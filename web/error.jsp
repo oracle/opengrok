@@ -41,7 +41,7 @@ org.apache.lucene.queryParser.*"
 String context = request.getContextPath();
 String rawSource = getServletContext().getInitParameter("SRC_ROOT");
 String configError = "";
-if (rawSource.equals("")) {
+if ("".equals(rawSource)) {
     configError = "SRC_ROOT parameter has not been configured in web.xml! Please configure your webapp.";
 } else {
     if(!(new File(rawSource)).isDirectory()) {
