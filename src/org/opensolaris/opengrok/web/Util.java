@@ -210,7 +210,15 @@ public class Util {
                         String repo = repoReader.readLine();
                         repoReader.close();
                         rootReader.close();
-                        return (cvsroot + File.separatorChar + repo + File.separatorChar + name + ",v");
+                        String dir = cvsroot + File.separatorChar + repo;
+                        String filename = name + ",v";
+                        File rcsFile = new File(dir, filename);
+                        if (!rcsFile.exists()) {
+                            File atticFile = new File(dir + File.separatorChar + "Attic", filename);
+                            if (atticFile.exists())
+                                rcsFile = atticFile;
+                        }
+                        return rcsFile.getPath();
                     }
                     rootReader.close();
                 }
