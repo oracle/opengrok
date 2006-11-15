@@ -1,0 +1,8 @@
+syntax: glob
+*~
+*.class
+build
+dist
+.hgcache
+opengrok.jar
+source.war

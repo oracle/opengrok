@@ -1,0 +1,161 @@
+body {
+	background-color: #ffffff;
+	font-size: 100.01%;
+	color: black;
+	font-family: arial, sans-serif;
+	padding: 1em;
+	margin: 0em;
+}
+
+#Masthead {
+	background: none;
+	display:block;
+	border: none;
+	border-bottom: 1px solid #000;
+	padding-bottom:3px;
+	margin-bottom: 3px;
+}
+
+#header {
+min-height:48px;
+}
+
+#MastheadLogo h1 {
+	display:inline;
+	font-size:normal;
+}
+
+#MastheadLogo {
+	background-color: white;
+	background-image: none;
+/*	background-image: url(./img/header-bw.png);*/
+	background-position: 0px 8px;
+	background-repeat: no-repeat;
+	float: left;
+	height: 48px;
+	width: 270px;
+	border: none;
+	text-decoration: none;
+}
+
+#pagetitle {
+	float: right;
+	font-size: large;
+	text-align:right;
+	color:#000;
+}
+
+#filename {
+	font-size: x-large;
+	text-align:right;
+	color:#000;
+}
+
+#bar {
+	padding-left: 0.5em;
+	margin-bottom:1em;
+	display: none;
+}
+
+input.q {
+	color: #000;
+	border: 1px solid #000;
+	font-weight: normal;
+	padding:2px;
+}
+
+input.submit {
+	background-color: #ccc;
+	color: #000;
+	border: 1px solid #000;
+	padding: 0px;
+	font-weight: bold;
+	min-width:4em;
+	text-align:center;
+}
+
+input.submit:hover, input.submit:active {
+	background-color: #ddd;
+	color: #000;
+	border: 1px solid #000;
+	padding: 0px;
+	font-weight: bold;
+	min-width:4em;
+	text-align:center;
+}
+
+.thead {
+background-color:#ddd;
+border-bottom:1px solid #000;
+font-weight:bold;
+}
+
+.alt {
+background-color:#fff;
+}
+
+a:link			{color:#000;text-decoration:none;}
+a:visited		{color:#000;text-decoration:none;}
+a:active, a:hover	{color:#000;text-decoration:underline;}
+img {border:0;}
+
+tt {margin:none;}
+
+
+form, pre {padding:0px;margin:0px;}
+#src {font-size:75%;}
+#src .l  {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;}
+#src .hl {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;font-weight:bold;}
+#src tt{padding-left:1em; padding-right:1em;}
+.sl {color:#999;text-decoration:underline;}
+td.a{color:#000}
+.n  {color:#000;}
+.s  {color:#000;}
+.c  {color:#000; font-style:italic;}
+a.d {color:#000; font-weight:bold; font-style:italic;text-decoration:none;}
+a.s {color:#000;}  /* matched lines */
+a.f {color:#000;}
+.mf {color:#000;}
+div.a{color:#000}
+
+#results .con{font-size:small;color:#000;}
+#more .l, #results .l { color:#888; }
+#results .m {background-color:#ffb;}
+#results i {color: #000; font-weight:bold;}
+#results tr.dir{background-color:#fff;border-top:3px solid #000;}
+#results td.f{width:3em;padding-left:2em;padding-right:.5em;}
+
+#more { line-height:1.25em;}
+#more b { background-color:none;}
+
+#diffbar {border-bottom: 1px solid #000; padding-left:2em;font-size:normal; margin-top:1em;}
+#difftable {border:#000; border-collapse:collapse;font-size:small;}
+span.tab    { padding: 5px; padding-top:3px; padding-bottom: 0px; margin-left: 2px; margin-right: 2px; margin-bottom:0px ;background-color:#eee; border:1px solid #000;border-bottom:1px none;}
+span.tabsel { padding: 6px; padding-top:5px; padding-bottom: 1px; margin-left: 2px; margin-right: 2px; background-color:#fff; border:1px solid #000; border-bottom:2px solid #fff;}
+#difftable .d { background-color:#8BD98B;font-weight:bold;}
+#difftable .a { background-color:#FFCC40;font-weight:bold;}
+tr.k {border-bottom:1px dashed #000;}
+#difftable i  {color:#666;background-color:#ddd;margin-right:.2em;padding-left:1em;padding-right:.5em;text-decoration:none;}
+#difftable i.a  {background-color:#FFDD80;color:#666; font-weight:bold;}
+strike.d{background-color:#bbddbb; margin-right:.2em;padding-left:1em;padding-right:.5em;}
+#difftable td.d { background-color:#eeeeee;}
+.grey{background-color:#eee;}
+
+#badge img { display:none; }
+
+#Footer {
+	background-color: white;
+	color: #000;
+	font-size: 75%;
+	margin-top: 1em;
+}
+#Footer p {
+	margin: 0.6em 0 1em 0;
+	text-align:center;
+}
+#Footer a {
+	color: #000;
+}
+
+.more {background-color:none;border: 1px #ccc solid;padding:.3em;margin:1px;}
+.sel {background-color:#ddd;border: 1px #000 solid;padding:.5em;margin:1px;}

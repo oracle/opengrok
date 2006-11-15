@@ -1,0 +1,46 @@
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+# Use is subject to license terms.
+#
+# ident	"%Z%%M% %I%     %E% SMI"
+#
+
+i pkginfo
+i request
+
+!default 0444 bin bin
+
+d none opt ? ? ?
+d none opt/OSOLopengrok 0755 bin bin
+d none opt/OSOLopengrok/lib 0755 bin bin
+f none opt/OSOLopengrok/lib/ant-tools.jar=lib/ant-tools.jar
+f none opt/OSOLopengrok/lib/bcel-5.1.jar=lib/bcel-5.1.jar
+f none opt/OSOLopengrok/lib/jakarta-oro-2.0.8.jar=lib/jakarta-oro-2.0.8.jar
+f none opt/OSOLopengrok/lib/lucene-1.4.3.jar=lib/lucene-1.4.3.jar
+f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.diff.jar=lib/org.apache.commons.jrcs.diff.jar
+f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.rcs.jar=lib/org.apache.commons.jrcs.rcs.jar
+f none opt/OSOLopengrok/lib/speller.jar=lib/speller.jar
+f none opt/OSOLopengrok/lib/svn-javahl.jar=lib/svn-javahl.jar
+f none opt/OSOLopengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar
+f none opt/OSOLopengrok/opengrok.jar=opengrok.jar 0555 bin bin
+f none opt/OSOLopengrok/source.war=source.war
+s local usr/local/bin/opengrok=../../../opt/OSOLopengrok/opengrok.jar

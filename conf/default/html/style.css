@@ -1,0 +1,172 @@
+body {
+background-color: #ffffff;
+font-size: 100.01%; /* 12px [1] */
+color: black;
+font-family: arial, sans-serif;
+padding: 1em;
+margin: 0em;
+}
+
+#Masthead {
+	background: none;
+	border: none;
+	display:block;
+	border-bottom: 4px solid #FFC726;
+	padding-bottom:3px;
+	margin-bottom: 3px;
+}
+#header {
+min-height:48px;
+height:48px;
+display:block;
+}
+#MastheadLogo h1 {
+	display: none;
+}
+
+#MastheadLogo {
+	background-color: white;
+	background-image: url(./img/Logo.png);
+	background-position: 0px 2px;
+	background-repeat: no-repeat;
+	float: left;
+	height: 43px;
+	width: 172px;
+	border: none;
+	text-decoration: none;
+}
+
+#pagetitle {
+	float: right;
+	font-size: large;
+	color:#5382a1;
+	text-align:right;
+}
+
+#filename {
+	font-size: x-large;
+	color:#000;
+	text-align:right;
+}
+
+#bar {
+	padding-left: 0.5em;
+	margin-bottom:1em;
+}
+
+input.q {
+	background-color: #ffffff;
+	color: #000;
+	border-left: 1px solid #bbbbff;
+	border-top: 1px solid #bbbbff;
+	border-right: 1px solid #93a8bb;
+	border-bottom: 1px solid #93a8bb;
+	font-weight: normal;
+	padding:2px;
+}
+
+input.submit {
+	background-color: #A3B8CB;
+	color: #000;
+	padding: 0px;
+	border-left: 1px solid #bbbbff;
+	border-top: 1px solid #bbbbff;
+	border-right: 1px solid #93a8bb;
+	border-bottom: 1px solid #93a8bb;
+	font-weight: bold;
+	min-width:4em;
+	text-align:center;
+}
+
+input.submit:hover, input.submit:active {
+	background-color: #A3B8CB;
+	color: #fff;
+	padding: 0px;
+	border-left: 1px solid #bbbbff;
+	border-top: 1px solid #bbbbff;
+	border-right: 1px solid #93a8bb;
+	border-bottom: 1px solid #93a8bb;
+	font-weight: bold;
+	min-width:4em;
+	text-align:center;
+}
+
+.thead {
+	background-color:#C5D5A9;
+	font-weight:bold;
+}
+
+.alt {
+	background-color:#e8e8f0;
+}
+
+a:link			{color:#2030A2;text-decoration:none;}
+a:visited		{color:#202062;text-decoration:none;}
+a:active, a:hover	{color:#202062;text-decoration:underline;}
+img {border:0;}
+tt {margin:none;}
+form, pre {padding:0px;margin:0px;}
+
+#src .l  {text-align:right;color:#888;background-color: #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
+#src .hl {text-align:right;color:#000;background-color: #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
+#src tt{padding-left:1em; padding-right:1em;}
+
+.sl {color:#999;text-decoration:underline;}
+td.a{color:#000}
+.n  {color:brown;} /* numbers */ 
+.s  {color:green;} /* strings */
+.c  {color:#666;} /* comments */
+.b  {color:#000; font-weight:bold;} /* comments */
+.k  {color:#000; font-family:monospace;} /* comments */
+a.d {color:#909; font-weight:bold; font-style:italic;text-decoration:none;} /* definitions */
+a.s {color:#000;}  /* matched lines */
+a.f {color:#909;} /* file locals */
+.mf {color:#909;} /* multiple file local defs */
+div.a {color:#000}
+a.h {font-size:small; margin-left:2em;}
+
+#results {margin-top:.5em;}
+#results .con{font-size:small;color:#000;}
+#more .l, #results .l { color:#666; }
+#results .m {background-color:#ffb;}
+#results i {color: green; font-weight:bold;}
+#results tr.dir{background-color:#C5D5A9;}
+#results td.f{width:3em;padding-left:2em;padding-right:.5em;}
+
+#more { line-height:1.25em;}
+#more b { background-color:#ffff99;}
+
+#diffbar {border-bottom: 2px solid #c5d5a9; padding-left:2em;font-size:normal; }
+#difftable {border:#C5D5A9; border-collapse:collapse;font-size:small;}
+span.tab { padding: 5px; padding-top:3px; padding-bottom: 0px;  margin-left: 2px; margin-right: 2px; margin-bottom:0px ;background-color:#eee; border:2px solid #c5d5a9;border-bottom:2px none #eee;}
+span.tabsel {  padding: 6px ; padding-top:5px; padding-bottom: 1px; margin-left: 2px; margin-right: 2px; background-color:#fff; border:2px solid #c5d5a9; border-bottom:2px solid #fff;}
+#difftable .d { background-color:#8BD98B;}
+#difftable .a { background-color:#FFCC40;}
+tr.k{border-bottom:1px dashed #ccc;}
+#difftable i  {color:#666;background-color:#ddd;margin-right:.2em;padding-left:1em;padding-right:.5em;text-decoration:none; font-weight:normal;}
+#difftable i.a  {background-color:#FFDD80;color:#666;}
+strike.d{background-color:#bbddbb; margin-right:.2em;padding-left:1em;padding-right:.5em;}
+#difftable td.d { background-color:#eeeeee;}
+.grey{background-color:#eee;}
+
+#badge { padding:3px; }
+
+.rssbadge { padding:3px; text-align:right; border:0px;}
+
+#Footer {
+	background-color: white;
+	color: #777;
+	font-size: 95%;
+	margin-top: 1em;
+}
+#Footer p {
+	margin: 0.6em 0 1em 0;
+	text-align:center;
+}
+#Footer a {
+	color: #555;
+}
+
+.more {background-color:#fff;border: 1px #ccc solid;padding:.3em;margin:1px;}
+.sel {background-color:#A3B8CB;border: 1px #336 solid;padding:.5em;margin:1px;}
+.error {color: brown;}

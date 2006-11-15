@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").  
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+
+ident	"%Z%%M% %I%     %E% SMI"
+
+-->
+<project default="build">
+    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex"/>
+    <property name="builddir" value="build"/>
+    <property name="outputjar" value="opengrok.jar"/>
+    <property name="distname" value="opengrok-0.3.1"/>
+    <property name="classdir" value="${builddir}/classes"/>
+    <property name="webapp" value="${builddir}/webapp"/>
+    <path id="compilecp">
+        <fileset dir="lib/" includes="*.jar"/>
+    </path>
+    <path id="runcp">
+    <pathelement location="${outputjar}"/>
+    <path refid="compilecp"/>
+        <pathelement location="."/>
+    </path>
+    <path id="junitcp">
+    <path refid="runcp"/>
+        <pathelement location="${classdir}"/>
+    </path>
+    <target name="compile">
+        <mkdir dir="${classdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/XMLXref.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffXref.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShXref.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="src"/>
+        <javac srcdir="src" destdir="${classdir}" deprecation="true" debug="true" optimize="on" >
+            <classpath refid="compilecp"/>
+        </javac>
+    </target>
+    <target name="build" depends="compile">
+        <jar jarfile="${outputjar}">
+            <fileset dir="${classdir}" excludes="**/test/"/>
+            <fileset dir="src" includes="org/opensolaris/opengrok/index/*.png"/>
+            <fileset dir="src" includes="org/opensolaris/opengrok/search/scope/*.gif"/>
+            <manifest>
+                <attribute name="Main-Class" value="org.opensolaris.opengrok.index.Indexer"/>
+                <attribute name="Class-Path" value="lib/lucene-1.4.3.jar
+                lib/jakarta-oro-2.0.8.jar
+                lib/org.apache.commons.jrcs.rcs.jar
+                lib/org.apache.commons.jrcs.diff.jar
+                lib/bcel-5.1.jar
+                lib/servlet-api.jar
+                lib/speller.jar
+                lib/ant-tools.jar
+		lib/swing-layout-0.9.jar
+		lib/svn-javahl.jar
+		"/>
+            </manifest>
+        </jar>
+    </target>
+    <target name="javadoc">
+        <javadoc sourcepath="src" destdir="${builddir}/api" packagenames="org.opensolaris.opengrok.*">
+	            <classpath refid="compilecp"/>
+	</javadoc>
+    </target>
+    <target name="webapp" depends="compile,build">
+        <war destfile="source.war" webxml="conf/default/web.xml">
+            <fileset dir="web"/>
+            <fileset dir="conf/default/html"/>
+            <lib dir="." includes="opengrok.jar"/>
+            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
+        </war>
+    </target>
+    <target name="polished" depends="compile,build">
+        <war destfile="source.war" webxml="conf/polished/web.xml">
+            <fileset dir="web"/>
+            <fileset dir="conf/polished/html"/>
+            <lib dir="." includes="opengrok.jar"/>
+            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
+        </war>
+    </target>
+    <target name="offwhite" depends="compile,build">
+        <war destfile="source.war" webxml="conf/offwhite/web.xml">
+            <fileset dir="web"/>
+            <fileset dir="conf/offwhite/html"/>
+            <lib dir="." includes="opengrok.jar"/>
+            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
+        </war>
+    </target>
+    <target name="os-webapp" depends="compile,build">
+        <war destfile="source.war" webxml="conf/opensolaris/web.xml">
+            <fileset dir="web"/>
+            <fileset dir="conf/opensolaris/html"/>
+            <lib dir="." includes="opengrok.jar"/>
+            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
+        </war>
+    </target>
+    <target name="dist" depends="compile,build">
+        <tar destfile="${builddir}/${distname}.tar">
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/">
+                <include name="README.txt" />
+                <include name="CHANGES.txt" />
+                <include name="build.xml" />
+                <include name="paths.tsv" />
+                <include name="LICENSE.*" />
+                <include name="lib/*.jar" />
+                <include name="source.war" />
+            </tarfileset>
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/" mode="0755">
+                <include name="${outputjar}"/>
+                <include name="run.sh"/>
+                <include name="run.bat"/>
+                <include name="run-quiet.sh"/>
+                <include name="${outputjar}"/>
+            </tarfileset>
+            <tarfileset dir="src" prefix="${distname}/src/"/>
+            <tarfileset dir="ext" prefix="${distname}/ext/"/>
+            <tarfileset dir="web" prefix="${distname}/web/"/>
+            <tarfileset dir="conf/default" prefix="${distname}/conf/default"/>
+            <tarfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
+            <tarfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
+            <tarfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+        </tar>
+        <gzip zipfile="${builddir}/${distname}.tar.gz" src="${builddir}/${distname}.tar"/>
+	<zip destfile="${builddir}/${distname}.zip">
+            <zipfileset dir="." prefix="${distname}/">
+                <include name="README.txt" />
+                <include name="CHANGES.txt" />
+                <include name="build.xml" />
+                <include name="paths.tsv" />
+                <include name="LICENSE.*" />
+                <include name="lib/*.jar" />
+                <include name="source.war" />
+                <include name="${outputjar}"/>
+                <include name="run.sh"/>
+                <include name="run.bat"/>
+                <include name="run-quiet.sh"/>
+	    </zipfileset>
+            <zipfileset dir="src" prefix="${distname}/src/"/>
+            <zipfileset dir="ext" prefix="${distname}/ext/"/>
+            <zipfileset dir="web" prefix="${distname}/web/"/>
+            <zipfileset dir="conf/default" prefix="${distname}/conf/default"/>
+            <zipfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
+            <zipfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
+            <zipfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+	</zip>
+    </target>
+    <target name="dist-src" depends="compile">
+        <tar destfile="${builddir}/${distname}-src.tar">
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/">
+                <include name="README.txt" />
+                <include name="CHANGES.txt" />
+                <include name="build.xml" />
+                <include name="paths.tsv" />
+                <include name="LICENSE.*" />
+            </tarfileset>
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/" mode="0755">
+                <include name="${outputjar}"/>
+                <include name="run.sh"/>
+                <include name="run.bat"/>
+                <include name="run-quiet.sh"/>
+            </tarfileset>
+            <tarfileset dir="src" prefix="${distname}/src/"/>
+            <tarfileset dir="web" prefix="${distname}/web/"/>
+            <tarfileset dir="conf/default" prefix="${distname}/conf/default"/>
+            <tarfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
+            <tarfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
+            <tarfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+        </tar>
+        <gzip zipfile="${builddir}/${distname}-src.tar.gz" src="${builddir}/${distname}-src.tar"/>
+	<zip destfile="${builddir}/${distname}-src.zip">
+            <zipfileset dir="." prefix="${distname}/">
+                <include name="README.txt" />
+                <include name="CHANGES.txt" />
+                <include name="build.xml" />
+                <include name="paths.tsv" />
+                <include name="LICENSE.*" />
+                <include name="run.sh"/>
+                <include name="run.bat"/>
+                <include name="run-quiet.sh"/>
+	    </zipfileset>
+            <zipfileset dir="src" prefix="${distname}/src/"/>
+            <zipfileset dir="web" prefix="${distname}/web/"/>
+            <zipfileset dir="conf/default" prefix="${distname}/conf/default"/>
+            <zipfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
+            <zipfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
+            <zipfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+	</zip>
+    </target>
+    <target name="run" depends="build">
+    	<java classname="org.opensolaris.opengrok.index.Indexer" classpath="opengrok.jar">
+         <classpath refid="compilecp"/>
+	</java>
+    </target>
+    <target name="rejar"  depends="build">
+        <mkdir dir="build/tmp"/>
+        <exec os="SunOS" executable="/usr/bin/jar" dir="build/tmp">
+		<arg line="-xf ../../opengrok.jar"/>
+	</exec>
+        <exec os="SunOS" executable="/usr/bin/jar" dir="build/tmp">
+		<arg line="-Mcf ../../opengrok.jar META-INF org"/>
+	</exec>
+        <deltree dir="build/tmp"/>
+    </target>
+    <target name="package" depends="rejar">
+        <exec os="SunOS" executable="/usr/bin/pkgmk">
+		<arg line="-o -d build -r . -f pkgdef/prototype"/>
+	</exec>
+        <exec os="SunOS" executable="/usr/bin/pkgtrans">
+		<arg line="-s build OSOLopengrok.pkg OSOLopengrok"/>
+	</exec>
+    </target>
+</project>
