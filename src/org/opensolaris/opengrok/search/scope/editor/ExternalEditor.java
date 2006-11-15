@@ -35,7 +35,7 @@ public class ExternalEditor extends Editor {
     public ExternalEditor() {
         super();
     }
-
+    
     /**
      * Display a named file in the editor
      * @param filename The name of the file to display
@@ -45,14 +45,26 @@ public class ExternalEditor extends Editor {
     public void displayFile(String filename, Integer lineno) throws Exception {
         String command;
         
-        if (getCommand().indexOf("%d") != -1) {
-            command = String.format(getCommand(), lineno, filename);
+        int l = getCommand().indexOf("%d");
+        int s = getCommand().indexOf("%s");
+        
+        if (s == -1) {
+            throw new Exception("Failed to locate %s in command. Don't know where to put the filename.");
+        }
+        
+        if (l != -1) {
+            if (l < s) {
+                command = String.format(getCommand(), lineno, filename);
+            } else {
+                command = String.format(getCommand(), filename, lineno);
+            }
         } else {
             command = String.format(getCommand(), filename);
         }
+
         Runtime.getRuntime().exec(command);
     }
-
+    
     /**
      * Is it possible to modify the command on this editor or not
      * @return true if the user is able to modify the command used to start this editor or not
