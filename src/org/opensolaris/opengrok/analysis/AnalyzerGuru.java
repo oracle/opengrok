@@ -29,6 +29,7 @@ package org.opensolaris.opengrok.analysis;
 
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.document.TroffAnalyzer;
+import org.opensolaris.opengrok.analysis.java.JavaAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.*;
 import org.opensolaris.opengrok.analysis.c.*;
 import org.opensolaris.opengrok.analysis.sh.*;
@@ -71,7 +72,8 @@ public class AnalyzerGuru {
         CAnalyzer.class,
         ShAnalyzer.class,
         PlainAnalyzer.class,
-        GZIPAnalyzer.class
+        GZIPAnalyzer.class,
+        JavaAnalyzer.class
     };
     private static HashMap<Class, FileAnalyzer> analyzerInstances = new HashMap<Class, FileAnalyzer>();
     
