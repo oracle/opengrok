@@ -145,8 +145,9 @@ public class Config {
         }
 
         String editor = prefs.get("editor", null);
-        if(editor == null)
+        if(editor == null) {
             editor = System.getenv("EDITOR");
+        }
 
         if ((editor != null) && (editor.length() > 0)) {
             // Try to see if I have this editor configured
@@ -334,11 +335,12 @@ public class Config {
 
         for (Editor ed : eds) {
             if (ed.getName().equalsIgnoreCase(editor)) {
-                return ed;
+                ret = ed;
+                break;
             }
         }
 
-        return null;
+        return ret;
     }
    
     /**

@@ -28,13 +28,13 @@
 
 package org.opensolaris.opengrok.analysis.c;
 
-import java.util.*;
+import java.util.HashSet;
 
 /**
   * Holds static hash set containing the C keywords
   */
 public class Consts{
-    public static final HashSet kwd = new HashSet() ;
+    public static final HashSet<String> kwd = new HashSet<String>() ;
     static {
         kwd.add( "throws" );
         kwd.add( "import" );

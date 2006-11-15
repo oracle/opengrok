@@ -35,7 +35,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -51,8 +50,6 @@ import org.opensolaris.opengrok.search.*;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
-import org.opensolaris.opengrok.search.context.LineMatcher;
-import org.opensolaris.opengrok.search.context.QueryMatchers;
 
 /**
  * This is an encapsulation of the details on how to seach in the index
@@ -93,7 +90,6 @@ public class SearchEngine {
     private Query query;
     private CompatibleAnalyser analyzer;
     private QueryParser qparser;
-    private boolean onlyFilename;
     private Context sourceContext;
     private HistoryContext historyContext;
     private Summarizer summer;
@@ -119,7 +115,6 @@ public class SearchEngine {
     public int search() {
         hits = null;
         StringBuilder sb = new StringBuilder();
-        onlyFilename = true;
         
         if ((freetext != null) && (freetext.length() > 0)) {
             sb.append(freetext);
@@ -171,8 +166,9 @@ public class SearchEngine {
             summer = null;
             try {
                 sourceContext = new Context(query);
-                if(sourceContext.isEmpty())
+                if(sourceContext.isEmpty()) {
                     sourceContext = null;
+                }
                 summer = new Summarizer(query, analyzer);
             } catch (Exception e) {
             }
@@ -180,8 +176,9 @@ public class SearchEngine {
             historyContext = null;
             try {
                 historyContext = new HistoryContext(query);
-                if(historyContext.isEmpty())
+                if(historyContext.isEmpty()) {
                     historyContext = null;
+                }
             } catch (Exception e) {
             }
             
@@ -326,8 +323,6 @@ public class SearchEngine {
      * @return Value of property symbol.
      */
     public String getSymbol() {
-        int ii;
-        
         return this.symbol;
     }
     

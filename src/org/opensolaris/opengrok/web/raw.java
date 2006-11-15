@@ -41,27 +41,28 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  */
 public class raw extends HttpServlet {
     protected long getLastModified(HttpServletRequest request) {
-	String context = request.getContextPath();
-	String servlet = request.getServletPath();
-	String reqURI = request.getRequestURI();
 	String path = request.getPathInfo();
-	if(path == null) path = "";
+	if(path == null) {
+            path = "";
+        }
 	String rawSource = getServletContext().getInitParameter("SRC_ROOT");
 	String resourcePath = rawSource + path;
 	File resourceFile = new File(resourcePath);
 	resourcePath = resourceFile.getAbsolutePath();
-	boolean valid;
 	String basename = resourceFile.getName();
-	boolean isDir = false;
+
+        long ret;
+        
 	if (resourcePath.length() < rawSource.length()
 	|| !resourcePath.startsWith(rawSource)
 	|| !resourceFile.canRead()
 	|| IgnoredNames.ignore.contains(basename)
 	|| resourceFile.isDirectory()) {
-	    return 0;
+	    ret = 0;
 	} else {
-	    return(resourceFile.lastModified());
+	    ret = resourceFile.lastModified();
 	}
+        return ret;
     }
     
     public void doGet(HttpServletRequest request,
@@ -69,17 +70,16 @@ public class raw extends HttpServlet {
 	throws IOException, ServletException {
 	
 	String context = request.getContextPath();
-	String servlet = request.getServletPath();
 	String reqURI = request.getRequestURI();
 	String path = request.getPathInfo();
-	if(path == null) path = "";
+	if(path == null) { 
+            path = ""; 
+        }
 	String rawSource = getServletContext().getInitParameter("SRC_ROOT");
 	String resourcePath = rawSource + path;
 	File resourceFile = new File(resourcePath);
 	resourcePath = resourceFile.getAbsolutePath();
-	boolean valid;
 	String basename = resourceFile.getName();
-	boolean isDir = false;
 	if (resourcePath.length() < rawSource.length()
 	|| !resourcePath.startsWith(rawSource)
 	|| !resourceFile.canRead()

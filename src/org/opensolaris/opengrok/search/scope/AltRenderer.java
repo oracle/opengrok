@@ -35,10 +35,7 @@ package org.opensolaris.opengrok.search.scope;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.*;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.*;
-import javax.swing.border.*;
 import javax.swing.*;
 import java.awt.Component;
 
