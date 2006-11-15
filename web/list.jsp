@@ -113,7 +113,8 @@ if (g == Genre.PLAIN) {
 }
                         }
                     } catch (IOException e) {
-	%> <h3 class="error">IO Error</h3>  <%
+        %> <h3 class="error">IO Error</h3> <p> <%=e.getMessage() %> </p> <%
+           
                     }
       %></pre></div><%
       in.close();

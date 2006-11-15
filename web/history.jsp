@@ -96,7 +96,7 @@ if(userPage != null && ! userPage.equals("")) {
     :  Util.Htmlize(hr.getComment())
 %><%
 ArrayList files = hr.getFiles();
-if(files != null) {
+if(files != null) {%><br/><%
     Iterator ifiles = files.iterator();
     while(ifiles.hasNext()) {
         String ifile = (String)ifiles.next();
