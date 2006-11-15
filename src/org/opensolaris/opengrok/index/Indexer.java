@@ -35,6 +35,7 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.store.FSDirectory;
 //import org.apache.lucene.search.spell.*;
+import org.apache.oro.io.GlobFilenameFilter;
 import org.apache.lucene.spell.NGramSpeller;
 import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
@@ -100,6 +101,10 @@ public class Indexer {
                             System.err.println("ERROR: Invalid option or No data root specified!");
                             System.err.println(usage);
                             System.exit(1);
+                        }
+                    } else if (argv[i].equals("-g")) {
+                        if(i+1 < argv.length) {
+                            IgnoredNames.glob = new GlobFilenameFilter(argv[++i]);
                         }
                     } else if (argv[i].equals("-q")) {
                         verbose = false;

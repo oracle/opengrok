@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -28,11 +28,13 @@
 package org.opensolaris.opengrok.index;
 
 import java.util.*;
+import java.io.FileFilter;
+import org.apache.oro.io.GlobFilenameFilter;
 
 /**
  * Comment that describes the contents of this IgnoredNames.java
  * Created on November 8, 2005
- * 
+ *
  * @author Chandan
  */
 public class IgnoredNames {
@@ -53,12 +55,15 @@ public class IgnoredNames {
         "CVSROOT",
         "TAGS",
         "tags",
-        ".svn"
+        ".svn",
+        ".hg"
     };
     public static Set<String> ignore = new HashSet<String>();
     static {
-	for(String ig : IGNORE) {
-	    ignore.add(ig);
-	}
+        for(String ig : IGNORE) {
+            ignore.add(ig);
+        }
     }
+    
+    public static FileFilter glob = new GlobFilenameFilter("*");
 }

@@ -347,6 +347,11 @@ class Index {
                 }
             }
         } else {
+            if(!IgnoredNames.glob.accept(file)) {
+                err.println("Warning: ignored file " + file.getName());
+                return;
+            }
+           
             String path = parent + '/' + file.getName();
             if (uidIter != null) {
                 String uid = Util.uid(path, DateField.timeToString(file.lastModified()));	 // construct uid for doc
