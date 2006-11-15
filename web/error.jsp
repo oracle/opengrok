@@ -61,7 +61,6 @@ if (rawSource.equals("")) {
 </head>
 <body>
 <div id="page">
-<form action="<%=context%>/search">
     <div id="header">
       <%= getServletContext().getInitParameter("HEADER") %>
     </div>
