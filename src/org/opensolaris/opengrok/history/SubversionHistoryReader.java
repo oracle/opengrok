@@ -50,6 +50,10 @@ public class SubversionHistoryReader extends HistoryReader {
     private boolean records;
     private LogMessage messages[];
     
+    
+    // Trond... Stephen sier at det kommer feil rekkef/olge... hva om jeg bare
+    // itererer nedover i stedet for oppover i next'n? da slipper jeg jo alt tull?
+    
     public SubversionHistoryReader(String parent, String name) throws Exception {
         super(new StringReader(""));
         this.parent = parent;

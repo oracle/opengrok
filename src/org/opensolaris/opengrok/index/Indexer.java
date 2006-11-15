@@ -39,6 +39,8 @@ import org.apache.oro.io.GlobFilenameFilter;
 import org.apache.lucene.spell.NGramSpeller;
 import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.MercurialRepository;
 import org.opensolaris.opengrok.search.scope.MainFrame;
 import org.opensolaris.opengrok.web.Util;
 
@@ -53,13 +55,14 @@ public class Indexer {
     private static boolean verbose = true;
     private static boolean economical = false;
     private static String usage = "Usage: " +
-            "opengrok.jar [-qe] [-c ctagsToUse] [-w webapproot] [-i ignore_name [ -i ..]] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
+            "opengrok.jar [-qe] [-c ctagsToUse] [-w webapproot] [-i ignore_name [ -i ..]] [-m directory [-m ...]] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
             "       opengrok.jar [-O | -l | -t] DATA_ROOT\n" +
             "\t-q run quietly\n" +
             "\t-e economical - consumes less disk space\n" +
             "\t-c path to ctags\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
+            "\t-m Path to Mercurial repository\n" +
             "\t-s SRC_ROOT is root directory of source tree\n" +
             "\t   default: last used SRC_ROOT\n" +
             "\tDATA_ROOT - is where output of indexer is stored\n" +
@@ -119,6 +122,7 @@ public class Indexer {
                         if(i+1 < argv.length) {
                             String webapp = argv[++i];
                             if(webapp.startsWith("/") || webapp.startsWith("http")) {
+                                ;
                             } else {
                                 webapp = "/" + webapp;
                             }
@@ -161,6 +165,17 @@ public class Indexer {
                     } else if (argv[i].equals("-i")) {
                         if(i+1 < argv.length) {
                             IgnoredNames.ignore.add(argv[++i]);
+                        }
+                    } else if (argv[i].equals("-m")) {
+                        if(i+1 < argv.length) {
+                            File file = new File(argv[++i]);
+                            if (!file.getCanonicalFile().isDirectory()) {
+                                System.err.println("WARNING: " + argv[i] + " is not a directory. Ignored");
+                            } else {
+                                MercurialRepository rep = new MercurialRepository(file.getCanonicalPath());
+                                rep.setVerbose(true);
+                                HistoryGuru.getInstance().addExternalRepository(rep, file.getCanonicalPath());
+                            }
                         }
                     } else if (!argv[i].startsWith("-")) {
                         if (dataRoot == null)

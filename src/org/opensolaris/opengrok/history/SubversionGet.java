@@ -74,6 +74,14 @@ public class SubversionGet extends InputStream {
         return input.read(b, off, len);
     }
     
+    public void reset() throws IOException {
+        input.reset();
+    }
+    
+    public void mark(int readlimit) {
+        input.mark(readlimit);
+    }
+    
     public int read() throws java.io.IOException {
         throw new IOException("use a BufferedInputStream. just read() is not supported!");
     }

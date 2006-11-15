@@ -21,6 +21,16 @@
     <param-value>&lt;div id="MastheadLogo"&gt; &lt;h1&gt; OpenGrok &lt;/h1&gt; &lt;/div&gt;</param-value>
     <description>OPTIONAL: Fragment of html encoded html that will be used for the title or logo of the project</description>
   </context-param>
+  
+  <context-param>
+    <param-name>SCAN_REPOS</param-name>
+    <param-value>false</param-value>
+    <description>Set this variable to true if you would like the web application to scan for external repositories (Mercurial)</description>
+  </context-param>
+  <listener>
+   <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
+  </listener>
+    
   <servlet>
     <servlet-name>search</servlet-name>
     <display-name>Source Finder</display-name>

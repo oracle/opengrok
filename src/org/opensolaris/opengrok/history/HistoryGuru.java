@@ -28,6 +28,8 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -47,12 +49,32 @@ public class HistoryGuru {
     private final int SCCS = 2;
     /** Subversion was used by the last file */
     private final int SVN = 3;
+    /** The last file was located in an "external" repository */
+    private final int EXTERNAL = 4;
     /** Method used on the last file */
     private int previousFile;
     /** Is JavaSVN available? */
-    private boolean svn_available;
+    private boolean svnAvailable;
+    private boolean initializedSvn;
     private static final String sccslabel = "/SCCS/s.";
-    private static final String svnlabel = "/.svn";
+    private static final String svnlabel = ".svn";
+    
+    private boolean isSvnAvailable() {
+        if (!initializedSvn) {
+            initializedSvn = true;
+            try {
+                if (Class.forName("org.tigris.subversion.javahl.SVNClient") != null) {
+                    svnAvailable = true;
+                }
+            } catch (ClassNotFoundException ex) {
+                /* EMPTY */
+                ;
+            } catch (UnsatisfiedLinkError ex) {
+                System.err.println("Failed to initialize Subversion library: " + ex);
+            }
+        }
+        return svnAvailable;
+    }
     
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
@@ -60,18 +82,9 @@ public class HistoryGuru {
      * @todo Set the revision system according to the users preferences, and call the various setups..
      */
     private HistoryGuru() {
-        svn_available = false;
-        try {
-            if (Class.forName("org.tigris.subversion.javahl.SVNClient") != null) {
-                svn_available = true;
-            }
-        } catch (ClassNotFoundException ex) {
-            /* EMPTY */
-            ;
-        } catch (UnsatisfiedLinkError ex) {
-            System.err.println("Failed to initialize Subversion library: " + ex);
-        }
+        svnAvailable = false;
         previousFile = UNKNOWN;
+        externalRepositories = new HashMap<String, ExternalRepository>();
     }
     
     /**
@@ -103,14 +116,20 @@ public class HistoryGuru {
             if (sfile.canRead()) {
                 hr = new SCCSHistoryReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(sfile))));
                 previousFile = SCCS;
-            } else if (svn_available) {
-                File svn = new File(parent + svnlabel);
-                if (svn.exists()) {
+            } else {
+                File svn = new File(parent, svnlabel);
+                
+                if (svn.exists() && isSvnAvailable()) {
                     try {
                         hr = new SubversionHistoryReader(parent, basename);
                         previousFile = SVN;
                     } catch (Exception e) {
                         ;
+                    }
+                } else {
+                    hr = lookupHistoryReader(parent, basename);
+                    if (hr != null) {
+                        previousFile = EXTERNAL;
                     }
                 }
             }
@@ -139,14 +158,16 @@ public class HistoryGuru {
         File sfile;
         
         switch (previousFile) {
+            case EXTERNAL :
+                hr = lookupHistoryReader(parent, basename);
+                break;
+
             case SVN :
-                sfile = new File(parent + svnlabel);
+                sfile = new File(parent, svnlabel);
                 if (sfile.exists()) {
                     try {
                         hr = new SubversionHistoryReader(parent, basename);
-                    } catch (Exception e) {
-                        ;
-                    }
+                    } catch (Exception e) { ; }
                 }
                 break;
                 
@@ -161,7 +182,7 @@ public class HistoryGuru {
                 sfile = new File(parent + sccslabel + basename);
                 try{
                     hr = new SCCSHistoryReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(sfile))));
-                } catch (IOException e) {}
+                } catch (IOException e) { ; }
                 break;
                 
             default:
@@ -200,11 +221,13 @@ public class HistoryGuru {
                 in.read();
                 in.reset();
                 previousFile = RCS;
-            } else if (svn_available) {
-                File svn = new File(parent + svnlabel);
-                if (svn.exists()) {
+            } else {
+                File svn = new File(parent, svnlabel);
+                if (svn.exists() && isSvnAvailable()) {
                     in = new BufferedInputStream(new SubversionGet(parent, basename, rev));
                     previousFile = SVN;
+                } else {
+                    in = lookupHistoryGet(parent, basename, rev);
                 }
             }
         }
@@ -243,10 +266,13 @@ public class HistoryGuru {
                 break;
                 
             case SVN :
-                history = new File(parent + svnlabel);
+                history = new File(parent, svnlabel);
                 if (history.exists()) {
                     in = new BufferedInputStream(new SubversionGet(parent, basename, rev));
                 }
+                break;
+            case EXTERNAL :
+                in = lookupHistoryGet(parent, basename, rev);
                 break;
                 
             default:
@@ -269,7 +295,8 @@ public class HistoryGuru {
         boolean ret = false;
         if ((new File(parent + "/SCCS")).isDirectory() ||
                 (new File(parent + "/CVS")).isDirectory() ||
-                (new File(parent + svnlabel)).isDirectory()) {
+                (new File(parent, svnlabel)).isDirectory() ||
+                (getRepository(parent) != null)) {
             ret = true;
         }
         
@@ -311,4 +338,45 @@ public class HistoryGuru {
             e.printStackTrace();
         }
     }
+    
+    public void addExternalRepository(ExternalRepository rep, String path) {
+        externalRepositories.put(path, rep);
+    }
+    
+    private ExternalRepository getRepository(String path) {
+        ExternalRepository ret = null;
+        while (path != null) {
+            ExternalRepository r = externalRepositories.get(path);
+            if (r != null) {
+                ret = r;
+                break;
+            }
+            path = (new File(path)).getParent();
+        }
+        return ret;
+    }
+
+    HistoryReader lookupHistoryReader(String parent, String basename) {
+        HistoryReader ret = null;
+
+        ExternalRepository rep = getRepository(parent);
+        if (rep != null) {
+            ret = rep.getHistoryReader(parent, basename);
+        }
+
+        return ret;
+    }
+    
+    InputStream lookupHistoryGet(String parent, String basename, String rev) {
+        InputStream ret = null;
+
+        ExternalRepository rep = getRepository(parent);
+        if (rep != null) {
+            ret = rep.getHistoryGet(parent, basename, rev);
+        }
+        
+        return ret;         
+    }
+        
+    private Map<String, ExternalRepository> externalRepositories;
 }

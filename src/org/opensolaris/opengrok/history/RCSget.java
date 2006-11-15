@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -28,18 +28,24 @@
 
 package org.opensolaris.opengrok.history;
 
-import org.apache.commons.jrcs.rcs.*;
-import org.apache.commons.jrcs.diff.*;
-import java.util.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Date;
+import org.apache.commons.jrcs.diff.PatchFailedException;
+import java.io.IOException;
+import org.apache.commons.jrcs.rcs.Archive;
+import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
+import org.apache.commons.jrcs.rcs.NodeNotFoundException;
+import org.apache.commons.jrcs.rcs.ParseException;
 
 /**
  * Virtualise RCS log as an input stream
  */
 public class RCSget extends InputStream {
-    Archive archive = null;
-    Object[] lines;
-    int curline, linepos;
+    private BufferedInputStream stream;
     
     public static void main(String[] args) {
         try{
@@ -57,9 +63,9 @@ public class RCSget extends InputStream {
         }
     }
     
-        /*
-         * Pass null in version to get current revision
-         */
+    /**
+     * Pass null in version to get current revision
+     */
     public RCSget(String file)  throws IOException, FileNotFoundException {
         this(file, new FileInputStream(file), null);
     }
@@ -69,14 +75,22 @@ public class RCSget extends InputStream {
     }
     
     public RCSget(String file, InputStream in, String version) throws IOException, FileNotFoundException{
-        //super(in);
         try {
-            this.archive = new Archive(file, in);
+            Archive archive = new Archive(file, in);
+            Object[] lines;
+            
             if (version != null) {
-                this.lines = archive.getRevision(version, false);
+                lines = archive.getRevision(version, false);
             } else {
-                this.lines = archive.getRevision(false);
+                lines = archive.getRevision(false);
             }
+            
+            StringBuilder sb = new StringBuilder();
+            for (int ii = 0; ii < lines.length; ++ii) {
+                sb.append((String)lines[ii]);
+                sb.append("\n");
+            }
+            stream = new BufferedInputStream(new ByteArrayInputStream(sb.toString().getBytes()));
         } catch (ParseException e) {
             throw (new IOException());
         } catch (InvalidFileFormatException e) {
@@ -86,38 +100,32 @@ public class RCSget extends InputStream {
         } catch (NodeNotFoundException e) {
             throw (new IOException("Revision " + version + " not found"));
         }
-        curline = 0;
-        linepos = 0;
     }
     
-    public int read(byte[] buffer, int pos, int len) {
-        int n = 0;
-        if(curline >= lines.length)
-            return -1;
-        
-        while (len > 0 && curline < lines.length) {
-            String line = (String) lines[curline];
-            if (curline < lines.length - 1) line = line + "\012";
-            int linelen = line.length();
-            if (( linelen - linepos) <= len) {
-                line.getBytes(linepos, linelen, buffer, pos);
-                int inc = linelen - linepos;
-                curline++;
-                pos += inc;
-                n += inc;
-                len -= inc;
-                linepos = 0;
-            } else {
-                line.getBytes(linepos, linepos + len, buffer, pos);
-                pos += len;
-                n += len;
-                linepos += len;
-                len = 0;
-            }
+    public void reset() throws IOException {
+        try {
+            stream.reset();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace(System.err);
+            throw e;
         }
-        
-        return n;
     }
+    
+    public void close() throws IOException {
+        if (stream != null) {
+            stream.close();
+        }
+    }
+    
+    public void mark(int readlimit) {
+        stream.mark(readlimit);
+    }
+    
+    public int read(byte[] buffer, int pos, int len) throws IOException {
+        return stream.read(buffer, pos, len);
+    }
+    
     public int read() throws IOException {
         throw new IOException("use a BufferedInputStream. just read() is not supported!");
     }

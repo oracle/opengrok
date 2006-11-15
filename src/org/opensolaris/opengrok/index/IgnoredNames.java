@@ -56,7 +56,9 @@ public class IgnoredNames {
         "TAGS",
         "tags",
         ".svn",
-        ".hg"
+        ".hg",
+        ".hgtags",
+        ".hgcache"
     };
     public static Set<String> ignore = new HashSet<String>();
     static {
