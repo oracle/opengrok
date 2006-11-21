@@ -62,7 +62,7 @@ public class Indexer {
             "\t-c path to ctags\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
-            "\t-m Path to Mercurial repository\n" +
+            "\t-S Search and add \"External\" repositories (Mercurial...)\n" +
             "\t-s SRC_ROOT is root directory of source tree\n" +
             "\t   default: last used SRC_ROOT\n" +
             "\tDATA_ROOT - is where output of indexer is stored\n" +
@@ -88,6 +88,7 @@ public class Indexer {
             String srcRoot = null;
             File srcRootDir = null;
             String dataRoot = null;
+            boolean searchRepositories = false;
             String urlPrefix = "/source/s?";
             ArrayList<String> subFiles = new ArrayList<String>();
             try{
@@ -166,17 +167,8 @@ public class Indexer {
                         if(i+1 < argv.length) {
                             IgnoredNames.ignore.add(argv[++i]);
                         }
-                    } else if (argv[i].equals("-m")) {
-                        if(i+1 < argv.length) {
-                            File file = new File(argv[++i]);
-                            if (!file.getCanonicalFile().isDirectory()) {
-                                System.err.println("WARNING: " + argv[i] + " is not a directory. Ignored");
-                            } else {
-                                MercurialRepository rep = new MercurialRepository(file.getCanonicalPath());
-                                rep.setVerbose(true);
-                                HistoryGuru.getInstance().addExternalRepository(rep, file.getCanonicalPath());
-                            }
-                        }
+                    } else if (argv[i].equals("-S")) {
+                        searchRepositories = true;
                     } else if (!argv[i].startsWith("-")) {
                         if (dataRoot == null)
                             dataRoot = argv[i];
@@ -217,6 +209,15 @@ public class Indexer {
                 if (! Index.setExuberantCtags(ctags)) {
                     System.exit(1);
                 }
+                
+                if (searchRepositories) {
+                    System.out.println("Scanning for repositories...");
+                    long start = System.currentTimeMillis();
+                    HistoryGuru.getInstance().addExternalRepositories(srcRootDir.listFiles());                    
+                    long time = (System.currentTimeMillis() - start) / 1000;
+                    System.out.println("Done searching for repositories (" + time + "s)");
+                }
+                
                 Index idx = new Index(verbose ? new StandardPrinter(System.out) : new NullPrinter(), new StandardPrinter(System.err));
                 idx.runIndexer(new File(dataRoot), srcRootDir, subFiles, economical);
             } catch ( Exception e) {

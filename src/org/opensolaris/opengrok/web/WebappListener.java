@@ -42,37 +42,11 @@ public final class WebappListener  implements ServletContextListener  {
         String scanrepos = context.getInitParameter("SCAN_REPOS");
         if (scanrepos != null && scanrepos.equalsIgnoreCase("true")) {
             System.out.println("Scanning for repositories...");
-            final HistoryGuru guru = HistoryGuru.getInstance();
             final String source = context.getInitParameter("SRC_ROOT");
             if (source != null) {
                 Thread t = new Thread(new Runnable() {
-                    private void scan(File[] files) {
-                        // Check if this directory contain a file named .hg
-                        for (int ii = 0; ii < files.length; ++ii) {
-                            if (files[ii].getName().equalsIgnoreCase(".hg")) {
-                                try {
-                                    String s = files[ii].getParentFile().getCanonicalPath();
-                                    System.out.println("Adding Mercurial repository: <" + s + ">");
-                                    MercurialRepository rep = new MercurialRepository(s);
-                                    guru.addExternalRepository(rep, s);
-                                    return ;
-                                } catch (IOException exp) {
-                                    System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                                    System.err.println("Repository will be ignored...");
-                                    exp.printStackTrace(System.err);
-                                }
-                            }
-                        }
-                        // Nope, search it's sub-dirs
-                        for (int ii = 0; ii < files.length; ++ii) {
-                            if (files[ii].isDirectory()) {
-                                scan(files[ii].listFiles());
-                            }
-                        }
-                    }
-                    
                     public void run() {
-                        scan((new File(source)).listFiles());
+                        HistoryGuru.getInstance().addExternalRepositories((new File(source)).listFiles());
                     }
                 });
                 

@@ -161,7 +161,7 @@ public class HistoryGuru {
             case EXTERNAL :
                 hr = lookupHistoryReader(parent, basename);
                 break;
-
+                
             case SVN :
                 sfile = new File(parent, svnlabel);
                 if (sfile.exists()) {
@@ -339,6 +339,32 @@ public class HistoryGuru {
         }
     }
     
+    public void addExternalRepositories(File[] files) {
+        // Check if this directory contain a file named .hg
+        for (int ii = 0; ii < files.length; ++ii) {
+            if (files[ii].getName().equalsIgnoreCase(".hg")) {
+                try {
+                    String s = files[ii].getParentFile().getCanonicalPath();
+                    System.out.println("Adding Mercurial repository: <" + s + ">");
+                    MercurialRepository rep = new MercurialRepository(s);
+                    addExternalRepository(rep, s);
+                    return ;
+                } catch (IOException exp) {
+                    System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
+                    System.err.println("Repository will be ignored...");
+                    exp.printStackTrace(System.err);
+                }
+            }
+        }
+        
+        // Nope, search it's sub-dirs
+        for (int ii = 0; ii < files.length; ++ii) {
+            if (files[ii].isDirectory()) {
+                addExternalRepositories(files[ii].listFiles());
+            }
+        }
+    }
+    
     public void addExternalRepository(ExternalRepository rep, String path) {
         externalRepositories.put(path, rep);
     }
@@ -355,28 +381,28 @@ public class HistoryGuru {
         }
         return ret;
     }
-
+    
     HistoryReader lookupHistoryReader(String parent, String basename) {
         HistoryReader ret = null;
-
+        
         ExternalRepository rep = getRepository(parent);
         if (rep != null) {
             ret = rep.getHistoryReader(parent, basename);
         }
-
+        
         return ret;
     }
     
     InputStream lookupHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
-
+        
         ExternalRepository rep = getRepository(parent);
         if (rep != null) {
             ret = rep.getHistoryGet(parent, basename, rev);
         }
         
-        return ret;         
+        return ret;
     }
-        
+    
     private Map<String, ExternalRepository> externalRepositories;
 }
