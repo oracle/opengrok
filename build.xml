@@ -27,6 +27,7 @@ ident	"%Z%%M% %I%     %E% SMI"
 <project default="build">
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex"/>
     <property name="builddir" value="build"/>
+    <property name="distdir" value="dist"/>
     <property name="outputjar" value="opengrok.jar"/>
     <property name="distname" value="opengrok-0.3.1"/>
     <property name="classdir" value="${builddir}/classes"/>
@@ -48,6 +49,8 @@ ident	"%Z%%M% %I%     %E% SMI"
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="src"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="src"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="src"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="src"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex" destdir="src"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="src"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="src"/>
@@ -121,7 +124,8 @@ ident	"%Z%%M% %I%     %E% SMI"
         </war>
     </target>
     <target name="dist" depends="compile,build">
-        <tar destfile="${builddir}/${distname}.tar">
+        <mkdir dir="${distdir}"/>
+        <tar destfile="${distdir}/${distname}.tar">
             <tarfileset dir="." username="ant" group="ant" prefix="${distname}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
@@ -146,8 +150,8 @@ ident	"%Z%%M% %I%     %E% SMI"
             <tarfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
             <tarfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
         </tar>
-        <gzip zipfile="${builddir}/${distname}.tar.gz" src="${builddir}/${distname}.tar"/>
-	<zip destfile="${builddir}/${distname}.zip">
+        <gzip zipfile="${distdir}/${distname}.tar.gz" src="${distdir}/${distname}.tar"/>
+	<zip destfile="${distdir}/${distname}.zip">
             <zipfileset dir="." prefix="${distname}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
@@ -171,7 +175,8 @@ ident	"%Z%%M% %I%     %E% SMI"
 	</zip>
     </target>
     <target name="dist-src" depends="compile">
-        <tar destfile="${builddir}/${distname}-src.tar">
+        <mkdir dir="${distdir}"/>
+        <tar destfile="${distdir}/${distname}-src.tar">
             <tarfileset dir="." username="ant" group="ant" prefix="${distname}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
@@ -192,8 +197,8 @@ ident	"%Z%%M% %I%     %E% SMI"
             <tarfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
             <tarfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
         </tar>
-        <gzip zipfile="${builddir}/${distname}-src.tar.gz" src="${builddir}/${distname}-src.tar"/>
-	<zip destfile="${builddir}/${distname}-src.zip">
+        <gzip zipfile="${distdir}/${distname}-src.tar.gz" src="${distdir}/${distname}-src.tar"/>
+	<zip destfile="${distdir}/${distname}-src.zip">
             <zipfileset dir="." prefix="${distname}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
@@ -235,4 +240,11 @@ ident	"%Z%%M% %I%     %E% SMI"
 		<arg line="-s build OSOLopengrok.pkg OSOLopengrok"/>
 	</exec>
     </target>
+    
+    <target name="clean">
+        <delete dir="${builddir}"/>
+        <delete dir="${distdir}"/>        
+        <delete file="source.war"/>
+        <delete file="opengrok.jar"/>
+    </target>    
 </project>
