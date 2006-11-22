@@ -63,6 +63,7 @@ ident	"%Z%%M% %I%     %E% SMI"
         <jflex file="src/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="src"/>
         <javac srcdir="src" destdir="${classdir}" deprecation="true" debug="true" optimize="on" >
             <classpath refid="compilecp"/>
+            <compilerarg value="-Xlint:unchecked"/>
         </javac>
     </target>
     <target name="build" depends="compile">
