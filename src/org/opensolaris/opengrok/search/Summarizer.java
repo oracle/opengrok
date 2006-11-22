@@ -35,7 +35,7 @@ public class Summarizer {
     /** Converts text to tokens. */
     private static Analyzer ANALYZER;
     
-    private HashSet highlight = new HashSet();            // put query terms in table
+    private HashSet<String> highlight = new HashSet<String>();            // put query terms in table
     
     public Summarizer(Query query, Analyzer a) {
         ANALYZER = a;
@@ -47,8 +47,8 @@ public class Summarizer {
      * document, with some appropriate regions highlit.
      */
     class Excerpt {
-        Vector passages = new Vector();
-        SortedSet tokenSet = new TreeSet();
+        Vector<Summary.Fragment> passages = new Vector<Summary.Fragment>();
+        SortedSet<String> tokenSet = new TreeSet<String>();
         int numTerms = 0;
         
         /**
@@ -118,11 +118,8 @@ public class Summarizer {
         // how many query terms are present.  An excerpt is
         // a Vector full of Fragments and Highlights
         //
-        SortedSet excerptSet = new TreeSet(new Comparator() {
-            public int compare(Object o1, Object o2) {
-                Excerpt excerpt1 = (Excerpt) o1;
-                Excerpt excerpt2 = (Excerpt) o2;
-                
+        SortedSet<Excerpt> excerptSet = new TreeSet<Excerpt>(new Comparator<Excerpt>() {
+            public int compare(Excerpt excerpt1, Excerpt excerpt2) {
                 if (excerpt1 == null && excerpt2 != null) {
                     return -1;
                 } else if (excerpt1 != null && excerpt2 == null) {
@@ -268,7 +265,7 @@ public class Summarizer {
     }
     
     private Token[] getTokens(String text) throws IOException {
-        ArrayList result = new ArrayList();
+        ArrayList<Token> result = new ArrayList<Token>();
         TokenStream ts = ANALYZER.tokenStream("full", new StringReader(text));
         for (Token token = ts.next(); token != null; token = ts.next()) {
             result.add(token);

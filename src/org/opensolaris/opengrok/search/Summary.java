@@ -82,7 +82,7 @@ public class Summary {
         public String toString() { return "<b> ... </b>"; }
     }
     
-    private ArrayList fragments = new ArrayList();
+    private ArrayList<Fragment> fragments = new ArrayList<Fragment>();
     
     private static final Fragment[] FRAGMENT_PROTO = new Fragment[0];
     

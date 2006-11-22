@@ -53,7 +53,7 @@ import org.apache.lucene.analysis.*;
   String filename;
   StringBuilder sb;
   boolean alt;
-  public static final HashSet stopset = new HashSet();
+  public static final HashSet<String> stopset = new HashSet<String>();
   static {
   stopset.add(  "a");
 stopset.add( "an");

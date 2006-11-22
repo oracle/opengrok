@@ -93,7 +93,7 @@ public class DirectoryListing {
 	    out.write("<th><tt>Description</tt></th>");
 	}
 	out.write("</tr>");
-	ArrayList readMes = new ArrayList();
+	ArrayList<String> readMes = new ArrayList<String>();
 	for (int i = 0; i < files.length; i++) {
 	    if(!ignore.contains(files[i])) {
 		File child = new File(dir, files[i]);
