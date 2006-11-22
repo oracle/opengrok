@@ -36,24 +36,23 @@ import java.util.HashSet;
 public class Consts{
     public static final HashSet<String> kwd = new HashSet<String>() ;
     static {
-        kwd.add( "throws" );
-        kwd.add( "import" );
-        kwd.add( "package" );
-        kwd.add( "final" );
+        // CPP
         kwd.add( "ident" );
         kwd.add( "ifndef" );
         kwd.add( "defined" );
         kwd.add( "endif" );
+        kwd.add( "include" );
+        kwd.add( "define" );
+        kwd.add( "ifdef" );
+        kwd.add( "pragma" );
+        // ANSI C keywords
         kwd.add( "auto" );
-        kwd.add( "bool" );
         kwd.add( "break" );
         kwd.add( "case" );
-        kwd.add( "catch" );
         kwd.add( "char" );
         kwd.add( "const" );
         kwd.add( "continue" );
         kwd.add( "default" );
-        kwd.add( "delete" );
         kwd.add( "do" );
         kwd.add( "double" );
         kwd.add( "else" );
@@ -61,18 +60,10 @@ public class Consts{
         kwd.add( "extern" );
         kwd.add( "float" );
         kwd.add( "for" );
-        kwd.add( "friend" );
         kwd.add( "goto" );
         kwd.add( "if" );
-        kwd.add( "inline" );
         kwd.add( "int" );
         kwd.add( "long" );
-        kwd.add( "namespace" );
-        kwd.add( "new" );
-        kwd.add( "private" );
-        kwd.add( "protected" );
-        kwd.add( "public" );
-        kwd.add( "redeclared" );
         kwd.add( "register" );
         kwd.add( "return" );
         kwd.add( "short" );
@@ -80,26 +71,35 @@ public class Consts{
         kwd.add( "sizeof" );
         kwd.add( "static" );
         kwd.add( "struct" );
-        kwd.add( "class" );
         kwd.add( "switch" );
-        kwd.add( "template" );
-        kwd.add( "this" );
-        kwd.add( "try" );
         kwd.add( "typedef" );
         kwd.add( "union" );
         kwd.add( "unsigned" );
-        kwd.add( "using" );
-        kwd.add( "virtual" );
         kwd.add( "void" );
         kwd.add( "volatile" );
         kwd.add( "while" );
+        // C++ keywords
+        kwd.add( "asm" );
+        kwd.add( "catch" );
+        kwd.add( "class" );
+        kwd.add( "delete" );
+        kwd.add( "friend" );
+        kwd.add( "inline" );
+        kwd.add( "new" );
         kwd.add( "operator" );
+        kwd.add( "private" );
+        kwd.add( "protected" );
+        kwd.add( "public" );
+        kwd.add( "template" );
+        kwd.add( "this" );
+        kwd.add( "try" );
+        kwd.add( "virtual" );
+        // other keywords
+        kwd.add( "bool" );
+        kwd.add( "namespace" );
+        kwd.add( "redeclared" );
+        kwd.add( "using" );
         kwd.add( "true" );
         kwd.add( "false" );
-        kwd.add( "throw" );
-        kwd.add( "include" );
-        kwd.add( "define" );
-        kwd.add( "ifdef" );
-        kwd.add( "pragma" );
     }
 }
