@@ -16,6 +16,8 @@ Requirements
     * Exuberant Ctags http://ctags.sourceforge.net/
     * Subversion 1.3.0 or later if SVN support is needed
       http://subversion.tigris.org/
+    * JFlex Ant task
+      http://www.jflex.org/
 
 
 Usage
@@ -110,3 +112,4 @@ AUTHORS
 Chandan B.N, Sun Microsystems. https://blogs.sun.com/chandan
 Trond Norbye, norbye.org
 Knut Pape, eBriefkasten.de
+Martin Englund, Sun Microsystems
