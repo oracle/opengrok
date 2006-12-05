@@ -26,10 +26,11 @@ ident	"%Z%%M% %I%     %E% SMI"
 -->
 <project default="build">
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex"/>
+    <property name="version" value="0.4"/>
     <property name="builddir" value="build"/>
     <property name="distdir" value="dist"/>
     <property name="outputjar" value="opengrok.jar"/>
-    <property name="distname" value="opengrok-0.3.1"/>
+    <property name="distname" value="opengrok"/>
     <property name="classdir" value="${builddir}/classes"/>
     <property name="webapp" value="${builddir}/webapp"/>
     <path id="compilecp">
@@ -126,8 +127,8 @@ ident	"%Z%%M% %I%     %E% SMI"
     </target>
     <target name="dist" depends="compile,build">
         <mkdir dir="${distdir}"/>
-        <tar destfile="${distdir}/${distname}.tar">
-            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/">
+        <tar destfile="${distdir}/${distname}-${version}.tar">
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}-${version}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
                 <include name="build.xml" />
@@ -136,24 +137,24 @@ ident	"%Z%%M% %I%     %E% SMI"
                 <include name="lib/*.jar" />
                 <include name="source.war" />
             </tarfileset>
-            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/" mode="0755">
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}-${version}/" mode="0755">
                 <include name="${outputjar}"/>
                 <include name="run.sh"/>
                 <include name="run.bat"/>
                 <include name="run-quiet.sh"/>
                 <include name="${outputjar}"/>
             </tarfileset>
-            <tarfileset dir="src" prefix="${distname}/src/"/>
-            <tarfileset dir="ext" prefix="${distname}/ext/"/>
-            <tarfileset dir="web" prefix="${distname}/web/"/>
-            <tarfileset dir="conf/default" prefix="${distname}/conf/default"/>
-            <tarfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
-            <tarfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
-            <tarfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+            <tarfileset dir="src" prefix="${distname}-${version}/src/"/>
+            <tarfileset dir="ext" prefix="${distname}-${version}/ext/"/>
+            <tarfileset dir="web" prefix="${distname}-${version}/web/"/>
+            <tarfileset dir="conf/default" prefix="${distname}-${version}/conf/default"/>
+            <tarfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
+            <tarfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
+            <tarfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
         </tar>
-        <gzip zipfile="${distdir}/${distname}.tar.gz" src="${distdir}/${distname}.tar"/>
-	<zip destfile="${distdir}/${distname}.zip">
-            <zipfileset dir="." prefix="${distname}/">
+        <gzip zipfile="${distdir}/${distname}-${version}.tar.gz" src="${distdir}/${distname}-${version}.tar"/>
+	<zip destfile="${distdir}/${distname}-${version}.zip">
+            <zipfileset dir="." prefix="${distname}-${version}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
                 <include name="build.xml" />
@@ -166,41 +167,41 @@ ident	"%Z%%M% %I%     %E% SMI"
                 <include name="run.bat"/>
                 <include name="run-quiet.sh"/>
 	    </zipfileset>
-            <zipfileset dir="src" prefix="${distname}/src/"/>
-            <zipfileset dir="ext" prefix="${distname}/ext/"/>
-            <zipfileset dir="web" prefix="${distname}/web/"/>
-            <zipfileset dir="conf/default" prefix="${distname}/conf/default"/>
-            <zipfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
-            <zipfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
-            <zipfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+            <zipfileset dir="src" prefix="${distname}-${version}/src/"/>
+            <zipfileset dir="ext" prefix="${distname}-${version}/ext/"/>
+            <zipfileset dir="web" prefix="${distname}-${version}/web/"/>
+            <zipfileset dir="conf/default" prefix="${distname}-${version}/conf/default"/>
+            <zipfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
+            <zipfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
+            <zipfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
 	</zip>
     </target>
     <target name="dist-src" depends="compile">
         <mkdir dir="${distdir}"/>
-        <tar destfile="${distdir}/${distname}-src.tar">
-            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/">
+        <tar destfile="${distdir}/${distname}-${version}-src.tar">
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}-${version}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
                 <include name="build.xml" />
                 <include name="paths.tsv" />
                 <include name="LICENSE.*" />
             </tarfileset>
-            <tarfileset dir="." username="ant" group="ant" prefix="${distname}/" mode="0755">
+            <tarfileset dir="." username="ant" group="ant" prefix="${distname}-${version}/" mode="0755">
                 <include name="${outputjar}"/>
                 <include name="run.sh"/>
                 <include name="run.bat"/>
                 <include name="run-quiet.sh"/>
             </tarfileset>
-            <tarfileset dir="src" prefix="${distname}/src/"/>
-            <tarfileset dir="web" prefix="${distname}/web/"/>
-            <tarfileset dir="conf/default" prefix="${distname}/conf/default"/>
-            <tarfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
-            <tarfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
-            <tarfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+            <tarfileset dir="src" prefix="${distname}-${version}/src/"/>
+            <tarfileset dir="web" prefix="${distname}-${version}/web/"/>
+            <tarfileset dir="conf/default" prefix="${distname}-${version}/conf/default"/>
+            <tarfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
+            <tarfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
+            <tarfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
         </tar>
-        <gzip zipfile="${distdir}/${distname}-src.tar.gz" src="${distdir}/${distname}-src.tar"/>
-	<zip destfile="${distdir}/${distname}-src.zip">
-            <zipfileset dir="." prefix="${distname}/">
+        <gzip zipfile="${distdir}/${distname}-${version}-src.tar.gz" src="${distdir}/${distname}-${version}-src.tar"/>
+	<zip destfile="${distdir}/${distname}-${version}-src.zip">
+            <zipfileset dir="." prefix="${distname}-${version}/">
                 <include name="README.txt" />
                 <include name="CHANGES.txt" />
                 <include name="build.xml" />
@@ -210,12 +211,12 @@ ident	"%Z%%M% %I%     %E% SMI"
                 <include name="run.bat"/>
                 <include name="run-quiet.sh"/>
 	    </zipfileset>
-            <zipfileset dir="src" prefix="${distname}/src/"/>
-            <zipfileset dir="web" prefix="${distname}/web/"/>
-            <zipfileset dir="conf/default" prefix="${distname}/conf/default"/>
-            <zipfileset dir="conf/polished" prefix="${distname}/conf/polished"/>
-            <zipfileset dir="conf/offwhite" prefix="${distname}/conf/offwhite"/>
-            <zipfileset dir="pkgdef" prefix="${distname}/pkgdef"/>
+            <zipfileset dir="src" prefix="${distname}-${version}/src/"/>
+            <zipfileset dir="web" prefix="${distname}-${version}/web/"/>
+            <zipfileset dir="conf/default" prefix="${distname}-${version}/conf/default"/>
+            <zipfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
+            <zipfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
+            <zipfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
 	</zip>
     </target>
     <target name="run" depends="build">
@@ -224,23 +225,25 @@ ident	"%Z%%M% %I%     %E% SMI"
 	</java>
     </target>
     <target name="rejar"  depends="build">
-        <mkdir dir="build/tmp"/>
+        <mkdir dir="${builddir}/tmp"/>
         <exec os="SunOS" executable="/usr/bin/jar" dir="build/tmp">
 		<arg line="-xf ../../opengrok.jar"/>
 	</exec>
         <exec os="SunOS" executable="/usr/bin/jar" dir="build/tmp">
 		<arg line="-Mcf ../../opengrok.jar META-INF org"/>
 	</exec>
-        <deltree dir="build/tmp"/>
+        <delete dir="${builddir}/tmp"/>
     </target>
     <target name="package" depends="rejar">
         <exec os="SunOS" executable="/usr/bin/pkgmk">
-		<arg line="-o -d build -r . -f pkgdef/prototype"/>
+		<arg line="-o -d build -r . -v ${version} -f pkgdef/prototype"/>
 	</exec>
         <exec os="SunOS" executable="/usr/bin/pkgtrans">
-		<arg line="-s build OSOLopengrok.pkg OSOLopengrok"/>
+		<arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
 	</exec>
     </target>
+
+    <target name="release" depends="webapp,dist,dist-src,package"/>
     
     <target name="clean">
         <delete dir="${builddir}"/>

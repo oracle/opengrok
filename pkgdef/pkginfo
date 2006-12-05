@@ -27,7 +27,6 @@
 PKG=OSOLopengrok
 BASEDIR=/
 NAME=OpenGrok
-VERSION=0.3.1
 VENDOR=http://www.opensolaris.org/os/project/opengrok/
 EMAIL=opengrok[at]sun.com
 CATEGORY=application
