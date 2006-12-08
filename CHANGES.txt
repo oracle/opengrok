@@ -1,3 +1,20 @@
+December 2006 update 0.4
+-------------------------------------------------
+New Features:
+   New Java Analyzer
+   Experimental support for Mercurial
+
+Bug Fixes:
+   Fixed image path (alt webroot) provided by Nathan Beyer
+   Improved JRCS parser provided by Gustav Gunnarsson
+   Improved error handling for a corrupt web.xml in error.jsp
+   Fix problem with unterminated <form> tag provided by Chris Elving
+   Fix problem with how arguments are passed to an editor 
+          (reported by Joachim Deguara)
+   Added patch for glob'ing files provided by Ben Ravago
+   Added patch for displaying CVS files not present on HEAD. 
+          Provided by Chris Elving.
+
 April 2006 update 0.3.1
 -------------------------------------------------
 Bug Fixes:
