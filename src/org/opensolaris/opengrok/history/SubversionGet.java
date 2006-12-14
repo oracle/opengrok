@@ -56,7 +56,7 @@ public class SubversionGet extends InputStream {
             try {
                 revision = Long.parseLong(rev);
             } catch (NumberFormatException exp) {
-                throw new IOException("Failed to retrieve rev (" + rev + "): Nrot a vaild Subversion revision format");
+                throw new IOException("Failed to retrieve rev (" + rev + "): Not a valid Subversion revision format");
             }
             
             
