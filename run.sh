@@ -20,13 +20,13 @@ EXUB_CTAGS=/usr/local/bin/ctags
 # If you need to set properties (Ex. override the mercurial binary)
 #PROPERTIES=-Dorg.opensolaris.opengrok.history.Mercurial=/home/trond/bin/hg
 
-# Specify your Mercurial repos
-# MERCURIAL_REPOS="-m /path/to/repos"
+# Uncomment the following line if your source contains Mercurial repositories.
+# SCAN_FOR_REPOS="-S"
 
 # You might want to add more available memory, and perhaps use a server jvm?
 #JAVA_OPTS="-server -Xmx1024m"
 
-java ${JAVA_OPTS} ${PROPERTIES} -jar ${PROGDIR}/opengrok.jar ${MERCURIAL_REPOS} -c ${EXUB_CTAGS} -s ${SRC_ROOT} ${DATA_ROOT}
+java ${JAVA_OPTS} ${PROPERTIES} -jar ${PROGDIR}/opengrok.jar ${SCAN_FOR_REPOS} -c ${EXUB_CTAGS} -s ${SRC_ROOT} ${DATA_ROOT}
 
 # OPTIONAL
 java -classpath ${PROGDIR}/opengrok.jar org.opensolaris.opengrok.web.EftarFile ${PATH_DESC} ${DATA_ROOT}/index/dtags.eftar
