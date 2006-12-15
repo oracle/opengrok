@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2006 Trond Norbye.  All rights reserved.
+ * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -44,10 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Read out version history for a given file from the Mercurial repository
- * Since we don't have a native Java binding yet, we fork off an external
- * process for each file!! This really sucked performance, so I create a
- * cache of the information I may use later on...
+ * Parse a stream of mercurial log comments.
  *
  * @author Trond Norbye
  */
@@ -57,98 +54,12 @@ public class MercurialHistoryReader extends HistoryReader {
     private List<HistoryEntry> history;
     private Iterator<HistoryEntry> iterator;
     private HistoryEntry entry;
-    private File file;
-    private MercurialRepository repository;
-    private File cache;
-    private boolean haveCache;
     
-    public MercurialHistoryReader(File file) throws Exception {
+    public MercurialHistoryReader(InputStream is) throws Exception {
         super(new StringReader(""));
-        this.file = file;
-        cache = null;
-        haveCache = false;
-    }
-    
-    private void writeCache() {
-        if (!haveCache) {
-            PrintWriter wrt = null;
-            try {
-                wrt = new PrintWriter(new FileWriter(cache));
-                
-                for (HistoryEntry ent : history) {
-                    wrt.print("changeset: ");
-                    wrt.print(ent.getRevision());
-                    wrt.println(":foo");
-                    
-                    wrt.print("user: ");
-                    wrt.println(ent.getAuthor());
-                    
-                    wrt.print("date: ");
-                    wrt.println(ent.getDate());
-                    
-                    wrt.println("description:");
-                    wrt.println(ent.getMessage().trim());
-                    
-                    wrt.println();
-                }
-                wrt.flush();
-                wrt.close();
-            } catch (IOException ex) {
-                try { wrt.close(); } catch (Exception e) {}
-                cache.delete();
-            }
-        }
-    }
-    
-    protected BufferedReader getReader() throws Exception {
-        BufferedReader ret = null;
-        
-        File cacheDir = new File(file.getParentFile(), ".hgcache");
-        if (!cacheDir.exists()) {
-            cacheDir.mkdir();
-        }
-        cache = new File(cacheDir, file.getName());
-        
-        if (!cache.exists() || (cache.lastModified() < file.lastModified())) {
-            haveCache = false;
-            
-            Socket socket = repository.getDaemonSocket();
-            InputStream in = null;
-            
-            if (socket != null) {
-                String s = file.getAbsolutePath();
-                if (s.startsWith(repository.getDirectory().getAbsolutePath())) {
-                    s = s.substring(repository.getDirectory().getAbsolutePath().length());
-                }
-                
-                String string = "log " + s;
-                socket.getOutputStream().write(string.getBytes());
-                socket.getOutputStream().flush();
-                in = socket.getInputStream();
-            } else {
-                String argv[];
-                if (repository.isVerbose()) {
-                    argv = new String[] { repository.getCommand(), "log", "-v",  file.getAbsolutePath() };
-                } else {
-                    argv = new String[] { repository.getCommand(), "log", file.getAbsolutePath() };
-                }
-                Process process = Runtime.getRuntime().exec(argv, null, repository.getDirectory());
-                in = process.getInputStream();
-            }
-            ret = new BufferedReader(new InputStreamReader(in));
-        } else {
-            haveCache = true;
-            ret = new BufferedReader(new FileReader(cache));
-        }
-        
-        return ret;
-    }
-    
-    protected void initialize(MercurialRepository repository) throws Exception {
-        this.repository = repository;
         df = new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
         history = new ArrayList<HistoryEntry>();
-        BufferedReader in = getReader(); // Socket, cache or process...
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
         
         try {
             String s;
@@ -187,12 +98,39 @@ public class MercurialHistoryReader extends HistoryReader {
             if (entry != null) {
                 history.add(entry);
             }
-            
-            writeCache();
         } catch (Exception exp) {
             System.err.print("Failed to get history: " + exp.getClass().toString());
             System.err.println(exp.getMessage());
             throw exp;
+        }
+    }
+    
+    protected void writeCache(File cache) {
+        PrintWriter wrt = null;
+        try {
+            wrt = new PrintWriter(new FileWriter(cache));
+            
+            for (HistoryEntry ent : history) {
+                wrt.print("changeset: ");
+                wrt.print(ent.getRevision());
+                wrt.println(":foo");
+                
+                wrt.print("user: ");
+                wrt.println(ent.getAuthor());
+                
+                wrt.print("date: ");
+                wrt.println(ent.getDate());
+                
+                wrt.println("description:");
+                wrt.println(ent.getMessage().trim());
+                
+                wrt.println();
+            }
+            wrt.flush();
+            wrt.close();
+        } catch (IOException ex) {
+            try { wrt.close(); } catch (Exception e) {}
+            cache.delete();
         }
     }
     
@@ -268,23 +206,6 @@ public class MercurialHistoryReader extends HistoryReader {
             } catch (Exception e) {
                 ;
             }
-        }
-    }
-    
-    /**
-     * Test function to test the MercurialHistoryReader
-     * @param args argument vector (containing the files to test).
-     */
-    public static void main(String[] args) throws Exception  {
-        for (int ii = 0; ii < args.length; ++ii) {
-            File file = new File(args[0]);
-            System.out.println("Got = " + file + " - " + file.getParent() + " === " + file.getName());
-            HistoryReader structured = new MercurialHistoryReader(new File(file.getParent(), file.getName()));
-            structured.testHistoryReader(STRUCTURED);
-            structured = new MercurialHistoryReader(new File(file.getParent(), file.getName()));
-            structured.testHistoryReader(LINE);
-            structured = new MercurialHistoryReader(new File(file.getParent(), file.getName()));
-            structured.testHistoryReader(READER);
         }
     }
 }

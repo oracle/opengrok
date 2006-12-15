@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2006 Trond Norbye.  All rights reserved.
+ * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -26,7 +26,6 @@ package org.opensolaris.opengrok.history;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,27 +37,18 @@ import java.io.InputStreamReader;
 public class MercurialGet extends InputStream {
     private BufferedInputStream stream;
     
-    /** Creates a new instance of MercurialGet */
-    public MercurialGet(String command, File directory, File file, String rev) throws Exception {
-        try {
-            String argv[] = { command, "cat", "-r", rev, file.getAbsolutePath() };
-            Process process = Runtime.getRuntime().exec(argv, null, directory);
-            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuffer sb = new StringBuffer();
-            String s;
-            while ((s = in.readLine()) != null) {
-                sb.append(s);
-                sb.append("\n");
-            }
-            
-            stream = new BufferedInputStream(new ByteArrayInputStream(sb.toString().getBytes()));
-        } catch (Exception exp) {
-            System.err.print("Failed to get history: " + exp.getClass().toString());
-            System.err.println(exp.getMessage());
-            throw exp;
+    protected MercurialGet(InputStream is) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        String s;
+        while ((s = in.readLine()) != null) {
+            sb.append(s);
+            sb.append("\n");
         }
+        
+        stream = new BufferedInputStream(new ByteArrayInputStream(sb.toString().getBytes()));
     }
-    
+        
     public void reset() throws IOException {
         try {
             stream.reset();
@@ -73,13 +63,11 @@ public class MercurialGet extends InputStream {
         stream.mark(readlimit);
     }
     
-    
-    
     public int read(byte[] b, int off, int len) throws IOException {
         int ret;
         try {
             ret = stream.read(b, off, len);
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Mercurial Get (read): " + e.getMessage());
             e.printStackTrace(System.err);
             ret = -1;
@@ -92,7 +80,7 @@ public class MercurialGet extends InputStream {
         int ret;
         try {
             ret = stream.read();
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Mercurial Get (read()): " + e.getMessage());
             e.printStackTrace(System.err);
             ret = -1;
