@@ -31,6 +31,6 @@ import java.io.InputStream;
  * @author Trond Norbye
  */
 public interface ExternalRepository {
-    public HistoryReader getHistoryReader(String parent, String basename);
+    public Class<? extends HistoryParser> getHistoryParser();
     public InputStream getHistoryGet(String parent, String basename, String rev);
 }

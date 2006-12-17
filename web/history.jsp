@@ -54,7 +54,8 @@ if (path.length() > 0) {
         }
         hr = new DirectoryHistoryReader(getServletContext().getInitParameter("DATA_ROOT") + "/index", apath, getServletContext().getInitParameter("SRC_ROOT"));
     } else {
-        hr = HistoryGuru.getInstance().getHistoryReader(rawSource + parent, basename);
+        File f = new File(rawSource + parent, basename);
+        hr = HistoryGuru.getInstance().getHistoryReader(f);
     }
     if (hr != null) {
 

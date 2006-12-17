@@ -31,9 +31,11 @@ package org.opensolaris.opengrok.history;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Iterator;
 
 /**
- * Abstract class for reading history of a source file. The HistoryReader have
+ * Class for reading history entries. The HistoryReader have
  * tree mutually exclusive usages:
  * <ol>
  *   <li>where you read it as if from a Reader (used by lucene)</li>
@@ -45,9 +47,19 @@ import java.util.Date;
  * Please note that it is the clients responsibility that if one access pattern
  * is used, it should not switch access method.
  */
-abstract public class HistoryReader extends FilterReader {
-    public HistoryReader(Reader in) {
-        super(in);
+public class HistoryReader extends Reader {
+
+    private List<HistoryEntry> entries;
+    private Iterator<HistoryEntry> iterator;
+    private HistoryEntry current;
+    private Reader input;
+
+    HistoryReader() {
+    }
+
+    HistoryReader(List<HistoryEntry> entries) {
+        this.entries = entries;
+        iterator = entries.iterator();
     }
     
     /**
@@ -60,86 +72,79 @@ abstract public class HistoryReader extends FilterReader {
      * } while(r.next())
      *
      */
-    abstract public boolean next() throws IOException;
+    public boolean next() throws IOException {
+        if (iterator.hasNext()) {
+            current = iterator.next();
+            return true;
+        }
+        return false;
+    }
     
     /**
      * @return  get the history line in one String of current log record
      */
-    abstract public String getLine();
+    public String getLine() {
+        return current.getLine();
+    }
     
     /**
      * @return  get the revision string of current log record
      */
-    abstract public String getRevision();
+    public String getRevision() {
+        return current.getRevision();
+    }
     
     /**
      * @return  get the date assosiated with current log record
      */
-    abstract public Date getDate();
+    public Date getDate() {
+        return current.getDate();
+    }
     
     /**
      * @return  get the author of current log record
      */
-    abstract public String getAuthor();
+    public String getAuthor() {
+        return current.getAuthor();
+    }
     
     /**
      * @return  get the comments of current log record
      */
-    abstract public String getComment();
+    public String getComment() {
+        return current.getMessage();
+    }
     
     /**
      * @return  Does current log record is actually point to a revision
      */
-    abstract public boolean isActive();
+    public boolean isActive() {
+        return current.isActive();
+    }
+
+    public int read(char[] cbuf, int off, int len) throws IOException {
+        if (input == null) {
+            input = createInternalReader();
+        }
+        return input.read(cbuf, off, len);
+    }
     
-    abstract public void close() throws IOException;
-    
+    public void close() throws IOException {
+        if (input != null) {
+            input.close();
+        }
+    }
+
     public ArrayList<String> getFiles() {
         return null;
     }
 
-    protected static final int STRUCTURED = 0;
-    protected static final int LINE = 1;
-    protected static final int READER = 2;
-    
-    /**
-     * Each implemetation of the HistoryReader should provide a main function
-     * to allow testing the class. The implementation of the main-class should
-     * create tree instances of itself and call this method.
-     * @param mode The mode (STRUCTURED, READER, LINE) to test the class in
-     */
-    protected void testHistoryReader(int mode) {
-        try {
-            switch (mode) {
-                case STRUCTURED:
-                    System.out.println("--------Reading as a structred");
-                    while (next()) {
-                        System.out.println("rev=" + getRevision());
-                        System.out.println("date=" + getDate());
-                        System.out.println("author=" + getAuthor());
-                        System.out.println("comment=" + getComment());
-                        System.out.println("active=" + isActive());
-                    }
-                    break;
-                case READER:
-                    System.out.println("--------Reading as a reader");
-                    int c;
-                    while((c = read()) != -1) {
-                        System.out.write((char) c);
-                    }
-                    break;
-                case LINE:
-                    System.out.println("--------Reading line by line");
-                    while(next()) {
-                        System.out.println("line=" + getLine());
-                    }   
-                    break;
-                default:
-                    System.err.println("Unknow test.");
-            }
-        } catch (Exception e) {
-            System.err.println(e);
-            e.printStackTrace(System.err);
+    private Reader createInternalReader() {
+        StringBuilder str = new StringBuilder();
+        for (HistoryEntry entry : entries) {
+            str.append(entry.getLine());
         }
+        return new StringReader(str.toString());
     }
+    
 }

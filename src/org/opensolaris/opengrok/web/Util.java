@@ -192,11 +192,11 @@ public class Util {
         return null;
     }
     
-    public static String getRCSFile(File file) {
+    public static File getRCSFile(File file) {
         return getRCSFile(file.getParent(), file.getName());
     }
     
-    public static String getRCSFile(String parent, String name) {
+    public static File getRCSFile(String parent, String name) {
         try{
             File CVSdir = new File(parent + "/CVS");
             if(CVSdir.isDirectory() && CVSdir.canRead()) {
@@ -218,7 +218,7 @@ public class Util {
                             if (atticFile.exists())
                                 rcsFile = atticFile;
                         }
-                        return rcsFile.getPath();
+                        return rcsFile;
                     }
                     rootReader.close();
                 }
@@ -227,6 +227,14 @@ public class Util {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static File getSCCSFile(File file) {
+        return getSCCSFile(file.getParent(), file.getName());
+    }
+
+    public static File getSCCSFile(String parent, String name) {
+        return new File(parent + "/SCCS/s." + name);
     }
     
 }

@@ -23,6 +23,8 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.util.Date;
+
 /**
  * Collect all information of a given revision
  *
@@ -30,20 +32,23 @@ package org.opensolaris.opengrok.history;
  */
 public class HistoryEntry {
     private String revision;
-    private String date;
+    private Date date;
     private String author;
     private StringBuffer message;
+    private boolean active;
     
     /** Creates a new instance of HistoryEntry */
     public HistoryEntry() {
         message = new StringBuffer();
     }
     
-    public HistoryEntry(String revision, String date, String author, String message) {
+    public HistoryEntry(String revision, Date date, String author,
+                        String message, boolean active) {
         this.revision = revision;
         this.date = date;
         this.author = author;
         this.message = new StringBuffer(message);
+        this.active = active;
     }
     
     public String getLine() {
@@ -54,7 +59,7 @@ public class HistoryEntry {
         return author;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
@@ -70,8 +75,16 @@ public class HistoryEntry {
         this.author = author;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public void setMessage(String message) {

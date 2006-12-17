@@ -170,7 +170,7 @@ public class AnalyzerGuru {
         doc.add(new org.apache.lucene.document.Field("u", Util.uid(path, date), false, true, false));
         doc.add(new org.apache.lucene.document.Field("fullpath", f.getAbsolutePath(), true, true, true));
         try{
-            HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f.getParent(), f.getName());
+            HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
             if (hr != null) {
                 doc.add(org.apache.lucene.document.Field.Text("hist", hr));
                 // date = hr.getLastCommentDate() //RFE

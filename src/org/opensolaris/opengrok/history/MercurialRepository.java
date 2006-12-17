@@ -105,8 +105,8 @@ public class MercurialRepository implements ExternalRepository {
         this.verbose = verbose;
     }
     
-    public HistoryReader getHistoryReader(String parent, String basename) {
-        MercurialHistoryReader ret = null;
+    InputStream getHistoryStream(File file) {
+        InputStream ret = null;
         
         if (daemon) {
             // Try to use daemon
@@ -115,7 +115,7 @@ public class MercurialRepository implements ExternalRepository {
             try {
                 StringBuilder command = new StringBuilder();
                 command.append("log ");
-                command.append((new File(parent, basename)).getAbsolutePath());
+                command.append(file.getAbsolutePath());
                 command.append(" ");
                 command.append(directory);
                 command.append("\n");
@@ -126,7 +126,7 @@ public class MercurialRepository implements ExternalRepository {
                 
                 InputStream in = socket.getInputStream();
                 if (in.read() == '+' && in.read() != -1) {
-                    ret = new MercurialHistoryReader(in);
+                    ret = in;
                 }
             } catch (Exception ex) {
                 System.err.println("Failed to use Mercurial daemon: ");
@@ -143,49 +143,22 @@ public class MercurialRepository implements ExternalRepository {
         }
         
         if (ret == null) {
-            File file = new File(parent, basename);
-            File cacheDir = new File(parent, ".hgcache");
-            File cache = new File(cacheDir, basename);
-            
-            if (useCache) {
-                if (!cacheDir.exists()) {
-                    cacheDir.mkdir();
-                }
-            }
-                        
-            if (!useCache || !cache.exists() || (cache.lastModified() < file.lastModified())) {
-                InputStream in = null;
-                
-                String argv[];
-                if (verbose) {
-                    argv = new String[] { command, "log", "-v",  file.getAbsolutePath() };
-                } else {
-                    argv = new String[] { command, "log", file.getAbsolutePath() };
-                }
-                Process process;
-                try {
-                    process = Runtime.getRuntime().exec(argv, null, directory);
-                    ret = new MercurialHistoryReader(process.getInputStream());
-                    process.waitFor();
-                } catch (Exception ex) {
-                    System.err.println("An error occured while executing hg log:");
-                    ex.printStackTrace(System.err);
-                    ret = null;
-                }
-                if (ret != null && useCache) {
-                    ret.writeCache(cache);
-                    System.out.println("Mercurial cache recreated for: " + file.getAbsolutePath());
-                }
+            String argv[];
+            if (verbose) {
+                argv = new String[] { command, "log", "-v",
+                                      file.getAbsolutePath() };
             } else {
-                try {
-                    ret = new MercurialHistoryReader(new FileInputStream(cache));
-                } catch (FileNotFoundException ex) {
-                    System.err.println("Cache file not found!");
-                    ex.printStackTrace(System.err);
-                } catch (Exception ex) {
-                    System.err.println("An error occured while reading the cache!");
-                    ex.printStackTrace(System.err);
-                }
+                argv = new String[] { command, "log", file.getAbsolutePath() };
+            }
+            try {
+                Process process =
+                    Runtime.getRuntime().exec(argv, null, directory);
+                ret = process.getInputStream();
+                process.waitFor();
+            } catch (Exception ex) {
+                System.err.println("An error occured while executing hg log:");
+                ex.printStackTrace(System.err);
+                ret = null;
             }
         }
         
@@ -248,5 +221,9 @@ public class MercurialRepository implements ExternalRepository {
         }
         
         return ret;
+    }
+
+    public Class<? extends HistoryParser> getHistoryParser() {
+        return MercurialHistoryParser.class;
     }
 }

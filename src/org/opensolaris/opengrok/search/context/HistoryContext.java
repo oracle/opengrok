@@ -68,7 +68,8 @@ public class HistoryContext {
         }
         File f = new File(filename);
         this.filename = filename;
-        return getHistoryContext(HistoryGuru.getInstance().getHistoryReader(f.getParent(), f.getName()), path, null, hits);
+        return getHistoryContext(HistoryGuru.getInstance().getHistoryReader(f),
+                                 path, null, hits);
         
     }
     
@@ -76,7 +77,9 @@ public class HistoryContext {
         if (m == null) {
             return false;
         }
-        return getHistoryContext(HistoryGuru.getInstance().getHistoryReader(parent, basename), path, out, null);
+        HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(
+                             new File(parent, basename));
+        return getHistoryContext(hr, path, out, null);
     }
     
     /**

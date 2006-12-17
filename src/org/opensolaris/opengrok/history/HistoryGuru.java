@@ -56,7 +56,6 @@ public class HistoryGuru {
     /** Is JavaSVN available? */
     private boolean svnAvailable;
     private boolean initializedSvn;
-    private static final String sccslabel = "/SCCS/s.";
     private static final String svnlabel = ".svn";
     
     private boolean isSvnAvailable() {
@@ -96,49 +95,50 @@ public class HistoryGuru {
     }
     
     /**
-     * Try to guess the correct history reader to use. Create an RCS, SCCS or Subversion
-     * HistoryReader if it looks like the file is managed by the appropriate
+     * Try to guess the correct history parser to use. Create an RCS, SCCS or Subversion
+     * HistoryParser if it looks like the file is managed by the appropriate
      * revision control system.
      *
-     * @param parent The directory containing this file
-     * @param basename The name of the file to get the history reader for
+     * @param file The the file to get the history parser for
      * @throws java.io.IOException If an error occurs while trying to access the filesystem
-     * @return A HistorReader that may be used to read out history data for a named file
+     * @return A subclass of HistorParser that may be used to read out history
+     * data for a named file
      */
-    private HistoryReader guessHistoryReader(String parent, String basename) throws IOException {
-        HistoryReader hr = null;
-        String rcspath = Util.getRCSFile(parent, basename);
-        if (rcspath != null && (new File(rcspath)).exists()) {
-            hr = new RCSHistoryReader(rcspath);
+    private Class<? extends HistoryParser> guessHistoryParser(File file)
+        throws IOException
+    {
+        Class<? extends HistoryParser> hpClass = null;
+        File rcsfile = Util.getRCSFile(file);
+        if (rcsfile != null && rcsfile.exists()) {
+            hpClass = RCSHistoryParser.class;
             previousFile = RCS;
         } else {
-            File sfile = new File(parent + sccslabel + basename);
-            if (sfile.canRead()) {
-                hr = new SCCSHistoryReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(sfile))));
+            if (Util.getSCCSFile(file).canRead()) {
+                hpClass = SCCSHistoryParser.class;
                 previousFile = SCCS;
             } else {
-                File svn = new File(parent, svnlabel);
+                File svn = new File(file.getParent(), svnlabel);
                 
                 if (svn.exists() && isSvnAvailable()) {
                     try {
-                        hr = new SubversionHistoryReader(parent, basename);
+                        hpClass = SubversionHistoryParser.class;
                         previousFile = SVN;
                     } catch (Exception e) {
                         ;
                     }
                 } else {
-                    hr = lookupHistoryReader(parent, basename);
-                    if (hr != null) {
+                    hpClass = lookupHistoryParser(file);
+                    if (hpClass != null) {
                         previousFile = EXTERNAL;
                     }
                 }
             }
         }
         
-        if (hr == null) {
+        if (hpClass == null) {
             previousFile = UNKNOWN;
         }
-        return hr;
+        return hpClass;
     }
     
     
@@ -147,54 +147,69 @@ public class HistoryGuru {
      * If configured, it will try to use the configured system. If the file is under another
      * revision control system, it will try to guess the correct system.
      *
-     * @param parent The directory containing this file
-     * @param basename The name of the file to get the history reader for
+     * @param file The file to get the history reader for
      * @throws java.io.IOException If an error occurs while trying to access the filesystem
      * @return A HistorReader that may be used to read out history data for a named file
      */
-    public HistoryReader getHistoryReader(String parent, String basename) throws IOException {
-        HistoryReader hr = null;
-        String rcspath;
-        File sfile;
+    public HistoryReader getHistoryReader(File file) throws IOException {
+        Class<? extends HistoryParser> parser = null;
+        ExternalRepository repos = null;
         
         switch (previousFile) {
             case EXTERNAL :
-                hr = lookupHistoryReader(parent, basename);
+                repos = getRepository(file.getParent());
+                if (repos != null) {
+                    parser = repos.getHistoryParser();
+                }
                 break;
                 
             case SVN :
-                sfile = new File(parent, svnlabel);
-                if (sfile.exists()) {
-                    try {
-                        hr = new SubversionHistoryReader(parent, basename);
-                    } catch (Exception e) { ; }
+                if (new File(file.getParent(), svnlabel).exists()) {
+                    parser = SubversionHistoryParser.class;
                 }
                 break;
                 
             case RCS :
-                rcspath = Util.getRCSFile(parent, basename);
-                if (rcspath != null && (new File(rcspath)).exists()) {
-                    hr = new RCSHistoryReader(rcspath);
+                File rcsfile = Util.getRCSFile(file);
+                if (rcsfile != null && rcsfile.exists()) {
+                    parser = RCSHistoryParser.class;
                 }
                 break;
                 
             case SCCS :
-                sfile = new File(parent + sccslabel + basename);
-                try{
-                    hr = new SCCSHistoryReader(new InputStreamReader(new BufferedInputStream(new FileInputStream(sfile))));
-                } catch (IOException e) { ; }
+                if (Util.getSCCSFile(file).canRead()) {
+                    parser = SCCSHistoryParser.class;
+                }
                 break;
                 
             default:
                 ;
         }
         
-        if (hr == null) {
+        if (parser == null) {
             // I did not find a match for the specified system. try to guess..
-            hr = guessHistoryReader(parent, basename);
+            parser = guessHistoryParser(file);
+            if (previousFile == EXTERNAL) {
+                repos = getRepository(file.getParent());
+            } else {
+                repos = null;
+            }
         }
-        
-        return hr;
+
+        if (parser != null) {
+            try {
+                return new HistoryReader(HistoryCache.get(file, parser, repos));
+            } catch (IOException ioe) {
+                throw ioe;
+            } catch (Exception e) {
+                IOException ioe =
+                    new IOException("Error while constructing HistoryReader");
+                ioe.initCause(e);
+                throw ioe;
+            }
+        }
+
+        return null;
     }
     
     /**
@@ -209,12 +224,13 @@ public class HistoryGuru {
      */
     public InputStream guessGetRevision(String parent, String basename, String rev) throws IOException {
         InputStream in = null;
-        String rcspath = Util.getRCSFile(parent, basename);
-        if (rcspath != null) {
+        File rcsfile = Util.getRCSFile(parent, basename);
+        if (rcsfile != null) {
+            String rcspath = rcsfile.getPath();
             in = new BufferedInputStream(new RCSget(rcspath, rev));
             previousFile = RCS;
         } else {
-            File history = new File(parent + sccslabel + basename);
+            File history = Util.getSCCSFile(parent, basename);
             if(history.canRead()) {
                 in = new BufferedInputStream(new SCCSget(new FileInputStream(history), rev));
                 in.mark(32);
@@ -244,19 +260,19 @@ public class HistoryGuru {
      */
     public InputStream getRevision(String parent, String basename, String rev) throws IOException {
         InputStream in = null;
-        String rcspath;
         File history;
         
         switch (previousFile) {
             case RCS :
-                rcspath = Util.getRCSFile(parent, basename);
-                if (rcspath != null) {
+                File rcsfile = Util.getRCSFile(parent, basename);
+                if (rcsfile != null) {
+                    String rcspath = rcsfile.getPath();
                     in = new BufferedInputStream(new RCSget(rcspath, rev));
                 }
                 break;
                 
             case SCCS :
-                history = new File(parent + sccslabel + basename);
+                history = Util.getSCCSFile(parent, basename);
                 if(history.canRead()) {
                     in = new BufferedInputStream(new SCCSget(new FileInputStream(history), rev));
                     in.mark(32);
@@ -306,11 +322,9 @@ public class HistoryGuru {
     public static void main(String[] args) {
         try{
             File f = new File(args[0]);
-            String parent = f.getParent();
-            String basename = f.getName();
             
             System.out.println("-----Reading comments as a reader");
-            HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(parent, basename);
+            HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
             BufferedReader rr = new BufferedReader(hr);
             int c;
             BufferedOutputStream br = new BufferedOutputStream(System.out);
@@ -320,14 +334,14 @@ public class HistoryGuru {
             br.flush();
             
             System.out.println("-----Reading comments as lines");
-            hr = HistoryGuru.getInstance().getHistoryReader(parent, basename);
+            hr = HistoryGuru.getInstance().getHistoryReader(f);
             while(hr.next()) {
                 System.out.println(hr.getLine() + "----------------------");
             }
             hr.close();
             
             System.out.println("-----Reading comments structure");
-            hr = HistoryGuru.getInstance().getHistoryReader(parent, basename);
+            hr = HistoryGuru.getInstance().getHistoryReader(f);
             while(hr.next()) {
                 System.out.println("REV  = " + hr.getRevision() + "\nDATE = "+ hr.getDate() + "\nAUTH = " +
                         hr.getAuthor() + "\nLOG  = " + hr.getComment() + "\nACTV = " + hr.isActive() + "\n-------------------");
@@ -382,12 +396,12 @@ public class HistoryGuru {
         return ret;
     }
     
-    HistoryReader lookupHistoryReader(String parent, String basename) {
-        HistoryReader ret = null;
-        
-        ExternalRepository rep = getRepository(parent);
+    private Class<? extends HistoryParser> lookupHistoryParser(File file) {
+        Class<? extends HistoryParser> ret = null;
+
+        ExternalRepository rep = getRepository(file.getParent());
         if (rep != null) {
-            ret = rep.getHistoryReader(parent, basename);
+            ret = rep.getHistoryParser();
         }
         
         return ret;

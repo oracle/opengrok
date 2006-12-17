@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -31,6 +31,10 @@ package org.opensolaris.opengrok.history;
 import java.io.*;
 import java.util.*;
 import java.text.*;
+import org.opensolaris.opengrok.web.Util;
+
+// This is a rewrite of the class that was previously called
+// SCCSHistoryReader
 
 /**
  * Reads and filters out junk from a SCCS history file
@@ -38,7 +42,7 @@ import java.text.*;
  * Wrote it since invoking sccs prs for each file was
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
-public class SCCSHistoryReader extends HistoryReader {
+public class SCCSHistoryParser implements HistoryParser {
     boolean pass;
     boolean passRecord;
     boolean active;
@@ -50,16 +54,39 @@ public class SCCSHistoryReader extends HistoryReader {
     private Date rdate;
     private String comment;
     DateFormat sccsDateFormat;
-    
-    public SCCSHistoryReader(Reader in) {
-        super(in);
+    Reader in;
+
+    public List<HistoryEntry> parse(File file, ExternalRepository repos)
+        throws IOException
+    {
+        in = new BufferedReader(new FileReader(Util.getSCCSFile(file)));
         pass = sep = false;
         passRecord = true;
         active = true;
         field = 0;
         sccsDateFormat =  new SimpleDateFormat("yy/MM/dd");
+
+        List<HistoryEntry> history = new ArrayList<HistoryEntry>();
+        while (next()) {
+            HistoryEntry entry = new HistoryEntry();
+            entry.setRevision(getRevision());
+            entry.setDate(getDate());
+            entry.setAuthor(getAuthor());
+            entry.setMessage(getComment());
+            entry.setActive(isActive());
+            history.add(entry);
+        }
+
+        in.close();
+
+        return history;
     }
-    
+
+    public boolean isCacheable() {
+        // repository is stored locally, no need to cache
+        return false;
+    }
+
     /**
      * Read a single line of delta record
      *
@@ -67,7 +94,7 @@ public class SCCSHistoryReader extends HistoryReader {
      * @return a String representing a single log delta entry
      *       rev date time author comments(s)
      */
-    public boolean next() throws java.io.IOException {
+    private boolean next() throws java.io.IOException {
         sep = true;
         record.setLength(0);
         int c;
@@ -82,14 +109,7 @@ public class SCCSHistoryReader extends HistoryReader {
             return false;
         }
     }
-    
-    /**
-     * @return  get the history line in one String of current log record
-     */
-    public String getLine() {
-        return record.toString();
-    }
-    
+
     private void initFields() {
         if(revision == null) {
             String[] f = record.toString().split(" ", 6);
@@ -109,55 +129,43 @@ public class SCCSHistoryReader extends HistoryReader {
             }
         }
     }
-    
+
     /**
      * @return  get the revision string of current log record
      */
-    public String getRevision() {
+    private String getRevision() {
         initFields();
         return revision;
     }
-    
+
     /**
      * @return  get the date assosiated with current log record
      */
-    public Date getDate() {
+    private Date getDate() {
         initFields();
         return rdate;
     }
-    
+
     /**
      * @return  get the author of current log record
      */
-    public String getAuthor() {
+    private String getAuthor() {
         initFields();
         return author;
     }
     /**
      * @return  get the comments of current log record
      */
-    public String getComment() {
+    private String getComment() {
         initFields();
         return comment;
     }
-    
-    public boolean isActive() {
+
+    private boolean isActive() {
         return active;
     }
-    
-    public final int read(char[] buf, int start, int len) throws java.io.IOException {
-        int n=0;
-        int c;
-        while((c = this.read()) > -1 && n <= len && start < buf.length) {
-            buf[start++] = (char) c;
-            n++;
-        }
-        if (c == -1 && n == 0 && len != 0)
-            return -1;
-        return n;
-    }
-    
-    public final int read() throws java.io.IOException {
+
+    private int read() throws java.io.IOException {
         int c, d, dt;
         while((c = in.read()) != -1) {
             switch (c) {
@@ -225,35 +233,5 @@ public class SCCSHistoryReader extends HistoryReader {
             }
         }
         return(-1);
-    }
-    
-    public void close() throws IOException {
-        in.close();
-    }
-    public static void main(String[] args) {
-        try {
-            System.out.println("--------Reading as a structred");
-            HistoryReader r = new SCCSHistoryReader(new BufferedReader(new FileReader(args[0])));
-            while(r.next()) {
-                System.out.println("rev=" + r.getRevision());
-                System.out.println("date=" + r.getDate());
-                System.out.println("author=" + r.getAuthor());
-                System.out.println("comment=" + r.getComment());
-                System.out.println("active=" + r.isActive());
-            }
-            System.out.println("--------Reading as a reader");
-            BufferedReader hr = new BufferedReader(new SCCSHistoryReader(new BufferedReader(new FileReader(args[0]))));
-            int c;
-            while((c = hr.read()) != -1) {
-                System.out.write((char) c);
-            }
-            System.out.println("--------Reading line by line");
-            HistoryReader hr2 = new SCCSHistoryReader(new BufferedReader(new FileReader(args[0])));
-            while(hr2.next()) {
-                System.out.println("line=" + hr2.getLine());
-            }
-        } catch (Exception e) {
-            System.err.println(e + "Usage SCCSreader SCCS/s.file\n");
-        }
     }
 }

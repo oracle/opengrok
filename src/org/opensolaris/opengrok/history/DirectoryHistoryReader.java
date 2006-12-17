@@ -59,7 +59,6 @@ public class DirectoryHistoryReader extends HistoryReader {
     }
     
     public DirectoryHistoryReader(String index, String path, String src_root) throws IOException {
-	super(new StringReader(" "));
 	IndexReader ireader = IndexReader.open(index);
 	IndexSearcher searcher = new IndexSearcher(ireader);
 	Sort sort = new Sort("date", true);
@@ -84,7 +83,8 @@ public class DirectoryHistoryReader extends HistoryReader {
 		    comment = rparent;
                     HistoryReader hr = null;
                     try {
-                        hr = HistoryGuru.getInstance().getHistoryReader(src_root + rparent, rbase);
+                        File f = new File(src_root + rparent, rbase);
+                        hr = HistoryGuru.getInstance().getHistoryReader(f);
                     } catch (IOException e) {
                     }
 		    if(hr != null) {
