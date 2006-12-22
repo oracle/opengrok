@@ -34,8 +34,11 @@ import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 class HistoryCache {
+    private static Object lock = new Object();
+    
     /**
      * Retrieve the history for the given file, either from the cache or by
      * parsing the history information in the repository.
@@ -46,43 +49,45 @@ class HistoryCache {
      * be <code>null</code>)
      */
     static List<HistoryEntry> get(File file,
-                                  Class<? extends HistoryParser> parserClass,
-                                  ExternalRepository repository)
-        throws Exception
-    {
+            Class<? extends HistoryParser> parserClass,
+            ExternalRepository repository)
+            throws Exception {
         File cache = getCachedFile(file);
         if (cache.exists() && file.lastModified() < cache.lastModified()) {
             try {
                 return readCache(cache);
             } catch (Exception e) {
                 System.err.println("Error when reading cache file '" +
-                                   cache + "':");
+                        cache + "':");
                 e.printStackTrace();
             }
         }
-
+        
         long time = System.currentTimeMillis();
-
+        
         HistoryParser parser = parserClass.newInstance();
         List<HistoryEntry> entries = parser.parse(file, repository);
-
+        
         time = System.currentTimeMillis() - time;
-
+        
         // TODO need a global property to turn off caching
-        if (cache.exists() || (parser.isCacheable() && time > 300)) {
-            // retrieving the history takes too long, cache it!
-            try {
-                writeCache(entries, cache);
-            } catch (Exception e) {
-                System.err.println("Error when writing cache file '" +
-                                   cache + "':");
-                e.printStackTrace();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.useHistoryCache()) {
+            if (cache.exists() || (parser.isCacheable() && time > env.getHistoryReaderTimeLimit())) {
+                // retrieving the history takes too long, cache it!
+                try {
+                    writeCache(entries, cache);
+                } catch (Exception e) {
+                    System.err.println("Error when writing cache file '" +
+                            cache + "':");
+                    e.printStackTrace();
+                }
             }
         }
-
+        
         return entries;
     }
-
+    
     /**
      * Get a <code>File</code> object describing the cache file.
      *
@@ -90,37 +95,70 @@ class HistoryCache {
      * @return file that might contain cached history for <code>file</code>
      */
     private static File getCachedFile(File file) {
-        // TODO we should put the cache directory under the data root
-        File parent = file.getParentFile();
-        File cacheDir = new File(parent, ".ogcache");
-        return new File(cacheDir, file.getName());
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(env.getDataRootPath());
+        sb.append(File.separatorChar);
+        sb.append(".ogcache");
+        
+        try {
+            sb.append(file.getCanonicalPath().substring(env.getSourceRootPath().length()));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        return new File(sb.toString());
     }
-
+    
     /**
      * Write history entries to a file.
      */
     private static void writeCache(List<HistoryEntry> entries, File file)
-        throws IOException
-    {
+    throws IOException {
         File dir = file.getParentFile();
         if (!dir.isDirectory()) {
             if (!dir.mkdirs()) {
                 System.err.println("Unable to create directory '" + dir + "'.");
             }
         }
-
-        XMLEncoder e = new XMLEncoder(
-                          new BufferedOutputStream(new FileOutputStream(file)));
-        e.writeObject(entries);
-        e.close();
+        
+        // We have a problem that multiple threads may access the cache layer
+        // at the same time. Since I would like to avoid read-locking, I just
+        // serialize the write access to the cache file. The generation of the
+        // cache file would most likely be executed during index generation, and
+        // that happens sequencial anyway....
+        // Generate the file with a temprorary name and move it into place when
+        // I'm done so I don't have to protect the readers for partially updated
+        // files...
+        synchronized (lock) {
+            File output = new File(dir, file.getName() + ".tmp");
+            if (!output.delete() && output.exists()) {
+                System.err.println("HistoryCache: cachefile tmpfile exists, and I could not delete it");
+                return ;
+            }
+            XMLEncoder e = new XMLEncoder(
+                    new BufferedOutputStream(new FileOutputStream(output)));
+            e.writeObject(entries);
+            e.close();
+            if (!file.delete() && file.exists()) {
+                output.delete();
+                System.err.println("HistoryCache: cachefile exists, and I could not delete it.");
+                return ;
+            }
+            if (!output.renameTo(file)) {
+                System.err.println("HistoryCache: Failed to rename cache tmpfile!");
+                output.delete();
+            }
+        }
     }
-
+    
     /**
      * Read history entries from a file.
      */
     private static List<HistoryEntry> readCache(File file) throws IOException {
         XMLDecoder d = new XMLDecoder(
-                          new BufferedInputStream(new FileInputStream(file)));
+                new BufferedInputStream(new FileInputStream(file)));
         Object obj = d.readObject();
         d.close();
         // We could cast obj directly to List<HistoryEntry>, but that would
