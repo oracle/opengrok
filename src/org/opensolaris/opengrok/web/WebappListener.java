@@ -28,6 +28,7 @@ import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.MercurialRepository;
 
@@ -36,13 +37,61 @@ import org.opensolaris.opengrok.history.MercurialRepository;
  * @author Trond Norbye
  */
 public final class WebappListener  implements ServletContextListener  {
+    
+    private String getFileName(ServletContext context, String variable, boolean directory) {
+        String value = context.getInitParameter(variable);
+        if (value == null) {
+            System.err.println("OpenGrok: configuration error. " + variable + " not specified in web.xml");
+            return null;
+        }
+        File file = new File(value);
+        if (!file.exists()) {
+            System.err.println("OpenGrok: " + variable + " configuration error. " + value + " does not exist.");
+            return null;
+        }
+        
+        if (directory) {
+            if (!file.isDirectory()) {
+                System.err.println("OpenGrok: " + variable + " configuration error. " + value + " is not a directory.");
+                return null;
+            }
+        }
+        
+        String can = null;
+        try {            
+            can = file.getCanonicalPath();        
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }        
+        
+        if (can == null) {
+            System.err.println("OpenGrok: " + variable + " configuration error. Failed to get canonical name for " + value + " is not a directory.");
+            return null;            
+        }
+        
+        return can;
+    }
+    
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
+        
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String value;
+        
+        if ((value = getFileName(context, "SRC_ROOT", true)) == null) {
+            return;
+        }        
+        env.setSourceRoot(value);
+
+        if ((value = getFileName(context, "DATA_ROOT", true)) == null) {
+            return;
+        }        
+        env.setDataRoot(value);
 
         String scanrepos = context.getInitParameter("SCAN_REPOS");
         if (scanrepos != null && scanrepos.equalsIgnoreCase("true")) {
             System.out.println("Scanning for repositories...");
-            final String source = context.getInitParameter("SRC_ROOT");
+            final String source = env.getSourceRootPath();
             if (source != null) {
                 Thread t = new Thread(new Runnable() {
                     public void run() {

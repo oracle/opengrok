@@ -30,6 +30,7 @@ package org.opensolaris.opengrok.analysis.document;
 import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 %%
 %public
@@ -38,7 +39,7 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %line
 %{
-  String urlPrefix = System.getProperty("urlPrefix");
+  String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   char tab;
   boolean p = false;
   Writer out;

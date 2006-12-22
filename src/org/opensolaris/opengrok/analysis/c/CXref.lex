@@ -34,6 +34,7 @@ package org.opensolaris.opengrok.analysis.c;
 import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 %%
 %public
@@ -44,7 +45,7 @@ import org.opensolaris.opengrok.web.Util;
 %line
 %{
   Writer out;
-  String urlPrefix = System.getProperty("urlPrefix");
+  String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   private HashMap<String, HashMap<Integer, String>> defs = null;
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
   	this.defs = defs;

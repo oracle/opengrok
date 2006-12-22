@@ -33,6 +33,7 @@ import java.io.*;
 import org.opensolaris.opengrok.analysis.*;
 import java.util.*;
 import java.util.prefs.*;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Analyzer for plain text files
@@ -82,7 +83,7 @@ public class PlainAnalyzer extends FileAnalyzer {
         //using pref to pass the path to ctags!
         //Preferences prefs = Preferences.userNodeForPackage(PlainAnalyzer.class);
         //String ctagsPath = prefs.get("ctags", null);
-        String ctagsPath = System.getProperty("ctags");
+        String ctagsPath = RuntimeEnvironment.getInstance().getCtags();
         if (ctagsPath != null ) {
             try {
                 ctags = new Ctags(ctagsPath);

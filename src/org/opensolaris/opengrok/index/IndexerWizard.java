@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  *
@@ -44,7 +45,7 @@ public class IndexerWizard extends javax.swing.JFrame {
         initComponents();
         setUrlPrefix(webappContext.getText());
         if(Index.setExuberantCtags(ctagsPath)) {
-            exubCtags = System.getProperty("ctags");
+            exubCtags = RuntimeEnvironment.getInstance().getCtags();
             if(exubCtags != null)
                 ctagsText.setText(exubCtags);
         }
@@ -687,7 +688,7 @@ public class IndexerWizard extends javax.swing.JFrame {
         if(ctagsChooser.getSelectedFile() != null) {
             String inputCtags = ctagsChooser.getSelectedFile().getPath();
             if(Index.setExuberantCtags(inputCtags)) {
-                ctagsText.setText(System.getProperty("ctags"));
+                ctagsText.setText(RuntimeEnvironment.getInstance().getCtags());
             } else {
                 JOptionPane.showMessageDialog(opts, "Error: " + inputCtags + " does not look like Exuberant Ctag!", "Error", JOptionPane.ERROR_MESSAGE);
                 ctagsText.setText("");

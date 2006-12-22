@@ -36,6 +36,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.spell.NGramSpeller;
 import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -469,7 +470,7 @@ class Index {
     
     public static boolean setExuberantCtags(String ctags) {
         if (ctags == null) {
-            ctags = System.getProperty("ctags");
+            ctags = RuntimeEnvironment.getInstance().getCtags();
         }
         
         // If no Path to CTags was specifyed we guess that its reachable ...

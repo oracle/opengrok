@@ -34,6 +34,7 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
 import org.apache.bcel.classfile.*;
 import java.util.*;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 
 /**
@@ -53,7 +54,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
     public static Genre g = Genre.XREFABLE;
 
-    private String urlPrefix = System.getProperty("urlPrefix");
+    private String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
    
     public Genre getGenre() {
         return this.g;

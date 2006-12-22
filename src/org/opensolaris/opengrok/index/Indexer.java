@@ -41,6 +41,7 @@ import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.MercurialRepository;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.scope.MainFrame;
 import org.opensolaris.opengrok.web.Util;
 
@@ -74,6 +75,7 @@ public class Indexer {
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
     
     public static void main(String argv[]) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if(argv.length == 0) {
             if (GraphicsEnvironment.isHeadless()) {
                 System.err.println("No display available for the Graphical User Interface");
@@ -117,7 +119,7 @@ public class Indexer {
                     } else if (argv[i].equals("-c")) {
                         if(i+1 < argv.length) {
                             ctags = argv[++i];
-                            System.setProperty("ctags", ctags);
+                            env.setCtags(ctags);
                         }
                     } else if (argv[i].equals("-w")) {
                         if(i+1 < argv.length) {
@@ -179,7 +181,7 @@ public class Indexer {
                         System.exit(1);
                     }
                 }
-                System.setProperty("urlPrefix", urlPrefix);
+                env.setUrlPrefix(urlPrefix);
                 if (dataRoot == null) {
                     System.out.println(usage);
                     System.exit(1);
@@ -206,6 +208,15 @@ public class Indexer {
                         System.exit(1);
                     }
                 }
+  
+                try {
+                    env.setDataRoot(new File(dataRoot));
+                    env.setSourceRoot(srcRootDir);
+                } catch (IOException ex) {
+                    System.err.println("Failed to extract absolute path names for data and/or source root");
+                    System.exit(1);
+                }
+                
                 if (! Index.setExuberantCtags(ctags)) {
                     System.exit(1);
                 }

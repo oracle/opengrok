@@ -31,8 +31,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.Socket;
 import javax.imageio.stream.FileImageInputStream;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  *
@@ -52,7 +54,7 @@ public class MercurialRepository implements ExternalRepository {
         this.directory = new File(directory);
         command = System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
         daemon = false;
-        useCache = System.getProperty("org.opensolaris.opengrok.history.MercurialCache", null) != null;
+        useCache = RuntimeEnvironment.getInstance().useHistoryCache();
         Socket sock = null;
         try {
             sock = new Socket("localhost", 4242);
@@ -69,8 +71,12 @@ public class MercurialRepository implements ExternalRepository {
                 System.out.println("Not using daemon... " + ret);
             }
         } catch (IOException ex) {
-            System.err.println("Failed to access Mercurial cache daemon");
-            ex.printStackTrace(System.err);
+            if (ex instanceof ConnectException) {
+                System.err.println("No Mercurial cache daemon available at localhost:4242");
+            } else {
+                System.err.println("Failed to access Mercurial cache daemon");
+                ex.printStackTrace(System.err);
+            }
         } finally {
             try {
                 if (sock != null) {
@@ -121,6 +127,7 @@ public class MercurialRepository implements ExternalRepository {
                 command.append("\n");
                 
                 socket = new Socket("localhost", 4242);
+                System.out.println(command.toString());
                 socket.getOutputStream().write(command.toString().getBytes());
                 socket.getOutputStream().flush();
                 
@@ -146,13 +153,13 @@ public class MercurialRepository implements ExternalRepository {
             String argv[];
             if (verbose) {
                 argv = new String[] { command, "log", "-v",
-                                      file.getAbsolutePath() };
+                file.getAbsolutePath() };
             } else {
                 argv = new String[] { command, "log", file.getAbsolutePath() };
             }
             try {
                 Process process =
-                    Runtime.getRuntime().exec(argv, null, directory);
+                        Runtime.getRuntime().exec(argv, null, directory);
                 ret = process.getInputStream();
                 process.waitFor();
             } catch (Exception ex) {
@@ -222,7 +229,7 @@ public class MercurialRepository implements ExternalRepository {
         
         return ret;
     }
-
+    
     public Class<? extends HistoryParser> getHistoryParser() {
         return MercurialHistoryParser.class;
     }
