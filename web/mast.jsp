@@ -55,6 +55,7 @@ if(resourcePath.length() < rawSource.length()
 || !resourcePath.startsWith(rawSource)) {
     valid = false;
     response.sendError(404);
+    return;
 } else if (!resourceFile.canRead() && resourcePath.startsWith(rawSource)) {
     String newPath = rawSource + "/on/" + path;
     File newFile = new File(newPath);
@@ -67,6 +68,7 @@ if(resourcePath.length() < rawSource.length()
     }
     valid = false;
     response.sendError(404);
+    return;
 } else {
     valid = true;
     path = resourcePath.substring(rawSource.length());

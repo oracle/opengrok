@@ -60,6 +60,7 @@ if (resourcePath.length() < rawSource.length()
 || IgnoredNames.ignore.contains(basename) || IgnoredNames.ignore.contains(parentBasename)) {
     valid = false;
     response.sendError(404);
+    return;
 } else {
     valid = true;
     path = resourcePath.substring(rawSource.length());

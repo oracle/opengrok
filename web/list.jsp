@@ -84,6 +84,7 @@ if (valid) {
                     in = HistoryGuru.getInstance().getRevision(resourceFile.getParent(), basename, rev);
                 } catch (Exception e) {
                     response.sendError(404, "Revision not found");
+                    return;
                 }
                 if(in != null) {
                     try {
