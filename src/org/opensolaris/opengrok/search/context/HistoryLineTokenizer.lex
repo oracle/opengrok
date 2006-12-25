@@ -37,6 +37,7 @@ import org.apache.lucene.analysis.*;
 
 %public
 %class HistoryLineTokenizer
+%unicode
 %function next
 %type String 
 %ignorecase
