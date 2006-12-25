@@ -126,7 +126,6 @@ public class JarAnalyzer extends FileAnalyzer {
 		doc.add(Field.Text("refs",dummy));
 	    }
 	} catch (IOException e) {
-	    System.err.println(e);
 	    e.printStackTrace();
 	}
     }

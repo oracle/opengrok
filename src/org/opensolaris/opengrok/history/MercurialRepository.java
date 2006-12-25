@@ -222,8 +222,7 @@ public class MercurialRepository implements ExternalRepository {
                 process.waitFor();
             } catch (Exception exp) {
                 System.err.print("Failed to get history: " + exp.getClass().toString());
-                System.err.println(exp.getMessage());
-                exp.printStackTrace(System.err);
+                exp.printStackTrace();
             }
         }
         

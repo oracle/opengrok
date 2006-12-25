@@ -320,7 +320,7 @@ public class AnalyzerGuru {
                         return a;
                     }
                 } catch (Exception e ) {
-                    System.err.println(e);
+                    e.printStackTrace();
                 }
             }
         }

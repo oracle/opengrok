@@ -53,8 +53,7 @@ public class MercurialGet extends InputStream {
         try {
             stream.reset();
         } catch (IOException e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace(System.err);
+            e.printStackTrace();
             throw e;
         }
     }

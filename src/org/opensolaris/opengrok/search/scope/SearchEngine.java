@@ -157,7 +157,6 @@ public class SearchEngine {
                     hits = null;
                 }
             } catch (Exception e) {
-                System.err.println(e);
                 e.printStackTrace();
             }
         }
@@ -238,8 +237,7 @@ public class SearchEngine {
                     ret.add(new Hit(filename, "...", "", false, alt));
                 }
             } catch (IOException e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace(System.err);
+                e.printStackTrace();
             }
         }
         

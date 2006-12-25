@@ -120,7 +120,7 @@ public class HistoryContext {
                 }
             }
         } catch (Exception e) {
-            System.err.println(e);
+            e.printStackTrace();
         }
         return matchedLines > 0;
     }

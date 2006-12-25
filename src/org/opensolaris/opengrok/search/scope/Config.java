@@ -287,8 +287,7 @@ public class Config {
             try {
                 names = epref.childrenNames();
             } catch (Exception e) {
-                System.err.println(e.getMessage());
-                e.printStackTrace(System.err);
+                e.printStackTrace();
             }
 
             if (names != null) {

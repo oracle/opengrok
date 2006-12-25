@@ -121,7 +121,7 @@ class Search {
 			SRC_ROOT = "";
 		    }
 		} catch (Exception e) {
-		    System.err.println(e);
+		    e.printStackTrace();
 		    SRC_ROOT = "";
 		}
 		IndexReader ireader = IndexReader.open(DATA_ROOT + "/index");
@@ -136,7 +136,6 @@ class Search {
 		    System.out.println(SRC_ROOT + rpath);
 		}
 	    } catch (Exception e) {
-		System.err.println(e);
 		e.printStackTrace();
 	    }
 	}

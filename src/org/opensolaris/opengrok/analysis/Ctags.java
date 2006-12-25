@@ -185,7 +185,6 @@ public class Ctags {
                 //System.out.println("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
             } while(true);
         } catch (Exception e) {
-            System.err.println(e);
             e.printStackTrace();
         }
         System.err.println("SHOULD NOT HAVE COME HERE");
@@ -204,7 +203,7 @@ public class Ctags {
                 //ct.writeTagFile(tdefs, "/somefile");
             }
         } catch ( Exception e) {
-            System.err.println(e);
+            e.printStackTrace();
         }
     }
 }

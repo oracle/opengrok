@@ -137,8 +137,7 @@ public class Context {
             } catch (IOException e) {
                 if (hits != null) {
                     // @todo verify why we ignore all exceptions?
-                    System.err.println(e);
-                    e.printStackTrace(System.err);
+                    e.printStackTrace();
                 }
             }
         }
@@ -209,7 +208,7 @@ public class Context {
                 }
             }
         } catch (IOException e) {
-            System.err.println(e);
+            e.printStackTrace();
         } finally {
             try {
                 in.close();
@@ -230,7 +229,6 @@ public class Context {
             long span =  ((new Date()).getTime() - start.getTime());
             System.err.println("took: "+ span + " msec");
         } catch (Exception e) {
-            System.err.println(e);
             e.printStackTrace();
         }
     }
