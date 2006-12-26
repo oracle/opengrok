@@ -52,6 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.table.TableColumn;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexerWizard;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.scope.editor.InternalEditor;
@@ -558,6 +559,9 @@ public class MainFrame extends javax.swing.JFrame {
     
     private void indexDatabaseComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_indexDatabaseComboItemStateChanged
         IndexDatabase db = (IndexDatabase)evt.getItem();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setDataRoot(db.getDatabase());
+        env.setSourceRoot(db.getSource());
         if (db.getSource() == null) {
             searchButton.setEnabled(false);
         } else {
