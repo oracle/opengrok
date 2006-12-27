@@ -51,47 +51,52 @@ import org.opensolaris.opengrok.web.Util;
  * @author Chandan
  */
 public class AnalyzerGuru {
-    private static HashMap<String, Class> ext;
-    private static SortedMap<String, Class> magics;
+    private static HashMap<String, Class<? extends FileAnalyzer>> ext;
+    private static SortedMap<String, Class<? extends FileAnalyzer>> magics;
     private static ArrayList<Method> matchers;
     /*
      * If you write your own analyzer please register it here
      */
-    private static Class[] analyzers = {
-        IgnorantAnalyzer.class,
-        BZip2Analyzer.class,
-        FileAnalyzer.class,
-        XMLAnalyzer.class,
-        TroffAnalyzer.class,
-        ELFAnalyzer.class,
-        JavaClassAnalyzer.class,
-        ImageAnalyzer.class,
-        JarAnalyzer.class,
-        ZipAnalyzer.class,
-        TarAnalyzer.class,
-        CAnalyzer.class,
-        ShAnalyzer.class,
-        PlainAnalyzer.class,
-        GZIPAnalyzer.class,
-        JavaAnalyzer.class
-    };
-    private static HashMap<Class, FileAnalyzer> analyzerInstances = new HashMap<Class, FileAnalyzer>();
+    private static ArrayList<Class<? extends FileAnalyzer>> analyzers =
+        new ArrayList<Class<? extends FileAnalyzer>>();
+    static {
+        analyzers.add(IgnorantAnalyzer.class);
+        analyzers.add(BZip2Analyzer.class);
+        analyzers.add(FileAnalyzer.class);
+        analyzers.add(XMLAnalyzer.class);
+        analyzers.add(TroffAnalyzer.class);
+        analyzers.add(ELFAnalyzer.class);
+        analyzers.add(JavaClassAnalyzer.class);
+        analyzers.add(ImageAnalyzer.class);
+        analyzers.add(JarAnalyzer.class);
+        analyzers.add(ZipAnalyzer.class);
+        analyzers.add(TarAnalyzer.class);
+        analyzers.add(CAnalyzer.class);
+        analyzers.add(ShAnalyzer.class);
+        analyzers.add(PlainAnalyzer.class);
+        analyzers.add(GZIPAnalyzer.class);
+        analyzers.add(JavaAnalyzer.class);
+    }
+
+    private static HashMap<Class<? extends FileAnalyzer>, FileAnalyzer>
+            analyzerInstances =
+                new HashMap<Class<? extends FileAnalyzer>, FileAnalyzer>();
     
     /**
      * Initializes an AnalyzerGuru
      */
     static {
         if (ext == null) {
-            ext = new HashMap<String, Class>();
+            ext = new HashMap<String, Class<? extends FileAnalyzer>>();
         }
         if (magics == null) {
-            magics = new TreeMap<String, Class>();
+            magics = new TreeMap<String, Class<? extends FileAnalyzer>>();
             // TODO: have a comparator
         }
         if (matchers == null) {
             matchers = new ArrayList<Method>();
         }
-        for (Class analyzer: analyzers) {
+        for (Class<? extends FileAnalyzer> analyzer: analyzers) {
             try{
                 String[] suffixes = (String[]) analyzer.getField("suffixes").get(null);
                 for (String suffix: suffixes) {
@@ -125,7 +130,7 @@ public class AnalyzerGuru {
      */
     public static FileAnalyzer getAnalyzer() {
         
-        Class a = FileAnalyzer.class;
+        Class<FileAnalyzer> a = FileAnalyzer.class;
         FileAnalyzer fa = analyzerInstances.get(a);
         if (fa == null) {
             try {
@@ -143,7 +148,7 @@ public class AnalyzerGuru {
      * use this if you want to analyze a file. Analyzers are costly.
      */
     public static FileAnalyzer getAnalyzer(InputStream in, String path) throws IOException {
-        Class a = find(in, path);
+        Class<? extends FileAnalyzer> a = find(in, path);
         if(a == null) {
             a = FileAnalyzer.class;
         }
@@ -210,16 +215,16 @@ public class AnalyzerGuru {
      * @return The contentType suitable for printing to response.setContentType()
      */
     public static String getContentType(String path) {
-        Class a = find(path);
+        Class<? extends FileAnalyzer> a = find(path);
         return  getContentType(a);
     }
     
     public static String getContentType(InputStream in, String path) throws IOException {
-        Class a = find(in, path);
+        Class<? extends FileAnalyzer> a = find(in, path);
         return getContentType(a);
     }
     
-    public static String getContentType(Class a) {
+    public static String getContentType(Class<? extends FileAnalyzer> a) {
         String contentType = null;
         if (a != null) {
             try {
@@ -231,7 +236,9 @@ public class AnalyzerGuru {
         return contentType;
     }
     
-    public static void writeXref(Class a, InputStream in, Writer out) throws IOException {
+    public static void writeXref(Class<? extends FileAnalyzer> a,
+                                 InputStream in, Writer out)
+            throws IOException {
         if (a != null) {
             try {
                 a.getMethod("writeXref", InputStream.class, Writer.class).invoke(null, in, out);
@@ -278,15 +285,16 @@ public class AnalyzerGuru {
      * Finds a suitable analyser class for an InputStream and a file name
      * Use if you just want to find file type.
      */
-    public static Class find(InputStream in, String path) throws IOException {
-        Class a = find(path);
+    public static Class<? extends FileAnalyzer>
+            find(InputStream in, String path) throws IOException {
+        Class<? extends FileAnalyzer> a = find(path);
         if(a == null) {
             a = find(in);
         }
         return a;
     }
     
-    public static Class find(String path) {
+    public static Class<? extends FileAnalyzer> find(String path) {
         int i = 0;
         if ((i = path.lastIndexOf('/')) > 0 || (i = path.lastIndexOf('\\')) > 0) {
             if(i+1<path.length())
@@ -295,7 +303,8 @@ public class AnalyzerGuru {
         path = path.toUpperCase();
         int dotpos = path.lastIndexOf('.');
         if(dotpos >= 0) {
-            Class analyzer = ext.get(path.substring(dotpos+1).toUpperCase());
+            Class<? extends FileAnalyzer> analyzer =
+                ext.get(path.substring(dotpos+1).toUpperCase());
             if (analyzer != null) {
                 //System.err.println(path.substring(dotpos+1).toUpperCase() + " = " + analyzer.getSimpleName());
                 return analyzer;
@@ -304,20 +313,27 @@ public class AnalyzerGuru {
         return(ext.get(path));
     }
     
-    public static Class find(InputStream in) throws IOException {
+    public static Class<? extends FileAnalyzer> find(InputStream in)
+            throws IOException {
         in.mark(8);
         byte[] content = new byte[8];
         int len = in.read(content);
         in.reset();
         if (len < 4)
             return null;
-        Class a = find(content);
+        Class<? extends FileAnalyzer> a = find(content);
         if(a == null) {
             for(Method matcher: matchers) {
                 try {
                     //System.out.println("USING = " + matcher.getName());
-                    if ((a = (Class) matcher.invoke(null, content))!= null) {
-                        return a;
+
+                    // cannot check conversion because of reflection
+                    @SuppressWarnings("unchecked")
+                    Class<? extends FileAnalyzer> c =
+                        (Class) matcher.invoke(null, content);
+
+                    if (c != null) {
+                        return c;
                     }
                 } catch (Exception e ) {
                     e.printStackTrace();
@@ -327,7 +343,7 @@ public class AnalyzerGuru {
         return a;
     }
     
-    public static Class find(byte[] content) {
+    public static Class<? extends FileAnalyzer> find(byte[] content) {
         char[] chars = new char[content.length > 8 ? 8 : content.length];
         for (int i = 0; i< chars.length ; i++) {
             chars[i] = (char)(0xFF & content[i]);
@@ -335,8 +351,8 @@ public class AnalyzerGuru {
         return(findMagic(new String(chars)));
     }
     
-    public static Class findMagic(String content) {
-        Class a = magics.get(content);
+    public static Class<? extends FileAnalyzer> findMagic(String content) {
+        Class<? extends FileAnalyzer> a = magics.get(content);
         if (a == null) {
             for(String magic: magics.keySet()) {
                 if(content.startsWith(magic)) {
@@ -352,7 +368,7 @@ public class AnalyzerGuru {
         System.out.println("<pre wrap=true>");
         for(String arg: args) {
             try {
-                Class an = af.find(arg);
+                Class<? extends FileAnalyzer> an = af.find(arg);
                 File f = new File(arg);
                 BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
                 FileAnalyzer fa = af.getAnalyzer(in, arg);
