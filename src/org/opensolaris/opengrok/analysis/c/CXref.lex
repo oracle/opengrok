@@ -89,7 +89,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 	  out.close();
       }
       catch (Exception e) {
-        System.out.println(e);
         e.printStackTrace();
       }
       long span =  ((new Date()).getTime() - start.getTime());

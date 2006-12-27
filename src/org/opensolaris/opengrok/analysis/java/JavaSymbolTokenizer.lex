@@ -67,7 +67,6 @@ import org.apache.lucene.analysis.*;
 	  }
         }
         catch (Exception e) {
-          System.out.println(e);
           e.printStackTrace();
         }
 	long span =  ((new Date()).getTime() - start.getTime());
