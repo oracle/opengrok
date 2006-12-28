@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public class MercurialRepository implements ExternalRepository {
     private File directory;
+    private String directoryName;
     private String command;
     private boolean verbose;
     private boolean daemon;
@@ -52,6 +53,7 @@ public class MercurialRepository implements ExternalRepository {
      */
     public MercurialRepository(String directory) {
         this.directory = new File(directory);
+        directoryName = this.directory.getAbsolutePath();
         command = System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
         daemon = false;
         useCache = RuntimeEnvironment.getInstance().useHistoryCache();
@@ -98,6 +100,11 @@ public class MercurialRepository implements ExternalRepository {
     public String getCommand() {
         return command;
     }
+
+    public void setDirectory(File directory) {
+        this.directory = directory;
+        directoryName = directory.getAbsolutePath();
+    }
     
     public File getDirectory() {
         return directory;
@@ -113,6 +120,7 @@ public class MercurialRepository implements ExternalRepository {
     
     InputStream getHistoryStream(File file) {
         InputStream ret = null;
+        String filename = file.getAbsolutePath().substring(directoryName.length() + 1);
         
         if (daemon) {
             // Try to use daemon
@@ -121,13 +129,12 @@ public class MercurialRepository implements ExternalRepository {
             try {
                 StringBuilder command = new StringBuilder();
                 command.append("log ");
-                command.append(file.getAbsolutePath());
+                command.append(filename);
                 command.append(" ");
-                command.append(directory);
+                command.append(directoryName);
                 command.append("\n");
                 
                 socket = new Socket("localhost", 4242);
-                System.out.println(command.toString());
                 socket.getOutputStream().write(command.toString().getBytes());
                 socket.getOutputStream().flush();
                 
@@ -152,10 +159,9 @@ public class MercurialRepository implements ExternalRepository {
         if (ret == null) {
             String argv[];
             if (verbose) {
-                argv = new String[] { command, "log", "-v",
-                file.getAbsolutePath() };
+                argv = new String[] { command, "log", "-v", filename };
             } else {
-                argv = new String[] { command, "log", file.getAbsolutePath() };
+                argv = new String[] { command, "log", filename };
             }
             try {
                 Process process =
@@ -174,7 +180,7 @@ public class MercurialRepository implements ExternalRepository {
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         MercurialGet ret = null;
-        
+        String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         if (daemon) {
             // Try to use daemon
             Socket socket = null;
@@ -184,9 +190,9 @@ public class MercurialRepository implements ExternalRepository {
                 command.append("get ");
                 command.append(rev);
                 command.append(" ");
-                command.append((new File(parent, basename)).getAbsolutePath());
+                command.append(filename);
                 command.append(" ");
-                command.append(directory);
+                command.append(directoryName);
                 command.append("\n");
                 
                 socket = new Socket("localhost", 4242);
@@ -215,7 +221,7 @@ public class MercurialRepository implements ExternalRepository {
         if (ret == null) {
             // Use external process!!!
             try {
-                String argv[] = { command, "cat", "-r", rev, (new File(parent, basename)).getAbsolutePath() };
+                String argv[] = { command, "cat", "-r", rev, filename };
                 Process process = Runtime.getRuntime().exec(argv, null, directory);
                 
                 ret = new MercurialGet(process.getInputStream());
