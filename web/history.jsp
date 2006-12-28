@@ -33,7 +33,7 @@ org.opensolaris.opengrok.history.*,
 java.util.regex.*
 "
 %><%@include file="mast.jsp"%><%
-if (path.length() > 0) {
+if (path.length() > 0 && valid) {
     boolean striked = false;
     String userPage = getInitParameter("USER_PAGE");
     String bugPage = getInitParameter("BUG_PAGE");
