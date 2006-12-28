@@ -118,4 +118,4 @@ if(files != null) {%><br/><%
         return;
     }
 }
-%><%@include file="foot.html"%>
+%><%@include file="foot.jsp"%>

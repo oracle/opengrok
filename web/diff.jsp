@@ -453,6 +453,6 @@ if(format.equals("s")) {
 				</div><%
         }
     }
-%><%@include file="foot.html"%><%
+%><%@include file="foot.jsp"%><%
 }
 %>

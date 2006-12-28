@@ -311,7 +311,7 @@ if( hits == null || errorMsg != null) {
 		<%=slider != null ? "<p>" + slider + "</p>" : ""%>
 		<%
             }
-	    %><br/></div><%@include file="foot.html"%><%
+	    %><br/></div><%@include file="foot.jsp"%><%
     }
     if (ireader != null)
         ireader.close();

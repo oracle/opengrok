@@ -71,4 +71,4 @@ if ("".equals(rawSource)) {
 exception.printStackTrace(); 
 %>
 <%=exception.getMessage()%>
-<%@include file="foot.html"%>
+<%@include file="foot.jsp"%>

@@ -55,4 +55,4 @@ if (valid) {
    }
 }
 
-%><%@include file="foot.html"%>
+%><%@include file="foot.jsp"%>

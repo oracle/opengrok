@@ -57,4 +57,4 @@ if (rawSource.equals("")) {
 <div id="bar"><a id="home" href="<%=context%>">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
 <h3 class="error">Error 404: File not found!</h3>
 The requested resource is not available. <%=configError%>
-<div style="display:block;height:10em">&nbsp;</div><%@include file="foot.html"%>
+<div style="display:block;height:10em">&nbsp;</div><%@include file="foot.jsp"%>
