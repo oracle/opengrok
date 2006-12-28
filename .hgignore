@@ -12,6 +12,8 @@ src/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.java
 src/org/opensolaris/opengrok/analysis/document/TroffXref.java
 src/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.java
 src/org/opensolaris/opengrok/analysis/java/JavaXref.java
+src/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.java
+src/org/opensolaris/opengrok/analysis/lisp/LispXref.java
 src/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.java
 src/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.java
 src/org/opensolaris/opengrok/analysis/plain/PlainXref.java
