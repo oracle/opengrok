@@ -1,6 +1,8 @@
 syntax: glob
 *~
 *.class
+tags
+TAGS
 build
 dist
 .hgcache
