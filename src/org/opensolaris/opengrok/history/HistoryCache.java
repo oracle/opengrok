@@ -119,7 +119,8 @@ class HistoryCache {
         File dir = file.getParentFile();
         if (!dir.isDirectory()) {
             if (!dir.mkdirs()) {
-                System.err.println("Unable to create directory '" + dir + "'.");
+                throw new IOException(
+                    "Unable to create directory '" + dir + "'.");
             }
         }
         
@@ -128,27 +129,23 @@ class HistoryCache {
         // serialize the write access to the cache file. The generation of the
         // cache file would most likely be executed during index generation, and
         // that happens sequencial anyway....
-        // Generate the file with a temprorary name and move it into place when
+        // Generate the file with a temporary name and move it into place when
         // I'm done so I don't have to protect the readers for partially updated
         // files...
         synchronized (lock) {
-            File output = new File(dir, file.getName() + ".tmp");
-            if (!output.delete() && output.exists()) {
-                System.err.println("HistoryCache: cachefile tmpfile exists, and I could not delete it");
-                return ;
-            }
+            File output = File.createTempFile("oghist", null, dir);
             XMLEncoder e = new XMLEncoder(
                     new BufferedOutputStream(new FileOutputStream(output)));
             e.writeObject(entries);
             e.close();
             if (!file.delete() && file.exists()) {
                 output.delete();
-                System.err.println("HistoryCache: cachefile exists, and I could not delete it.");
-                return ;
+                throw new IOException(
+                    "Cachefile exists, and I could not delete it.");
             }
             if (!output.renameTo(file)) {
-                System.err.println("HistoryCache: Failed to rename cache tmpfile!");
                 output.delete();
+                throw new IOException("Failed to rename cache tmpfile.");
             }
         }
     }
