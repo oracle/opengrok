@@ -24,6 +24,8 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,7 +35,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.Socket;
-import javax.imageio.stream.FileImageInputStream;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -139,8 +140,15 @@ public class MercurialRepository implements ExternalRepository {
                 socket.getOutputStream().flush();
                 
                 InputStream in = socket.getInputStream();
+                byte[] buffer = new byte[8192];
                 if (in.read() == '+' && in.read() != -1) {
-                    ret = in;
+                    int size;
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    while ((size = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, size);                        
+                    }
+                    
+                    ret = new ByteArrayInputStream(out.toByteArray());
                 }
             } catch (Exception ex) {
                 System.err.println("Failed to use Mercurial daemon: ");
@@ -200,8 +208,15 @@ public class MercurialRepository implements ExternalRepository {
                 socket.getOutputStream().flush();
                 
                 InputStream in = socket.getInputStream();
+                byte[] buffer = new byte[8192];
                 if (in.read() == '+' && in.read() != -1) {
-                    ret = new MercurialGet(in);
+                    int size;
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    while ((size = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, size);                        
+                    }
+                    
+                    ret = new MercurialGet(new ByteArrayInputStream(out.toByteArray()));
                 }
                 
             } catch (Exception ex) {
