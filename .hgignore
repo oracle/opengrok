@@ -5,6 +5,5 @@ tags
 TAGS
 build
 dist
-.hgcache
 opengrok.jar
 source.war
