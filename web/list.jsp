@@ -46,7 +46,7 @@ if(!isDir && ef != null) {
 if (valid) {
     if (isDir) {
 // If requesting a Directory listing -------------
-        DirectoryListing dl = new DirectoryListing(IgnoredNames.ignore, ef);
+        DirectoryListing dl = new DirectoryListing(ef);
         String[] files = resourceFile.list();
         if (files != null) {
             Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);

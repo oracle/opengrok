@@ -167,7 +167,7 @@ public class Indexer {
                         }
                     } else if (argv[i].equals("-i")) {
                         if(i+1 < argv.length) {
-                            IgnoredNames.ignore.add(argv[++i]);
+                            IgnoredNames.add(argv[++i]);
                         }
                     } else if (argv[i].equals("-S")) {
                         searchRepositories = true;

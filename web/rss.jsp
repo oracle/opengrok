@@ -57,7 +57,7 @@ String parentBasename = resourceFile.getParentFile().getName();
 if (resourcePath.length() < rawSource.length()
 || !resourcePath.startsWith(rawSource)
 || !resourceFile.canRead()
-|| IgnoredNames.ignore.contains(basename) || IgnoredNames.ignore.contains(parentBasename)) {
+|| IgnoredNames.ignore(basename) || IgnoredNames.ignore(parentBasename)) {
     valid = false;
     response.sendError(404);
     return;

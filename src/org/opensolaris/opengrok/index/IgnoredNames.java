@@ -27,6 +27,7 @@
  */
 package org.opensolaris.opengrok.index;
 
+import java.io.File;
 import java.util.*;
 import java.io.FileFilter;
 import org.apache.oro.io.GlobFilenameFilter;
@@ -43,7 +44,6 @@ public class IgnoredNames {
         "CVS",
         "RCS",
         "cscope.in.out",
-        "cscope.in.out",
         "cscope.out.po",
         "cscope.out.in",
         "cscope.po.out",
@@ -58,15 +58,46 @@ public class IgnoredNames {
         ".svn",
         ".hg",
         ".hgtags",
-        ".hgcache",
         ".ogcache",
+        "*~",
     };
-    public static Set<String> ignore = new HashSet<String>();
+    private static Set<String> ignore = new HashSet<String>();
+    private static List<FileFilter> patterns = new ArrayList<FileFilter>();
+    
     static {
         for(String ig : IGNORE) {
-            ignore.add(ig);
+            add(ig);
         }
     }
     
     public static FileFilter glob = new GlobFilenameFilter("*");
+    
+    public static void add(String pattern) {
+        if (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1) {
+            patterns.add(new GlobFilenameFilter(pattern));
+        } else {
+            ignore.add(pattern);
+        }
+    }
+    
+    public static boolean ignore(File file) {
+        boolean ret = false;
+        
+        if (ignore.contains(file.getName())) {
+            ret = true;
+        } else {
+            for (FileFilter fe : patterns) {
+                if (fe.accept(file)) {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+        
+        return ret;        
+    }
+    
+    public static boolean ignore(String name) {
+        return ignore(new File(name));
+    }
 }

@@ -152,7 +152,7 @@ class Index {
                 String[] allSubFiles = srcRootDir.list();
                 if (allSubFiles != null) {
                     for(String sub: allSubFiles) {
-                        if(!IgnoredNames.ignore.contains(sub)) subFiles.add(sub);
+                        if(!IgnoredNames.ignore(sub)) subFiles.add(sub);
                     }
                 }
             }
@@ -331,7 +331,7 @@ class Index {
         }
         //SizeandLines rets = new SizeandLines();
         if (file.isDirectory()) {
-            if(!IgnoredNames.ignore.contains(file.getName())) { // if a directory
+            if(!IgnoredNames.ignore(file)) { // if a directory
                 String[] files = file.list();
                 if (files != null && files.length > 0) {
                     //SizeandLines ret = new SizeandLines();
@@ -341,7 +341,7 @@ class Index {
                         (new File(xrefDir, path)).mkdirs();
                     }
                     for (int i = 0; i < files.length; i++) {
-                        if (!IgnoredNames.ignore.contains(files[i])) {
+                        if (!IgnoredNames.ignore(files[i])) {
                             indexDown(new File(file, files[i]), path);
                         }
                     }

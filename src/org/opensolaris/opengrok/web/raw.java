@@ -49,14 +49,13 @@ public class raw extends HttpServlet {
 	String resourcePath = rawSource + path;
 	File resourceFile = new File(resourcePath);
 	resourcePath = resourceFile.getAbsolutePath();
-	String basename = resourceFile.getName();
 
         long ret;
         
 	if (resourcePath.length() < rawSource.length()
 	|| !resourcePath.startsWith(rawSource)
 	|| !resourceFile.canRead()
-	|| IgnoredNames.ignore.contains(basename)
+	|| IgnoredNames.ignore(resourceFile)
 	|| resourceFile.isDirectory()) {
 	    ret = 0;
 	} else {
@@ -83,7 +82,7 @@ public class raw extends HttpServlet {
 	if (resourcePath.length() < rawSource.length()
 	|| !resourcePath.startsWith(rawSource)
 	|| !resourceFile.canRead()
-	|| IgnoredNames.ignore.contains(basename)) {
+	|| IgnoredNames.ignore(basename)) {
 	    response.sendError(404);
 	} else if (resourceFile.isDirectory()) {
 	    if(!reqURI.endsWith("/")) {

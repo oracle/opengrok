@@ -32,23 +32,21 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.util.HashSet;
+import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
  * Generates HTML listing of a Directory
  */
 public class DirectoryListing {
-    private Set<String> ignore;
     private EftarFileReader desc;
     private long now;
     
-    public DirectoryListing(Set<String> ignore) {
-	this.ignore = ignore;
+    public DirectoryListing() {
 	desc = null;
 	now =  (new Date()).getTime();
     }
     
-    public DirectoryListing(Set<String> ignore, EftarFileReader desc) {
-	this.ignore = ignore;
+    public DirectoryListing(EftarFileReader desc) {
 	this.desc = desc;
 	now =  (new Date()).getTime();
     }
@@ -95,7 +93,7 @@ public class DirectoryListing {
 	out.write("</tr>");
 	ArrayList<String> readMes = new ArrayList<String>();
 	for (int i = 0; i < files.length; i++) {
-	    if(!ignore.contains(files[i])) {
+	    if(!IgnoredNames.ignore(files[i])) {
 		File child = new File(dir, files[i]);
 		String count = "";
 		String size = null;
@@ -151,7 +149,7 @@ public class DirectoryListing {
     }
     
     public static void main(String args[]) { try {
-	DirectoryListing dl = new DirectoryListing(new HashSet<String>());
+	DirectoryListing dl = new DirectoryListing();
 	File tolist = new File(args[0]);
 	File outFile = new File(args[1]);
 	BufferedWriter out = new BufferedWriter(new FileWriter(outFile));

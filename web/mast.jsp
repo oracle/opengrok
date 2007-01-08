@@ -50,8 +50,8 @@ EftarFileReader ef = null;
 String parent = null;
 String parentBasename = resourceFile.getParentFile().getName();
 if(resourcePath.length() < rawSource.length()
-|| IgnoredNames.ignore.contains(basename)
-|| IgnoredNames.ignore.contains(parentBasename)
+|| IgnoredNames.ignore(basename)
+|| IgnoredNames.ignore(parentBasename)
 || !resourcePath.startsWith(rawSource)) {
     valid = false;
     response.sendError(404);
