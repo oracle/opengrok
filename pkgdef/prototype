@@ -35,7 +35,7 @@ d none opt/OSOLopengrok/lib 0755 bin bin
 f none opt/OSOLopengrok/lib/ant-tools.jar=lib/ant-tools.jar
 f none opt/OSOLopengrok/lib/bcel-5.1.jar=lib/bcel-5.1.jar
 f none opt/OSOLopengrok/lib/jakarta-oro-2.0.8.jar=lib/jakarta-oro-2.0.8.jar
-f none opt/OSOLopengrok/lib/lucene-1.4.3.jar=lib/lucene-1.4.3.jar
+f none opt/OSOLopengrok/lib/lucene-core-1.9.1.jar=lib/lucene-core-1.9.1.jar
 f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.diff.jar=lib/org.apache.commons.jrcs.diff.jar
 f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.rcs.jar=lib/org.apache.commons.jrcs.rcs.jar
 f none opt/OSOLopengrok/lib/speller.jar=lib/speller.jar
