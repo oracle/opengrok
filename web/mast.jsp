@@ -39,18 +39,15 @@ String rawSource = getServletContext().getInitParameter("SRC_ROOT");
 String resourcePath = rawSource + path;
 File resourceFile = new File(resourcePath);
 resourcePath = resourceFile.getAbsolutePath();
-boolean valid;
+boolean valid = true;
 boolean noHistory = true;
 String basename = resourceFile.getName();
-if("/".equals(path)) {
-    basename = "Cross Reference";
-}
 boolean isDir = false;
 EftarFileReader ef = null;
 String parent = null;
 String parentBasename = resourceFile.getParentFile().getName();
 if(resourcePath.length() < rawSource.length()
-|| IgnoredNames.ignore(basename)
+|| IgnoredNames.ignore(path)
 || IgnoredNames.ignore(parentBasename)
 || !resourcePath.startsWith(rawSource)) {
     valid = false;
@@ -72,6 +69,9 @@ if(resourcePath.length() < rawSource.length()
 } else {
     valid = true;
     path = resourcePath.substring(rawSource.length());
+    if ("".equals(path)) {
+        path = "/";
+    }
     if (File.separatorChar == '\\') {
         path = path.replace('\\','/');
     }
@@ -122,7 +122,7 @@ if(resourcePath.length() < rawSource.length()
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-    <title><%=basename%></title>
+    <title>Cross Reference: <%=path%></title>
     <link rel="icon" href="<%=context%>/img/icon.png" type="image/png"/>
     <link rel="stylesheet" type="text/css" href="<%=context%>/style.css"/>
     <link rel="stylesheet" type="text/css" href="<%=context%>/print.css" media="print" />
@@ -132,9 +132,9 @@ if(resourcePath.length() < rawSource.length()
 <form action="<%=context%>/search">
     <div id="header">
         <%= getServletContext().getInitParameter("HEADER") %>
-        <div id="pagetitle"><b id="filename"><%=basename%><%= isDir ? "/" : "" %></b><br/><%=dtag%></div>
+        <div id="pagetitle"><b id="filename">Cross Reference: <%=path%></b><br/><%=dtag%></div>
     </div>
-<div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%><%= isDir ? "/" : "" %></tt></div>    
+<div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>    
 <div id="bar"><a href="<%=context%>" id="home">Home</a> | 
 <%
 
@@ -152,7 +152,7 @@ if ((!isDir && noHistory) || servlet.startsWith("/hi")) {
 
 if(isDir) {
                 if(path.length() > 0) {
-	%><input type="checkbox" name="path" value="<%=path%>"/> only in <b><%=basename%></b><%
+	%><input type="checkbox" name="path" value="<%=path%>"/> only in <b><%=path%></b><%
   }
 } else {
 	%><input type="checkbox" name="path" value="<%=parent%>"/> only in <b><%=parentBasename%></b><%

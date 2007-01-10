@@ -69,8 +69,6 @@ class HistoryCache {
         List<HistoryEntry> entries = parser.parse(file, repository);
         
         time = System.currentTimeMillis() - time;
-        
-        // TODO need a global property to turn off caching
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.useHistoryCache()) {
             if (cache.exists() || (parser.isCacheable() && time > env.getHistoryReaderTimeLimit())) {
@@ -103,9 +101,17 @@ class HistoryCache {
         sb.append(".ogcache");
         
         try {
-            sb.append(file.getCanonicalPath().substring(env.getSourceRootPath().length()));
+            String add = file.getCanonicalPath().substring(env.getSourceRootPath().length());
+            if (add.length() == 0) {
+                add = File.separator;
+            }
+            sb.append(add);
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+        
+        if (file.isDirectory()) {
+            sb.append(".log");
         }
         
         return new File(sb.toString());

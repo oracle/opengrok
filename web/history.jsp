@@ -39,29 +39,18 @@ if (path.length() > 0 && valid) {
     String bugPage = getInitParameter("BUG_PAGE");
     Pattern bugPattern = Pattern.compile("\\b([12456789][0-9]{6})\\b");
     Format df = new SimpleDateFormat("dd-MMM-yyyy");
-    HistoryReader hr = null;
     Date tstart = new Date();
-    if(isDir) {
-        String[] apaths = request.getParameterValues("also");
-        String apath = path;
-        if (apaths!= null && apaths.length>0) {
-            StringBuilder paths = new StringBuilder(path);
-            for(int i=0; i< apaths.length; i++) {
-                paths.append(' ');
-                paths.append(apaths[i]);
-            }
-            apath = paths.toString();
-        }
-        hr = new DirectoryHistoryReader(getServletContext().getInitParameter("DATA_ROOT") + "/index", apath, getServletContext().getInitParameter("SRC_ROOT"));
-    } else {
-        File f = new File(rawSource + parent, basename);
-        hr = HistoryGuru.getInstance().getHistoryReader(f);
-    }
-    if (hr != null) {
+    File f = new File(rawSource + path);
+    HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
 
+    if (hr == null) {
+        response.sendError(404, "No history");
+        return;
+    }
+    
 %><form action="<%=context%>/diff<%=path%>">
 <table cellspacing="0" cellpadding="2" border="0" width="100%" class="src">
-<tr><td colspan="4"><span class="pagetitle">History log of <a href="<%= context +"/xref" + path %>"><%=basename%></a></span></td></tr>
+<tr><td colspan="4"><span class="pagetitle">History log of <a href="<%= context +"/xref" + path %>"><%=path%></a></span></td></tr>
 <tr class="thead"><%
 if(!isDir) {
 %><td>Revision</td><th><input type="submit" value=" Compare "/></th><%
@@ -96,12 +85,15 @@ if(userPage != null && ! userPage.equals("")) {
     bugPattern.matcher(Util.Htmlize(hr.getComment())).replaceAll("<a href=\"" + bugPage + "$1\">$1</a>")
     :  Util.Htmlize(hr.getComment())
 %><%
-ArrayList files = hr.getFiles();
+List<String> files = hr.getFiles();
 if(files != null) {%><br/><%
-    Iterator ifiles = files.iterator();
-    while(ifiles.hasNext()) {
-        String ifile = (String)ifiles.next();
-        String jfile = ifile.startsWith(path) ? ifile.substring(path.length()+1) : ifile;
+    for (String ifile : files) {
+        String jfile = ifile;
+        if ("/".equals(path)) {
+            jfile = ifile.substring(1);
+        } else if (ifile.startsWith(path)) {
+            jfile = ifile.substring(path.length()+1);
+        }
         %><a class="h" href="<%=context%>/xref<%=ifile%>"><%=jfile%></a><br/><%
     }
 }
@@ -113,9 +105,5 @@ if(files != null) {%><br/><%
             %><p><b>Note:</b> No associated file changes are available for revisions with strike-through numbers (eg. <strike>1.45</strike>)</p><%
         }
         %><p class="rssbadge"><a href="<%=context%>/rss<%=path%>"><img src="<%=context%>/img/rss.png" width="80" height="15" alt="RSS XML Feed" title="RSS XML Feed of latest changes"/></a></p><%
-    } else {
-        response.sendError(404, "No history");
-        return;
-    }
 }
 %><%@include file="foot.jsp"%>

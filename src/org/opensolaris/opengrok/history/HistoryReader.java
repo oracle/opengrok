@@ -135,8 +135,8 @@ public class HistoryReader extends Reader {
         }
     }
 
-    public ArrayList<String> getFiles() {
-        return null;
+    public List<String> getFiles() {
+        return current.getFiles();
     }
 
     private Reader createInternalReader() {

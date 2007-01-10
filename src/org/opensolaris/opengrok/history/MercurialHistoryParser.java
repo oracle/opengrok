@@ -33,6 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.StringTokenizer;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 // This is a rewrite of the class that was previously called
 // MercurialHistoryReader
@@ -43,16 +45,17 @@ import java.util.Date;
  * @author Trond Norbye
  */
 public class MercurialHistoryParser implements HistoryParser {
-
+    
     public List<HistoryEntry> parse(File file, ExternalRepository repos)
-        throws IOException, ParseException
-    {
-        InputStream is = ((MercurialRepository) repos).getHistoryStream(file);
+    throws IOException, ParseException {
+        MercurialRepository mrepos = (MercurialRepository)repos;
         SimpleDateFormat df =
-            new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
+                new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
         List<HistoryEntry> history = new ArrayList<HistoryEntry>();
+        InputStream is = mrepos.getHistoryStream(file);
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
-
+        String mydir = mrepos.getDirectory().getAbsolutePath() + File.separator;
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String s;
         boolean description = false;
         HistoryEntry entry = null;
@@ -78,7 +81,14 @@ public class MercurialHistoryParser implements HistoryParser {
                 description = false;
             } else if (s.startsWith("files:") && entry != null) {
                 description = false;
-                // ignore
+                String[] strings = s.split(" ");
+                for (int ii = 1; ii < strings.length; ++ii) {
+                    if (strings[ii].length() > 0) {
+                        File f = new File(mydir, strings[ii]);
+                        String name = f.getCanonicalPath().substring(env.getSourceRootPath().length());
+                        entry.addFile(name);
+                    }
+                }
             } else if (s.startsWith("summary:") && entry != null) {
                 entry.setMessage(s.substring("summary:".length()).trim());
                 description = false;
@@ -88,14 +98,14 @@ public class MercurialHistoryParser implements HistoryParser {
                 entry.appendMessage(s);
             }
         }
-
+        
         if (entry != null) {
             history.add(entry);
         }
-
+        
         return history;
     }
-
+    
     public boolean isCacheable() {
         return true;
     }

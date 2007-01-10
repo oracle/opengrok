@@ -121,7 +121,11 @@ public class MercurialRepository implements ExternalRepository {
     
     InputStream getHistoryStream(File file) {
         InputStream ret = null;
-        String filename = file.getAbsolutePath().substring(directoryName.length() + 1);
+        String abs = file.getAbsolutePath();
+        String filename = ""; 
+        if (abs.length() > directoryName.length()) {
+            filename = abs.substring(directoryName.length() + 1);
+        }
         
         if (daemon) {
             // Try to use daemon
@@ -166,7 +170,7 @@ public class MercurialRepository implements ExternalRepository {
         
         if (ret == null) {
             String argv[];
-            if (verbose) {
+            if (verbose || file.isDirectory()) {
                 argv = new String[] { command, "log", "-v", filename };
             } else {
                 argv = new String[] { command, "log", filename };
@@ -175,7 +179,6 @@ public class MercurialRepository implements ExternalRepository {
                 Process process =
                         Runtime.getRuntime().exec(argv, null, directory);
                 ret = process.getInputStream();
-                process.waitFor();
             } catch (Exception ex) {
                 System.err.println("An error occured while executing hg log:");
                 ex.printStackTrace(System.err);
@@ -240,7 +243,6 @@ public class MercurialRepository implements ExternalRepository {
                 Process process = Runtime.getRuntime().exec(argv, null, directory);
                 
                 ret = new MercurialGet(process.getInputStream());
-                process.waitFor();
             } catch (Exception exp) {
                 System.err.print("Failed to get history: " + exp.getClass().toString());
                 exp.printStackTrace();

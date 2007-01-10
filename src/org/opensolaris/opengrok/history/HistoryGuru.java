@@ -23,7 +23,7 @@
  */
 
 /*
- * ident	"@(#)HistoryGuru.java 1.2     06/02/22 SMI"
+ * ident        "@(#)HistoryGuru.java 1.2     06/02/22 SMI"
  */
 package org.opensolaris.opengrok.history;
 
@@ -152,6 +152,10 @@ public class HistoryGuru {
      * @return A HistorReader that may be used to read out history data for a named file
      */
     public HistoryReader getHistoryReader(File file) throws IOException {
+        if (file.isDirectory()) {
+            return getDirectoryHistoryReader(file);
+        }
+        
         Class<? extends HistoryParser> parser = null;
         ExternalRepository repos = null;
         
@@ -212,6 +216,36 @@ public class HistoryGuru {
         return null;
     }
     
+    private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
+        Class<? extends HistoryParser> parser = null;
+        ExternalRepository repos = getRepository(file.getAbsolutePath());
+         if (repos != null) {
+             parser = repos.getHistoryParser();
+         }
+
+        if (parser == null) {
+            // I did not find a match for the specified system. Use the default directory reader
+            parser = DirectoryHistoryParser.class;
+            repos = null;
+        }
+
+        if (parser != null) {
+            try {
+                return new HistoryReader(HistoryCache.get(file, parser, repos));
+            } catch (IOException ioe) {
+                throw ioe;
+            } catch (Exception e) {
+                e.printStackTrace();
+                IOException ioe =
+                    new IOException("Error while constructing HistoryReader");
+                ioe.initCause(e);
+                throw ioe;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Get a named revision of the specified file. Try to guess out the source
      * control system that is used.
@@ -222,7 +256,7 @@ public class HistoryGuru {
      * @throws java.io.IOException If an error occurs while reading out the version
      * @return An InputStream containing the named revision of the file.
      */
-    public InputStream guessGetRevision(String parent, String basename, String rev) throws IOException {
+    private InputStream guessGetRevision(String parent, String basename, String rev) throws IOException {
         InputStream in = null;
         File rcsfile = Util.getRCSFile(parent, basename);
         if (rcsfile != null) {

@@ -23,7 +23,9 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Collect all information of a given revision
@@ -36,10 +38,12 @@ public class HistoryEntry {
     private String author;
     private StringBuffer message;
     private boolean active;
+    private List<String> files;
     
     /** Creates a new instance of HistoryEntry */
     public HistoryEntry() {
         message = new StringBuffer();
+        files = new ArrayList<String>();
     }
     
     public HistoryEntry(String revision, Date date, String author,
@@ -99,6 +103,18 @@ public class HistoryEntry {
     public void appendMessage(String message) {
         this.message.append(message);
         this.message.append("\n");
+    }
+    
+    public void addFile(String file) {
+        files.add(file);
+    }
+    
+    public List<String> getFiles() {
+        return files;
+    }
+    
+    public void setFiles(List<String> files) {
+        this.files = files;
     }
     
     public String toString() {
