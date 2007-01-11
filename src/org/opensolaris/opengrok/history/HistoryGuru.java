@@ -390,17 +390,22 @@ public class HistoryGuru {
     public void addExternalRepositories(File[] files) {
         // Check if this directory contain a file named .hg
         for (int ii = 0; ii < files.length; ++ii) {
-            if (files[ii].getName().equalsIgnoreCase(".hg")) {
-                try {
-                    String s = files[ii].getParentFile().getCanonicalPath();
-                    System.out.println("Adding Mercurial repository: <" + s + ">");
-                    MercurialRepository rep = new MercurialRepository(s);
-                    addExternalRepository(rep, s);
-                    return ;
-                } catch (IOException exp) {
-                    System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                    System.err.println("Repository will be ignored...");
-                    exp.printStackTrace(System.err);
+            if (files[ii].isDirectory()) {
+                String name = files[ii].getName().toLowerCase();
+                if (name.equals(".hg")) {
+                    try {
+                        String s = files[ii].getParentFile().getCanonicalPath();
+                        System.out.println("Adding Mercurial repository: <" + s + ">");
+                        MercurialRepository rep = new MercurialRepository(s);
+                        addExternalRepository(rep, s);
+                        return ;
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }
+                } else if (name.equals(".svn") || name.equals("cvs") || name.equals("sccs")) {
+                    return;
                 }
             }
         }
