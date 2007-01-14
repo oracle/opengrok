@@ -138,7 +138,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
     p = true;
 }
 
-^\.(RS|RE)[^\n]*$ { out.write("\n");}
+^\.(RS|RE)[^\n]* { out.write("\n"); }
 
 ^\.so {out.write(".so ");}
 ^\.(EQ|in|sp|ne|rt|br|pn|ds|de|if|ig|el|ft|hy|ie|ll|ps|rm|ta|ti)[^\n]*\n {}
