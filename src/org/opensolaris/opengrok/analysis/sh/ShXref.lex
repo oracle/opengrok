@@ -57,8 +57,8 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
   public void write(Writer out) throws IOException {
   	this.out = out;
+        Util.readableLine(1, out);
 	yyline = 2;
-	out.write("<a class=\"l\" name=\"1\">      1 </a>");
 	while(yylex() != YYEOF) {
 	}
   }

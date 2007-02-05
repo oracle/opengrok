@@ -118,19 +118,12 @@ public class Util {
         }
     }
     
-/*    public static String simpleLine(int num) {
-        //return("\n<a name=\""+num + "\">" + num + "\t</a>");
-        return("\n<a  class=\"l\" name=\""+num + "\">" + (num < 10 ? "   " : (num < 100 ? "  " : (num < 1000? " " : ""))) + num + "    </a>");
-    }
- */
     public static void readableLine(int num, Writer out) throws IOException {
-/*		out.write("\n<a name=\"");
-                out.write(num);
-                out.write("\">");
-                out.write(num);
-                out.write("\t</a>");*/
         String snum = String.valueOf(num);
-        out.write("\n<a class=\"");
+        if (num > 1) {
+            out.write("\n");
+        }
+        out.write("<a class=\"");
         out.write((num % 10 == 0 ? "hl" : "l"));
         out.write("\" name=\"");
         out.write(snum);
