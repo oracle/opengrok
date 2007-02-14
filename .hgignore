@@ -7,3 +7,5 @@ build
 dist
 opengrok.jar
 source.war
+prj.el
+nbproject
