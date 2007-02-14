@@ -56,7 +56,7 @@ public class SCCSHistoryParser implements HistoryParser {
     DateFormat sccsDateFormat;
     Reader in;
 
-    public List<HistoryEntry> parse(File file, ExternalRepository repos)
+    public History parse(File file, ExternalRepository repos)
         throws IOException
     {
         in = new BufferedReader(new FileReader(Util.getSCCSFile(file)));
@@ -66,7 +66,7 @@ public class SCCSHistoryParser implements HistoryParser {
         field = 0;
         sccsDateFormat =  new SimpleDateFormat("yy/MM/dd");
 
-        List<HistoryEntry> history = new ArrayList<HistoryEntry>();
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         while (next()) {
             HistoryEntry entry = new HistoryEntry();
             entry.setRevision(getRevision());
@@ -74,11 +74,13 @@ public class SCCSHistoryParser implements HistoryParser {
             entry.setAuthor(getAuthor());
             entry.setMessage(getComment());
             entry.setActive(isActive());
-            history.add(entry);
+            entries.add(entry);
         }
 
         in.close();
 
+        History history = new History();
+        history.setHistoryEntries(entries);
         return history;
     }
 

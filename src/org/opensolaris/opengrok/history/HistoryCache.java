@@ -48,7 +48,7 @@ class HistoryCache {
      * @param repository The external repository to read the history from (can
      * be <code>null</code>)
      */
-    static List<HistoryEntry> get(File file,
+    static History get(File file,
             Class<? extends HistoryParser> parserClass,
             ExternalRepository repository)
             throws Exception {
@@ -66,7 +66,7 @@ class HistoryCache {
         long time = System.currentTimeMillis();
         
         HistoryParser parser = parserClass.newInstance();
-        List<HistoryEntry> entries = parser.parse(file, repository);
+        History history = parser.parse(file, repository);
         
         time = System.currentTimeMillis() - time;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -74,7 +74,7 @@ class HistoryCache {
             if (cache.exists() || (parser.isCacheable() && time > env.getHistoryReaderTimeLimit())) {
                 // retrieving the history takes too long, cache it!
                 try {
-                    writeCache(entries, cache);
+                    writeCache(history, cache);
                 } catch (Exception e) {
                     System.err.println("Error when writing cache file '" +
                             cache + "':");
@@ -83,7 +83,7 @@ class HistoryCache {
             }
         }
         
-        return entries;
+        return history;
     }
     
     /**
@@ -118,9 +118,9 @@ class HistoryCache {
     }
     
     /**
-     * Write history entries to a file.
+     * Write history to a file.
      */
-    private static void writeCache(List<HistoryEntry> entries, File file)
+    private static void writeCache(History history, File file)
     throws IOException {
         File dir = file.getParentFile();
         if (!dir.isDirectory()) {
@@ -142,7 +142,7 @@ class HistoryCache {
             File output = File.createTempFile("oghist", null, dir);
             XMLEncoder e = new XMLEncoder(
                     new BufferedOutputStream(new FileOutputStream(output)));
-            e.writeObject(entries);
+            e.writeObject(history);
             e.close();
             if (!file.delete() && file.exists()) {
                 output.delete();
@@ -157,19 +157,13 @@ class HistoryCache {
     }
     
     /**
-     * Read history entries from a file.
+     * Read history from a file.
      */
-    private static List<HistoryEntry> readCache(File file) throws IOException {
+    private static History readCache(File file) throws IOException {
         XMLDecoder d = new XMLDecoder(
                 new BufferedInputStream(new FileInputStream(file)));
         Object obj = d.readObject();
         d.close();
-        // We could cast obj directly to List<HistoryEntry>, but that would
-        // generate an unchecked cast warning. Copy the list instead.
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        for (Object o : (List) obj) {
-            entries.add((HistoryEntry) o);
-        }
-        return entries;
+        return (History) obj;
     }
 }

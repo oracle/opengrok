@@ -25,7 +25,6 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -38,23 +37,24 @@ public class DirectoryHistoryParser implements HistoryParser {
     public DirectoryHistoryParser() {
     }
     
-    public List<HistoryEntry> parse(File file, ExternalRepository repository) throws Exception {
+    public History parse(File file, ExternalRepository repository)
+            throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String filename = file.getCanonicalPath().substring(env.getSourceRootPath().length());
         HistoryReader hr = new DirectoryHistoryReader(filename);
         
-        List<HistoryEntry> ret = null;
-        if (hr != null) {
-            ret = new ArrayList<HistoryEntry>();
-            
-            while (hr.next()) {
-                HistoryEntry ent = new HistoryEntry(hr.getRevision(), hr.getDate(), hr.getAuthor(), hr.getComment(), hr.isActive());
-                ent.setFiles(hr.getFiles());
-                ret.add(ent);
-            }
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        while (hr.next()) {
+            HistoryEntry ent = new HistoryEntry(
+                hr.getRevision(), hr.getDate(), hr.getAuthor(),
+                hr.getComment(), hr.isActive());
+            ent.setFiles(hr.getFiles());
+            entries.add(ent);
         }
-        
-        return ret;
+
+        History history = new History();
+        history.setHistoryEntries(entries);
+        return history;
     }
     
     public boolean isCacheable() {

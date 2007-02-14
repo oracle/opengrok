@@ -25,7 +25,6 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.tigris.subversion.javahl.ClientException;
 import org.tigris.subversion.javahl.SVNClient;
@@ -42,13 +41,13 @@ import org.tigris.subversion.javahl.LogMessage;
  */
 public class SubversionHistoryParser implements HistoryParser {
 
-    public List<HistoryEntry> parse(File file, ExternalRepository repos)
+    public History parse(File file, ExternalRepository repos)
         throws IOException, ClientException
     {
         SVNClient client = new SVNClient();
         LogMessage[] messages =
             client.logMessages(file.getPath(), Revision.START, Revision.HEAD);
-        LinkedList<HistoryEntry> history = new LinkedList<HistoryEntry>();
+        LinkedList<HistoryEntry> entries = new LinkedList<HistoryEntry>();
         for (LogMessage msg : messages) {
             HistoryEntry entry = new HistoryEntry();
             entry.setRevision(msg.getRevision().toString());
@@ -56,8 +55,10 @@ public class SubversionHistoryParser implements HistoryParser {
             entry.setAuthor(msg.getAuthor());
             entry.setMessage(msg.getMessage());
             entry.setActive(true);
-            history.addFirst(entry);
+            entries.addFirst(entry);
         }
+        History history = new History();
+        history.setHistoryEntries(entries);
         return history;
     }
 

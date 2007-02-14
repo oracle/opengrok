@@ -31,7 +31,6 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
 import java.util.StringTokenizer;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -46,12 +45,12 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public class MercurialHistoryParser implements HistoryParser {
     
-    public List<HistoryEntry> parse(File file, ExternalRepository repos)
+    public History parse(File file, ExternalRepository repos)
     throws IOException, ParseException {
         MercurialRepository mrepos = (MercurialRepository)repos;
         SimpleDateFormat df =
                 new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
-        List<HistoryEntry> history = new ArrayList<HistoryEntry>();
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         InputStream is = mrepos.getHistoryStream(file);
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
         String mydir = mrepos.getDirectory().getAbsolutePath() + File.separator;
@@ -62,7 +61,7 @@ public class MercurialHistoryParser implements HistoryParser {
         while ((s = in.readLine()) != null) {
             if (s.startsWith("changeset:")) {
                 if (entry != null) {
-                    history.add(entry);
+                    entries.add(entry);
                 }
                 entry = new HistoryEntry();
                 entry.setActive(true);
@@ -100,9 +99,11 @@ public class MercurialHistoryParser implements HistoryParser {
         }
         
         if (entry != null) {
-            history.add(entry);
+            entries.add(entry);
         }
         
+        History history = new History();
+        history.setHistoryEntries(entries);
         return history;
     }
     

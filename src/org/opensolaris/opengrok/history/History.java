@@ -18,36 +18,36 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
 package org.opensolaris.opengrok.history;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 /**
- * Interface for parsers which read a history log and return an object
- * representing the history of the file.
+ * Class representing the history of a file.
  */
-interface HistoryParser {
-    /**
-     * Parse the history log for the given file.
-     *
-     * @param file the file
-     * @param repository the external repository to fetch the history from
-     * (could be null if no external repository is used)
-     * @return the history of the file
-     */
-    History parse(File file, ExternalRepository repository)
-        throws Exception;
-    /**
-     * Check whether the parsed history should be cached.
-     *
-     * @return <code>true</code> if the history should be cached
-     */
-    boolean isCacheable();
+public class History {
+    /** Entries in the log. */
+    private List<HistoryEntry> entries;
+    /** List of the last log entry for each line in the file. */
+    private List<HistoryEntry> annotation;
+
+    public void setHistoryEntries(List<HistoryEntry> entries) {
+        this.entries = entries;
+    }
+
+    public List<HistoryEntry> getHistoryEntries() {
+        return entries;
+    }
+
+    public void setAnnotation(List<HistoryEntry> annotation) {
+        this.annotation = annotation;
+    }
+
+    public List<HistoryEntry> getAnnotation() {
+        return annotation;
+    }
 }

@@ -57,8 +57,8 @@ public class HistoryReader extends Reader {
     HistoryReader() {
     }
 
-    HistoryReader(List<HistoryEntry> entries) {
-        this.entries = entries;
+    HistoryReader(History history) {
+        entries = history.getHistoryEntries();
         iterator = entries.iterator();
     }
     

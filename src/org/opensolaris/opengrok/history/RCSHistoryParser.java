@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class RCSHistoryParser implements HistoryParser {
 
-    public List<HistoryEntry> parse(File file, ExternalRepository repos)
+    public History parse(File file, ExternalRepository repos)
         throws IOException, ParseException
     {
         Archive archive = new Archive(Util.getRCSFile(file).getPath());
@@ -49,8 +49,11 @@ public class RCSHistoryParser implements HistoryParser {
         Node n = archive.findNode(ver);
         n = n.root();
 
-        List<HistoryEntry> history = new ArrayList<HistoryEntry>();
-        traverse(n, history);
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        traverse(n, entries);
+
+        History history = new History();
+        history.setHistoryEntries(entries);
         return history;
     }
 
