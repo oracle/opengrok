@@ -352,6 +352,11 @@ class Index {
                 err.println("Warning: ignored file " + file.getName());
                 return;
             }
+            
+            if (!file.isFile()) {
+                err.println("Warning: skipping file " + file.getName());
+                return;
+            }
            
             String path = parent + '/' + file.getName();
             if (uidIter != null) {
