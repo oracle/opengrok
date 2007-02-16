@@ -18,19 +18,22 @@
  */
 
 /*
- * Copyright 2006 Trond Norbye.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.MercurialRepository;
 
 /**
  * Populate the Mercurial Repositories
@@ -58,15 +61,15 @@ public final class WebappListener  implements ServletContextListener  {
         }
         
         String can = null;
-        try {            
-            can = file.getCanonicalPath();        
+        try {
+            can = file.getCanonicalPath();
         } catch (IOException ex) {
             ex.printStackTrace();
-        }        
+        }
         
         if (can == null) {
             System.err.println("OpenGrok: " + variable + " configuration error. Failed to get canonical name for " + value + " is not a directory.");
-            return null;            
+            return null;
         }
         
         return can;
@@ -74,39 +77,80 @@ public final class WebappListener  implements ServletContextListener  {
     
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
-        
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String value;
         
-        if ((value = getFileName(context, "SRC_ROOT", true)) == null) {
-            return;
-        }        
-        env.setSourceRoot(value);
-
-        if ((value = getFileName(context, "DATA_ROOT", true)) == null) {
-            return;
-        }        
-        env.setDataRoot(value);
-
-        String scanrepos = context.getInitParameter("SCAN_REPOS");
-        if (scanrepos != null && scanrepos.equalsIgnoreCase("true")) {
-            System.out.println("Scanning for repositories...");
-            final String source = env.getSourceRootPath();
-            if (source != null) {
-                Thread t = new Thread(new Runnable() {
-                    public void run() {
-                        HistoryGuru.getInstance().addExternalRepositories((new File(source)).listFiles());
-                    }
-                });
-                
-                t.setDaemon(true);
-                t.start();
+        String config = context.getInitParameter("CONFIGURATION");
+        if (config != null) {
+            try {
+                env.readConfiguration(new File(config));
+            } catch (IOException ex) {
+                System.err.println("OpenGrok Configuration error. Failed to read config file: ");
+                ex.printStackTrace();
             }
         } else {
-            System.out.println("Will not scan for external repositories...");
+            String value;
+            
+            if ((value = getFileName(context, "SRC_ROOT", true)) == null) {
+                return;
+            }
+            env.setSourceRoot(value);
+            
+            if ((value = getFileName(context, "DATA_ROOT", true)) == null) {
+                return;
+            }
+            env.setDataRoot(value);
+            
+            String scanrepos = context.getInitParameter("SCAN_REPOS");
+            if (scanrepos != null && scanrepos.equalsIgnoreCase("true")) {
+                final String source = env.getSourceRootPath();
+                if (source != null) {
+                    Thread t = new Thread(new Runnable() {
+                        public void run() {
+                            System.out.println("Scanning for repositories...");
+                            long start = System.currentTimeMillis();
+                            HistoryGuru.getInstance().addExternalRepositories(source);
+                            long stop = System.currentTimeMillis();
+                            System.out.println("Done searching for repositories: " + ((stop - start)/1000) + "s");
+                        }
+                    });
+                    
+                    t.setDaemon(true);
+                    t.start();
+                }
+            } else {
+                System.out.println("Will not scan for external repositories...");
+            }
+        }
+        
+        String address = context.getInitParameter("ConfigAddress");
+        if (address != null && address.length() > 0) {
+            System.out.println("Will listen for configuration on [" + address + "]");
+            String[] cfg = address.split(":");
+            if (cfg.length == 2) {
+                try {
+                    InetAddress host = InetAddress.getByName(cfg[0]);
+                    SocketAddress addr = new InetSocketAddress(InetAddress.getByName(cfg[0]), Integer.parseInt(cfg[1]));
+                    if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
+                        System.err.println("OpenGrok: Failed to start configuration listener thread");
+                    }
+                } catch (NumberFormatException ex) {
+                    System.err.println("OpenGrok: Failed to start configuration listener thread:");
+                    ex.printStackTrace();
+                } catch (UnknownHostException ex) {
+                    System.err.println("OpenGrok: Failed to start configuration listener thread:");
+                    ex.printStackTrace();
+                }
+            } else {
+                
+                for (int i = 0; i < cfg.length; ++i) {
+                    System.out.println("[" + cfg[i] + "]");
+                }
+            }
         }
     }
     
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
     }
 }
+

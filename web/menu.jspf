@@ -1,0 +1,62 @@
+<%-- 
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").  
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+
+--%><%@ page import="org.opensolaris.opengrok.configuration.Project,
+org.opensolaris.opengrok.web.Util" session="false" errorPage="error.jsp"%>
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+        <td valign="top"><br /> &nbsp;</td>
+        <td align="left" valign="middle">
+            <br/><form action="search" name="sbox">
+                <table cellpadding="2" border="0" cellspacing="0">
+                    <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td></tr>
+                    <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
+                    <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
+                    <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
+                    <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr><% 
+                    if (hasProjects) { %>
+                    <tr>
+                        <td align="right" valign="top"> Project </td>
+                        <td>
+                            <select class="q" name="project" size="<%=Math.min(5, env.getProjects().size())%>" multiple style="width: 300px"/>
+                                <%
+                                for (Project p : env.getProjects()) {
+                                %><option value="<%=Util.formQuoteEscape(p.getPath())%>"<%
+                                          String projectPath = p.getPath();                                          
+                                          for (String proj : project.split(" ")) {
+                                              if (proj.equals(projectPath)) {
+                                          %> selected<%
+                                                  break;
+                                              }
+                                           }
+                                          %>><%=Util.formQuoteEscape(p.getDescription())%></option>
+                                <%
+                                }
+                    %></select></td></tr><%
+                    }%>
+                    <tr><td></td><td>  &nbsp; <input class="submit" type="submit" value="Search"/> | 
+                            <input class="submit" onClick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "/>
+                    | <a href="help.html">Help</a></td></tr>
+                </table>
+            </form>
+        </td>
+    <td valign="top" align="right"></td></tr>
+</table>

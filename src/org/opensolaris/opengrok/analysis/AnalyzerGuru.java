@@ -42,6 +42,8 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
 import org.opensolaris.opengrok.analysis.archive.*;
 import org.opensolaris.opengrok.analysis.executables.*;
+import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.*;
 import org.opensolaris.opengrok.web.Util;
 
@@ -59,7 +61,7 @@ public class AnalyzerGuru {
      * If you write your own analyzer please register it here
      */
     private static ArrayList<Class<? extends FileAnalyzer>> analyzers =
-        new ArrayList<Class<? extends FileAnalyzer>>();
+            new ArrayList<Class<? extends FileAnalyzer>>();
     static {
         analyzers.add(IgnorantAnalyzer.class);
         analyzers.add(BZip2Analyzer.class);
@@ -79,10 +81,10 @@ public class AnalyzerGuru {
         analyzers.add(JavaAnalyzer.class);
         analyzers.add(LispAnalyzer.class);
     }
-
+    
     private static HashMap<Class<? extends FileAnalyzer>, FileAnalyzer>
             analyzerInstances =
-                new HashMap<Class<? extends FileAnalyzer>, FileAnalyzer>();
+            new HashMap<Class<? extends FileAnalyzer>, FileAnalyzer>();
     
     /**
      * Initializes an AnalyzerGuru
@@ -187,7 +189,18 @@ public class AnalyzerGuru {
         doc.add(org.apache.lucene.document.Field.Keyword("date", date));
         if(path != null) {
             doc.add(new org.apache.lucene.document.Field("path", path, true, true, true));
-        }
+            
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            if (env.hasProjects()) {
+                StringBuilder sb = new StringBuilder();
+                
+                for (Project proj : env.getProjects()) {
+                    if (path.indexOf(proj.getPath()) == 0) {
+                        doc.add(org.apache.lucene.document.Field.Text("project", proj.getPath()));
+                    }
+                }
+            }
+        }        
         FileAnalyzer fa = null;
         try {
             fa = getAnalyzer(in, path);
@@ -210,6 +223,7 @@ public class AnalyzerGuru {
             }
         }
         doc.removeField("fullpath");
+        
         return doc;
     }
     
@@ -239,7 +253,7 @@ public class AnalyzerGuru {
     }
     
     public static void writeXref(Class<? extends FileAnalyzer> a,
-                                 InputStream in, Writer out)
+            InputStream in, Writer out)
             throws IOException {
         if (a != null) {
             try {
@@ -306,7 +320,7 @@ public class AnalyzerGuru {
         int dotpos = path.lastIndexOf('.');
         if(dotpos >= 0) {
             Class<? extends FileAnalyzer> analyzer =
-                ext.get(path.substring(dotpos+1).toUpperCase());
+                    ext.get(path.substring(dotpos+1).toUpperCase());
             if (analyzer != null) {
                 //System.err.println(path.substring(dotpos+1).toUpperCase() + " = " + analyzer.getSimpleName());
                 return analyzer;
@@ -316,7 +330,7 @@ public class AnalyzerGuru {
     }
     
     public static Class<? extends FileAnalyzer> find(InputStream in)
-            throws IOException {
+    throws IOException {
         in.mark(8);
         byte[] content = new byte[8];
         int len = in.read(content);
@@ -328,12 +342,12 @@ public class AnalyzerGuru {
             for(Method matcher: matchers) {
                 try {
                     //System.out.println("USING = " + matcher.getName());
-
+                    
                     // cannot check conversion because of reflection
                     @SuppressWarnings("unchecked")
                     Class<? extends FileAnalyzer> c =
-                        (Class) matcher.invoke(null, content);
-
+                            (Class) matcher.invoke(null, content);
+                    
                     if (c != null) {
                         return c;
                     }

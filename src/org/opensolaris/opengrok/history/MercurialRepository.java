@@ -23,18 +23,14 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ConnectException;
-import java.net.Socket;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -46,8 +42,12 @@ public class MercurialRepository implements ExternalRepository {
     private String directoryName;
     private String command;
     private boolean verbose;
-    private boolean daemon;
     private boolean useCache;
+    
+    
+    public MercurialRepository() {
+        
+    }
     
     /**
      * Creates a new instance of MercurialRepository
@@ -56,42 +56,7 @@ public class MercurialRepository implements ExternalRepository {
         this.directory = new File(directory);
         directoryName = this.directory.getAbsolutePath();
         command = System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
-        daemon = false;
         useCache = RuntimeEnvironment.getInstance().useHistoryCache();
-        Socket sock = null;
-        try {
-            sock = new Socket("localhost", 4242);
-            OutputStream out = sock.getOutputStream();
-            InputStream in = sock.getInputStream();
-            out.write(("verify " + directory + "\n").getBytes());
-            out.flush();
-            int ret = in.read();
-            
-            if (ret == '+') {
-                System.out.println("Using daemon");
-                daemon = true;
-            } else {
-                System.out.println("Not using daemon... " + ret);
-            }
-        } catch (IOException ex) {
-            if (ex instanceof ConnectException) {
-                System.err.println("No Mercurial cache daemon available at localhost:4242");
-            } else {
-                System.err.println("Failed to access Mercurial cache daemon");
-                ex.printStackTrace(System.err);
-            }
-        } finally {
-            try {
-                if (sock != null) {
-                    sock.close();
-                }
-            } catch (Exception e) {
-                ;
-            }
-        }
-        if (daemon) {
-            System.out.println("Using Mercurial cache daemon");
-        }
     }
     
     public void setCommand(String command) {
@@ -100,15 +65,6 @@ public class MercurialRepository implements ExternalRepository {
     
     public String getCommand() {
         return command;
-    }
-
-    public void setDirectory(File directory) {
-        this.directory = directory;
-        directoryName = directory.getAbsolutePath();
-    }
-    
-    public File getDirectory() {
-        return directory;
     }
     
     public boolean isVerbose() {
@@ -122,68 +78,25 @@ public class MercurialRepository implements ExternalRepository {
     InputStream getHistoryStream(File file) {
         InputStream ret = null;
         String abs = file.getAbsolutePath();
-        String filename = ""; 
+        String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
         
-        if (daemon) {
-            // Try to use daemon
-            Socket socket = null;
-            
-            try {
-                StringBuilder command = new StringBuilder();
-                command.append("log ");
-                command.append(filename);
-                command.append(" ");
-                command.append(directoryName);
-                command.append("\n");
-                
-                socket = new Socket("localhost", 4242);
-                socket.getOutputStream().write(command.toString().getBytes());
-                socket.getOutputStream().flush();
-                
-                InputStream in = socket.getInputStream();
-                byte[] buffer = new byte[8192];
-                if (in.read() == '+' && in.read() != -1) {
-                    int size;
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    while ((size = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, size);                        
-                    }
-                    
-                    ret = new ByteArrayInputStream(out.toByteArray());
-                }
-            } catch (Exception ex) {
-                System.err.println("Failed to use Mercurial daemon: ");
-                ex.printStackTrace(System.err);
-            } finally {
-                try {
-                    if (socket != null) {
-                        socket.close();
-                    }
-                } catch (Exception e) {
-                    ;
-                }
-            }
+        String argv[];
+        if (verbose || file.isDirectory()) {
+            argv = new String[] { command, "log", "-v", filename };
+        } else {
+            argv = new String[] { command, "log", filename };
         }
-        
-        if (ret == null) {
-            String argv[];
-            if (verbose || file.isDirectory()) {
-                argv = new String[] { command, "log", "-v", filename };
-            } else {
-                argv = new String[] { command, "log", filename };
-            }
-            try {
-                Process process =
-                        Runtime.getRuntime().exec(argv, null, directory);
-                ret = process.getInputStream();
-            } catch (Exception ex) {
-                System.err.println("An error occured while executing hg log:");
-                ex.printStackTrace(System.err);
-                ret = null;
-            }
+        try {
+            Process process =
+                    Runtime.getRuntime().exec(argv, null, directory);
+            ret = process.getInputStream();
+        } catch (Exception ex) {
+            System.err.println("An error occured while executing hg log:");
+            ex.printStackTrace(System.err);
+            ret = null;
         }
         
         return ret;
@@ -192,61 +105,15 @@ public class MercurialRepository implements ExternalRepository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         MercurialGet ret = null;
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
-        if (daemon) {
-            // Try to use daemon
-            Socket socket = null;
-            
-            try {
-                StringBuilder command = new StringBuilder();
-                command.append("get ");
-                command.append(rev);
-                command.append(" ");
-                command.append(filename);
-                command.append(" ");
-                command.append(directoryName);
-                command.append("\n");
-                
-                socket = new Socket("localhost", 4242);
-                socket.getOutputStream().write(command.toString().getBytes());
-                socket.getOutputStream().flush();
-                
-                InputStream in = socket.getInputStream();
-                byte[] buffer = new byte[8192];
-                if (in.read() == '+' && in.read() != -1) {
-                    int size;
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    while ((size = in.read(buffer)) != -1) {
-                        out.write(buffer, 0, size);                        
-                    }
-                    
-                    ret = new MercurialGet(new ByteArrayInputStream(out.toByteArray()));
-                }
-                
-            } catch (Exception ex) {
-                System.err.println("Failed to use Mercurial daemon: ");
-                ex.printStackTrace(System.err);
-            } finally {
-                try {
-                    if (socket != null) {
-                        socket.close();
-                    }
-                } catch (Exception e) {
-                    ;
-                }
-            }
-        }
         
-        if (ret == null) {
-            // Use external process!!!
-            try {
-                String argv[] = { command, "cat", "-r", rev, filename };
-                Process process = Runtime.getRuntime().exec(argv, null, directory);
-                
-                ret = new MercurialGet(process.getInputStream());
-            } catch (Exception exp) {
-                System.err.print("Failed to get history: " + exp.getClass().toString());
-                exp.printStackTrace();
-            }
+        try {
+            String argv[] = { command, "cat", "-r", rev, filename };
+            Process process = Runtime.getRuntime().exec(argv, null, directory);
+            
+            ret = new MercurialGet(process.getInputStream());
+        } catch (Exception exp) {
+            System.err.print("Failed to get history: " + exp.getClass().toString());
+            exp.printStackTrace();
         }
         
         return ret;
@@ -255,4 +122,44 @@ public class MercurialRepository implements ExternalRepository {
     public Class<? extends HistoryParser> getHistoryParser() {
         return MercurialHistoryParser.class;
     }
+    
+    public String getDirectoryName() {
+        return directoryName;
+    }
+    
+    public void setDirectoryName(String directoryName) {
+        this.directoryName = directoryName;
+        this.directory = new File(this.directoryName);
+    }
+    
+    public void createCache() throws IOException, ParseException {
+        MercurialHistoryParser p = new MercurialHistoryParser();
+        System.out.println("Update Mercurial History Cache for " + directory);
+        System.out.flush();
+        History history = p.parse(directory, this);
+        if (history != null && history.getHistoryEntries() != null) {
+            HashMap<String, ArrayList<HistoryEntry>> map = new HashMap<String, ArrayList<HistoryEntry>>();
+            for (HistoryEntry e : history.getHistoryEntries()) {
+                for (String s : e.getFiles()) {
+                    ArrayList<HistoryEntry> list = map.get(s);
+                    if (list == null) {
+                        list = new ArrayList<HistoryEntry>();
+                        list.add(e);
+                        map.put(s, list);
+                    } else {
+                        list.add(e);
+                    }
+                }
+            }
+            
+            for (Map.Entry<String, ArrayList<HistoryEntry>> e : map.entrySet()) {
+                for (HistoryEntry ent : e.getValue()) {
+                    ent.strip();
+                }
+                HistoryCache.writeCacheFile(e.getKey(), e.getValue());
+            }
+        }
+    }
 }
+
+

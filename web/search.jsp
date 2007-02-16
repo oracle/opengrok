@@ -28,6 +28,7 @@ java.util.Hashtable,
 java.util.Vector,
 java.util.Date,
 java.util.ArrayList,
+java.util.List,
 java.lang.*,
 java.io.*,
 java.io.StringReader,
@@ -36,6 +37,7 @@ org.opensolaris.opengrok.search.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
+org.opensolaris.opengrok.configuration.*,
 org.apache.lucene.spell.*,
 org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
@@ -43,13 +45,17 @@ org.apache.lucene.index.*,
 org.apache.lucene.search.*,
 org.apache.lucene.queryParser.*"
 %><%@ page session="false" %><%@ page errorPage="error.jsp" %><%
-
 Date starttime = new Date();
 String q    = request.getParameter("q");
 String defs = request.getParameter("defs");
 String refs = request.getParameter("refs");
 String hist = request.getParameter("hist");
 String path = request.getParameter("path");
+
+%>
+<%@ include file="projects.jspf" %>
+<%
+
 Hits hits = null;
 String errorMsg = null;
 String context = request.getContextPath();
@@ -59,6 +65,7 @@ if( defs != null && defs.equals("")) defs = null;
 if( refs != null && refs.equals("")) refs = null;
 if( hist != null && hist.equals("")) hist = null;
 if( path != null && path.equals("")) path = null;
+if (project == null) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
     Searcher searcher = null;		    //the searcher used to open/search the index
@@ -73,7 +80,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     String qstr = "";
     String result = "";
     try {
-        String DATA_ROOT = getServletContext().getInitParameter("DATA_ROOT");
+        String DATA_ROOT = env.getDataRootPath();
         if(DATA_ROOT.equals("")) {
             throw new Exception("DATA_ROOT parameter is not configured in web.xml!");
         }
@@ -91,11 +98,55 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             if(start < 0 ) start = 0;
         } catch (Exception e) {  }
         
-        qstr =   (q == null ? "" : q ) +
-                (defs == null ? "" : " defs:(" + defs+")") +
-                (refs == null ? "" : " refs:(" + refs+")") +
-                (path == null ? "" : " path:(" + path+")")  +
-                (hist == null ? "" : " hist:(" + hist+")");
+        StringBuilder sb = new StringBuilder();
+        if (q != null) {
+            sb.append(q);
+        }
+
+        if (defs != null) {
+            sb.append(" defs:(");
+            sb.append(defs);
+            sb.append(")");
+        }
+        
+        if (refs != null) {
+            sb.append(" refs:(");
+            sb.append(refs);
+            sb.append(")");
+        }
+
+        if (path != null) {
+            sb.append(" path:(");
+            sb.append(path);
+            sb.append(")");
+        }
+
+        if (hist != null) {
+            sb.append(" hist:(");
+            sb.append(hist);
+            sb.append(")");
+        }
+        
+        if (project != null) {
+            sb.append(" (");
+
+            boolean first = true;
+            for (String s : project.split(" ")) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(" OR ");
+                }
+                sb.append("project:(");
+                sb.append(s);
+                sb.append(")");
+            }
+
+            sb.append(")");
+        }
+        
+        qstr = sb.toString();
+                                
         QueryParser qparser = new QueryParser("full", analyzer);
         qparser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
         query = qparser.parse(qstr); //parse the
@@ -136,24 +187,41 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     </div>
 <div id="Masthead"></div>
 <div id="bar">
-<table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <%@ include file="menu.jspf"%>
+<!-- table cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
     <td valign="top"><br /> &nbsp;</td>
     <td align="left" valign="middle">
         <br/><form action="search" name="sbox">
-        <table cellpadding="2" border="0" cellspacing="0">
-            <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" value="<%= (q == null ? "" : Util.formQuoteEscape(q))%>"/></td></tr>
-            <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" value="<%= (defs == null ? "" : Util.formQuoteEscape(defs))%>"/></td></tr>
-            <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" value="<%=(refs == null ? "" : Util.formQuoteEscape(refs))%>"/></td></tr>
-            <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" value="<%=(path == null ? "" : Util.formQuoteEscape(path))%>"/></td></tr>
-            <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" value="<%=(hist == null ? "" : Util.formQuoteEscape(hist))%>"/></td></tr>
+                <table cellpadding="2" border="0" cellspacing="0">
+                    <tr valign="top">
+                        <td>
+                            <table cellpadding="2" border="0" cellspacing="0">
+                                <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td></tr>
+                                <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
+                                <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
+                                <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
+                                <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
+                            </table>
+                        </td>
+                        <%         if (hasProjects) { %>
+                        <td>
+                            Project:<br>
+                            <select class="q" name="project" size="6" multiple="true" style="width: 300px">
+                                <%                for (Project p : env.getProjects()) {
+                                %><option value="<%=Util.formQuoteEscape(p.getPath())%>"<%=p.getPath().equals(project) ? " selected" : ""%>><%=Util.formQuoteEscape(p.getDescription())%></option><%
+                                } %>
+                            </select>
+                        </td>
+                        <%         } %>                                    
+                    </tr>
             <tr><td></td><td>  &nbsp; <input class="submit" type="submit" value="Search"/> | <input class="submit"
             onClick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "
             />  | <a href="help.html">Help</a></td></tr>
         </table></form>
     </td>
     <td valign="top" align="right"></td></tr>
-</table>
+</table -->
 </div>
 <div id="results">
 <%
@@ -161,7 +229,7 @@ if( hits == null || errorMsg != null) {
 	    	%><%=errorMsg%><%
             } else if (hits.length() == 0) {
                 
-                String ngramIndex = getServletContext().getInitParameter("DATA_ROOT") + "/spellIndex";
+                String ngramIndex = env.getDataRootPath() + "/spellIndex";
                 if (ngramIndex != null && (new
                         File(ngramIndex+"/segments")).exists()) {
                     Date sstart = new Date();
@@ -290,7 +358,7 @@ if( hits == null || errorMsg != null) {
                 }
                 EftarFileReader ef = null;
                 try{
-                    ef = new EftarFileReader(getServletContext().getInitParameter("DATA_ROOT") + "/index/dtags.eftar");
+                    ef = new EftarFileReader(env.getDataRootPath() + "/index/dtags.eftar");
                 } catch (Exception e) {
                 }
                 Results.prettyPrintHTML(hits, start, start+thispage,
@@ -298,8 +366,8 @@ if( hits == null || errorMsg != null) {
                         sourceContext, historyContext, summer,
                         context + "/xref",
                         context + "/more",
-                        getServletContext().getInitParameter("SRC_ROOT"),
-                        getServletContext().getInitParameter("DATA_ROOT"),
+                        env.getSourceRootPath(),
+                        env.getDataRootPath(),
                         ef);
                 if(ef != null) {
                     try{
@@ -317,6 +385,6 @@ if( hits == null || errorMsg != null) {
     if (ireader != null)
         ireader.close();
 } else { // Entry page show the map
-    response.sendRedirect(context + "/index.html");
+    response.sendRedirect(context + "/index.jsp");
 }
 %>

@@ -1,0 +1,86 @@
+<%-- 
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").  
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+
+--%><%@ page import="org.opensolaris.opengrok.configuration.*,
+java.util.List" session="false" errorPage="error.jsp" %><%
+boolean hasProjects = false;
+String project = null;
+List<Project> projects;
+RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+env.register();
+
+if (env.hasProjects()) {
+    hasProjects = true;
+    projects = env.getProjects();
+    
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("OpenGrok/project")) {
+                project = cookie.getValue();
+                break;
+            }
+        }
+    }
+    
+// see if a new parameter is passed...
+    String p[] = request.getParameterValues("project");
+    if (p != null) {
+        StringBuilder sb = new StringBuilder();
+        for (String s : p) {
+            sb.append(s);
+            sb.append(" ");
+        }
+        project = sb.toString().trim();
+    }
+    
+// see that this is a valid project..
+    if (project != null) {
+        StringBuilder sb = new StringBuilder();
+        for (String aproj : project.split(" ")) {
+            boolean valid = false;
+            for (Project proj : projects) {
+                if (proj.getPath().equalsIgnoreCase(aproj)) {
+                    valid = true;
+                    break;
+                }
+            }
+            if (valid) {
+                sb.append(aproj);
+                sb.append(" ");
+            }
+        }
+        if (sb.length() == 0) {
+            project = "";
+        } else {
+            project = sb.toString().trim();
+        }
+    } else {
+        project = "";
+    }
+    
+// update the cookie
+    Cookie cookie = new Cookie("OpenGrok/project", project);
+    response.addCookie(cookie);
+} else {
+    project = "";
+}
+%>

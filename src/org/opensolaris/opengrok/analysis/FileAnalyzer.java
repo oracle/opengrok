@@ -81,11 +81,11 @@ public class FileAnalyzer extends Analyzer {
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
-	if("path".equals(fieldName)) {
+	if ("path".equals(fieldName) || "project".equals(fieldName)) {
 	    return new PathTokenizer(reader);
 	} else if("hist".equals(fieldName)) {
 	    return hista.tokenStream(fieldName, reader);
-	}
+        }
 	return null;
     }
     

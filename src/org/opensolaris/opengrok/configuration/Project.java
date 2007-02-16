@@ -18,22 +18,41 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-package org.opensolaris.opengrok.history;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
+package org.opensolaris.opengrok.configuration;
 
 /**
- * An interface for an external repository
  *
  * @author Trond Norbye
  */
-public interface ExternalRepository {
-    public Class<? extends HistoryParser> getHistoryParser();
-    public InputStream getHistoryGet(String parent, String basename, String rev);
-    public void createCache() throws IOException, ParseException;
+public class Project {
+    private String path;
+    private String description;
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public String getPath() {
+        return path;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    public void setPath(String path) {
+        this.path = path;
+    }
+    
+    /** Creates a new instance of Project */
+    public Project() {
+    }
+    
+    public Project(String description, String path) {
+        this.description = description;
+        this.path = path;
+    }
 }

@@ -52,7 +52,7 @@ if (valid) {
             Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
             ArrayList readMes = dl.listTo(resourceFile, out, path, files);
             if(readMes != null && readMes.size() > 0) {
-                File xdir = new File(getServletContext().getInitParameter("DATA_ROOT") + "/xref" + path);
+                File xdir = new File(environment.getDataRootPath() + "/xref" + path);
                 if(xdir.exists() && xdir.isDirectory()) {
                     char[] buf = new char[8192];
                     for(int i = 0; i< readMes.size(); i++) {
@@ -98,7 +98,6 @@ if (valid) {
 		%><div id="src"><span class="pagetitle"><%=basename%> revision <%=rev%> </span><pre>
 <%
 if (g == Genre.PLAIN) {
-    System.setProperty("urlPrefix", context+"/s?");
     AnalyzerGuru.writeXref(a, in, out);
 } else if (g == Genre.IMAGE) {
 			%><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
@@ -135,7 +134,7 @@ if (g == Genre.PLAIN) {
     } else {
 // requesting cross referenced file -------------
         
-        String xrefSource = getServletContext().getInitParameter("DATA_ROOT") + "/xref";
+        String xrefSource = environment.getSourceRootPath() + "/xref";
         String resourceXFile = xrefSource + path;
         File xrefFile = new File(resourceXFile);
         if(xrefFile.exists()) {
@@ -167,7 +166,6 @@ if (g == Genre.PLAIN) {
                 }
             } else if(g == Genre.PLAIN) {
             %><div id="src"><pre><%
-            System.setProperty("urlPrefix", context+"/s?");
             AnalyzerGuru.writeXref(a, bin, out);
             %></pre></div><%
             } else {

@@ -167,7 +167,11 @@ public class Util {
         }
         return sb.toString();
     }
+    
     public static String formQuoteEscape(String q) {
+        if (q == null) {
+            return "";
+        }
         StringBuilder sb = new StringBuilder();
         char c;
         for(int i=0; i < q.length() ; i++) {

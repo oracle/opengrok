@@ -23,6 +23,7 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,7 +48,7 @@ public class HistoryEntry {
     }
     
     public HistoryEntry(String revision, Date date, String author,
-                        String message, boolean active) {
+            String message, boolean active) {
         this.revision = revision;
         this.date = date;
         this.author = author;
@@ -58,44 +59,44 @@ public class HistoryEntry {
     public String getLine() {
         return revision + " " + date + " " + author + " " + message + "\n";
     }
-
+    
     public String getAuthor() {
         return author;
     }
-
+    
     public Date getDate() {
         return date;
     }
-
+    
     public String getMessage() {
         return message.toString().trim();
     }
-
+    
     public String getRevision() {
         return revision;
     }
-
+    
     public void setAuthor(String author) {
         this.author = author;
     }
-
+    
     public void setDate(Date date) {
         this.date = date;
     }
-
+    
     public boolean isActive() {
         return active;
     }
-
+    
     public void setActive(boolean active) {
         this.active = active;
     }
-
+    
     public void setMessage(String message) {
         this.message.setLength(0);
         this.message.append(message);
     }
-
+    
     public void setRevision(String revision) {
         this.revision = revision;
     }
@@ -119,5 +120,16 @@ public class HistoryEntry {
     
     public String toString() {
         return getLine();
+    }
+    
+    /**
+     * Remove "unneeded" info such as multiline history and files list
+     */
+    public void strip() {
+        int idx = message.indexOf("\n");
+        if (idx != -1) {
+            message.setLength(idx);
+        }
+        files.clear();
     }
 }

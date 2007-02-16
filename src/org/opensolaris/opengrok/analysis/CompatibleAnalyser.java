@@ -49,11 +49,11 @@ public class CompatibleAnalyser extends Analyzer {
             return new PlainSymbolTokenizer(reader);
         } else if (fieldName.equals("defs")) {
             return new PlainSymbolTokenizer(reader);
-        } else if (fieldName.equals("path")) {
+        } else if (fieldName.equals("path") || fieldName.equals("project")) {
             return pather.tokenStream(fieldName, reader);
         } else if (fieldName.equals("hist")) {
             return historer.tokenStream(fieldName, reader);
-        }
+        } 
         return new PlainFullTokenizer(reader);
     }
 }

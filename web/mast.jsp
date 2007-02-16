@@ -27,7 +27,8 @@ javax.servlet.http.*,
 java.util.*,
 java.io.*,
 java.text.*,
-org.opensolaris.opengrok.index.*
+org.opensolaris.opengrok.index.*,
+org.opensolaris.opengrok.configuration.*
 "
 %><%@ page session="false" %><%@ page errorPage="error.jsp"%><%
 String context = request.getContextPath();
@@ -35,7 +36,9 @@ String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if (path == null) path = "";
-String rawSource = getServletContext().getInitParameter("SRC_ROOT");
+RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
+environment.register();
+String rawSource = environment.getSourceRootPath();
 String resourcePath = rawSource + path;
 File resourceFile = new File(resourcePath);
 resourcePath = resourceFile.getAbsolutePath();
@@ -101,7 +104,7 @@ if(resourcePath.length() < rawSource.length()
             parentBasename = pLastSlash != -1 ? parent.substring(pLastSlash+1) : parent;
             noHistory = !(isDir || HistoryGuru.getInstance().hasHistory(rawSource + "/" + parent));
             try{
-                ef = new EftarFileReader(getServletContext().getInitParameter("DATA_ROOT") + "/index/dtags.eftar");
+                ef = new EftarFileReader(environment.getDataRootPath() + "/index/dtags.eftar");
                 dtag = ef.get(path);
                 if(servlet.startsWith("/xr")) {
                 } else {

@@ -26,9 +26,12 @@ package org.opensolaris.opengrok.history;
 
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
@@ -98,7 +101,7 @@ class HistoryCache {
         StringBuilder sb = new StringBuilder();
         sb.append(env.getDataRootPath());
         sb.append(File.separatorChar);
-        sb.append(".ogcache");
+        sb.append("historycache");
         
         try {
             String add = file.getCanonicalPath().substring(env.getSourceRootPath().length());
@@ -110,9 +113,7 @@ class HistoryCache {
             ex.printStackTrace();
         }
         
-        if (file.isDirectory()) {
-            sb.append(".log");
-        }
+        sb.append(".log");
         
         return new File(sb.toString());
     }
@@ -126,7 +127,7 @@ class HistoryCache {
         if (!dir.isDirectory()) {
             if (!dir.mkdirs()) {
                 throw new IOException(
-                    "Unable to create directory '" + dir + "'.");
+                        "Unable to create directory '" + dir + "'.");
             }
         }
         
@@ -147,7 +148,7 @@ class HistoryCache {
             if (!file.delete() && file.exists()) {
                 output.delete();
                 throw new IOException(
-                    "Cachefile exists, and I could not delete it.");
+                        "Cachefile exists, and I could not delete it.");
             }
             if (!output.renameTo(file)) {
                 output.delete();
@@ -165,5 +166,29 @@ class HistoryCache {
         Object obj = d.readObject();
         d.close();
         return (History) obj;
+    }
+    
+    protected static void writeCacheFile(String name, List<HistoryEntry> list) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append(RuntimeEnvironment.getInstance().getDataRootPath());
+        sb.append(File.separatorChar);
+        sb.append("historycache");
+        sb.append(File.separatorChar);
+        sb.append(name);
+        sb.append(".log");
+        
+        File file = new File(sb.toString());
+        File dir = file.getParentFile();
+        if (!dir.isDirectory()) {
+            if (!dir.mkdirs()) {
+                throw new IOException(
+                        "Unable to create directory '" + dir + "'.");
+            }
+        }
+
+        XMLEncoder e = new XMLEncoder(
+                new BufferedOutputStream(new FileOutputStream(file)));
+        e.writeObject(list);
+        e.close();
     }
 }

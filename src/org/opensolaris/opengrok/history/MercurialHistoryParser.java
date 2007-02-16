@@ -53,7 +53,7 @@ public class MercurialHistoryParser implements HistoryParser {
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         InputStream is = mrepos.getHistoryStream(file);
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        String mydir = mrepos.getDirectory().getAbsolutePath() + File.separator;
+        String mydir = mrepos.getDirectoryName() + File.separator;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String s;
         boolean description = false;

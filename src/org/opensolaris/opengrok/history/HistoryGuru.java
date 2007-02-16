@@ -28,8 +28,11 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -83,7 +86,6 @@ public class HistoryGuru {
     private HistoryGuru() {
         svnAvailable = false;
         previousFile = UNKNOWN;
-        externalRepositories = new HashMap<String, ExternalRepository>();
     }
     
     /**
@@ -387,7 +389,7 @@ public class HistoryGuru {
         }
     }
     
-    public void addExternalRepositories(File[] files) {
+    private void addExternalRepositories(File[] files, Map<String, ExternalRepository> repos) {
         // Check if this directory contain a file named .hg
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
@@ -396,8 +398,8 @@ public class HistoryGuru {
                     try {
                         String s = files[ii].getParentFile().getCanonicalPath();
                         System.out.println("Adding Mercurial repository: <" + s + ">");
-                        MercurialRepository rep = new MercurialRepository(s);
-                        addExternalRepository(rep, s);
+                        MercurialRepository rep = new MercurialRepository(s);                        
+                        addExternalRepository(rep, s, repos);
                         return ;
                     } catch (IOException exp) {
                         System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
@@ -413,19 +415,28 @@ public class HistoryGuru {
         // Nope, search it's sub-dirs
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
-                addExternalRepositories(files[ii].listFiles());
+                addExternalRepositories(files[ii].listFiles(), repos);
             }
         }
     }
     
-    public void addExternalRepository(ExternalRepository rep, String path) {
-        externalRepositories.put(path, rep);
+    private void addExternalRepository(ExternalRepository rep, String path, Map<String, ExternalRepository> repos) {
+        repos.put(path, rep);
     }
     
+    public void addExternalRepositories(String dir) {
+        Map<String, ExternalRepository> repos = new HashMap<String, ExternalRepository>();
+        addExternalRepositories((new File(dir)).listFiles(), repos);
+        RuntimeEnvironment.getInstance().setRepositories(repos);
+    }
+
     private ExternalRepository getRepository(String path) {
         ExternalRepository ret = null;
+        
+        Map<String, ExternalRepository> repos = RuntimeEnvironment.getInstance().getRepositories();
+        
         while (path != null) {
-            ExternalRepository r = externalRepositories.get(path);
+            ExternalRepository r = repos.get(path);
             if (r != null) {
                 ret = r;
                 break;
@@ -457,5 +468,4 @@ public class HistoryGuru {
         return ret;
     }
     
-    private Map<String, ExternalRepository> externalRepositories;
 }

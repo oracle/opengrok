@@ -58,7 +58,6 @@ public class IgnoredNames {
         ".svn",
         ".hg",
         ".hgtags",
-        ".ogcache",
         "*~",
     };
     private static Set<String> ignore = new HashSet<String>();

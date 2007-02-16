@@ -30,6 +30,7 @@ org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*,
 org.opensolaris.opengrok.index.IgnoredNames,
+org.opensolaris.opengrok.configuration.*,
 org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
 org.apache.lucene.index.*,
@@ -42,7 +43,9 @@ String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if(path == null) path = "";
-String rawSource = getServletContext().getInitParameter("SRC_ROOT");
+RuntimeEnvironment env = RuntimeEnvironmen.getInstance();
+env.register();
+String rawSource = env.getSourceRootPath();
 String resourcePath = rawSource + path;
 File resourceFile = new File(resourcePath);
 resourcePath = resourceFile.getAbsolutePath();
@@ -74,7 +77,7 @@ if (resourcePath.length() < rawSource.length()
         String dtag = "";
         
         try {
-            EftarFileReader ef = new EftarFileReader(getServletContext().getInitParameter("DATA_ROOT") + "/index/dtags.eftar");
+            EftarFileReader ef = new EftarFileReader(env.getDataRootPath() + "/index/dtags.eftar");
             dtag = ef.get(path);
 	    ef.close();
         } catch (Exception e) {
@@ -110,7 +113,7 @@ if (resourcePath.length() < rawSource.length()
             }
             apath = paths.toString();
         }
-        hr = new DirectoryHistoryReader(getServletContext().getInitParameter("DATA_ROOT") + "/index", apath, getServletContext().getInitParameter("SRC_ROOT"));
+        hr = new DirectoryHistoryReader(env.getDataRootPath() + "/index", apath, env.getSourceRootPath());
     } else {
         File f = new File(rawSource + parent, basename);
         hr = HistoryGuru.getInstance().getHistoryReader(f);

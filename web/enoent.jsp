@@ -28,12 +28,14 @@ java.io.*"
 %><%@ page session="false" %><%@ page isErrorPage="true" %><%
 
 String context = request.getContextPath();
-String rawSource = getServletContext().getInitParameter("SRC_ROOT");
+RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+env.register();
+String rawSource = env.getSourceRootPath();
 String configError = "";
 if (rawSource.equals("")) {
     configError = "SRC_ROOT parameter has not been configured in web.xml! Please configure your webapp.";
 } else {
-    if(!(new File(rawSource)).isDirectory()) {
+    if (!env.getSourceRootFile().isDirectory()) {
         configError = "SRC_ROOT parameter in web.xml does not point to a valid directory! Please configure your webapp.";
     }
 }
