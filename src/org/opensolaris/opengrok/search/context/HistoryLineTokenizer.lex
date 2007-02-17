@@ -107,15 +107,15 @@ stopset.add( "1.0");
         this.hits = hits;
   }
 
+  /**
+   * Set the name of the file we are working on (needed if we would like to
+   * generate a list of hits instead of generating html)
+   * @param filename the name of the file
+   */
   public void setFilename(String filename) {
         this.filename = filename;
   }
 
-    /**
-     * Set the name of the file we are working on (needed if we would like to
-     * generate a list of hits instead of generating html)
-     * @param filename the name of the file
-     */
     public void setAlt(boolean alt) {
         this.alt = alt;
     }

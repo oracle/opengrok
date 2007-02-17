@@ -104,7 +104,6 @@ public final class HitTableModel implements TableModel {
      * @param aValue Not used
      * @param rowIndex Not used
      * @param columnIndex Not used
-     * @see setHits
      */
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         ;
@@ -254,7 +253,7 @@ public final class HitTableModel implements TableModel {
     
     /**
      * Set the searchEngine this TableModel should use
-     * @param hits A list containing all of the hits.
+     * @param se a <code>SearchEngine</code> object
      */
     public void setSearchEngine(SearchEngine se) {
         this.se = se;

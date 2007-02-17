@@ -46,8 +46,7 @@ ident	"%Z%%M% %I%     %E% SMI"
     <path refid="runcp"/>
         <pathelement location="${classdir}"/>
     </path>
-    <target name="compile">
-        <mkdir dir="${classdir}"/>
+    <target name="jflex">
         <mkdir dir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${gensrcdir}"/>
@@ -66,6 +65,9 @@ ident	"%Z%%M% %I%     %E% SMI"
         <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="${gensrcdir}"/>
+    </target>
+    <target name="compile" depends="jflex">
+        <mkdir dir="${classdir}"/>
         <javac destdir="${classdir}" deprecation="true" debug="true" optimize="on" >
             <src path="src"/>
             <src path="${gensrcdir}"/>
@@ -94,8 +96,14 @@ ident	"%Z%%M% %I%     %E% SMI"
             </manifest>
         </jar>
     </target>
-    <target name="javadoc">
-        <javadoc sourcepath="src" destdir="${builddir}/api" packagenames="org.opensolaris.opengrok.*">
+    <target name="javadoc" depends="jflex">
+        <javadoc destdir="${builddir}/api"
+                 packagenames="org.opensolaris.opengrok.*">
+          <sourcepath>
+            <pathelement path="src"/>
+            <pathelement path="${gensrcdir}"/>
+          </sourcepath>
+          <tag name="todo"/>
 	            <classpath refid="compilecp"/>
 	</javadoc>
     </target>
