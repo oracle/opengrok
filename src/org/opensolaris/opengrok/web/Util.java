@@ -194,6 +194,16 @@ public class Util {
     }
     
     public static File getRCSFile(String parent, String name) {
+        File rcsDir = new File(parent + File.separator + "RCS");
+        File rcsFile = new File(rcsDir, name + ",v");
+        if (rcsFile.exists()) {
+            return rcsFile;
+        }
+        // not RCS, try CVS instead
+        return getCVSFile(parent, name);
+    }
+
+    private static File getCVSFile(String parent, String name) {
         try{
             File CVSdir = new File(parent + "/CVS");
             if(CVSdir.isDirectory() && CVSdir.canRead()) {

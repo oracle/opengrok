@@ -346,6 +346,7 @@ public class HistoryGuru {
     public boolean hasHistory(String parent) {
         boolean ret = false;
         if ((new File(parent + "/SCCS")).isDirectory() ||
+                (new File(parent + "/RCS")).isDirectory() ||
                 (new File(parent + "/CVS")).isDirectory() ||
                 (new File(parent, svnlabel)).isDirectory() ||
                 (getRepository(parent) != null)) {
