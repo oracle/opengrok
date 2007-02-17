@@ -56,7 +56,8 @@ class HistoryCache {
             ExternalRepository repository)
             throws Exception {
         File cache = getCachedFile(file);
-        if (cache.exists() && file.lastModified() < cache.lastModified()) {
+        boolean hasCache = (cache != null) && cache.exists();
+        if (hasCache && file.lastModified() < cache.lastModified()) {
             try {
                 return readCache(cache);
             } catch (Exception e) {
@@ -74,7 +75,10 @@ class HistoryCache {
         time = System.currentTimeMillis() - time;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.useHistoryCache()) {
-            if (cache.exists() || (parser.isCacheable() && time > env.getHistoryReaderTimeLimit())) {
+            if ((cache != null) &&
+                    (cache.exists() ||
+                         (parser.isCacheable() &&
+                              (time > env.getHistoryReaderTimeLimit())))) {
                 // retrieving the history takes too long, cache it!
                 try {
                     writeCache(history, cache);
@@ -103,8 +107,13 @@ class HistoryCache {
         sb.append(File.separatorChar);
         sb.append("historycache");
         
+        String sourceRoot = env.getSourceRootPath();
+        if (sourceRoot == null) {
+            return null;
+        }
+
         try {
-            String add = file.getCanonicalPath().substring(env.getSourceRootPath().length());
+            String add = file.getCanonicalPath().substring(sourceRoot.length());
             if (add.length() == 0) {
                 add = File.separator;
             }
