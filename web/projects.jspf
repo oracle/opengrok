@@ -80,7 +80,5 @@ if (env.hasProjects()) {
 // update the cookie
     Cookie cookie = new Cookie("OpenGrok/project", project);
     response.addCookie(cookie);
-} else {
-    project = "";
 }
 %>
