@@ -58,7 +58,7 @@ public class SubversionHistoryParser implements HistoryParser {
         SVNClient client = new SVNClient();
 
         LogMessage[] messages =
-            client.logMessages(file.getPath(), Revision.START, Revision.HEAD);
+            client.logMessages(file.getPath(), Revision.START, Revision.BASE);
         final LinkedHashMap<Long, HistoryEntry> revisions =
             new LinkedHashMap<Long, HistoryEntry>();
         for (LogMessage msg : messages) {
@@ -89,7 +89,7 @@ public class SubversionHistoryParser implements HistoryParser {
                     lineNo += 1;
                 }
             };
-        client.blame(file.getPath(), Revision.START, Revision.HEAD, callback);
+        client.blame(file.getPath(), Revision.START, Revision.BASE, callback);
 
         History history = new History();
         history.setHistoryEntries(entries);
