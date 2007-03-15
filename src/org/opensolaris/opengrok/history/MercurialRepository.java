@@ -18,59 +18,62 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
- *
- * @author Trond Norbye
+ * Access to a Mercurial repository.
+ * 
  */
 public class MercurialRepository implements ExternalRepository {
     private File directory;
     private String directoryName;
     private String command;
     private boolean verbose;
-    private boolean useCache;
     
-    
+    /**
+     * Creates a new instance of MercurialRepository
+     */
     public MercurialRepository() {
         
     }
     
     /**
      * Creates a new instance of MercurialRepository
+     * @param directory The directory containing the .hg-subdirectory
      */
     public MercurialRepository(String directory) {
         this.directory = new File(directory);
         directoryName = this.directory.getAbsolutePath();
         command = System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
-        useCache = RuntimeEnvironment.getInstance().useHistoryCache();
     }
     
-    public void setCommand(String command) {
-        this.command = command;
-    }
-    
-    public String getCommand() {
-        return command;
-    }
-    
+    /**
+     * Use verbose log messages, or just the summary
+     * @return true if verbose log messages are used for this repository
+     */
     public boolean isVerbose() {
         return verbose;
     }
-    
+        
+    /**
+     * Specify if verbose log messages or just the summary should be used
+     * @param verbose set to true if verbose messages should be used
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -103,14 +106,22 @@ public class MercurialRepository implements ExternalRepository {
     }
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {
-        MercurialGet ret = null;
-        String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
-        
+        InputStream ret = null;
+
+        String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);        
         try {
             String argv[] = { command, "cat", "-r", rev, filename };
             Process process = Runtime.getRuntime().exec(argv, null, directory);
             
-            ret = new MercurialGet(process.getInputStream());
+            StringBuilder sb = new StringBuilder();
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String s;
+            while ((s = in.readLine()) != null) {
+                sb.append(s);
+                sb.append("\n");
+            }
+            
+            ret = new BufferedInputStream(new ByteArrayInputStream(sb.toString().getBytes()));
         } catch (Exception exp) {
             System.err.print("Failed to get history: " + exp.getClass().toString());
             exp.printStackTrace();
@@ -123,10 +134,19 @@ public class MercurialRepository implements ExternalRepository {
         return MercurialHistoryParser.class;
     }
     
+    /**
+     * Get the name of the root directory for this repository
+     * @return the name of the directory containing the .hg subdirectory
+     */
     public String getDirectoryName() {
         return directoryName;
     }
     
+    /**
+     * Specify the name of the root directory for this repository
+     * @param directoryName the new name of the directory containing the .hg 
+     *        subdirectory
+     */
     public void setDirectoryName(String directoryName) {
         this.directoryName = directoryName;
         this.directory = new File(this.directoryName);
@@ -156,7 +176,10 @@ public class MercurialRepository implements ExternalRepository {
                 for (HistoryEntry ent : e.getValue()) {
                     ent.strip();
                 }
-                HistoryCache.writeCacheFile(e.getKey(), e.getValue());
+                
+                History hist = new History();
+                hist.setHistoryEntries(e.getValue());                
+                HistoryCache.writeCacheFile(e.getKey(), hist);
             }
         }
     }

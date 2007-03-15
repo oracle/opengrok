@@ -32,7 +32,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.StringTokenizer;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 // This is a rewrite of the class that was previously called

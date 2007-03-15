@@ -27,26 +27,20 @@
  */
 
 package org.opensolaris.opengrok.index;
+
 import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.net.InetAddress;
 import java.util.*;
-import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
-import org.apache.lucene.store.FSDirectory;
-//import org.apache.lucene.search.spell.*;
 import org.apache.oro.io.GlobFilenameFilter;
-import org.apache.lucene.spell.NGramSpeller;
 import org.opensolaris.opengrok.analysis.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.MercurialRepository;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.scope.MainFrame;
-import org.opensolaris.opengrok.web.Util;
 
 /**
  * Creates and updates an inverted source index
@@ -56,7 +50,6 @@ import org.opensolaris.opengrok.web.Util;
 
 public class Indexer {
     private static boolean verbose = true;
-    private static boolean economical = false;
     private static String usage = "Usage: " +
             "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
             "       opengrok.jar [-O | -l | -t] DATA_ROOT\n" +
@@ -82,6 +75,10 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
     
+    /**
+     * Program entry point
+     * @param argv argument vector
+     */
     public static void main(String argv[]) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean runIndex = true;
@@ -126,7 +123,7 @@ public class Indexer {
                     } else if (argv[i].equals("-q")) {
                         verbose = false;
                     } else if (argv[i].equals("-e")) {
-                        economical = true;
+                        env.setGenerateHtml(true);
                     } else if (argv[i].equals("-P")) {
                         addProjects = true;
                     } else if (argv[i].equals("-c")) {
@@ -281,7 +278,7 @@ public class Indexer {
 
                 if (runIndex) {
                     Index idx = new Index(verbose ? new StandardPrinter(System.out) : new NullPrinter(), new StandardPrinter(System.err));
-                    idx.runIndexer(env.getDataRootFile(), env.getSourceRootFile(), subFiles, economical);
+                    idx.runIndexer(env.getDataRootFile(), env.getSourceRootFile(), subFiles, env.isGenerateHtml());
                 }
 
                 if (configHost != null) {

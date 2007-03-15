@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -26,17 +26,12 @@ package org.opensolaris.opengrok.history;
 
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
 import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 class HistoryCache {
@@ -177,7 +172,16 @@ class HistoryCache {
         return (History) obj;
     }
     
-    protected static void writeCacheFile(String name, List<HistoryEntry> list) throws IOException {
+    /**
+     * Store a history object to file in the same format as writeCache, but
+     * this method does not try to synchonize access (so this function must
+     * not be called on the same file from multiple threads). It's intended
+     * usage is from the ExternalRepository's createCache.
+     * @param name the name of the file (relative from source root)
+     * @param history the history for this file
+     * @throws IOException if an error occurs
+     */
+    protected static void writeCacheFile(String name, History history) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(RuntimeEnvironment.getInstance().getDataRootPath());
         sb.append(File.separatorChar);
@@ -197,7 +201,7 @@ class HistoryCache {
 
         XMLEncoder e = new XMLEncoder(
                 new BufferedOutputStream(new FileOutputStream(file)));
-        e.writeObject(list);
+        e.writeObject(history);
         e.close();
     }
 }

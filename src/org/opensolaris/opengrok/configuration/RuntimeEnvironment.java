@@ -175,6 +175,14 @@ public class RuntimeEnvironment {
     public void setUseHistoryCache(boolean useHistoryCache) {
         getConfiguration().setHistoryCache(useHistoryCache);
     }
+
+    public boolean isGenerateHtml() {
+        return getConfiguration().isGenerateHtml();
+    }
+    
+    public void setGenerateHtml(boolean generateHtml) {
+        getConfiguration().setGenerateHtml(generateHtml);
+    }
     
     public void setThreadLocalConfiguration(boolean tls) {
         threadLocalConfig = tls;

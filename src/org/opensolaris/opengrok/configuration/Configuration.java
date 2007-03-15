@@ -42,6 +42,7 @@ public class Configuration {
     private String dataRoot;
     private Map<String, ExternalRepository> repositories;
     private String urlPrefix;
+    private boolean generateHtml;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -115,4 +116,15 @@ public class Configuration {
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;
     }
+
+    public void setGenerateHtml(boolean generateHtml) {
+        this.generateHtml = generateHtml;
+    }
+    
+    public boolean isGenerateHtml() {
+        return generateHtml;
+    }
+
+
+
 }

@@ -28,12 +28,34 @@ import java.io.InputStream;
 import java.text.ParseException;
 
 /**
- * An interface for an external repository
+ * An interface for an external repository. 
  *
  * @author Trond Norbye
  */
 public interface ExternalRepository {
+    /**
+     * Get a parser capable of getting history log elements from this repository.
+     * @return a specialized parser for this kind of repository
+     */
     public Class<? extends HistoryParser> getHistoryParser();
+    
+    /**
+     * Get an input stream that I may use to read a speciffic version of a
+     * named file.
+     * @param parent the name of the directory containing the file
+     * @param basename the name of the file to get
+     * @param rev the revision to get
+     * @return An input stream containing the correct revision.
+     */
     public InputStream getHistoryGet(String parent, String basename, String rev);
+
+    /**
+     * Create a history log cache for all of the files in this repository.
+     * Some SCM's have a more optimal way to query the log information, so
+     * the concrete repository could implement a smarter way to generate the
+     * cache instead of creating it for each file beeing accessed.
+     * @throws IOException if an error occurs while creating the cache
+     * @throws ParseException if an error occurs while parsing the log information.
+     */
     public void createCache() throws IOException, ParseException;
 }
