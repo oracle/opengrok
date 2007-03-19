@@ -106,4 +106,4 @@ if(files != null) {%><br/><%
         }
         %><p class="rssbadge"><a href="<%=context%>/rss<%=path%>"><img src="<%=context%>/img/rss.png" width="80" height="15" alt="RSS XML Feed" title="RSS XML Feed of latest changes"/></a></p><%
 }
-%><%@include file="foot.jsp"%>
+%><%@include file="foot.jspf"%>

@@ -173,7 +173,7 @@ if (g == Genre.PLAIN) {
         }
         }
     }
-%><%@include file="foot.jsp"%><%
+%><%@include file="foot.jspf"%><%
 }
 if(ef != null) {
     try {

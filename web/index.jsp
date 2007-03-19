@@ -77,4 +77,4 @@ String path = null;
     <br/>
     <br/>
 </div>
-<%@include file="foot.jsp"%>
+<%@include file="foot.jspf"%>
