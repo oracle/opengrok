@@ -75,6 +75,10 @@ public class SubversionHistoryParser implements HistoryParser {
             new ArrayList<HistoryEntry>(revisions.values());
         Collections.reverse(entries);
 
+        // The following code fetches "svn annotation" for the file. Commented
+        // out since it's not currently used and more than doubles the time
+        // needed to fetch the history.
+        /*
         final ArrayList<LineInfo> annotation = new ArrayList<LineInfo>();
         BlameCallback callback = new BlameCallback() {
                 int lineNo = 1;
@@ -90,10 +94,11 @@ public class SubversionHistoryParser implements HistoryParser {
                 }
             };
         client.blame(file.getPath(), Revision.START, Revision.BASE, callback);
+        */
 
         History history = new History();
         history.setHistoryEntries(entries);
-        history.setAnnotation(annotation);
+        //history.setAnnotation(annotation);
         return history;
     }
 
