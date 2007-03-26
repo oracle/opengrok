@@ -54,27 +54,6 @@ String path = null;
 <%@ include file="menu.jspf" %>
 </div>
 <div id="results" style="font-size:100%">
-    <!-- CONFIG: Page Content -->
-    <p>
-        <b>OpenGrok - a "wicked fast" source browser!</b>
-    </p>
-    <p>
-        This is the front page of of your <a href="xref/">browsable and searchable
-    source tree</a> (<a href="xref/">xref/</a>).</p>
-    <p>
-        To setup and configure OpenGrok please refer to 
-        <a href="http://www.opensolaris.org/os/project/opengrok/">http://www.opensolaris.org/os/project/opengrok/</a>
-        or README.txt in the distribution.
-    </p>
-    <p>
-        You can replace this block of text with some more useful 
-        information about your source tree and its organization, with direct 
-        links to key parts of code base.
-    </p>
-    <br/>
-    <br/>
-    <br/>
-    <br/>
-    <br/>
+<%@ include file="index_body.html" %>
 </div>
 <%@include file="foot.jspf"%>
