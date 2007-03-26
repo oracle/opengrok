@@ -48,9 +48,7 @@ public class MercurialRepository implements ExternalRepository {
     /**
      * Creates a new instance of MercurialRepository
      */
-    public MercurialRepository() {
-        
-    }
+    public MercurialRepository() { }
     
     /**
      * Creates a new instance of MercurialRepository
@@ -78,8 +76,7 @@ public class MercurialRepository implements ExternalRepository {
         this.verbose = verbose;
     }
     
-    InputStream getHistoryStream(File file) {
-        InputStream ret = null;
+    Process getHistoryLogProcess(File file) throws IOException {
         String abs = file.getAbsolutePath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -92,26 +89,18 @@ public class MercurialRepository implements ExternalRepository {
         } else {
             argv = new String[] { command, "log", filename };
         }
-        try {
-            Process process =
-                    Runtime.getRuntime().exec(argv, null, directory);
-            ret = process.getInputStream();
-        } catch (Exception ex) {
-            System.err.println("An error occured while executing hg log:");
-            ex.printStackTrace(System.err);
-            ret = null;
-        }
         
-        return ret;
-    }
+        return Runtime.getRuntime().exec(argv, null, directory);        
+    }    
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);        
+        String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
+        Process process = null;
         try {
             String argv[] = { command, "cat", "-r", rev, filename };
-            Process process = Runtime.getRuntime().exec(argv, null, directory);
+            process = Runtime.getRuntime().exec(argv, null, directory);
             
             StringBuilder sb = new StringBuilder();
             BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -125,6 +114,16 @@ public class MercurialRepository implements ExternalRepository {
         } catch (Exception exp) {
             System.err.print("Failed to get history: " + exp.getClass().toString());
             exp.printStackTrace();
+        } finally {
+            // Clean up zombie-processes...
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalStateException exp) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
+            }
         }
         
         return ret;

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -34,75 +34,102 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
-// This is a rewrite of the class that was previously called
-// MercurialHistoryReader
-
 /**
  * Parse a stream of mercurial log comments.
- *
- * @author Trond Norbye
  */
 public class MercurialHistoryParser implements HistoryParser {
     
     public History parse(File file, ExternalRepository repos)
-    throws IOException, ParseException {
+            throws IOException, ParseException {
         MercurialRepository mrepos = (MercurialRepository)repos;
-        SimpleDateFormat df =
-                new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        InputStream is = mrepos.getHistoryStream(file);
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        String mydir = mrepos.getDirectoryName() + File.separator;
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String s;
-        boolean description = false;
-        HistoryEntry entry = null;
-        while ((s = in.readLine()) != null) {
-            if (s.startsWith("changeset:")) {
-                if (entry != null) {
-                    entries.add(entry);
-                }
-                entry = new HistoryEntry();
-                entry.setActive(true);
-                String rev = s.substring("changeset:".length()).trim();
-                if (rev.indexOf(':') != -1) {
-                    rev = rev.substring(0, rev.indexOf(':'));
-                }
-                entry.setRevision(rev);
-                description = false;
-            } else if (s.startsWith("user:") && entry != null) {
-                entry.setAuthor(s.substring("user:".length()).trim());
-                description = false;
-            } else if (s.startsWith("date:") && entry != null) {
-                Date date = df.parse(s.substring("date:".length()).trim());
-                entry.setDate(date);
-                description = false;
-            } else if (s.startsWith("files:") && entry != null) {
-                description = false;
-                String[] strings = s.split(" ");
-                for (int ii = 1; ii < strings.length; ++ii) {
-                    if (strings[ii].length() > 0) {
-                        File f = new File(mydir, strings[ii]);
-                        String name = f.getCanonicalPath().substring(env.getSourceRootPath().length());
-                        entry.addFile(name);
+        History history = new History();
+        
+        Exception exception = null;
+        Process process = null;
+        try {
+            process = mrepos.getHistoryLogProcess(file);
+            if (process == null) {
+                return null;
+            }
+            
+            SimpleDateFormat df =
+                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
+            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            
+            InputStream is = process.getInputStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+            String mydir = mrepos.getDirectoryName() + File.separator;
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            String s;
+            boolean description = false;
+            HistoryEntry entry = null;
+            while ((s = in.readLine()) != null) {
+                if (s.startsWith("changeset:")) {
+                    if (entry != null) {
+                        entries.add(entry);
                     }
+                    entry = new HistoryEntry();
+                    entry.setActive(true);
+                    String rev = s.substring("changeset:".length()).trim();
+                    if (rev.indexOf(':') != -1) {
+                        rev = rev.substring(0, rev.indexOf(':'));
+                    }
+                    entry.setRevision(rev);
+                    description = false;
+                } else if (s.startsWith("user:") && entry != null) {
+                    entry.setAuthor(s.substring("user:".length()).trim());
+                    description = false;
+                } else if (s.startsWith("date:") && entry != null) {
+                    Date date = df.parse(s.substring("date:".length()).trim());
+                    entry.setDate(date);
+                    description = false;
+                } else if (s.startsWith("files:") && entry != null) {
+                    description = false;
+                    String[] strings = s.split(" ");
+                    for (int ii = 1; ii < strings.length; ++ii) {
+                        if (strings[ii].length() > 0) {
+                            File f = new File(mydir, strings[ii]);
+                            String name = f.getCanonicalPath().substring(env.getSourceRootPath().length());
+                            entry.addFile(name);
+                        }
+                    }
+                } else if (s.startsWith("summary:") && entry != null) {
+                    entry.setMessage(s.substring("summary:".length()).trim());
+                    description = false;
+                } else if (s.startsWith("description:") && entry != null) {
+                    description = true;
+                } else if (description && entry != null) {
+                    entry.appendMessage(s);
                 }
-            } else if (s.startsWith("summary:") && entry != null) {
-                entry.setMessage(s.substring("summary:".length()).trim());
-                description = false;
-            } else if (s.startsWith("description:") && entry != null) {
-                description = true;
-            } else if (description && entry != null) {
-                entry.appendMessage(s);
+            }
+            
+            if (entry != null) {
+                entries.add(entry);
+            }
+            
+            history.setHistoryEntries(entries);            
+        } catch (Exception e) {
+            exception = e;
+        }
+        
+        // Clean up zombie-processes...
+        if (process != null) {
+            try {
+                process.exitValue();
+            } catch (IllegalStateException exp) {
+                // the process is still running??? just kill it..
+                process.destroy();
             }
         }
         
-        if (entry != null) {
-            entries.add(entry);
+        if (exception != null) {
+            if (exception instanceof IOException) {
+                throw (IOException)exception;
+            } else {
+                throw (ParseException)exception;
+            }
         }
         
-        History history = new History();
-        history.setHistoryEntries(entries);
         return history;
     }
     
