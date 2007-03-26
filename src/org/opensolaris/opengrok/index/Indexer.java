@@ -248,11 +248,12 @@ public class Indexer {
                 }
                 
                 if (addProjects) {
-                    File files[] = env.getSourceRootFile().listFiles();
-                    
+                    File files[] = env.getSourceRootFile().listFiles();                    
+                    List<Project> projects = env.getProjects();
+                    projects.clear();
                     for (File file : files) {
                         if (!file.getName().startsWith(".")) {
-                            env.getProjects().add(new Project(file.getName(), "/" + file.getName()));
+                            projects.add(new Project(file.getName(), "/" + file.getName()));
                         }
                     }
                 }
