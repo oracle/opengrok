@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<!--
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+or http://www.opensolaris.org/os/licensing.
+See the License for the specific language governing permissions
+and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+-->
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!-- 
+  Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+  Use is subject to license terms.
+--> 
+
+<service_bundle type="manifest" name="OSOLopengrok:opengrok">
+   <service name="application/opengrok" type="service" version="1">
+      <stability value="Unstable" />
+
+      <single_instance />
+      <dependency
+          name="fs-local"
+          grouping="require_all"
+          restart_on="none"
+          type="service">
+          <service_fmri value="svc:/system/filesystem/local" />
+      </dependency>
+
+      <dependency
+          name="network-service"
+          grouping="require_all"
+          restart_on="none"
+          type="service">
+          <service_fmri value="svc:/network/service" />
+      </dependency>
+
+      <dependency
+          name="name-services"
+          grouping="require_all"
+          restart_on="refresh"
+          type="service">
+          <service_fmri value="svc:/milestone/name-services" />
+      </dependency>
+
+      <dependency
+          name="identity"
+          grouping="optional_all"
+          restart_on="refresh"
+          type="service">
+          <service_fmri value="svc:/system/identity:domain" />
+      </dependency>
+
+      <property_group
+          name="startd"
+          type="framework">
+          <propval name="duration" type="astring" value="child" />
+      </property_group>
+
+      <instance name="opengrok" enabled="false">
+         <exec_method
+            type="method"
+            name="start"
+            exec="/opengrok/smf/indexer.sh"
+            timeout_seconds="0">
+            <method_context>
+               <-- Specify the user and the group the indexing service
+               should run as -->
+               <method_credential user="opengrok" group="opengrok"/>
+               <method_environment>
+                   <!-- The root direction of this opengrok
+                   installation -->
+                   <envvar name="ROOT" value="/opengrok"/>
+                   
+                   <!-- How often should the source be updated (in
+                   seconds) -->
+                   <envvar name="SLEEPTIME" value="1800"/>
+
+                   <!-- The Java version to use -->
+                   <envvar name="JAVA_HOME" value="/usr/jdk/latest"/>
+                   <!-- The path needed -->
+                   <envvar name="PATH" value="/usr/bin"/>
+
+                   <!-- The name og the various SCM tools to use -->
+                   <envvar name="CVS" value="/opt/csw/bin/cvs" />
+                   <envvar name="SUBVERSION" value="/opt/csw/bin/svn"/>
+                   <envvar name="MERCURIAL" value="/opt/csw/bin/hg"/>
+
+                   <!-- The name of the web servers that should be
+                   notified with the information of the active
+                   configuration to use. Specify them with
+                   hostname:port and separate multiple hosts by space.
+                   ex: value="server1:2424 server2:2424" -->
+                   <envvar name="WEBSERVERS" value="localhost:2424"/>
+
+                   <!-- The email address to send an email if the
+                   source update fails, or a fatal error occurs while
+                   the index database is beeing updated. -->
+                   <envvar name="ADMINISTRATOR" value="trond.norbye@sun.com"/>
+
+                   <!-- The current version of the Mercurial log parser
+                   expects C date format. -->
+                   <envvar name="LC_ALL" value="C"/>
+
+                   <!-- Additional libraries to look for libraries in.
+                   (Subversions java binding etc) -->
+                   <envvar name="LD_LIBRARY_PATH" value="/opt/csw/lib/svn"/>
+               </method_environment>
+            </method_context>
+         </exec_method>
+   
+         <exec_method
+            type="method"
+            name="stop"
+            exec=":kill"
+            timeout_seconds="-1">
+         </exec_method>
+      </instance>
+         
+      <template>
+         <common_name>
+            <loctext xml:lang="C">OpenGrok indexing service</loctext>
+         </common_name>
+      </template>
+   </service>
+</service_bundle>
