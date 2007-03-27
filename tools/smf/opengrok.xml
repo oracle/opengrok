@@ -27,7 +27,6 @@ CDDL HEADER END
 
 <service_bundle type="manifest" name="OSOLopengrok:opengrok">
    <service name="application/opengrok" type="service" version="1">
-      <stability value="Unstable" />
 
       <single_instance />
       <dependency
@@ -75,7 +74,7 @@ CDDL HEADER END
             exec="/opengrok/smf/indexer.sh"
             timeout_seconds="0">
             <method_context>
-               <-- Specify the user and the group the indexing service
+               <!-- Specify the user and the group the indexing service
                should run as -->
                <method_credential user="opengrok" group="opengrok"/>
                <method_environment>
@@ -127,6 +126,8 @@ CDDL HEADER END
             timeout_seconds="-1">
          </exec_method>
       </instance>
+
+      <stability value="Unstable" />
          
       <template>
          <common_name>
