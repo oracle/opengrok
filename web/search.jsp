@@ -65,7 +65,7 @@ if( defs != null && defs.equals("")) defs = null;
 if( refs != null && refs.equals("")) refs = null;
 if( hist != null && hist.equals("")) hist = null;
 if( path != null && path.equals("")) path = null;
-if (project == null) project = null;
+if (project != null && project.equals("")) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
     Searcher searcher = null;		    //the searcher used to open/search the index

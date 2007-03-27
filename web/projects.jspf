@@ -68,11 +68,7 @@ if (env.hasProjects()) {
                 sb.append(" ");
             }
         }
-        if (sb.length() == 0) {
-            project = "";
-        } else {
-            project = sb.toString().trim();
-        }
+        project = sb.toString().trim();
     } else {
         project = "";
     }
