@@ -129,10 +129,10 @@ public class Ctags {
                     String fld = tagLine.substring(p+1,lp);
                     //System.out.println("FIELD===" + fld);
                     lp = p;
-                    if(fld.startsWith("li")) {
+                    if(fld.startsWith("line:")) {
                         int sep = fld.indexOf(':');
                         lnum = fld.substring(sep+1);
-                    } else if (fld.startsWith("si")) {
+                    } else if (fld.startsWith("signature:")) {
                         int sep = fld.indexOf(':');
                         signature = fld.substring(sep+1);
                     } else if (fld.indexOf(':') < 0) {
