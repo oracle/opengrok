@@ -61,6 +61,22 @@ public class MercurialRepository implements ExternalRepository {
     }
     
     /**
+     * Set the name of the Mercurial command to use
+     * @param command the name of the command (hg)
+     */
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
+    /**
+     * Get the name of the Mercurial command that should be used
+     * @return the name of the hg command in use
+     */
+    public String getCommand() {
+        return command;
+    }
+    
+    /**
      * Use verbose log messages, or just the summary
      * @return true if verbose log messages are used for this repository
      */
@@ -119,7 +135,7 @@ public class MercurialRepository implements ExternalRepository {
             if (process != null) {
                 try {
                     process.exitValue();
-                } catch (IllegalStateException exp) {
+                } catch (IllegalThreadStateException exp) {
                     // the process is still running??? just kill it..
                     process.destroy();
                 }

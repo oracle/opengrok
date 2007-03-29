@@ -116,7 +116,7 @@ public class MercurialHistoryParser implements HistoryParser {
         if (process != null) {
             try {
                 process.exitValue();
-            } catch (IllegalStateException exp) {
+            } catch (IllegalThreadStateException exp) {
                 // the process is still running??? just kill it..
                 process.destroy();
             }
@@ -125,8 +125,11 @@ public class MercurialHistoryParser implements HistoryParser {
         if (exception != null) {
             if (exception instanceof IOException) {
                 throw (IOException)exception;
-            } else {
+            } else if (exception instanceof ParseException) {
                 throw (ParseException)exception;
+            } else {
+                System.err.println("Got exception while parsing history for: " + file.getAbsolutePath());
+                exception.printStackTrace();
             }
         }
         
