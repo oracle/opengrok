@@ -110,10 +110,14 @@ public class Ctags {
             do {
                 String tagLine = ctagsOut.readLine();
                 //System.out.println("Tagline:-->" + tagLine+"<----ONELINE");
+                if (tagLine.length()==0) {
+                    //System.out.println("RETURNING - EMPTY LINE");
+                    return;
+                }
                 int p = tagLine.indexOf('\t');
                 if (p <= 0) {
-                    //System.out.println("RETURNING NO TAB");
-                    return;
+                    //System.out.println("SKIPPING LINE - NO TAB");
+                    continue;
                 }
                 String def = tagLine.substring(0, p);
                 int mstart = tagLine.indexOf('\t', p+1);
@@ -148,8 +152,8 @@ public class Ctags {
                     match = match.replaceAll("\\/", "/");
                     match = match.replaceAll("[ \t]+", " ");
                     } else {
-                    //System.out.println("RETURNING NO SECOND TAB");
-                    return;
+                    //System.out.println("SKIPPING LINE - NO SECOND TAB");
+                    continue;
                     }
                 HashMap<Integer, String> taglist = defs.get(def);
                 if (taglist == null) {
