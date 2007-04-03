@@ -107,7 +107,6 @@ public class HistoryGuru {
      * data for a named file
      */
     private Class<? extends HistoryParser> guessHistoryParser(File file)
-        throws IOException
     {
         Class<? extends HistoryParser> hpClass = null;
         File rcsfile = Util.getRCSFile(file);
@@ -142,8 +141,46 @@ public class HistoryGuru {
         }
         return hpClass;
     }
-    
-    
+
+    /**
+     * Get the <code>HistoryParser</code> to use for the specified file.
+     */
+    private Class<? extends HistoryParser> getHistoryParser(File file) {
+        Class<? extends HistoryParser> parser = null;
+
+        switch (previousFile) {
+        case EXTERNAL:
+            ExternalRepository repos = getRepository(file.getParent());
+            if (repos != null) {
+                parser = repos.getHistoryParser();
+            }
+            break;
+        case SVN:
+            if (new File(file.getParent(), svnlabel).exists()) {
+                parser = SubversionHistoryParser.class;
+            }
+            break;
+        case RCS:
+            File rcsfile = Util.getRCSFile(file);
+            if (rcsfile != null && rcsfile.exists()) {
+                parser = RCSHistoryParser.class;
+            }
+            break;
+        case SCCS:
+            if (Util.getSCCSFile(file).canRead()) {
+                parser = SCCSHistoryParser.class;
+            }
+            break;
+        }
+
+        if (parser == null) {
+            // I did not find a match for the specified system. try to guess..
+            parser = guessHistoryParser(file);
+        }
+
+        return parser;
+    }
+
     /**
      * Get the appropriate history reader for the file specified by parent and basename.
      * If configured, it will try to use the configured system. If the file is under another
@@ -157,53 +194,12 @@ public class HistoryGuru {
         if (file.isDirectory()) {
             return getDirectoryHistoryReader(file);
         }
-        
-        Class<? extends HistoryParser> parser = null;
-        ExternalRepository repos = null;
-        
-        switch (previousFile) {
-            case EXTERNAL :
-                repos = getRepository(file.getParent());
-                if (repos != null) {
-                    parser = repos.getHistoryParser();
-                }
-                break;
-                
-            case SVN :
-                if (new File(file.getParent(), svnlabel).exists()) {
-                    parser = SubversionHistoryParser.class;
-                }
-                break;
-                
-            case RCS :
-                File rcsfile = Util.getRCSFile(file);
-                if (rcsfile != null && rcsfile.exists()) {
-                    parser = RCSHistoryParser.class;
-                }
-                break;
-                
-            case SCCS :
-                if (Util.getSCCSFile(file).canRead()) {
-                    parser = SCCSHistoryParser.class;
-                }
-                break;
-                
-            default:
-                ;
-        }
-        
-        if (parser == null) {
-            // I did not find a match for the specified system. try to guess..
-            parser = guessHistoryParser(file);
-            if (previousFile == EXTERNAL) {
-                repos = getRepository(file.getParent());
-            } else {
-                repos = null;
-            }
-        }
+
+        Class<? extends HistoryParser> parser = getHistoryParser(file);
 
         if (parser != null) {
             try {
+                ExternalRepository repos = getRepository(file.getParent());
                 return new HistoryReader(HistoryCache.get(file, parser, repos));
             } catch (IOException ioe) {
                 throw ioe;
