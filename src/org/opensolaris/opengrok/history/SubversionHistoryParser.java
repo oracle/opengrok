@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.tigris.subversion.javahl.BlameCallback;
 import org.tigris.subversion.javahl.ClientException;
@@ -75,31 +76,39 @@ public class SubversionHistoryParser implements HistoryParser {
             new ArrayList<HistoryEntry>(revisions.values());
         Collections.reverse(entries);
 
-        // The following code fetches "svn annotation" for the file. Commented
-        // out since it's not currently used and more than doubles the time
-        // needed to fetch the history.
-        /*
-        final ArrayList<LineInfo> annotation = new ArrayList<LineInfo>();
-        BlameCallback callback = new BlameCallback() {
-                int lineNo = 1;
-                long prev = -1;
-                public void singleLine(Date changed, long revision,
-                                       String author, String line) {
-                    if (lineNo == 1 || prev != revision) {
-                        HistoryEntry e = revisions.get(revision);
-                        annotation.add(new LineInfo(lineNo, e));
-                    }
-                    prev = revision;
-                    lineNo += 1;
-                }
-            };
-        client.blame(file.getPath(), Revision.START, Revision.BASE, callback);
-        */
-
         History history = new History();
         history.setHistoryEntries(entries);
-        //history.setAnnotation(annotation);
         return history;
+    }
+
+    /**
+     * Annotate the specified file.
+     *
+     * @param file the file to annotate
+     * @param revision the revision of the file (<code>null</code>
+     * means BASE)
+     * @param repository external repository (ignored)
+     * @return list of <code>LineInfo</code> objects
+     */
+    public List<LineInfo> annotate(File file, String revision,
+                                   ExternalRepository repository)
+        throws ClientException
+    {
+        SVNClient client = new SVNClient();
+
+        final ArrayList<LineInfo> annotation = new ArrayList<LineInfo>();
+        BlameCallback callback = new BlameCallback() {
+                public void singleLine(Date changed, long revision,
+                                       String author, String line) {
+                    annotation.add(new LineInfo(Long.toString(revision),
+                                                author));
+                }
+            };
+
+        Revision rev = (revision == null) ?
+            Revision.BASE : Revision.getInstance(Long.parseLong(revision));
+        client.blame(file.getPath(), Revision.START, rev, callback);
+        return annotation;
     }
 
     /**

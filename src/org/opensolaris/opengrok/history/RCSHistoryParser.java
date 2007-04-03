@@ -79,6 +79,11 @@ public class RCSHistoryParser implements HistoryParser {
         }
     }
 
+    public List<LineInfo> annotate(File file, String revision,
+                                   ExternalRepository repository) {
+        return null;
+    }
+
     public boolean isCacheable() {
         // repository is stored locally, no need to cache
         return false;

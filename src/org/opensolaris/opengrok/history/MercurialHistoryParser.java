@@ -32,6 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -135,7 +136,12 @@ public class MercurialHistoryParser implements HistoryParser {
         
         return history;
     }
-    
+
+    public List<LineInfo> annotate(File file, String revision,
+                                   ExternalRepository repository) {
+        return null;
+    }
+
     public boolean isCacheable() {
         return true;
     }

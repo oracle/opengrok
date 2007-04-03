@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -56,7 +57,12 @@ public class DirectoryHistoryParser implements HistoryParser {
         history.setHistoryEntries(entries);
         return history;
     }
-    
+
+    public List<LineInfo> annotate(File file, String revision,
+                                   ExternalRepository repository) {
+        return null;
+    }
+
     public boolean isCacheable() {
         return false;
     }

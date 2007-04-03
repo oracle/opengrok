@@ -28,52 +28,32 @@ package org.opensolaris.opengrok.history;
  * History information about a line in a source file.
  */
 public class LineInfo {
-    /** The first line for which this information is valid. */
-    private int lineNo;
-    /** History entry describing the most recent update of the line. */
-    private HistoryEntry entry;
+    /** Revision for the last modification of the line. */
+    private final String revision;
+    /** Author responsible for the last modification of the line. */
+    private final String author;
 
     /**
-     * Create an empty object.
+     * Create a <code>LineInfo</code> object.
      */
-    public LineInfo() { }
-
-    /**
-     * Create a <code>LineInfo</code> object for a specified line.
-     *
-     * @param line line number
-     * @param e most recent history entry for this line
-     */
-    public LineInfo(int line, HistoryEntry e) {
-        lineNo = line;
-        entry = e;
+    LineInfo(String revision, String author) {
+        this.revision = revision;
+        this.author = author;
     }
 
     /**
-     * Set the line number this information is valid for.
+     * Get the revision for the last modification of the line.
+     * @return revision of last modification
      */
-    public void setLineNumber(int line) {
-        lineNo = line;
+    public String getRevision() {
+        return revision;
     }
 
     /**
-     * Get the line number this information is valid for.
+     * Get the author responsible for the last modification of the line.
+     * @return author responsible for last modification
      */
-    public int getLineNumber() {
-        return lineNo;
-    }
-
-    /**
-     * Set the most recent history entry for this line.
-     */
-    public void setEntry(HistoryEntry e) {
-        entry = e;
-    }
-
-    /**
-     * Get the most recent history entry for this line.
-     */
-    public HistoryEntry getEntry() {
-        return entry;
+    public String getAuthor() {
+        return author;
     }
 }
