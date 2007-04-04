@@ -182,6 +182,24 @@ public class HistoryGuru {
     }
 
     /**
+     * Annotate the specified revision of a file.
+     *
+     * @param file the file to annotate
+     * @param rev the revision to annotate (<code>null</code> means BASE)
+     * @return list of <code>LineInfo</code> objects for each line (or
+     * <code>null</code> if the backend doesn't support annotations)
+     */
+    public List<LineInfo> annotate(File file, String rev) throws Exception {
+        Class<? extends HistoryParser> parserClass = getHistoryParser(file);
+        if (parserClass != null) {
+            HistoryParser parser = parserClass.newInstance();
+            ExternalRepository repos = getRepository(file.getParent());
+            return parser.annotate(file, rev, repos);
+        }
+        return null;
+    }
+
+    /**
      * Get the appropriate history reader for the file specified by parent and basename.
      * If configured, it will try to use the configured system. If the file is under another
      * revision control system, it will try to guess the correct system.
@@ -380,8 +398,22 @@ public class HistoryGuru {
                         hr.getAuthor() + "\nLOG  = " + hr.getComment() + "\nACTV = " + hr.isActive() + "\n-------------------");
             }
             hr.close();
+
+            System.out.println("-----Annotate");
+            List<LineInfo> annotation = HistoryGuru.getInstance().annotate(
+                    f, (args.length > 1 ? args[1] : null));
+            if (annotation == null) {
+                System.out.println("<null>");
+            } else {
+                for (int i = 1; i <= annotation.size(); i++) {
+                    LineInfo li = annotation.get(i-1);
+                    System.out.println("Line " + i + "\t" + li.getRevision() +
+                                       ", " + li.getAuthor());
+                }
+            }
         } catch (Exception e) {
-            System.err.println("Exception " + e + "\nUsage: HistoryGuru file");
+            System.err.println("Exception " + e +
+                               "\nUsage: HistoryGuru file [annotate-rev]");
             e.printStackTrace();
         }
     }
