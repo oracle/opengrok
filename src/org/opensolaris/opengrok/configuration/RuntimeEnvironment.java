@@ -27,7 +27,6 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -49,48 +48,51 @@ import org.opensolaris.opengrok.history.ExternalRepository;
  * configuration this execution context (classloader) is using.
  */
 public class RuntimeEnvironment {
-    private boolean threadLocalConfig;
-    
     private Configuration configuration;
     private Map<Thread, Configuration> threadmap;
     
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     
+    /**
+     * Get the one and only instance of the RuntimeEnvironment
+     * @return the one and only instance of the RuntimeEnvironment
+     */
     public static RuntimeEnvironment getInstance() {
         return instance;
     }
     
     /**
-     * Creates a new instance of RuntimeEnvironment
+     * Creates a new instance of RuntimeEnvironment. Private to ensure a
+     * singleton pattern.
      */
     private RuntimeEnvironment() {
-        threadLocalConfig = false;
         configuration = new Configuration();
         threadmap = Collections.synchronizedMap(new HashMap<Thread, Configuration>());
     }
     
     private Configuration getConfiguration() {
         Configuration ret = configuration;
-        
-        if (threadLocalConfig) {
-            Configuration config = threadmap.get(Thread.currentThread());
-            
-            if (config != null) {
-                ret = config;
-            }
+        Configuration config = threadmap.get(Thread.currentThread());
+
+        if (config != null) {
+            ret = config;
         }
         
         return ret;
     }
     
+    /**
+     * Get the path to the where the index database is stored
+     * @return the path to the index database
+     */
     public String getDataRootPath() {
         return getConfiguration().getDataRoot();
     }
     
-    public String getSourceRootPath() {
-        return getConfiguration().getSourceRoot();
-    }
-    
+    /**
+     * Get a file representing the index database
+     * @return the index database
+     */
     public File getDataRootFile() {
         File ret  = null;
         String file = getDataRootPath();
@@ -101,6 +103,35 @@ public class RuntimeEnvironment {
         return ret;
     }
     
+    /**
+     * Set the path to where the index database is stored
+     * @param data the index database
+     * @throws IOException if the path cannot be resolved
+     */
+    public void setDataRoot(File data) throws IOException {
+        getConfiguration().setDataRoot(data.getCanonicalPath());
+    }
+    
+    /**
+     * Set the path to where the index database is stored
+     * @param dataRoot the index database
+     */
+    public void setDataRoot(String dataRoot) {
+        getConfiguration().setDataRoot(dataRoot);
+    }
+    
+    /**
+     * Get the path to where the sources are located
+     * @return path to where the sources are located
+     */
+    public String getSourceRootPath() {
+        return getConfiguration().getSourceRoot();
+    }
+    
+    /**
+     * Get a file representing the directory where the sources are located
+     * @return A file representing the directory where the sources are located
+     */
     public File getSourceRootFile() {
         File ret  = null;
         String file = getSourceRootPath();
@@ -111,95 +142,179 @@ public class RuntimeEnvironment {
         return ret;
     }
     
-    public void setDataRoot(File data) throws IOException {
-        getConfiguration().setDataRoot(data.getCanonicalPath());
-    }
-    
-    public void setDataRoot(String dataRoot) {
-        getConfiguration().setDataRoot(dataRoot);
-    }
-    
+    /**
+     * Specify the source root
+     * @param source the location of the sources
+     * @throws IOException if the name cannot be resolved
+     */
     public void setSourceRoot(File source) throws IOException {
         getConfiguration().setSourceRoot(source.getCanonicalPath());
     }
     
+    /**
+     * Specify the source root
+     * @param sourceRoot the location of the sources
+     */
     public void setSourceRoot(String sourceRoot) {
         getConfiguration().setSourceRoot(sourceRoot);
     }
     
+    /**
+     * Do we have projects?
+     * @return true if we have projects
+     */
     public boolean hasProjects() {
         List<Project> proj = getProjects();
         return (proj != null && proj.size() > 0);
     }
     
+    /**
+     * Get all of the projects
+     * @return a list containing all of the projects (may be null)
+     */
     public List<Project> getProjects() {
         return getConfiguration().getProjects();
     }
     
+    /**
+     * Set the list of the projects
+     * @param projects the list of projects to use
+     */
     public void setProjects(List<Project> projects) {
         getConfiguration().setProjects(projects);
     }
     
+    /**
+     * Register this thread in the thread/configuration map (so that all
+     * subsequent calls to the RuntimeEnvironment from this thread will use
+     * the same configuration
+     */
     public void register() {
         threadmap.put(Thread.currentThread(), configuration);
     }
     
+    /**
+     * Get the context name of the web application
+     * @return the web applications context name
+     */
     public String getUrlPrefix() {
         return getConfiguration().getUrlPrefix();
     }
     
+    /**
+     * Set the web context name
+     * @param urlPrefix the web applications context name
+     */
     public void setUrlPrefix(String urlPrefix) {
         getConfiguration().setUrlPrefix(urlPrefix);
     }
     
+    /**
+     * Get the name of the ctags program in use
+     * @return the name of the ctags program in use
+     */
     public String getCtags() {
         return getConfiguration().getCtags();
     }
     
+    /**
+     * Specify the CTags program to use
+     * @param ctags the ctags program to use
+     */
     public void setCtags(String ctags) {
         getConfiguration().setCtags(ctags);
     }
     
+    /**
+     * Get the max time a SMC operation may use to avoid beeing cached
+     * @return the max time
+     */
     public int getHistoryReaderTimeLimit() {
         return getConfiguration().getHistoryCacheTime();
     }
     
+    /**
+     * Specify the maximum time a SCM operation should take before it will
+     * be cached (in ms)
+     * @param historyReaderTimeLimit the max time in ms before it is cached
+     */
     public void setHistoryReaderTimeLimit(int historyReaderTimeLimit) {
         getConfiguration().setHistoryCacheTime(historyReaderTimeLimit);
     }
     
+    /**
+     * Is history cache currently enabled?
+     * @return true if history cache is enabled
+     */
     public boolean useHistoryCache() {
         return getConfiguration().isHistoryCache();
     }
     
+    /**
+     * Specify if we should use history cache or not
+     * @param useHistoryCache set false if you do not want to use history cache
+     */
     public void setUseHistoryCache(boolean useHistoryCache) {
         getConfiguration().setHistoryCache(useHistoryCache);
     }
-
+    
+    /**
+     * Should we generate HTML or not during the indexing phase
+     * @return true if HTML should be generated during the indexing phase
+     */
     public boolean isGenerateHtml() {
         return getConfiguration().isGenerateHtml();
     }
     
+    /**
+     * Specify if we should generate HTML or not during the indexing phase
+     * @param generateHtml set this to true to pregenerate HTML
+     */
     public void setGenerateHtml(boolean generateHtml) {
         getConfiguration().setGenerateHtml(generateHtml);
     }
     
-    public void setThreadLocalConfiguration(boolean tls) {
-        threadLocalConfig = tls;
-    }
-    
+    /**
+     * Get the map of external SCM repositories available
+     * @return A map containing all available SCMs
+     */
     public Map<String, ExternalRepository> getRepositories() {
         return getConfiguration().getRepositories();
     }
     
+    /**
+     * Set the map of external SCM repositories
+     * @param repositories the repositories to use
+     */
     public void setRepositories(Map<String, ExternalRepository> repositories) {
         getConfiguration().setRepositories(repositories);
     }
     
-    public Map<Thread, Configuration> getThreadmap() {
-        return threadmap;
+    /**
+     * Set the project that is specified to be the default project to use. The
+     * default project is the project you will search (from the web application)
+     * if the page request didn't contain the cookie..
+     * @param defaultProject The default project to use
+     */
+    public void setDefaultProject(Project defaultProject) {
+        getConfiguration().setDefaultProject(defaultProject);
     }
     
+    /**
+     * Get the project that is specified to be the default project to use. The
+     * default project is the project you will search (from the web application)
+     * if the page request didn't contain the cookie..
+     * @return the default project (may be null if not specified)
+     */
+    public Project getDefaultProject() {
+        return getConfiguration().getDefaultProject();
+    }
+    
+    /**
+     * Read an configuration file and set it as the current configuration.
+     * @param file the file to read
+     * @throws IOException if an error occurs
+     */
     public void readConfiguration(File file) throws IOException {
         XMLDecoder d = new XMLDecoder(
                 new BufferedInputStream(new FileInputStream(file)));
@@ -214,6 +329,11 @@ public class RuntimeEnvironment {
         }
     }
     
+    /**
+     * Write the current configuration to a file
+     * @param file the file to write the configuration into
+     * @throws IOException if an error occurs
+     */
     public void writeConfiguration(File file) throws IOException {
         XMLEncoder e = new XMLEncoder(
                 new BufferedOutputStream(new FileOutputStream(file)));
@@ -221,6 +341,12 @@ public class RuntimeEnvironment {
         e.close();
     }
     
+    /**
+     * Write the current configuration to a socket
+     * @param host the host address to receive the configuration
+     * @param port the port to use on the host
+     * @throws IOException if an error occurs
+     */
     public void writeConfiguration(InetAddress host, int port) throws IOException {
         Socket sock = new Socket(host, port);
         XMLEncoder e = new XMLEncoder(sock.getOutputStream());
@@ -236,12 +362,21 @@ public class RuntimeEnvironment {
     private Thread configurationListenerThread;
     private ServerSocket configServerSocket;
     
+    /**
+     * Try to stop the configuration listener thread
+     */
     public void stopConfigurationListenerThread() {
         try {
             configServerSocket.close();
-        } catch (Exception e) {}        
+        } catch (Exception e) {}
     }
-
+    
+    /**
+     * Start a thread to listen on a socket to receive new configurations
+     * to use.
+     * @param endpoint The socket address to listen on
+     * @return true if the endpoint was available (and the thread was started)
+     */
     public boolean startConfigurationListenerThread(SocketAddress endpoint) {
         boolean ret = false;
         
@@ -249,7 +384,6 @@ public class RuntimeEnvironment {
             configServerSocket = new ServerSocket();
             configServerSocket.bind(endpoint);
             ret = true;
-            threadLocalConfig = true;
             final ServerSocket sock = configServerSocket;
             Thread t = new Thread(new Runnable() {
                 public void run() {

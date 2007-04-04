@@ -22,15 +22,12 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
 package org.opensolaris.opengrok.index;
 
 import java.awt.GraphicsEnvironment;
 import java.io.*;
 import java.net.InetAddress;
+import java.text.ParseException;
 import java.util.*;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
@@ -41,17 +38,17 @@ import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.scope.MainFrame;
+import org.opensolaris.opengrok.util.Getopt;
 
 /**
  * Creates and updates an inverted source index
  * as well as generates Xref, file stats etc., if specified
  * in the options
  */
-
 public class Indexer {
-    private static boolean verbose = true;
+    private static boolean verbose = false;
     private static String usage = "Usage: " +
-            "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
+            "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-p project-path] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
             "       opengrok.jar [-O | -l | -t] DATA_ROOT\n" +
             "\t-q run quietly\n" +
             "\t-e economical - consumes less disk space\n" +
@@ -60,11 +57,12 @@ public class Indexer {
             "\t-W Write the current running configuration\n" +
             "\t-U Send configuration to hostname:port\n" +
             "\t-P Generate a project for each toplevel directory\n" +
+            "\t-p Use the project specified by the project path as the default project\n" +
             "\t-n Do not generate indexes\n" +
             "\t-H Start a threadpool to read history history\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
-            "\t-S Search and add \"External\" repositories (Mercurial...)\n" +
+            "\t-S Search and add \"External\" repositories (Mercurial etc)\n" +
             "\t-s SRC_ROOT is root directory of source tree\n" +
             "\t   default: last used SRC_ROOT\n" +
             "\tDATA_ROOT - is where output of indexer is stored\n" +
@@ -74,7 +72,9 @@ public class Indexer {
             "\t-l list all files in the index \n" +
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
-    
+
+    private static String options = "qec:R:W:U:Pp:nHw:i:Ss:O:l:t:v";
+
     /**
      * Program entry point
      * @param argv argument vector
@@ -82,7 +82,7 @@ public class Indexer {
     public static void main(String argv[]) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean runIndex = true;
-        
+
         if(argv.length == 0) {
             if (GraphicsEnvironment.isHeadless()) {
                 System.err.println("No display available for the Graphical User Interface");
@@ -100,116 +100,104 @@ public class Indexer {
             String configHost = null;
             boolean addProjects = false;
             boolean refreshHistory = false;
-            
+            String defaultProject = null;
+
+            // Parse command line options:
+            Getopt getopt = new Getopt(argv, options);
+            try {
+                getopt.parse();
+            } catch (ParseException ex) {
+                System.err.println("OpenGrok: " + ex.getMessage());
+                System.err.println(usage);
+                System.exit(1);
+            }
+
             try{
-                if (argv == null || argv.length < 2) {
-                    System.err.println(usage);
-                    System.exit(1);
-                }
-                for (int i = 0; i < argv.length ; i++) {
-                    if (argv[i].equals("-O")) {
-                        if (argv.length == 2 && i+1 < argv.length) {
-                            Index.doOptimize(new File(argv[i+1]));
-                            System.exit(0);
+                int cmd;
+                while ((cmd = getopt.getOpt()) != -1) {
+                    switch (cmd) {
+                    case 'O':
+                        Index.doOptimize(new File(getopt.getOptarg()));
+                        System.exit(0);
+                        break;
+                    case 'l':
+                        Index.doList(new File(getopt.getOptarg()));
+                        System.exit(0);
+                        break;
+                    case 't':
+                        Index.doDict(new File(getopt.getOptarg()));
+                        System.exit(0);
+                        break;
+                    case 'g':
+                        IgnoredNames.glob = new GlobFilenameFilter(getopt.getOptarg());
+                        break;
+
+                    case 'q': verbose = false; break;
+                    case 'e': env.setGenerateHtml(false); break;
+                    case 'P': addProjects = true; break;
+                    case 'p': defaultProject = getopt.getOptarg(); break;
+                    case 'c': env.setCtags(getopt.getOptarg()); break;
+                    case 'w': {
+                        String webapp = getopt.getOptarg();
+                        if (webapp.startsWith("/") || webapp.startsWith("http")) {
+                            ;
                         } else {
-                            System.err.println("ERROR: Invalid option or No data root specified!");
-                            System.err.println(usage);
+                            webapp = "/" + webapp;
+                        }
+                        if (webapp.endsWith("/")) {
+                            env.setUrlPrefix(webapp + "s?");
+                        } else {
+                            env.setUrlPrefix(webapp + "/s?");
+                        }
+                    }
+                    break;
+                    case 'W': configFilename = getopt.getOptarg(); break;
+                    case 'U': configHost = getopt.getOptarg(); break;
+                    case 'R':
+                        env.readConfiguration(new File(getopt.getOptarg()));
+                        break;
+                    case 'n': runIndex = false; break;
+                    case 'H': refreshHistory = true; break;
+                    case 'v': verbose = true; break;
+
+                    case 's': {
+                        File file = new File(getopt.getOptarg());
+                        if (!file.isDirectory()) {
+                            System.err.println("ERROR: No such directory: " + file.toString());
                             System.exit(1);
                         }
-                    } else if (argv[i].equals("-g")) {
-                        if(i+1 < argv.length) {
-                            IgnoredNames.glob = new GlobFilenameFilter(argv[++i]);
-                        }
-                    } else if (argv[i].equals("-q")) {
-                        verbose = false;
-                    } else if (argv[i].equals("-e")) {
-                        env.setGenerateHtml(true);
-                    } else if (argv[i].equals("-P")) {
-                        addProjects = true;
-                    } else if (argv[i].equals("-c")) {
-                        if(i+1 < argv.length) {
-                            env.setCtags(argv[++i]);
-                        }
-                    } else if (argv[i].equals("-w")) {
-                        if(i+1 < argv.length) {
-                            String webapp = argv[++i];
-                            if(webapp.startsWith("/") || webapp.startsWith("http")) {
-                                ;
-                            } else {
-                                webapp = "/" + webapp;
-                            }
-                            if(webapp.endsWith("/")) {
-                                env.setUrlPrefix(webapp + "s?");
-                            } else {
-                                env.setUrlPrefix(webapp + "/s?");
-                            }
-                        }
-                    } else if (argv[i].equals("-W")) {
-                        if(i+1 < argv.length) {
-                            configFilename = argv[++i];
-                        }
-                    } else if (argv[i].equals("-U")) {
-                        if(i+1 < argv.length) {
-                            configHost = argv[++i];
-                        }
-                    } else if (argv[i].equals("-R")) {
-                        if(i+1 < argv.length) {
-                            env.readConfiguration(new File(argv[++i]));
-                        }
-                    } else if (argv[i].equals("-n")) {
-                        runIndex = false;
-                    } else if (argv[i].equals("-H")) {
-                        refreshHistory = true;
-                    } else if (argv[i].equals("-l")) {
-                        if (argv.length == 2 && i+1 < argv.length) {
-                            Index.doList(new File(argv[i+1]));
-                            System.exit(0);
-                        } else {
-                            System.err.println("ERROR: Invalid option or No data root specified!");
-                            System.err.println(usage);
-                            System.exit(1);
-                        }
-                    } else if (argv[i].equals("-t")) {
-                        if (argv.length == 2 && i+1 < argv.length) {
-                            Index.doDict(new File(argv[i+1]));
-                            System.exit(0);
-                        } else {
-                            System.err.println("ERROR: Invalid or option No data root specified!");
-                            System.err.println(usage);
-                            System.exit(1);
-                        }
-                    } else if (argv[i].equals("-s")) {
-                        if(i+1 < argv.length) {
-                            File file = new File(argv[++i]);
-                            if (!file.isDirectory()) {
-                                System.err.println("ERROR: No such directory: " + file.toString());
-                                System.exit(1);
-                            }
-                            
-                            env.setSourceRoot(file);
-                        }
-                    } else if (argv[i].equals("-i")) {
-                        if(i+1 < argv.length) {
-                            IgnoredNames.add(argv[++i]);
-                        }
-                    } else if (argv[i].equals("-S")) {
-                        searchRepositories = true;
-                    } else if (!argv[i].startsWith("-")) {
-                        if (env.getDataRootPath() == null)
-                            env.setDataRoot(argv[i]);
-                        else
-                            subFiles.add(argv[i]);
-                    } else {
-                        System.err.println(usage);
+
+                        env.setSourceRoot(file);
+                        break;
+                    }
+
+                    case 'i':    IgnoredNames.add(getopt.getOptarg()); break;
+                    case 'S' : searchRepositories = true; break;
+                    default: 
+                        System.err.println("Unhandled option: " + (char)cmd);
                         System.exit(1);
+                    }
+                }
+
+                int optind = getopt.getOptind();
+                if (optind != -1) {
+                    if (optind < argv.length) {
+                        env.setDataRoot(argv[optind]);
+                        ++optind;
+                    }
+
+                    while (optind < argv.length) {
+                        subFiles.add(argv[optind]);
+                        ++optind;
                     }
                 }
                 
                 if (env.getDataRootPath()  == null) {
-                    System.out.println(usage);
+                    System.err.println("ERROR: Please specify a DATA ROOT path");
+                    System.err.println(usage);
                     System.exit(1);
                 }
-                
+
                 if (env.getSourceRootFile() == null) {
                     File srcConfig = new File(env.getDataRootPath(), "SRC_ROOT");
                     String line = null;
@@ -227,18 +215,18 @@ public class Indexer {
                         System.exit(1);
                     }
                     env.setSourceRoot(line);
-                    
+
                     if (!env.getSourceRootFile().isDirectory()) {
                         System.err.println("ERROR: No such directory:" + line);
                         System.err.println(usage);
                         System.exit(1);
                     }
                 }
-                
+
                 if (! Index.setExuberantCtags(env.getCtags())) {
                     System.exit(1);
                 }
-                
+
                 if (searchRepositories) {
                     System.out.println("Scanning for repositories...");
                     long start = System.currentTimeMillis();
@@ -246,18 +234,43 @@ public class Indexer {
                     long time = (System.currentTimeMillis() - start) / 1000;
                     System.out.println("Done searching for repositories (" + time + "s)");
                 }
-                
+
                 if (addProjects) {
-                    File files[] = env.getSourceRootFile().listFiles();                    
+                    File files[] = env.getSourceRootFile().listFiles();
                     List<Project> projects = env.getProjects();
                     projects.clear();
                     for (File file : files) {
-                        if (!file.getName().startsWith(".")) {
+                        if (!file.getName().startsWith(".") && file.isDirectory()) {
                             projects.add(new Project(file.getName(), "/" + file.getName()));
                         }
                     }
+
+                    // The projects should be sorted...
+                    Collections.sort(projects, new Comparator() {
+                        public int compare(Object obj1, Object obj2){
+                            String s1 = ((Project)obj1).getDescription();
+                            String s2 = ((Project)obj2).getDescription();
+
+                            int ret;
+                            if (s1 == null) {
+                                ret = (s2 == null) ? 0 : 1;
+                            } else {
+                                ret = s1.compareTo(s2);
+                            }
+                            return ret;
+                        }
+                    });
                 }
-                
+
+                if (defaultProject != null) {
+                    for (Project p : env.getProjects()) {
+                        if (p.getPath().equals(defaultProject)) {
+                            env.setDefaultProject(p);
+                            break;
+                        }
+                    }
+                }
+
                 if (configFilename != null) {
                     System.out.println("Writing configuration to " + configFilename);
                     System.out.flush();
@@ -265,7 +278,7 @@ public class Indexer {
                     System.out.println("Done...");
                     System.out.flush();
                 }
-                
+
                 if (refreshHistory) {
                     for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
                         try {

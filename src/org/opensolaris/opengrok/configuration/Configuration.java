@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.configuration;
@@ -30,8 +30,10 @@ import java.util.Map;
 import org.opensolaris.opengrok.history.ExternalRepository;
 
 /**
- *
- * @author Trond Norbye
+ * Placeholder class for all configuration variables. Due to the multithreaded
+ * nature of the web application, each thread will use the same instance of the
+ * configuration object for each page request. Class and methods should have
+ * package scope, but that didn't work with the XMLDecoder/XMLEncoder.
  */
 public class Configuration {
     private String ctags;
@@ -43,6 +45,7 @@ public class Configuration {
     private Map<String, ExternalRepository> repositories;
     private String urlPrefix;
     private boolean generateHtml;
+    private Project defaultProject;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -116,7 +119,7 @@ public class Configuration {
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;
     }
-
+    
     public void setGenerateHtml(boolean generateHtml) {
         this.generateHtml = generateHtml;
     }
@@ -124,7 +127,12 @@ public class Configuration {
     public boolean isGenerateHtml() {
         return generateHtml;
     }
-
-
-
+    
+    public void setDefaultProject(Project defaultProject) {
+        this.defaultProject = defaultProject;
+    }
+    
+    public Project getDefaultProject() {
+        return defaultProject;
+    }
 }

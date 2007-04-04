@@ -30,6 +30,11 @@ env.register();
 if (env.hasProjects()) {
     hasProjects = true;
     projects = env.getProjects();
+    Project defaultProject = env.getDefaultProject();
+    if (defaultProject != null) {
+       project = defaultProject.getPath();
+    }
+
     
     Cookie[] cookies = request.getCookies();
     if (cookies != null) {
@@ -41,7 +46,7 @@ if (env.hasProjects()) {
         }
     }
     
-// see if a new parameter is passed...
+    // see if a new parameter is passed...
     String p[] = request.getParameterValues("project");
     if (p != null) {
         StringBuilder sb = new StringBuilder();
@@ -52,7 +57,7 @@ if (env.hasProjects()) {
         project = sb.toString().trim();
     }
     
-// see that this is a valid project..
+    // see that this is a valid project..
     if (project != null) {
         StringBuilder sb = new StringBuilder();
         for (String aproj : project.split(" ")) {
@@ -73,7 +78,7 @@ if (env.hasProjects()) {
         project = "";
     }
     
-// update the cookie
+    // update the cookie
     Cookie cookie = new Cookie("OpenGrok/project", project);
     response.addCookie(cookie);
 }

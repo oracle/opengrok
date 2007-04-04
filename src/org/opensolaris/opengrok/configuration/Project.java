@@ -24,33 +24,56 @@
 package org.opensolaris.opengrok.configuration;
 
 /**
- *
- * @author Trond Norbye
- */
+ * Placeholder for the information that builds up a project
+ */ 
 public class Project {
     private String path;
     private String description;
     
+    /**
+     * Get a textual description of this project
+     * @return a textual description of the project
+     */
     public String getDescription() {
         return description;
     }
     
+    /**
+     * Get the path (relative from source root) where this project is located
+     * @return the relative path
+     */
     public String getPath() {
         return path;
     }
     
+    /**
+     * Set a textual description of this project
+     * @param description a textual description of the project
+     */
     public void setDescription(String description) {
         this.description = description;
     }
     
+    /**
+     * Set the path (relative from source root) this project is located
+     * @param path the relative path from source sroot where this project is
+     *             located.
+     */
     public void setPath(String path) {
         this.path = path;
     }
     
-    /** Creates a new instance of Project */
+    /**
+     * Creates a new instance of Project
+     */
     public Project() {
     }
     
+    /**
+     * Create a new instance of Project with a given description and path
+     * @param description the description of this project
+     * @param path the path to where this project is located (relative from source root)
+     */
     public Project(String description, String path) {
         this.description = description;
         this.path = path;
