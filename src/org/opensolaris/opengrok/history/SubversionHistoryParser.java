@@ -58,7 +58,7 @@ public class SubversionHistoryParser implements HistoryParser {
         SVNClient client = new SVNClient();
 
         LogMessage[] messages =
-            client.logMessages(file.getPath(), Revision.START, Revision.BASE);
+            client.logMessages(file.getPath(), Revision.START, Revision.BASE, false);
         final LinkedHashMap<Long, HistoryEntry> revisions =
             new LinkedHashMap<Long, HistoryEntry>();
         for (LogMessage msg : messages) {
