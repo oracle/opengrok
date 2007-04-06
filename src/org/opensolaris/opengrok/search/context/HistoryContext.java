@@ -31,12 +31,9 @@ package org.opensolaris.opengrok.search.context;
 import java.io.*;
 import java.util.*;
 import org.apache.lucene.search.*;
-import org.apache.commons.jrcs.rcs.*;
-import org.apache.commons.jrcs.diff.*;
 import org.opensolaris.opengrok.history.*;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.web.Util;
 
 /**
  * it is supposed to get the matching lines from history log files.
