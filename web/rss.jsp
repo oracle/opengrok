@@ -43,7 +43,7 @@ String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if(path == null) path = "";
-RuntimeEnvironment env = RuntimeEnvironmen.getInstance();
+RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 env.register();
 String rawSource = env.getSourceRootPath();
 String resourcePath = rawSource + path;
@@ -113,7 +113,7 @@ if (resourcePath.length() < rawSource.length()
             }
             apath = paths.toString();
         }
-        hr = new DirectoryHistoryReader(env.getDataRootPath() + "/index", apath, env.getSourceRootPath());
+        hr = new DirectoryHistoryReader(apath);
     } else {
         File f = new File(rawSource + parent, basename);
         hr = HistoryGuru.getInstance().getHistoryReader(f);
@@ -128,11 +128,9 @@ if (resourcePath.length() < rawSource.length()
     <title><%=Util.Htmlize(hr.getComment())%></title>
     <description><%
     if(isDir) {
-        ArrayList files = hr.getFiles();
+        List<String> files = hr.getFiles();
         if(files != null) {
-            Iterator ifiles = files.iterator();
-            while(ifiles.hasNext()) {
-                String ifile = (String)ifiles.next();
+            for (String ifile : files) {
     %><%=ifile%>
 <%
             }

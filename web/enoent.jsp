@@ -24,7 +24,8 @@ ident	"@(#)enoent.jsp 1.3     05/12/02 SMI"
 --%><%@ page import = "javax.servlet.*,
 javax.servlet.http.*,
 java.lang.*,
-java.io.*"
+java.io.*,
+org.opensolaris.opengrok.configuration.*"
 %><%@ page session="false" %><%@ page isErrorPage="true" %><%
 
 String context = request.getContextPath();
