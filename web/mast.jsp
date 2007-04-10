@@ -49,6 +49,7 @@ boolean isDir = false;
 EftarFileReader ef = null;
 String parent = null;
 String parentBasename = resourceFile.getParentFile().getName();
+
 if(resourcePath.length() < rawSource.length()
 || IgnoredNames.ignore(path)
 || IgnoredNames.ignore(parentBasename)
@@ -148,7 +149,12 @@ if ((!isDir && noHistory) || servlet.startsWith("/hi")) {
 	%><a id="history" href="<%=context%>/history<%=path%>">History</a> |<%
 }
         if (!isDir) {
-        %> <a id="download" href="<%=context%>/raw<%=path%>">Download</a> | <%
+           String rev = request.getParameter("r");
+           if (rev == null || rev.equals("")) {
+%> <a id="download" href="<%=context%>/raw<%=path%>">Download</a> | <%
+           } else {
+%> <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a> | <%
+           }
         }
 
 %> <input id="search" name="q" class="q"/>
