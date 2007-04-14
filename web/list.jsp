@@ -134,7 +134,7 @@ if (g == Genre.PLAIN) {
     } else {
 // requesting cross referenced file -------------
         
-        String xrefSource = environment.getSourceRootPath() + "/xref";
+        String xrefSource = environment.getDataRootPath() + "/xref";
         String resourceXFile = xrefSource + path;
         File xrefFile = new File(resourceXFile);
         if(xrefFile.exists()) {
