@@ -88,4 +88,10 @@ public class RCSHistoryParser implements HistoryParser {
         // repository is stored locally, no need to cache
         return false;
     }
+
+    public boolean supportsAnnotation() {
+        // jrcs's documentation says that it is possible to get an annotated
+        // file, but that doesn't seem to work
+        return false;
+    }
 }

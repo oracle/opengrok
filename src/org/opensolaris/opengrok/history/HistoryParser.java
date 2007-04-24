@@ -65,4 +65,11 @@ interface HistoryParser {
      * @return <code>true</code> if the history should be cached
      */
     boolean isCacheable();
+
+    /**
+     * Checks whether this parser can annotate files.
+     *
+     * @return <code>true</code> if annotation is supported
+     */
+    boolean supportsAnnotation();
 }

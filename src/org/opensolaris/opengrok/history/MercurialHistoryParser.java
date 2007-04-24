@@ -145,4 +145,9 @@ public class MercurialHistoryParser implements HistoryParser {
     public boolean isCacheable() {
         return true;
     }
+
+    public boolean supportsAnnotation() {
+        // not implemented yet
+        return false;
+    }
 }

@@ -66,4 +66,8 @@ public class DirectoryHistoryParser implements HistoryParser {
     public boolean isCacheable() {
         return false;
     }
+
+    public boolean supportsAnnotation() {
+        return false;
+    }
 }

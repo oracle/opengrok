@@ -117,4 +117,8 @@ public class SubversionHistoryParser implements HistoryParser {
     public boolean isCacheable() {
         return true;
     }
+
+    public boolean supportsAnnotation() {
+        return true;
+    }
 }

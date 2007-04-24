@@ -94,6 +94,11 @@ public class SCCSHistoryParser implements HistoryParser {
         return false;
     }
 
+    public boolean supportsAnnotation() {
+        // not implemented yet
+        return false;
+    }
+
     /**
      * Read a single line of delta record
      *
