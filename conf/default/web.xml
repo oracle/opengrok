@@ -48,6 +48,10 @@
       <param-name>BUG_PAGE</param-name>
       <param-value>http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=</param-value>
     </init-param>
+    <init-param>
+      <param-name>BUG_PATTERN</param-name>
+      <param-value>\b([12456789][0-9]{6})\b</param-value>
+    </init-param>
   </servlet>
   <servlet>
     <servlet-name>lister</servlet-name>

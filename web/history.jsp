@@ -37,7 +37,11 @@ if (path.length() > 0 && valid) {
     boolean striked = false;
     String userPage = getInitParameter("USER_PAGE");
     String bugPage = getInitParameter("BUG_PAGE");
-    Pattern bugPattern = Pattern.compile("\\b([12456789][0-9]{6})\\b");
+    String bugRegex = getInitParameter("BUG_PATTERN");
+    if(bugRegex == null || bugRegex.equals("")) {
+        bugRegex = "\\b([12456789][0-9]{6})\\b";
+    }
+    Pattern bugPattern = Pattern.compile(bugRegex);
     Format df = new SimpleDateFormat("dd-MMM-yyyy");
     Date tstart = new Date();
     File f = new File(rawSource + path);
