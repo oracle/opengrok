@@ -30,7 +30,6 @@ package org.opensolaris.opengrok.history;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.Util;
@@ -186,10 +185,10 @@ public class HistoryGuru {
      *
      * @param file the file to annotate
      * @param rev the revision to annotate (<code>null</code> means BASE)
-     * @return list of <code>LineInfo</code> objects for each line (or
-     * <code>null</code> if the backend doesn't support annotations)
+     * @return file annotation, or <code>null</code> if the
+     * <code>HistoryParser</code> does not support annotation
      */
-    public List<LineInfo> annotate(File file, String rev) throws Exception {
+    public Annotation annotate(File file, String rev) throws Exception {
         Class<? extends HistoryParser> parserClass = getHistoryParser(file);
         if (parserClass != null) {
             HistoryParser parser = parserClass.newInstance();
@@ -400,15 +399,15 @@ public class HistoryGuru {
             hr.close();
 
             System.out.println("-----Annotate");
-            List<LineInfo> annotation = HistoryGuru.getInstance().annotate(
+            Annotation annotation = HistoryGuru.getInstance().annotate(
                     f, (args.length > 1 ? args[1] : null));
             if (annotation == null) {
                 System.out.println("<null>");
             } else {
                 for (int i = 1; i <= annotation.size(); i++) {
-                    LineInfo li = annotation.get(i-1);
-                    System.out.println("Line " + i + "\t" + li.getRevision() +
-                                       ", " + li.getAuthor());
+                    System.out.println("Line " + i + "\t" +
+                                       annotation.getRevision(i) + ", " +
+                                       annotation.getAuthor(i));
                 }
             }
         } catch (Exception e) {

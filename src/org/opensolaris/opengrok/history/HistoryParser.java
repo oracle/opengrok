@@ -25,7 +25,6 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Interface for parsers which read a history log and return an object
@@ -51,13 +50,11 @@ interface HistoryParser {
      * <code>null</code> to annotate the checked out revision
      * @param repository the external repository (or <code>null</code>
      * if no external repository is used)
-     * @return a list of <code>LineInfo</code> objects which describe
-     * each line of the file, or <code>null</code> if annotation is
-     * not supported for this <code>HistoryParser</code>
+     * @return an object representing the file annotation, or <code>null</code>
+     * if annotation is not supported for this <code>HistoryParser</code>
      */
-    List<LineInfo> annotate(File file, String revision,
-                            ExternalRepository repository)
-        throws Exception;
+    Annotation annotate(File file, String revision,
+                        ExternalRepository repository) throws Exception;
 
     /**
      * Check whether the parsed history should be cached.

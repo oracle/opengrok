@@ -79,8 +79,8 @@ public class RCSHistoryParser implements HistoryParser {
         }
     }
 
-    public List<LineInfo> annotate(File file, String revision,
-                                   ExternalRepository repository) {
+    public Annotation annotate(File file, String revision,
+                               ExternalRepository repository) {
         return null;
     }
 

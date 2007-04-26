@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 import org.tigris.subversion.javahl.BlameCallback;
 import org.tigris.subversion.javahl.ClientException;
@@ -88,20 +87,19 @@ public class SubversionHistoryParser implements HistoryParser {
      * @param revision the revision of the file (<code>null</code>
      * means BASE)
      * @param repository external repository (ignored)
-     * @return list of <code>LineInfo</code> objects
+     * @return file annotation
      */
-    public List<LineInfo> annotate(File file, String revision,
-                                   ExternalRepository repository)
+    public Annotation annotate(File file, String revision,
+                               ExternalRepository repository)
         throws ClientException
     {
         SVNClient client = new SVNClient();
 
-        final ArrayList<LineInfo> annotation = new ArrayList<LineInfo>();
+        final Annotation annotation = new Annotation();
         BlameCallback callback = new BlameCallback() {
                 public void singleLine(Date changed, long revision,
                                        String author, String line) {
-                    annotation.add(new LineInfo(Long.toString(revision),
-                                                author));
+                    annotation.addLine(Long.toString(revision), author);
                 }
             };
 

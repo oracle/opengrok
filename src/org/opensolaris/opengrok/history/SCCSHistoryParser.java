@@ -84,8 +84,8 @@ public class SCCSHistoryParser implements HistoryParser {
         return history;
     }
 
-    public List<LineInfo> annotate(File file, String revision,
-                                   ExternalRepository repository) {
+    public Annotation annotate(File file, String revision,
+                               ExternalRepository repository) {
         return null;
     }
 
