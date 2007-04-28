@@ -49,7 +49,7 @@ public class TroffAnalyzer extends FileAnalyzer {
 	"'\\\"", ".so", ".\\\"", ".TH"
     };
     
-    public static Genre g = Genre.XREFABLE;
+    public static Genre g = Genre.PLAIN;
     
     public Genre getGenre() {
 	return this.g;
