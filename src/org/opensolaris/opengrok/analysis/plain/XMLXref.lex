@@ -31,6 +31,7 @@ import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.Annotation;
 
 %%
 %public
@@ -42,9 +43,10 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 %{
   Writer out;
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
+  Annotation annotation;
   public void write(Writer out) throws IOException {
   	this.out = out;
-        Util.readableLine(1, out);
+        Util.readableLine(1, out, annotation);
 	yyline = 2;
 	while(yylex() != YYEOF);
   }
@@ -54,6 +56,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
+	annotation = null;
   }
 
   public int getLine() {
@@ -157,7 +160,7 @@ NameChar = {FileChar}|"."
 	}
 
 "&"	{out.write( "&amp;");}
-\n	{Util.readableLine(yyline, out); }
+ \n	{Util.readableLine(yyline, out, annotation); }
 [ !-~\t\r\f]	{out.write(yycharat(0));}
 .	{}
 }

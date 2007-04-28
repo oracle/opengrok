@@ -32,6 +32,7 @@ import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
+import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * Analyzes [tn]roff files
@@ -116,9 +117,12 @@ public class TroffAnalyzer extends FileAnalyzer {
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
      * @param out Output xref writer
+     * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out) throws IOException {
+    public static void writeXref(InputStream in, Writer out,
+                                 Annotation annotation) throws IOException {
 	TroffXref xref = new TroffXref(in);
+        xref.annotation = annotation;
 	out.write("</pre>");
 	xref.write(out);
 	out.write("<pre>");

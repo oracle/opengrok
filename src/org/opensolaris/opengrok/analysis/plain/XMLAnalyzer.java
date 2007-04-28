@@ -32,6 +32,7 @@ import org.opensolaris.opengrok.analysis.plain.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
+import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * Analyzes HTML files
@@ -118,9 +119,12 @@ public class XMLAnalyzer extends FileAnalyzer {
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
      * @param out Output xref writer
+     * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out) throws IOException {
+    public static void writeXref(InputStream in, Writer out,
+                                 Annotation annotation) throws IOException {
 	XMLXref xref = new XMLXref(in);
+        xref.annotation = annotation;
 	xref.write(out);
     }
 }

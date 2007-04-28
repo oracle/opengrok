@@ -113,8 +113,10 @@ public class FileAnalyzer extends Analyzer {
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
      * @param out Output xref writer
+     * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out) throws IOException {
+    public static void writeXref(InputStream in, Writer out,
+                                 Annotation annotation) throws IOException {
 	throw new UnsupportedOperationException("Not yet implemented");
     }
     

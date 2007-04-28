@@ -35,6 +35,7 @@ import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.Annotation;
 
 %%
 %public
@@ -46,6 +47,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 %{
   Writer out;
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
+  Annotation annotation;
   private HashMap<String, HashMap<Integer, String>> defs = null;
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
   	this.defs = defs;
@@ -57,11 +59,12 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
+	annotation = null;
   }
 
   public void write(Writer out) throws IOException {
   	this.out = out;
-        Util.readableLine(1, out);
+        Util.readableLine(1, out, annotation);
 	yyline = 2;
 	while(yylex() != YYEOF) {
 	}
@@ -193,7 +196,10 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
 }
 
 <SCOMMENT> {
-{WhiteSpace}*\n	{ yybegin(YYINITIAL); out.write("</span>");Util.readableLine(yyline, out);}
+  {WhiteSpace}*\n {
+    yybegin(YYINITIAL); out.write("</span>");
+    Util.readableLine(yyline, out, annotation);
+  }
 }
 
 
@@ -201,7 +207,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
 "&"	{out.write( "&amp;");}
 "<"	{out.write( "&lt;");}
 ">"	{out.write( "&gt;");}
-{WhiteSpace}*\n	{ Util.readableLine(yyline, out); }
+{WhiteSpace}*\n	{ Util.readableLine(yyline, out, annotation); }
  {WhiteSpace}	{ out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
  [!-~]	{ out.write(yycharat(0)); }
  .	{ }

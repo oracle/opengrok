@@ -31,6 +31,7 @@ import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.Annotation;
 
 %%
 %public
@@ -42,6 +43,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 %{
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   Writer out;
+  Annotation annotation;
   private HashMap<String, HashMap<Integer, String>> defs = null;
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
   	this.defs = defs;
@@ -53,11 +55,12 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
+	annotation = null;
   }
 
   public void write(Writer out) throws IOException {
   	this.out = out;
-        Util.readableLine(1, out);
+        Util.readableLine(1, out, annotation);
 	yyline = 2;
 	while(yylex() != YYEOF) {
 	}
@@ -175,8 +178,8 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <SCOMMENT> {
-//\n {WhiteSpace}* "#"  { Util.readableLine(yyline, out); out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
-\n	{ yybegin(YYINITIAL); out.write("</span>"); Util.readableLine(yyline, out);}
+\n { yybegin(YYINITIAL); out.write("</span>");
+     Util.readableLine(yyline, out, annotation);}
 }
 
 
@@ -191,7 +194,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 "&"	{out.write( "&amp;");}
 "<"	{out.write( "&lt;");}
 ">"	{out.write( "&gt;");}
- \n	{ Util.readableLine(yyline, out); }
+ \n	{ Util.readableLine(yyline, out, annotation); }
 {WhiteSpace}+	{ out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
 [!-~]	{ out.write(yycharat(0)); }
  .	{ }

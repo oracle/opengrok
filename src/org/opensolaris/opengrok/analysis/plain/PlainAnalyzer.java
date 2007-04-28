@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.*;
 import java.util.*;
 import java.util.prefs.*;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * Analyzer for plain text files
@@ -158,9 +159,12 @@ public class PlainAnalyzer extends FileAnalyzer {
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
      * @param out Output xref writer
+     * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out) throws IOException {
+    public static void writeXref(InputStream in, Writer out,
+                                 Annotation annotation) throws IOException {
         PlainXref xref = new PlainXref(in);
+        xref.annotation = annotation;
         xref.write(out);
     }
 }

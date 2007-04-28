@@ -26,7 +26,6 @@ java.lang.*,
 javax.servlet.http.*,
 java.util.*,
 java.io.*,
-java.text.*,  
 org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.index.*,
 org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
@@ -44,6 +43,7 @@ if(!isDir && ef != null) {
 }
 
 if (valid) {
+    boolean annotate = Boolean.parseBoolean(request.getParameter("a"));
     if (isDir) {
 // If requesting a Directory listing -------------
         DirectoryListing dl = new DirectoryListing(ef);
@@ -98,7 +98,9 @@ if (valid) {
 		%><div id="src"><span class="pagetitle"><%=basename%> revision <%=rev%> </span><pre>
 <%
 if (g == Genre.PLAIN) {
-    AnalyzerGuru.writeXref(a, in, out);
+    Annotation annotation = annotate ?
+        HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
+    AnalyzerGuru.writeXref(a, in, out, annotation);
 } else if (g == Genre.IMAGE) {
 			%><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
 } else if (g == Genre.HTML) {
@@ -137,7 +139,7 @@ if (g == Genre.PLAIN) {
         String xrefSource = environment.getDataRootPath() + "/xref";
         String resourceXFile = xrefSource + path;
         File xrefFile = new File(resourceXFile);
-        if(xrefFile.exists()) {
+        if(xrefFile.exists() && !annotate) {
             char[] buf = new char[8192];
             BufferedReader br = new BufferedReader(new FileReader(resourceXFile));
             int len = 0;
@@ -166,7 +168,9 @@ if (g == Genre.PLAIN) {
                 }
             } else if(g == Genre.PLAIN) {
             %><div id="src"><pre><%
-            AnalyzerGuru.writeXref(a, bin, out);
+            Annotation annotation = annotate ?
+                HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
+            AnalyzerGuru.writeXref(a, bin, out, annotation);
             %></pre></div><%
             } else {
 	    %> Click <a href="<%=context%>/raw<%=path%>">download <%=basename%></a><%

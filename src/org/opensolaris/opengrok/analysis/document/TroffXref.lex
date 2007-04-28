@@ -31,6 +31,7 @@ import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.Annotation;
 
 %%
 %public
@@ -43,6 +44,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
   char tab;
   boolean p = false;
   Writer out;
+  Annotation annotation;
   private HashMap<String, HashMap<Integer, String>> defs = null;
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
   	this.defs = defs;
@@ -58,6 +60,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
+	annotation = null;
   }
 
   public void write(Writer out) throws IOException {

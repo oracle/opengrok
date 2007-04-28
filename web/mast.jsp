@@ -26,7 +26,6 @@ java.lang.*,
 javax.servlet.http.*,
 java.util.*,
 java.io.*,
-java.text.*,
 org.opensolaris.opengrok.index.*,
 org.opensolaris.opengrok.configuration.*
 "

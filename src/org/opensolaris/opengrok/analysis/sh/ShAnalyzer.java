@@ -32,6 +32,7 @@ import org.apache.lucene.analysis.*;
 import java.io.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.*;
+import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * Analyzes Shell scripts/Conf files etc.,
@@ -107,9 +108,12 @@ public class ShAnalyzer extends PlainAnalyzer {
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
      * @param out Output xref writer
+     * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out) throws IOException {
+    public static void writeXref(InputStream in, Writer out,
+                                 Annotation annotation) throws IOException {
         ShXref xref = new ShXref(in);
+        xref.annotation = annotation;
         xref.write(out);
     }
 }

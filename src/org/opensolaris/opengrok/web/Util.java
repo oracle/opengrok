@@ -31,6 +31,7 @@ package org.opensolaris.opengrok.web;
 import java.util.regex.*;
 import java.text.*;
 import java.io.*;
+import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * File for useful functions
@@ -118,7 +119,8 @@ public class Util {
         }
     }
     
-    public static void readableLine(int num, Writer out) throws IOException {
+    public static void readableLine(int num, Writer out, Annotation annotation)
+            throws IOException {
         String snum = String.valueOf(num);
         if (num > 1) {
             out.write("\n");
@@ -131,6 +133,23 @@ public class Util {
         out.write((num > 999 ? "   " : (num > 99 ? "    " : (num > 9 ? "     " : "      "))));
         out.write(snum);
         out.write(" </a>");
+        if (annotation != null) {
+            String r = annotation.getRevision(num);
+            out.write("<span class=\"l\"> ");
+            for (int i = r.length(); i < annotation.getWidestRevision(); i++) {
+                out.write(" ");
+            }
+            out.write(r);
+            out.write(" </span>");
+
+            String a = annotation.getAuthor(num);
+            out.write("<span class=\"l\"> ");
+            for (int i = a.length(); i < annotation.getWidestAuthor(); i++) {
+                out.write(" ");
+            }
+            out.write(a);
+            out.write(" </span>");
+        }
     }
     
     /**

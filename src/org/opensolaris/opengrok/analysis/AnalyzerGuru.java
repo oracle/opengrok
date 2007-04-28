@@ -253,11 +253,12 @@ public class AnalyzerGuru {
     }
     
     public static void writeXref(Class<? extends FileAnalyzer> a,
-            InputStream in, Writer out)
+            InputStream in, Writer out, Annotation annotation)
             throws IOException {
         if (a != null) {
             try {
-                a.getMethod("writeXref", InputStream.class, Writer.class).invoke(null, in, out);
+                a.getMethod("writeXref", InputStream.class, Writer.class,
+                        Annotation.class).invoke(null, in, out, annotation);
             } catch (IllegalArgumentException ex) {
             } catch (SecurityException ex) {
             } catch (NoSuchMethodException ex) {
