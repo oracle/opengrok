@@ -43,6 +43,8 @@ File resourceFile = new File(resourcePath);
 resourcePath = resourceFile.getAbsolutePath();
 boolean valid = true;
 boolean noHistory = true;
+boolean noAnnotation = true;
+boolean annotate = false;
 String basename = resourceFile.getName();
 boolean isDir = false;
 EftarFileReader ef = null;
@@ -103,6 +105,10 @@ if(resourcePath.length() < rawSource.length()
             int pLastSlash = parent.lastIndexOf('/');
             parentBasename = pLastSlash != -1 ? parent.substring(pLastSlash+1) : parent;
             noHistory = !(isDir || HistoryGuru.getInstance().hasHistory(rawSource + "/" + parent));
+            noAnnotation = isDir ||
+                    !HistoryGuru.getInstance().hasAnnotation(resourceFile);
+            annotate = !noAnnotation &&
+                    Boolean.parseBoolean(request.getParameter("a"));
             try{
                 ef = new EftarFileReader(environment.getDataRootPath() + "/index/dtags.eftar");
                 dtag = ef.get(path);
@@ -146,6 +152,17 @@ if ((!isDir && noHistory) || servlet.startsWith("/hi")) {
 	%> <span class="c" id="history">History</span> |<%
 } else {
 	%><a id="history" href="<%=context%>/history<%=path%>">History</a> |<%
+}
+if (noAnnotation || annotate) {
+%> <span class="c" id="annotate">Annotate</span> |<%
+} else {
+    String rev = request.getParameter("r");
+    if (rev == null) {
+        rev = "";
+    } else if (!rev.isEmpty()) {
+        rev = "&r=" + rev;
+    }
+%> <a id="annotate" href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a> |<%
 }
         if (!isDir) {
            String rev = request.getParameter("r");

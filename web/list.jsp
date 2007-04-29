@@ -43,7 +43,6 @@ if(!isDir && ef != null) {
 }
 
 if (valid) {
-    boolean annotate = Boolean.parseBoolean(request.getParameter("a"));
     if (isDir) {
 // If requesting a Directory listing -------------
         DirectoryListing dl = new DirectoryListing(ef);

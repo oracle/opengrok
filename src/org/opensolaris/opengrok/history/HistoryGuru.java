@@ -368,7 +368,29 @@ public class HistoryGuru {
         
         return ret;
     }
-    
+
+    /**
+     * Check if we can annotate the specified file.
+     *
+     * @param file the file to check
+     * @return <code>true</code> if the file is under version control and the
+     * version control system supports annotation
+     */
+    public boolean hasAnnotation(File file) {
+        if (file.isDirectory()) {
+            return false;
+        }
+        Class<? extends HistoryParser> parser = getHistoryParser(file);
+        if (parser == null) {
+            return false;
+        }
+        try {
+            return parser.newInstance().supportsAnnotation();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static void main(String[] args) {
         try{
             File f = new File(args[0]);
