@@ -37,43 +37,81 @@ import org.opensolaris.opengrok.history.Annotation;
  * File for useful functions
  */
 public class Util {
-    public static String Htmlize(String q) {
+    /**
+     * Return a string which represents a <code>CharSequence</code> in HTML.
+     *
+     * @param q a character sequence
+     * @return a string representing the character sequence in HTML
+     */
+    public static String Htmlize(CharSequence q) {
         StringBuilder sb = new StringBuilder(q.length() * 2);
-        char c;
-        for(int i=0; i < q.length() ; i++) {
-            c = q.charAt(i);
-            if (c == '&') {
-                sb.append("&amp;");
-            } else if(c == '>') {
-                sb.append("&gt;");
-            } else if(c == '<') {
-                sb.append("&lt;");
-            } else if(c == '\n') {
-                sb.append("<br/>");
-            } else {
-                sb.append(c);
-            }
-        }
+        Htmlize(q, sb);
         return sb.toString();
     }
-    public static void Htmlize(char[] cs, int length, Writer out) throws IOException {
-        char c;
-        for(int i=0; i < length && i < cs.length; i++) {
-            c = cs[i];
-            if (c == '&') {
-                out.append("&amp;");
-            } else if(c == '>') {
-                out.append("&gt;");
-            } else if(c == '<') {
-                out.append("&lt;");
-            } else if(c == '\n') {
-                out.append("<br/>");
-            } else {
-                out.append(c);
-            }
+
+    /**
+     * Append a character sequence to an <code>Appendable</code> object. Escape
+     * special characters for HTML.
+     *
+     * @param q a character sequence
+     * @param out the object to append the character sequence to
+     * @exception IOException if an I/O error occurs
+     */
+    public static void Htmlize(CharSequence q, Appendable out)
+            throws IOException {
+        for (int i = 0; i < q.length(); i++) {
+            Htmlize(q.charAt(i), out);
         }
     }
-    
+
+    /**
+     * Append a character sequence to a <code>StringBuilder</code>
+     * object. Escape special characters for HTML. This method is identical to
+     * <code>Htmlize(CharSequence,Appendable)</code>, except that it is
+     * guaranteed not to throw <code>IOException</code> because it uses a
+     * <code>StringBuilder</code>.
+     *
+     * @param q a character sequence
+     * @param out the object to append the character sequence to
+     * @see #Htmlize(CharSequence, Appendable)
+     */
+    public static void Htmlize(CharSequence q, StringBuilder out) {
+        try {
+            Htmlize(q, (Appendable) out);
+        } catch (IOException ioe) {
+            // StringBuilder's append methods are not declared to throw
+            // IOException, so this should never happen.
+            throw new RuntimeException(
+                "StringBuilder should not throw IOException", ioe);
+        }
+    }
+
+    public static void Htmlize(char[] cs, int length, Appendable out)
+            throws IOException {
+        for(int i=0; i < length && i < cs.length; i++) {
+            Htmlize(cs[i], out);
+        }
+    }
+
+    /**
+     * Append a character to a an <code>Appendable</code> object. If the
+     * character has special meaning in HTML, append a sequence of characters
+     * representing the special character.
+     *
+     * @param c the character to append
+     * @param out the object to append the character to
+     * @exception IOException if an I/O error occurs
+     */
+    private static void Htmlize(char c, Appendable out) throws IOException {
+        switch (c) {
+        case '&': out.append("&amp;"); break;
+        case '>': out.append("&gt;"); break;
+        case '<': out.append("&lt;"); break;
+        case '\n': out.append("<br/>"); break;
+        default: out.append(c);
+        }
+    }
+
     public static String breadcrumbPath(String urlPrefix, String l) {
         return breadcrumbPath(urlPrefix, l, '/');
     }
@@ -139,7 +177,7 @@ public class Util {
             for (int i = r.length(); i < annotation.getWidestRevision(); i++) {
                 out.write(" ");
             }
-            out.write(r);
+            Htmlize(r, out);
             out.write(" </span>");
 
             String a = annotation.getAuthor(num);
@@ -147,7 +185,7 @@ public class Util {
             for (int i = a.length(); i < annotation.getWidestAuthor(); i++) {
                 out.write(" ");
             }
-            out.write(a);
+            Htmlize(a, out);
             out.write(" </span>");
         }
     }
