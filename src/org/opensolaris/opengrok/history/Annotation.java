@@ -40,20 +40,30 @@ public class Annotation {
      * Gets the revision for the last change to the specified line.
      *
      * @param line line number (counting from 1)
-     * @return revision string
+     * @return revision string, or an empty string if there is no information
+     * about the specified line
      */
     public String getRevision(int line) {
-        return lines.get(line-1).revision;
+        try {
+            return lines.get(line-1).revision;
+        } catch (IndexOutOfBoundsException e) {
+            return "";
+        }
     }
 
     /**
      * Gets the author who last modified the specified line.
      *
      * @param line line number (counting from 1)
-     * @return author
+     * @return author, or an empty string if there is no information about the
+     * specified line
      */
     public String getAuthor(int line) {
-        return lines.get(line-1).author;
+        try {
+            return lines.get(line-1).author;
+        } catch (IndexOutOfBoundsException e) {
+            return "";
+        }
     }
 
     /**
