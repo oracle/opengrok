@@ -62,12 +62,20 @@ class HistoryCache {
             }
         }
         
-        long time = System.currentTimeMillis();
         
         HistoryParser parser = parserClass.newInstance();
-        History history = parser.parse(file, repository);
+        History history = null;
+        long time;
+        try {
+            time = System.currentTimeMillis();
+            history = parser.parse(file, repository);
+            time = System.currentTimeMillis() - time;
+        } catch (Exception e) {
+            System.err.println("Failed to parse " + file.getAbsolutePath());
+            e.printStackTrace();
+            throw e;
+        }
         
-        time = System.currentTimeMillis() - time;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.useHistoryCache()) {
             if ((cache != null) &&
