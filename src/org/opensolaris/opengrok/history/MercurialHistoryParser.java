@@ -137,8 +137,8 @@ public class MercurialHistoryParser implements HistoryParser {
     }
 
     public Annotation annotate(File file, String revision,
-                               ExternalRepository repository) {
-        return null;
+                               ExternalRepository repository) throws Exception {
+        return repository.annotate(file, revision);
     }
 
     public boolean isCacheable() {
@@ -146,7 +146,6 @@ public class MercurialHistoryParser implements HistoryParser {
     }
 
     public boolean supportsAnnotation() {
-        // not implemented yet
-        return false;
+        return true;
     }
 }

@@ -394,7 +394,7 @@ public class HistoryGuru {
     public static void main(String[] args) {
         try{
             File f = new File(args[0]);
-            
+            HistoryGuru.getInstance().addExternalRepositories(".");
             System.out.println("-----Reading comments as a reader");
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
             BufferedReader rr = new BufferedReader(hr);

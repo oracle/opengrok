@@ -34,6 +34,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Access to a Mercurial repository.
@@ -148,7 +150,57 @@ public class MercurialRepository implements ExternalRepository {
     public Class<? extends HistoryParser> getHistoryParser() {
         return MercurialHistoryParser.class;
     }
-    
+
+    /** Pattern used to extract author/revision from hg annotate. */
+    private final static Pattern ANNOTATION_PATTERN =
+        Pattern.compile("^\\s*(\\S+)\\s+(\\d+)\\s");
+
+    /**
+     * Annotate the specified file/revision.
+     *
+     * @param file file to annotate
+     * @param revision revision to annotate
+     * @return file annotation
+     */
+    public Annotation annotate(File file, String revision) throws Exception {
+        ArrayList<String> argv = new ArrayList<String>();
+        argv.add(command);
+        argv.add("annotate");
+        argv.add("-u");
+        argv.add("-n");
+        argv.add("-f");
+        if (revision != null) {
+            argv.add("-r");
+            argv.add(revision);
+        }
+        argv.add(file.getName());
+        ProcessBuilder pb = new ProcessBuilder(argv);
+        pb.directory(file.getParentFile());
+        Process process = pb.start();
+        try {
+            BufferedReader in =
+                new BufferedReader(new InputStreamReader
+                                     (process.getInputStream()));
+            Annotation a = new Annotation();
+            String line;
+            while ((line = in.readLine()) != null) {
+                Matcher matcher = ANNOTATION_PATTERN.matcher(line);
+                matcher.find();
+                String author = matcher.group(1);
+                String rev = matcher.group(2);
+                a.addLine(rev, author);
+            }
+            return a;
+        } finally {
+            // is this really the way to do it? seems a bit brutal...
+            try {
+                process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                process.destroy();
+            }
+        }
+    }
+
     /**
      * Get the name of the root directory for this repository
      * @return the name of the directory containing the .hg subdirectory

@@ -23,6 +23,7 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -48,6 +49,15 @@ public interface ExternalRepository {
      * @return An input stream containing the correct revision.
      */
     public InputStream getHistoryGet(String parent, String basename, String rev);
+
+    /**
+     * Annotate the specified revision of a file.
+     *
+     * @param file the file to annotate
+     * @param revision revision of the file
+     * @return an <code>Annotation</code> object
+     */
+    Annotation annotate(File file, String revision) throws Exception;
 
     /**
      * Create a history log cache for all of the files in this repository.
