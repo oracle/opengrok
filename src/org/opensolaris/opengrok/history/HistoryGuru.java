@@ -149,7 +149,7 @@ public class HistoryGuru {
 
         switch (previousFile) {
         case EXTERNAL:
-            ExternalRepository repos = getRepository(file.getParent());
+            ExternalRepository repos = getRepository(file.getParentFile());
             if (repos != null) {
                 parser = repos.getHistoryParser();
             }
@@ -192,7 +192,7 @@ public class HistoryGuru {
         Class<? extends HistoryParser> parserClass = getHistoryParser(file);
         if (parserClass != null) {
             HistoryParser parser = parserClass.newInstance();
-            ExternalRepository repos = getRepository(file.getParent());
+            ExternalRepository repos = getRepository(file.getParentFile());
             return parser.annotate(file, rev, repos);
         }
         return null;
@@ -216,7 +216,7 @@ public class HistoryGuru {
 
         if (parser != null) {
             try {
-                ExternalRepository repos = getRepository(file.getParent());
+                ExternalRepository repos = getRepository(file.getParentFile());
                 return new HistoryReader(HistoryCache.get(file, parser, repos));
             } catch (IOException ioe) {
                 throw ioe;
@@ -233,7 +233,7 @@ public class HistoryGuru {
     
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
         Class<? extends HistoryParser> parser = null;
-        ExternalRepository repos = getRepository(file.getAbsolutePath());
+        ExternalRepository repos = getRepository(file);
          if (repos != null) {
              parser = repos.getHistoryParser();
          }
@@ -357,16 +357,12 @@ public class HistoryGuru {
      * @return true if the files in this directory have associated revision history
      */
     public boolean hasHistory(String parent) {
-        boolean ret = false;
-        if ((new File(parent + "/SCCS")).isDirectory() ||
-                (new File(parent + "/RCS")).isDirectory() ||
-                (new File(parent + "/CVS")).isDirectory() ||
-                (new File(parent, svnlabel)).isDirectory() ||
-                (getRepository(parent) != null)) {
-            ret = true;
-        }
-        
-        return ret;
+        return
+            (new File(parent, "SCCS")).isDirectory() ||
+            (new File(parent, "RCS")).isDirectory() ||
+            (new File(parent, "CVS")).isDirectory() ||
+            (new File(parent, svnlabel)).isDirectory() ||
+            (getRepository(new File(parent)) != null);
     }
 
     /**
@@ -480,26 +476,27 @@ public class HistoryGuru {
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }
 
-    private ExternalRepository getRepository(String path) {
-        ExternalRepository ret = null;
-        
+    private ExternalRepository getRepository(File path) {
         Map<String, ExternalRepository> repos = RuntimeEnvironment.getInstance().getRepositories();
         
         while (path != null) {
-            ExternalRepository r = repos.get(path);
-            if (r != null) {
-                ret = r;
-                break;
+            try {
+                ExternalRepository r = repos.get(path.getCanonicalPath());
+                if (r != null) return r;
+            } catch (IOException e) {
+                System.err.println("Failed to get canonical path for " + path);
+                e.printStackTrace();
             }
-            path = (new File(path)).getParent();
+            path = path.getParentFile();
         }
-        return ret;
+
+        return null;
     }
     
     private Class<? extends HistoryParser> lookupHistoryParser(File file) {
         Class<? extends HistoryParser> ret = null;
 
-        ExternalRepository rep = getRepository(file.getParent());
+        ExternalRepository rep = getRepository(file.getParentFile());
         if (rep != null) {
             ret = rep.getHistoryParser();
         }
@@ -507,15 +504,13 @@ public class HistoryGuru {
         return ret;
     }
     
-    InputStream lookupHistoryGet(String parent, String basename, String rev) {
-        InputStream ret = null;
-        
-        ExternalRepository rep = getRepository(parent);
+    private InputStream lookupHistoryGet(String parent, String basename,
+                                         String rev) {
+        ExternalRepository rep = getRepository(new File(parent));
         if (rep != null) {
-            ret = rep.getHistoryGet(parent, basename, rev);
+            return rep.getHistoryGet(parent, basename, rev);
         }
-        
-        return ret;
+        return null;
     }
     
 }
