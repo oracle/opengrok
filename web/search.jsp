@@ -51,6 +51,7 @@ String defs = request.getParameter("defs");
 String refs = request.getParameter("refs");
 String hist = request.getParameter("hist");
 String path = request.getParameter("path");
+String sort = request.getParameter("sort");
 
 %>
 <%@ include file="projects.jspf" %>
@@ -65,6 +66,7 @@ if( defs != null && defs.equals("")) defs = null;
 if( refs != null && refs.equals("")) refs = null;
 if( hist != null && hist.equals("")) hist = null;
 if( path != null && path.equals("")) path = null;
+if( sort != null && sort.equals("")) sort = null;
 if (project != null && project.equals("")) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
@@ -150,7 +152,15 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         QueryParser qparser = new QueryParser("full", analyzer);
         qparser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
         query = qparser.parse(qstr); //parse the
-        hits = searcher.search(query);
+        if (sort == null || sort.equals("relevancy")) {
+            hits = searcher.search(query);
+        }
+        else if (sort.equals("lastmodtime")) {
+            hits = searcher.search(query, new Sort("date", true));
+        }
+        else {
+            hits = searcher.search(query);
+        }
         thispage = max;
     } catch (BooleanQuery.TooManyClauses e) {
         errorMsg = "<b>Error:</b> Too many results for wildcard!";
@@ -202,6 +212,19 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                                 <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
                                 <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
                                 <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
+<% if (sort == null || sort.equals("relevancy")) { %>
+                                <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy" selected>relevancy</option><option value="lastmodtime">last modified time</option></select></td></tr>
+<%
+   }
+   else if (sort.equals("lastmodtime")) { %>
+                                <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy">relevancy</option><option value="lastmodtime" selected>last modified time</option></select></td></tr>
+<%
+   }
+   else { %>
+                                <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy" selected>relevancy</option><option value="lastmodtime">last modified time</option></select></td></tr>
+<%
+   }
+%>
                             </table>
                         </td>
                         <%         if (hasProjects) { %>
@@ -301,7 +324,8 @@ if( hits == null || errorMsg != null) {
                             (defs == null ? "" : "&amp;defs=" + Util.URIEncode(defs)) +
                             (refs == null ? "" : "&amp;refs=" + Util.URIEncode(refs)) +
                             (path == null ? "" : "&amp;path=" + Util.URIEncode(path)) +
-                            (hist == null ? "" : "&amp;hist=" + Util.URIEncode(hist));
+                            (hist == null ? "" : "&amp;hist=" + Util.URIEncode(hist)) +
+                            (sort == null ? "" : "&amp;sort=" + Util.URIEncode(sort));
                     
                     slider = new StringBuilder();
                     int labelStart =1;
@@ -335,7 +359,7 @@ if( hits == null || errorMsg != null) {
                     thispage = hits.length() - start;      // set the max index to max or last
                 }
 		%>&nbsp; &nbsp; Searched <b><%=query.toString()%></b> (Results <b><%=start+1%> -
-		<%=thispage+start%></b> of <b><%=hits.length()%></b>) <p><%=slider != null ?
+		<%=thispage+start%></b> of <b><%=hits.length()%></b>) sorted by <%=sort%> <p><%=slider != null ?
                     slider.toString(): ""%></p>
 		<table width="100%" cellpadding="3" cellspacing="0" border="0"><%
                 

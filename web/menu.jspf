@@ -31,8 +31,19 @@ org.opensolaris.opengrok.web.Util" session="false" errorPage="error.jsp"%>
                     <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
                     <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
                     <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
-                    <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr><% 
-                    if (hasProjects) { %>
+                    <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
+<% if (sort == null || sort.equals("relevancy")) { %>
+                    <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy" selected>relevancy</option><option value="lastmodtime">last modified time</option></select></td></tr>
+<% }
+   else if (sort.equals("lastmodtime")) { %>
+                    <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy">relevancy</option><option value="lastmodtime" selected>last modified time</option></select></td></tr>
+<% }
+   else { %>
+                    <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy" selected>relevancy</option><option value="lastmodtime">last modified time</option></select></td></tr>
+<%
+   }
+%>
+                    <% if (hasProjects) { %>
                     <tr>
                         <td align="right" valign="top"> Project </td>
                         <td>
