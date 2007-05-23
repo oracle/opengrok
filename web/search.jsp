@@ -51,11 +51,40 @@ String defs = request.getParameter("defs");
 String refs = request.getParameter("refs");
 String hist = request.getParameter("hist");
 String path = request.getParameter("path");
-String sort = request.getParameter("sort");
 
 %>
 <%@ include file="projects.jspf" %>
 <%
+String sort = null;
+
+final String LASTMODTIME = "lastmodtime";
+final String RELEVANCY = "relevancy";
+
+Cookie[] cookies = request.getCookies();
+if (cookies != null) {
+    for (Cookie cookie : cookies) {
+        if (cookie.getName().equals("OpenGrok/sorting")) {
+            sort = cookie.getValue();
+            if (!LASTMODTIME.equals(sort) && !RELEVANCY.equals(sort)) {
+                sort = null;
+            }
+            break;
+        }
+    }
+}
+
+String sortParam = request.getParameter("sort");
+if (sortParam != null) {
+    if (LASTMODTIME.equals(sortParam)) {
+        sort = LASTMODTIME;
+    } else if (RELEVANCY.equals(sortParam)) {
+        sort = RELEVANCY;
+    }
+    if (sort != null) {
+        Cookie cookie = new Cookie("OpenGrok/sorting", sort);
+        response.addCookie(cookie);
+    }
+}
 
 Hits hits = null;
 String errorMsg = null;
@@ -66,7 +95,6 @@ if( defs != null && defs.equals("")) defs = null;
 if( refs != null && refs.equals("")) refs = null;
 if( hist != null && hist.equals("")) hist = null;
 if( path != null && path.equals("")) path = null;
-if( sort != null && sort.equals("")) sort = null;
 if (project != null && project.equals("")) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
@@ -152,15 +180,11 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         QueryParser qparser = new QueryParser("full", analyzer);
         qparser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
         query = qparser.parse(qstr); //parse the
-        if (sort == null || sort.equals("relevancy")) {
-            hits = searcher.search(query);
-        }
-        else if (sort.equals("lastmodtime")) {
+        if ("lastmodtime".equals(sort)) {
             hits = searcher.search(query, new Sort("date", true));
-        }
-        else {
+        } else {
             hits = searcher.search(query);
-        }
+        } 
         thispage = max;
     } catch (BooleanQuery.TooManyClauses e) {
         errorMsg = "<b>Error:</b> Too many results for wildcard!";
@@ -197,54 +221,33 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     </div>
 <div id="Masthead"></div>
 <div id="bar">
-    <%@ include file="menu.jspf"%>
-<!-- table cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr>
-    <td valign="top"><br /> &nbsp;</td>
-    <td align="left" valign="middle">
-        <br/><form action="search" name="sbox">
-                <table cellpadding="2" border="0" cellspacing="0">
-                    <tr valign="top">
-                        <td>
-                            <table cellpadding="2" border="0" cellspacing="0">
-                                <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td></tr>
-                                <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
-                                <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
-                                <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
-                                <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
-<% if (sort == null || sort.equals("relevancy")) { %>
-                                <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy" selected>relevancy</option><option value="lastmodtime">last modified time</option></select></td></tr>
-<%
-   }
-   else if (sort.equals("lastmodtime")) { %>
-                                <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy">relevancy</option><option value="lastmodtime" selected>last modified time</option></select></td></tr>
-<%
-   }
-   else { %>
-                                <tr><td align="right"> sort by </td><td><select class="q" name="sort"><option value="relevancy" selected>relevancy</option><option value="lastmodtime">last modified time</option></select></td></tr>
-<%
-   }
-%>
-                            </table>
-                        </td>
-                        <%         if (hasProjects) { %>
-                        <td>
-                            Project:<br>
-                            <select class="q" name="project" size="6" multiple="true" style="width: 300px">
-                                <%                for (Project p : env.getProjects()) {
-                                %><option value="<%=Util.formQuoteEscape(p.getPath())%>"<%=p.getPath().equals(project) ? " selected" : ""%>><%=Util.formQuoteEscape(p.getDescription())%></option><%
-                                } %>
-                            </select>
-                        </td>
-                        <%         } %>                                    
-                    </tr>
-            <tr><td></td><td>  &nbsp; <input class="submit" type="submit" value="Search"/> | <input class="submit"
-            onClick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "
-            />  | <a href="help.html">Help</a></td></tr>
-        </table></form>
-    </td>
-    <td valign="top" align="right"></td></tr>
-</table -->
+    <table border="0" width="100%"><tr><td><a href="<%=context%>" id="home">Home</a></td><td align="right"><%                
+     {
+        StringBuffer url = request.getRequestURL();
+        url.append('?');
+        String querys = request.getQueryString();
+        if (querys != null) {
+            int idx = querys.indexOf("sort=");
+            if (idx == -1) {
+                url.append(querys);
+                url.append('&');
+            } else {
+                url.append(querys.substring(0, idx));
+            }
+        }
+        url.append("sort=");
+        
+        if (sort == null || RELEVANCY.equals(sort)) {
+           url.append(LASTMODTIME);
+           %><b>Sort by relevance</b> <a href="<%=url.toString()%>">Sort by last modified time</a><%
+        } else {
+           url.append(RELEVANCY);
+           %><a href="<%=url.toString()%>">Sort by relevance</a> <b>Sort by last modified time</b><%
+        }
+      } %></td></tr></table>
+</div>
+<div id="menu">
+   <%@ include file="menu.jspf"%>
 </div>
 <div id="results">
 <%
