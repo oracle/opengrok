@@ -30,7 +30,6 @@ package org.opensolaris.opengrok.analysis.sh;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
 import java.io.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.*;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -82,7 +81,7 @@ public class ShAnalyzer extends PlainAnalyzer {
 
     public void analyze(Document doc, InputStream in) {
         super.analyze(doc, in);
-        doc.add(Field.Text("refs", dummy));
+        doc.add(new Field("refs", dummy));
     }    
 
     public TokenStream tokenStream(String fieldName, Reader reader) {

@@ -56,6 +56,7 @@ public interface ExternalRepository {
      * @param file the file to annotate
      * @param revision revision of the file
      * @return an <code>Annotation</code> object
+     * @throws java.lang.Exception if an error occurs
      */
     Annotation annotate(File file, String revision) throws Exception;
 

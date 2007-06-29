@@ -183,12 +183,18 @@ public class MercurialRepository implements ExternalRepository {
                                      (process.getInputStream()));
             Annotation a = new Annotation();
             String line;
+            int lineno = 0;
             while ((line = in.readLine()) != null) {
+                ++lineno;
                 Matcher matcher = ANNOTATION_PATTERN.matcher(line);
-                matcher.find();
-                String author = matcher.group(1);
-                String rev = matcher.group(2);
-                a.addLine(rev, author);
+                if (matcher.find()) {
+                    String author = matcher.group(1);
+                    String rev = matcher.group(2);
+                    a.addLine(rev, author);
+                } else {
+                    System.err.println("Error: did not find annotation in line " + lineno);
+                    System.err.println("[" + line + "]");
+                }
             }
             return a;
         } finally {

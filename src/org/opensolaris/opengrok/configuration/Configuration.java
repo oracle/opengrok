@@ -46,6 +46,8 @@ public class Configuration {
     private String urlPrefix;
     private boolean generateHtml;
     private Project defaultProject;
+    private int indexWordLimit;
+    private boolean verbose;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -54,6 +56,9 @@ public class Configuration {
         setProjects(new ArrayList<Project>());
         setRepositories(new HashMap<String, ExternalRepository>());
         setUrlPrefix("/source/s?");
+        setCtags("ctags");
+        setIndexWordLimit(60000);
+        setVerbose(false);
     }
     
     public String getCtags() {
@@ -134,5 +139,21 @@ public class Configuration {
     
     public Project getDefaultProject() {
         return defaultProject;
+    }
+
+    public int getIndexWordLimit() {
+        return indexWordLimit;
+    }
+
+    public void setIndexWordLimit(int indexWordLimit) {
+        this.indexWordLimit = indexWordLimit;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 }

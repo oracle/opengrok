@@ -103,7 +103,7 @@ public class SearchEngine {
     public SearchEngine() {
         analyzer = new CompatibleAnalyser();
         qparser = new QueryParser("full", analyzer);
-        qparser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
+        qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
     }
     
     /**

@@ -90,7 +90,7 @@ public class TroffAnalyzer extends FileAnalyzer {
 	} catch (IOException e) {
 	    return;
 	}
-	doc.add(Field.Text("full",  new StringReader("")));
+	doc.add(new Field("full", new StringReader("")));
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {

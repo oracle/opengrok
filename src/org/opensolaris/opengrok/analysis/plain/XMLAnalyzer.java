@@ -95,7 +95,7 @@ public class XMLAnalyzer extends FileAnalyzer {
 	} catch (IOException e) {
 	    return;
 	}
-	doc.add(Field.Text("full", dummy));
+	doc.add(new Field("full", dummy));
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {

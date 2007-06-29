@@ -41,7 +41,7 @@ public class JavaAnalyzer extends PlainAnalyzer {
 
     public void analyze(Document doc, InputStream in) {
         super.analyze(doc, in);
-        doc.add(Field.Text("refs", dummy));
+        doc.add(new Field("refs", dummy));
     }    
     
     public TokenStream tokenStream(String fieldName, Reader reader) {

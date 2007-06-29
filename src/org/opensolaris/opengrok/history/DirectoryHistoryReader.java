@@ -80,7 +80,13 @@ public class DirectoryHistoryReader extends HistoryReader {
                 if (!rpath.startsWith(path)) {
                     continue;
                 }
-                Date cdate = DateField.stringToDate(doc.get("date"));
+                Date cdate;
+                try {
+                    cdate = DateTools.stringToDate(doc.get("date"));
+                } catch (java.text.ParseException ex) {
+                    ex.printStackTrace();
+                    cdate = new Date();
+                }
                 String comment = "none", cauthor = "nobody";
                 int ls = rpath.lastIndexOf('/');
                 if(ls != -1) {

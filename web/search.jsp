@@ -38,7 +38,9 @@ org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
 org.opensolaris.opengrok.configuration.*,
-org.apache.lucene.spell.*,
+org.apache.lucene.search.spell.LuceneDictionary,
+org.apache.lucene.search.spell.SpellChecker,
+org.apache.lucene.store.FSDirectory,
 org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
 org.apache.lucene.index.*,
@@ -178,7 +180,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         qstr = sb.toString();
                                 
         QueryParser qparser = new QueryParser("full", analyzer);
-        qparser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
+        qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         query = qparser.parse(qstr); //parse the
         if ("lastmodtime".equals(sort)) {
             hits = searcher.search(query, new Sort("date", true));
@@ -254,13 +256,13 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
 if( hits == null || errorMsg != null) {
 	    	%><%=errorMsg%><%
             } else if (hits.length() == 0) {
+                File spellIndex = new File(env.getDataRootPath(), "spellIndex");
                 
-                String ngramIndex = env.getDataRootPath() + "/spellIndex";
-                if (ngramIndex != null && (new
-                        File(ngramIndex+"/segments")).exists()) {
+                if (spellIndex.exists()) {
+                    FSDirectory spellDirectory = FSDirectory.getDirectory(spellIndex);
+                    SpellChecker checker = new SpellChecker(spellDirectory);
+
                     Date sstart = new Date();
-                    IndexReader spellReader = IndexReader.open(ngramIndex);
-                    IndexSearcher spellSearcher = new IndexSearcher(spellReader);
 
                     %><p><font color="#cc0000">Did you mean</font>:<%
                         String[] toks;
@@ -269,7 +271,7 @@ if( hits == null || errorMsg != null) {
                             if(toks != null){
                                 for(int j=0; j<toks.length; j++) {
                                     if(toks[j].length() > 3) {
-                                        String[] ret = NGramSpeller.suggestUsingNGrams(spellSearcher,toks[j].toLowerCase(), 3, 4, 3, 5, 3, 2, 0, null, false);
+                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
                                         for(int i = 0;i < ret.length; i++) {
 					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp; <%
                                         }
@@ -282,7 +284,7 @@ if( hits == null || errorMsg != null) {
                             if(toks != null){
                                 for(int j=0; j<toks.length; j++) {
                                     if(toks[j].length() > 3) {
-                                        String[] ret = NGramSpeller.suggestUsingNGrams(spellSearcher,toks[j].toLowerCase(),3, 4, 3, 5, 3, 2, 0, null, false);
+                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
                                         for(int i = 0;i < ret.length; i++) {
 					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
                                 }
@@ -295,7 +297,7 @@ if( hits == null || errorMsg != null) {
                             if(toks != null){
                                 for(int j=0; j<toks.length; j++) {
                                     if(toks[j].length() > 3) {
-                                        String[] ret = NGramSpeller.suggestUsingNGrams(spellSearcher,toks[j].toLowerCase(),3, 4, 3, 5, 3, 2, 0, null, false);
+                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
                                         for(int i = 0;i < ret.length; i++) {
 					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
                                         }
@@ -303,8 +305,7 @@ if( hits == null || errorMsg != null) {
                                 }
                             }
                         }
-                        spellSearcher.close();
-                        spellReader.close();
+                        spellDirectory.close();
                         %></p><%
                 }
 		%><p> Your search  <b><%=query.toString()%></b> did not match any files.

@@ -46,7 +46,6 @@ import org.opensolaris.opengrok.util.Getopt;
  * in the options
  */
 public class Indexer {
-    private static boolean verbose = false;
     private static String usage = "Usage: " +
             "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-p project-path] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
             "       opengrok.jar [-O | -l | -t] DATA_ROOT\n" +
@@ -62,6 +61,7 @@ public class Indexer {
             "\t-H Start a threadpool to read history history\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
+            "\t-m Maximum words in a file to index\n" +
             "\t-S Search and add \"External\" repositories (Mercurial etc)\n" +
             "\t-s SRC_ROOT is root directory of source tree\n" +
             "\t   default: last used SRC_ROOT\n" +
@@ -73,7 +73,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "qec:R:W:U:Pp:nHw:i:Ss:O:l:t:v";
+    private static String options = "qec:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:";
 
     /**
      * Program entry point
@@ -116,6 +116,10 @@ public class Indexer {
                 int cmd;
                 while ((cmd = getopt.getOpt()) != -1) {
                     switch (cmd) {
+                    case 'D' : 
+                        Index.dumpU(getopt.getOptarg()); 
+                        System.exit(1);
+                        break;
                     case 'O':
                         Index.doOptimize(new File(getopt.getOptarg()));
                         System.exit(0);
@@ -132,7 +136,7 @@ public class Indexer {
                         IgnoredNames.glob = new GlobFilenameFilter(getopt.getOptarg());
                         break;
 
-                    case 'q': verbose = false; break;
+                    case 'q': env.setVerbose(false); break;
                     case 'e': env.setGenerateHtml(false); break;
                     case 'P': addProjects = true; break;
                     case 'p': defaultProject = getopt.getOptarg(); break;
@@ -158,7 +162,7 @@ public class Indexer {
                         break;
                     case 'n': runIndex = false; break;
                     case 'H': refreshHistory = true; break;
-                    case 'v': verbose = true; break;
+                    case 'v': env.setVerbose(true); break;
 
                     case 's': {
                         File file = new File(getopt.getOptarg());
@@ -171,10 +175,19 @@ public class Indexer {
                         break;
                     }
 
-                    case 'i':    IgnoredNames.add(getopt.getOptarg()); break;
+                    case 'i':  IgnoredNames.add(getopt.getOptarg()); break;
                     case 'S' : searchRepositories = true; break;
+                    case 'm' : {
+                        try {
+                            env.setIndexWordLimit(Integer.parseInt(getopt.getOptarg()));
+                        } catch (NumberFormatException exp) {
+                            System.err.println("ERROR: Failed to parse argument to \"-m\": " + exp.getMessage());
+                            System.exit(1);
+                        }
+                        break;
+                    }
                     default: 
-                        System.err.println("Unhandled option: " + (char)cmd);
+                        System.err.println("Unknown option: " + (char)cmd);
                         System.exit(1);
                     }
                 }
@@ -223,16 +236,21 @@ public class Indexer {
                     }
                 }
 
-                if (! Index.setExuberantCtags(env.getCtags())) {
+                if (!env.validateExuberantCtags()) {
                     System.exit(1);
                 }
 
                 if (searchRepositories) {
-                    System.out.println("Scanning for repositories...");
+                    if (env.isVerbose()) {
+                        System.out.println("Scanning for repositories...");
+                    }
+                    env.getRepositories().clear();
                     long start = System.currentTimeMillis();
                     HistoryGuru.getInstance().addExternalRepositories(env.getSourceRootPath());
                     long time = (System.currentTimeMillis() - start) / 1000;
-                    System.out.println("Done searching for repositories (" + time + "s)");
+                    if (env.isVerbose()) {
+                        System.out.println("Done searching for repositories (" + time + "s)");
+                    }
                 }
 
                 if (addProjects) {
@@ -246,10 +264,10 @@ public class Indexer {
                     }
 
                     // The projects should be sorted...
-                    Collections.sort(projects, new Comparator() {
-                        public int compare(Object obj1, Object obj2){
-                            String s1 = ((Project)obj1).getDescription();
-                            String s2 = ((Project)obj2).getDescription();
+                    Collections.sort(projects, new Comparator<Project>() {
+                        public int compare(Project p1, Project p2){
+                            String s1 = p1.getDescription();
+                            String s2 = p2.getDescription();
 
                             int ret;
                             if (s1 == null) {
@@ -270,13 +288,17 @@ public class Indexer {
                         }
                     }
                 }
-
+                
                 if (configFilename != null) {
-                    System.out.println("Writing configuration to " + configFilename);
-                    System.out.flush();
+                    if (env.isVerbose()) {
+                        System.out.println("Writing configuration to " + configFilename);
+                        System.out.flush();
+                    }
                     env.writeConfiguration(new File(configFilename));
-                    System.out.println("Done...");
-                    System.out.flush();
+                    if (env.isVerbose()) {
+                        System.out.println("Done...");
+                        System.out.flush();
+                    }
                 }
 
                 if (refreshHistory) {
@@ -291,13 +313,15 @@ public class Indexer {
                 }
 
                 if (runIndex) {
-                    Index idx = new Index(verbose ? new StandardPrinter(System.out) : new NullPrinter(), new StandardPrinter(System.err));
+                    Index idx = new Index(env.isVerbose() ? new StandardPrinter(System.out) : new NullPrinter(), new StandardPrinter(System.err));
                     idx.runIndexer(env.getDataRootFile(), env.getSourceRootFile(), subFiles, env.isGenerateHtml());
                 }
 
                 if (configHost != null) {
                     String[] cfg = configHost.split(":");
-                    System.out.println("Send configuration to: " + configHost);
+                    if (env.isVerbose()) {
+                        System.out.println("Send configuration to: " + configHost);
+                    }
 
                     if (cfg.length == 2) {
                         try {
@@ -314,11 +338,13 @@ public class Indexer {
                         }
                         System.err.println();
                     }
-                    System.out.println("Configuration successfully updated");
+                    if (env.isVerbose()) {
+                        System.out.println("Configuration successfully updated");
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("Error: [ main ] " + e);
-                if (verbose) e.printStackTrace();
+                if (env.isVerbose()) e.printStackTrace();
                 System.exit(1);
             }
         }

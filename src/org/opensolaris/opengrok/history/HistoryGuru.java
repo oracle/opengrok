@@ -21,14 +21,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident        "@(#)HistoryGuru.java 1.2     06/02/22 SMI"
- */
 package org.opensolaris.opengrok.history;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -43,21 +38,27 @@ import org.opensolaris.opengrok.web.Util;
 public class HistoryGuru {
     /** The one and only instance of the HistoryGuru */
     private static HistoryGuru instance = new HistoryGuru();
-    /** Unknown version control system for last file */
-    private final int UNKNOWN = 0;
-    /** RCS was used by the last file */
-    private final int RCS = 1;
-    /** SCCS was used by the last file */
-    private final int SCCS = 2;
-    /** Subversion was used by the last file */
-    private final int SVN = 3;
-    /** The last file was located in an "external" repository */
-    private final int EXTERNAL = 4;
+
+    /** The different SourceControlSystems currently supported */
+    private enum SCM { 
+        /** Unknown version control system for last file */
+        UNKNOWN,
+        /** RCS was used by the last file */
+        RCS,
+        /** SCCS was used by the last file */
+        SCCS,
+        /** Subversion was used by the last file */
+        SVN,
+        /** The last file was located in an "external" repository */
+        EXTERNAL };
+   
     /** Method used on the last file */
-    private int previousFile;
+    private SCM previousFile;
     /** Is JavaSVN available? */
     private boolean svnAvailable;
+    /** Is JavaSVN initialized? */
     private boolean initializedSvn;
+    /** The name of the Subversion subdirectory */
     private static final String svnlabel = ".svn";
     
     private boolean isSvnAvailable() {
@@ -68,10 +69,13 @@ public class HistoryGuru {
                     svnAvailable = true;
                 }
             } catch (ClassNotFoundException ex) {
+                System.err.println("Could not find the supported Subversion bindings");
+                ex.printStackTrace();
                 /* EMPTY */
                 ;
             } catch (UnsatisfiedLinkError ex) {
-                System.err.println("Failed to initialize Subversion library: " + ex);
+                System.err.println("Failed to initialize Subversion library: ");
+                ex.printStackTrace();
             }
         }
         return svnAvailable;
@@ -83,8 +87,7 @@ public class HistoryGuru {
      * @todo Set the revision system according to the users preferences, and call the various setups..
      */
     private HistoryGuru() {
-        svnAvailable = false;
-        previousFile = UNKNOWN;
+        previousFile = SCM.UNKNOWN;
     }
     
     /**
@@ -107,40 +110,36 @@ public class HistoryGuru {
      */
     private Class<? extends HistoryParser> guessHistoryParser(File file)
     {
-        Class<? extends HistoryParser> hpClass = null;
-        File rcsfile = Util.getRCSFile(file);
-        if (rcsfile != null && rcsfile.exists()) {
-            hpClass = RCSHistoryParser.class;
-            previousFile = RCS;
+        Class<? extends HistoryParser> hpClass = lookupHistoryParser(file);
+        if (hpClass != null) {
+            previousFile = SCM.EXTERNAL;
         } else {
-            if (Util.getSCCSFile(file).canRead()) {
-                hpClass = SCCSHistoryParser.class;
-                previousFile = SCCS;
+            File rcsfile = Util.getRCSFile(file);
+            if (rcsfile != null && rcsfile.exists()) {
+                hpClass = RCSHistoryParser.class;
+                previousFile = SCM.RCS;
             } else {
-                File svn = new File(file.getParent(), svnlabel);
-                
-                if (svn.exists() && isSvnAvailable()) {
-                    try {
-                        hpClass = SubversionHistoryParser.class;
-                        previousFile = SVN;
-                    } catch (Exception e) {
-                        ;
-                    }
+                if (Util.getSCCSFile(file).canRead()) {
+                    hpClass = SCCSHistoryParser.class;
+                    previousFile = SCM.SCCS;
                 } else {
-                    hpClass = lookupHistoryParser(file);
-                    if (hpClass != null) {
-                        previousFile = EXTERNAL;
+                    File svn = new File(file.getParent(), svnlabel);
+
+                    if (svn.exists() && isSvnAvailable()) {
+                        hpClass = SubversionHistoryParser.class;
+                        previousFile = SCM.SVN;
                     }
                 }
             }
         }
-        
         if (hpClass == null) {
-            previousFile = UNKNOWN;
+            previousFile = SCM.UNKNOWN;
         }
+                
         return hpClass;
     }
-
+    
+    
     /**
      * Get the <code>HistoryParser</code> to use for the specified file.
      */
@@ -272,30 +271,38 @@ public class HistoryGuru {
      * @return An InputStream containing the named revision of the file.
      */
     private InputStream guessGetRevision(String parent, String basename, String rev) throws IOException {
-        InputStream in = null;
-        File rcsfile = Util.getRCSFile(parent, basename);
-        if (rcsfile != null) {
-            String rcspath = rcsfile.getPath();
-            in = new BufferedInputStream(new RCSget(rcspath, rev));
-            previousFile = RCS;
+        InputStream in = lookupHistoryGet(parent, basename, rev);
+        
+        if (in != null) {
+            previousFile = SCM.EXTERNAL;
         } else {
-            File history = Util.getSCCSFile(parent, basename);
-            if(history.canRead()) {
-                in = new BufferedInputStream(new SCCSget(new FileInputStream(history), rev));
-                in.mark(32);
-                in.read();
-                in.reset();
-                previousFile = RCS;
+            File rcsfile = Util.getRCSFile(parent, basename);
+            if (rcsfile != null) {
+                String rcspath = rcsfile.getPath();
+                in = new BufferedInputStream(new RCSget(rcspath, rev));
+                previousFile = SCM.RCS;
             } else {
-                File svn = new File(parent, svnlabel);
-                if (svn.exists() && isSvnAvailable()) {
-                    in = new BufferedInputStream(new SubversionGet(parent, basename, rev));
-                    previousFile = SVN;
+                File history = Util.getSCCSFile(parent, basename);
+                if(history.canRead()) {
+                    in = new BufferedInputStream(new SCCSget(new FileInputStream(history), rev));
+                    in.mark(32);
+                    in.read();
+                    in.reset();
+                    previousFile = SCM.RCS;
                 } else {
-                    in = lookupHistoryGet(parent, basename, rev);
+                    File svn = new File(parent, svnlabel);
+                    if (svn.exists() && isSvnAvailable()) {
+                        in = new BufferedInputStream(new SubversionGet(parent, basename, rev));
+                        previousFile = SCM.SVN;
+                    }
                 }
             }
         }
+        
+        if (in == null) {
+            previousFile = SCM.UNKNOWN;
+        }
+        
         return in;
     }
     
@@ -470,6 +477,12 @@ public class HistoryGuru {
         repos.put(path, rep);
     }
     
+    /**
+     * Search through the all of the directories and add all of the source
+     * repositories found.
+     * 
+     * @param dir the root directory to start the search in.
+     */
     public void addExternalRepositories(String dir) {
         Map<String, ExternalRepository> repos = new HashMap<String, ExternalRepository>();
         addExternalRepositories((new File(dir)).listFiles(), repos);

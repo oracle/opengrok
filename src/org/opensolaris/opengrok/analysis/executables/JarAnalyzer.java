@@ -118,12 +118,12 @@ public class JarAnalyzer extends FileAnalyzer {
 		    
 		}
 	    }
-	    doc.add(Field.Text("full", new TagFilter(new StringReader(fullText.toString()))));
+	    doc.add(new Field("full", new TagFilter(new StringReader(fullText.toString()))));
 	    if(defs.size() > 0) {
-		doc.add(Field.Text("defs",dummy));
+		doc.add(new Field("defs",dummy));
 	    }
 	    if(refs.size() > 0) {
-		doc.add(Field.Text("refs",dummy));
+		doc.add(new Field("refs",dummy));
 	    }
 	} catch (IOException e) {
 	    e.printStackTrace();

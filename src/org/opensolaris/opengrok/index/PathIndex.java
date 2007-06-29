@@ -48,7 +48,7 @@ class PathIndex {
                 String parent = (lastSlash != -1) ? path.substring(0, lastSlash) : "";
                 //System.out.println(parent);
                 Document doc = new Document();
-                doc.add(new Field("p", parent, true, true, false));
+                doc.add(new Field("p", parent, Field.Store.YES, Field.Index.TOKENIZED));
                 writer.addDocument(doc);
                 i++;
             }

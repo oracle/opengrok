@@ -76,7 +76,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	    if(in instanceof FileInputStream) {
 		parseELF((FileInputStream) in);
 		if (len > 0) {
-		    doc.add(Field.Text("full", " "));
+		    doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
 		    //doc.add(Field.Text("refs", " "));
 		}
 	    } else {
@@ -84,7 +84,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 		FileInputStream fin = new FileInputStream(fullpath);
 		parseELF((FileInputStream) fin);
 		if (len > 0) {
-		    doc.add(Field.Text("full", " "));
+		    doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
 		    //doc.add(Field.Text("refs", " "));
 		}
 	    }

@@ -39,12 +39,10 @@ public class IndexerWizard extends javax.swing.JFrame {
         } else {
             dataRoot = new File(System.getProperty("user.home") + File.separatorChar + "opengrok_data");
         }
-        Preferences prefs = Preferences.userNodeForPackage(Indexer.class);
-        String ctagsPath = prefs.get("ctags", null);
         initSrcRoot();
         initComponents();
         setUrlPrefix(webappContext.getText());
-        if(Index.setExuberantCtags(ctagsPath)) {
+        if (RuntimeEnvironment.getInstance().validateExuberantCtags()) {
             exubCtags = RuntimeEnvironment.getInstance().getCtags();
             if(exubCtags != null)
                 ctagsText.setText(exubCtags);
@@ -614,7 +612,8 @@ public class IndexerWizard extends javax.swing.JFrame {
     };
     
     private void bstartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bstartActionPerformed
-        if (!Index.setExuberantCtags(ctagsText.getText())) {
+        RuntimeEnvironment.getInstance().setCtags(ctagsText.getText());
+        if (!RuntimeEnvironment.getInstance().validateExuberantCtags()) {
             JOptionPane.showMessageDialog(this, "Error: " + ctagsText.getText() + "Does not look like a Exuberant Ctags!\nPlease select the path to Exuberant Ctags in Advanced Options", "Error", JOptionPane.ERROR_MESSAGE);
             opts.setSize(new Dimension(530,420));
             opts.setVisible(true);
@@ -687,7 +686,8 @@ public class IndexerWizard extends javax.swing.JFrame {
         ctagsChooser.showDialog(opts, "Exuberant Ctags");
         if(ctagsChooser.getSelectedFile() != null) {
             String inputCtags = ctagsChooser.getSelectedFile().getPath();
-            if(Index.setExuberantCtags(inputCtags)) {
+            RuntimeEnvironment.getInstance().setCtags(inputCtags);
+            if (RuntimeEnvironment.getInstance().validateExuberantCtags()) {
                 ctagsText.setText(RuntimeEnvironment.getInstance().getCtags());
             } else {
                 JOptionPane.showMessageDialog(opts, "Error: " + inputCtags + " does not look like Exuberant Ctag!", "Error", JOptionPane.ERROR_MESSAGE);

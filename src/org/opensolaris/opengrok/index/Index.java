@@ -18,22 +18,18 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
 package org.opensolaris.opengrok.index;
+
 import java.io.*;
 import java.util.*;
-import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
+import org.apache.lucene.search.spell.LuceneDictionary;
+import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.spell.NGramSpeller;
 import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -101,8 +97,12 @@ class Index {
             }
         }
         try {
-            if(indexDir != null && IndexReader.isLocked(indexDir.getPath())) {
-                IndexReader.unlock(FSDirectory.getDirectory(indexDir, false));
+            
+            if(indexDir != null) {
+                FSDirectory directory = FSDirectory.getDirectory(indexDir);
+                if (IndexReader.isLocked(directory)) {
+                    IndexReader.unlock(directory);
+                }
             }
         } catch (IOException e) {}
     }
@@ -132,8 +132,6 @@ class Index {
                 err.println("WARNING: Could not save source root name in " + dataRoot.getPath() + "/SRC_ROOT");
             }
             
-            indexDir = new File(dataRoot, "index");
-            
             if (!economical) {
                 xrefDir = new File(dataRoot, "xref");
                 if(!xrefDir.exists()) {
@@ -141,7 +139,9 @@ class Index {
                 }
             }
             
-            if(indexDir.isDirectory() && (new File(indexDir, "segments")).exists()) {
+            indexDir = new File(dataRoot, "index");
+            FSDirectory directory = FSDirectory.getDirectory(indexDir);
+            if (IndexReader.indexExists(directory)) {
                 create = false;
             }
             
@@ -156,7 +156,11 @@ class Index {
                     }
                 }
             }
-            HashMap<File, String> inputSources = new HashMap<File,String>();
+            
+            Map<File, String> inputSources = new LinkedHashMap<File,String>();
+            Collections.sort(subFiles);
+            ArrayList<File> theFiles = new ArrayList<File>();
+            
             for(String sub: subFiles) {
                 File subFile = new File(srcRootDir, sub);
                 if (!subFile.exists()) {
@@ -178,6 +182,7 @@ class Index {
                             parent = subFilePath.substring(srcRootLength, subFilePath.length() - subNameLength-1);
                         }
                         inputSources.put(subFile, parent);
+                        theFiles.add(subFile);
                         if(!subFile.isDirectory() && !economical && parent.length() > 0) {
                             (new File(xrefDir, parent)).mkdirs();
                         }
@@ -195,7 +200,7 @@ class Index {
                 return 0;
             }
             
-            for(File src: inputSources.keySet()) {
+            for(File src: theFiles) {
                 out.println("Processing " + src.getName());
                 changed = false;
                 if (!create) {
@@ -225,7 +230,7 @@ class Index {
                     if(writer == null) {
                         writer = new IndexWriter(indexDir, af.getAnalyzer(), create);
                     }
-                    writer.maxFieldLength = 60000;
+                    writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
                     /*writer.mergeFactor = 1000;
                     writer.maxMergeDocs = 100000;
                     writer.minMergeDocs = 1000;*/
@@ -251,14 +256,14 @@ class Index {
                 out.print("Optimizing the index ... ");
                 doOptimize(dataRoot);
                 out.println("done");
-                if(!economical) {
+                if (!economical) { 
                     out.print("Generating spelling suggestion index ... ");
                     File spellIndex = new File(dataRoot, "spellIndex");
-                    IndexReader reader = IndexReader.open(indexDir);
-                    IndexWriter swriter = new IndexWriter(spellIndex, new WhitespaceAnalyzer(), true);
-                    NGramSpeller.formNGramIndex(reader, swriter, 3, 4, "defs", 5);
-                    swriter.optimize();
-                    swriter.close();
+                    IndexReader reader = IndexReader.open(indexDir);                     
+                    FSDirectory spellDirectory = FSDirectory.getDirectory(spellIndex);
+                    SpellChecker checker = new SpellChecker(spellDirectory);
+                    checker.indexDictionary(new LuceneDictionary(reader, "defs"));
+                    spellDirectory.close();
                     reader.close();
                     out.println("done");
                 }
@@ -307,8 +312,8 @@ class Index {
             indexDown(file, parent);
             if (deleting) {		   // delete rest of stale docs
                 while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
-                    out.println(" - " + Util.uid2url(uidIter.term().text()));
-                    reader.delete(uidIter.term());
+                    out.println("Remove stale file: " + Util.uid2url(uidIter.term().text()));
+                    reader.deleteDocuments(uidIter.term());
                     uidIter.next();
                 }
                 deleting = false;
@@ -360,12 +365,13 @@ class Index {
            
             String path = parent + '/' + file.getName();
             if (uidIter != null) {
-                String uid = Util.uid(path, DateField.timeToString(file.lastModified()));	 // construct uid for doc
+                String uid = Util.uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND));	 // construct uid for doc
                 while (uidIter.term() != null && uidIter.term().field().equals("u") &&
                         uidIter.term().text().compareTo(uid) < 0) {
                     if (deleting) {	   // delete stale docs
-                        out.println(" - " + Util.uid2url(uidIter.term().text()));
-                        reader.delete(uidIter.term());
+                        out.println("Removing stale file:" + Util.uid2url(uidIter.term().text()));
+                        // out.println(" - " + Util.uid2url(uidIter.term().text()));
+                        reader.deleteDocuments(uidIter.term());
                         changed = true;
                     }
                     uidIter.next();
@@ -377,10 +383,11 @@ class Index {
                     if (!deleting) {		      // add new docs
                         InputStream in = new BufferedInputStream(new FileInputStream(file));
                         FileAnalyzer fa = af.getAnalyzer(in, path);
-                        out.print(fa.getClass().getSimpleName());
+                        out.println("Adding: " + path + " (" + fa.getClass().getSimpleName() + ")");
+                        //out.print(fa.getClass().getSimpleName());
                         Document d = af.getDocument(file, in, path);
                         if (d != null) {
-                            out.println(" + " + path);
+                            // out.println(" + " + path);
                             writer.addDocument(d, fa);
                             FileAnalyzer.Genre g = af.getGenre(fa.getClass());
                             if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
@@ -396,11 +403,12 @@ class Index {
             } else {		      // creating a new index
                 InputStream in = new BufferedInputStream(new FileInputStream(file));
                 FileAnalyzer fa = af.getAnalyzer(in, path);
-                out.print(fa.getClass().getSimpleName());
-                out.print(" ");
+                //out.print(fa.getClass().getSimpleName());
+                out.println("Adding: " + path + " (" + fa.getClass().getSimpleName() + ")");
+                //out.print(" ");
                 Document d = af.getDocument(file, in, path);
                 if (d != null) {
-                    out.println(path);
+                    //out.println(path);
                     writer.addDocument(d, fa);
                     Genre g = af.getGenre(fa.getClass());
                     if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
@@ -412,6 +420,24 @@ class Index {
             }
         }
     }
+    
+    public static void dumpU(String data) {
+        try {
+            String startuid =  Util.uid("/", "");
+            IndexReader reader = IndexReader.open(data);
+            TermEnum uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
+        
+
+            while (uidIter.term() != null && uidIter.term().field().equals("u")) {
+                System.out.println("[" + uidIter.term().text() + "]");
+                 uidIter.next();
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    
+    }
+    
     
   /*
    * Merges fragmented indexes
@@ -473,37 +499,4 @@ class Index {
         }
     }
     
-    public static boolean setExuberantCtags(String ctags) {
-        if (ctags == null) {
-            ctags = RuntimeEnvironment.getInstance().getCtags();
-        }
-        
-        // If no Path to CTags was specifyed we guess that its reachable ...
-        if (ctags == null)
-            ctags = "ctags";
-        
-        //Check if exub ctags is available
-        Process ctagsProcess = null;
-        try {
-            ctagsProcess = Runtime.getRuntime().exec(new String[] {ctags, "--version" });
-        } catch (Exception e) {
-        }
-        try {
-            BufferedReader cin = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream()));
-            String ctagOut;
-            if((ctagOut = cin.readLine()) != null && ctagOut.startsWith("Exuberant Ctags")) {
-                System.setProperty("ctags", ctags);
-            } else {
-                System.err.println("Error: No Exuberant Ctags found in PATH!\n" +
-                        "(tried running " + ctags + ")\n" +
-                        "Please use option -c to specify path to a good Exuberant Ctags program");
-                return false;
-            }
-        } catch (Exception e) {
-            System.err.println("Error: executing " + ctags + "! " +e.getLocalizedMessage() +
-                    "\nPlease use option -c to specify path to a good Exuberant Ctags program");
-            return false;
-        }
-        return true;
-    }
 }

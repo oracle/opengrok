@@ -31,6 +31,7 @@ package org.opensolaris.opengrok.search.context;
 import java.io.*;
 import java.util.*;
 import org.apache.lucene.search.*;
+import org.apache.lucene.queryParser.QueryParser;
 import org.opensolaris.opengrok.history.*;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.search.Hit;
@@ -124,10 +125,8 @@ public class HistoryContext {
     
     public static void main(String[] args) {
         try{
-            Query qry = org.apache.lucene.queryParser.QueryParser.parse(
-                    args[0],
-                    "hist",
-                    new CompatibleAnalyser());
+            QueryParser parser = new QueryParser("hist", new CompatibleAnalyser());
+            Query qry = parser.parse(args[0]);            
             System.out.println("Query = " + qry.toString());
             HistoryContext ctx = new HistoryContext(qry);
             Date start = new Date();

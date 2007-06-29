@@ -85,7 +85,7 @@ public class ZipAnalyzer extends FileAnalyzer {
                 len += ename.length();
                 content[len++] = '\n';
             }
-            doc.add(Field.Text("full",dummy));
+            doc.add(new Field("full",dummy));
         } catch (IOException e) {
         }
     }

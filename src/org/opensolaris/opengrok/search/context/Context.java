@@ -34,6 +34,7 @@ package org.opensolaris.opengrok.search.context;
 
 import java.io.*;
 import java.util.*;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.search.Hit;
@@ -222,7 +223,8 @@ public class Context {
     
     public static void main(String[] args) {
         try{
-            Context ctx = new Context(org.apache.lucene.queryParser.QueryParser.parse(args[0], "full", new CompatibleAnalyser()));
+            QueryParser parser = new QueryParser("full", new CompatibleAnalyser());
+            Context ctx = new Context(parser.parse(args[0]));
             Date start = new Date();
             Writer out = new BufferedWriter(new OutputStreamWriter(System.out));
             ctx.getContext(new BufferedReader(new FileReader(args[1])), out, null, null, args[1], null, false, null);

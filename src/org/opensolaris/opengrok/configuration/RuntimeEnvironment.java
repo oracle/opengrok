@@ -27,10 +27,12 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -224,7 +226,50 @@ public class RuntimeEnvironment {
     public void setCtags(String ctags) {
         getConfiguration().setCtags(ctags);
     }
-    
+
+    /**
+     * Validate that I have a Exuberant ctags program I may use
+     * @return true if success, false otherwise
+     */
+    public boolean validateExuberantCtags() {
+        String ctags = getCtags();
+                
+        //Check if exub ctags is available
+        Process ctagsProcess = null;
+        try {
+            ctagsProcess = Runtime.getRuntime().exec(new String[] {ctags, "--version" });
+        } catch (Exception e) {
+        }
+        try {
+            BufferedReader cin = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream()));
+            String ctagOut;
+            if (!((ctagOut = cin.readLine()) != null && ctagOut.startsWith("Exuberant Ctags"))) {
+                System.err.println("Error: No Exuberant Ctags found in PATH!\n" +
+                        "(tried running " + ctags + ")\n" +
+                        "Please use option -c to specify path to a good Exuberant Ctags program");
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("Error: executing " + ctags + "! " +e.getLocalizedMessage() +
+                    "\nPlease use option -c to specify path to a good Exuberant Ctags program");
+            return false;
+        }
+        
+        // reap the child process..
+        try {
+            int ret;
+            if ((ret = ctagsProcess.exitValue()) != 0) {
+                System.err.println("Error: ctags returned " + ret);
+                return false;
+            }            
+        } catch (IllegalThreadStateException exp) {
+            // the process is still running??? just kill it..
+            ctagsProcess.destroy();
+            return true;
+        }        
+        return true;
+    }
+        
     /**
      * Get the max time a SMC operation may use to avoid beeing cached
      * @return the max time
@@ -309,6 +354,34 @@ public class RuntimeEnvironment {
     public Project getDefaultProject() {
         return getConfiguration().getDefaultProject();
     }
+    
+    /**
+     * Chandan wrote the following answer on the opengrok-discuss list:
+     * "Traditionally search engines (specially spiders) think that large files
+     * are junk. Large files tend to be multimedia files etc., which text
+     * search spiders do not want to chew. So they ignore the contents of 
+     * the file after a cutoff length. Lucene does this by number of words,
+     * which is by default is 10,000."
+     * By default OpenGrok will increase this limit to 60000, but it may be
+     * overridden in the configuration file
+     * @return The maximum words to index
+     */
+    public int getIndexWordLimit() {
+        return getConfiguration().getIndexWordLimit();
+    }
+
+    public void setIndexWordLimit(int indexWordLimit) {
+        getConfiguration().setIndexWordLimit(indexWordLimit);
+    }
+    
+    public boolean isVerbose() {
+        return getConfiguration().isVerbose();
+    }
+
+    public void setVerbose(boolean verbose) {
+        getConfiguration().setVerbose(verbose);
+    }
+    
     
     /**
      * Read an configuration file and set it as the current configuration.

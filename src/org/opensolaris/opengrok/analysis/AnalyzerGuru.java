@@ -27,6 +27,7 @@
  */
 package org.opensolaris.opengrok.analysis;
 
+import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.document.TroffAnalyzer;
 import org.opensolaris.opengrok.analysis.java.JavaAnalyzer;
@@ -175,20 +176,22 @@ public class AnalyzerGuru {
     
     public Document getDocument(File f, InputStream in, String path) throws IOException {
         Document doc = new Document();
-        String date = DateField.timeToString(f.lastModified());
-        doc.add(new org.apache.lucene.document.Field("u", Util.uid(path, date), false, true, false));
-        doc.add(new org.apache.lucene.document.Field("fullpath", f.getAbsolutePath(), true, true, true));
+        String date = DateTools.timeToString(f.lastModified(), DateTools.Resolution.MILLISECOND);
+        doc.add(new Field("u", Util.uid(path, date), Field.Store.YES, Field.Index.UN_TOKENIZED));
+        doc.add(new Field("fullpath", f.getAbsolutePath(), Field.Store.YES, Field.Index.TOKENIZED));
+                
         try{
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
             if (hr != null) {
-                doc.add(org.apache.lucene.document.Field.Text("hist", hr));
+                doc.add(new Field("hist", hr));
                 // date = hr.getLastCommentDate() //RFE
             }
         } catch (IOException e) {
+            e.printStackTrace();
         }
-        doc.add(org.apache.lucene.document.Field.Keyword("date", date));
+        doc.add(new Field("date", date, Field.Store.YES, Field.Index.UN_TOKENIZED));
         if(path != null) {
-            doc.add(new org.apache.lucene.document.Field("path", path, true, true, true));
+            doc.add(new Field("path", path, Field.Store.YES, Field.Index.TOKENIZED));
             
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             if (env.hasProjects()) {
@@ -196,7 +199,7 @@ public class AnalyzerGuru {
                 
                 for (Project proj : env.getProjects()) {
                     if (path.indexOf(proj.getPath()) == 0) {
-                        doc.add(org.apache.lucene.document.Field.Text("project", proj.getPath()));
+                        doc.add(new Field("project", proj.getPath(), Field.Store.YES, Field.Index.TOKENIZED));
                     }
                 }
             }
@@ -211,11 +214,11 @@ public class AnalyzerGuru {
             try {
                 Genre g  = fa.getGenre();
                 if (g == Genre.PLAIN) {
-                    doc.add(new org.apache.lucene.document.Field("t", "p", true, false, false));
+                    doc.add(new Field("t", "p", Field.Store.YES, Field.Index.UN_TOKENIZED));
                 } else if ( g == Genre.XREFABLE) {
-                    doc.add(new org.apache.lucene.document.Field("t", "x", true, false, false));
+                    doc.add(new Field("t", "x", Field.Store.YES, Field.Index.UN_TOKENIZED));
                 } else if ( g == Genre.HTML) {
-                    doc.add(new org.apache.lucene.document.Field("t", "h", true, false, false));
+                    doc.add(new Field("t", "h", Field.Store.YES, Field.Index.UN_TOKENIZED));
                 }
                 fa.analyze(doc, in);
             } catch (Exception e) {
@@ -392,9 +395,10 @@ public class AnalyzerGuru {
                 System.out.println("\nANALYZER = " + fa);
                 Document doc = af.getDocument(f, in, arg);
                 System.out.println("\nDOCUMENT = " + doc);
-                Enumeration fields = doc.fields();
-                while (fields.hasMoreElements()) {
-                    org.apache.lucene.document.Field field = (org.apache.lucene.document.Field) fields.nextElement();
+                
+                Iterator iterator = doc.getFields().iterator();
+                while (iterator.hasNext()) {
+                    org.apache.lucene.document.Field field = (org.apache.lucene.document.Field) iterator.next();
                     if(field.isTokenized()){
                         Reader r = field.readerValue();
                         if(r == null) {

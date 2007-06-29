@@ -106,7 +106,7 @@ class Search {
 		    (hist == null ? "" : " hist:(" + hist+")");
 		
 		QueryParser qparser = new QueryParser("full", analyzer);
-		qparser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
+		qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
 		Query query = qparser.parse(qstr); //parse the
 		File src_root = new File(DATA_ROOT, "SRC_ROOT");
 		String SRC_ROOT = "";

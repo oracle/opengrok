@@ -28,6 +28,7 @@
 package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.*;
+import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.plain.*;
 import org.apache.lucene.document.*;
@@ -95,9 +96,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         } catch (org.apache.bcel.classfile.ClassFormatException e) {
         }
         if(fullText != null && fullText.length() > 0) {
-            doc.add(org.apache.lucene.document.Field.Text("defs", dummy));
-            doc.add(org.apache.lucene.document.Field.Text("refs", dummy));
-            doc.add(org.apache.lucene.document.Field.Text("full", dummy));
+            doc.add(new Field("defs", dummy));
+            doc.add(new Field("refs", dummy));
+            doc.add(new Field("full", dummy));
         }
     }
 

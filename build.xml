@@ -82,13 +82,13 @@ ident	"%Z%%M% %I%     %E% SMI"
             <fileset dir="src" includes="org/opensolaris/opengrok/search/scope/*.gif"/>
             <manifest>
                 <attribute name="Main-Class" value="org.opensolaris.opengrok.index.Indexer"/>
-                <attribute name="Class-Path" value="lib/lucene-core-1.9.1.jar
+                <attribute name="Class-Path" value="lib/lucene-core-2.1.0.jar
+                lib/lucene-spellchecker-2.1.0.jar
                 lib/jakarta-oro-2.0.8.jar
                 lib/org.apache.commons.jrcs.rcs.jar
                 lib/org.apache.commons.jrcs.diff.jar
                 lib/bcel-5.1.jar
                 lib/servlet-api.jar
-                lib/speller.jar
                 lib/ant-tools.jar
 		lib/swing-layout-0.9.jar
 		lib/svn-javahl.jar

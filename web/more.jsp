@@ -41,7 +41,7 @@ if (valid) {
   if((grepTerms = request.getParameter("t")) != null && !grepTerms.equals("")) {
 	try{
 		QueryParser qparser = new QueryParser("full", new CompatibleAnalyser());
-		qparser.setOperator(QueryParser.DEFAULT_OPERATOR_AND);
+                qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
 		Query tquery = qparser.parse(grepTerms);
 		if (tquery != null) {
 			Context sourceContext = new Context(tquery);

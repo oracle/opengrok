@@ -117,15 +117,15 @@ public class PlainAnalyzer extends FileAnalyzer {
         } catch (IOException e) {
             return;
         }
-        doc.add(Field.Text("full", dummy));
+        doc.add(new Field("full", dummy));
         try {
 	    String fullpath;
 	    if((fullpath = doc.get("fullpath")) != null && ctags != null) {
                 defs = ctags.doCtags(fullpath+"\n");
                 if(defs != null && defs.size() > 0) {
-                    doc.add(Field.Text("defs", dummy));
-                    doc.add(Field.Text("refs", dummy)); //XXX adding a refs field only if it has defs?
-                    doc.add(new Field("tags", ctags.tagString(), true, false, false));
+                    doc.add(new Field("defs", dummy));
+                    doc.add(new Field("refs", dummy)); //XXX adding a refs field only if it has defs?
+                    doc.add(new Field("tags", ctags.tagString(), Field.Store.YES, Field.Index.UN_TOKENIZED));
                 }
             }
         } catch (IOException e) {

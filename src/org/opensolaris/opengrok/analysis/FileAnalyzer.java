@@ -30,7 +30,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.*;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
-import org.opensolaris.opengrok.web.Util;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.*;
 
 /**
@@ -85,6 +85,10 @@ public class FileAnalyzer extends Analyzer {
 	    return new PathTokenizer(reader);
 	} else if("hist".equals(fieldName)) {
 	    return hista.tokenStream(fieldName, reader);
+        }
+        
+        if (RuntimeEnvironment.getInstance().isVerbose()) {
+            System.out.println("Have no analyzer for: " + fieldName);
         }
 	return null;
     }
