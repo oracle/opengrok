@@ -59,6 +59,7 @@ public class Configuration {
         setCtags("ctags");
         setIndexWordLimit(60000);
         setVerbose(false);
+        setGenerateHtml(true);
     }
     
     public String getCtags() {

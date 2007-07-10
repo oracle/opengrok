@@ -314,7 +314,7 @@ public class Indexer {
 
                 if (runIndex) {
                     Index idx = new Index(env.isVerbose() ? new StandardPrinter(System.out) : new NullPrinter(), new StandardPrinter(System.err));
-                    idx.runIndexer(env.getDataRootFile(), env.getSourceRootFile(), subFiles, env.isGenerateHtml());
+                    idx.runIndexer(env.getDataRootFile(), env.getSourceRootFile(), subFiles, !env.isGenerateHtml());
                 }
 
                 if (configHost != null) {
