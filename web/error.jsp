@@ -16,27 +16,12 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
-ident	"%Z%%M% %I%     %E% SMI"
-
 --%><%@ page import = "javax.servlet.*,
-java.lang.Integer,
 javax.servlet.http.*,
-java.util.Hashtable,
-java.util.Vector,
-java.util.Date,
-java.util.ArrayList,
-java.lang.*,
 java.io.*,
-java.io.StringReader,
-org.apache.lucene.spell.*,
-org.apache.lucene.analysis.*,
-org.apache.lucene.document.*,
-org.apache.lucene.index.*,
-org.apache.lucene.search.*,
-org.apache.lucene.queryParser.*,
 org.opensolaris.opengrok.configuration.*"
 %><%@ page session="false" %><%@ page isErrorPage="true" %><%
 String context = request.getContextPath();
@@ -47,7 +32,7 @@ String configError = "";
 if ("".equals(rawSource)) {
     configError = "SRC_ROOT parameter has not been configured in web.xml! Please configure your webapp.";
 } else {
-    if (!env.getSourceRootFile().isDirectory()) {
+    if (env.getSourceRootFile() == null || !env.getSourceRootFile().isDirectory()) {
         configError = "SRC_ROOT parameter in web.xml does not point to a valid directory! Please configure your webapp.";
     }
 }
@@ -70,8 +55,20 @@ if ("".equals(rawSource)) {
 <div id="Masthead"></div>
 <div id="bar"><a id="home" href="<%=context%>">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
 <h3 class="error">There was an error!</h3>
-<%=configError%><%
-exception.printStackTrace(); 
+<p><%=configError%>
+</p><%if (!(exception instanceof NullPointerException)) {%><pre><%
+   StringWriter wrt = new StringWriter();
+   PrintWriter prt = new PrintWriter(wrt);
+   exception.printStackTrace(prt);
+   prt.flush();
+   out.write(wrt.toString());
+   prt.close();
 %>
+</pre>
+<p>
 <%=exception.getMessage()%>
+</p>
+<%
+}
+%>
 <%@include file="foot.jspf"%>
