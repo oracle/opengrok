@@ -63,6 +63,7 @@ public class CAnalyzer extends PlainAnalyzer {
                 "D",
                 "S",
                 "XS",	// Mainly found in perl directories
+                "X",    // rpcgen input files
 		"PHP"
     };
     public static String[] magics = {
