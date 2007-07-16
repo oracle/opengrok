@@ -18,28 +18,28 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-
-/*
- * ident	"@(#)IgnoredNames.java 1.2     06/02/22 SMI"
  */
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
-import java.util.*;
 import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.oro.io.GlobFilenameFilter;
 
 /**
- * Comment that describes the contents of this IgnoredNames.java
- * Created on November 8, 2005
+ * This class maintains a list of file names (like "cscope.out"), SRC_ROOT relative
+ * file paths (like "usr/src/uts" or "usr/src/Makefile"), and glob patterns
+ * (like .make.*) which opengrok should ignore.
  *
  * @author Chandan
  */
 public class IgnoredNames {
-    public static final String[] IGNORE = {
+    private static final String[] IGNORE = {
         "SCCS",
         "CVS",
         "RCS",
@@ -59,26 +59,58 @@ public class IgnoredNames {
         ".hg",
         ".hgtags",
         "*~",
+	"deleted_files",
+	".make.*",
+	".del-*"
     };
+    
+    /** The list of exact filenames to ignore */     
     private static Set<String> ignore = new HashSet<String>();
+    /** The list of filenames with wildcards to ignore */
     private static List<FileFilter> patterns = new ArrayList<FileFilter>();
+    /** The list of paths that should be ignored */
+    private static List<String> path = new ArrayList<String>();
     
     static {
         for(String ig : IGNORE) {
             add(ig);
         }
     }
-    
+
     public static FileFilter glob = new GlobFilenameFilter("*");
     
+    /**
+     * Add a pattern to the list of patterns of filenames to ignore
+     * @param pattern the pattern to ignore
+     */
     public static void add(String pattern) {
         if (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1) {
             patterns.add(new GlobFilenameFilter(pattern));
+        } else if (pattern.indexOf(File.separatorChar) != -1) {
+            if (pattern.charAt(0) == File.separatorChar) {
+                path.add(pattern);
+            } else {
+                path.add(File.separator + pattern);
+            }
         } else {
             ignore.add(pattern);
         }
     }
     
+    /**
+     * Remove all installed patterns from the list of files to ignore
+     */
+    public static void clear() {
+        patterns.clear();
+        ignore.clear();
+        path.clear();
+    }
+    
+    /**
+     * Should the file be ignored or not?
+     * @param file the file to check
+     * @return true if this file should be ignored, false otherwise
+     */
     public static boolean ignore(File file) {
         boolean ret = false;
         
@@ -93,9 +125,24 @@ public class IgnoredNames {
             }
         }
         
+        if (!ret) {
+            String absolute = file.getAbsolutePath();
+            for (String s : path) {
+                if (absolute.endsWith(s)) {
+                    ret = true;
+                    break;
+                }
+            }
+        }
+        
         return ret;        
     }
     
+    /**
+     * Should the file be ignored or not?
+     * @param name the name of the file to check
+     * @return true if this pathname should be ignored, false otherwise
+     */
     public static boolean ignore(String name) {
         return ignore(new File(name));
     }
