@@ -60,6 +60,7 @@ public class Configuration {
         setIndexWordLimit(60000);
         setVerbose(false);
         setGenerateHtml(true);
+        setQuickContextScan(true);
     }
     
     public String getCtags() {
@@ -157,4 +158,16 @@ public class Configuration {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    private boolean quickContextScan;
+    
+    public boolean isQuickContextScan() {
+        return quickContextScan;
+    }
+    
+    public void setQuickContextScan(boolean quickContextScan) {
+        this.quickContextScan = quickContextScan;
+    }
+    
+    
 }

@@ -37,6 +37,7 @@ import java.util.*;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.web.Util;
 
@@ -151,7 +152,7 @@ public class Context {
         int charsRead = 0;
         boolean truncated = false;
         
-        if (limit) {
+        if (limit && RuntimeEnvironment.getInstance().isQuickContextScan()) {
             try{
                 charsRead = in.read(buffer);
                 // truncate to last line read

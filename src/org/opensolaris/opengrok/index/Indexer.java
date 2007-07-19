@@ -57,6 +57,9 @@ public class Indexer {
             "\t-U Send configuration to hostname:port\n" +
             "\t-P Generate a project for each toplevel directory\n" +
             "\t-p Use the project specified by the project path as the default project\n" +
+            "\t-Q +/- Turn on / off quick context scan. By default only the first 32k\n" +
+            "\t       of a file is scanned and a '[..all..]' link is inserted if the\n" +
+            "\t       is bigger. Activating this option may slow down the server.\n" +
             "\t-n Do not generate indexes\n" +
             "\t-H Start a threadpool to read history history\n" +
             "\t-w root URL of the webapp, default is /source\n" +
@@ -73,7 +76,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "qec:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:";
+    private static String options = "qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:";
 
     /**
      * Program entry point
@@ -177,6 +180,20 @@ public class Indexer {
 
                     case 'i':  IgnoredNames.add(getopt.getOptarg()); break;
                     case 'S' : searchRepositories = true; break;
+                    case 'Q' : 
+                        switch (getopt.getOptarg().charAt(0)) {
+                        case '+' :
+                            env.setQuickContextScan(true);
+                            break;
+                        case '-' :
+                            env.setQuickContextScan(false);
+                            break;
+                        default:
+                            System.err.println("ERROR: You should pass either '+' or '-' as argument to -Q");
+                            System.exit(1);
+                        }
+                        
+                        break;
                     case 'm' : {
                         try {
                             env.setIndexWordLimit(Integer.parseInt(getopt.getOptarg()));

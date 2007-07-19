@@ -319,6 +319,14 @@ public class RuntimeEnvironment {
         getConfiguration().setGenerateHtml(generateHtml);
     }
     
+    public boolean isQuickContextScan() {
+        return getConfiguration().isQuickContextScan();
+    }
+
+    public void setQuickContextScan(boolean quickContextScan) {
+        getConfiguration().setQuickContextScan(quickContextScan);
+    }
+
     /**
      * Get the map of external SCM repositories available
      * @return A map containing all available SCMs
