@@ -159,7 +159,7 @@ if (noAnnotation || annotate) {
     String rev = request.getParameter("r");
     if (rev == null) {
         rev = "";
-    } else if (!rev.isEmpty()) {
+    } else if (rev.length() > 0) {
         rev = "&r=" + rev;
     }
 %> <a id="annotate" href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a> |<%
