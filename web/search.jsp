@@ -197,13 +197,11 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     } catch (Exception e) {
         errorMsg = "<b>Error:</b> " + Util.Htmlize(e.getMessage());
     }
-    if (hits != null && hits.length() == 1 && request.getServletPath().equals("/s")) {
-        if (query != null && query instanceof TermQuery) {
+    // @TODO fix me. I should try to figure out where the exact hit is instead
+    // of returning a page with just _one_ entry in....
+    if (hits != null && hits.length() == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
             response.sendRedirect(context + "/xref" + hits.doc(0).get("path")
             + "#" + ((TermQuery)query).getTerm().text());
-        } else {
-            response.sendRedirect(context + "/xref" + hits.doc(0).get("path"));
-        }
     } else {
 	    %><?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
