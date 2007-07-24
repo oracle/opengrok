@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opensolaris.opengrok.history.ExternalRepository;
+import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
@@ -48,6 +49,7 @@ public class Configuration {
     private Project defaultProject;
     private int indexWordLimit;
     private boolean verbose;
+    private IgnoredNames ignoredNames;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -61,6 +63,7 @@ public class Configuration {
         setVerbose(false);
         setGenerateHtml(true);
         setQuickContextScan(true);
+        setIgnoredNames(new IgnoredNames());
     }
     
     public String getCtags() {
@@ -168,6 +171,12 @@ public class Configuration {
     public void setQuickContextScan(boolean quickContextScan) {
         this.quickContextScan = quickContextScan;
     }
-    
-    
+
+    public void setIgnoredNames(IgnoredNames ignoredNames) {
+        this.ignoredNames = ignoredNames;
+    }
+
+    public IgnoredNames getIgnoredNames() {
+        return ignoredNames;
+    }
 }

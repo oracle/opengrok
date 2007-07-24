@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opensolaris.opengrok.history.ExternalRepository;
+import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -390,6 +391,13 @@ public class RuntimeEnvironment {
         getConfiguration().setVerbose(verbose);
     }
     
+    public IgnoredNames getIgnoredNames() {
+        return getConfiguration().getIgnoredNames();
+    }
+
+    public void setIgnoredNames(IgnoredNames ignoredNames) {
+        getConfiguration().setIgnoredNames(ignoredNames);
+    }
     
     /**
      * Read an configuration file and set it as the current configuration.

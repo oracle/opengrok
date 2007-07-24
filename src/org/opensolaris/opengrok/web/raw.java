@@ -72,7 +72,7 @@ public class raw extends HttpServlet {
         if (!(resourcePath.length() < rawSource.length()
                 || !resourcePath.startsWith(rawSource)
                 || !resourceFile.canRead()
-                || IgnoredNames.ignore(resourceFile)
+                || environment.getIgnoredNames().ignore(resourceFile)
                 || resourceFile.isDirectory())) {
             
             String rev;
@@ -135,7 +135,7 @@ public class raw extends HttpServlet {
         if (resourcePath.length() < rawSource.length()
                 || !resourcePath.startsWith(rawSource)
                 || !resourceFile.canRead()
-                || IgnoredNames.ignore(basename)) {
+                || environment.getIgnoredNames().ignore(basename)) {
             response.sendError(404);
         } else if (resourceFile.isDirectory()) {
             if(!reqURI.endsWith("/")) {

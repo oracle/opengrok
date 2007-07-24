@@ -50,10 +50,11 @@ boolean isDir = false;
 EftarFileReader ef = null;
 String parent = null;
 String parentBasename = resourceFile.getParentFile().getName();
+IgnoredNames ignoredNames = environment.getIgnoredNames();
 
 if(resourcePath.length() < rawSource.length()
-|| IgnoredNames.ignore(path)
-|| IgnoredNames.ignore(parentBasename)
+|| ignoredNames.ignore(path)
+|| ignoredNames.ignore(parentBasename)
 || !resourcePath.startsWith(rawSource)) {
     valid = false;
     response.sendError(404);

@@ -32,6 +32,7 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.util.HashSet;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
@@ -92,8 +93,9 @@ public class DirectoryListing {
 	}
 	out.write("</tr>");
 	ArrayList<String> readMes = new ArrayList<String>();
+        IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
 	for (int i = 0; i < files.length; i++) {
-	    if(!IgnoredNames.ignore(files[i])) {
+	    if(!ignoredNames.ignore(files[i])) {
 		File child = new File(dir, files[i]);
 		String count = "";
 		String size = null;

@@ -31,7 +31,6 @@ import java.text.ParseException;
 import java.util.*;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
-import org.apache.oro.io.GlobFilenameFilter;
 import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.ExternalRepository;
@@ -85,7 +84,7 @@ public class Indexer {
     public static void main(String argv[]) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean runIndex = true;
-
+        
         if(argv.length == 0) {
             if (GraphicsEnvironment.isHeadless()) {
                 System.err.println("No display available for the Graphical User Interface");
@@ -107,6 +106,7 @@ public class Indexer {
 
             // Parse command line options:
             Getopt getopt = new Getopt(argv, options);
+
             try {
                 getopt.parse();
             } catch (ParseException ex) {
@@ -146,9 +146,6 @@ public class Indexer {
                     case 't':
                         Index.doDict(new File(getopt.getOptarg()));
                         System.exit(0);
-                        break;
-                    case 'g':
-                        IgnoredNames.glob = new GlobFilenameFilter(getopt.getOptarg());
                         break;
 
                     case 'q': env.setVerbose(false); break;
@@ -190,7 +187,9 @@ public class Indexer {
                         break;
                     }
 
-                    case 'i':  IgnoredNames.add(getopt.getOptarg()); break;
+                    case 'i':  
+                        env.getIgnoredNames().add(getopt.getOptarg()); 
+                        break;
                     case 'S' : searchRepositories = true; break;
                     case 'Q' : 
                         switch (getopt.getOptarg().charAt(0)) {
@@ -329,7 +328,7 @@ public class Indexer {
                         System.out.flush();
                     }
                 }
-
+                
                 if (refreshHistory) {
                     for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
                         try {

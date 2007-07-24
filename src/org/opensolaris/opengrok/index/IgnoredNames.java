@@ -39,7 +39,7 @@ import org.apache.oro.io.GlobFilenameFilter;
  * @author Chandan
  */
 public class IgnoredNames {
-    private static final String[] IGNORE = {
+    private static final String[] defaultPatterns = {
         "SCCS",
         "CVS",
         "RCS",
@@ -65,45 +65,53 @@ public class IgnoredNames {
     };
     
     /** The list of exact filenames to ignore */     
-    private static Set<String> ignore = new HashSet<String>();
+    private Set<String> ignore;
     /** The list of filenames with wildcards to ignore */
-    private static List<FileFilter> patterns = new ArrayList<FileFilter>();
+    private List<FileFilter> patterns;
     /** The list of paths that should be ignored */
-    private static List<String> path = new ArrayList<String>();
+    private List<String> path;
+    /** The full list of all patterns. This list will be saved in the
+     * configuration file (if used)
+     */
+    private List<String> ignoredPatterns;
     
-    static {
-        for(String ig : IGNORE) {
-            add(ig);
+    public IgnoredNames() {
+        ignore = new HashSet<String>();
+        patterns = new ArrayList<FileFilter>();
+        path = new ArrayList<String>();
+        ignoredPatterns = new PatternList(this);
+        addDefaultPatterns();
+    }
+    
+    public List<String> getIgnoredPatterns() {
+        return ignoredPatterns;
+    }
+    
+    public void setIgnoredPatterns(List<String> ignoredPatterns) {
+        clear();
+        for (String s : ignoredPatterns) {
+            add(s);
         }
     }
-
-    public static FileFilter glob = new GlobFilenameFilter("*");
     
     /**
      * Add a pattern to the list of patterns of filenames to ignore
      * @param pattern the pattern to ignore
      */
-    public static void add(String pattern) {
-        if (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1) {
-            patterns.add(new GlobFilenameFilter(pattern));
-        } else if (pattern.indexOf(File.separatorChar) != -1) {
-            if (pattern.charAt(0) == File.separatorChar) {
-                path.add(pattern);
-            } else {
-                path.add(File.separator + pattern);
-            }
-        } else {
-            ignore.add(pattern);
+    public void add(String pattern) {
+        if (!ignoredPatterns.contains(pattern)) {
+            ignoredPatterns.add(pattern);
         }
     }
     
     /**
      * Remove all installed patterns from the list of files to ignore
      */
-    public static void clear() {
+    public void clear() {
         patterns.clear();
         ignore.clear();
         path.clear();
+        ignoredPatterns.clear();
     }
     
     /**
@@ -111,9 +119,9 @@ public class IgnoredNames {
      * @param file the file to check
      * @return true if this file should be ignored, false otherwise
      */
-    public static boolean ignore(File file) {
+    public boolean ignore(File file) {
         boolean ret = false;
-        
+
         if (ignore.contains(file.getName())) {
             ret = true;
         } else {
@@ -143,7 +151,50 @@ public class IgnoredNames {
      * @param name the name of the file to check
      * @return true if this pathname should be ignored, false otherwise
      */
-    public static boolean ignore(String name) {
+    public boolean ignore(String name) {
         return ignore(new File(name));
+    }
+
+    public void addDefaultPatterns() {
+        for (String s : defaultPatterns) {
+            add(s);
+        }
+    }    
+    
+    private void addPattern(String pattern) {
+        if (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1) {
+            patterns.add(new GlobFilenameFilter(pattern));
+        } else if (pattern.indexOf(File.separatorChar) != -1) {
+            if (pattern.charAt(0) == File.separatorChar) {
+                path.add(pattern);
+            } else {
+                path.add(File.separator + pattern);
+            }
+        } else {
+            ignore.add(pattern);
+        }
+    }
+    
+    /**
+     * During the load of the configuration file, the framework will add
+     * entries to the ignored pattern list. Since I use them in different
+     * lists, I need to detect when an object is beeing added to this list 
+     * (So I may populate it to the correct list as well)
+     */
+    public class PatternList extends ArrayList<String> {
+        private IgnoredNames owner;
+        
+        public PatternList(IgnoredNames owner) {
+            this.owner = owner;
+        }
+        
+
+        public boolean add(String pattern) {
+            boolean ret = super.add(pattern);
+            if (ret) {
+                owner.addPattern(pattern);
+            }
+            return ret;
+        }
     }
 }

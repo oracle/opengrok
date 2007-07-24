@@ -53,6 +53,7 @@ class Index {
     private AnalyzerGuru af;
     private Printer err;
     private Printer out;
+    private IgnoredNames ignoredNames;
     
     public Index(Printer out, Printer err) {
         this.err = err;
@@ -144,6 +145,8 @@ class Index {
             if (IndexReader.indexExists(directory)) {
                 create = false;
             }
+
+            ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
             
             if(subFiles == null) {
                 subFiles = new ArrayList<String>();
@@ -152,7 +155,7 @@ class Index {
                 String[] allSubFiles = srcRootDir.list();
                 if (allSubFiles != null) {
                     for(String sub: allSubFiles) {
-                        if(!IgnoredNames.ignore(sub)) subFiles.add(sub);
+                        if(!ignoredNames.ignore(sub)) subFiles.add(sub);
                     }
                 }
             }
@@ -336,7 +339,7 @@ class Index {
         }
         //SizeandLines rets = new SizeandLines();
         if (file.isDirectory()) {
-            if(!IgnoredNames.ignore(file)) { // if a directory
+            if(!ignoredNames.ignore(file)) { // if a directory
                 String[] files = file.list();
                 if (files != null && files.length > 0) {
                     //SizeandLines ret = new SizeandLines();
@@ -346,18 +349,13 @@ class Index {
                         (new File(xrefDir, path)).mkdirs();
                     }
                     for (int i = 0; i < files.length; i++) {
-                        if (!IgnoredNames.ignore(files[i])) {
+                        if (!ignoredNames.ignore(files[i])) {
                             indexDown(new File(file, files[i]), path);
                         }
                     }
                 }
             }
         } else {
-            if(!IgnoredNames.glob.accept(file)) {
-                err.println("Warning: ignored file " + file.getName());
-                return;
-            }
-            
             if (!file.isFile()) {
                 err.println("Warning: skipping file " + file.getName());
                 return;

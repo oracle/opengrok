@@ -57,10 +57,11 @@ if("/".equals(path)) {
 boolean isDir = false;
 String parent = null;
 String parentBasename = resourceFile.getParentFile().getName();
+IgnoredNames ignoredNames = env.getIgnoredNames();
 if (resourcePath.length() < rawSource.length()
 || !resourcePath.startsWith(rawSource)
 || !resourceFile.canRead()
-|| IgnoredNames.ignore(basename) || IgnoredNames.ignore(parentBasename)) {
+|| ignoredNames.ignore(basename) || ignoredNames.ignore(parentBasename)) {
     valid = false;
     response.sendError(404);
     return;
