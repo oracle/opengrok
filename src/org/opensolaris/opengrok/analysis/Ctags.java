@@ -52,7 +52,7 @@ public class Ctags {
                 "--file-scope=yes",
                 "-u",
                 "--filter=yes",
-                "--filter-terminator=" + '\n',
+                "--filter-terminator=__ctags_done_with_file__" + '\n',
                 "--fields=-anf+iKnS",
                 "--excmd=pattern",
 		"--regex-Asm=/^[ \\t]*(ENTRY|ENTRY2|ALTENTRY)[ \\t]*\\(([a-zA-Z0-9_]+)/\\2/f,function/"  // for assmebly definitions
@@ -110,14 +110,14 @@ public class Ctags {
             do {
                 String tagLine = ctagsOut.readLine();
                 //System.out.println("Tagline:-->" + tagLine+"<----ONELINE");
-                if (tagLine.length()==0) {
-                    //System.out.println("RETURNING - EMPTY LINE");
-                    return;
-                }
+		if ( tagLine.equals( "__ctags_done_with_file__" ) )
+		{
+		    return;
+		}
                 int p = tagLine.indexOf('\t');
                 if (p <= 0) {
                     //System.out.println("SKIPPING LINE - NO TAB");
-                    continue;
+		    continue;
                 }
                 String def = tagLine.substring(0, p);
                 int mstart = tagLine.indexOf('\t', p+1);
