@@ -53,9 +53,16 @@ do
       send_report
    else
       # (re)generate index database
-      echo "Update index database"
+      echo "Update index database" >> ${output}
+      # You may want to add something like the following command
+      # to automatically generate projects for each subdirectory in the
+      # SRC_ROOT directory. The -p options let you specify the project
+      # that should be selected by default (note that the parameter here
+      # is the path to the project)
+      # ADD_PROJECTS="-P -p /onnv-gate -W ${DATA_ROOT}/../configuration.xml"
       ${JAVA_HOME}/bin/java -Xmx1524m -jar ${PROGDIR}/opengrok.jar \
-                    -H -R ${DATA_ROOT}/../configuration.xml >> ${output} 2>&1
+                    -H -R ${DATA_ROOT}/../configuration.xml \
+                    ${ADD_PROJECTS} >> ${output} 2>&1
 
       if [ $? -ne 0 ]
       then
@@ -79,7 +86,8 @@ do
                  ${JAVA_HOME}/bin/java -Xmx1524m \
                                        -jar ${PROGDIR}/opengrok.jar \
                                        -U ${f} \
-                                       -R ${DATA_ROOT}/../configuration.xml 
+                                       -R ${DATA_ROOT}/../configuration.xml \
+                                       -n  >> ${output} 2>&1
                # fi
 
             done
