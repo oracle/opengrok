@@ -117,6 +117,18 @@ public class Indexer {
 
             try{
                 int cmd;
+                
+                // We need to read the configuration file first, since we
+                // will try to overwrite options..
+                while ((cmd = getopt.getOpt()) != -1) {
+                    if (cmd == 'R') {
+                        env.readConfiguration(new File(getopt.getOptarg()));
+                        break;
+                    }
+                }
+                
+                // Now we can handle all the other options..
+                getopt.reset();                
                 while ((cmd = getopt.getOpt()) != -1) {
                     switch (cmd) {
                     case 'D' : 
@@ -160,8 +172,8 @@ public class Indexer {
                     break;
                     case 'W': configFilename = getopt.getOptarg(); break;
                     case 'U': configHost = getopt.getOptarg(); break;
-                    case 'R':
-                        env.readConfiguration(new File(getopt.getOptarg()));
+                    case 'R': 
+                        // already handled
                         break;
                     case 'n': runIndex = false; break;
                     case 'H': refreshHistory = true; break;

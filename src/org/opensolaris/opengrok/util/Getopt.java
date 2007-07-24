@@ -131,6 +131,13 @@ public class Getopt {
     }
     
     /**
+     * Reset the current pointer so we may traverse all the options again..
+     */
+    public void reset() {
+        current = -1;
+    }
+    
+    /**
      * Get the argument to the current option
      * @return the argument or null if none present (or allowed)
      */
