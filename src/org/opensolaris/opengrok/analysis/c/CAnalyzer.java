@@ -50,6 +50,7 @@ public class CAnalyzer extends PlainAnalyzer {
         "C",
                 "H",
                 "CPP",
+                "HPP",
                 "CC",
                 "C++",
                 "HH",
