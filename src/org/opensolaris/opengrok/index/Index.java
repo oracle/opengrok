@@ -224,7 +224,7 @@ class Index {
                             //forcefully unlock the index
                             try {
                                 if (IndexReader.isLocked(dataRoot + "/index")) {
-                                    IndexReader.unlock(FSDirectory.getDirectory(dataRoot + "/index", false) );
+                                    IndexReader.unlock(FSDirectory.getDirectory(dataRoot + "/index") );
                                 }
                             } catch (Exception ex) {
                             }
@@ -243,7 +243,7 @@ class Index {
                     } catch (IOException e) {
                         try {
                             if (reader != null && dataRoot != null && reader.isLocked(dataRoot + "/index")) {
-                                reader.unlock(FSDirectory.getDirectory(dataRoot + "/index", false) );
+                                reader.unlock(FSDirectory.getDirectory(dataRoot + "/index") );
                             }
                         } catch (IOException eio) {
                             out.println("Warning: Could not delete lock file!");
@@ -274,7 +274,7 @@ class Index {
             return 1;
         } catch (RuntimeException e) {
             if (reader != null && dataRoot != null && reader.isLocked(dataRoot + "/index")) {
-                reader.unlock(FSDirectory.getDirectory(dataRoot + "/index", false));
+                reader.unlock(FSDirectory.getDirectory(dataRoot + "/index"));
             }
             throw e;
         }
