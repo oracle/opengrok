@@ -1,3 +1,25 @@
+August 2007 update 0.5
+-------------------------------------------------
+Please see http://cvs.opensolaris.org/source/history/opengrok/trunk/ for
+full history information, and for the list of contributors. The following is
+just a summary.
+
+New Features:
+   Annotate support for Subversion and Mercurial
+   Use of a "history cache" for some SCM's to improve performance
+   Replaced system properties with configuration that may be changed runtime
+   Added support for Lisp
+   Updated the Lucene search engine, and allow wildcard search
+   Implemented glob'ing for IgnoredNames (-i *.bak)
+   Added a meta robots directive to the page headers to stop robots
+   Added support for "Projects"
+   Added support for RCS
+   Allow user-configurable bug patterns
+
+Bug fixes:
+   Fix problems that Tomcat reports IllegalStateException for page redirects
+   Added more stack traces when errors occurs
+
 December 2006 update 0.4
 -------------------------------------------------
 New Features:

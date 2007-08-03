@@ -59,7 +59,7 @@ do
       # SRC_ROOT directory. The -p options let you specify the project
       # that should be selected by default (note that the parameter here
       # is the path to the project)
-      # ADD_PROJECTS="-P -p /onnv-gate -W ${DATA_ROOT}/../configuration.xml"
+      # ADD_PROJECTS="-S -P -p /onnv-gate -W ${DATA_ROOT}/../configuration.xml"
       ${JAVA_HOME}/bin/java -Xmx1524m -jar ${PROGDIR}/opengrok.jar \
                     -H -R ${DATA_ROOT}/../configuration.xml \
                     ${ADD_PROJECTS} >> ${output} 2>&1

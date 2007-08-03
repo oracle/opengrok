@@ -1,0 +1,174 @@
+OpenGrok deployment, step by step
+---------------------------------
+
+One of the design goals of OpenGrok is that it should be easy to use, so a
+user should be able to use OpenGrok with a minimum of configuration. While the
+mimimum configuration is suitable for some users, it will not fit all users.
+The intent of this document is to offer a "step by step" guide for two
+different deployments of OpenGrok. A simple configuration suitable for small
+deployments, and a more "advanced" one for sites that want to host multiple
+source projects with a single OpenGrok server.
+
+Simple configuration.
+---------------------
+
+The first thing you need to do is to create a directory structure to hold the
+sources and the database used by OpenGrok. I would suggest something like:
+
+/opengrok
+|-- bin
+|-- data
+`-- source
+
+You should copy the OpenGrok binaries into the bin-directory. The following
+command should do the trick:
+
+$ cp -r run.sh opengrok.jar lib /opengrok/bin
+
+Edit run.sh and set the following parameters:
+SRC_ROOT=/opengrok/source
+DATA_ROOT=/opengrok/data
+EXUB_CTAGS=/absolute/path/to/Exubrant/Ctags
+
+The last thing we need to do is to configure the web application. To do so, 
+please execute the following commands:
+$ mkdir /opengrok/web/source
+$ cd /opengrok/web/source
+$ unzip /path/to/opengrok-release/source.war
+
+edit WEB-INF/web.xml and specify SRC_ROOT and DATA_ROOT.
+
+You may also want to modify the file index_body.html before you re-create
+the war-file with the following commands:
+
+$ cd /opengrok/web/source
+$ zip -r /opengrok/web/source.war
+
+Deploy OpenGrok to a Tomcat server by copying source.war to the "webapps"
+directory in the Tomcat installation.
+In case you have Glassfish, you can use web admin UI to deploy the war, or
+you can simply put it in your domains directory in the "autodeploy" folder.
+If you are using any other web application container servers, please refer to
+their documentation on war deployments.
+
+
+Advanced configuration.
+-----------------------
+
+This configuration is suitable for deployments where you would like to host
+multiple source projects in the same OpenGrok installation. This configuration
+is also suitable if you want to run the index generation on one server, and
+the web interface on another server.
+
+I would recommend that you create a unique user and group named opengrok to
+own the files and run the indexing software.
+
+As with the simple configuration you need to set up a directory structure.
+I would suggest something like:
+
+/opengrok
+|-- bin
+|-- smf
+|-- stage1
+|   |-- data
+|   `-- source
+`-- stage2
+    |-- data
+    `-- source
+
+The reason we need two stage directories is that the web service will use one
+while we're updating the other.
+
+You should then populate the directory with files from the OpenGrok 
+distribution:
+$ cp -r opengrok.jar lib /opengrok/bin
+$ cp -r tools/smf /opengrok
+
+(Please note that you should use the same value for SRC_ROOT and DATA_ROOT for
+on all servers if you generate indexes on one server and run the web interface
+on another server. On Solaris you could use the automounter to mount /opengrok
+on all servers, or you could specify the path by using /net/servername/opengrok)
+
+The /opengrok/smf subdirectory contains scripts and manifest files that may be
+used to run the index generation as a Solaris service. You will find a script
+that may be used as a skeleton to create you own startup / shutdown script in
+tools/init.d. This should be placed in /etc/init.d and appropriate links
+must be creted from the desired rcX.d directory.
+
+Solaris users should edit /opengrok/smf/opengrok.xml and verify that the
+variables specified there are correct. The service is imported by executing
+the following command:
+# svccfg import /opengrok/smf/opengrok.xml
+
+For other platforms these variables are specified in /etc/init.d/opengrok.sh
+
+The next thing to do is to populate the source trees with the sources you want
+OpenGrok to serve. E.g. to create your own "mirror" of the OpenGrok sources you
+would execute:
+
+$ cd /opengrok/stage1/source
+$ hg clone ssh://anon@opensolaris.org/hg/opengrok/trunk opengrok
+$ cp -pr opengrok /opengrok/stage2/source
+
+If you are going to host source from multiple projects in your OpenGrok server,
+you should edit /opengrok/smf/indexer.sh and look for the line:
+      # ADD_PROJECTS="-P -p /onnv-gate -W ${DATA_ROOT}/../configuration.xml"
+
+Remove the '#' to activate the line, and replace "/onnv-gate" with the 
+directory name of the project you would like to be selected as default (to 
+select the opengrok source we added above, insert "/opengrok").
+
+The last step we need to do before we can start generating the indices is to
+create the configuration file used by the web interface. You create the
+configuration file by executing the following command:
+
+$ java -jar /opengrok/bin/opengrok.jar -W /opengrok/stage1/configuration.xml \
+       -c /path/to/ctags -P -S -v -s /opengrok/stage1/source \
+       /opengrok/stage1/data
+
+You can now start generating indices by executing:
+Solaris with SMF:
+# svcadm enable opengrok
+Or if you use scripts in /etc/init.d:
+# /etc/init.d/opengrok start
+
+The last thing we need to do is to configure the web application. To do so, 
+please execute the following commands:
+$ mkdir /opengrok/web/source
+$ cd /opengrok/web/source
+$ unzip /path/to/opengrok-release/source.war
+
+edit WEB-INF/web.xml and add the following section (next to all the other
+<context-param> entries):
+
+ <context-param>
+   <param-name>CONFIGURATION</param-name>
+   <param-value>/opengrok/configuration.xml</param-value>
+ </context-param>
+
+ <context-param>
+   <param-name>ConfigAddress</param-name>
+   <param-value>localhost:2424</param-value>
+ </context-param>
+
+The last entry will let the web application listen on port 2424 for
+configuration updates. There is currently _no_ authentication implemented here,
+so you should not add an ip address reachable from an untrusted source.
+If you run the index generation on another server than the web server, you must
+add one of the external interfaces of the web server (but it should _NOT_ be
+reachable from external hosts).
+
+You may also want to modify the file index_body.html before you re-create
+the jar-file with the following commands:
+
+$ cd /opengrok/web/source
+$ zip -r /opengrok/web/source.war
+
+Deploy OpenGrok to a Tomcat server by copying source.war to the webapps
+directory in the Tomcat installation.
+In case you have Glassfish, you can use web admin UI to deploy the war, or
+you can simply put it in your domains directory in the "autodeploy" folder.
+If you are using any other web application container servers, please refer to
+their documentation on war deployments.
+
+

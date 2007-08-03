@@ -4,19 +4,21 @@ OpenGrok - a wicked fast source browser
 OpenGrok is a fast and usable source code search and cross reference
 engine, written in Java. It helps you search, cross-reference and navigate
 your source tree. It can understand various program file formats and
-version control histories like SCCS, RCS, CVS and Subversion
+version control histories like SCCS, RCS, CVS, Subversion and Mercurial.
 
 OpenGrok is the tool used for the OpenSolaris Source Browser.
 
 Requirements
 ------------
-    * Latest Java http://java.sun.com/
+    * Latest Java http://java.sun.com/ (At least 1.5)
     * A servlet container like Tomact (5.x or later)
       http://tomcat.apache.org/
     * Exuberant Ctags http://ctags.sourceforge.net/
     * Subversion 1.3.0 or later if SVN support is needed
       http://subversion.tigris.org/
-    * JFlex Ant task
+    * Mercurial 0.9.3 or later if Mercurial support is needed
+      http://www.selenic.com/mercurial/wiki/
+    * JFlex Ant task (If you want to build OpenGrok)
       http://www.jflex.org/
 
 
@@ -30,10 +32,11 @@ data files will be stored in DATA_ROOT directory.
 OpenGrok setup Step.0 - Setting up the Sources.
 ----------------------------------------------
 Source base must be available locally for OpenGrok to work efficiently. No
-changes are required to your source tree. If the code is under CVS or 
-Subversion OpenGrok requires the checked out source tree under SRC_ROOT.
-A local CVSROOT or Subversion file protocol access must be available.
-File history will not be fetched from a remote CVS/SVN server.
+changes are required to your source tree. If the code is under source control
+management (SCM) OpenGrok requires the checked out source tree under SRC_ROOT.
+It is possible for some SCM systems to use a remote repository (Subversion),
+but this is not recommended due to the performance penalty. CVS must have a
+local repository.
 Note that OpenGrok ignores symbolic links.
 
 ---------------------------------------------------
@@ -73,7 +76,7 @@ directory listings or search results) Example descriptions are in paths.tsv
 file. You can list descriptions for directories one per line tab separated
 format path tab description. Refer to example 4 below.
 
-Note 1 - Changing webapp parameters: web.xml is the deployment descriptorblogsblo
+Note 1 - Changing webapp parameters: web.xml is the deployment descriptor
 for the web application. It is in a Jar file named source.war, you can
 either:
 

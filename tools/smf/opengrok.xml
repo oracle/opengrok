@@ -91,10 +91,10 @@ CDDL HEADER END
                    <!-- The path needed -->
                    <envvar name="PATH" value="/usr/bin"/>
 
-                   <!-- The name og the various SCM tools to use -->
-                   <envvar name="CVS" value="/opt/csw/bin/cvs" />
-                   <envvar name="SUBVERSION" value="/opt/csw/bin/svn"/>
-                   <envvar name="MERCURIAL" value="/opt/csw/bin/hg"/>
+                   <!-- The name of the various SCM tools to use -->
+                   <envvar name="CVS" value="/usr/bin/cvs" />
+                   <envvar name="SUBVERSION" value="/usr/bin/svn"/>
+                   <envvar name="MERCURIAL" value="/usr/bin/hg"/>
 
                    <!-- The name of the web servers that should be
                    notified with the information of the active
@@ -106,15 +106,15 @@ CDDL HEADER END
                    <!-- The email address to send an email if the
                    source update fails, or a fatal error occurs while
                    the index database is beeing updated. -->
-                   <envvar name="ADMINISTRATOR" value="trond.norbye@sun.com"/>
+                   <envvar name="ADMINISTRATOR" value="root@localhost"/>
 
                    <!-- The current version of the Mercurial log parser
                    expects C date format. -->
                    <envvar name="LC_ALL" value="C"/>
 
-                   <!-- Additional libraries to look for libraries in.
+                   <!-- Additional directories to look for libraries in.
                    (Subversions java binding etc) -->
-                   <envvar name="LD_LIBRARY_PATH" value="/opt/csw/lib/svn"/>
+                   <envvar name="LD_LIBRARY_PATH" value="/usr/lib/svn"/>
                </method_environment>
             </method_context>
          </exec_method>
