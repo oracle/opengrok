@@ -125,12 +125,14 @@ class Index {
             
             String srcRootPath = srcRootDir.getAbsolutePath();
             File srcConfigFile = new File(dataRoot, "SRC_ROOT");
-            try {
-                FileWriter srcConfig = new FileWriter(srcConfigFile);
-                srcConfig.write(srcRootPath+"\n");
-                srcConfig.close();
-            } catch(IOException e) {
-                err.println("WARNING: Could not save source root name in " + dataRoot.getPath() + "/SRC_ROOT");
+            if (!srcConfigFile.exists()) {
+                try {
+                    FileWriter srcConfig = new FileWriter(srcConfigFile);
+                    srcConfig.write(srcRootPath+"\n");
+                    srcConfig.close();
+                } catch(IOException e) {
+                    err.println("WARNING: Could not save source root name in " + dataRoot.getPath() + "/SRC_ROOT");
+                }
             }
             
             if (!economical) {
@@ -155,7 +157,9 @@ class Index {
                 String[] allSubFiles = srcRootDir.list();
                 if (allSubFiles != null) {
                     for(String sub: allSubFiles) {
-                        if(!ignoredNames.ignore(sub)) subFiles.add(sub);
+                        if(!ignoredNames.ignore(sub)) {
+                            subFiles.add(sub);
+                        }
                     }
                 }
             }
@@ -202,7 +206,12 @@ class Index {
                 err.println("WARNING: nothing to index!");
                 return 0;
             }
-            
+
+            Collections.sort(theFiles, new Comparator<File>() {
+                public int compare(File o1, File o2) {
+                    return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+                }
+            });
             for(File src: theFiles) {
                 out.println("Processing " + src.getName());
                 changed = false;
@@ -212,7 +221,10 @@ class Index {
                     startIndexing(src, indexDir, inputSources.get(src));
                 }
                 
-                if (changed) anythingChanged = true;
+                if (changed) {
+                    anythingChanged = true;
+                }
+                
                 if (create || changed) {
                     if(af == null)
                         af = new AnalyzerGuru();
@@ -316,7 +328,10 @@ class Index {
             if (deleting) {		   // delete rest of stale docs
                 while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
                     out.println("Remove stale file: " + Util.uid2url(uidIter.term().text()));
-                    reader.deleteDocuments(uidIter.term());
+                    int no = reader.deleteDocuments(uidIter.term());
+                    if (no != 1) {
+                        err.println("  WARNING: " + no + " documents removed");
+                    }
                     uidIter.next();
                 }
                 deleting = false;
@@ -369,7 +384,10 @@ class Index {
                     if (deleting) {	   // delete stale docs
                         out.println("Removing stale file:" + Util.uid2url(uidIter.term().text()));
                         // out.println(" - " + Util.uid2url(uidIter.term().text()));
-                        reader.deleteDocuments(uidIter.term());
+                        int no = reader.deleteDocuments(uidIter.term());
+                        if (no != 1) {
+                            err.println("  WARNING: " + no + " documents removed");
+                        }
                         changed = true;
                     }
                     uidIter.next();
@@ -419,23 +437,20 @@ class Index {
         }
     }
     
-    public static void dumpU(String data) {
+    public static void dumpU(File dataRoot) {
         try {
             String startuid =  Util.uid("/", "");
-            IndexReader reader = IndexReader.open(data);
+            IndexReader reader = IndexReader.open(new File(dataRoot, "index"));
             TermEnum uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
-        
 
             while (uidIter.term() != null && uidIter.term().field().equals("u")) {
                 System.out.println("[" + uidIter.term().text() + "]");
-                 uidIter.next();
+                uidIter.next();
             }
         } catch (Exception e) {
             System.out.println(e);
         }
-    
     }
-    
     
   /*
    * Merges fragmented indexes

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -49,6 +49,7 @@ public class Indexer {
             "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-p project-path] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
             "       opengrok.jar [-O | -l | -t] DATA_ROOT\n" +
             "\t-q run quietly\n" +
+            "\t-v Print progress information\n" +
             "\t-e economical - consumes less disk space\n" +
             "\t-c path to ctags\n" +
             "\t-R Read configuration from file\n" +
@@ -56,11 +57,11 @@ public class Indexer {
             "\t-U Send configuration to hostname:port\n" +
             "\t-P Generate a project for each toplevel directory\n" +
             "\t-p Use the project specified by the project path as the default project\n" +
-            "\t-Q +/- Turn on / off quick context scan. By default only the first 32k\n" +
-            "\t       of a file is scanned and a '[..all..]' link is inserted if the\n" +
-            "\t       is bigger. Activating this option may slow down the server.\n" +
+            "\t-Q on/off Turn on / off quick context scan. By default only the first 32k\n" +
+            "\t          of a file is scanned and a '[..all..]' link is inserted if the\n" +
+            "\t          is bigger. Activating this option may slow down the server.\n" +
             "\t-n Do not generate indexes\n" +
-            "\t-H Start a threadpool to read history history\n" +
+            "\t-H Generate history cache for external repositories\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
             "\t-m Maximum words in a file to index\n" +
@@ -71,7 +72,8 @@ public class Indexer {
             "\tsubtree - only specified files or directories under SRC_ROOT are processed\n" +
             "\t   if not specified all files under SRC_ROOT are processed\n" +
             "\n\t-O optimize the index \n" +
-            "\t-l list all files in the index \n" +
+            "\t-l list all files in the index\n" +
+            "\t-D list the index uid's\n" +
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
@@ -132,8 +134,8 @@ public class Indexer {
                 while ((cmd = getopt.getOpt()) != -1) {
                     switch (cmd) {
                     case 'D' : 
-                        Index.dumpU(getopt.getOptarg()); 
-                        System.exit(1);
+                        Index.dumpU(new File(getopt.getOptarg())); 
+                        System.exit(0);
                         break;
                     case 'O':
                         Index.doOptimize(new File(getopt.getOptarg()));
@@ -192,16 +194,14 @@ public class Indexer {
                         break;
                     case 'S' : searchRepositories = true; break;
                     case 'Q' : 
-                        switch (getopt.getOptarg().charAt(0)) {
-                        case '+' :
+                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
                             env.setQuickContextScan(true);
-                            break;
-                        case '-' :
+                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
                             env.setQuickContextScan(false);
-                            break;
-                        default:
-                            System.err.println("ERROR: You should pass either '+' or '-' as argument to -Q");
-                            System.exit(1);
+                        } else {
+                            System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -Q");
+                            System.err.println("       Ex: \"-Q on\" will just scan a \"chunk\" of the file and insert \"[..all..]\"");
+                            System.err.println("           \"-Q off\" will try to build a more accurate list by reading the complete file.");
                         }
                         
                         break;
