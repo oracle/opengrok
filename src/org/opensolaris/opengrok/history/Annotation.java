@@ -101,9 +101,10 @@ public class Annotation {
      * @param author author name
      */
     void addLine(String revision, String author) {
-        lines.add(new Line(revision, author));
-        widestRevision = Math.max(widestRevision, revision.length());
-        widestAuthor = Math.max(widestAuthor, author.length());
+	final Line line = new Line(revision, author);
+        lines.add(line);
+        widestRevision = Math.max(widestRevision, line.revision.length());
+        widestAuthor = Math.max(widestAuthor, line.author.length());
     }
 
     /** Class representing one line in the file. */
@@ -111,8 +112,8 @@ public class Annotation {
         final String revision;
         final String author;
         Line(String rev, String aut) {
-            revision = rev;
-            author = aut;
+            revision = (rev == null) ? "" : rev;
+            author = (aut == null) ? "" : aut;
         }
     }
 }
