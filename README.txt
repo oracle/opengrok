@@ -11,8 +11,9 @@ OpenGrok is the tool used for the OpenSolaris Source Browser.
 Requirements
 ------------
     * Latest Java http://java.sun.com/ (At least 1.5)
-    * A servlet container like Tomact (5.x or later)
+    * A servlet container like Tomcat (5.x or later)
       http://tomcat.apache.org/
+      supporting Servlet 2.4 and JSP 2.0
     * Exuberant Ctags http://ctags.sourceforge.net/
     * Subversion 1.3.0 or later if SVN support is needed
       http://subversion.tigris.org/
@@ -78,7 +79,7 @@ format path tab description. Refer to example 4 below.
 
 Note 1 - Changing webapp parameters: web.xml is the deployment descriptor
 for the web application. It is in a Jar file named source.war, you can
-either:
+change the :
 
     * Option 1: Unzip the file to TOMCAT/webapps/source/ directory and
     change the source/WEB-INF/web.xml and other static html files like
@@ -93,6 +94,36 @@ either:
     	$ zip -u source.war WEB-INF/web.xml
 
     Then copy the war files to <i>TOMCAT</i>/webapps directory.
+
+    * Option 3: Edit the Context container element for the webapp
+
+	Copy source.war to TOMCAT/webapps
+
+        When invoking OpenGrok to build the index, use -w <webapp> to set the 
+        context.
+
+        After the index is built, there's a couple different ways to set the
+        Context for the servlet container:
+          - Add the Context inside a Host element in TOMCAT/conf/server.xml
+
+	    <Context path="/<webapp>" docBase="source.war">
+	        <Parameter name="DATA_ROOT" value="/path/to/data/root" override="false" />
+		<Parameter name="SRC_ROOT" value="/path/to/src/root" override="false" />
+		<Parameter name="HEADER" value='...' override="false" />
+	        <Parameter name="SCAN_REPOS" value="false" override="false/>
+	    </Context>
+
+          - Create a Context file for the webapp
+
+	    This file will be named `<webapp>.xml'.
+
+	    For Tomcat, the file will be located at:
+	    `TOMCAT/conf/<engine_name>/<hostname>', where <engine_name>
+	    is the Engine that is processing requests and <hostname> is a Host
+	    associated with that Engine.  By default, this path is
+	    'TOMCAT/conf/Catalina/localhost' or 'TOMCAT/conf/Standalone/localhost'.
+
+	    This file will contain something like the Context described above.
 
 ---------------------------------------------------
 Using Standalone Swing GUI
