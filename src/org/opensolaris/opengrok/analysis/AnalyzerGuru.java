@@ -44,7 +44,6 @@ import org.apache.lucene.analysis.*;
 import org.opensolaris.opengrok.analysis.archive.*;
 import org.opensolaris.opengrok.analysis.executables.*;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.*;
 import org.opensolaris.opengrok.web.Util;
 
@@ -192,16 +191,9 @@ public class AnalyzerGuru {
         doc.add(new Field("date", date, Field.Store.YES, Field.Index.UN_TOKENIZED));
         if(path != null) {
             doc.add(new Field("path", path, Field.Store.YES, Field.Index.TOKENIZED));
-            
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            if (env.hasProjects()) {
-                StringBuilder sb = new StringBuilder();
-                
-                for (Project proj : env.getProjects()) {
-                    if (path.indexOf(proj.getPath()) == 0) {
-                        doc.add(new Field("project", proj.getPath(), Field.Store.YES, Field.Index.TOKENIZED));
-                    }
-                }
+            Project project = Project.getProject(path);
+            if (project != null) {
+                doc.add(new Field("project", project.getPath(), Field.Store.YES, Field.Index.TOKENIZED));
             }
         }        
         FileAnalyzer fa = null;

@@ -27,6 +27,7 @@ javax.servlet.http.*,
 java.util.*,
 java.io.*,
 org.opensolaris.opengrok.analysis.*,
+org.opensolaris.opengrok.configuration.Project,
 org.opensolaris.opengrok.index.*,
 org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.web.*,
@@ -44,7 +45,53 @@ if(!isDir && ef != null) {
 
 if (valid) {
     if (isDir) {
-// If requesting a Directory listing -------------
+        
+        // verify that the current path is part of the selected project
+        Project activeProject = Project.getProject(resourceFile);
+            
+        if (activeProject != null) {
+            String project = null;
+            
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals("OpenGrok/project")) {
+                        project = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+
+            boolean add = false;
+            if (project != null) {
+               boolean found = false;
+               for (String aproj : project.split(" ")) {
+                    if (activeProject.getPath().equalsIgnoreCase(aproj)) {
+                        found = true;
+                        break;
+                    }
+               }
+               if (!found) {
+                   add = true;
+               }
+            } else {
+                add = true;
+            }
+            
+            if (add) {
+                if (project == null || project.length() == 0) {
+                    project = activeProject.getPath();
+                } else {
+                    project = project + " " + activeProject.getPath();
+                }
+                // update the cookie
+                Cookie cookie = new Cookie("OpenGrok/project", project);
+                cookie.setPath(context + "/");
+                response.addCookie(cookie);
+            }
+        }
+        
+        // If requesting a Directory listing -------------
         DirectoryListing dl = new DirectoryListing(ef);
         String[] files = resourceFile.list();
         if (files != null) {

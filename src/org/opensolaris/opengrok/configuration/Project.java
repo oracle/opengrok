@@ -23,6 +23,8 @@
  */
 package org.opensolaris.opengrok.configuration;
 
+import java.io.File;
+
 /**
  * Placeholder for the information that builds up a project
  */ 
@@ -77,5 +79,40 @@ public class Project {
     public Project(String description, String path) {
         this.description = description;
         this.path = path;
+    }
+
+    /**
+     * Get the project for a specific file
+     * @param path the file to lookup (relative from source root)
+     * @return the project that this file belongs to (or null if the file 
+     *         doesn't belong to a project)
+     */
+    public static Project getProject(String path) {
+        Project ret = null;
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.hasProjects()) {
+            for (Project proj : env.getProjects()) {
+                if (path.indexOf(proj.getPath()) == 0) {
+                    ret = proj;
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Get the project for a specific file
+     * @param file the file to lookup
+     * @return the project that this file belongs to (or null if the file 
+     *         doesn't belong to a project)
+     */
+    public static Project getProject(File file) {
+        Project ret = null;
+        String root = RuntimeEnvironment.getInstance().getSourceRootFile().getAbsolutePath();
+        String me = file.getAbsolutePath();
+        if (me.startsWith(root)) {
+            ret = getProject(me.substring(root.length()));
+        }
+        return ret;
     }
 }
