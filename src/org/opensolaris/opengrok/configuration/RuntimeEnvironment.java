@@ -379,18 +379,32 @@ public class RuntimeEnvironment {
         return getConfiguration().getIndexWordLimit();
     }
 
+    /**
+     * Set the number of words in a file Lucene will index.
+     * See getIndexWordLimit for a better description.
+     * @param indexWordLimit the number of words to index in a single file
+     */
     public void setIndexWordLimit(int indexWordLimit) {
         getConfiguration().setIndexWordLimit(indexWordLimit);
     }
     
+    /**
+     * Is the verbosity flag turned on?
+     * @return true if we can print extra information
+     */
     public boolean isVerbose() {
         return getConfiguration().isVerbose();
     }
-
+    
+    /**
+     * Set the verbosity flag (to add extra debug information in output)
+     * @param verbose new value
+     */
     public void setVerbose(boolean verbose) {
         getConfiguration().setVerbose(verbose);
     }
-    
+
+
     public IgnoredNames getIgnoredNames() {
         return getConfiguration().getIgnoredNames();
     }
