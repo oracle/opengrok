@@ -26,7 +26,7 @@ ident	"%Z%%M% %I%     %E% SMI"
 -->
 <project default="build">
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex"/>
-    <property name="version" value="0.4"/>
+    <property name="version" value="0.5"/>
     <property name="builddir" value="build"/>
     <property name="distdir" value="dist"/>
     <property name="outputjar" value="opengrok.jar"/>
