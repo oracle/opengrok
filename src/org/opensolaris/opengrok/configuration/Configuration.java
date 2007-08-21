@@ -49,6 +49,7 @@ public class Configuration {
     private Project defaultProject;
     private int indexWordLimit;
     private boolean verbose;
+    private boolean allowLeadingWildcard;
     private IgnoredNames ignoredNames;
     
     /** Creates a new instance of Configuration */
@@ -160,6 +161,14 @@ public class Configuration {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+    
+    public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
+        this.allowLeadingWildcard = allowLeadingWildcard;
+    }
+    
+    public boolean isAllowLeadingWildcard() {
+        return allowLeadingWildcard;
     }
 
     private boolean quickContextScan;

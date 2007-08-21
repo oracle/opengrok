@@ -45,8 +45,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.TagFilter;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.*;
-
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
@@ -104,6 +104,7 @@ public class SearchEngine {
         analyzer = new CompatibleAnalyser();
         qparser = new QueryParser("full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
+        qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
     }
     
     /**

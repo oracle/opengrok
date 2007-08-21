@@ -42,6 +42,7 @@ if (valid) {
 	try{
 		QueryParser qparser = new QueryParser("full", new CompatibleAnalyser());
                 qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
+                qparser.setAllowLeadingWildcard(environment.isAllowLeadingWildcard());
 		Query tquery = qparser.parse(grepTerms);
 		if (tquery != null) {
 			Context sourceContext = new Context(tquery);

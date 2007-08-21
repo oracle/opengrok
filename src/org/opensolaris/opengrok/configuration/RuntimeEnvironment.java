@@ -150,7 +150,7 @@ public class RuntimeEnvironment {
      * @param source the location of the sources
      * @throws IOException if the name cannot be resolved
      */
-    public void setSourceRoot(File source) throws IOException {
+    public void setSourceRootFile(File source) throws IOException {
         getConfiguration().setSourceRoot(source.getCanonicalPath());
     }
     
@@ -404,6 +404,23 @@ public class RuntimeEnvironment {
         getConfiguration().setVerbose(verbose);
     }
 
+    /**
+     * Specify if a search may start with a wildcard. Note that queries
+     * that start with a wildcard will give a significant impact on the
+     * search performace.
+     * @param allowLeadingWildcard set to true to activate (disabled by default)
+     */
+    public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
+        getConfiguration().setAllowLeadingWildcard(allowLeadingWildcard);
+    }
+    
+    /**
+     * Is leading wildcards allowed?
+     * @return true if a search may start with a wildcard
+     */
+    public boolean isAllowLeadingWildcard() {
+        return getConfiguration().isAllowLeadingWildcard();
+    }
 
     public IgnoredNames getIgnoredNames() {
         return getConfiguration().getIgnoredNames();

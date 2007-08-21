@@ -33,6 +33,7 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.queryParser.*;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Search and list the matching files
@@ -107,6 +108,7 @@ class Search {
 		
 		QueryParser qparser = new QueryParser("full", analyzer);
 		qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
+                qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
 		Query query = qparser.parse(qstr); //parse the
 		File src_root = new File(DATA_ROOT, "SRC_ROOT");
 		String SRC_ROOT = "";

@@ -181,6 +181,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                                 
         QueryParser qparser = new QueryParser("full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
+        qparser.setAllowLeadingWildcard(env.isAllowLeadingWildcard());
+
         query = qparser.parse(qstr); //parse the
         if ("lastmodtime".equals(sort)) {
             hits = searcher.search(query, new Sort("date", true));

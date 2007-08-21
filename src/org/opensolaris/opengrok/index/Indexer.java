@@ -21,17 +21,20 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
 package org.opensolaris.opengrok.index;
 
 import java.awt.GraphicsEnvironment;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.text.ParseException;
-import java.util.*;
-import org.apache.lucene.document.*;
-import org.apache.lucene.index.*;
-import org.opensolaris.opengrok.analysis.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -65,6 +68,7 @@ public class Indexer {
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
             "\t-m Maximum words in a file to index\n" +
+            "\t-a on/off Allow or disallow leading wildcards in a search\n" +
             "\t-S Search and add \"External\" repositories (Mercurial etc)\n" +
             "\t-s SRC_ROOT is root directory of source tree\n" +
             "\t   default: last used SRC_ROOT\n" +
@@ -77,7 +81,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:";
+    private static String options = "a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:";
 
     /**
      * Program entry point
@@ -185,10 +189,9 @@ public class Indexer {
                             System.exit(1);
                         }
 
-                        env.setSourceRoot(file);
+                        env.setSourceRootFile(file);
                         break;
                     }
-
                     case 'i':  
                         env.getIgnoredNames().add(getopt.getOptarg()); 
                         break;
@@ -214,6 +217,18 @@ public class Indexer {
                         }
                         break;
                     }
+                    case 'a' : 
+                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                            env.setAllowLeadingWildcard(true);
+                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                            env.setAllowLeadingWildcard(false);
+                        } else {
+                            System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -a");
+                            System.err.println("       Ex: \"-a on\" will allow a search to start with a wildcard");
+                            System.err.println("           \"-a off\" will disallow a search to start with a wildcard");
+                        }
+                        
+                        break;
                     default: 
                         System.err.println("Unknown option: " + (char)cmd);
                         System.exit(1);
