@@ -139,6 +139,14 @@ ident	"%Z%%M% %I%     %E% SMI"
             <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
         </war>
     </target>
+    <target name="svn-webapp" depends="compile,build">
+        <war destfile="source.war" webxml="conf/default/web.xml">
+            <fileset dir="web"/>
+            <fileset dir="conf/default/html"/>
+            <lib dir="." includes="opengrok.jar"/>
+            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar,svn-javahl.jar"/>
+        </war>
+    </target>
     <target name="dist" depends="compile,build">
         <mkdir dir="${distdir}"/>
         <tar destfile="${distdir}/${distname}-${version}.tar">
@@ -258,6 +266,8 @@ ident	"%Z%%M% %I%     %E% SMI"
     </target>
 
     <target name="release" depends="webapp,dist,dist-src,package"/>
+
+    <target name="svn-release" depends="svn-webapp,dist,dist-src,package"/>
     
     <target name="clean">
         <delete dir="${builddir}"/>
