@@ -35,6 +35,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -67,6 +69,7 @@ public class Indexer {
             "\t-H Generate history cache for external repositories\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
+            "\t-A ext:analyzer Files with extension ext should be analyzed with the named class\n" +
             "\t-m Maximum words in a file to index\n" +
             "\t-a on/off Allow or disallow leading wildcards in a search\n" +
             "\t-S Search and add \"External\" repositories (Mercurial etc)\n" +
@@ -81,7 +84,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:";
+    private static String options = "a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:";
 
     /**
      * Program entry point
@@ -226,8 +229,43 @@ public class Indexer {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -a");
                             System.err.println("       Ex: \"-a on\" will allow a search to start with a wildcard");
                             System.err.println("           \"-a off\" will disallow a search to start with a wildcard");
+                            System.exit(1);
                         }
                         
+                        break;
+
+                    case 'A': {
+                            String[] arg = getopt.getOptarg().split(":");
+                            if (arg.length != 2) {
+                                System.err.println("ERROR: You must specify: -A extension:class");
+                                System.err.println("       Ex: -A foo:org.opensolaris.opengrok.analysis.c.CAnalyzer");
+                                System.err.println("           will use the C analyzer for all files ending with .foo");
+                                System.err.println("       Ex: -A c:-");
+                                System.err.println("           will disable the c-analyzer for for all files ending with .c");
+                                System.exit(1);
+                            }
+
+                            arg[0] = arg[0].substring(arg[0].lastIndexOf('.') + 1).toUpperCase();
+                            if (arg[1].equals("-")) {
+                                AnalyzerGuru.addExtension(arg[0], null);
+                                break;
+                            } 
+
+                            try {
+                                Class clazz = Class.forName(arg[1]);                                
+                                if (FileAnalyzer.class.isAssignableFrom(clazz)) {
+                                    @SuppressWarnings("unchecked")
+                                    Class<? extends FileAnalyzer> analyzer = clazz;
+                                    AnalyzerGuru.addExtension(arg[0], analyzer);
+                                } else {
+                                    System.err.println("ERROR: " + arg[1] + " does not exted FileAnalyzer!");
+                                    System.exit(1);
+                                }
+                            } catch (ClassNotFoundException exp) {
+                                System.err.println("ERROR: Could not locate class: " + arg[1]);
+                                System.exit(1);
+                            }
+                        }
                         break;
                     default: 
                         System.err.println("Unknown option: " + (char)cmd);

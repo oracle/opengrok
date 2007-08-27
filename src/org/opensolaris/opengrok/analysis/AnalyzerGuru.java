@@ -128,6 +128,13 @@ public class AnalyzerGuru {
         //System.err.println("Exts " + ext);
         //System.err.println("Matchers " + matchers);
     }
+
+    public static void addExtension(String extension, Class<? extends FileAnalyzer> analyzer) {
+        ext.remove(extension);
+        if (analyzer != null) {
+            ext.put(extension, analyzer);
+        }
+    }
     
     /*
      * Get the default Analyzer.
