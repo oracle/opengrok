@@ -173,6 +173,7 @@ ident	"%Z%%M% %I%     %E% SMI"
             <tarfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
             <tarfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
             <tarfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
+            <tarfileset dir="doc" prefix="${distname}-${version}/doc"/>
         </tar>
         <gzip zipfile="${distdir}/${distname}-${version}.tar.gz" src="${distdir}/${distname}-${version}.tar"/>
 	<zip destfile="${distdir}/${distname}-${version}.zip">
@@ -196,6 +197,7 @@ ident	"%Z%%M% %I%     %E% SMI"
             <zipfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
             <zipfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
             <zipfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
+            <zipfileset dir="doc" prefix="${distname}-${version}/doc"/>
 	</zip>
     </target>
     <target name="dist-src" depends="compile">
@@ -220,6 +222,7 @@ ident	"%Z%%M% %I%     %E% SMI"
             <tarfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
             <tarfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
             <tarfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
+            <tarfileset dir="doc" prefix="${distname}-${version}/doc"/>
         </tar>
         <gzip zipfile="${distdir}/${distname}-${version}-src.tar.gz" src="${distdir}/${distname}-${version}-src.tar"/>
 	<zip destfile="${distdir}/${distname}-${version}-src.zip">
@@ -239,6 +242,7 @@ ident	"%Z%%M% %I%     %E% SMI"
             <zipfileset dir="conf/polished" prefix="${distname}-${version}/conf/polished"/>
             <zipfileset dir="conf/offwhite" prefix="${distname}-${version}/conf/offwhite"/>
             <zipfileset dir="pkgdef" prefix="${distname}-${version}/pkgdef"/>
+            <zipfileset dir="doc" prefix="${distname}-${version}/doc"/>
 	</zip>
     </target>
     <target name="run" depends="build">
