@@ -30,6 +30,7 @@ org.opensolaris.opengrok.configuration.*"
 
 String context = request.getContextPath();
 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+env.setUrlPrefix(context + "/s?");
 env.register();
 String rawSource = env.getSourceRootPath();
 String configError = "";

@@ -24,7 +24,9 @@ java.util.List" session="false" errorPage="error.jsp" %><%
 boolean hasProjects = false;
 String project = null;
 List<Project> projects;
+String context = request.getContextPath();
 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+env.setUrlPrefix(context + "/s?");
 env.register();
 
 if (env.hasProjects()) {

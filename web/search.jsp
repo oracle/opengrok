@@ -90,7 +90,6 @@ if (sortParam != null) {
 
 Hits hits = null;
 String errorMsg = null;
-String context = request.getContextPath();
 
 if( q!= null && q.equals("")) q = null;
 if( defs != null && defs.equals("")) defs = null;

@@ -36,6 +36,7 @@ String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if (path == null) path = "";
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
+environment.setUrlPrefix(context + "/s?");
 environment.register();
 String rawSource = environment.getSourceRootPath();
 String resourcePath = rawSource + path;
