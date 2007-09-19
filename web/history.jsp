@@ -35,9 +35,9 @@ java.util.regex.*
 %><%@include file="mast.jsp"%><%
 if (path.length() > 0 && valid) {
     boolean striked = false;
-    String userPage = getInitParameter("USER_PAGE");
-    String bugPage = getInitParameter("BUG_PAGE");
-    String bugRegex = getInitParameter("BUG_PATTERN");
+    String userPage = environment.getUserPage();
+    String bugPage = environment.getBugPage();
+    String bugRegex = environment.getBugPattern();
     if(bugRegex == null || bugRegex.equals("")) {
         bugRegex = "\\b([12456789][0-9]{6})\\b";
     }

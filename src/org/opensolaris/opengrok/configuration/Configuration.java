@@ -51,7 +51,10 @@ public class Configuration {
     private boolean verbose;
     private boolean allowLeadingWildcard;
     private IgnoredNames ignoredNames;
-    
+    private String userPage;
+    private String bugPage;
+    private String bugPattern;
+
     /** Creates a new instance of Configuration */
     public Configuration() {
         setHistoryCache(true);
@@ -65,6 +68,9 @@ public class Configuration {
         setGenerateHtml(true);
         setQuickContextScan(true);
         setIgnoredNames(new IgnoredNames());
+        setUserPage("http://www.opensolaris.org/viewProfile.jspa?username=");
+        setBugPage("http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=");
+        setBugPattern("\\b([12456789][0-9]{6})\\b");
     }
     
     public String getCtags() {
@@ -187,5 +193,29 @@ public class Configuration {
 
     public IgnoredNames getIgnoredNames() {
         return ignoredNames;
+    }
+
+    public void setUserPage(String userPage) {
+        this.userPage = userPage;
+    }
+
+    public String getUserPage() {
+        return userPage;
+    }
+
+    public void setBugPage(String bugPage) {
+        this.bugPage = bugPage;
+    }
+
+    public String getBugPage() {
+        return bugPage;
+    }
+
+    public void setBugPattern(String bugPattern) {
+        this.bugPattern = bugPattern;
+    }
+
+    public String getBugPattern() {
+        return bugPattern;
     }
 }

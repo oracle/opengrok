@@ -429,6 +429,54 @@ public class RuntimeEnvironment {
     public void setIgnoredNames(IgnoredNames ignoredNames) {
         getConfiguration().setIgnoredNames(ignoredNames);
     }
+
+    /**
+     * Returns the user page for the history listing
+     * @return the URL string fragment preceeding the username
+     */
+    public String getUserPage() {
+        return getConfiguration().getUserPage();
+    }
+
+    /**
+     * Sets the user page for the history listing
+     * @param userPage the URL fragment preceeding the username from history
+     */
+    public void setUserPage(String userPage) {
+        getConfiguration().setUserPage(userPage);
+    }
+
+    /**
+     * Returns the bug page for the history listing
+     * @return the URL string fragment preceeding the bug ID
+     */
+    public String getBugPage() {
+        return getConfiguration().getBugPage();
+    }
+
+    /**
+     * Sets the bug page for the history listing
+     * @param bugPage the URL fragment preceeding the bug ID
+     */
+    public void setBugPage(String bugPage) {
+        getConfiguration().setBugPage(bugPage);
+    }
+
+    /**
+     * Returns the bug regex for the history listing
+     * @return the regex that is looked for in history comments
+     */
+    public String getBugPattern() {
+        return getConfiguration().getBugPattern();
+    }
+
+    /**
+     * Sets the bug regex for the history listing
+     * @param bugPattern the regex to search history comments
+     */
+    public void setBugPattern(String bugPattern) {
+        getConfiguration().setBugPattern(bugPattern);
+    }
     
     /**
      * Read an configuration file and set it as the current configuration.
