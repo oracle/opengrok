@@ -59,9 +59,19 @@ public class PlainAnalyzer extends FileAnalyzer {
     
     public static Class isMagic(byte[] content) {
         for(byte b: content) {
-            if(b == 9 || b == 10 || b == 13 || (b >= 32 && b < 127) ) {
-                
+            if (b >= 32 && b < 127) {
+                // ASCII printable characters
+            } else if (b == 9) {
+                // horizontal tab
+            } else if (b == 10) {
+                // line feed
+            } else if (b == 12) {
+                // form feed
+            } else if (b == 13) {
+                // carriage return
             } else {
+                // 8-bit values or unprintable control characters,
+                // probably not plain text
                 return null;
             }
         }
