@@ -8,4 +8,6 @@ dist
 opengrok.jar
 source.war
 prj.el
-nbproject
+nbproject/private
+generatedsrc
+
