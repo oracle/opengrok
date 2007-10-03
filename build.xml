@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").  
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+
+-->
+<project name="opengrok" default="default" basedir=".">
+    <description>Builds, tests, and runs the project opengrok.</description>
+    <import file="nbproject/build-impl.xml"/>
+
+    <import file="nbproject/profiler-build-impl.xml"/>    <!--
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="opengrok-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
+    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>
+    <property name="gensrcdir" value="generatedsrc"/>
+    <target name="jflex">
+        <mkdir dir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/plain/XMLXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="${gensrcdir}"/>
+    </target>
+    
+    <target name="-pre-compile" depends="jflex"/>
+    <target name="-post-clean">
+        <delete dir="${gensrcdir}"/>
+    </target>
+
+
+
+
+
+</project>
