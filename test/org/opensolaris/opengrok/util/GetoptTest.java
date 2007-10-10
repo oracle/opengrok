@@ -60,11 +60,7 @@ public class GetoptTest {
         String[] argv = new String[]{"-a", "foo", "-bc", "--", "-f" };
         Getopt instance = new Getopt(argv, "a:bcr:f");
 
-        try {
-            instance.parse();
-        } catch (ParseException exp) {
-            fail("Failed to parse arguments: " + exp.getMessage());
-        }
+        instance.parse();
 
         assertTrue(instance.getOpt() == 'a');
         assertEquals(instance.getOptarg(), "foo");
@@ -79,15 +75,11 @@ public class GetoptTest {
     }
 
     @Test
-    public void reset() {
+    public void reset() throws ParseException {
         String[] argv = new String[]{"-a", "foo", "-bc", "argument1" };
         Getopt instance = new Getopt(argv, "a:bc");
 
-        try {
-            instance.parse();
-        } catch (ParseException exp) {
-            fail("Failed to parse arguments: " + exp.getMessage());
-        }
+        instance.parse();
 
         assertTrue(instance.getOpt() == 'a');
         assertEquals(instance.getOptarg(), "foo");
@@ -123,7 +115,10 @@ public class GetoptTest {
             instance.parse();
             fail("Parse shall not allow missing arguments");
         } catch (ParseException exp) {
-            assertTrue(exp.getMessage().indexOf("requires an argument") != -1);
+            if (!exp.getMessage().contains("requires an argument")) {
+                // not the exception we expected
+                throw exp;
+            }
         }
         
         instance = new Getopt(argv, "b");
@@ -131,7 +126,10 @@ public class GetoptTest {
             instance.parse();
             fail("Parse shall not allow unknown arguments");
         } catch (ParseException exp) {
-            assertTrue(exp.getMessage().indexOf("Unknown argument: ") != -1);
-        }        
+            if (!exp.getMessage().contains("Unknown argument: ")) {
+                // not the exception we expected
+                throw exp;
+            }
+        }
     }
 }
