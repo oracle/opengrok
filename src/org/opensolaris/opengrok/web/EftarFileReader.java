@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -18,17 +18,19 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
  */
 package org.opensolaris.opengrok.web;
 
-import java.io.*;
-import java.util.*;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Date;
+import java.util.StringTokenizer;
+
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File Reader
@@ -36,31 +38,33 @@ import java.util.*;
  *
  * @author Chandan
  */
-
 public class EftarFileReader {
+
     private RandomAccessFile f;
+
     class FNode {
+
         public long offset;
         public long hash;
         public int childOffset;
         public int numChildren;
         public int tagOffset;
-        
+
         public FNode() throws IOException {
-	    offset = f.getFilePointer();
-	    //System.err.println("offset " + offset);
-	    try{
-            hash = f.readLong();
-            childOffset = f.readUnsignedShort();
-            numChildren = f.readUnsignedShort();
-            tagOffset = f.readUnsignedShort();
-	    } catch (EOFException e) {
-		numChildren = 0;
-		tagOffset = 0;
-	    }
-	    //System.err.println("offset " + offset + " num children " + numChildren + " tagOff " + tagOffset);
+            offset = f.getFilePointer();
+            //System.err.println("offset " + offset);
+            try {
+                hash = f.readLong();
+                childOffset = f.readUnsignedShort();
+                numChildren = f.readUnsignedShort();
+                tagOffset = f.readUnsignedShort();
+            } catch (EOFException e) {
+                numChildren = 0;
+                tagOffset = 0;
+            }
+            //System.err.println("offset " + offset + " num children " + numChildren + " tagOff " + tagOffset);
         }
-        
+
         public FNode(long hash, long offset, int childOffset, int num, int tagOffset) {
             this.hash = hash;
             this.offset = offset;
@@ -68,20 +72,20 @@ public class EftarFileReader {
             this.numChildren = num;
             this.tagOffset = tagOffset;
         }
-        
+
         public FNode get(long hash) throws IOException {
             if (childOffset == 0 || numChildren == 0) {
                 return null;
             }
             return binarySearch(offset + childOffset, numChildren, hash);
         }
-        
+
         private FNode binarySearch(long start, int len, long hash) throws IOException {
             //System.err.printf(" Searching [%x] in %5d elem from %x\n", hash, len, start);
             int b = 0;
             int e = len;
-            while(b <= e) {
-                int m = (b + e) /2;
+            while (b <= e) {
+                int m = (b + e) / 2;
                 f.seek(start + m * EftarFile.RECORD_LENGTH);
                 long mhash = f.readLong();
                 if (hash > mhash) {
@@ -89,17 +93,19 @@ public class EftarFileReader {
                 } else if (hash < mhash) {
                     e = m - 1;
                 } else {
-                    return new FNode(mhash, (f.getFilePointer() - 8l), f.readUnsignedShort(), f.readUnsignedShort(),f.readUnsignedShort());
+                    return new FNode(mhash, f.getFilePointer() - 8l, f.readUnsignedShort(), f.readUnsignedShort(), f.readUnsignedShort());
                 }
             }
             return null;
         }
+
         public String getTag() throws IOException {
-            if(tagOffset == 0)
+            if (tagOffset == 0) {
                 return null;
+            }
             f.seek(offset + (long) tagOffset);
-            byte [] tagString;
-            if(childOffset != 0) {
+            byte[] tagString;
+            if (childOffset != 0) {
                 tagString = new byte[childOffset - tagOffset];
             } else {
                 tagString = new byte[numChildren];
@@ -107,6 +113,8 @@ public class EftarFileReader {
             f.read(tagString);
             return new String(tagString);
         }
+
+        @Override
         public String toString() {
             String tagString = null;
             try {
@@ -116,28 +124,30 @@ public class EftarFileReader {
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }
     }
-    
+
     public EftarFileReader(String file) throws FileNotFoundException {
         f = new RandomAccessFile(file, "r");
     }
-    
+
     public FNode getNode(String path) throws IOException {
         StringTokenizer toks = new StringTokenizer(path, "/");
         f.seek(0);
         FNode n = new FNode();
-        if(File.separator.equals(path) || path.length() == 0)
+        if (File.separator.equals(path) || path.length() == 0) {
             return n;
+        }
         FNode next = null;
         while (toks.hasMoreTokens() && ((next = n.get(EftarFile.myHash(toks.nextToken()))) != null)) {
             n = next;
         }
-        if(! toks.hasMoreElements()) {
+        if (!toks.hasMoreElements()) {
             return next;
         }
         return null;
     }
+
     public String getChildTag(FNode fn, String name) throws IOException {
-        if(fn != null && fn.childOffset != 0 && fn.numChildren != 0) {
+        if (fn != null && fn.childOffset != 0 && fn.numChildren != 0) {
             FNode ch = fn.binarySearch(fn.offset + fn.childOffset, fn.numChildren, EftarFile.myHash(name));
             if (ch != null) {
                 return ch.getTag();
@@ -145,24 +155,26 @@ public class EftarFileReader {
         }
         return null;
     }
-    
-    public String get(String path) throws IOException  {
+
+    public String get(String path) throws IOException {
         StringTokenizer toks = new StringTokenizer(path, "/");
         f.seek(0);
         FNode n = new FNode();
         FNode next;
         long tagOffset = 0;
         int tagLength = 0;
-        while(toks.hasMoreTokens()) {
-	    String tok = toks.nextToken();
-            if(tok == null || tok.length() == 0)
+        while (toks.hasMoreTokens()) {
+            String tok = toks.nextToken();
+            if (tok == null || tok.length() == 0) {
                 continue;
+            }
             next = n.get(EftarFile.myHash(tok));
-            if(next == null)
+            if (next == null) {
                 break;
-            if(next.tagOffset != 0) {
+            }
+            if (next.tagOffset != 0) {
                 tagOffset = next.offset + next.tagOffset;
-                if(next.childOffset != 0) {
+                if (next.childOffset != 0) {
                     tagLength = next.childOffset - next.tagOffset;
                 } else {
                     tagLength = next.numChildren;
@@ -170,7 +182,7 @@ public class EftarFileReader {
             }
             n = next;
         }
-        if(tagOffset != 0) {
+        if (tagOffset != 0) {
             f.seek(tagOffset);
             byte[] desc = new byte[tagLength];
             f.read(desc);
@@ -178,22 +190,20 @@ public class EftarFileReader {
         }
         return "";
     }
-    
+
     public void close() throws IOException {
-        if(f != null) {
+        if (f != null) {
             f.close();
         }
     }
-    
-    public static void main(String args[]) throws Throwable {
-        Date tn = new Date();
+
+    public static void main(String[] args) throws Throwable {
         EftarFileReader fr = new EftarFileReader(args[0]);
-        for(int i=1; i< args.length; i++) {
+        for (int i = 1; i < args.length; i++) {
             String arg = args[i];
-            tn = new Date();
             System.out.println(arg + "\t" + fr.get(arg));
         }
-	FNode fn = fr.getNode(args[1]);
+        FNode fn = fr.getNode(args[1]);
         System.err.println("Node = " + fn);
         System.err.println("Child tag = " + fr.getChildTag(fn, args[2]));
     }
