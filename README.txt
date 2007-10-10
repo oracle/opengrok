@@ -162,3 +162,4 @@ Chandan B.N, Sun Microsystems. https://blogs.sun.com/chandan
 Trond Norbye, norbye.org
 Knut Pape, eBriefkasten.de
 Martin Englund, Sun Microsystems
+Knut Anders Hatlen, Sun Microsystems
