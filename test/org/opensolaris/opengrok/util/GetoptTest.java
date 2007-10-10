@@ -62,16 +62,16 @@ public class GetoptTest {
 
         instance.parse();
 
-        assertTrue(instance.getOpt() == 'a');
-        assertEquals(instance.getOptarg(), "foo");
-        assertTrue(instance.getOpt() == 'b');
-        assertEquals(instance.getOptarg(), null);
-        assertTrue(instance.getOpt() == 'c');
-        assertEquals(instance.getOptarg(), null);
-        assertTrue(instance.getOpt() == -1);
-        assertTrue(instance.getOptind() == 4);
+        assertEquals('a', (char) instance.getOpt());
+        assertEquals("foo", instance.getOptarg());
+        assertEquals('b', (char) instance.getOpt());
+        assertNull(instance.getOptarg());
+        assertEquals('c', (char) instance.getOpt());
+        assertNull(instance.getOptarg());
+        assertEquals(-1, instance.getOpt());
+        assertEquals(4, instance.getOptind());
         assertTrue(instance.getOptind() < argv.length);
-        assertEquals(argv[instance.getOptind()], "-f");
+        assertEquals("-f", argv[instance.getOptind()]);
     }
 
     @Test
@@ -81,29 +81,29 @@ public class GetoptTest {
 
         instance.parse();
 
-        assertTrue(instance.getOpt() == 'a');
-        assertEquals(instance.getOptarg(), "foo");
-        assertTrue(instance.getOpt() == 'b');
-        assertEquals(instance.getOptarg(), null);
-        assertTrue(instance.getOpt() == 'c');
-        assertEquals(instance.getOptarg(), null);
-        assertTrue(instance.getOpt() == -1);
-        assertTrue(instance.getOptind() == 3);
+        assertEquals('a', (char) instance.getOpt());
+        assertEquals("foo", instance.getOptarg());
+        assertEquals('b', (char) instance.getOpt());
+        assertNull(instance.getOptarg());
+        assertEquals('c', (char) instance.getOpt());
+        assertNull(instance.getOptarg());
+        assertEquals(-1, instance.getOpt());
+        assertEquals(3, instance.getOptind());
         assertTrue(instance.getOptind() < argv.length);
-        assertEquals(argv[instance.getOptind()], "argument1");
+        assertEquals("argument1", argv[instance.getOptind()]);
 
         instance.reset();
 
-        assertTrue(instance.getOpt() == 'a');
-        assertEquals(instance.getOptarg(), "foo");
-        assertTrue(instance.getOpt() == 'b');
-        assertEquals(instance.getOptarg(), null);
-        assertTrue(instance.getOpt() == 'c');
-        assertEquals(instance.getOptarg(), null);
-        assertTrue(instance.getOpt() == -1);
-        assertTrue(instance.getOptind() == 3);
+        assertEquals('a', (char) instance.getOpt());
+        assertEquals("foo", instance.getOptarg());
+        assertEquals('b', (char) instance.getOpt());
+        assertNull(instance.getOptarg());
+        assertEquals('c', (char) instance.getOpt());
+        assertNull(instance.getOptarg());
+        assertEquals(-1, instance.getOpt());
+        assertEquals(3, instance.getOptind());
         assertTrue(instance.getOptind() < argv.length);
-        assertEquals(argv[instance.getOptind()], "argument1");
+        assertEquals("argument1", argv[instance.getOptind()]);
     } /* Test of reset method, of class Getopt. */
 
     @Test
