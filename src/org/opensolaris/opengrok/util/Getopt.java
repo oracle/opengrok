@@ -25,8 +25,6 @@ package org.opensolaris.opengrok.util;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A simple implementation of the getopt(3c). It does just implement what I
@@ -156,34 +154,5 @@ public class Getopt {
      */
     public int getOptind() {
         return optind;
-    }
-    
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        Getopt opts = new Getopt(args, "a:b:c");
-        try {
-            opts.parse();
-        } catch (ParseException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
-            System.exit(1);
-        }
-        
-        System.out.println("Options and their arguments");
-        int cmd;
-        while ((cmd = opts.getOpt()) != -1) {
-            String arg = opts.getOptarg();
-            if (arg != null) {
-                System.out.println("" + (char)cmd + " " + arg);
-            } else {
-                System.out.println((char)cmd);
-            }
-        }
-        System.out.println("Arguments");
-        for (int ii = opts.getOptind(); ii < args.length; ++ii) {
-            System.out.println(args[ii]);
-        }
     }
 }
