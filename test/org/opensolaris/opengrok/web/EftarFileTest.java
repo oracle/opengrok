@@ -107,7 +107,6 @@ public class EftarFileTest {
      */
     @Test
     public void searchEftarFile() throws Exception {
-        System.out.println("search");
         EftarFileReader er = new EftarFileReader(eftar.getAbsolutePath());
         StringBuilder sb = new StringBuilder();
         StringBuilder match = new StringBuilder();
