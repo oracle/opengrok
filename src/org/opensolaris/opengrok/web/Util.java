@@ -177,7 +177,14 @@ public class Util {
             for (int i = r.length(); i < annotation.getWidestRevision(); i++) {
                 out.write(" ");
             }
+            
+            out.write("<a href=\"");
+            out.write(URIEncode(annotation.getFilename()));
+            out.write("?a=true&r=");
+            out.write(URIEncode(r));
+            out.write("\">");
             Htmlize(r, out);
+            out.write("</a>");            
             out.write(" </span>");
 
             String a = annotation.getAuthor(num);
