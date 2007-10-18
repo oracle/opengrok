@@ -95,7 +95,7 @@ public class SubversionHistoryParser implements HistoryParser {
     {
         SVNClient client = new SVNClient();
 
-        final Annotation annotation = new Annotation();
+        final Annotation annotation = new Annotation(file.getName());
         BlameCallback callback = new BlameCallback() {
                 public void singleLine(Date changed, long revision,
                                        String author, String line) {

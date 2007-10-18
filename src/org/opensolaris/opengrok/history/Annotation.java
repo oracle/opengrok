@@ -35,7 +35,12 @@ public class Annotation {
     private final ArrayList<Line> lines = new ArrayList<Line>();
     private int widestRevision;
     private int widestAuthor;
-
+    private String filename;
+    
+    public Annotation(String filename) {
+        this.filename = filename;
+    }
+    
     /**
      * Gets the revision for the last change to the specified line.
      *
@@ -115,5 +120,9 @@ public class Annotation {
             revision = (rev == null) ? "" : rev;
             author = (aut == null) ? "" : aut;
         }
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }

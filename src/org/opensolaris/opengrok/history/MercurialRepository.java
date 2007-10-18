@@ -181,7 +181,7 @@ public class MercurialRepository implements ExternalRepository {
             BufferedReader in =
                 new BufferedReader(new InputStreamReader
                                      (process.getInputStream()));
-            Annotation a = new Annotation();
+            Annotation a = new Annotation(file.getName());
             String line;
             int lineno = 0;
             while ((line = in.readLine()) != null) {
