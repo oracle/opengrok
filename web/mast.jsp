@@ -144,7 +144,7 @@ if(resourcePath.length() < rawSource.length()
 <form action="<%=context%>/search">
     <div id="header">
         <%= getServletContext().getInitParameter("HEADER") %>
-        <div id="pagetitle"><b id="filename">Cross Reference: <%=path%></b><br/><%=dtag%></div>
+        <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><br/><%=dtag%></div>
     </div>
 <div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>    
 <div id="bar"><a href="<%=context%>" id="home">Home</a> | 
