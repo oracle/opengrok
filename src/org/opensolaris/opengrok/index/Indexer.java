@@ -67,6 +67,7 @@ public class Indexer {
             "\t          is bigger. Activating this option may slow down the server.\n" +
             "\t-n Do not generate indexes\n" +
             "\t-H Generate history cache for external repositories\n" +
+            "\t-L laf Use \"laf\" as the look'n'feel for the webapp\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
             "\t-A ext:analyzer Files with extension ext should be analyzed with the named class\n" +
@@ -84,7 +85,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:";
+    private static String options = "a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:L:";
 
     /**
      * Program entry point
@@ -266,6 +267,9 @@ public class Indexer {
                                 System.exit(1);
                             }
                         }
+                        break;
+                    case 'L' :
+                        env.setWebappLAF(getopt.getOptarg());
                         break;
                     default: 
                         System.err.println("Unknown option: " + (char)cmd);

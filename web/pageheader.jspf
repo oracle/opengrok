@@ -19,15 +19,5 @@ CDDL HEADER END
 Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%><%@ page import = "javax.servlet.*,
-         java.lang.*,
-         javax.servlet.http.*"
-         session="false" %>
-<div id="Footer">
-    <p class="Center">
-        <a href="http://www.opensolaris.org/os/project/opengrok/"><img src="<%=request.getContextPath()%>/img/servedby.png" alt="Served by OpenGrok" title="Served by OpenGrok"/></a>
-    </p>
-</div>
-</div>
-</body>
-</html>
+--%><%@ page session="false" errorPage="error.jsp" %>
+<div id="MastheadLogo"><h1> OpenGrok </h1></div>

@@ -204,22 +204,11 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             response.sendRedirect(context + "/xref" + hits.doc(0).get("path")
             + "#" + ((TermQuery)query).getTerm().text());
     } else {
-	    %><?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
-<head>
-    <meta name="robots" content="noindex,nofollow">
-    <link rel="icon" href="img/icon.png" type="image/png"/>
-    <link rel="stylesheet" type="text/css" href="style.css"/>
-    <link rel="stylesheet" type="text/css" href="print.css" media="print" />
-    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="print.css"/>
-    <title>Search</title>
-</head>
+         String pageTitle = "Search";
+	    %><%@ include file="httpheader.jspf" %>
 <body>
 <div id="page">
-    <div id="header">
-       <%= getServletContext().getInitParameter("HEADER") %>
-    </div>
+    <div id="header"><%@ include file="pageheader.jspf" %></div>
 <div id="Masthead"></div>
 <div id="bar">
     <table border="0" width="100%"><tr><td><a href="<%=context%>" id="home">Home</a></td><td align="right"><%                

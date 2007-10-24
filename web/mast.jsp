@@ -128,22 +128,12 @@ if(resourcePath.length() < rawSource.length()
             } catch (Exception e) {
                 dtag = "";
             }
-%><?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
-<head>
-    <meta name="robots" content="noindex,nofollow">
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-    <title>Cross Reference: <%=path%></title>
-    <link rel="icon" href="<%=context%>/img/icon.png" type="image/png"/>
-    <link rel="stylesheet" type="text/css" href="<%=context%>/style.css"/>
-    <link rel="stylesheet" type="text/css" href="<%=context%>/print.css" media="print" />
-    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=context%>/print.css"/>
-</head>
+    String pageTitle="Cross Reference: " + path;
+    
+%><%@ include file="httpheader.jspf" %>
 <body><div id="page">
 <form action="<%=context%>/search">
-    <div id="header">
-        <%= getServletContext().getInitParameter("HEADER") %>
+    <div id="header"><%@ include file="pageheader.jspf" %>
         <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><br/><%=dtag%></div>
     </div>
 <div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>    

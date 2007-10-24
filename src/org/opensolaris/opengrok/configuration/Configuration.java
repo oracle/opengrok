@@ -54,7 +54,8 @@ public class Configuration {
     private String userPage;
     private String bugPage;
     private String bugPattern;
-
+    private String webappLAF;
+    
     /** Creates a new instance of Configuration */
     public Configuration() {
         setHistoryCache(true);
@@ -71,6 +72,7 @@ public class Configuration {
         setUserPage("http://www.opensolaris.org/viewProfile.jspa?username=");
         setBugPage("http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
+        setWebappLAF("default");
     }
     
     public String getCtags() {
@@ -217,5 +219,13 @@ public class Configuration {
 
     public String getBugPattern() {
         return bugPattern;
+    }
+
+    public String getWebappLAF() {
+        return webappLAF;
+    }
+
+    public void setWebappLAF(String webappLAF) {
+        this.webappLAF = webappLAF;
     }
 }

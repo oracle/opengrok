@@ -26,36 +26,27 @@ javax.servlet.http.*,
 java.lang.*,
 java.io.*,
 org.opensolaris.opengrok.configuration.*"
-%><%@ page session="false" %><%@ page isErrorPage="true" %><%
+ session="false" %><%@ page isErrorPage="true" %><%
 
 String context = request.getContextPath();
-RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-env.setUrlPrefix(context + "/s?");
-env.register();
-String rawSource = env.getSourceRootPath();
+RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
+environment.setUrlPrefix(context + "/s?");
+environment.register();
+String rawSource = environment.getSourceRootPath();
 String configError = "";
 if (rawSource.equals("")) {
     configError = "SRC_ROOT parameter has not been configured in web.xml! Please configure your webapp.";
 } else {
-    if (!env.getSourceRootFile().isDirectory()) {
+    if (!environment.getSourceRootFile().isDirectory()) {
         configError = "SRC_ROOT parameter in web.xml does not point to a valid directory! Please configure your webapp.";
     }
 }
-%><?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-    <title>File not found</title>
-    <link rel="icon" href="<%=context%>/img/icon.png" type="image/png"/>
-    <link rel="stylesheet" type="text/css" href="<%=context%>/style.css"/>
-    <link rel="stylesheet" type="text/css" href="<%=context%>/print.css" media="print" />
-    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=context%>/print.css"/>
-</head>
+String pageTitle = "File not found";
+%><%@ include file="httpheader.jspf" %>
 <body><div id="page">
 <form action="<%=context%>/search">
     <div id="header">
-        <%= getServletContext().getInitParameter("HEADER") %>
+        <%@ include file="pageheader.jspf" %>
     </div>
 <div id="Masthead"></div>
 <div id="bar"><a id="home" href="<%=context%>">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>

@@ -478,6 +478,13 @@ public class RuntimeEnvironment {
         getConfiguration().setBugPattern(bugPattern);
     }
     
+    public String getWebappLAF() {
+        return getConfiguration().getWebappLAF();
+    }
+    
+    public void setWebappLAF(String laf) {
+        getConfiguration().setWebappLAF(laf);
+    }
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read

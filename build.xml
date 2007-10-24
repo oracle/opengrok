@@ -22,7 +22,7 @@ Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 -->
-<project name="opengrok" default="default" basedir=".">
+<project name="OpenGrok" default="default" basedir=".">
     <description>Builds, tests, and runs the project opengrok.</description>
     <import file="nbproject/build-impl.xml"/>
 
@@ -116,7 +116,12 @@ Use is subject to license terms.
     </target>
 
 
-
-
-
+    <target name="-post-jar">
+        <war destfile="${dist.war}" webxml="conf/web.xml">
+            <fileset dir="web"/>
+            <fileset dir="conf" excludes="web.xml"/>
+            <lib dir="${dist.dir}" includes="opengrok.jar"/>
+            <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
+        </war>
+    </target>
 </project>
