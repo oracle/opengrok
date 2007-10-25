@@ -38,9 +38,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opensolaris.opengrok.history.ExternalRepository;
@@ -52,7 +50,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  */
 public class RuntimeEnvironment {
     private Configuration configuration;
-    private Map<Thread, Configuration> threadmap;
+    private ThreadLocal<Configuration> threadConfig;
     
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     
@@ -70,26 +68,19 @@ public class RuntimeEnvironment {
      */
     private RuntimeEnvironment() {
         configuration = new Configuration();
-        threadmap = Collections.synchronizedMap(new HashMap<Thread, Configuration>());
+        threadConfig = new ThreadLocal<Configuration>() {
+            @Override protected Configuration initialValue() {
+                return configuration;
+            }            
+        };
     }
-    
-    private Configuration getConfiguration() {
-        Configuration ret = configuration;
-        Configuration config = threadmap.get(Thread.currentThread());
 
-        if (config != null) {
-            ret = config;
-        }
-        
-        return ret;
-    }
-    
     /**
      * Get the path to the where the index database is stored
      * @return the path to the index database
      */
     public String getDataRootPath() {
-        return getConfiguration().getDataRoot();
+        return threadConfig.get().getDataRoot();
     }
     
     /**
@@ -112,7 +103,7 @@ public class RuntimeEnvironment {
      * @throws IOException if the path cannot be resolved
      */
     public void setDataRoot(File data) throws IOException {
-        getConfiguration().setDataRoot(data.getCanonicalPath());
+        threadConfig.get().setDataRoot(data.getCanonicalPath());
     }
     
     /**
@@ -120,7 +111,7 @@ public class RuntimeEnvironment {
      * @param dataRoot the index database
      */
     public void setDataRoot(String dataRoot) {
-        getConfiguration().setDataRoot(dataRoot);
+        threadConfig.get().setDataRoot(dataRoot);
     }
     
     /**
@@ -128,7 +119,7 @@ public class RuntimeEnvironment {
      * @return path to where the sources are located
      */
     public String getSourceRootPath() {
-        return getConfiguration().getSourceRoot();
+        return threadConfig.get().getSourceRoot();
     }
     
     /**
@@ -151,7 +142,7 @@ public class RuntimeEnvironment {
      * @throws IOException if the name cannot be resolved
      */
     public void setSourceRootFile(File source) throws IOException {
-        getConfiguration().setSourceRoot(source.getCanonicalPath());
+        threadConfig.get().setSourceRoot(source.getCanonicalPath());
     }
     
     /**
@@ -159,7 +150,7 @@ public class RuntimeEnvironment {
      * @param sourceRoot the location of the sources
      */
     public void setSourceRoot(String sourceRoot) {
-        getConfiguration().setSourceRoot(sourceRoot);
+        threadConfig.get().setSourceRoot(sourceRoot);
     }
     
     /**
@@ -176,7 +167,7 @@ public class RuntimeEnvironment {
      * @return a list containing all of the projects (may be null)
      */
     public List<Project> getProjects() {
-        return getConfiguration().getProjects();
+        return threadConfig.get().getProjects();
     }
     
     /**
@@ -184,7 +175,7 @@ public class RuntimeEnvironment {
      * @param projects the list of projects to use
      */
     public void setProjects(List<Project> projects) {
-        getConfiguration().setProjects(projects);
+        threadConfig.get().setProjects(projects);
     }
     
     /**
@@ -193,7 +184,7 @@ public class RuntimeEnvironment {
      * the same configuration
      */
     public void register() {
-        threadmap.put(Thread.currentThread(), configuration);
+        threadConfig.set(configuration);
     }
     
     /**
@@ -201,7 +192,7 @@ public class RuntimeEnvironment {
      * @return the web applications context name
      */
     public String getUrlPrefix() {
-        return getConfiguration().getUrlPrefix();
+        return threadConfig.get().getUrlPrefix();
     }
     
     /**
@@ -209,7 +200,7 @@ public class RuntimeEnvironment {
      * @param urlPrefix the web applications context name
      */
     public void setUrlPrefix(String urlPrefix) {
-        getConfiguration().setUrlPrefix(urlPrefix);
+        threadConfig.get().setUrlPrefix(urlPrefix);
     }
     
     /**
@@ -217,7 +208,7 @@ public class RuntimeEnvironment {
      * @return the name of the ctags program in use
      */
     public String getCtags() {
-        return getConfiguration().getCtags();
+        return threadConfig.get().getCtags();
     }
     
     /**
@@ -225,7 +216,7 @@ public class RuntimeEnvironment {
      * @param ctags the ctags program to use
      */
     public void setCtags(String ctags) {
-        getConfiguration().setCtags(ctags);
+        threadConfig.get().setCtags(ctags);
     }
 
     /**
@@ -276,7 +267,7 @@ public class RuntimeEnvironment {
      * @return the max time
      */
     public int getHistoryReaderTimeLimit() {
-        return getConfiguration().getHistoryCacheTime();
+        return threadConfig.get().getHistoryCacheTime();
     }
     
     /**
@@ -285,7 +276,7 @@ public class RuntimeEnvironment {
      * @param historyReaderTimeLimit the max time in ms before it is cached
      */
     public void setHistoryReaderTimeLimit(int historyReaderTimeLimit) {
-        getConfiguration().setHistoryCacheTime(historyReaderTimeLimit);
+        threadConfig.get().setHistoryCacheTime(historyReaderTimeLimit);
     }
     
     /**
@@ -293,7 +284,7 @@ public class RuntimeEnvironment {
      * @return true if history cache is enabled
      */
     public boolean useHistoryCache() {
-        return getConfiguration().isHistoryCache();
+        return threadConfig.get().isHistoryCache();
     }
     
     /**
@@ -301,7 +292,7 @@ public class RuntimeEnvironment {
      * @param useHistoryCache set false if you do not want to use history cache
      */
     public void setUseHistoryCache(boolean useHistoryCache) {
-        getConfiguration().setHistoryCache(useHistoryCache);
+        threadConfig.get().setHistoryCache(useHistoryCache);
     }
     
     /**
@@ -309,7 +300,7 @@ public class RuntimeEnvironment {
      * @return true if HTML should be generated during the indexing phase
      */
     public boolean isGenerateHtml() {
-        return getConfiguration().isGenerateHtml();
+        return threadConfig.get().isGenerateHtml();
     }
     
     /**
@@ -317,15 +308,15 @@ public class RuntimeEnvironment {
      * @param generateHtml set this to true to pregenerate HTML
      */
     public void setGenerateHtml(boolean generateHtml) {
-        getConfiguration().setGenerateHtml(generateHtml);
+        threadConfig.get().setGenerateHtml(generateHtml);
     }
     
     public boolean isQuickContextScan() {
-        return getConfiguration().isQuickContextScan();
+        return threadConfig.get().isQuickContextScan();
     }
 
     public void setQuickContextScan(boolean quickContextScan) {
-        getConfiguration().setQuickContextScan(quickContextScan);
+        threadConfig.get().setQuickContextScan(quickContextScan);
     }
 
     /**
@@ -333,7 +324,7 @@ public class RuntimeEnvironment {
      * @return A map containing all available SCMs
      */
     public Map<String, ExternalRepository> getRepositories() {
-        return getConfiguration().getRepositories();
+        return threadConfig.get().getRepositories();
     }
     
     /**
@@ -341,7 +332,7 @@ public class RuntimeEnvironment {
      * @param repositories the repositories to use
      */
     public void setRepositories(Map<String, ExternalRepository> repositories) {
-        getConfiguration().setRepositories(repositories);
+        threadConfig.get().setRepositories(repositories);
     }
     
     /**
@@ -351,7 +342,7 @@ public class RuntimeEnvironment {
      * @param defaultProject The default project to use
      */
     public void setDefaultProject(Project defaultProject) {
-        getConfiguration().setDefaultProject(defaultProject);
+        threadConfig.get().setDefaultProject(defaultProject);
     }
     
     /**
@@ -361,7 +352,7 @@ public class RuntimeEnvironment {
      * @return the default project (may be null if not specified)
      */
     public Project getDefaultProject() {
-        return getConfiguration().getDefaultProject();
+        return threadConfig.get().getDefaultProject();
     }
     
     /**
@@ -376,7 +367,7 @@ public class RuntimeEnvironment {
      * @return The maximum words to index
      */
     public int getIndexWordLimit() {
-        return getConfiguration().getIndexWordLimit();
+        return threadConfig.get().getIndexWordLimit();
     }
 
     /**
@@ -385,7 +376,7 @@ public class RuntimeEnvironment {
      * @param indexWordLimit the number of words to index in a single file
      */
     public void setIndexWordLimit(int indexWordLimit) {
-        getConfiguration().setIndexWordLimit(indexWordLimit);
+        threadConfig.get().setIndexWordLimit(indexWordLimit);
     }
     
     /**
@@ -393,7 +384,7 @@ public class RuntimeEnvironment {
      * @return true if we can print extra information
      */
     public boolean isVerbose() {
-        return getConfiguration().isVerbose();
+        return threadConfig.get().isVerbose();
     }
     
     /**
@@ -401,7 +392,7 @@ public class RuntimeEnvironment {
      * @param verbose new value
      */
     public void setVerbose(boolean verbose) {
-        getConfiguration().setVerbose(verbose);
+        threadConfig.get().setVerbose(verbose);
     }
 
     /**
@@ -411,7 +402,7 @@ public class RuntimeEnvironment {
      * @param allowLeadingWildcard set to true to activate (disabled by default)
      */
     public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
-        getConfiguration().setAllowLeadingWildcard(allowLeadingWildcard);
+        threadConfig.get().setAllowLeadingWildcard(allowLeadingWildcard);
     }
     
     /**
@@ -419,15 +410,15 @@ public class RuntimeEnvironment {
      * @return true if a search may start with a wildcard
      */
     public boolean isAllowLeadingWildcard() {
-        return getConfiguration().isAllowLeadingWildcard();
+        return threadConfig.get().isAllowLeadingWildcard();
     }
 
     public IgnoredNames getIgnoredNames() {
-        return getConfiguration().getIgnoredNames();
+        return threadConfig.get().getIgnoredNames();
     }
 
     public void setIgnoredNames(IgnoredNames ignoredNames) {
-        getConfiguration().setIgnoredNames(ignoredNames);
+        threadConfig.get().setIgnoredNames(ignoredNames);
     }
 
     /**
@@ -435,7 +426,7 @@ public class RuntimeEnvironment {
      * @return the URL string fragment preceeding the username
      */
     public String getUserPage() {
-        return getConfiguration().getUserPage();
+        return threadConfig.get().getUserPage();
     }
 
     /**
@@ -443,7 +434,7 @@ public class RuntimeEnvironment {
      * @param userPage the URL fragment preceeding the username from history
      */
     public void setUserPage(String userPage) {
-        getConfiguration().setUserPage(userPage);
+        threadConfig.get().setUserPage(userPage);
     }
 
     /**
@@ -451,7 +442,7 @@ public class RuntimeEnvironment {
      * @return the URL string fragment preceeding the bug ID
      */
     public String getBugPage() {
-        return getConfiguration().getBugPage();
+        return threadConfig.get().getBugPage();
     }
 
     /**
@@ -459,7 +450,7 @@ public class RuntimeEnvironment {
      * @param bugPage the URL fragment preceeding the bug ID
      */
     public void setBugPage(String bugPage) {
-        getConfiguration().setBugPage(bugPage);
+        threadConfig.get().setBugPage(bugPage);
     }
 
     /**
@@ -467,7 +458,7 @@ public class RuntimeEnvironment {
      * @return the regex that is looked for in history comments
      */
     public String getBugPattern() {
-        return getConfiguration().getBugPattern();
+        return threadConfig.get().getBugPattern();
     }
 
     /**
@@ -475,15 +466,15 @@ public class RuntimeEnvironment {
      * @param bugPattern the regex to search history comments
      */
     public void setBugPattern(String bugPattern) {
-        getConfiguration().setBugPattern(bugPattern);
+        threadConfig.get().setBugPattern(bugPattern);
     }
     
     public String getWebappLAF() {
-        return getConfiguration().getWebappLAF();
+        return threadConfig.get().getWebappLAF();
     }
     
     public void setWebappLAF(String laf) {
-        getConfiguration().setWebappLAF(laf);
+        threadConfig.get().setWebappLAF(laf);
     }
     /**
      * Read an configuration file and set it as the current configuration.
@@ -512,7 +503,7 @@ public class RuntimeEnvironment {
     public void writeConfiguration(File file) throws IOException {
         XMLEncoder e = new XMLEncoder(
                 new BufferedOutputStream(new FileOutputStream(file)));
-        e.writeObject(getConfiguration());
+        e.writeObject(threadConfig.get());
         e.close();
     }
     
@@ -525,7 +516,7 @@ public class RuntimeEnvironment {
     public void writeConfiguration(InetAddress host, int port) throws IOException {
         Socket sock = new Socket(host, port);
         XMLEncoder e = new XMLEncoder(sock.getOutputStream());
-        e.writeObject(getConfiguration());
+        e.writeObject(threadConfig.get());
         e.close();
         try {
             sock.close();
@@ -534,7 +525,6 @@ public class RuntimeEnvironment {
         }
     }
     
-    private Thread configurationListenerThread;
     private ServerSocket configServerSocket;
     
     /**
