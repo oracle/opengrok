@@ -96,11 +96,15 @@ Path = "/"? {FNameChar}+ ("/" {FNameChar}+)+[a-zA-Z0-9]
 FileChar = [a-zA-Z_0-9_\-\/]
 NameChar = {FileChar}|"."
 
-%state TAG STRING COMMENT SSTRING
+%state TAG STRING COMMENT SSTRING CDATA
 %%
 
 <YYINITIAL> {
  "<!--"  { yybegin(COMMENT); out.write("<span class=\"c\">&lt;!--"); }
+ "<![CDATA[" {
+    yybegin(CDATA);
+    out.write("&lt;<span class=\"n\">![CDATA[</span><span class=\"c\">");
+ }
  "<"	{ yybegin(TAG); out.write("&lt;");}
 }
 
@@ -117,7 +121,7 @@ NameChar = {FileChar}|"."
  \" {WhiteSpace}* \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
  \"	{ yybegin(TAG); out.write("\"</span>"); }
 }
-<STRING, STRING, COMMENT> {
+<STRING, STRING, COMMENT, CDATA> {
  "<"	{out.write( "&lt;");}
  ">"	{out.write( "&gt;");}
 }
@@ -131,7 +135,13 @@ NameChar = {FileChar}|"."
 "-->"     { yybegin(YYINITIAL); out.write("--&gt;</span>"); }
 }
 
-<YYINITIAL, COMMENT, STRING, SSTRING, TAG> {
+<CDATA> {
+  "]]>" {
+    yybegin(YYINITIAL); out.write("<span class=\"n\">]]</span></span>&gt;");
+  }
+}
+
+<YYINITIAL, COMMENT, CDATA, STRING, SSTRING, TAG> {
 {File}|{Path}
 	{String s=yytext();
 	out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
