@@ -205,6 +205,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             + "#" + ((TermQuery)query).getTerm().text());
     } else {
          String pageTitle = "Search";
+         RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
+         environment.register();
 	    %><%@ include file="httpheader.jspf" %>
 <body>
 <div id="page">
