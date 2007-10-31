@@ -123,7 +123,9 @@ public class AnalyzerGuru {
                 String[] suffixes = (String[]) analyzer.getField("suffixes").get(null);
                 for (String suffix : suffixes) {
                     //System.err.println(analyzer.getSimpleName() + " = " + suffix);
-                    ext.put(suffix, analyzer);
+                    Class old = ext.put(suffix, analyzer);
+                    assert old == null :
+                        "suffix '" + suffix + "' used in multiple analyzers";
                 }
             } catch (Exception e) {
                 //   System.err.println("AnalyzerFinder:" + analyzer.getSimpleName() + e);

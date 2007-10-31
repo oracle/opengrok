@@ -54,7 +54,6 @@ public class CAnalyzer extends PlainAnalyzer {
                 "CC",
                 "C++",
                 "HH",
-                "JAVA",
                 "I",
                 "CXX",
                 "L",
