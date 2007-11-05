@@ -436,7 +436,8 @@ public class AnalyzerGuru {
                 return analyzer;
             }
         }
-        return ext.get(file);
+        // file doesn't have any of the extensions we know
+        return null;
     }
 
     /**
