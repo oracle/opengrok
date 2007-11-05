@@ -235,6 +235,8 @@ public class HistoryGuru {
         ExternalRepository repos = getRepository(file);
          if (repos != null) {
              parser = repos.getHistoryParser();
+         } else if ((new File(file.getParentFile(), ".svn")).exists()) {
+             parser = SubversionHistoryParser.class;
          }
 
         if (parser == null) {

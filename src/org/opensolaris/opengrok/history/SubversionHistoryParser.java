@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 
 import org.tigris.subversion.javahl.BlameCallback;
+import org.tigris.subversion.javahl.ChangePath;
 import org.tigris.subversion.javahl.ClientException;
 import org.tigris.subversion.javahl.SVNClient;
 import org.tigris.subversion.javahl.Revision;
@@ -53,14 +54,13 @@ public class SubversionHistoryParser implements HistoryParser {
      * @return object representing the file's history
      */
     public History parse(File file, ExternalRepository repos)
-        throws IOException, ClientException
-    {
+            throws IOException, ClientException {
         SVNClient client = new SVNClient();
 
         LogMessage[] messages =
-            client.logMessages(file.getPath(), Revision.START, Revision.BASE, false);
+                client.logMessages(file.getPath(), Revision.START, Revision.BASE, false);
         final LinkedHashMap<Long, HistoryEntry> revisions =
-            new LinkedHashMap<Long, HistoryEntry>();
+                new LinkedHashMap<Long, HistoryEntry>();
         for (LogMessage msg : messages) {
             HistoryEntry entry = new HistoryEntry();
             entry.setRevision(msg.getRevision().toString());
@@ -68,11 +68,17 @@ public class SubversionHistoryParser implements HistoryParser {
             entry.setAuthor(msg.getAuthor());
             entry.setMessage(msg.getMessage());
             entry.setActive(true);
+            ChangePath[] files = msg.getChangedPaths();
+            if (files != null) {
+                for (ChangePath path : msg.getChangedPaths()) {
+                    entry.addFile(path.getPath());
+                }
+            }
             revisions.put(msg.getRevisionNumber(), entry);
         }
 
         ArrayList<HistoryEntry> entries =
-            new ArrayList<HistoryEntry>(revisions.values());
+                new ArrayList<HistoryEntry>(revisions.values());
         Collections.reverse(entries);
 
         History history = new History();
@@ -90,21 +96,20 @@ public class SubversionHistoryParser implements HistoryParser {
      * @return file annotation
      */
     public Annotation annotate(File file, String revision,
-                               ExternalRepository repository)
-        throws ClientException
-    {
+            ExternalRepository repository)
+            throws ClientException {
         SVNClient client = new SVNClient();
 
         final Annotation annotation = new Annotation(file.getName());
         BlameCallback callback = new BlameCallback() {
-                public void singleLine(Date changed, long revision,
-                                       String author, String line) {
-                    annotation.addLine(Long.toString(revision), author);
-                }
-            };
 
-        Revision rev = (revision == null) ?
-            Revision.BASE : Revision.getInstance(Long.parseLong(revision));
+                    public void singleLine(Date changed, long revision,
+                            String author, String line) {
+                        annotation.addLine(Long.toString(revision), author);
+                    }
+                };
+
+        Revision rev = (revision == null) ? Revision.BASE : Revision.getInstance(Long.parseLong(revision));
         client.blame(file.getPath(), Revision.START, rev, callback);
         return annotation;
     }
