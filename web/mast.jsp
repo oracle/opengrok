@@ -52,6 +52,16 @@ EftarFileReader ef = null;
 String parent = null;
 String parentBasename = resourceFile.getParentFile().getName();
 IgnoredNames ignoredNames = environment.getIgnoredNames();
+String uriEncodedName = null;
+{
+   File theFile = new File(path);
+   String parentName = theFile.getParent();
+   if (parentName != null) {
+      uriEncodedName = parentName + "/" + Util.URIEncode(theFile.getName());
+   } else {
+      uriEncodedName = "/" + Util.URIEncode(theFile.getName());
+   }
+}
 
 if(resourcePath.length() < rawSource.length()
 || ignoredNames.ignore(path)
@@ -159,9 +169,9 @@ if (noAnnotation || annotate) {
         if (!isDir) {
            String rev = request.getParameter("r");
            if (rev == null || rev.equals("")) {
-%> <a id="download" href="<%=context%>/raw<%=path%>">Download</a> | <%
+%> <a id="download" href="<%=context%>/raw<%=uriEncodedName%>">Download</a> | <%
            } else {
-%> <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a> | <%
+%> <a id="download" href="<%=context%>/raw<%=uriEncodedName%>?r=<%=rev%>">Download</a> | <%
            }
         }
 

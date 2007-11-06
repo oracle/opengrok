@@ -201,8 +201,20 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....
     if (hits != null && hits.length() == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
-            response.sendRedirect(context + "/xref" + hits.doc(0).get("path")
-            + "#" + ((TermQuery)query).getTerm().text());
+        File file = new File(hits.doc(0).get("path"));
+        String parent = file.getParent();
+        
+        StringBuilder url = new StringBuilder(context);
+        url.append("/xref");
+        if (parent != null) {
+            url.append(parent.getAbsolutePath());
+        }
+        url.append('/');
+        url.append(Util.URIEncode(file.getName());
+        sb.append("#");
+        sb.append(((TermQuery)query).getTerm().text());;
+        
+        response.sendRedirect(sb.toString());
     } else {
          String pageTitle = "Search";
          RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
