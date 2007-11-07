@@ -202,7 +202,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     // of returning a page with just _one_ entry in....
     if (hits != null && hits.length() == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
         File file = new File(hits.doc(0).get("path"));
-        String parent = file.getParent();
+        File parent = file.getParentFile();
         
         StringBuilder url = new StringBuilder(context);
         url.append("/xref");
@@ -210,11 +210,11 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             url.append(parent.getAbsolutePath());
         }
         url.append('/');
-        url.append(Util.URIEncode(file.getName());
-        sb.append("#");
-        sb.append(((TermQuery)query).getTerm().text());;
-        
-        response.sendRedirect(sb.toString());
+        url.append(Util.URIEncode(file.getName()));
+        url.append("#");
+        url.append(((TermQuery)query).getTerm().text());
+
+        response.sendRedirect(url.toString());
     } else {
          String pageTitle = "Search";
          RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
