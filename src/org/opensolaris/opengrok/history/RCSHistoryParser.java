@@ -25,7 +25,6 @@
 /*
  * ident	"@(#)RCSHistoryReader.java 1.2     05/12/01 SMI"
  */
-
 package org.opensolaris.opengrok.history;
 
 import org.apache.commons.jrcs.rcs.*;
@@ -42,9 +41,8 @@ import org.opensolaris.opengrok.web.Util;
 public class RCSHistoryParser implements HistoryParser {
 
     public History parse(File file, ExternalRepository repos)
-        throws IOException, ParseException
-    {
-        Archive archive = new Archive(Util.getRCSFile(file).getPath());
+            throws IOException, ParseException {
+        Archive archive = new Archive(getRCSFile(file).getPath());
         Version ver = archive.getRevisionVersion();
         Node n = archive.findNode(ver);
         n = n.root();
@@ -58,8 +56,9 @@ public class RCSHistoryParser implements HistoryParser {
     }
 
     private void traverse(Node n, List<HistoryEntry> history) {
-        if (n== null)
+        if (n == null) {
             return;
+        }
         traverse(n.getChild(), history);
         TreeMap brt = n.getBranches();
         if (brt != null) {
@@ -68,7 +67,7 @@ public class RCSHistoryParser implements HistoryParser {
                 traverse(b, history);
             }
         }
-        if(!n.isGhost()) {
+        if (!n.isGhost()) {
             HistoryEntry entry = new HistoryEntry();
             entry.setRevision(n.getVersion().toString());
             entry.setDate(n.getDate());
@@ -80,7 +79,7 @@ public class RCSHistoryParser implements HistoryParser {
     }
 
     public Annotation annotate(File file, String revision,
-                               ExternalRepository repository) {
+            ExternalRepository repository) {
         return null;
     }
 
@@ -93,5 +92,53 @@ public class RCSHistoryParser implements HistoryParser {
         // jrcs's documentation says that it is possible to get an annotated
         // file, but that doesn't seem to work
         return false;
+    }
+
+    protected static File getRCSFile(File file) {
+        return getRCSFile(file.getParent(), file.getName());
+    }
+
+    protected static File getRCSFile(String parent, String name) {
+        File rcsDir = new File(parent, "RCS");
+        File rcsFile = new File(rcsDir, name + ",v");
+        if (rcsFile.exists()) {
+            return rcsFile;
+        }
+        // not RCS, try CVS instead
+        return getCVSFile(parent, name);
+    }
+
+    protected static File getCVSFile(String parent, String name) {
+        try {
+            File CVSdir = new File(parent, "CVS");
+            if (CVSdir.isDirectory() && CVSdir.canRead()) {
+                File root = new File(CVSdir, "Root");
+                if (root.canRead()) {
+                    BufferedReader rootReader = new BufferedReader(new FileReader(root));
+                    String cvsroot = rootReader.readLine();
+                    if (cvsroot.startsWith("/")) {
+                        File repository = new File(CVSdir, "Repository");
+                        BufferedReader repoReader = new BufferedReader(new FileReader(repository));
+                        String repo = repoReader.readLine();
+                        repoReader.close();
+                        rootReader.close();
+                        String dir = cvsroot + File.separatorChar + repo;
+                        String filename = name + ",v";
+                        File rcsFile = new File(dir, filename);
+                        if (!rcsFile.exists()) {
+                            File atticFile = new File(dir + File.separatorChar + "Attic", filename);
+                            if (atticFile.exists()) {
+                                rcsFile = atticFile;
+                            }
+                        }
+                        return rcsFile;
+                    }
+                    rootReader.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
