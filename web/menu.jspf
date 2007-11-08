@@ -40,11 +40,13 @@ org.opensolaris.opengrok.web.Util" session="false" errorPage="error.jsp"%>
                                 <%
                                 for (Project p : env.getProjects()) {
                                 %><option value="<%=Util.formQuoteEscape(p.getPath())%>"<%
-                                          String projectPath = p.getPath();                                          
-                                          for (String proj : project.split(" ")) {
-                                              if (proj.equals(projectPath)) {
-                                          %> selected<%
-                                                  break;
+                                          if (project != null) {
+                                              String projectPath = p.getPath();                                          
+                                              for (String proj : project.split(" ")) {
+                                                  if (proj.equals(projectPath)) {
+                                                      %> selected<%
+                                                      break;
+                                                  }
                                               }
                                            }
                                           %>><%=Util.formQuoteEscape(p.getDescription())%></option>
