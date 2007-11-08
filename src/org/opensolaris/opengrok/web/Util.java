@@ -204,7 +204,7 @@ public class Util {
      * separate the path from the date.
      */
     public static String uid(String path, String date) {
-        return path.replace(File.separatorChar, '\u0000') + "\u0000" + date;
+        return path.replace('/', '\u0000') + "\u0000" + date;
     }
     
     public static String uid2url(String uid) {

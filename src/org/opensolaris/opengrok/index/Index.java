@@ -319,6 +319,8 @@ class Index {
      * May need to optimize if this gets worse.
      */
     private void startIndexing(File file, File indexDir, String parent) throws IOException {
+        parent = parent.replace('\\', '/');
+        
         if (!create) {
             String startuid =  Util.uid(parent + '/' + file.getName(), "");
             //System.out.println("Start uid = " + startuid);
