@@ -56,7 +56,7 @@ org.opensolaris.opengrok.web.Util" session="false" errorPage="error.jsp"%>
                     }%>
                     <tr><td></td><td>  &nbsp; <input class="submit" type="submit" value="Search"/> | 
                             <input class="submit" onClick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "/>
-                    | <a href="help.html">Help</a></td></tr>
+                    | <a href="help.jsp">Help</a></td></tr>
                 </table>
             </form>
         </td>
