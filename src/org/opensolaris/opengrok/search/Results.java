@@ -65,22 +65,14 @@ public class Results {
             String tag = (desc != null) ? " - <i>" + desc.get(parent) + "</i>": "";
             
             out.write("<tr class=\"dir\"><td colspan=\"2\">&nbsp;&nbsp;<a href=\"");
-            out.write(urlPrefix);
-            
-            File file = new File(parent);
-            String path = file.getParent();
-            if (path != null) {
-                out.write(path);
-            }
-            out.write('/');
-            out.write(Util.URIEncode(file.getName()));
+            out.write(Util.URIEncodePath(urlPrefix + parent));
             out.write("/\">" + parent + "/</a>" + tag + "</td></tr>");
-            
+
             boolean alt = false;
             for (Document doc: dirHash.get(parent)) {
                 String rpath = doc.get("path");
                 String self = rpath.substring(rpath.lastIndexOf('/')+1, rpath.length());
-                String selfUrl = urlPrefix + Util.URIEncode(rpath);
+                String selfUrl = Util.URIEncodePath(urlPrefix + rpath);
                 out.write("<tr ");
                 if(alt)
                     out.write(" class=\"alt\"");

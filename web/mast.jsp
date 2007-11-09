@@ -52,16 +52,7 @@ EftarFileReader ef = null;
 String parent = null;
 String parentBasename = resourceFile.getParentFile().getName();
 IgnoredNames ignoredNames = environment.getIgnoredNames();
-String uriEncodedName = null;
-{
-   File theFile = new File(path);
-   String parentName = theFile.getParent();
-   if (parentName != null) {
-      uriEncodedName = parentName + "/" + Util.URIEncode(theFile.getName());
-   } else {
-      uriEncodedName = "/" + Util.URIEncode(theFile.getName());
-   }
-}
+String uriEncodedName = Util.URIEncodePath(path);
 
 if(resourcePath.length() < rawSource.length()
 || ignoredNames.ignore(path)

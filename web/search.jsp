@@ -201,18 +201,12 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....
     if (hits != null && hits.length() == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
-        File file = new File(hits.doc(0).get("path"));
-        File parent = file.getParentFile();
+        String preFragmentPath = Util.URIEncodePath(context + "/xref" + hits.doc(0).get("path"));
+        String fragment = Util.URIEncode(((TermQuery)query).getTerm().text());
         
-        StringBuilder url = new StringBuilder(context);
-        url.append("/xref");
-        if (parent != null) {
-            url.append(parent.getAbsolutePath());
-        }
-        url.append('/');
-        url.append(Util.URIEncode(file.getName()));
+        StringBuilder url = new StringBuilder(preFragmentPath);
         url.append("#");
-        url.append(((TermQuery)query).getTerm().text());
+        url.append(fragment);
 
         response.sendRedirect(url.toString());
     } else {
