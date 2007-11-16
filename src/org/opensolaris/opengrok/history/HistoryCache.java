@@ -75,24 +75,30 @@ class HistoryCache {
             e.printStackTrace();
             throw e;
         }
-        
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (env.useHistoryCache()) {
-            if ((cache != null) &&
-                    (cache.exists() ||
-                         (parser.isCacheable() &&
-                              (time > env.getHistoryReaderTimeLimit())))) {
-                // retrieving the history takes too long, cache it!
-                try {
-                    writeCache(history, cache);
-                } catch (Exception e) {
-                    System.err.println("Error when writing cache file '" +
-                            cache + "':");
-                    e.printStackTrace();
+
+        if (!file.isDirectory()) {
+            // Don't cache history-information for directories, since the 
+            // history information on the directory may change if a file in
+            // a sub-directory change. This will cause us to present a stale
+            // history log until a the current directory is updated and 
+            // invalidates the cache entry.           
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            if (env.useHistoryCache()) {
+                if ((cache != null) &&
+                        (cache.exists() ||
+                             (parser.isCacheable() &&
+                                  (time > env.getHistoryReaderTimeLimit())))) {
+                    // retrieving the history takes too long, cache it!
+                    try {
+                        writeCache(history, cache);
+                    } catch (Exception e) {
+                        System.err.println("Error when writing cache file '" +
+                                cache + "':");
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
-        
+        }        
         return history;
     }
     
