@@ -23,11 +23,11 @@
  */
 package org.opensolaris.opengrok.web;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLEncoder;
+import java.util.StringTokenizer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import org.opensolaris.opengrok.history.Annotation;
@@ -221,22 +221,30 @@ public class Util {
         String url = uid.replace('\u0000', '/'); // replace nulls with slashes
         return url.substring(0, url.lastIndexOf('/')); // remove date from end
     }
-    private static char[] hexdigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     public static String URIEncode(String q) {
-        StringBuilder sb = new StringBuilder();
-        char c;
-        for (int i = 0; i < q.length(); i++) {
-            c = q.charAt(i);
-            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
-                sb.append(c);
-            } else {
-                sb.append("%");
-                sb.append(hexdigits[(0xf0 & c) >>> 4]);
-                sb.append(hexdigits[0x0f & c]);
-            }
+        try {
+            // We should probably use an encoding which supports a larger
+            // character set, but use ISO-8859-1 for now, since that's what
+            // we use other places in the code.
+            return URLEncoder.encode(q, "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            // Should not happen. ISO-8859-1 must be supported by all JVMs.
+            return null;
         }
-        return sb.toString();
+    }
+
+    public static String URIEncodePath(String path) {
+        final String SEGMENT_SEP = "/";
+        StringTokenizer pathTokenizer = new StringTokenizer(path, SEGMENT_SEP, true);
+        StringBuilder urlPath = new StringBuilder();
+
+        while (pathTokenizer.hasMoreTokens()) {
+            String token = pathTokenizer.nextToken();
+            urlPath.append(SEGMENT_SEP.equals(token) ? token : URIEncode(token));
+        }
+
+        return urlPath.toString();
     }
 
     public static String formQuoteEscape(String q) {

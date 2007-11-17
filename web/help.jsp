@@ -22,7 +22,7 @@ Use is subject to license terms.
 --%><%@ page import = "org.opensolaris.opengrok.configuration.RuntimeEnvironment"
              session="false" errorPage="error.jsp" %><%
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-environment.register);
+environment.register();
 String pageTitle = "OpenGrok Help";
 %><%@ include file="httpheader.jspf" %>
 <body>

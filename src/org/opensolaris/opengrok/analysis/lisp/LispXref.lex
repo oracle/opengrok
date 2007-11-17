@@ -124,7 +124,12 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
                       if (tags.containsKey(new Integer(yyline-1))) {
                         out.write("<a class=\"d\" name=\"");
                         out.write(id);
-                        out.write("\">");
+                        out.write("\"/>");
+                        out.write("<a href=\"");
+                        out.write(urlPrefix);
+                        out.write("refs=");
+                        out.write(id);
+                        out.write("\" class=\"d\">");
                         out.write(id);
                         out.write("</a>");
                         written = true;

@@ -22,15 +22,16 @@ Use is subject to license terms.
 --%><%@ page import="org.opensolaris.opengrok.configuration.*"
              session="false" errorPage="error.jsp" %><%
 String laf = environment.getWebappLAF();
+String httpHeaderContext = request.getContextPath();
 %><?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
 <head>
     <meta name="robots" content="noindex,nofollow">
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
-    <link rel="icon" href="<%=context%>/<%=laf%>/img/icon.png" type="image/png"/>
-    <link rel="stylesheet" type="text/css" href="<%=context%>/<%=laf%>/style.css"/>
-    <link rel="stylesheet" type="text/css" href="<%=context%>/<%=laf%>/print.css" media="print" />
-    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=context%>/<%=laf%>/print.css"/>
+    <link rel="icon" href="<%=httpHeaderContext%>/<%=laf%>/img/icon.png" type="image/png"/>
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/style.css"/>
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css" media="print" />
+    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css"/>
     <title><%=pageTitle%></title>
 </head>
