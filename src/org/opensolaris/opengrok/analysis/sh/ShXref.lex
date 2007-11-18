@@ -104,7 +104,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+)
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
-%state STRING COMMENT SCOMMENT QSTRING
+%state STRING SCOMMENT QSTRING
 
 %%
 <STRING>{
