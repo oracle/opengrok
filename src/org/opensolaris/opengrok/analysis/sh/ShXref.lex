@@ -45,6 +45,9 @@ import org.opensolaris.opengrok.history.Annotation;
   Writer out;
   Annotation annotation;
   private HashMap<String, HashMap<Integer, String>> defs = null;
+  private final Stack<Integer> stateStack = new Stack<Integer>();
+  private final Stack<String> styleStack = new Stack<String>();
+
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
   	this.defs = defs;
   }
@@ -68,6 +71,34 @@ import org.opensolaris.opengrok.history.Annotation;
 
   public int getLine() {
   	return yyline-2;
+  }
+
+  private void pushstate(int state, String style) throws IOException {
+    if (!styleStack.empty()) {
+      out.write("</span>");
+    }
+    if (style == null) {
+      out.write("<span>");
+    } else {
+      out.write("<span class=\"" + style + "\">");
+    }
+    stateStack.push(yystate());
+    styleStack.push(style);
+    yybegin(state);
+  }
+
+  private void popstate() throws IOException {
+    out.write("</span>");
+    yybegin(stateStack.pop());
+    styleStack.pop();
+    if (!styleStack.empty()) {
+      String style = styleStack.peek();
+      if (style == null) {
+        out.write("<span>");
+      } else {
+        out.write("<span class=\"" + style + "\">");
+      }
+    }
   }
 
   public static void main(String argv[]) {
@@ -104,7 +135,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+)
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
-%state STRING SCOMMENT QSTRING
+%state STRING SCOMMENT QSTRING SUBSHELL BACKQUOTE
 
 %%
 <STRING>{
@@ -117,9 +148,17 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 			  out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
 			  out.write("</a>");
 			}
+
+  /* This rule matches associative arrays inside strings,
+     for instance "${array["string"]}". Push a new STRING
+     state on the stack to prevent premature exit from the
+     STRING state. */
+  \$\{ {Identifier} \[\" {
+    out.write(yytext()); pushstate(STRING, "s");
+  }
 }
 
-<YYINITIAL> {
+<YYINITIAL, SUBSHELL, BACKQUOTE> {
 \$ ? {Identifier}	{ String id = yytext();
  			if(Consts.shkwd.contains(id)) {
 				out.write("<b>");out.write(id);out.write("</b>");
@@ -164,31 +203,45 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 {Number}	{ out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
- \"	{ yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'	{ yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "#"	{ yybegin(SCOMMENT);out.write("<span class=\"c\">#");}
+ \$ ? \" { pushstate(STRING, "s"); out.write(yytext()); }
+ \$ ? \' { pushstate(QSTRING, "s"); out.write(yytext()); }
+ "#"     { pushstate(SCOMMENT, "c"); out.write(yytext()); }
 }
 
 <STRING> {
  \" {WhiteSpace}* \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
- \"	{ yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\	{ out.write("\\\\"); }
- \\\"	{ out.write("\\\""); }
+ \"	{ out.write(yytext()); popstate(); }
+ \\\\ | \\\" | \\\$   { out.write(yytext()); }
+ \$\(   { pushstate(SUBSHELL, null); out.write(yytext()); }
+ `      { pushstate(BACKQUOTE, null); out.write(yytext()); }
 }
 
 <QSTRING> {
  \' {WhiteSpace}* \' { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
  \\'  { out.write("\\'"); }
- \'	{ yybegin(YYINITIAL); out.write("'</span>"); }
+ \'   { out.write(yytext()); popstate(); }
 }
 
 <SCOMMENT> {
-\n { yybegin(YYINITIAL); out.write("</span>");
+\n { popstate();
      Util.readableLine(yyline, out, annotation);}
 }
 
+<SUBSHELL> {
+  \)   { out.write(yytext()); popstate(); }
+}
 
-<YYINITIAL, STRING, SCOMMENT, QSTRING> {
+<BACKQUOTE> {
+  ` { out.write(yytext()); popstate(); }
+}
+
+<YYINITIAL, SUBSHELL, BACKQUOTE> {
+  \\` | \\\( | \\\) | \\\\ { out.write(yytext()); }
+  \$ ? \( { pushstate(SUBSHELL, null); out.write(yytext()); }
+  ` { pushstate(BACKQUOTE, null); out.write(yytext()); }
+}
+
+<YYINITIAL, SUBSHELL, BACKQUOTE, STRING, SCOMMENT, QSTRING> {
 {File}
 	{out.write("<a href=\""+urlPrefix+"path=");
 	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
