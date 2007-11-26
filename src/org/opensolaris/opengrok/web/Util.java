@@ -183,18 +183,27 @@ public class Util {
         out.write(" </a>");
         if (annotation != null) {
             String r = annotation.getRevision(num);
+            boolean enabled = annotation.isEnabled(num);
+
             out.write("<span class=\"l\"> ");
             for (int i = r.length(); i < annotation.getWidestRevision(); i++) {
                 out.write(" ");
             }
 
-            out.write("<a href=\"");
-            out.write(URIEncode(annotation.getFilename()));
-            out.write("?a=true&r=");
-            out.write(URIEncode(r));
-            out.write("\">");
+            if (enabled) {
+                out.write("<a href=\"");
+                out.write(URIEncode(annotation.getFilename()));
+                out.write("?a=true&r=");
+                out.write(URIEncode(r));
+                out.write("\">");
+            }
+
             Htmlize(r, out);
-            out.write("</a>");
+
+            if (enabled) {
+                out.write("</a>");
+            }
+
             out.write(" </span>");
 
             String a = annotation.getAuthor(num);

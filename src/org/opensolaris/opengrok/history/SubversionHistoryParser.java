@@ -100,12 +100,19 @@ public class SubversionHistoryParser implements HistoryParser {
             throws ClientException {
         SVNClient client = new SVNClient();
 
+        // we need to find the first revision where the file appeared at this location
+        // in order to find out if it should be disabled because of a copy
+        LogMessage[] messages =
+                client.logMessages(file.getPath(), Revision.START, Revision.BASE, true, false, 1);
+
+        final long oldestRevOnThisPath = (messages != null && messages.length > 0) ? messages[0].getRevisionNumber() : 0;
+
         final Annotation annotation = new Annotation(file.getName());
         BlameCallback callback = new BlameCallback() {
 
                     public void singleLine(Date changed, long revision,
                             String author, String line) {
-                        annotation.addLine(Long.toString(revision), author);
+                        annotation.addLine(Long.toString(revision), author, oldestRevOnThisPath <= revision);
                     }
                 };
 

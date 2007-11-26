@@ -72,6 +72,20 @@ public class Annotation {
     }
 
     /**
+     * Gets the enabled state for the last change to the specified line.
+     *
+     * @param line line number (counting from 1)
+     * @return true if the xref for this revision is enabled, false otherwise
+     */
+    public boolean isEnabled(int line) {
+        try {
+            return lines.get(line-1).enabled;
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+    }
+
+    /**
      * Returns the size of the file (number of lines).
      *
      * @return number of lines
@@ -105,8 +119,8 @@ public class Annotation {
      * @param revision revision number
      * @param author author name
      */
-    void addLine(String revision, String author) {
-        final Line line = new Line(revision, author);
+    void addLine(String revision, String author, boolean enabled) {
+        final Line line = new Line(revision, author, enabled);
         lines.add(line);
         widestRevision = Math.max(widestRevision, line.revision.length());
         widestAuthor = Math.max(widestAuthor, line.author.length());
@@ -116,9 +130,11 @@ public class Annotation {
     private static class Line {
         final String revision;
         final String author;
-        Line(String rev, String aut) {
+        final boolean enabled;
+        Line(String rev, String aut, boolean ena) {
             revision = (rev == null) ? "" : rev;
             author = (aut == null) ? "" : aut;
+            enabled = ena;
         }
     }
 

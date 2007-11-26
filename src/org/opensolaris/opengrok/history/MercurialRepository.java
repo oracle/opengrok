@@ -190,7 +190,7 @@ public class MercurialRepository implements ExternalRepository {
                 if (matcher.find()) {
                     String author = matcher.group(1);
                     String rev = matcher.group(2);
-                    a.addLine(rev, author);
+                    a.addLine(rev, author, true);
                 } else {
                     System.err.println("Error: did not find annotation in line " + lineno);
                     System.err.println("[" + line + "]");
