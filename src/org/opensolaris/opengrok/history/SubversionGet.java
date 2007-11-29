@@ -27,7 +27,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+
 import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Info;
 import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.SVNClient;
 
@@ -60,10 +64,22 @@ public class SubversionGet extends InputStream {
             }
             
             
+	    RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+	    String workingCopy = RuntimeEnvironment.getInstance().getSourceRootFile().getAbsolutePath();
+
             SVNClient client = new SVNClient();
+
             byte data[];
             try {
-                data = client.fileContent(parent + File.separator + name, Revision.getInstance(revision));
+                Info info = client.info(workingCopy);
+		String wcUrl = info.getUrl();
+
+		String svnPath = parent + "/" + name;
+
+		// erase the working copy from the path to get the fragment
+		svnPath = svnPath.substring(workingCopy.length());
+
+                data = client.fileContent(wcUrl + svnPath, Revision.getInstance(revision));
             } catch (ClientException ex) {
                 ex.printStackTrace();
                 throw new IOException("Failed to retrieve rev (" + rev + "): " + ex.toString());

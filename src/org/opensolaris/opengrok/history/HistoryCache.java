@@ -24,19 +24,30 @@
 
 package org.opensolaris.opengrok.history;
 
+import java.beans.Encoder;
+import java.beans.Expression;
+import java.beans.PersistenceDelegate;
+import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.beans.XMLDecoder;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 class HistoryCache {
     private static Object lock = new Object();
-    
+
+    static class FilePersistenceDelegate extends PersistenceDelegate {
+        protected Expression instantiate(Object oldInstance, Encoder out) {
+            File f = (File)oldInstance;
+            return new Expression(oldInstance, f.getClass(), "new", new Object[] { f.toString() });
+        }
+    }
+        
+
     /**
      * Retrieve the history for the given file, either from the cache or by
      * parsing the history information in the repository.
@@ -148,7 +159,7 @@ class HistoryCache {
                         "Unable to create directory '" + dir + "'.");
             }
         }
-        
+
         // We have a problem that multiple threads may access the cache layer
         // at the same time. Since I would like to avoid read-locking, I just
         // serialize the write access to the cache file. The generation of the
@@ -161,6 +172,7 @@ class HistoryCache {
             File output = File.createTempFile("oghist", null, dir);
             XMLEncoder e = new XMLEncoder(
                     new BufferedOutputStream(new FileOutputStream(output)));
+            e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
             e.writeObject(history);
             e.close();
             if (!file.delete() && file.exists()) {
@@ -215,6 +227,7 @@ class HistoryCache {
 
         XMLEncoder e = new XMLEncoder(
                 new BufferedOutputStream(new FileOutputStream(file)));
+        e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
         e.writeObject(history);
         e.close();
     }

@@ -63,12 +63,15 @@ if(!isDir) {
 boolean alt = true;
 while (hr.next()) {
     String rev = hr.getRevision();
+    rev = Util.URIEncode(rev);
     alt = !alt;
 %><tr  valign="top" <%= alt ?  "class=\"alt\"" : "" %>><%
 if(!isDir) {
         if(hr.isActive()) {
-%><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + path + "?r=" + rev %>"><%=rev%></a>&nbsp;</td><td align="center"><input type="radio" name="r1" value="<%=rev%>"/>
-<input type="radio" name="r2" value="<%=rev%>"/></td><%
+	  String rp = ((hr.getSourceRootPath() == null) ? path : hr.getSourceRootPath().toString());
+	  rp = Util.URIEncodePath(rp);
+%><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + rev %>"><%=rev%></a>&nbsp;</td><td align="center"><input type="radio" name="r1" value="<%=rp%>@<%=rev%>"/>
+<input type="radio" name="r2" value="<%=rp%>@<%=rev%>"/></td><%
         } else {
             striked = true;
   %><td><strike>&nbsp;<%=rev%>&nbsp; </strike></td><td>&nbsp;</td><%
@@ -95,7 +98,7 @@ if(files != null) {%><br/><%
         String jfile = ifile;
         if ("/".equals(path)) {
             jfile = ifile.substring(1);
-        } else if (ifile.startsWith(path)) {
+        } else if (ifile.startsWith(path) && ifile.length() > (path.length()+1)) {
             jfile = ifile.substring(path.length()+1);
         }
         %><a class="h" href="<%=context%>/xref<%=ifile%>"><%=jfile%></a><br/><%

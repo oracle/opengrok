@@ -27,6 +27,7 @@ javax.servlet.http.*,
 java.util.*,
 java.io.*,
 java.text.*,
+java.net.URLDecoder,
 org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.web.*,
@@ -76,9 +77,35 @@ String[] diffline(String line1, String line2) {
 %><%
 
 if (valid) {
-    String r1 = request.getParameter("r1");
-    String r2 = request.getParameter("r2");
-    
+    String rp1 = request.getParameter("r1");
+    String rp2 = request.getParameter("r2");
+    String srcRoot = environment.getSourceRootFile().getAbsolutePath();
+
+    String r1 = null;
+    String r2 = null;
+    File rpath1 = null;
+    File rpath2 = null;
+    String[] tmp;
+    try {
+        tmp = rp1.split("@");	
+        if (tmp != null && tmp.length == 2) {
+	    rpath1 = new File(srcRoot+URLDecoder.decode(tmp[0], "ISO-8859-1"));
+	    r1 = URLDecoder.decode(tmp[1], "ISO-8859-1");
+	}
+    } catch (UnsupportedEncodingException e) {
+    }
+
+    try {
+        tmp = rp2.split("@");
+        if (tmp != null && tmp.length == 2) {
+	    if (tmp != null && tmp.length == 2) {
+		rpath2 = new File(srcRoot+URLDecoder.decode(tmp[0], "ISO-8859-1"));
+		r2 = URLDecoder.decode(tmp[1], "ISO-8859-1");
+	    }
+	}
+    } catch (UnsupportedEncodingException e) {
+    }
+
     if (r1 == null || r2 == null || r1.equals("") || r2.equals("") || r1.equals(r2) || !r1.matches("^[0-9]+(\\.[0-9]+)*$") || !r2.matches("^[0-9]+(\\.[0-9]+)*$")) {
 %><div class="src"><h3 class="error">Error:</h3>
     Please pick two revisions to compare the changed from the <a href="<%=context%>/history<%=path%>">history</a>
@@ -90,8 +117,8 @@ if (valid) {
             InputStream in1 = null;
             InputStream in2 = null;
             try{
-                in1 = HistoryGuru.getInstance().getRevision(resourceFile.getParent(), basename, r1);
-                in2 = HistoryGuru.getInstance().getRevision(resourceFile.getParent(), basename, r2);
+                in1 = HistoryGuru.getInstance().getRevision(rpath1.getParent(), rpath1.getName(), r1);
+                in2 = HistoryGuru.getInstance().getRevision(rpath2.getParent(), rpath2.getName(), r2);
             } catch (Exception e) {
 		%> <h3 class="error">Error opening revisions!</h3> <%
             }

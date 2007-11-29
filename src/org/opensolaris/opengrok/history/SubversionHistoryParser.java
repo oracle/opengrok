@@ -25,13 +25,18 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.LinkedHashMap;
+
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 import org.tigris.subversion.javahl.BlameCallback;
 import org.tigris.subversion.javahl.ChangePath;
 import org.tigris.subversion.javahl.ClientException;
+import org.tigris.subversion.javahl.Info;
 import org.tigris.subversion.javahl.SVNClient;
 import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.LogMessage;
@@ -54,35 +59,98 @@ public class SubversionHistoryParser implements HistoryParser {
      * @return object representing the file's history
      */
     public History parse(File file, ExternalRepository repos)
-            throws IOException, ClientException {
+        throws IOException, ClientException {
         SVNClient client = new SVNClient();
+        History history = new History();
 
+        // Get the working copy's view of the file.
+        // This will reconcile the repository's view of the file
+        // and OpenGrok's view of the file.
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String workingCopy = RuntimeEnvironment.getInstance().getSourceRootFile().getAbsolutePath();
+
+        Info info = client.info(workingCopy);
+
+        String wcUrl = info.getUrl();
+        String wcRepoUrl = info.getRepository();
+
+        // Reconcile the path. If the source root is an arbitrary directory in the repository,
+        // (e.g. /trunk), and not the whole repository, this path will need to be removed from
+        // the front of each file, if possible.
+        final String leadingPathFragment = wcUrl.substring(wcRepoUrl.length());
+
+        // now get the file's info
+        info = client.info(file.getPath());
+
+        String fileUrl = info.getUrl();
+        String repoUrl = info.getRepository();
+
+        // now we simply erase the repo part of the URL, and the leading path fragment
+        File fileRepo = new File(fileUrl.substring(repoUrl.length())); 
+        File fileRepoSourcePath = new File(fileRepo.getPath().substring(leadingPathFragment.length()));
+
+        // Get the entire history, with changed files
         LogMessage[] messages =
-                client.logMessages(file.getPath(), Revision.START, Revision.BASE, false);
-        final LinkedHashMap<Long, HistoryEntry> revisions =
+            client.logMessages(file.getPath(), Revision.START, Revision.BASE, false, true);
+
+        if (messages != null) {
+            // reverse the history so we read it from newest to oldest
+            // Reversing the Revision params on logMessages()
+            // will not give any history at all
+
+            List<LogMessage> messageList = Arrays.asList(messages);
+            Collections.reverse(messageList);
+
+            final LinkedHashMap<Long, HistoryEntry> revisions =
                 new LinkedHashMap<Long, HistoryEntry>();
-        for (LogMessage msg : messages) {
-            HistoryEntry entry = new HistoryEntry();
-            entry.setRevision(msg.getRevision().toString());
-            entry.setDate(msg.getDate());
-            entry.setAuthor(msg.getAuthor());
-            entry.setMessage(msg.getMessage());
-            entry.setActive(true);
-            ChangePath[] files = msg.getChangedPaths();
-            if (files != null) {
-                for (ChangePath path : msg.getChangedPaths()) {
-                    entry.addFile(path.getPath());
+
+            for (LogMessage msg : messageList) {
+                HistoryEntry entry = new HistoryEntry();
+                entry.setRevision(msg.getRevision().toString());
+                entry.setDate(msg.getDate());
+                entry.setAuthor(msg.getAuthor());
+                entry.setMessage(msg.getMessage());
+                entry.setActive(true);
+                entry.setRepositoryPath(fileRepo);
+                entry.setSourceRootPath(fileRepoSourcePath);
+
+                ChangePath[] changedPaths = msg.getChangedPaths();
+                if (changedPaths != null) {
+                    for (ChangePath cp : changedPaths) {
+                        final String itemPath = cp.getPath();
+
+                        // directory-directory copy
+                        if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && fileRepo.getPath().startsWith(itemPath)) {
+                            String newRepoLoc = cp.getCopySrcPath() + fileRepo.getPath().substring(itemPath.length());
+                            fileRepo = new File(newRepoLoc);                        
+                            fileRepoSourcePath = new File(newRepoLoc.substring(leadingPathFragment.length()));
+                        }
+                        // file-file copy
+                        else if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && itemPath.equals(fileRepo)) {
+                            fileRepo = new File(cp.getCopySrcPath());
+                            fileRepoSourcePath = new File(cp.getCopySrcPath().substring(leadingPathFragment.length()));
+                        }
+                        if (itemPath.startsWith(leadingPathFragment)) {
+                            entry.addFile(itemPath.substring(leadingPathFragment.length()));
+                        } else {
+                            // This is an arbitrary path which is outside of our working copy.
+                            // This link will be broken.
+                            entry.addFile(itemPath);
+                        }
+                    }
+
                 }
+                revisions.put(msg.getRevisionNumber(), entry);
+
             }
-            revisions.put(msg.getRevisionNumber(), entry);
+
+            ArrayList<HistoryEntry> entries =
+                new ArrayList<HistoryEntry>(revisions.values());
+
+            history.setHistoryEntries(entries);
+
         }
 
-        ArrayList<HistoryEntry> entries =
-                new ArrayList<HistoryEntry>(revisions.values());
-        Collections.reverse(entries);
-
-        History history = new History();
-        history.setHistoryEntries(entries);
         return history;
     }
 
