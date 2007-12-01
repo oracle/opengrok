@@ -92,8 +92,6 @@ URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
-FileChar = [a-zA-Z_0-9_\-\/]
-NameChar = {FileChar}|"."
 %%
 {File}|{Path}
 	{String s=yytext();
@@ -107,7 +105,7 @@ NameChar = {FileChar}|"."
 	 out.write(s);out.write("\">");
 	 out.write(s);out.write("</a>");}
 
-{NameChar}+ "@" {NameChar}+ "." {NameChar}+
+{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
 	{	
 		for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
 			if(zzBuffer[mi] != '@') {
