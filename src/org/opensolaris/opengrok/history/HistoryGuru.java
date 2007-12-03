@@ -27,7 +27,6 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.web.Util;
 
 /**
  * The HistoryGuru is used to implement an transparent layer to the various
@@ -69,12 +68,17 @@ public class HistoryGuru {
                     svnAvailable = true;
                 }
             } catch (ClassNotFoundException ex) {
-                System.err.println("Could not find the supported Subversion bindings");
+                System.err.println("Could not find the supported Subversion bindings.");
+                System.err.println("Please verify that you have svn-javahl.jar installed.");
                 ex.printStackTrace();
-                /* EMPTY */
-                ;
             } catch (UnsatisfiedLinkError ex) {
-                System.err.println("Failed to initialize Subversion library: ");
+                System.err.println("Failed to initialize Subversion library.");
+                System.err.println("Please verify that you have Subversions native library in your ");
+                if (File.separatorChar == '/') {
+                    System.err.println("Please verify that you have Subversions native library (libsvnjavahl-1.so) in your LD_LIBRARY_PATH");                    
+                } else {
+                    System.err.println("Please verify that you have the Subversion native library (dll) in your PATH");
+                }
                 ex.printStackTrace();
             }
         }
@@ -461,7 +465,19 @@ public class HistoryGuru {
                         System.err.println("Repository will be ignored...");
                         exp.printStackTrace(System.err);
                     }
-                } else if (name.equals(".svn") || name.equals("cvs") || name.equals("sccs")) {
+                } else if (name.equals(".svn") && isSvnAvailable()) {
+                    try {
+                        String s = files[ii].getParentFile().getCanonicalPath();
+                        System.out.println("Adding Subversion repository: <" + s + ">");
+                        SubversionRepository rep = new SubversionRepository(s);                        
+                        addExternalRepository(rep, s, repos);
+                        return ;
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }                    
+                } else if (name.equals("cvs") || name.equals("sccs")) {
                     return;
                 }
             }

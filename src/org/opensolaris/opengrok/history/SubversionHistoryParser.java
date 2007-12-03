@@ -18,7 +18,8 @@
  */
 
 /*
- * ident	"%Z%%M% %I%     %E% SMI"
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
 
@@ -31,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.LinkedHashMap;
 
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 import org.tigris.subversion.javahl.BlameCallback;
@@ -66,9 +68,13 @@ public class SubversionHistoryParser implements HistoryParser {
         // Get the working copy's view of the file.
         // This will reconcile the repository's view of the file
         // and OpenGrok's view of the file.
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String workingCopy = RuntimeEnvironment.getInstance().getSourceRootFile().getAbsolutePath();
+        String workingCopy = null;
 
+        if (repos instanceof SubversionRepository) {
+            workingCopy = ((SubversionRepository)repos).getDirectoryName();
+        } else {
+            workingCopy = RuntimeEnvironment.getInstance().getSourceRootFile().getAbsolutePath();
+        }
         Info info = client.info(workingCopy);
 
         String wcUrl = info.getUrl();
@@ -165,28 +171,8 @@ public class SubversionHistoryParser implements HistoryParser {
      */
     public Annotation annotate(File file, String revision,
             ExternalRepository repository)
-            throws ClientException {
-        SVNClient client = new SVNClient();
-
-        // we need to find the first revision where the file appeared at this location
-        // in order to find out if it should be disabled because of a copy
-        LogMessage[] messages =
-                client.logMessages(file.getPath(), Revision.START, Revision.BASE, true, false, 1);
-
-        final long oldestRevOnThisPath = (messages != null && messages.length > 0) ? messages[0].getRevisionNumber() : 0;
-
-        final Annotation annotation = new Annotation(file.getName());
-        BlameCallback callback = new BlameCallback() {
-
-                    public void singleLine(Date changed, long revision,
-                            String author, String line) {
-                        annotation.addLine(Long.toString(revision), author, oldestRevOnThisPath <= revision);
-                    }
-                };
-
-        Revision rev = (revision == null) ? Revision.BASE : Revision.getInstance(Long.parseLong(revision));
-        client.blame(file.getPath(), Revision.START, rev, callback);
-        return annotation;
+            throws Exception {
+        return repository.annotate(file, revision);
     }
 
     /**
