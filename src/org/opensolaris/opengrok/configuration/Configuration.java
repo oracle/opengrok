@@ -55,6 +55,7 @@ public class Configuration {
     private String bugPage;
     private String bugPattern;
     private String webappLAF;
+    private boolean remoteScmSupported;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -73,6 +74,7 @@ public class Configuration {
         setBugPage("http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setWebappLAF("default");
+        setRemoteScmSupported(false);
     }
     
     public String getCtags() {
@@ -227,5 +229,13 @@ public class Configuration {
 
     public void setWebappLAF(String webappLAF) {
         this.webappLAF = webappLAF;
+    }
+
+    public boolean isRemoteScmSupported() {
+        return remoteScmSupported;
+    }
+
+    public void setRemoteScmSupported(boolean remoteScmSupported) {
+        this.remoteScmSupported = remoteScmSupported;
     }
 }

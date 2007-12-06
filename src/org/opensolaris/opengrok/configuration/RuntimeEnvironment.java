@@ -476,6 +476,15 @@ public class RuntimeEnvironment {
     public void setWebappLAF(String laf) {
         threadConfig.get().setWebappLAF(laf);
     }
+
+    public boolean isRemoteScmSupported() {
+        return threadConfig.get().isRemoteScmSupported();
+    }
+    
+    public void setRemoteScmSupported(boolean supported) {
+        threadConfig.get().setRemoteScmSupported(supported);
+    }
+    
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read

@@ -67,6 +67,7 @@ public class Indexer {
             "\t          is bigger. Activating this option may slow down the server.\n" +
             "\t-n Do not generate indexes\n" +
             "\t-H Generate history cache for external repositories\n" +
+            "\t-r on/off Turn on / off support for remote SCM systems\n" +
             "\t-L laf Use \"laf\" as the look'n'feel for the webapp\n" +
             "\t-w root URL of the webapp, default is /source\n" +
             "\t-i ignore named files or directories\n" +
@@ -85,7 +86,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:L:";
+    private static String options = "r:a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:L:";
 
     /**
      * Program entry point
@@ -184,6 +185,18 @@ public class Indexer {
                         break;
                     case 'n': runIndex = false; break;
                     case 'H': refreshHistory = true; break;
+                    case 'r': {
+                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                            env.setRemoteScmSupported(true);
+                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                            env.setRemoteScmSupported(true);
+                        } else {
+                            System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
+                            System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
+                            System.err.println("           \"-Q off\" will ignore SCM for remote systems");
+                        }
+                    }
+                    break;
                     case 'v': env.setVerbose(true); break;
 
                     case 's': {
