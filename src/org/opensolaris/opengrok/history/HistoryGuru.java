@@ -73,7 +73,6 @@ public class HistoryGuru {
                 ex.printStackTrace();
             } catch (UnsatisfiedLinkError ex) {
                 System.err.println("Failed to initialize Subversion library.");
-                System.err.println("Please verify that you have Subversions native library in your ");
                 if (File.separatorChar == '/') {
                     System.err.println("Please verify that you have Subversions native library (libsvnjavahl-1.so) in your LD_LIBRARY_PATH");                    
                 } else {
