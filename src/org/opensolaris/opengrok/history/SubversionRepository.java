@@ -126,6 +126,12 @@ public class SubversionRepository implements ExternalRepository {
         return annotation;
 
     }
+
+    public boolean supportsAnnotation() {
+        return true;
+    }
+
+    public boolean isCacheable() {
+        return true;
+    }
 }
-
-

@@ -18,23 +18,21 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)SCCSHistoryReader.java 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.history;
 
-import java.io.*;
-import java.util.*;
-import java.text.*;
-import org.opensolaris.opengrok.web.Util;
-
-// This is a rewrite of the class that was previously called
-// SCCSHistoryReader
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Reads and filters out junk from a SCCS history file
@@ -42,7 +40,7 @@ import org.opensolaris.opengrok.web.Util;
  * Wrote it since invoking sccs prs for each file was
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
-public class SCCSHistoryParser implements HistoryParser {
+class SCCSHistoryParser implements HistoryParser {
     boolean pass;
     boolean passRecord;
     boolean active;
@@ -82,21 +80,6 @@ public class SCCSHistoryParser implements HistoryParser {
         History history = new History();
         history.setHistoryEntries(entries);
         return history;
-    }
-
-    public Annotation annotate(File file, String revision,
-                               ExternalRepository repository) {
-        return null;
-    }
-
-    public boolean isCacheable() {
-        // repository is stored locally, no need to cache
-        return false;
-    }
-
-    public boolean supportsAnnotation() {
-        // not implemented yet
-        return false;
     }
 
     /**

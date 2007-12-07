@@ -38,7 +38,7 @@ public interface ExternalRepository {
      * Get a parser capable of getting history log elements from this repository.
      * @return a specialized parser for this kind of repository
      */
-    public Class<? extends HistoryParser> getHistoryParser();
+    Class<? extends HistoryParser> getHistoryParser();
     
     /**
      * Get an input stream that I may use to read a speciffic version of a
@@ -51,6 +51,13 @@ public interface ExternalRepository {
     public InputStream getHistoryGet(String parent, String basename, String rev);
 
     /**
+     * Checks whether this parser can annotate files.
+     *
+     * @return <code>true</code> if annotation is supported
+     */
+    public boolean supportsAnnotation(); 
+
+    /**
      * Annotate the specified revision of a file.
      *
      * @param file the file to annotate
@@ -58,8 +65,15 @@ public interface ExternalRepository {
      * @return an <code>Annotation</code> object
      * @throws java.lang.Exception if an error occurs
      */
-    Annotation annotate(File file, String revision) throws Exception;
+    public Annotation annotate(File file, String revision) throws Exception;
 
+    /**
+     * Check whether the parsed history should be cached.
+     *
+     * @return <code>true</code> if the history should be cached
+     */
+    boolean isCacheable();
+    
     /**
      * Create a history log cache for all of the files in this repository.
      * Some SCM's have a more optimal way to query the log information, so

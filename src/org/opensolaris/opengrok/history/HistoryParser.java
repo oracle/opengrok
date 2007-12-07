@@ -41,32 +41,4 @@ interface HistoryParser {
      */
     History parse(File file, ExternalRepository repository)
         throws Exception;
-
-    /**
-     * Annotate (aka praise/blame) the specified file.
-     *
-     * @param file the file
-     * @param revision which revision of the file to annotate, or
-     * <code>null</code> to annotate the checked out revision
-     * @param repository the external repository (or <code>null</code>
-     * if no external repository is used)
-     * @return an object representing the file annotation, or <code>null</code>
-     * if annotation is not supported for this <code>HistoryParser</code>
-     */
-    Annotation annotate(File file, String revision,
-                        ExternalRepository repository) throws Exception;
-
-    /**
-     * Check whether the parsed history should be cached.
-     *
-     * @return <code>true</code> if the history should be cached
-     */
-    boolean isCacheable();
-
-    /**
-     * Checks whether this parser can annotate files.
-     *
-     * @return <code>true</code> if annotation is supported
-     */
-    boolean supportsAnnotation();
 }

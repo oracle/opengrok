@@ -18,27 +18,29 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- */
-
-/*
- * ident	"@(#)RCSHistoryReader.java 1.2     05/12/01 SMI"
  */
 package org.opensolaris.opengrok.history;
 
-import org.apache.commons.jrcs.rcs.*;
-import java.util.*;
-import java.io.*;
-import org.opensolaris.opengrok.web.Util;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeMap;
+import org.apache.commons.jrcs.rcs.Archive;
+import org.apache.commons.jrcs.rcs.Node;
+import org.apache.commons.jrcs.rcs.ParseException;
+import org.apache.commons.jrcs.rcs.Version;
 
-// This is a rewrite of the class that was previously called
-// RCSHistoryReader
 
 /**
  * Virtualise RCS file as a reader, getting a specified version
  */
-public class RCSHistoryParser implements HistoryParser {
+class RCSHistoryParser implements HistoryParser {
 
     public History parse(File file, ExternalRepository repos)
             throws IOException, ParseException {
@@ -76,22 +78,6 @@ public class RCSHistoryParser implements HistoryParser {
             entry.setActive(true);
             history.add(entry);
         }
-    }
-
-    public Annotation annotate(File file, String revision,
-            ExternalRepository repository) {
-        return null;
-    }
-
-    public boolean isCacheable() {
-        // repository is stored locally, no need to cache
-        return false;
-    }
-
-    public boolean supportsAnnotation() {
-        // jrcs's documentation says that it is possible to get an annotated
-        // file, but that doesn't seem to work
-        return false;
     }
 
     protected static File getRCSFile(File file) {

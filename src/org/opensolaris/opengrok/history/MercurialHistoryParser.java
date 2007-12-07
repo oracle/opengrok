@@ -37,7 +37,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 /**
  * Parse a stream of mercurial log comments.
  */
-public class MercurialHistoryParser implements HistoryParser {
+class MercurialHistoryParser implements HistoryParser {
     
     public History parse(File file, ExternalRepository repos)
             throws IOException, ParseException {
@@ -134,18 +134,5 @@ public class MercurialHistoryParser implements HistoryParser {
         }
         
         return history;
-    }
-
-    public Annotation annotate(File file, String revision,
-                               ExternalRepository repository) throws Exception {
-        return repository.annotate(file, revision);
-    }
-
-    public boolean isCacheable() {
-        return true;
-    }
-
-    public boolean supportsAnnotation() {
-        return true;
     }
 }

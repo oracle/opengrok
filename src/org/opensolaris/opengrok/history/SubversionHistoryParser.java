@@ -28,14 +28,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.LinkedHashMap;
-
-import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-
-import org.tigris.subversion.javahl.BlameCallback;
 import org.tigris.subversion.javahl.ChangePath;
 import org.tigris.subversion.javahl.ClientException;
 import org.tigris.subversion.javahl.Info;
@@ -43,15 +38,12 @@ import org.tigris.subversion.javahl.SVNClient;
 import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.LogMessage;
 
-// This is a rewrite of the class that was previously called
-// SubversionHistoryReader
-
 /**
  * Read out version history for a given file.
  *
  * @author Trond Norbye
  */
-public class SubversionHistoryParser implements HistoryParser {
+class SubversionHistoryParser implements HistoryParser {
 
     /**
      * Parse the history for the specified file.
@@ -158,31 +150,5 @@ public class SubversionHistoryParser implements HistoryParser {
         }
 
         return history;
-    }
-
-    /**
-     * Annotate the specified file.
-     *
-     * @param file the file to annotate
-     * @param revision the revision of the file (<code>null</code>
-     * means BASE)
-     * @param repository external repository (ignored)
-     * @return file annotation
-     */
-    public Annotation annotate(File file, String revision,
-            ExternalRepository repository)
-            throws Exception {
-        return repository.annotate(file, revision);
-    }
-
-    /**
-     * Check whether history should be cached for this parser.
-     */
-    public boolean isCacheable() {
-        return true;
-    }
-
-    public boolean supportsAnnotation() {
-        return true;
     }
 }

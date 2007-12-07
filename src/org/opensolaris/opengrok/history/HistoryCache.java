@@ -87,7 +87,7 @@ class HistoryCache {
             throw e;
         }
 
-        if (!file.isDirectory()) {
+        if (repository != null && repository.isCacheable() && !file.isDirectory()) {
             // Don't cache history-information for directories, since the 
             // history information on the directory may change if a file in
             // a sub-directory change. This will cause us to present a stale
@@ -97,8 +97,7 @@ class HistoryCache {
             if (env.useHistoryCache()) {
                 if ((cache != null) &&
                         (cache.exists() ||
-                             (parser.isCacheable() &&
-                                  (time > env.getHistoryReaderTimeLimit())))) {
+                             (time > env.getHistoryReaderTimeLimit()))) {
                     // retrieving the history takes too long, cache it!
                     try {
                         writeCache(history, cache);

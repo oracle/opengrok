@@ -191,12 +191,11 @@ public class HistoryGuru {
      * <code>HistoryParser</code> does not support annotation
      */
     public Annotation annotate(File file, String rev) throws Exception {
-        Class<? extends HistoryParser> parserClass = getHistoryParser(file);
-        if (parserClass != null) {
-            HistoryParser parser = parserClass.newInstance();
-            ExternalRepository repos = getRepository(file.getParentFile());
-            return parser.annotate(file, rev, repos);
+        ExternalRepository repos = getRepository(file);
+        if (repos != null) {
+            return repos.annotate(file, rev);
         }
+
         return null;
     }
 
@@ -385,18 +384,14 @@ public class HistoryGuru {
      * version control system supports annotation
      */
     public boolean hasAnnotation(File file) {
-        if (file.isDirectory()) {
-            return false;
+        if (!file.isDirectory()) {
+            ExternalRepository repos = getRepository(file);
+            if (repos != null) {
+                return repos.supportsAnnotation();
+            }
         }
-        Class<? extends HistoryParser> parser = getHistoryParser(file);
-        if (parser == null) {
-            return false;
-        }
-        try {
-            return parser.newInstance().supportsAnnotation();
-        } catch (Exception e) {
-            return false;
-        }
+        
+        return false;
     }
 
     public static void main(String[] args) {

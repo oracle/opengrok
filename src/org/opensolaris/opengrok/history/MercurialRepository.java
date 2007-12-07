@@ -256,6 +256,13 @@ public class MercurialRepository implements ExternalRepository {
             }
         }
     }
-}
 
+    public boolean supportsAnnotation() {
+        return true;
+    }
+
+    public boolean isCacheable() {
+        return true;
+    }
+}
 
