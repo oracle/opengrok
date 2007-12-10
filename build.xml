@@ -121,7 +121,7 @@ Use is subject to license terms.
             <fileset dir="web"/>
             <fileset dir="conf" excludes="web.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
-            <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
+            <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar,svn-javahl.jar"/>
         </war>
     </target>
 </project>
