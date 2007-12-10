@@ -110,7 +110,6 @@ public class TroffAnalyzer extends FileAnalyzer {
 	out.write("</pre>");
 	xref.write(out);
 	out.write("<pre>");
-	//lines = xref.getLine();
     }
     
     /**

@@ -162,7 +162,6 @@ public class PlainAnalyzer extends FileAnalyzer {
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.write(out);
-        //lines = xref.getLine();
     }
 
     /**

@@ -69,10 +69,6 @@ import org.opensolaris.opengrok.history.Annotation;
 	}
   }
 
-  public int getLine() {
-  	return yyline-2;
-  }
-
   private void pushstate(int state, String style) throws IOException {
     if (!styleStack.empty()) {
       out.write("</span>");

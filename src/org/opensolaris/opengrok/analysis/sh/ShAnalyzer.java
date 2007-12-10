@@ -100,7 +100,6 @@ public class ShAnalyzer extends PlainAnalyzer {
         xref.reInit(content, len);
         xref.setDefs(super.defs);
         xref.write(out);
-        //lines = xref.getLine();
     }
     
     /**

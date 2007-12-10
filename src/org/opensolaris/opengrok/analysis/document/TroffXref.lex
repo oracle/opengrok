@@ -68,9 +68,6 @@ import org.opensolaris.opengrok.history.Annotation;
 	while(yylex() != YYEOF) {
 	}
   }
-  public int getLine() {
-  	return yyline-2;
-  }
 
   public static void main(String argv[]) {
     if (argv.length <= 1) {

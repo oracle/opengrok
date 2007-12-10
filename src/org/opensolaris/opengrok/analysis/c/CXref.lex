@@ -70,10 +70,6 @@ import org.opensolaris.opengrok.history.Annotation;
 	}
   }
 
-  public int getLine() {
-  	return yyline-2;
-  }
-
   public static void main(String argv[]) {
     if (argv.length <= 1) {
       System.out.println("Usage : java Xref <inputfile> <outfile> <ctags binary> ");
