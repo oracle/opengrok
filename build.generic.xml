@@ -33,7 +33,6 @@ ident	"%Z%%M% %I%     %E% SMI"
     <property name="distname" value="opengrok"/>
     <property name="classdir" value="${builddir}/classes"/>
     <property name="gensrcdir" value="${builddir}/src"/>
-    <property name="webapp" value="${builddir}/webapp"/>
     <path id="compilecp">
         <fileset dir="lib/" includes="*.jar"/>
     </path>
@@ -108,41 +107,9 @@ ident	"%Z%%M% %I%     %E% SMI"
 	</javadoc>
     </target>
     <target name="webapp" depends="compile,build">
-        <war destfile="source.war" webxml="conf/default/web.xml">
+        <war destfile="source.war" webxml="conf/web.xml">
             <fileset dir="web"/>
-            <fileset dir="conf/default/html"/>
-            <lib dir="." includes="opengrok.jar"/>
-            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
-        </war>
-    </target>
-    <target name="polished" depends="compile,build">
-        <war destfile="source.war" webxml="conf/polished/web.xml">
-            <fileset dir="web"/>
-            <fileset dir="conf/polished/html"/>
-            <lib dir="." includes="opengrok.jar"/>
-            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
-        </war>
-    </target>
-    <target name="offwhite" depends="compile,build">
-        <war destfile="source.war" webxml="conf/offwhite/web.xml">
-            <fileset dir="web"/>
-            <fileset dir="conf/offwhite/html"/>
-            <lib dir="." includes="opengrok.jar"/>
-            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
-        </war>
-    </target>
-    <target name="os-webapp" depends="compile,build">
-        <war destfile="source.war" webxml="conf/opensolaris/web.xml">
-            <fileset dir="web"/>
-            <fileset dir="conf/opensolaris/html"/>
-            <lib dir="." includes="opengrok.jar"/>
-            <lib dir="lib" includes="*.jar" excludes="servlet-api.jar"/>
-        </war>
-    </target>
-    <target name="svn-webapp" depends="compile,build">
-        <war destfile="source.war" webxml="conf/default/web.xml">
-            <fileset dir="web"/>
-            <fileset dir="conf/default/html"/>
+            <fileset dir="conf" excludes="web.xml"/>
             <lib dir="." includes="opengrok.jar"/>
             <lib dir="lib" includes="*.jar" excludes="servlet-api.jar,svn-javahl.jar"/>
         </war>
@@ -270,8 +237,6 @@ ident	"%Z%%M% %I%     %E% SMI"
     </target>
 
     <target name="release" depends="webapp,dist,dist-src,package"/>
-
-    <target name="svn-release" depends="svn-webapp,dist,dist-src,package"/>
     
     <target name="clean">
         <delete dir="${builddir}"/>
