@@ -146,16 +146,38 @@ if ((!isDir && noHistory) || servlet.startsWith("/hi")) {
 } else {
 	%><a id="history" href="<%=context%>/history<%=path%>">History</a> |<%
 }
-if (noAnnotation || annotate) {
+if (noAnnotation) {
 %> <span class="c" id="annotate">Annotate</span> |<%
 } else {
-    String rev = request.getParameter("r");
+   String rev = request.getParameter("r");
     if (rev == null) {
         rev = "";
     } else if (rev.length() > 0) {
         rev = "&r=" + rev;
     }
-%> <a id="annotate" href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a> |<%
+
+    if (Boolean.parseBoolean(request.getParameter("a"))) {
+     %> <span id="toggle-annotate-by-javascript" style="display: none">
+<a href="#" onClick="javascript:toggle_annotations(); return false;">Annotate</a>
+</span>
+<span id="toggle-annotate">
+<a href="<%=context%>/xref<%=path%><% 
+if (rev.length() > 0) { 
+    %>?<%=rev%><% 
+} %>">Annotate</a></span>
+<script type="text/javascript">
+<!--
+var toggle_js = document.getElementById('toggle-annotate-by-javascript'); 
+var toggle_ss = document.getElementById('toggle-annotate');
+
+toggle_js.style.display = 'inline';
+toggle_ss.style.display = 'none';
+// -->
+</script> <%
+    } else {
+        %> <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
+    }        
+ %> | <%       
 }
         if (!isDir) {
            String rev = request.getParameter("r");

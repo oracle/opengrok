@@ -159,3 +159,6 @@ strike.d{background-color:#bbddbb; margin-right:.2em;padding-left:1em;padding-ri
 
 .more {background-color:none;border: 1px #ccc solid;padding:.3em;margin:1px;}
 .sel {background-color:#ddd;border: 1px #000 solid;padding:.5em;margin:1px;}
+
+span.blame { }
+span.blame-hidden { display: none }

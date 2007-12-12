@@ -185,7 +185,7 @@ public class Util {
             String r = annotation.getRevision(num);
             boolean enabled = annotation.isEnabled(num);
 
-            out.write("<span class=\"l\"> ");
+            out.write("<span class=\"blame\"><span class=\"l\"> ");
             for (int i = r.length(); i < annotation.getWidestRevision(); i++) {
                 out.write(" ");
             }
@@ -212,7 +212,7 @@ public class Util {
                 out.write(" ");
             }
             Htmlize(a, out);
-            out.write(" </span>");
+            out.write(" </span></span>");
         }
     }
 

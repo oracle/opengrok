@@ -251,3 +251,6 @@ strike.d{background-color:#bbddbb; margin-right:.2em;padding-left:1em;padding-ri
 .more {border: 1px #bba solid;padding:.3em;margin:1px;}
 .sel {background-color:#d6d6c0;border: 1px #998 solid;padding:.5em;margin:1px;}
 .error {color: brown;}
+
+span.blame { }
+span.blame-hidden { display: none }
