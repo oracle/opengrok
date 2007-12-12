@@ -59,7 +59,7 @@ class MercurialHistoryParser implements HistoryParser {
             InputStream is = process.getInputStream();
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
             String mydir = mrepos.getDirectoryName() + File.separator;
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
             String s;
             boolean description = false;
             HistoryEntry entry = null;
@@ -89,7 +89,7 @@ class MercurialHistoryParser implements HistoryParser {
                     for (int ii = 1; ii < strings.length; ++ii) {
                         if (strings[ii].length() > 0) {
                             File f = new File(mydir, strings[ii]);
-                            String name = f.getCanonicalPath().substring(env.getSourceRootPath().length());
+                            String name = f.getCanonicalPath().substring(rootLength);
                             entry.addFile(name);
                         }
                     }

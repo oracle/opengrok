@@ -39,17 +39,16 @@ import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.LogMessage;
 
 /**
- * Read out version history for a given file.
+ * Parse source history for a Subversion Repository
  *
  * @author Trond Norbye
  */
 class SubversionHistoryParser implements HistoryParser {
-
     /**
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repos ignored
+     * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
     public History parse(File file, ExternalRepository repos)
@@ -62,11 +61,11 @@ class SubversionHistoryParser implements HistoryParser {
         // and OpenGrok's view of the file.
         String workingCopy = null;
 
-        if (repos instanceof SubversionRepository) {
-            workingCopy = ((SubversionRepository)repos).getDirectoryName();
-        } else {
-            workingCopy = RuntimeEnvironment.getInstance().getSourceRootFile().getAbsolutePath();
+        SubversionRepository srep = (SubversionRepository)repos;
+        if (srep.isIgnored()) {
+            return null;
         }
+        workingCopy = srep.getDirectoryName();
         Info info = client.info(workingCopy);
 
         String wcUrl = info.getUrl();
@@ -86,6 +85,7 @@ class SubversionHistoryParser implements HistoryParser {
         // now we simply erase the repo part of the URL, and the leading path fragment
         File fileRepo = new File(fileUrl.substring(repoUrl.length())); 
         File fileRepoSourcePath = new File(fileRepo.getPath().substring(leadingPathFragment.length()));
+        int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
 
         // Get the entire history, with changed files
         LogMessage[] messages =
@@ -129,11 +129,15 @@ class SubversionHistoryParser implements HistoryParser {
                             fileRepoSourcePath = new File(cp.getCopySrcPath().substring(leadingPathFragment.length()));
                         }
                         if (itemPath.startsWith(leadingPathFragment)) {
-                            entry.addFile(itemPath.substring(leadingPathFragment.length()));
-                        } else {
+                            File f = new File(workingCopy, itemPath.substring(leadingPathFragment.length()));
+                            if (f.exists() && !f.isDirectory()) {
+                                String name = f.getCanonicalPath().substring(rootLength);
+                                entry.addFile(name);
+                            }
+                        } else {                            
                             // This is an arbitrary path which is outside of our working copy.
                             // This link will be broken.
-                            entry.addFile(itemPath);
+//                            entry.addFile(itemPath);
                         }
                     }
 

@@ -23,7 +23,13 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -46,8 +52,6 @@ public class HistoryGuru {
         RCS,
         /** SCCS was used by the last file */
         SCCS,
-        /** Subversion was used by the last file */
-        SVN,
         /** The last file was located in an "external" repository */
         EXTERNAL };
    
@@ -125,13 +129,6 @@ public class HistoryGuru {
                 if (SCCSHistoryParser.getSCCSFile(file).canRead()) {
                     hpClass = SCCSHistoryParser.class;
                     previousFile = SCM.SCCS;
-                } else {
-                    File svn = new File(file.getParent(), svnlabel);
-
-                    if (svn.exists() && isSvnAvailable()) {
-                        hpClass = SubversionHistoryParser.class;
-                        previousFile = SCM.SVN;
-                    }
                 }
             }
         }
@@ -154,11 +151,6 @@ public class HistoryGuru {
             ExternalRepository repos = getRepository(file.getParentFile());
             if (repos != null) {
                 parser = repos.getHistoryParser();
-            }
-            break;
-        case SVN:
-            if (new File(file.getParent(), svnlabel).exists()) {
-                parser = SubversionHistoryParser.class;
             }
             break;
         case RCS:
@@ -235,11 +227,9 @@ public class HistoryGuru {
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
         Class<? extends HistoryParser> parser = null;
         ExternalRepository repos = getRepository(file);
-         if (repos != null) {
-             parser = repos.getHistoryParser();
-         } else if ((new File(file.getParentFile(), ".svn")).exists()) {
-             parser = SubversionHistoryParser.class;
-         }
+        if (repos != null) {
+            parser = repos.getHistoryParser();
+        }
 
         if (parser == null) {
             // I did not find a match for the specified system. Use the default directory reader
@@ -255,7 +245,7 @@ public class HistoryGuru {
             } catch (Exception e) {
                 e.printStackTrace();
                 IOException ioe =
-                    new IOException("Error while constructing HistoryReader");
+                        new IOException("Error while constructing HistoryReader");
                 ioe.initCause(e);
                 throw ioe;
             }
@@ -293,12 +283,6 @@ public class HistoryGuru {
                     in.read();
                     in.reset();
                     previousFile = SCM.RCS;
-                } else {
-                    File svn = new File(parent, svnlabel);
-                    if (svn.exists() && isSvnAvailable()) {
-                        in = new BufferedInputStream(new SubversionGet(parent, basename, rev));
-                        previousFile = SCM.SVN;
-                    }
                 }
             }
         }
@@ -341,12 +325,6 @@ public class HistoryGuru {
                 }
                 break;
                 
-            case SVN :
-                history = new File(parent, svnlabel);
-                if (history.exists()) {
-                    in = new BufferedInputStream(new SubversionGet(parent, basename, rev));
-                }
-                break;
             case EXTERNAL :
                 in = lookupHistoryGet(parent, basename, rev);
                 break;
@@ -372,7 +350,6 @@ public class HistoryGuru {
             (new File(parent, "SCCS")).isDirectory() ||
             (new File(parent, "RCS")).isDirectory() ||
             (new File(parent, "CVS")).isDirectory() ||
-            (new File(parent, svnlabel)).isDirectory() ||
             (getRepository(new File(parent)) != null);
     }
 
@@ -458,7 +435,7 @@ public class HistoryGuru {
                         System.err.println("Repository will be ignored...");
                         exp.printStackTrace(System.err);
                     }
-                } else if (name.equals(".svn") && isSvnAvailable()) {
+                } else if (name.equals(svnlabel) && isSvnAvailable()) {
                     try {
                         String s = files[ii].getParentFile().getCanonicalPath();
                         System.out.println("Adding Subversion repository: <" + s + ">");
@@ -519,7 +496,9 @@ public class HistoryGuru {
         while (path != null) {
             try {
                 ExternalRepository r = repos.get(path.getCanonicalPath());
-                if (r != null) return r;
+                if (r != null) {
+                    return r;
+                }
             } catch (IOException e) {
                 System.err.println("Failed to get canonical path for " + path);
                 e.printStackTrace();

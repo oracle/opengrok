@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Access to a Mercurial repository.
@@ -227,8 +228,10 @@ public class MercurialRepository implements ExternalRepository {
     
     public void createCache() throws IOException, ParseException {
         MercurialHistoryParser p = new MercurialHistoryParser();
-        System.out.println("Update Mercurial History Cache for " + directory);
-        System.out.flush();
+        if (RuntimeEnvironment.getInstance().isVerbose()) {
+            System.out.print("Update Mercurial History Cache for " + directory);
+            System.out.flush();
+        }
         History history = p.parse(directory, this);
         if (history != null && history.getHistoryEntries() != null) {
             HashMap<String, ArrayList<HistoryEntry>> map = new HashMap<String, ArrayList<HistoryEntry>>();
@@ -254,6 +257,10 @@ public class MercurialRepository implements ExternalRepository {
                 hist.setHistoryEntries(e.getValue());                
                 HistoryCache.writeCacheFile(e.getKey(), hist);
             }
+        }
+        if (RuntimeEnvironment.getInstance().isVerbose()) {
+            System.out.println(" done.");
+            System.out.flush();
         }
     }
 

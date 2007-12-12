@@ -27,35 +27,58 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.tigris.subversion.javahl.BlameCallback;
+import org.tigris.subversion.javahl.Info;
 import org.tigris.subversion.javahl.LogMessage;
 import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.SVNClient;
 
 /**
- * Access to a Mercurial repository.
- * 
+ * Access to a Subversion repository. 
  */
 public class SubversionRepository implements ExternalRepository {
+
     private File directory;
     private String directoryName;
     private boolean verbose;
-    
+    private boolean ignored;
+
     /**
-     * Creates a new instance of MercurialRepository
+     * Creates a new instance of SubversionRepository
      */
-    public SubversionRepository() { }
-    
+    public SubversionRepository() {
+    }
+
     /**
-     * Creates a new instance of MercurialRepository
-     * @param directory The directory containing the .hg-subdirectory
+     * Creates a new instance of SubversionRepository
+     * @param directory The directory containing the .svn-subdirectory
      */
     public SubversionRepository(String directory) {
         this.directory = new File(directory);
         directoryName = this.directory.getAbsolutePath();
+
+        if (!RuntimeEnvironment.getInstance().isRemoteScmSupported()) {
+            // try to figure out if I should ignore this repository
+            try {
+                SVNClient client = new SVNClient();
+                Info info = client.info(directory);
+                if (!info.getUrl().startsWith("file")) {
+                    if (RuntimeEnvironment.getInstance().isVerbose()) {
+                        System.out.println("Skipping history from remote repository: <" + directory + ">");
+                    }
+                    ignored = true;
+                }
+            } catch (Exception e) {
+
+            }
+        }
     }
-        
+
     /**
      * Use verbose log messages, or just the summary
      * @return true if verbose log messages are used for this repository
@@ -63,7 +86,7 @@ public class SubversionRepository implements ExternalRepository {
     public boolean isVerbose() {
         return verbose;
     }
-        
+
     /**
      * Specify if verbose log messages or just the summary should be used
      * @param verbose set to true if verbose messages should be used
@@ -71,35 +94,95 @@ public class SubversionRepository implements ExternalRepository {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-    
-    
+
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         return new SubversionGet(parent, basename, rev);
     }
-    
+
     public Class<? extends HistoryParser> getHistoryParser() {
         return SubversionHistoryParser.class;
     }
 
     /**
      * Get the name of the root directory for this repository
-     * @return the name of the directory containing the .hg subdirectory
+     * @return the name of the directory containing the .svn subdirectory
      */
     public String getDirectoryName() {
         return directoryName;
     }
-    
+
     /**
      * Specify the name of the root directory for this repository
-     * @param directoryName the new name of the directory containing the .hg 
+     * @param directoryName the new name of the directory containing the .svn 
      *        subdirectory
      */
     public void setDirectoryName(String directoryName) {
         this.directoryName = directoryName;
         this.directory = new File(this.directoryName);
     }
-    
+
+    public boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored(boolean ignored) {
+        this.ignored = ignored;
+    }
+
     public void createCache() throws IOException, ParseException {
+        if (ignored) {
+            if (RuntimeEnvironment.getInstance().isVerbose()) {
+                System.out.println("Skipping Subversion History Cache for " + directory);
+                System.out.flush();
+            }
+            return;
+        }
+
+        if (RuntimeEnvironment.getInstance().isVerbose()) {
+            System.out.print("Update Subversion History Cache for " + directory);
+            System.out.flush();
+        }
+
+        SubversionHistoryParser parser = new SubversionHistoryParser();
+        History history = null;
+
+        try {
+            history = parser.parse(directory, this);
+        } catch (Exception e) {
+            System.err.println("Failed to get info for " + directory);
+            e.printStackTrace();
+        }
+
+        if (history != null && history.getHistoryEntries() != null) {
+            HashMap<String, ArrayList<HistoryEntry>> map = new HashMap<String, ArrayList<HistoryEntry>>();
+            for (HistoryEntry e : history.getHistoryEntries()) {
+                for (String s : e.getFiles()) {
+                    ArrayList<HistoryEntry> list = map.get(s);
+                    if (list == null) {
+                        list = new ArrayList<HistoryEntry>();
+                        list.add(e);
+                        map.put(s, list);
+                    } else {
+                        list.add(e);
+                    }
+                }
+            }
+
+            for (Map.Entry<String, ArrayList<HistoryEntry>> e : map.entrySet()) {
+                for (HistoryEntry ent : e.getValue()) {
+                    ent.strip();
+                }
+
+                History hist = new History();
+                hist.setHistoryEntries(e.getValue());
+                HistoryCache.writeCacheFile(e.getKey(), hist);
+            }
+        }
+
+        if (RuntimeEnvironment.getInstance().isVerbose()) {
+            System.out.println(" done.");
+            System.out.flush();
+        }
     }
 
     public Annotation annotate(File file, String revision) throws Exception {
@@ -115,16 +198,15 @@ public class SubversionRepository implements ExternalRepository {
         final Annotation annotation = new Annotation(file.getName());
         BlameCallback callback = new BlameCallback() {
 
-                    public void singleLine(Date changed, long revision,
-                            String author, String line) {
-                        annotation.addLine(Long.toString(revision), author, oldestRevOnThisPath <= revision);
-                    }
-                };
+            public void singleLine(Date changed, long revision,
+                    String author, String line) {
+                annotation.addLine(Long.toString(revision), author, oldestRevOnThisPath <= revision);
+            }
+            };
 
         Revision rev = (revision == null) ? Revision.BASE : Revision.getInstance(Long.parseLong(revision));
         client.blame(file.getPath(), Revision.START, rev, callback);
         return annotation;
-
     }
 
     public boolean supportsAnnotation() {
