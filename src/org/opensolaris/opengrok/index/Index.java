@@ -23,14 +23,29 @@
  */
 package org.opensolaris.opengrok.index;
 
-import java.io.*;
-import java.util.*;
-import org.apache.lucene.document.*;
-import org.apache.lucene.index.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.apache.lucene.document.DateTools;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
-import org.opensolaris.opengrok.analysis.*;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.Util;
@@ -226,10 +241,11 @@ class Index {
                 }
                 
                 if (create || changed) {
-                    if(af == null)
+                    if(af == null) {
                         af = new AnalyzerGuru();
+                    }
                     try {
-                        writer = new IndexWriter(indexDir, af.getAnalyzer(), create);
+                        writer = new IndexWriter(indexDir, AnalyzerGuru.getAnalyzer(), create);
                     } catch (IOException e) {
                         String msg = e.getMessage();
                         if(msg != null && msg.startsWith("Lock obtain")) {
@@ -243,7 +259,7 @@ class Index {
                         }
                     }
                     if(writer == null) {
-                        writer = new IndexWriter(indexDir, af.getAnalyzer(), create);
+                        writer = new IndexWriter(indexDir, AnalyzerGuru.getAnalyzer(), create);
                     }
                     writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
                     /*writer.mergeFactor = 1000;
@@ -254,8 +270,8 @@ class Index {
                         writer.close();
                     } catch (IOException e) {
                         try {
-                            if (reader != null && dataRoot != null && reader.isLocked(dataRoot + "/index")) {
-                                reader.unlock(FSDirectory.getDirectory(dataRoot + "/index") );
+                            if (reader != null && dataRoot != null && IndexReader.isLocked(dataRoot + "/index")) {
+                                IndexReader.unlock(FSDirectory.getDirectory(dataRoot + "/index") );
                             }
                         } catch (IOException eio) {
                             out.println("Warning: Could not delete lock file!");
@@ -274,19 +290,19 @@ class Index {
                 if (!economical) { 
                     out.print("Generating spelling suggestion index ... ");
                     File spellIndex = new File(dataRoot, "spellIndex");
-                    IndexReader reader = IndexReader.open(indexDir);                     
+                    IndexReader indexReader = IndexReader.open(indexDir);                     
                     FSDirectory spellDirectory = FSDirectory.getDirectory(spellIndex);
                     SpellChecker checker = new SpellChecker(spellDirectory);
-                    checker.indexDictionary(new LuceneDictionary(reader, "defs"));
+                    checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));
                     spellDirectory.close();
-                    reader.close();
+                    indexReader.close();
                     out.println("done");
                 }
             }
             return 1;
         } catch (RuntimeException e) {
-            if (reader != null && dataRoot != null && reader.isLocked(dataRoot + "/index")) {
-                reader.unlock(FSDirectory.getDirectory(dataRoot + "/index"));
+            if (reader != null && dataRoot != null && IndexReader.isLocked(dataRoot + "/index")) {
+                IndexReader.unlock(FSDirectory.getDirectory(dataRoot + "/index"));
             }
             throw e;
         }
@@ -341,8 +357,9 @@ class Index {
             uidIter.close();    // close uid iterator
             reader.close();     // close existing index
             uidIter = null;
-        } else  //creating
+        } else { //creating
             indexDown(file, parent);
+        }
     }
     
     private void indexDown(File file, String parent) throws IOException {
@@ -399,44 +416,35 @@ class Index {
                     uidIter.next();		   // keep matching docs
                 } else {
                     if (!deleting) {		      // add new docs
-                        InputStream in = new BufferedInputStream(new FileInputStream(file));
-                        FileAnalyzer fa = af.getAnalyzer(in, path);
-                        out.println("Adding: " + path + " (" + fa.getClass().getSimpleName() + ")");
-                        //out.print(fa.getClass().getSimpleName());
-                        Document d = af.getDocument(file, in, path);
-                        if (d != null) {
-                            // out.println(" + " + path);
-                            writer.addDocument(d, fa);
-                            FileAnalyzer.Genre g = af.getGenre(fa.getClass());
-                            if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-                                fa.writeXref(xrefDir, path);
-                            }
-                        } else {
-                            err.println("Warning: did not add " + path);
-                        }
+                        addFile(file, path);
                     } else {
                         changed = true;
                     }
                 }
             } else {		      // creating a new index
-                InputStream in = new BufferedInputStream(new FileInputStream(file));
-                FileAnalyzer fa = af.getAnalyzer(in, path);
-                //out.print(fa.getClass().getSimpleName());
-                out.println("Adding: " + path + " (" + fa.getClass().getSimpleName() + ")");
-                //out.print(" ");
-                Document d = af.getDocument(file, in, path);
-                if (d != null) {
-                    //out.println(path);
-                    writer.addDocument(d, fa);
-                    Genre g = af.getGenre(fa.getClass());
-                    if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-                        fa.writeXref(xrefDir, path);
-                    }
-                } else {
-                    err.println("Warning: did not add " + path);
-                }
+                addFile(file, path);
             }
         }
+    }
+
+    private void addFile(File file, String path) throws IOException {
+        InputStream in = new BufferedInputStream(new FileInputStream(file));
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
+        //out.print(fa.getClass().getSimpleName());
+        out.println("Adding: " + path + " (" + fa.getClass().getSimpleName() + ")");
+        //out.print(" ");
+        Document d = af.getDocument(file, in, path);
+        if (d != null) {
+            //out.println(path);
+            writer.addDocument(d, fa);
+            Genre g = AnalyzerGuru.getGenre(fa.getClass());
+            if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
+                fa.writeXref(xrefDir, path);
+            }
+        } else {
+            err.println("Warning: did not add " + path);
+        }
+
     }
     
     public static void dumpU(File dataRoot) {
