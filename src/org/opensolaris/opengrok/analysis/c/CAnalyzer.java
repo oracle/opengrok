@@ -88,14 +88,6 @@ public class CAnalyzer extends PlainAnalyzer {
         }
         return super.tokenStream(fieldName, reader);
     }
-    
-    public static String[] getMagics() {
-        return magics;
-    }
-    
-    public static String[] getSuffixes() {
-        return suffixes;
-    }
 
     /**
      * Write a cross referenced HTML file.

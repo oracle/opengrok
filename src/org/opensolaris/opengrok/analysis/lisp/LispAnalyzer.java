@@ -63,10 +63,6 @@ public class LispAnalyzer extends PlainAnalyzer {
         return super.tokenStream(fieldName, reader);
     }
 
-    public static String[] getSuffixes() {
-        return suffixes;
-    }
-
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
