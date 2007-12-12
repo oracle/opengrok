@@ -443,7 +443,6 @@ public class HistoryGuru {
     }
     
     private void addExternalRepositories(File[] files, Map<String, ExternalRepository> repos) {
-        // Check if this directory contain a file named .hg
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
                 String name = files[ii].getName().toLowerCase();
@@ -480,7 +479,20 @@ public class HistoryGuru {
         // Nope, search it's sub-dirs
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
-                addExternalRepositories(files[ii].listFiles(), repos);
+                // Could return null if e.g. the directory is unreadable
+                File[] dirfiles = files[ii].listFiles();
+                if (dirfiles != null) {
+                    addExternalRepositories(files[ii].listFiles(), repos);
+                } else {
+                    try {
+                        String s = files[ii].getCanonicalPath();
+                        System.err.println("Failed to read directory: " + s);
+                    } catch (IOException exp) {
+                        System.err.println("Failed to read directory (could not get canonical path): "
+                                + files[ii].getName() + ": " + exp.getMessage());
+                        exp.printStackTrace(System.err);
+                    }                    
+                }
             }
         }
     }
