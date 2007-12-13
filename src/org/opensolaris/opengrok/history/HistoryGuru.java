@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
  * The HistoryGuru is used to implement an transparent layer to the various
@@ -419,7 +420,8 @@ public class HistoryGuru {
         }
     }
     
-    private void addExternalRepositories(File[] files, Map<String, ExternalRepository> repos) {
+    private void addExternalRepositories(File[] files, Map<String, ExternalRepository> repos,
+            IgnoredNames ignoredNames) {
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
                 String name = files[ii].getName().toLowerCase();
@@ -447,7 +449,7 @@ public class HistoryGuru {
                         System.err.println("Repository will be ignored...");
                         exp.printStackTrace(System.err);
                     }                    
-                } else if (name.equals("cvs") || name.equals("sccs")) {
+                } else if (name.equals("cvs") || name.equals("sccs") || name.equals("codemgr_wsdata")) {
                     return;
                 }
             }
@@ -455,11 +457,12 @@ public class HistoryGuru {
         
         // Nope, search it's sub-dirs
         for (int ii = 0; ii < files.length; ++ii) {
-            if (files[ii].isDirectory()) {
+            if (files[ii].isDirectory() &&
+                    !ignoredNames.ignore(files[ii])) {
                 // Could return null if e.g. the directory is unreadable
                 File[] dirfiles = files[ii].listFiles();
                 if (dirfiles != null) {
-                    addExternalRepositories(files[ii].listFiles(), repos);
+                    addExternalRepositories(files[ii].listFiles(), repos, ignoredNames);
                 } else {
                     try {
                         String s = files[ii].getCanonicalPath();
@@ -486,7 +489,8 @@ public class HistoryGuru {
      */
     public void addExternalRepositories(String dir) {
         Map<String, ExternalRepository> repos = new HashMap<String, ExternalRepository>();
-        addExternalRepositories((new File(dir)).listFiles(), repos);
+        addExternalRepositories((new File(dir)).listFiles(), repos,
+                RuntimeEnvironment.getInstance().getIgnoredNames());
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }
 

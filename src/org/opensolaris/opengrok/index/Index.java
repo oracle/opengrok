@@ -364,11 +364,12 @@ class Index {
     
     private void indexDown(File file, String parent) throws IOException {
         if(!file.canRead()) {
-            err.println("Warning: could not read " + file.getName());
+            err.println("Warning: could not read " + file.getCanonicalPath());
             return;
         }
         if(!file.getAbsolutePath().equals(file.getCanonicalPath())) {
-            err.println("Warning: ignored link " + file.getName());
+            err.println("Warning: ignored link " + file.getAbsolutePath() +
+                    " -> " + file.getCanonicalPath());
             return;
         }
         //SizeandLines rets = new SizeandLines();
@@ -391,7 +392,7 @@ class Index {
             }
         } else {
             if (!file.isFile()) {
-                err.println("Warning: skipping file " + file.getName());
+                err.println("Warning: skipping non-regular file " + file.getCanonicalPath());
                 return;
             }
            
