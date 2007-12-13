@@ -54,19 +54,29 @@ if (path.length() > 0 && valid) {
     
 %><form action="<%=context%>/diff<%=path%>">
 <table cellspacing="0" cellpadding="2" border="0" width="100%" class="src">
-<tr><td colspan="4"><span class="pagetitle">History log of <a href="<%= context +"/xref" + path %>"><%=path%></a></span></td></tr>
-<tr class="thead"><%
-if(!isDir) {
-%><td>Revision</td><th><input type="submit" value=" Compare "/></th><%
-}
-%><td>Date</td><td>Author</td><td>Comments</td></tr><%
+<tr>
+    <td colspan="4"><span class="pagetitle">History log of <a href="<%= context +"/xref" + path %>"><%=path%></a></span></td>
+</tr>
+<tr class="thead">
+    <td>Revision</td><%
+    if (!isDir) {
+        %><th><input type="submit" value=" Compare "/></th><%
+    }
+    %><td>Date</td><td>Author</td><td>Comments</td>
+</tr><%
 boolean alt = true;
 while (hr.next()) {
     String rev = hr.getRevision();
-    rev = Util.URIEncode(rev);
+    if (rev == null || rev.length() == 0) {
+        rev = "";
+    } else {
+        rev = Util.URIEncode(rev);
+    }
     alt = !alt;
-%><tr  valign="top" <%= alt ?  "class=\"alt\"" : "" %>><%
-if(!isDir) {
+    %><tr  valign="top" <%= alt ?  "class=\"alt\"" : "" %>><%
+    if (isDir) {
+    %><td>&nbsp;<%=rev%>&nbsp;</td><%
+    } else {
         if(hr.isActive()) {
 	  String rp = ((hr.getSourceRootPath() == null) ? path : hr.getSourceRootPath().toString());
 	  rp = Util.URIEncodePath(rp);
@@ -101,7 +111,11 @@ if(files != null) {%><br/><%
         } else if (ifile.startsWith(path) && ifile.length() > (path.length()+1)) {
             jfile = ifile.substring(path.length()+1);
         }
-        %><a class="h" href="<%=context%>/xref<%=ifile%>"><%=jfile%></a><br/><%
+        if (rev == "") {
+            %><a class="h" href="<%=context%>/xref<%=ifile%>"><%=jfile%></a><br/><%
+        } else {
+            %><a class="h" href="<%=context%>/xref<%=ifile%>?r=<%=rev%>"><%=jfile%></a><br/><%            
+        }
     }
 }
 %></td></tr><%
