@@ -77,8 +77,8 @@ String[] diffline(String line1, String line2) {
 %><%
 
 if (valid) {
-    String rp1 = request.getParameter("r1");
-    String rp2 = request.getParameter("r2");
+    final String rp1 = request.getParameter("r1");
+    final String rp2 = request.getParameter("r2");
     String srcRoot = environment.getSourceRootFile().getAbsolutePath();
 
     String r1 = null;
@@ -172,37 +172,37 @@ if (valid) {
 if(format.equals("s")) {
 	%><span class="tabsel"><b>sdiff</b></span> <%
 } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=s&full=<%=pfull%>">sdiff</a></span> <%
+	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=s&full=<%=pfull%>">sdiff</a></span> <%
 }
                             
                             if(format.equals("u")) {
 	%><span class="tabsel"><b>udiff</b></span> <%
                                 } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=u&full=<%=pfull%>">udiff</a></span> <%
+	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=u&full=<%=pfull%>">udiff</a></span> <%
                                 }
                             
                             if(format.equals("t")) {
 	%><span class="tabsel"><b>text</b></span> <%
                                 } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=t&full=<%=pfull%>">text</a></span> <%
+	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=t&full=<%=pfull%>">text</a></span> <%
                                 }
                             
                             if(format.equals("o")) {
 	%><span class="tabsel"><b>old (<%=r1%>)</b></span> <%
                                 } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=o&full=<%=pfull%>">old (<%=r1%>)</a></span> <%
+	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=o&full=<%=pfull%>">old (<%=r1%>)</a></span> <%
                                 }
                             
                             if(format.equals("n")) {
 	%><span class="tabsel"><b>new (<%=r2%>)</b></span>&nbsp;|&nbsp;<%
                                 } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=n&full=<%=pfull%>">new (<%=r2%>)</a></span>&nbsp;|&nbsp;<%
+	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=n&full=<%=pfull%>">new (<%=r2%>)</a></span>&nbsp;|&nbsp;<%
                                 }
                             
                             if(!full) {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1">&nbsp; &nbsp; full &nbsp; &nbsp;</a></span> <span class="tabsel"><b>compact</b></span><%
+	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1">&nbsp; &nbsp; full &nbsp; &nbsp;</a></span> <span class="tabsel"><b>compact</b></span><%
                                 } else {
-	%><span class="tabsel"><b>&nbsp; &nbsp; full &nbsp; &nbsp;</b> </span> <span class="tab"> <a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=0">compact</a></span><%
+	%><span class="tabsel"><b>&nbsp; &nbsp; full &nbsp; &nbsp;</b> </span> <span class="tab"> <a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=0">compact</a></span><%
                                 }
                             
                             if(format.equals("s") || format.equals("u")) {
