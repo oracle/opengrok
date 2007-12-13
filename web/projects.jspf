@@ -20,7 +20,7 @@ Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 --%><%@ page import="org.opensolaris.opengrok.configuration.*,
-java.util.List" session="false" errorPage="error.jsp" %><%
+java.util.List" %><%
 boolean hasProjects = false;
 String project = null;
 List<Project> projects;
