@@ -61,6 +61,7 @@ import org.opensolaris.opengrok.analysis.lisp.LispAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzer;
+import org.opensolaris.opengrok.analysis.sql.SQLAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -102,6 +103,7 @@ public class AnalyzerGuru {
         analyzers.add(GZIPAnalyzer.class);
         analyzers.add(JavaAnalyzer.class);
         analyzers.add(LispAnalyzer.class);
+        analyzers.add(SQLAnalyzer.class);
     }
     private static HashMap<Class<? extends FileAnalyzer>, FileAnalyzer> analyzerInstances = new HashMap<Class<? extends FileAnalyzer>, FileAnalyzer>();
     /**

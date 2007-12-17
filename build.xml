@@ -102,6 +102,7 @@ Use is subject to license terms.
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/XMLXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/sql/SQLXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex" destdir="${gensrcdir}"/>
