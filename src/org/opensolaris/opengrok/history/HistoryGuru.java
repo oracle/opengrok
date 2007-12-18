@@ -420,27 +420,51 @@ public class HistoryGuru {
         }
     }
     
+    private void addMercurialRepository(File file, Map<String, ExternalRepository> repos, IgnoredNames ignoredNames) {
+        try {
+            String s = file.getCanonicalPath();
+            if (RuntimeEnvironment.getInstance().isVerbose()) {
+                System.out.println("Adding Mercurial repository: <" + s + ">");
+            }
+            MercurialRepository rep = new MercurialRepository(s);
+            addExternalRepository(rep, s, repos);
+        } catch (IOException exp) {
+            System.err.println("Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
+            System.err.println("Repository will be ignored...");
+            exp.printStackTrace(System.err);
+        }
+
+        // The forest-extension in Mercurial adds repositories inside the
+        // repositories. I don't want to traverse all subdirectories in the
+        // repository searching for .hg-directories, but I will search all the
+        // toplevel directories. 
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) {
+                    File child = new File(f, ".hg");
+                    if (child.exists()) {
+                        addMercurialRepository(f, repos, ignoredNames);
+                    }
+                }
+            }
+        }
+    }
+    
     private void addExternalRepositories(File[] files, Map<String, ExternalRepository> repos,
             IgnoredNames ignoredNames) {
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
                 String name = files[ii].getName().toLowerCase();
                 if (name.equals(".hg")) {
-                    try {
-                        String s = files[ii].getParentFile().getCanonicalPath();
-                        System.out.println("Adding Mercurial repository: <" + s + ">");
-                        MercurialRepository rep = new MercurialRepository(s);                        
-                        addExternalRepository(rep, s, repos);
-                        return ;
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }
+                    addMercurialRepository(files[ii].getParentFile(), repos, ignoredNames);
+                    return;
                 } else if (name.equals(svnlabel) && isSvnAvailable()) {
                     try {
                         String s = files[ii].getParentFile().getCanonicalPath();
-                        System.out.println("Adding Subversion repository: <" + s + ">");
+                        if (RuntimeEnvironment.getInstance().isVerbose()) {
+                            System.out.println("Adding Subversion repository: <" + s + ">");
+                        }
                         SubversionRepository rep = new SubversionRepository(s);                        
                         addExternalRepository(rep, s, repos);
                         return ;
