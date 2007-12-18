@@ -459,20 +459,22 @@ public class HistoryGuru {
                 if (name.equals(".hg")) {
                     addMercurialRepository(files[ii].getParentFile(), repos, ignoredNames);
                     return;
-                } else if (name.equals(svnlabel) && isSvnAvailable()) {
-                    try {
-                        String s = files[ii].getParentFile().getCanonicalPath();
-                        if (RuntimeEnvironment.getInstance().isVerbose()) {
-                            System.out.println("Adding Subversion repository: <" + s + ">");
+                } else if (name.equals(svnlabel)) {
+                    if (isSvnAvailable()) {
+                        try {
+                            String s = files[ii].getParentFile().getCanonicalPath();
+                            if (RuntimeEnvironment.getInstance().isVerbose()) {
+                                System.out.println("Adding Subversion repository: <" + s + ">");
+                            }
+                            SubversionRepository rep = new SubversionRepository(s);                        
+                            addExternalRepository(rep, s, repos);
+                        } catch (IOException exp) {
+                           System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
+                           System.err.println("Repository will be ignored...");
+                           exp.printStackTrace(System.err);
                         }
-                        SubversionRepository rep = new SubversionRepository(s);                        
-                        addExternalRepository(rep, s, repos);
-                        return ;
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }                    
+                    }
+                    return;
                 } else if (name.equals("cvs") || name.equals("sccs") || name.equals("codemgr_wsdata")) {
                     return;
                 }
