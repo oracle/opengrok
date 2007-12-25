@@ -23,6 +23,7 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.tigris.subversion.javahl.BlameCallback;
+import org.tigris.subversion.javahl.ClientException;
 import org.tigris.subversion.javahl.Info;
 import org.tigris.subversion.javahl.LogMessage;
 import org.tigris.subversion.javahl.Revision;
@@ -96,7 +98,37 @@ public class SubversionRepository implements ExternalRepository {
     }
 
     public InputStream getHistoryGet(String parent, String basename, String rev) {
-        return new SubversionGet(parent, basename, rev);
+        InputStream ret = null;
+        
+        Revision revision = Revision.WORKING;
+        
+        if (rev != null) {
+            try {
+                revision = Revision.getInstance(Long.parseLong(rev));
+            } catch (NumberFormatException exp) {
+                System.err.println("Failed to retrieve rev (" + rev + "): Not a valid Subversion revision format");
+                exp.printStackTrace();
+                return null;
+            }
+        }
+
+        SVNClient client = new SVNClient();
+        try {
+            Info info = client.info(directoryName);
+            String wcUrl = info.getUrl();
+
+            String svnPath = parent + "/" + basename;
+
+            // erase the working copy from the path to get the fragment
+            svnPath = svnPath.substring(directoryName.length());
+
+            ret = new ByteArrayInputStream(client.fileContent(wcUrl + svnPath, revision));
+        } catch (ClientException ex) {
+            System.err.println("Failed to retrieve rev (" + rev + "): " + ex.toString());
+            ex.printStackTrace();
+        }        
+        
+        return ret;
     }
 
     public Class<? extends HistoryParser> getHistoryParser() {
