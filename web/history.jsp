@@ -87,7 +87,14 @@ while (hr.next()) {
   %><td><strike>&nbsp;<%=rev%>&nbsp; </strike></td><td>&nbsp;</td><%
         }
 }
-%><td><%= df.format(hr.getDate()) %>&nbsp;</td>
+%><td><% 
+        Date date = hr.getDate(); 
+        if (date == null) {
+            %><%=df.format(date)%><%
+        } else {
+            %>&nbsp<%
+        }
+%>&nbsp;</td>
 <td>
 <%
 
