@@ -111,7 +111,11 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
 
-JavadocWithArg = "param" | "throws" | "exception"
+JavadocWithClassArg = "@throws" | "@exception"
+JavadocWithParamNameArg = "@param"
+
+ClassName = ({Identifier} ".")* {Identifier}
+ParamName = {Identifier} | "<" {Identifier} ">"
 
 %state  STRING COMMENT SCOMMENT QSTRING JAVADOC
 
@@ -204,7 +208,8 @@ JavadocWithArg = "param" | "throws" | "exception"
 }
 
 <JAVADOC> {
-  "@" {JavadocWithArg} {WhiteSpace} {Identifier} {
+  {JavadocWithParamNameArg} {WhiteSpace} {ParamName} |
+  {JavadocWithClassArg} {WhiteSpace} {ClassName} {
     String text = yytext();
     String[] tokens = text.split(WHITE_SPACE, 2);
     out.append("<strong>").append(tokens[0]).append("</strong>")
