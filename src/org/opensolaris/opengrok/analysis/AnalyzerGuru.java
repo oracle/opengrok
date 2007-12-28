@@ -37,6 +37,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.apache.lucene.analysis.Token;
@@ -500,13 +501,45 @@ public class AnalyzerGuru {
     public static Class<? extends FileAnalyzer> findMagic(String signature) {
         Class<? extends FileAnalyzer> a = magics.get(signature);
         if (a == null) {
-            for (String magic : magics.keySet()) {
-                if (signature.startsWith(magic)) {
-                    return magics.get(magic);
+            String sigWithoutBOM = stripBOM(signature);
+            for (Map.Entry<String, Class<? extends FileAnalyzer>> entry :
+                     magics.entrySet()) {
+                if (signature.startsWith(entry.getKey())) {
+                    return entry.getValue();
+                }
+                // See if text files have the magic sequence if we remove the
+                // byte-order marker
+                if (sigWithoutBOM != null &&
+                        getGenre(entry.getValue()) == Genre.PLAIN &&
+                        sigWithoutBOM.startsWith(entry.getKey())) {
+                    return entry.getValue();
                 }
             }
         }
         return a;
+    }
+
+    /** Byte-order markers. */
+    private static final String[] BOMS = {
+        new String(new char[] { 0xEF, 0xBB, 0xBF }), // UTF-8 BOM
+        new String(new char[] { 0xFE, 0xFF }),       // UTF-16BE BOM
+        new String(new char[] { 0xFF, 0xFE }),       // UTF-16LE BOM
+    };
+
+    /**
+     * Strip away the byte-order marker from the string, if it has one.
+     *
+     * @param str the string to remove the BOM from
+     * @return a string without the byte-order marker, or <code>null</code> if
+     * the string doesn't start with a BOM
+     */
+    private static String stripBOM(String str) {
+        for (String bom : BOMS) {
+            if (str.startsWith(bom)) {
+                return str.substring(bom.length());
+            }
+        }
+        return null;
     }
 
     public static void main(String[] args) throws Exception {
