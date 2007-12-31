@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <title>How to build {OpenGrok</title>
+    </head>
+    <body>
+        <h1>How to build {OpenGrok</h1>
+        <p>The easiest way to build (or modify) {OpenGrok is by using
+            <a href="www.netbeans.org">NetBeans</a>, but you can also build
+            {OpenGrok from the command line.
+        </p>
+        <h2>Requirements</h2>
+        <p>You need the following:</p>
+        <ul>
+            <li><a href="http://java.sun.com/javase/downloads/index.jsp">JDK</a>
+            1.5 og higher</li>
+            <li><a href="http://ant.apache.org/">Apache Ant</a> 1.7.0 or later 
+            if you don't intend to build using NetBeans</li>
+            <li>The source code is located in a 
+                <a href="http://www.selenic.com/mercurial/wiki/">Mercurial</a> 
+            repository</li>
+            <li>The analyzers is generated from lex by using 
+            <a href="http://jflex.de/">JFlex</a></li>
+        </ul>
+        
+        <h2>Check out the source</h2>
+        <p>The first thing you need to do is to check out the source code. You
+            might do this from within NetBeans if you have the Mercurial plugin
+            installed, or you can check out the source with the following 
+            command:
+        </p>
+        <pre>
+    hg clone ssh://anon@hg.opensolaris.org/hg/opengrok/trunk
+        </pre>
+        
+        <h2>Prepare the source for compilation</h2>
+        <p>Copy <code>JFlex.jar</code> into the <code>lib</code> directory in
+        the OpenGrok source.</p>
+        
+        <h2>Compile the source</h2>
+        <p>If you use NetBeans you should be able to open OpenGrok as a project
+            and build it from there. If you want to build from the command line,
+        execute the following command:</p>
+        <pre>
+        ant -f build.generic.xml
+        </pre>
+        
+        
+    </body>
+</html>
