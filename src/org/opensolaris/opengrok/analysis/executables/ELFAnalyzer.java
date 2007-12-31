@@ -35,7 +35,6 @@ import org.apache.lucene.analysis.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 
 /**
  * Analyzes ELF (Executable and Linking Format) files.
@@ -44,16 +43,6 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
  * @author Chandan
  */
 public class ELFAnalyzer extends FileAnalyzer {
-    public static String[] suffixes = null;
-    public static String[] magics = {
-	"\177ELF"
-    };
-    
-    public static Genre g = Genre.XREFABLE;
-    public Genre getGenre() {
-	return this.g;
-    }
-    
     private StringBuffer sb;
     private char[] content;
     private int len;
@@ -63,8 +52,8 @@ public class ELFAnalyzer extends FileAnalyzer {
     StringReader dummy = new StringReader("");
     
     /** Creates a new instance of ELFAnalyzer */
-    public ELFAnalyzer() {
-	super();
+    protected ELFAnalyzer(FileAnalyzerFactory factory) {
+	super(factory);
 	content = new char[16*1024];
 	plainfull = new PlainFullTokenizer(dummy);
 	CharBuffer cb;

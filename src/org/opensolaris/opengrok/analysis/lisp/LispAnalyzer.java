@@ -37,15 +37,8 @@ public class LispAnalyzer extends PlainAnalyzer {
     LispXref xref;
     Reader dummy = new StringReader("");
 
-    public static String[] suffixes = {
-        "LISP",
-        "LSP",
-        "EL",
-        "SCM",
-    };
-
-    public LispAnalyzer() {
-        super();
+    protected LispAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
         cref = new LispSymbolTokenizer(dummy);
         xref = new LispXref(dummy);
     }
@@ -79,7 +72,7 @@ public class LispAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out,
+    static void writeXref(InputStream in, Writer out,
                                  Annotation annotation) throws IOException {
         LispXref xref = new LispXref(in);
         xref.annotation = annotation;

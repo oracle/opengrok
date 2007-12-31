@@ -40,15 +40,9 @@ public class JavaAnalyzer extends PlainAnalyzer {
     JavaXref xref;
     Reader dummy = new StringReader("");
 
-    public static String[] suffixes = {
-        "JAVA"
-    };
-    public static String[] magics = {
-        "/*"
-    };
     /** Creates a new instance of JavaAnalyzer */
-    public JavaAnalyzer() {
-        super();
+    protected JavaAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
         cref = new JavaSymbolTokenizer(dummy);
         xref = new JavaXref(dummy);
     }
@@ -82,7 +76,7 @@ public class JavaAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out,
+    static void writeXref(InputStream in, Writer out,
                                  Annotation annotation) throws IOException {
         JavaXref xref = new JavaXref(in);
         xref.annotation = annotation;

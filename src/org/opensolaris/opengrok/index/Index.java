@@ -438,7 +438,7 @@ class Index {
         if (d != null) {
             //out.println(path);
             writer.addDocument(d, fa);
-            Genre g = AnalyzerGuru.getGenre(fa.getClass());
+            Genre g = fa.getFactory().getGenre();
             if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
                 fa.writeXref(xrefDir, path);
             }

@@ -36,7 +36,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -266,13 +266,15 @@ public class Indexer {
                             } 
 
                             try {
-                                Class clazz = Class.forName(arg[1]);                                
-                                if (FileAnalyzer.class.isAssignableFrom(clazz)) {
-                                    @SuppressWarnings("unchecked")
-                                    Class<? extends FileAnalyzer> analyzer = clazz;
-                                    AnalyzerGuru.addExtension(arg[0], analyzer);
-                                } else {
-                                    System.err.println("ERROR: " + arg[1] + " does not exted FileAnalyzer!");
+                                Class clazz = Class.forName(arg[1]);
+                                try {
+                                    FileAnalyzerFactory f =
+                                        (FileAnalyzerFactory)
+                                            clazz.newInstance();
+                                    AnalyzerGuru.addExtension(arg[0], f);
+                                } catch (ClassCastException cce) {
+                                    System.err.println("ERROR: " + arg[1] +
+                                      " does not extend FileAnalyzerFactory!");
                                     System.exit(1);
                                 }
                             } catch (ClassNotFoundException exp) {

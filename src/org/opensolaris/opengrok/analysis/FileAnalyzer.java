@@ -51,10 +51,9 @@ import org.opensolaris.opengrok.history.*;
  */
 
 public class FileAnalyzer extends Analyzer {
-    public static String[] magics = null;
-    public static String[] suffixe = null;
-    public static String contentType = null;
-    
+
+    private final FileAnalyzerFactory factory;
+
     /**
      * What kind of file is this?
      */
@@ -65,15 +64,23 @@ public class FileAnalyzer extends Analyzer {
 	DATA,   // not xrefed - no context
 	HTML    // not xrefed - summarizer context from original file
     }
-    public static Genre g = Genre.DATA;
-    
-    public Genre getGenre() {
-	return this.g;
+
+    /**
+     * Get the factory which created this analyzer.
+     * @return the {@code FileAnalyzerFactory} which created this analyzer
+     */
+    public final FileAnalyzerFactory getFactory() {
+        return factory;
     }
-    
+
+    public Genre getGenre() {
+        return factory.getGenre();
+    }
+
     private HistoryAnalyzer hista;
     /** Creates a new instance of FileAnalyzer */
-    public FileAnalyzer() {
+    public FileAnalyzer(FileAnalyzerFactory factory) {
+        this.factory = factory;
 	hista = new HistoryAnalyzer();
     }
     
@@ -113,17 +120,6 @@ public class FileAnalyzer extends Analyzer {
 	out.close();
     }
 
-    /**
-     * Write a cross referenced HTML file reads the source from in
-     * @param in Input source
-     * @param out Output xref writer
-     * @param annotation annotation for the file (could be null)
-     */
-    public static void writeXref(InputStream in, Writer out,
-                                 Annotation annotation) throws IOException {
-	throw new UnsupportedOperationException("Not yet implemented");
-    }
-    
     public void writeXref(File xrefDir, String path) throws IOException {
 	Writer out = new BufferedWriter(new FileWriter(new File(xrefDir, path)));
 	writeXref(out);

@@ -43,19 +43,16 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
  */
 
 public class GZIPAnalyzer extends FileAnalyzer {
-    /** Creates a new instance of ZipAnalyzer */
-    public static String[] suffixes = {
-	"GZ"
-    };
-    public static String[] magics = {
-	"\037\213"
-    };
-    public static Genre g;
+    private Genre g;
     public Genre getGenre() {
-	return this.g;
+	if (g != null) {
+            return g;
+        }
+        return super.getGenre();
     }
-    public GZIPAnalyzer() {
-	super();
+
+    protected GZIPAnalyzer(FileAnalyzerFactory factory) {
+	super(factory);
     }
     
     private FileAnalyzer fa;

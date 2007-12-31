@@ -122,7 +122,7 @@ if (valid) {
         if(noHistory) {
                     response.sendError(404, "Revision not found");
         } else if (rev.matches("^[0-9]+(\\.[0-9]+)*$")) {
-            Class a = AnalyzerGuru.find(basename);
+            FileAnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             if (g == Genre.PLAIN|| g == Genre.HTML || g == null) {
                 InputStream in = null;
@@ -197,7 +197,7 @@ if (g == Genre.PLAIN) {
         br.close();
         } else {
             BufferedInputStream bin = new BufferedInputStream(new FileInputStream(resourceFile));
-            Class a = AnalyzerGuru.find(basename);
+            FileAnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             if(g == null) {
                 a = AnalyzerGuru.find(bin);

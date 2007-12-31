@@ -30,6 +30,7 @@ package org.opensolaris.opengrok.analysis.sh;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
 import java.io.*;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.*;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -44,37 +45,9 @@ public class ShAnalyzer extends PlainAnalyzer {
     ShSymbolTokenizer shref;
     ShXref xref;
     Reader dummy = new StringReader("");
-    public static String[] suffixes = {
-        "SH",
-                "KSH",
-                "CSH",
-                "BASH",
-                "TCL",
-                "TK",
-                "PERL",
-                "RUBY",
-                "PM",
-                "RB",
-                "PY",
-                "PL",
-                "P5",
-                "AWK",
-                "MAKEFILE",
-                "GMK",
-                "CONF",
-                "COM",
-                "SPEC",
-                "FLG",
-                "XCL"		// message
-    };
-    public static String[] magics = {
-        "#!",
-                "##",
-                "#\n#"
-    };
-    
-    public ShAnalyzer() {
-        super();
+
+    protected ShAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
         shref = new ShSymbolTokenizer(dummy);
         xref = new ShXref(dummy);
     }
@@ -108,7 +81,7 @@ public class ShAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out,
+    static void writeXref(InputStream in, Writer out,
                                  Annotation annotation) throws IOException {
         ShXref xref = new ShXref(in);
         xref.annotation = annotation;

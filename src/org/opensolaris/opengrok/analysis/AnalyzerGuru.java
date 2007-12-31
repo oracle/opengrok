@@ -32,11 +32,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -46,23 +45,23 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.archive.BZip2Analyzer;
-import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzer;
-import org.opensolaris.opengrok.analysis.archive.TarAnalyzer;
-import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
-import org.opensolaris.opengrok.analysis.c.CAnalyzer;
-import org.opensolaris.opengrok.analysis.data.IgnorantAnalyzer;
-import org.opensolaris.opengrok.analysis.data.ImageAnalyzer;
-import org.opensolaris.opengrok.analysis.document.TroffAnalyzer;
-import org.opensolaris.opengrok.analysis.executables.ELFAnalyzer;
-import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
-import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
-import org.opensolaris.opengrok.analysis.java.JavaAnalyzer;
-import org.opensolaris.opengrok.analysis.lisp.LispAnalyzer;
-import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
-import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
-import org.opensolaris.opengrok.analysis.sh.ShAnalyzer;
-import org.opensolaris.opengrok.analysis.sql.SQLAnalyzer;
+import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
+import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.archive.TarAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.archive.ZipAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.c.CAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.data.IgnorantAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.data.ImageAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.document.TroffAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.executables.ELFAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.executables.JarAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.java.JavaAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.lisp.LispAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.plain.XMLAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.sql.SQLAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -79,113 +78,87 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class AnalyzerGuru {
 
-    private static HashMap<String, Class<? extends FileAnalyzer>> ext;
-    private static SortedMap<String, Class<? extends FileAnalyzer>> magics;
-    private static ArrayList<Method> matchers;
+    /** The default {@code FileAnalyzerFactory} instance. */
+    private static final FileAnalyzerFactory
+        DEFAULT_ANALYZER_FACTORY = new FileAnalyzerFactory();
+
+    /** Map from file extensions to analyzer factories. */
+    private static final Map<String, FileAnalyzerFactory>
+        ext = new HashMap<String, FileAnalyzerFactory>();
+
+    // TODO: have a comparator
+    /** Map from magic strings to analyzer factories. */
+    private static final SortedMap<String, FileAnalyzerFactory>
+        magics = new TreeMap<String, FileAnalyzerFactory>();
+
+    /**
+     * List of matcher objects which can be used to determine which analyzer
+     * factory to use.
+     */
+    private static final List<FileAnalyzerFactory.Matcher>
+        matchers = new ArrayList<FileAnalyzerFactory.Matcher>();
+
     /*
      * If you write your own analyzer please register it here
      */
-    private static ArrayList<Class<? extends FileAnalyzer>> analyzers = new ArrayList<Class<? extends FileAnalyzer>>();
     static {
-        analyzers.add(IgnorantAnalyzer.class);
-        analyzers.add(BZip2Analyzer.class);
-        analyzers.add(FileAnalyzer.class);
-        analyzers.add(XMLAnalyzer.class);
-        analyzers.add(TroffAnalyzer.class);
-        analyzers.add(ELFAnalyzer.class);
-        analyzers.add(JavaClassAnalyzer.class);
-        analyzers.add(ImageAnalyzer.class);
-        analyzers.add(JarAnalyzer.class);
-        analyzers.add(ZipAnalyzer.class);
-        analyzers.add(TarAnalyzer.class);
-        analyzers.add(CAnalyzer.class);
-        analyzers.add(ShAnalyzer.class);
-        analyzers.add(PlainAnalyzer.class);
-        analyzers.add(GZIPAnalyzer.class);
-        analyzers.add(JavaAnalyzer.class);
-        analyzers.add(LispAnalyzer.class);
-        analyzers.add(SQLAnalyzer.class);
-    }
-    private static HashMap<Class<? extends FileAnalyzer>, FileAnalyzer> analyzerInstances = new HashMap<Class<? extends FileAnalyzer>, FileAnalyzer>();
-    /**
-     * Initializes an AnalyzerGuru
-     */
-    static {
-        if (ext == null) {
-            ext = new HashMap<String, Class<? extends FileAnalyzer>>();
-        }
-        if (magics == null) {
-            magics = new TreeMap<String, Class<? extends FileAnalyzer>>();
-            // TODO: have a comparator
-        }
-        if (matchers == null) {
-            matchers = new ArrayList<Method>();
-        }
-        for (Class<? extends FileAnalyzer> analyzer : analyzers) {
-            try {
-                String[] suffixes = (String[]) analyzer.getField("suffixes").get(null);
-                for (String suffix : suffixes) {
-                    //System.err.println(analyzer.getSimpleName() + " = " + suffix);
-                    Class old = ext.put(suffix, analyzer);
-                    assert old == null :
+        FileAnalyzerFactory[] analyzers = {
+            DEFAULT_ANALYZER_FACTORY,
+            new IgnorantAnalyzerFactory(),
+            new BZip2AnalyzerFactory(),
+            new XMLAnalyzerFactory(),
+            new TroffAnalyzerFactory(),
+            new ELFAnalyzerFactory(),
+            new JavaClassAnalyzerFactory(),
+            new ImageAnalyzerFactory(),
+            new JarAnalyzerFactory(),
+            new ZipAnalyzerFactory(),
+            new TarAnalyzerFactory(),
+            new CAnalyzerFactory(),
+            new ShAnalyzerFactory(),
+            new PlainAnalyzerFactory(),
+            new GZIPAnalyzerFactory(),
+            new JavaAnalyzerFactory(),
+            new LispAnalyzerFactory(),
+            new SQLAnalyzerFactory(),
+        };
+
+        for (FileAnalyzerFactory analyzer : analyzers) {
+            for (String suffix : analyzer.getSuffixes()) {
+                FileAnalyzerFactory old = ext.put(suffix, analyzer);
+                assert old == null :
                         "suffix '" + suffix + "' used in multiple analyzers";
-                }
-            } catch (Exception e) {
-                //   System.err.println("AnalyzerFinder:" + analyzer.getSimpleName() + e);
             }
-            try {
-                String[] smagics = (String[]) analyzer.getField("magics").get(null);
-                for (String magic : smagics) {
-                    //System.err.println(analyzer.getSimpleName() + " = " + magic);
-                    magics.put(magic, analyzer);
-                }
-            } catch (Exception e) {
-                //  System.err.println("AnalyzerFinder: " + analyzer.getSimpleName() + e);
+            for (String magic : analyzer.getMagicStrings()) {
+                magics.put(magic, analyzer);
             }
-            try {
-                Method m = analyzer.getMethod("isMagic", byte[].class);
-                if (m != null) {
-                    matchers.add(m);
-                }
-            } catch (Exception e) {
-            }
+            matchers.addAll(analyzer.getMatchers());
         }
-        //System.err.println("Exts " + ext);
-        //System.err.println("Matchers " + matchers);
     }
 
     /**
      *  Instruct the AnalyzerGuru to use a given analyzer for a given
      *  file extension.
      *  @param extension the file-extension to add
-     *  @param analyzer the analyzer to use for the given extension
+     *  @param factory   a factory which creates
+     *                   the analyzer to use for the given extension
      *                  (if you pass null as the analyzer, you will disable
      *                   the analyzer used for that extension)
      */
-    public static void addExtension(String extension, Class<? extends FileAnalyzer> analyzer) {
-        ext.remove(extension);
-        if (analyzer != null) {
-            ext.put(extension, analyzer);
+    public static void addExtension(String extension,
+                                    FileAnalyzerFactory factory) {
+        if (factory == null) {
+            ext.remove(extension);
+        } else {
+            ext.put(extension, factory);
         }
     }
 
-    /*
+    /**
      * Get the default Analyzer.
      */
     public static FileAnalyzer getAnalyzer() {
-
-        Class<FileAnalyzer> a = FileAnalyzer.class;
-        FileAnalyzer fa = analyzerInstances.get(a);
-        if (fa == null) {
-            try {
-                fa = a.newInstance();
-                analyzerInstances.put(a, fa);
-                return fa;
-            } catch (Exception e) {
-                System.err.println("ERROR: Initializing " + a);
-            }
-        }
-        return fa;
+        return DEFAULT_ANALYZER_FACTORY.getAnalyzer();
     }
 
     /**
@@ -199,25 +172,11 @@ public class AnalyzerGuru {
      *                             data in the input stream. 
      */
     public static FileAnalyzer getAnalyzer(InputStream in, String file) throws IOException {
-        Class<? extends FileAnalyzer> a = find(in, file);
-        if (a == null) {
-            a = FileAnalyzer.class;
+        FileAnalyzerFactory factory = find(in, file);
+        if (factory == null) {
+            return getAnalyzer();
         }
-        if (a != null) {
-            FileAnalyzer fa = analyzerInstances.get(a);
-            if (fa == null) {
-                try {
-                    fa = (FileAnalyzer) a.newInstance();
-                    analyzerInstances.put(a, fa);
-                    return fa;
-                } catch (Exception e) {
-                    System.err.println("ERROR: Initializing " + a);
-                }
-            } else {
-                return fa;
-            }
-        }
-        return null;
+        return factory.getAnalyzer();
     }
 
     /**
@@ -280,17 +239,6 @@ public class AnalyzerGuru {
     /**
      * Get the content type for a named file.
      *
-     * @param file The file to get the content type for
-     * @return The contentType suitable for printing to response.setContentType()
-     */
-    public static String getContentType(String file) {
-        Class<? extends FileAnalyzer> a = find(file);
-        return getContentType(a);
-    }
-
-    /**
-     * Get the content type for a named file.
-     *
      * @param in The input stream we want to get the content type for (if
      *           we cannot determine the content type by the filename)
      * @param file The name of the file
@@ -299,47 +247,24 @@ public class AnalyzerGuru {
      *                             stream.
      */
     public static String getContentType(InputStream in, String file) throws IOException {
-        Class<? extends FileAnalyzer> a = find(in, file);
-        return getContentType(a);
-    }
-
-    /**
-     * Get the content type the named analyzer accepts
-     * @param analyzer the analyzer to test
-     * @return the contentType suitable for printing to response.setContentType()
-     */
-    public static String getContentType(Class<? extends FileAnalyzer> analyzer) {
-        String contentType = null;
-        if (analyzer != null) {
-            try {
-                contentType = (String) analyzer.getMethod("getContentType").invoke(null);
-            } catch (Exception e) {
-            }
-        }
-        return contentType;
+        return find(in, file).getContentType();
     }
 
     /**
      * Write a browsable version of the file
      *
-     * @param analyzer The analyzer for this filetype
+     * @param factory The analyzer factory for this filetype
      * @param in The input stream containing the data
      * @param out Where to write the result
      * @param annotation Annotation information for the file
      * @throws java.io.IOException If an error occurs while creating the
      *                             output
      */
-    public static void writeXref(Class<? extends FileAnalyzer> analyzer, InputStream in, Writer out, Annotation annotation) throws IOException {
-        if (analyzer != null) {
-            try {
-                analyzer.getMethod("writeXref", InputStream.class, Writer.class, Annotation.class).invoke(null, in, out, annotation);
-            } catch (IllegalArgumentException ex) {
-            } catch (SecurityException ex) {
-            } catch (NoSuchMethodException ex) {
-            } catch (InvocationTargetException ex) {
-            } catch (IllegalAccessException ex) {
-            }
-        }
+    public static void writeXref(FileAnalyzerFactory factory, InputStream in,
+                                 Writer out, Annotation annotation)
+        throws IOException
+    {
+        factory.writeXref(in, out, annotation);
     }
 
     /**
@@ -349,22 +274,7 @@ public class AnalyzerGuru {
      * @return The genre suitable to decide how to display the file
      */
     public static Genre getGenre(String file) {
-        Class a = find(file);
-        return getGenre(a);
-    }
-
-    /**
-     * Get the genre of a file (or the content of the file)
-     *
-     * @param in The content of the file
-     * @param file The file to inpect
-     * @return The genre suitable to decide how to display the file
-     * @throws java.io.IOException If an error occurs while getting the content
-     *                             of the file
-     */
-    public static Genre getGenre(InputStream in, String file) throws IOException {
-        Class a = find(in, file);
-        return getGenre(a);
+        return getGenre(find(file));
     }
 
     /**
@@ -375,25 +285,19 @@ public class AnalyzerGuru {
      * @throws java.io.IOException If an error occurs while getting the content
      */
     public static Genre getGenre(InputStream in) throws IOException {
-        Class a = find(in);
-        return getGenre(a);
+        return getGenre(find(in));
     }
 
     /**
      * Get the genre for a named class (this is most likely an analyzer)
-     * @param clazz the class to get the genre for
+     * @param factory the analyzer factory to get the genre for
      * @return The genre of this class (null if not found)
      */
-    public static Genre getGenre(Class clazz) {
-        Genre g = null;
-        if (clazz != null) {
-            try {
-                g = (Genre) clazz.getField("g").get(null);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    public static Genre getGenre(FileAnalyzerFactory factory) {
+        if (factory != null) {
+            return factory.getGenre();
         }
-        return g;
+        return null;
     }
 
     /**
@@ -406,24 +310,26 @@ public class AnalyzerGuru {
      *
      * @param in The input stream containing the data
      * @param file The file name to get the analyzer for
-     * @return The analyzer to use
+     * @return the analyzer factory to use
      * @throws java.io.IOException If a problem occurs while reading the data
      */
-    public static Class<? extends FileAnalyzer> find(InputStream in, String file) throws IOException {
-        Class<? extends FileAnalyzer> a = find(file);
-        if (a == null) {
-            a = find(in);
+    public static FileAnalyzerFactory find(InputStream in, String file)
+        throws IOException
+    {
+        FileAnalyzerFactory factory = find(file);
+        if (factory != null) {
+            return factory;
         }
-        return a;
+        return find(in);
     }
 
     /**
      * Finds a suitable analyser class for file name.
      *
      * @param file The file name to get the analyzer for
-     * @return The analyzer to use
+     * @return the analyzer factory to use
      */
-    public static Class<? extends FileAnalyzer> find(String file) {
+    public static FileAnalyzerFactory find(String file) {
         int i = 0;
         if ((i = file.lastIndexOf('/')) > 0 || (i = file.lastIndexOf('\\')) > 0) {
             if (i + 1 < file.length()) {
@@ -433,10 +339,10 @@ public class AnalyzerGuru {
         file = file.toUpperCase();
         int dotpos = file.lastIndexOf('.');
         if (dotpos >= 0) {
-            Class<? extends FileAnalyzer> analyzer = ext.get(file.substring(dotpos + 1).toUpperCase());
-            if (analyzer != null) {
-                //System.err.println(path.substring(dotpos+1).toUpperCase() + " = " + analyzer.getSimpleName());
-                return analyzer;
+            FileAnalyzerFactory factory =
+                ext.get(file.substring(dotpos + 1).toUpperCase());
+            if (factory != null) {
+                return factory;
             }
         }
         // file doesn't have any of the extensions we know
@@ -447,11 +353,11 @@ public class AnalyzerGuru {
      * Finds a suitable analyser class for the data in this stream
      *
      * @param in The stream containing the data to analyze
-     * @return The analyzer to use
+     * @return the analyzer factory to use
      * @throws java.io.IOException if an error occurs while reading data from
      *                             the stream
      */
-    public static Class<? extends FileAnalyzer> find(InputStream in) throws IOException {
+    public static FileAnalyzerFactory find(InputStream in) throws IOException {
         in.mark(8);
         byte[] content = new byte[8];
         int len = in.read(content);
@@ -459,33 +365,29 @@ public class AnalyzerGuru {
         if (len < 4) {
             return null;
         }
-        Class<? extends FileAnalyzer> a = find(content);
-        if (a == null) {
-            for (Method matcher : matchers) {
-                try {
-                    //System.out.println("USING = " + matcher.getName());
-                    // cannot check conversion because of reflection
-                    @SuppressWarnings(value = "unchecked")
-                    Class<? extends FileAnalyzer> c = (Class) matcher.invoke(null, content);
 
-                    if (c != null) {
-                        return c;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        FileAnalyzerFactory factory = find(content);
+        if (factory != null) {
+            return factory;
+        }
+
+        for (FileAnalyzerFactory.Matcher matcher : matchers) {
+            FileAnalyzerFactory fac = matcher.isMagic(content);
+            if (fac != null) {
+                return fac;
             }
         }
-        return a;
+
+        return null;
     }
 
     /**
      * Finds a suitable analyser class for a magic signature
      *
      * @param signature the magic signature look up
-     * @return The analyzer to use
+     * @return the analyzer factory to use
      */
-    public static Class<? extends FileAnalyzer> find(byte[] signature) {
+    public static FileAnalyzerFactory find(byte[] signature) {
         char[] chars = new char[signature.length > 8 ? 8 : signature.length];
         for (int i = 0; i < chars.length; i++) {
             chars[i] = (char) (0xFF & signature[i]);
@@ -496,13 +398,13 @@ public class AnalyzerGuru {
     /**
      * Get an analyzer by looking up the "magic signature"
      * @param signature the signature to look up
-     * @return The analyzer to handle data with this signature
+     * @return the analyzer factory to handle data with this signature
      */
-    public static Class<? extends FileAnalyzer> findMagic(String signature) {
-        Class<? extends FileAnalyzer> a = magics.get(signature);
+    public static FileAnalyzerFactory findMagic(String signature) {
+        FileAnalyzerFactory a = magics.get(signature);
         if (a == null) {
             String sigWithoutBOM = stripBOM(signature);
-            for (Map.Entry<String, Class<? extends FileAnalyzer>> entry :
+            for (Map.Entry<String, FileAnalyzerFactory> entry :
                      magics.entrySet()) {
                 if (signature.startsWith(entry.getKey())) {
                     return entry.getValue();
@@ -510,7 +412,7 @@ public class AnalyzerGuru {
                 // See if text files have the magic sequence if we remove the
                 // byte-order marker
                 if (sigWithoutBOM != null &&
-                        getGenre(entry.getValue()) == Genre.PLAIN &&
+                        entry.getValue().getGenre() == Genre.PLAIN &&
                         sigWithoutBOM.startsWith(entry.getKey())) {
                     return entry.getValue();
                 }
@@ -547,7 +449,7 @@ public class AnalyzerGuru {
         System.out.println("<pre wrap=true>");
         for (String arg : args) {
             try {
-                Class<? extends FileAnalyzer> an = AnalyzerGuru.find(arg);
+                FileAnalyzerFactory an = AnalyzerGuru.find(arg);
                 File f = new File(arg);
                 BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
                 FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, arg);

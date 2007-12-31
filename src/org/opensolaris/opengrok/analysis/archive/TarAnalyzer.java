@@ -35,7 +35,6 @@ import org.opensolaris.opengrok.analysis.plain.*;
 import org.apache.lucene.document.*;
 import org.opensolaris.opengrok.web.Util;
 import org.apache.tools.tar.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 
 /**
  * Analyzes TAR files
@@ -48,19 +47,12 @@ public class TarAnalyzer extends FileAnalyzer {
     /** Creates a new instance of ZipAnalyzer */
     static char[] content;
     int len;
-    public static String[] suffixes = {
-        "TAR"
-    };
-    public static Genre g = Genre.XREFABLE;
-    public Genre getGenre() {
-        return this.g;
-    }
     
     private static Reader dummy = new StringReader("");
     
     private PlainFullTokenizer plainfull;
-    public TarAnalyzer() {
-        super();
+    protected TarAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
         content = new char[64*1024];
         plainfull = new PlainFullTokenizer(dummy);
     }

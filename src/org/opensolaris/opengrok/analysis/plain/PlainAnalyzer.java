@@ -45,47 +45,16 @@ import org.opensolaris.opengrok.history.Annotation;
 public class PlainAnalyzer extends FileAnalyzer {
     public static char[] content;
     public int len;
-    int flen;
     PlainFullTokenizer plainfull;
     PlainSymbolTokenizer plainref;
     PlainXref xref;
     private static Reader dummy = new StringReader(" ");
     Ctags ctags;
     public HashMap<String, HashMap<Integer, String>> defs;
-    public static String contentType = "text/plain";
-    public static String getContentType() {
-        return "text/plain";
-    }
     
-    public static Class isMagic(byte[] content) {
-        for(byte b: content) {
-            if (b >= 32 && b < 127) {
-                // ASCII printable characters
-            } else if (b == 9) {
-                // horizontal tab
-            } else if (b == 10) {
-                // line feed
-            } else if (b == 12) {
-                // form feed
-            } else if (b == 13) {
-                // carriage return
-            } else {
-                // 8-bit values or unprintable control characters,
-                // probably not plain text
-                return null;
-            }
-        }
-        return PlainAnalyzer.class;
-    }
-
-    public static Genre g = Genre.PLAIN;
-
-    public Genre getGenre() {
-        return g;
-    }
     /** Creates a new instance of PlainAnalyzer */
-    public PlainAnalyzer() {
-        super();
+    protected PlainAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
         content = new char[64 * 1024];
         len = 0;
         plainfull = new PlainFullTokenizer(dummy);
@@ -170,7 +139,7 @@ public class PlainAnalyzer extends FileAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out,
+    static void writeXref(InputStream in, Writer out,
                                  Annotation annotation) throws IOException {
         PlainXref xref = new PlainXref(in);
         xref.annotation = annotation;

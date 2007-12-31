@@ -45,25 +45,11 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Chandan
  */
 public class JavaClassAnalyzer extends FileAnalyzer {
-    public static String[] suffixes = {
-        "CLASS"
-    };
-    
-    public static String[] magics = {
-        "\312\376\272\276" //cafebabe
-    };
-
-    public static Genre g = Genre.XREFABLE;
-
     private String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
    
-    public Genre getGenre() {
-        return this.g;
-    }
-    
     /** Creates a new instance of JavaClassAnalyzer */
-    public JavaClassAnalyzer() {
-        super();
+    protected JavaClassAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
     }
     
     private LinkedList<String>defs;

@@ -34,7 +34,6 @@ import org.opensolaris.opengrok.analysis.plain.*;
 import org.apache.lucene.document.*;
 import java.util.zip.*;
 import java.util.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 
 /**
  * Analyzes JAR, WAR, EAR (Java Archive) files.
@@ -55,29 +54,15 @@ public class JarAnalyzer extends FileAnalyzer {
     private LinkedList<String> refs;
     private StringBuilder fullText;
     private StringWriter xref;
-    
-    public static String[] suffixes = {
-	"JAR", "WAR", "EAR"
-    };
-    
-    public static String[] magics = {
-	"PK\003\004"
-    };
-    
-    public static Genre g = Genre.XREFABLE;
-    public Genre getGenre() {
-	return this.g;
-    }
-    
+
     private static Reader dummy = new StringReader("");
-    public JarAnalyzer() {
-	super();
+    protected JarAnalyzer(FileAnalyzerFactory factory) {
+	super(factory);
 	content = new byte[16*1024];
 	plainfull = new PlainFullTokenizer(dummy);
     }
     
     public void analyze(Document doc, InputStream in) {
-	JavaClassAnalyzer jca = new JavaClassAnalyzer();
 	defs = new LinkedList<String>();
 	refs = new LinkedList<String>();
 	fullText = new StringBuilder();
@@ -92,7 +77,10 @@ public class JarAnalyzer extends FileAnalyzer {
 		fullText.append(ename);
 		fullText.append('\n');
 		int len = 0;
-		if (ename.endsWith(".class")) {
+                FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
+		if (fac instanceof JavaClassAnalyzerFactory) {
+                    JavaClassAnalyzer jca =
+                        (JavaClassAnalyzer) fac.getAnalyzer();
 		    BufferedInputStream bif = new BufferedInputStream(zis);
 		    int r;
 		    while((r = bif.read(buf)) > 0) {
@@ -114,8 +102,6 @@ public class JarAnalyzer extends FileAnalyzer {
 		    xref.write("<pre>");
 		    jca.writeXref(xref);
 		    xref.write("</pre>");
-		} else {
-		    
 		}
 	    }
 	    doc.add(new Field("full", new TagFilter(new StringReader(fullText.toString()))));

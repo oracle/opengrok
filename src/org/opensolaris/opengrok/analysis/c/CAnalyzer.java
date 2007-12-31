@@ -46,32 +46,9 @@ public class CAnalyzer extends PlainAnalyzer {
     CSymbolTokenizer cref;
     CXref xref;
     Reader dummy = new StringReader("");
-    public static String[] suffixes = {
-        "C",
-                "H",
-                "CPP",
-                "HPP",
-                "CC",
-                "C++",
-                "HH",
-                "I",
-                "CXX",
-                "L",
-                "Y",
-                "LEX",
-                "YACC",
-                "D",
-                "S",
-                "XS",	// Mainly found in perl directories
-                "X",    // rpcgen input files
-		"PHP"
-    };
-    public static String[] magics = {
-        "/*"
-    };
-    
-    public CAnalyzer() {
-        super();
+
+    protected CAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
         cref = new CSymbolTokenizer(dummy);
         xref = new CXref(dummy);
     }
@@ -105,7 +82,7 @@ public class CAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out,
+    static void writeXref(InputStream in, Writer out,
                                  Annotation annotation) throws IOException {
         CXref xref = new CXref(in);
         xref.annotation = annotation;

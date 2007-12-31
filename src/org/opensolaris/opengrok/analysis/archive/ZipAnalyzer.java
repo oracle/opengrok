@@ -34,7 +34,6 @@ import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.plain.*;
 import org.apache.lucene.document.*;
 import java.util.zip.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -48,22 +47,13 @@ public class ZipAnalyzer extends FileAnalyzer {
     /** Creates a new instance of ZipAnalyzer */
     static char[] content;
     int len;
-    public static String[] suffixes = {
-        "ZIP"
-    };
-    public static String[] magics = {
-        "PK\003\004"
-    };
-    public static Genre g = Genre.XREFABLE;
-    public Genre getGenre() {
-        return this.g;
-    }
-    
+
     private static Reader dummy = new StringReader("");
     
     private PlainFullTokenizer plainfull;
-    public ZipAnalyzer() {
-        super();
+
+    protected ZipAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
         content = new char[64*1024];
         plainfull = new PlainFullTokenizer(dummy);
     }

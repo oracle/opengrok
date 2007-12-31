@@ -28,8 +28,6 @@
 package org.opensolaris.opengrok.analysis.plain;
 import java.io.*;
 import org.opensolaris.opengrok.analysis.*;
-import org.opensolaris.opengrok.analysis.plain.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
 import org.opensolaris.opengrok.history.Annotation;
@@ -41,24 +39,7 @@ import org.opensolaris.opengrok.history.Annotation;
  * @author Chandan
  */
 public class XMLAnalyzer extends FileAnalyzer {
-    public static String[] suffixes = {
-	"HTML", "HTM", "XML"
-    };
-    public static String[] magics = {
-	"<htm", "<HTM", "<?xm", "<?Xm", "<?XM",
-	    "<!--", "<!EN", "<!DO", "<tit",
-	    "<TIT", "<XML", "<xml", "<HEA", "<hea"
-    };
     
-    public static Genre g = Genre.PLAIN;
-    
-    public Genre getGenre() {
-	return this.g;
-    }
-    
-    public static String getContentType() {
-	return "text/html";
-    }
     public static char[] content;
     private PlainFullTokenizer plainfull;
     private XMLXref xref;
@@ -68,7 +49,8 @@ public class XMLAnalyzer extends FileAnalyzer {
     /**
      * Creates a new instance of XMLAnalyzer
      */
-    public XMLAnalyzer() {
+    protected XMLAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
 	content = new char[64 * 1024];
 	len = 0;
 	plainfull = new PlainFullTokenizer(dummy);
@@ -121,7 +103,7 @@ public class XMLAnalyzer extends FileAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out,
+    static void writeXref(InputStream in, Writer out,
                                  Annotation annotation) throws IOException {
 	XMLXref xref = new XMLXref(in);
         xref.annotation = annotation;

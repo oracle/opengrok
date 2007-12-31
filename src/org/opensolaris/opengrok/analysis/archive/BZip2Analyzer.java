@@ -34,7 +34,6 @@ import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.plain.*;
 import org.apache.lucene.document.*;
 import org.apache.tools.bzip2.*;
-import org.opensolaris.opengrok.web.Util;
 
 /**
  * Analyzes a BZip2 file
@@ -44,21 +43,17 @@ import org.opensolaris.opengrok.web.Util;
  */
 
 public class BZip2Analyzer extends FileAnalyzer {
-    /** Creates a new instance of ZipAnalyzer */
-    public static String[] suffixes = {
-	"BZ", "BZ2"
-    };
-    public static String[] magics = {
-	"BZh"           //Bzip files
-    };
-    public static Genre g;
+    private Genre g;
     
     public Genre getGenre() {
-	return this.g;
+	if (g != null) {
+            return g;
+        }
+        return super.getGenre();
     }
-    
-    public BZip2Analyzer() {
-	super();
+
+    protected BZip2Analyzer(FileAnalyzerFactory factory) {
+	super(factory);
     }
     
     private FileAnalyzer fa;

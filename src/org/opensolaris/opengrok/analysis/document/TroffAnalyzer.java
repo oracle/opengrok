@@ -29,7 +29,6 @@ package org.opensolaris.opengrok.analysis.document;
 
 import java.io.*;
 import org.opensolaris.opengrok.analysis.*;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
 import org.opensolaris.opengrok.history.Annotation;
@@ -43,28 +42,15 @@ import org.opensolaris.opengrok.history.Annotation;
 public class TroffAnalyzer extends FileAnalyzer {
     public static char[] content;
     public int len;
-    int flen;
     
-    public static String[] magics = {
-	"'\\\"", ".so", ".\\\"", ".TH"
-    };
-    
-    public static Genre g = Genre.PLAIN;
-    
-    public Genre getGenre() {
-	return this.g;
-    }
-    
-    public static String getContentType() {
-	return "text/plain";
-    }
     private TroffFullTokenizer troffull;
     private TroffXref xref;
     Reader dummy = new StringReader("");
     /**
      * Creates a new instance of TroffAnalyzer
      */
-    public TroffAnalyzer() {
+    protected TroffAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
 	troffull = new TroffFullTokenizer(dummy);
 	xref = new TroffXref(dummy);
 	content = new char[12*1024];
@@ -118,7 +104,7 @@ public class TroffAnalyzer extends FileAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    public static void writeXref(InputStream in, Writer out,
+    static void writeXref(InputStream in, Writer out,
                                  Annotation annotation) throws IOException {
 	TroffXref xref = new TroffXref(in);
         xref.annotation = annotation;
