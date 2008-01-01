@@ -228,10 +228,6 @@ public class MercurialRepository implements ExternalRepository {
     
     public void createCache() throws IOException, ParseException {
         MercurialHistoryParser p = new MercurialHistoryParser();
-        if (RuntimeEnvironment.getInstance().isVerbose()) {
-            System.out.print("Update Mercurial History Cache for " + directory);
-            System.out.flush();
-        }
         History history = p.parse(directory, this);
         if (history != null && history.getHistoryEntries() != null) {
             HashMap<String, ArrayList<HistoryEntry>> map = new HashMap<String, ArrayList<HistoryEntry>>();
@@ -258,10 +254,6 @@ public class MercurialRepository implements ExternalRepository {
                 HistoryCache.writeCacheFile(e.getKey(), hist);
             }
         }
-        if (RuntimeEnvironment.getInstance().isVerbose()) {
-            System.out.println(" done.");
-            System.out.flush();
-        }
     }
 
     public boolean supportsAnnotation() {
@@ -270,6 +262,39 @@ public class MercurialRepository implements ExternalRepository {
 
     public boolean isCacheable() {
         return true;
+    }
+
+    private int waitFor(Process process) {
+        
+        do {
+            try {
+               return process.waitFor(); 
+            } catch (InterruptedException exp) {
+
+            }
+        } while (true);
+    }
+    
+    public void update() throws Exception {
+        Process process = null;
+        try {
+            process = Runtime.getRuntime().exec(new String[] {command, "pull"}, null, directory);
+            if (waitFor(process) != 0) {
+                return ;                
+            }
+            process = Runtime.getRuntime().exec(new String[] {command, "update"}, null, directory);
+            if (waitFor(process) != 0) {
+                return ;                
+            }        
+        } finally {
+            
+            // is this really the way to do it? seems a bit brutal...
+            try {
+                process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                process.destroy();
+            }
+        }
     }
 }
 

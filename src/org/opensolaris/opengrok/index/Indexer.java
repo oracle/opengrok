@@ -34,11 +34,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.scope.MainFrame;
@@ -266,15 +264,13 @@ public class Indexer {
                             } 
 
                             try {
-                                Class clazz = Class.forName(arg[1]);
-                                try {
-                                    FileAnalyzerFactory f =
-                                        (FileAnalyzerFactory)
-                                            clazz.newInstance();
-                                    AnalyzerGuru.addExtension(arg[0], f);
-                                } catch (ClassCastException cce) {
-                                    System.err.println("ERROR: " + arg[1] +
-                                      " does not extend FileAnalyzerFactory!");
+                                Class clazz = Class.forName(arg[1]);                                
+                                if (FileAnalyzer.class.isAssignableFrom(clazz)) {
+                                    @SuppressWarnings("unchecked")
+                                    Class<? extends FileAnalyzer> analyzer = clazz;
+                                    AnalyzerGuru.addExtension(arg[0], analyzer);
+                                } else {
+                                    System.err.println("ERROR: " + arg[1] + " does not exted FileAnalyzer!");
                                     System.exit(1);
                                 }
                             } catch (ClassNotFoundException exp) {
@@ -402,14 +398,7 @@ public class Indexer {
                 }
                 
                 if (refreshHistory) {
-                    for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
-                        try {
-                            entry.getValue().createCache();
-                        } catch (Exception e) {
-                            System.err.println("Failed to generate history cache.");
-                            e.printStackTrace();
-                        }
-                    }
+                    HistoryGuru.getInstance().createCache();
                 }
 
                 if (runIndex) {

@@ -83,4 +83,12 @@ public interface ExternalRepository {
      * @throws ParseException if an error occurs while parsing the log information.
      */
     public void createCache() throws IOException, ParseException;
+    
+    /**
+     * Update the content in this repository by pulling the changes from the
+     * upstream repository..
+     * @throws Exception if an error occurs.
+     */
+    public void update() throws Exception;
+    
 }

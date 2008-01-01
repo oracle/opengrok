@@ -520,6 +520,67 @@ public class HistoryGuru {
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }
 
+    /**
+     * Update the source the contents in the source repositories.
+     */
+    public void updateRepositories() {
+        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
+        
+        for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
+            ExternalRepository repository = entry.getValue();
+            
+            String path = entry.getKey();
+            String type = repository.getClass().getSimpleName();
+            
+            if (verbose) {
+                System.out.print("Update " + type + " repository in " + path);
+                System.out.flush();
+            }
+            
+            try {
+                repository.update();
+            } catch (Exception e) {
+                System.err.println("An error occured while updating " + path + " (" + type + ")");
+                e.printStackTrace();
+            }
+
+            if (verbose) {
+                System.out.println();
+            }
+        }
+    }
+    
+    /**
+     * Create the history cache for all of the repositories
+     */
+    public void createCache() {
+        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
+
+        for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
+            ExternalRepository repository = entry.getValue();
+            
+            String path = entry.getKey();
+            String type = repository.getClass().getSimpleName();
+            
+            if (verbose) {
+                System.out.print("Create historycache for " + path + " (" + type + ")");
+                System.out.flush();
+            }
+            
+            try {
+                repository.createCache();
+            } catch (Exception e) {
+                System.err.println("An error occured while creating cache for " + path + " (" + type + ")");
+                e.printStackTrace();
+            }
+
+            if (verbose) {
+                System.out.println();
+            }   
+        }
+    }
+
+    
     private ExternalRepository getRepository(File path) {
         Map<String, ExternalRepository> repos = RuntimeEnvironment.getInstance().getRepositories();
         

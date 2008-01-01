@@ -170,11 +170,6 @@ public class SubversionRepository implements ExternalRepository {
             return;
         }
 
-        if (RuntimeEnvironment.getInstance().isVerbose()) {
-            System.out.print("Update Subversion History Cache for " + directory);
-            System.out.flush();
-        }
-
         SubversionHistoryParser parser = new SubversionHistoryParser();
         History history = null;
 
@@ -210,11 +205,6 @@ public class SubversionRepository implements ExternalRepository {
                 HistoryCache.writeCacheFile(e.getKey(), hist);
             }
         }
-
-        if (RuntimeEnvironment.getInstance().isVerbose()) {
-            System.out.println(" done.");
-            System.out.flush();
-        }
     }
 
     public Annotation annotate(File file, String revision) throws Exception {
@@ -247,5 +237,33 @@ public class SubversionRepository implements ExternalRepository {
 
     public boolean isCacheable() {
         return true;
+    }
+
+    public void update() throws Exception {
+        Process process = null;
+        String command = System.getProperty("org.opensolaris.opengrok.history.Subversion", "svn");
+
+        try {
+            process = Runtime.getRuntime().exec(new String[] {command, "update"}, null, directory);
+            boolean interrupted;
+            do {
+                interrupted = false;
+                try {
+                    if (process.waitFor() != 0) {
+                        return;
+                    }
+                } catch (InterruptedException exp) {
+                    interrupted = true;
+                }
+            } while (interrupted);
+        } finally {
+            
+            // is this really the way to do it? seems a bit brutal...
+            try {
+                process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                process.destroy();
+            }
+        }
     }
 }
