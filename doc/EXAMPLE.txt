@@ -124,7 +124,7 @@ configuration file by executing the following command:
 
 $ java -jar /opengrok/bin/opengrok.jar -W /opengrok/stage1/configuration.xml \
        -c /path/to/ctags -P -S -v -s /opengrok/stage1/source \
-       /opengrok/stage1/data
+       -d /opengrok/stage1/data
 
 You can now start generating indices by executing:
 Solaris with SMF:
