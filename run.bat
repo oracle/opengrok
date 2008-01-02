@@ -19,7 +19,7 @@ REM A tab separated file that contains small
 REM descriptions for paths in the source tree
 set PATH_DESC=%PROGDIR%\paths.tsv
 
-java -jar %PROGDIR%opengrok.jar -c %EXUB_CTAGS% -s %SRC_ROOT% %DATA_ROOT%
+java -jar %PROGDIR%opengrok.jar -c %EXUB_CTAGS% -s %SRC_ROOT% -d %DATA_ROOT%
 
 REM OPTIONAL
 java -classpath %PROGDIR%opengrok.jar org.opensolaris.opengrok.web.EftarFile %PATH_DESC% %DATA_ROOT%\index\dtags.eftar

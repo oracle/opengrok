@@ -49,8 +49,8 @@ import org.opensolaris.opengrok.util.Getopt;
  */
 public class Indexer {
     private static String usage = "Usage: " +
-            "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-p project-path] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] DATA_ROOT [subtree .. ]\n" +
-            "       opengrok.jar [-O | -l | -t] DATA_ROOT\n" +
+            "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-p project-path] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] [-d DATA_ROOT] [subtree .. ]\n" +
+            "       opengrok.jar [-O | -l | -t] [-d DATA_ROOT]\n" +
             "\t-q run quietly\n" +
             "\t-v Print progress information\n" +
             "\t-e economical - consumes less disk space\n" +
@@ -75,7 +75,7 @@ public class Indexer {
             "\t-S Search and add \"External\" repositories (Mercurial etc)\n" +
             "\t-s SRC_ROOT is root directory of source tree\n" +
             "\t   default: last used SRC_ROOT\n" +
-            "\tDATA_ROOT - is where output of indexer is stored\n" +
+            "\t-d DATA_ROOT - is where output of indexer is stored\n" +
             "\tsubtree - only specified files or directories under SRC_ROOT are processed\n" +
             "\t   if not specified all files under SRC_ROOT are processed\n" +
             "\n\t-O optimize the index \n" +
@@ -84,7 +84,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "r:a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:L:";
+    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:L:";
 
     /**
      * Program entry point
@@ -207,6 +207,9 @@ public class Indexer {
                         env.setSourceRootFile(file);
                         break;
                     }
+                    case 'd': 
+                        env.setDataRoot(getopt.getOptarg());
+                        break;
                     case 'i':  
                         env.getIgnoredNames().add(getopt.getOptarg()); 
                         break;
@@ -291,12 +294,7 @@ public class Indexer {
                 }
 
                 int optind = getopt.getOptind();
-                if (optind != -1) {
-                    if (optind < argv.length) {
-                        env.setDataRoot(argv[optind]);
-                        ++optind;
-                    }
-
+                if (optind != -1) {                
                     while (optind < argv.length) {
                         subFiles.add(argv[optind]);
                         ++optind;

@@ -17,7 +17,7 @@ PATH_DESC=${PROGDIR}/paths.tsv
 # from http://ctags.sf.net
 EXUB_CTAGS=/usr/local/bin/ctags
 
-java -jar ${PROGDIR}/opengrok.jar -q -c ${EXUB_CTAGS} -s ${SRC_ROOT} ${DATA_ROOT}
+java -jar ${PROGDIR}/opengrok.jar -q -c ${EXUB_CTAGS} -s ${SRC_ROOT} -d ${DATA_ROOT}
 
 # OPTIONAL
 java -classpath ${PROGDIR}/opengrok.jar org.opensolaris.opengrok.web.EftarFile ${PATH_DESC} ${DATA_ROOT}/index/dtags.eftar
