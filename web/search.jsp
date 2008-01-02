@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 ident	"%Z%%M% %I%     %E% SMI"
@@ -33,8 +33,8 @@ java.lang.*,
 java.io.*,
 java.io.StringReader,
 org.opensolaris.opengrok.analysis.*,
+org.opensolaris.opengrok.index.IndexDatabase,
 org.opensolaris.opengrok.search.*,
-org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
 org.opensolaris.opengrok.configuration.*,
@@ -54,9 +54,7 @@ String refs = request.getParameter("refs");
 String hist = request.getParameter("hist");
 String path = request.getParameter("path");
 
-%>
-<%@ include file="projects.jspf" %>
-<%
+%><%@ include file="projects.jspf" %><%
 String sort = null;
 
 final String LASTMODTIME = "lastmodtime";
@@ -119,8 +117,6 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         if(!data_root.isDirectory()) {
             throw new Exception("DATA_ROOT parameter in web.xml does not exist or is not a directory!");
         }
-        ireader = IndexReader.open(DATA_ROOT + "/index");
-        searcher = new IndexSearcher(ireader);
         //String date = request.getParameter("date");
         try {
             start = Integer.parseInt(request.getParameter("start"));	//parse the max results first
@@ -158,24 +154,6 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             sb.append(")");
         }
         
-        if (project != null) {
-            sb.append(" (");
-
-            boolean first = true;
-            for (String s : project.split(" ")) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(" OR ");
-                }
-                sb.append("project:(");
-                sb.append(s);
-                sb.append(")");
-            }
-
-            sb.append(")");
-        }
-        
         qstr = sb.toString();
                                 
         QueryParser qparser = new QueryParser("full", analyzer);
@@ -183,11 +161,28 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         qparser.setAllowLeadingWildcard(env.isAllowLeadingWildcard());
 
         query = qparser.parse(qstr); //parse the
-        if ("lastmodtime".equals(sort)) {
-            hits = searcher.search(query, new Sort("date", true));
-        } else {
-            hits = searcher.search(query);
-        } 
+
+        File root = new File(RuntimeEnvironment.getInstance().getDataRootFile(),
+                "index");
+
+        if (RuntimeEnvironment.getInstance().hasProjects()) {
+            if (project == null) {
+                errorMsg = "<b>Error:</b> You must select a project!";
+            } else {
+                root = new File(root, project);
+            }
+        }
+
+        if (errorMsg == null) {
+            ireader = IndexReader.open(root);
+            searcher = new IndexSearcher(ireader);
+
+            if ("lastmodtime".equals(sort)) {
+                hits = searcher.search(query, new Sort("date", true));
+            } else {
+                hits = searcher.search(query);
+            }
+        }
         thispage = max;
     } catch (BooleanQuery.TooManyClauses e) {
         errorMsg = "<b>Error:</b> Too many results for wildcard!";
@@ -253,7 +248,11 @@ if( hits == null || errorMsg != null) {
 	    	%><%=errorMsg%><%
             } else if (hits.length() == 0) {
                 File spellIndex = new File(env.getDataRootPath(), "spellIndex");
-                
+
+                if (RuntimeEnvironment.getInstance().hasProjects()) {
+                    spellIndex = new File(spellIndex, project);
+                }
+                                              
                 if (spellIndex.exists()) {
                     FSDirectory spellDirectory = FSDirectory.getDirectory(spellIndex);
                     SpellChecker checker = new SpellChecker(spellDirectory);

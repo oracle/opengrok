@@ -28,12 +28,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.prefs.Preferences;
 import javax.swing.JOptionPane;
-import javax.swing.ProgressMonitor;
-import javax.swing.UIManager;
-import javax.swing.filechooser.FileFilter;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -41,17 +37,17 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author  cb117521
  */
 public class IndexerWizard extends javax.swing.JFrame {
+
     private File dataRoot = null;
     private File srcRoot = null;
     private String exubCtags = null;
-    private Index idx;
+    private IndexDatabase idx;
     private IndexThread ithread;
-    final StatusPrinter out = new StatusPrinter();
-    final StatusPrinter err = new StatusPrinter();
     private boolean idxDone;
+
     /** Creates new form IndexerWizard */
     public IndexerWizard(String dataRootPath) {
-        if(dataRootPath != null) {
+        if (dataRootPath != null) {
             dataRoot = new File(dataRootPath);
         } else {
             dataRoot = new File(System.getProperty("user.home") + File.separatorChar + "opengrok_data");
@@ -61,17 +57,18 @@ public class IndexerWizard extends javax.swing.JFrame {
         setUrlPrefix(webappContext.getText());
         if (RuntimeEnvironment.getInstance().validateExuberantCtags()) {
             exubCtags = RuntimeEnvironment.getInstance().getCtags();
-            if(exubCtags != null)
+            if (exubCtags != null) {
                 ctagsText.setText(exubCtags);
+            }
         }
         bcancel.setEnabled(false);
         StatusPanel.setVisible(false);
     }
-    
+
     private void initSrcRoot() {
-        if(dataRoot != null && dataRoot.exists()) {
+        if (dataRoot != null && dataRoot.exists()) {
             File srcConfig = new File(dataRoot, "SRC_ROOT");
-            if(srcConfig.exists()) {
+            if (srcConfig.exists()) {
                 try {
                     BufferedReader sr = new BufferedReader(new FileReader(srcConfig));
                     String srcRootPath = sr.readLine();
@@ -82,6 +79,7 @@ public class IndexerWizard extends javax.swing.JFrame {
             }
         }
     }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -528,75 +526,74 @@ public class IndexerWizard extends javax.swing.JFrame {
         );
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
     private void webappContextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_webappContextKeyReleased
         Preferences prefs = Preferences.userNodeForPackage(IndexerWizard.class);
         String webapp = webappContext.getText();
         String urlPrefix = null;
-        if(webapp.startsWith("/") || webapp.startsWith("http")) {
+        if (webapp.startsWith("/") || webapp.startsWith("http")) {
         } else {
             webapp = "/" + webapp;
         }
-        if(webapp.endsWith("/")) {
+        if (webapp.endsWith("/")) {
             urlPrefix = webapp + "s?";
         } else {
             urlPrefix = webapp + "/s?";
         }
-        if(urlPrefix != null) {
+        if (urlPrefix != null) {
             System.setProperty("urlPrefix", webappContext.getText());
             prefs.put("context", webapp);
         }
-        try{
+        try {
             prefs.sync();
-        } catch (Exception e) {}
-       // System.err.println("CHanged:" + webapp);
+        } catch (Exception e) {
+        }
     }//GEN-LAST:event_webappContextKeyReleased
-    
+
     private void webappContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webappContextActionPerformed
         webappContextKeyReleased(null);
     }//GEN-LAST:event_webappContextActionPerformed
-    
+
     private void webappContextKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_webappContextKeyTyped
         
     }//GEN-LAST:event_webappContextKeyTyped
-    
+
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
 // TODO add your handling code here:
     }//GEN-LAST:event_jButton8ActionPerformed
-    
+
     private void bcloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bcloseActionPerformed
         bcancelActionPerformed(evt);
         this.setVisible(false);
         this.dispose();
     }//GEN-LAST:event_bcloseActionPerformed
-    
+
     private void bcancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bcancelActionPerformed
-        if(ithread != null && ithread.isAlive()){
+        if (ithread != null && ithread.isAlive()) {
             try {
                 ithread.interrupt();
-                idx.cancel();
+                idx.interrupt();
             } catch (Exception e) {
                 System.err.println("Cancelled" + e);
             }
             runStatus.setText("");
             warnStatus.setText("");
             iprogress.setIndeterminate(false);
-            //StatusPanel.setVisible(false);
             bstart.setEnabled(true);
             badv.setEnabled(true);
         }
 //        this.setVisible(false);
 //        transferFocusBackward();
     }//GEN-LAST:event_bcancelActionPerformed
-    
+
     private void economicalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_economicalActionPerformed
         Preferences prefs = Preferences.userNodeForPackage(IndexerWizard.class);
         prefs.putBoolean("xref", economical.isSelected());
-        try{
+        try {
             prefs.flush();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }//GEN-LAST:event_economicalActionPerformed
-    
+
     private void ctagsChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ctagsChooserActionPerformed
 // TODO add your handling code here:
     }//GEN-LAST:event_ctagsChooserActionPerformed
@@ -609,24 +606,24 @@ public class IndexerWizard extends javax.swing.JFrame {
             idxDone = false;
             try{
                 // System.err.println("Running indexer");
-                idx.runIndexer(dataRoot, srcRoot, new ArrayList<String>(), !economical.isSelected());
+                idx.update();
                 warnStatus.setText("");
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Error: " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 try {
-                    idx.cancel();
+                    idx.interrupt();
                 } catch (Exception en) {}
                 warnStatus.setText("Error!");
             }
             idxDone = true;
-            runStatus.setText(out.getStatus());
+            runStatus.setText("");
             iprogress.setIndeterminate(false);
             iprogress.setValue(100);
             bcancel.setEnabled(false);
             bstart.setEnabled(true);
             badv.setEnabled(true);
         }
-    };
+    }
     
     private void bstartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bstartActionPerformed
         RuntimeEnvironment.getInstance().setCtags(ctagsText.getText());
@@ -644,40 +641,31 @@ public class IndexerWizard extends javax.swing.JFrame {
                 prefs.flush();
             } catch(Exception e) {}
         }
-        if(canstart()) {
+        if (canstart()) {
+            try {
+                idx = new IndexDatabase();
+                idx.addIndexChangedListener(new IndexChangedListener() {
+                    public void fileAdded(String path, String analyzer) {
+                        runStatus.setText("Adding: " + path + " (" + analyzer + ")");
+                        runStatus.repaint();
+                    }
+
+                    public void fileRemoved(String path) {
+                        runStatus.setText("Remove stale file: " + path);
+                        runStatus.repaint();
+                    }
+                });
+            } catch (Exception exp) {
+                JOptionPane.showMessageDialog(this, "Error: Failed to create index database: " + exp.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             iprogress.setIndeterminate(true);
             StatusPanel.setVisible(true);
-            idx = new Index(out, err);
             ithread = new IndexThread();
-            Thread progt = new Thread() {
-                public synchronized void run() {
-                    while(ithread.isAlive()) {
-                        runStatus.setText(out.getStatus());
-                        warnStatus.setText(err.getStatus());
-                        try {
-                            Thread.sleep(110);
-                        } catch (InterruptedException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                    if(idxDone == false) {
-                        try {
-                            idx.cancel();
-                        } catch (Exception en) {}
-                        runStatus.setText("Interrupted!");
-                        iprogress.setIndeterminate(false);
-                        iprogress.setValue(100);
-                        bcancel.setEnabled(false);
-                        bstart.setEnabled(true);
-                        badv.setEnabled(true);
-                    }
-                }
-            };
             ithread.start();
-            progt.start();
         }
     }//GEN-LAST:event_bstartActionPerformed
-            private void dataRootTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataRootTextActionPerformed
+    private void dataRootTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataRootTextActionPerformed
                 if(dataRootText.getText() != null && !"".equals(dataRootText.getText())) {
                     dataRoot = new File(dataRootText.getText());
                     if(dataRoot.exists()) {

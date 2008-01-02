@@ -78,13 +78,12 @@ public class Indexer {
             "\t-d DATA_ROOT - is where output of indexer is stored\n" +
             "\tsubtree - only specified files or directories under SRC_ROOT are processed\n" +
             "\t   if not specified all files under SRC_ROOT are processed\n" +
-            "\n\t-O optimize the index \n" +
+            "\n" +
             "\t-l list all files in the index\n" +
-            "\t-D list the index uid's\n" +
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHw:i:Ss:O:l:t:vD:m:A:L:";
+    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHw:i:Ss:ltvm:A:L:";
 
     /**
      * Program entry point
@@ -112,6 +111,8 @@ public class Indexer {
             boolean addProjects = false;
             boolean refreshHistory = false;
             String defaultProject = null;
+            boolean listFiles = false;
+            boolean createDict = false;
 
             // Parse command line options:
             Getopt getopt = new Getopt(argv, options);
@@ -140,21 +141,13 @@ public class Indexer {
                 getopt.reset();                
                 while ((cmd = getopt.getOpt()) != -1) {
                     switch (cmd) {
-                    case 'D' : 
-                        Index.dumpU(new File(getopt.getOptarg())); 
-                        System.exit(0);
-                        break;
-                    case 'O':
-                        Index.doOptimize(new File(getopt.getOptarg()));
-                        System.exit(0);
-                        break;
                     case 'l':
-                        Index.doList(new File(getopt.getOptarg()));
-                        System.exit(0);
+                        listFiles = true;
+                        runIndex = false;
                         break;
                     case 't':
-                        Index.doDict(new File(getopt.getOptarg()));
-                        System.exit(0);
+                        createDict = true;
+                        runIndex = false;
                         break;
 
                     case 'q': env.setVerbose(false); break;
@@ -401,9 +394,30 @@ public class Indexer {
                     HistoryGuru.getInstance().createCache();
                 }
 
+                if (listFiles) {
+                    IndexDatabase.listAllFiles(subFiles); 
+                }
+
+                if (createDict) {
+                    IndexDatabase.listFrequentTokens(subFiles);
+                }
+                
                 if (runIndex) {
-                    Index idx = new Index(env.isVerbose() ? new StandardPrinter(System.out) : new NullPrinter(), new StandardPrinter(System.err));
-                    idx.runIndexer(env.getDataRootFile(), env.getSourceRootFile(), subFiles, !env.isGenerateHtml());
+                    IndexChangedListener progress = new DefaultIndexChangedListener();
+                    if (subFiles.isEmpty() || !env.hasProjects()) {
+                        IndexDatabase.updateAll(progress); 
+                    } else {
+                        for (String path : subFiles) {
+                            Project project = Project.getProject(path);
+                            if (project == null) {
+                                System.err.println("Warning: Could not find a project for \"" + path + "\"");
+                            } else {
+                                IndexDatabase db = new IndexDatabase(project);
+                                db.addIndexChangedListener(progress);
+                                db.update();
+                            }
+                        }
+                    }
                 }
 
                 if (configHost != null) {
