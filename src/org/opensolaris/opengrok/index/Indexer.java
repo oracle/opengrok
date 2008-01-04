@@ -260,19 +260,13 @@ public class Indexer {
                             } 
 
                             try {
-                                Class clazz = Class.forName(arg[1]);
-                                try {
-                                    FileAnalyzerFactory f =
-                                        (FileAnalyzerFactory)
-                                            clazz.newInstance();
-                                    AnalyzerGuru.addExtension(arg[0], f);
-                                } catch (ClassCastException cce) {
-                                    System.err.println("ERROR: " + arg[1] +
-                                      " does not extend FileAnalyzerFactory!");
-                                    System.exit(1);
-                                }
-                            } catch (ClassNotFoundException exp) {
-                                System.err.println("ERROR: Could not locate class: " + arg[1]);
+                                AnalyzerGuru.addExtension(
+                                        arg[0],
+                                        AnalyzerGuru.findFactory(arg[1]));
+                            } catch (Exception e) {
+                                System.err.println("Unable to use " + arg[1] +
+                                                   " as a FileAnalyzerFactory");
+                                e.printStackTrace();
                                 System.exit(1);
                             }
                         }

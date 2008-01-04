@@ -98,6 +98,10 @@ public class AnalyzerGuru {
     private static final List<FileAnalyzerFactory.Matcher>
         matchers = new ArrayList<FileAnalyzerFactory.Matcher>();
 
+    /** List of all registered {@code FileAnalyzerFactory} instances. */
+    private static final List<FileAnalyzerFactory>
+        factories = new ArrayList<FileAnalyzerFactory>();
+
     /*
      * If you write your own analyzer please register it here
      */
@@ -124,16 +128,24 @@ public class AnalyzerGuru {
         };
 
         for (FileAnalyzerFactory analyzer : analyzers) {
-            for (String suffix : analyzer.getSuffixes()) {
-                FileAnalyzerFactory old = ext.put(suffix, analyzer);
-                assert old == null :
-                        "suffix '" + suffix + "' used in multiple analyzers";
-            }
-            for (String magic : analyzer.getMagicStrings()) {
-                magics.put(magic, analyzer);
-            }
-            matchers.addAll(analyzer.getMatchers());
+            registerAnalyzer(analyzer);
         }
+    }
+
+    /**
+     * Register a {@code FileAnalyzerFactory} instance.
+     */
+    private static void registerAnalyzer(FileAnalyzerFactory factory) {
+        for (String suffix : factory.getSuffixes()) {
+            FileAnalyzerFactory old = ext.put(suffix, factory);
+            assert old == null :
+            "suffix '" + suffix + "' used in multiple analyzers";
+        }
+        for (String magic : factory.getMagicStrings()) {
+            magics.put(magic, factory);
+        }
+        matchers.addAll(factory.getMatchers());
+        factories.add(factory);
     }
 
     /**
@@ -298,6 +310,52 @@ public class AnalyzerGuru {
             return factory.getGenre();
         }
         return null;
+    }
+
+    /**
+     * Find a {@code FileAnalyzerFactory} with the specified class name. If one
+     * doesn't exist, create one and register it.
+     *
+     * @param factoryClassName name of the factory class
+     * @return a file analyzer factory
+     *
+     * @throws ClassNotFoundException if there is no class with that name
+     * @throws ClassCastException if the class is not a subclass of {@code
+     * FileAnalyzerFactory}
+     * @throws IllegalAccessException if the constructor cannot be accessed
+     * @throws InstantiationException if the class cannot be instantiated
+     */
+    public static FileAnalyzerFactory findFactory(String factoryClassName)
+        throws ClassNotFoundException, IllegalAccessException,
+               InstantiationException
+    {
+        return findFactory(Class.forName(factoryClassName));
+    }
+
+    /**
+     * Find a {@code FileAnalyzerFactory} which is an instance of the specified
+     * class. If one doesn't exist, create one and register it.
+     *
+     * @param factoryClass the factory class
+     * @return a file analyzer factory
+     *
+     * @throws ClassCastException if the class is not a subclass of {@code
+     * FileAnalyzerFactory}
+     * @throws IllegalAccessException if the constructor cannot be accessed
+     * @throws InstantiationException if the class cannot be instantiated
+     */
+    private static FileAnalyzerFactory findFactory(Class factoryClass)
+        throws InstantiationException, IllegalAccessException
+    {
+        for (FileAnalyzerFactory f : factories) {
+            if (f.getClass() == factoryClass) {
+                return f;
+            }
+        }
+        FileAnalyzerFactory f =
+            (FileAnalyzerFactory) factoryClass.newInstance();
+        registerAnalyzer(f);
+        return f;
     }
 
     /**
