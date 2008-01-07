@@ -553,4 +553,37 @@ public class IndexDatabase {
             }
         }
     }
+    
+    /**
+     * Get an indexReader for the Index database where a given file
+     * @param path the file to get the database for
+     * @return The index database where the file should be located or null if
+     *         it cannot be located.
+     */
+    public static IndexReader getIndexReader(String path) {
+        IndexReader ret = null;
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        File indexDir = new File(env.getDataRootFile(), "index");
+
+        if (env.hasProjects()) {
+            Project p = Project.getProject(path);
+            if (p != null) {
+                indexDir = new File(indexDir, p.getPath());
+            } else {
+                return null;
+            }
+        }
+
+        if (indexDir.exists() && IndexReader.indexExists(indexDir)) {
+            try {
+                ret = IndexReader.open(indexDir);
+            } catch (Exception ex) {
+                System.err.println("Failed to open index: " + indexDir.getAbsolutePath());
+                ex.printStackTrace();
+            }
+        }
+
+        return ret;
+    }
 }
