@@ -80,6 +80,7 @@ ident	"%Z%%M% %I%     %E% SMI"
             <fileset dir="${classdir}" excludes="**/test/"/>
             <fileset dir="src" includes="org/opensolaris/opengrok/index/*.png"/>
             <fileset dir="src" includes="org/opensolaris/opengrok/search/scope/*.gif"/>
+            <fileset dir="src" includes="org/opensolaris/opengrok/analysis/sql/*.dat"/>
             <manifest>
                 <attribute name="Main-Class" value="org.opensolaris.opengrok.index.Indexer"/>
                 <attribute name="Class-Path" value="lib/lucene-core-2.1.0.jar
