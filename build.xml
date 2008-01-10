@@ -116,8 +116,24 @@ Use is subject to license terms.
         <delete dir="${gensrcdir}"/>
     </target>
 
+    <!--
+        Copy the jars from lib to dist/lib manually if we don't have
+        the copylibs task from NetBeans
+      -->
+    <target name="-copy-lib-without-netbeans"
+            unless="manifest.available+main.class+mkdist.available">
+      <pathconvert property="opengrok.lib.files" pathsep=",">
+        <path>
+          <pathelement path="${javac.classpath}"/>
+        </path>
+        <flattenmapper/>
+      </pathconvert>
+      <copy todir="${dist.dir}/lib">
+        <fileset dir="lib" includes="${opengrok.lib.files}"/>
+      </copy>
+    </target>
 
-    <target name="-post-jar">
+    <target name="-post-jar" depends="-copy-lib-without-netbeans">
         <war destfile="${dist.war}" webxml="conf/web.xml">
             <fileset dir="web"/>
             <fileset dir="conf" excludes="web.xml"/>
