@@ -127,7 +127,8 @@ public class HistoryGuru {
                 hpClass = RCSHistoryParser.class;
                 previousFile = SCM.RCS;
             } else {
-                if (SCCSHistoryParser.getSCCSFile(file).canRead()) {
+                File sccsfile = SCCSHistoryParser.getSCCSFile(file);
+                if (sccsfile != null && sccsfile.canRead()) {
                     hpClass = SCCSHistoryParser.class;
                     previousFile = SCM.SCCS;
                 }
@@ -145,35 +146,34 @@ public class HistoryGuru {
      * Get the <code>HistoryParser</code> to use for the specified file.
      */
     private Class<? extends HistoryParser> getHistoryParser(File file) {
-        Class<? extends HistoryParser> parser = null;
 
         switch (previousFile) {
         case EXTERNAL:
             ExternalRepository repos = getRepository(file.getParentFile());
-            if (repos != null) {
+            if (repos != null && repos.fileHasHistory(file)) {
+                Class<? extends HistoryParser> parser;
                 parser = repos.getHistoryParser();
+                if (parser != null)
+                    return parser;
             }
             break;
         case RCS:
             File rcsfile = RCSHistoryParser.getRCSFile(file);
             if (rcsfile != null && rcsfile.exists()) {
-                parser = RCSHistoryParser.class;
+                return RCSHistoryParser.class;
             }
             break;
         case SCCS:
-            if (SCCSHistoryParser.getSCCSFile(file).canRead()) {
-                parser = SCCSHistoryParser.class;
+            File sccsfile = SCCSHistoryParser.getSCCSFile(file);
+            if (sccsfile != null && sccsfile.canRead()) {
+                return SCCSHistoryParser.class;
             }
             break;
         }
 
-        if (parser == null) {
-            // I did not find a match for the specified system. try to guess..
-            parser = guessHistoryParser(file);
-        }
-
-        return parser;
-    }
+        // I did not find a match for the specified system. try to guess..
+        return guessHistoryParser(file);
+}
 
     /**
      * Annotate the specified revision of a file.
@@ -211,7 +211,10 @@ public class HistoryGuru {
         if (parser != null) {
             try {
                 ExternalRepository repos = getRepository(file.getParentFile());
-                return new HistoryReader(HistoryCache.get(file, parser, repos));
+                History history = HistoryCache.get(file, parser, repos);
+                if (history == null)
+                    return null;
+                return new HistoryReader(history);
             } catch (IOException ioe) {
                 throw ioe;
             } catch (Exception e) {
@@ -229,7 +232,7 @@ public class HistoryGuru {
         Class<? extends HistoryParser> parser = null;
         ExternalRepository repos = getRepository(file);
         if (repos != null) {
-            parser = repos.getHistoryParser();
+            parser = repos.getDirectoryHistoryParser();
         }
 
         if (parser == null) {
@@ -279,11 +282,11 @@ public class HistoryGuru {
             } else {
                 File history = SCCSHistoryParser.getSCCSFile(parent, basename);
                 if(history.canRead()) {
-                    in = new BufferedInputStream(new SCCSget(new FileInputStream(history), rev));
+                    in = new BufferedInputStream(new SCCSget(history.getCanonicalPath(), rev));
                     in.mark(32);
                     in.read();
                     in.reset();
-                    previousFile = SCM.RCS;
+                    previousFile = SCM.SCCS;
                 }
             }
         }
@@ -318,8 +321,8 @@ public class HistoryGuru {
                 
             case SCCS :
                 history = SCCSHistoryParser.getSCCSFile(parent, basename);
-                if(history.canRead()) {
-                    in = new BufferedInputStream(new SCCSget(new FileInputStream(history), rev));
+                if(history != null && history.canRead()) {
+                    in = new BufferedInputStream(new SCCSget(history.getCanonicalPath(), rev));
                     in.mark(32);
                     in.read();
                     in.reset();
@@ -375,7 +378,8 @@ public class HistoryGuru {
     public static void main(String[] args) {
         try{
             File f = new File(args[0]);
-            HistoryGuru.getInstance().addExternalRepositories(".");
+            File d = new File(".");
+            HistoryGuru.getInstance().addExternalRepositories(d.getCanonicalPath());
             System.out.println("-----Reading comments as a reader");
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
             BufferedReader rr = new BufferedReader(hr);
@@ -475,7 +479,19 @@ public class HistoryGuru {
                         }
                     }
                     return;
-                } else if (name.equals("cvs") || name.equals("sccs") || name.equals("codemgr_wsdata")) {
+                } else if (name.equals("codemgr_wsdata")) {
+                    try {
+                        String s = files[ii].getParentFile().getCanonicalPath();
+                        System.out.println("Adding Teamware repository: <" + s + ">");
+                        TeamwareRepository rep = new TeamwareRepository(s);
+                        addExternalRepository(rep, s, repos);
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }
+                    return;
+                } else if (name.equals("cvs") || name.equals("sccs")) {
                     return;
                 }
             }
@@ -584,6 +600,13 @@ public class HistoryGuru {
     private ExternalRepository getRepository(File path) {
         Map<String, ExternalRepository> repos = RuntimeEnvironment.getInstance().getRepositories();
         
+        try {
+            path = path.getCanonicalFile();
+        } catch (IOException e) {
+            System.err.println("Failed to get canonical path for " + path);
+            e.printStackTrace();
+            return null;
+        }
         while (path != null) {
             try {
                 ExternalRepository r = repos.get(path.getCanonicalPath());
@@ -619,5 +642,5 @@ public class HistoryGuru {
         }
         return null;
     }
-    
+   
 }

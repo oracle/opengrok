@@ -81,7 +81,13 @@ class HistoryCache {
             time = System.currentTimeMillis();
             history = parser.parse(file, repository);
             time = System.currentTimeMillis() - time;
-        } catch (Exception e) {
+        } catch (UnsupportedOperationException e) {
+            // In this case, we've found a file for which the SCM has no history
+            // An example is a non-SCCS file somewhere in an SCCS-controlled
+            // workspace.
+            return null;
+        }
+        catch (Exception e) {
             System.err.println("Failed to parse " + file.getAbsolutePath());
             e.printStackTrace();
             throw e;

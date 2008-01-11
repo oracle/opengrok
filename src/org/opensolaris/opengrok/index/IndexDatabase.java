@@ -289,7 +289,13 @@ public class IndexDatabase {
      * @throws java.io.IOException if an error occurs
      */
     private void addFile(File file, String path) throws IOException {
-        InputStream in = new BufferedInputStream(new FileInputStream(file));
+        InputStream in;
+        try {
+            in = new BufferedInputStream(new FileInputStream(file));
+        } catch (IOException ex) {
+            System.err.println("Warning: " + ex.getMessage());
+            return;
+        }
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
 
         for (IndexChangedListener listener : listeners) {

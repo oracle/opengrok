@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Access to a Mercurial repository.
@@ -149,6 +148,10 @@ public class MercurialRepository implements ExternalRepository {
     }
     
     public Class<? extends HistoryParser> getHistoryParser() {
+        return MercurialHistoryParser.class;
+    }
+
+    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
         return MercurialHistoryParser.class;
     }
 
@@ -295,6 +298,14 @@ public class MercurialRepository implements ExternalRepository {
                 process.destroy();
             }
         }
+    }
+
+    public boolean fileHasHistory(File file) {
+        // Todo: is there a cheap test for whether mercurial has history
+        // available for a file?
+        // Otherwise, this is harmless, since mercurial's commands will just
+        // print nothing if there is no history.
+        return true;
     }
 }
 

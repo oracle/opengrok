@@ -57,6 +57,11 @@ class SCCSHistoryParser implements HistoryParser {
     public History parse(File file, ExternalRepository repos)
         throws IOException
     {
+        File f = getSCCSFile(file);
+        if (f == null) {
+            return null;
+        }
+        
         in = new BufferedReader(new FileReader(getSCCSFile(file)));
         pass = sep = false;
         passRecord = true;
@@ -230,11 +235,17 @@ class SCCSHistoryParser implements HistoryParser {
         return(-1);
     }
 
-    protected static File getSCCSFile(File file) {
+    protected static File getSCCSFile(File file)
+    {
         return getSCCSFile(file.getParent(), file.getName());
     }
 
-    protected static File getSCCSFile(String parent, String name) {
-        return new File(parent + "/SCCS/s." + name);
+    protected static File getSCCSFile(String parent, String name)
+    {
+        File f = new File(parent + "/SCCS/s." + name);
+        if (!f.exists()) {
+            return null;
+        }
+        return f;
     }
 }

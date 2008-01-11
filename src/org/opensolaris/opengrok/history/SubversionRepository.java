@@ -135,6 +135,10 @@ public class SubversionRepository implements ExternalRepository {
         return SubversionHistoryParser.class;
     }
 
+    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
+        return SubversionHistoryParser.class;
+    }
+    
     /**
      * Get the name of the root directory for this repository
      * @return the name of the directory containing the .svn subdirectory
@@ -236,6 +240,13 @@ public class SubversionRepository implements ExternalRepository {
     }
 
     public boolean isCacheable() {
+        return true;
+    }
+    
+    public boolean fileHasHistory(File file) {
+        // TODO: Research how to cheaply test if a file in a given
+        // SVN repo has history.  If there is a cheap test, then this
+        // code can be refined, boosting performance.
         return true;
     }
 

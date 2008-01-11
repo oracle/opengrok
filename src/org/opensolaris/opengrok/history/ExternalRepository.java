@@ -40,6 +40,10 @@ public interface ExternalRepository {
      */
     Class<? extends HistoryParser> getHistoryParser();
     
+    Class<? extends HistoryParser> getDirectoryHistoryParser();
+    
+    public boolean fileHasHistory(File file);
+    
     /**
      * Get an input stream that I may use to read a speciffic version of a
      * named file.
