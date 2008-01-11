@@ -254,12 +254,17 @@ public class AnalyzerGuru {
      * @param in The input stream we want to get the content type for (if
      *           we cannot determine the content type by the filename)
      * @param file The name of the file
-     * @return The contentType suitable for printing to response.setContentType()
+     * @return The contentType suitable for printing to response.setContentType() or null
+     *         if the factory was not found
      * @throws java.io.IOException If an error occurs while accessing the input
      *                             stream.
      */
     public static String getContentType(InputStream in, String file) throws IOException {
-        return find(in, file).getContentType();
+        FileAnalyzerFactory factory = find(in, file);
+        String type = null;
+        if (factory != null)
+            type = factory.getContentType();
+        return type;
     }
 
     /**
