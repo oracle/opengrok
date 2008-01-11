@@ -132,6 +132,6 @@ if(files != null) {%><br/><%
         if(striked) {
             %><p><b>Note:</b> No associated file changes are available for revisions with strike-through numbers (eg. <strike>1.45</strike>)</p><%
         }
-        %><p class="rssbadge"><a href="<%=context%>/rss<%=path%>"><img src="<%=context%>/<%=environment.getWebappLAF()%>/img/rss.png" width="80" height="15" alt="RSS XML Feed" title="RSS XML Feed of latest changes"/></a></p><%
+        %><p class="rssbadge"><a href="<%=context%>/rss<%=Util.URIEncodePath(path)%>"><img src="<%=context%>/<%=environment.getWebappLAF()%>/img/rss.png" width="80" height="15" alt="RSS XML Feed" title="RSS XML Feed of latest changes"/></a></p><%
 }
 %><%@include file="foot.jspf"%>

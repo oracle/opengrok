@@ -26,6 +26,7 @@ java.lang.*,
 javax.servlet.http.*,
 java.util.*,
 java.io.*,
+java.net.URLDecoder,
 org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*,
@@ -43,6 +44,12 @@ String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if(path == null) path = "";
+else {
+     try {
+       path = URLDecoder.decode(path, "ISO-8859-1");
+     } catch (UnsupportedEncodingException e) {
+     }
+}
 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 env.setUrlPrefix(context + "/s?");
 env.register();

@@ -26,6 +26,7 @@ java.lang.*,
 javax.servlet.http.*,
 java.util.*,
 java.io.*,
+java.net.URLDecoder,
 org.opensolaris.opengrok.index.*,
 org.opensolaris.opengrok.configuration.*
 "
@@ -35,6 +36,12 @@ String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if (path == null) path = "";
+else {
+     try {
+       path = URLDecoder.decode(path, "ISO-8859-1");
+     } catch (UnsupportedEncodingException e) {
+     }
+}
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
 environment.setUrlPrefix(context + "/s?");
 environment.register();
@@ -182,9 +189,9 @@ toggle_ss.style.display = 'none';
         if (!isDir) {
            String rev = request.getParameter("r");
            if (rev == null || rev.equals("")) {
-%> <a id="download" href="<%=context%>/raw<%=uriEncodedName%>">Download</a> | <%
+%> <a id="download" href="<%=context%>/raw<%=path%>">Download</a> | <%
            } else {
-%> <a id="download" href="<%=context%>/raw<%=uriEncodedName%>?r=<%=rev%>">Download</a> | <%
+%> <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a> | <%
            }
         }
 

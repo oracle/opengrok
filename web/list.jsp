@@ -139,7 +139,7 @@ if (valid) {
                             g = AnalyzerGuru.getGenre(a);
                         }
                         if (g == Genre.DATA || g == Genre.XREFABLE || g == null) {
-		%> <div id="src">Binary file [Click <a href="<%=context%>/raw<%=uriEncodedName%>?r=<%=rev%>">here</a> to download] </div><%
+		%> <div id="src">Binary file [Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">here</a> to download] </div><%
                         } else {
 		%><div id="src"><span class="pagetitle"><%=basename%> revision <%=rev%> </span><pre>
 <%
@@ -219,7 +219,7 @@ if (g == Genre.PLAIN) {
             AnalyzerGuru.writeXref(a, bin, out, annotation);
             %></pre></div><%
             } else {
-	    %> Click <a href="<%=context%>/raw<%=uriEncodedName%>">download <%=basename%></a><%
+	    %> Click <a href="<%=context%>/raw<%=path%>">download <%=basename%></a><%
         }
         }
     }
