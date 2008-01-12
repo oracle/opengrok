@@ -114,7 +114,42 @@ Use is subject to license terms.
     <target name="-pre-compile" depends="jflex"/>
     <target name="-post-clean">
         <delete dir="${gensrcdir}"/>
+        <delete file="${manifest.file}"/>
     </target>
+
+    <!--
+        Create an empty manifest file so that nbproject/build-impl.xml
+        notices that a manifest should be added to the jar file
+      -->
+    <target name="-touch-manifest">
+      <!-- no attributes, main-class and class-path will be added later -->
+      <manifest file="manifest.mf" mode="replace"/>
+    </target>
+
+    <target name="-pre-init" depends="-touch-manifest"/>
+
+    <!--
+        Initialize a property holding a list of jar files on which
+        opengrok.jar depends
+      -->
+    <target name="-post-init">
+      <pathconvert property="opengrok.lib.files" pathsep=" ">
+        <path>
+          <pathelement path="${javac.classpath}"/>
+        </path>
+        <flattenmapper/>
+        <map from="" to="lib/"/>
+      </pathconvert>
+    </target>
+
+    <!-- Update the manifest file with a classpath attribute -->
+    <target name="-update-manifest-classpath">
+      <manifest file="${manifest.file}" mode="update">
+        <attribute name="Class-Path" value="${opengrok.lib.files}"/>
+      </manifest>
+    </target>
+
+    <target name="-pre-jar" depends="-update-manifest-classpath"/>
 
     <!--
         Copy the jars from lib to dist/lib manually if we don't have
@@ -122,14 +157,8 @@ Use is subject to license terms.
       -->
     <target name="-copy-lib-without-netbeans"
             unless="manifest.available+main.class+mkdist.available">
-      <pathconvert property="opengrok.lib.files" pathsep=",">
-        <path>
-          <pathelement path="${javac.classpath}"/>
-        </path>
-        <flattenmapper/>
-      </pathconvert>
-      <copy todir="${dist.dir}/lib">
-        <fileset dir="lib" includes="${opengrok.lib.files}"/>
+      <copy todir="${dist.dir}">
+        <fileset dir="." includes="${opengrok.lib.files}"/>
       </copy>
     </target>
 

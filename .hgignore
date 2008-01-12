@@ -11,3 +11,4 @@ prj.el
 nbproject/private
 generatedsrc
 lib/JFlex.jar
+manifest.mf
