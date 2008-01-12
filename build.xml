@@ -22,7 +22,7 @@ Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 -->
-<project name="OpenGrok" default="default" basedir=".">
+<project name="OpenGrok" default="jar" basedir=".">
     <description>Builds, tests, and runs the project opengrok.</description>
     <import file="nbproject/build-impl.xml"/>
 
