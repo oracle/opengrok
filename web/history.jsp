@@ -89,10 +89,10 @@ while (hr.next()) {
 }
 %><td><% 
         Date date = hr.getDate(); 
-        if (date == null) {
+        if (date != null) {
             %><%=df.format(date)%><%
         } else {
-            %>&nbsp<%
+            %>&nbsp;<%
         }
 %>&nbsp;</td>
 <td>
