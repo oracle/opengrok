@@ -87,6 +87,9 @@ Use is subject to license terms.
     nbproject/build-impl.xml file. 
 
     -->
+
+    <property name="version" value="0.6"/>
+
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>
     <property name="gensrcdir" value="generatedsrc"/>
     <target name="jflex">
@@ -169,5 +172,14 @@ Use is subject to license terms.
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
             <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar,svn-javahl.jar"/>
         </war>
+    </target>
+
+    <target name="package" depends="jar">
+      <exec os="SunOS" executable="/usr/bin/pkgmk">
+        <arg line="-o -d build -r . -v ${version} -f pkgdef/prototype"/>
+      </exec>
+      <exec os="SunOS" executable="/usr/bin/pkgtrans">
+	<arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
+      </exec>
     </target>
 </project>
