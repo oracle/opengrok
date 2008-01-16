@@ -16,12 +16,12 @@
         <ul>
             <li><a href="http://java.sun.com/javase/downloads/index.jsp">JDK</a>
             1.5 og higher</li>
-            <li><a href="http://ant.apache.org/">Apache Ant</a> 1.7.0 or later 
+            <li><a href="http://ant.apache.org/">Apache Ant</a> 1.6.5 or later
             if you don't intend to build using NetBeans</li>
             <li>The source code is located in a 
                 <a href="http://www.selenic.com/mercurial/wiki/">Mercurial</a> 
             repository</li>
-            <li>The analyzers is generated from lex by using 
+            <li>The analyzers are generated from lex by using
             <a href="http://jflex.de/">JFlex</a></li>
         </ul>
         
@@ -37,16 +37,23 @@
         
         <h2>Prepare the source for compilation</h2>
         <p>Copy <code>JFlex.jar</code> into the <code>lib</code> directory in
-        the OpenGrok source.</p>
+        the OpenGrok source. (If you are using NetBeans, you could
+        alternatively add JFlex.jar to Ant's classpath at
+        Tools-&gt;Options-&gt;Miscellaneous-&gt;Ant. If you are
+        running Ant from the command line, it should also work if you put
+        JFlex.jar into your <code>~/.ant/lib</code> directory.)
+        </p>
         
         <h2>Compile the source</h2>
         <p>If you use NetBeans you should be able to open OpenGrok as a project
             and build it from there. If you want to build from the command line,
         execute the following command:</p>
         <pre>
-        ant -f build.generic.xml
+        ant
         </pre>
-        
-        
+
+        <p>If the build is successful, you should now find the
+        binaries under the <code>dist</code> directory.</p>
+
     </body>
 </html>
