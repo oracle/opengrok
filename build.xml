@@ -89,6 +89,7 @@ Use is subject to license terms.
     -->
 
     <property name="version" value="0.6"/>
+    <property name="distname" value="opengrok"/>
 
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>
     <property name="gensrcdir" value="generatedsrc"/>
@@ -182,4 +183,30 @@ Use is subject to license terms.
 	<arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
       </exec>
     </target>
+
+    <target name="dist" depends="jar">
+      <tar destfile="${dist.dir}/${distname}-${version}.tar.gz"
+           compression="gzip">
+        <tarfileset dir="." prefix="${distname}-${version}">
+          <include name="README.txt"/>
+          <include name="CHANGES.txt"/>
+          <include name="LICENSE.txt"/>
+          <include name="paths.tsv"/>
+        </tarfileset>
+        <tarfileset dir="." prefix="${distname}-${version}" mode="755">
+          <include name="run.sh"/>
+          <include name="run-quiet.sh"/>
+          <include name="run.bat"/>
+        </tarfileset>
+        <tarfileset dir="doc" prefix="${distname}-${version}">
+          <include name="EXAMPLE.txt"/>
+        </tarfileset>
+        <tarfileset dir="${dist.dir}" prefix="${distname}-${version}">
+          <include name="opengrok.jar"/>
+          <include name="source.war"/>
+          <include name="lib/*"/>
+        </tarfileset>
+      </tar>
+    </target>
+
 </project>
