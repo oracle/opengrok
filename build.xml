@@ -209,4 +209,14 @@ Use is subject to license terms.
       </tar>
     </target>
 
+    <target name="dist-src" depends="init">
+      <mkdir dir="${dist.dir}"/>
+      <exec executable="hg">
+        <arg value="archive"/>
+        <arg value="-t"/>
+        <arg value="tgz"/>
+        <arg value="${dist.dir}/${distname}-${version}-src.tar.gz"/>
+      </exec>
+    </target>
+
 </project>
