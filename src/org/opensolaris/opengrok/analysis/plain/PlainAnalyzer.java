@@ -43,14 +43,14 @@ import org.opensolaris.opengrok.history.Annotation;
  * @author Chandan
  */
 public class PlainAnalyzer extends FileAnalyzer {
-    public static char[] content;
-    public int len;
-    PlainFullTokenizer plainfull;
-    PlainSymbolTokenizer plainref;
-    PlainXref xref;
-    private static Reader dummy = new StringReader(" ");
-    Ctags ctags;
-    public HashMap<String, HashMap<Integer, String>> defs;
+    protected char[] content;
+    protected int len;
+    private PlainFullTokenizer plainfull;
+    private PlainSymbolTokenizer plainref;
+    private PlainXref xref;
+    private static final Reader dummy = new StringReader(" ");
+    private Ctags ctags;
+    protected HashMap<String, HashMap<Integer, String>> defs;
     
     /** Creates a new instance of PlainAnalyzer */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {

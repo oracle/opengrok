@@ -33,9 +33,6 @@ import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class SQLAnalyzer extends PlainAnalyzer {
-    public static String[] suffixes = {
-        "SQL",
-    };
 
     private final SQLXref xref = new SQLXref((Reader)null);
 

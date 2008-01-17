@@ -40,11 +40,11 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 public class XMLAnalyzer extends FileAnalyzer {
     
-    public static char[] content;
+    private char[] content;
+    private int len;
     private PlainFullTokenizer plainfull;
     private XMLXref xref;
-    private Reader dummy = new StringReader("");
-    int len;
+    private static final Reader dummy = new StringReader("");
     
     /**
      * Creates a new instance of XMLAnalyzer

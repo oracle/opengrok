@@ -40,8 +40,8 @@ import org.opensolaris.opengrok.history.Annotation;
  * @author Chandan
  */
 public class TroffAnalyzer extends FileAnalyzer {
-    public static char[] content;
-    public int len;
+    private char[] content;
+    private int len;
     
     private TroffFullTokenizer troffull;
     private TroffXref xref;

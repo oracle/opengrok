@@ -43,23 +43,18 @@ import java.util.*;
  */
 
 public class JarAnalyzer extends FileAnalyzer {
-    /**
-     * Creates a new instance of JarAnalyzer
-     */
-    static byte[] content;
-    int len;
-    PlainFullTokenizer plainfull;
-    
+    private byte[] content;
+    private int len;
+
     private LinkedList<String> defs;
     private LinkedList<String> refs;
     private StringBuilder fullText;
     private StringWriter xref;
 
-    private static Reader dummy = new StringReader("");
+    private static final Reader dummy = new StringReader("");
     protected JarAnalyzer(FileAnalyzerFactory factory) {
 	super(factory);
 	content = new byte[16*1024];
-	plainfull = new PlainFullTokenizer(dummy);
     }
     
     public void analyze(Document doc, InputStream in) {

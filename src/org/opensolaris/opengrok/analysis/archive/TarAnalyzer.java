@@ -44,11 +44,10 @@ import org.apache.tools.tar.*;
  */
 
 public class TarAnalyzer extends FileAnalyzer {
-    /** Creates a new instance of ZipAnalyzer */
-    static char[] content;
-    int len;
+    private char[] content;
+    private int len;
     
-    private static Reader dummy = new StringReader("");
+    private static final Reader dummy = new StringReader("");
     
     private PlainFullTokenizer plainfull;
     protected TarAnalyzer(FileAnalyzerFactory factory) {
