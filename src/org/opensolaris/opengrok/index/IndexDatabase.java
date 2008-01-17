@@ -302,7 +302,7 @@ public class IndexDatabase {
             listener.fileAdded(path, fa.getClass().getSimpleName());
         }
 
-        Document d = analyzerGuru.getDocument(file, in, path);
+        Document d = analyzerGuru.getDocument(file, in, path, fa);
         if (d != null) {
             writer.addDocument(d, fa);
             Genre g = fa.getFactory().getGenre();

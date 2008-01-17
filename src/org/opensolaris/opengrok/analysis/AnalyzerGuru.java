@@ -200,7 +200,8 @@ public class AnalyzerGuru {
      * @throws java.io.IOException If an exception occurs while collecting the
      *                             datas
      */
-    public Document getDocument(File file, InputStream in, String path) throws IOException {
+    public Document getDocument(File file, InputStream in, String path,
+                                FileAnalyzer fa) throws IOException {
         Document doc = new Document();
         String date = DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND);
         doc.add(new Field("u", Util.uid(path, date), Field.Store.YES, Field.Index.UN_TOKENIZED));
@@ -223,11 +224,7 @@ public class AnalyzerGuru {
                 doc.add(new Field("project", project.getPath(), Field.Store.YES, Field.Index.TOKENIZED));
             }
         }
-        FileAnalyzer fa = null;
-        try {
-            fa = getAnalyzer(in, path);
-        } catch (Exception e) {
-        }
+
         if (fa != null) {
             try {
                 Genre g = fa.getGenre();
@@ -517,7 +514,7 @@ public class AnalyzerGuru {
                 BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
                 FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, arg);
                 System.out.println("\nANALYZER = " + fa);
-                Document doc = af.getDocument(f, in, arg);
+                Document doc = af.getDocument(f, in, arg, fa);
                 System.out.println("\nDOCUMENT = " + doc);
 
                 Iterator iterator = doc.getFields().iterator();
