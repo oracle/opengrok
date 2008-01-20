@@ -125,4 +125,15 @@ public class UtilTest {
         assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
     }
 
+    @Test
+    public void buildQueryString() {
+        String freetext = "foo:(bar) foo::bar";
+        String defs = "foo::bar";
+        String refs = "";
+        String path = "";
+        String hist = null;
+        String expResult = "foo:(bar) foo::bar defs:(foo\\:\\:bar)";
+        String result = Util.buildQueryString(freetext, defs, refs, path, hist);
+        assertEquals(expResult, result);
+    }
 }

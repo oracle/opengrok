@@ -125,36 +125,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             if(start < 0 ) start = 0;
         } catch (Exception e) {  }
         
-        StringBuilder sb = new StringBuilder();
-        if (q != null) {
-            sb.append(q);
-        }
-
-        if (defs != null) {
-            sb.append(" defs:(");
-            sb.append(defs);
-            sb.append(")");
-        }
-        
-        if (refs != null) {
-            sb.append(" refs:(");
-            sb.append(refs);
-            sb.append(")");
-        }
-
-        if (path != null) {
-            sb.append(" path:(");
-            sb.append(path);
-            sb.append(")");
-        }
-
-        if (hist != null) {
-            sb.append(" hist:(");
-            sb.append(hist);
-            sb.append(")");
-        }
-        
-        qstr = sb.toString();
+        qstr = Util.buildQueryString(q, defs, refs, path, hist);
                                 
         QueryParser qparser = new QueryParser("full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);

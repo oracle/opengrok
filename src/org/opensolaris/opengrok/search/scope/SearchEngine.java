@@ -50,6 +50,7 @@ import org.opensolaris.opengrok.search.*;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * This is an encapsulation of the details on how to seach in the index
@@ -115,39 +116,11 @@ public class SearchEngine {
      */
     public int search() {
         hits = null;
-        StringBuilder sb = new StringBuilder();
-        
-        if ((freetext != null) && (freetext.length() > 0)) {
-            sb.append(freetext);
-        }
-        
-        if ((definition != null) && (definition.length() > 0)) {
-            sb.append(" defs:(");
-            sb.append(definition);
-            sb.append(")");
-        }
-        
-        if ((symbol != null) && (symbol.length() > 0)) {
-            sb.append(" refs:(");
-            sb.append(symbol);
-            sb.append(")");
-        }
-        
-        if ((file != null) && (file.length() > 0)) {
-            sb.append(" path:(");
-            sb.append(file);
-            sb.append(")");
-        }
-        
-        if ((history != null) && (history.length() > 0)) {
-            sb.append(" hist:(");
-            sb.append(history);
-            sb.append(")");
-        }
-        
-        if (sb.length() > 0) {
+
+        String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
+        if (qry.length() > 0) {
             try {
-                query = qparser.parse(sb.toString());
+                query = qparser.parse(qry);
                 
                 IndexReader ireader = IndexReader.open(indexDatabase.getDatabase() +
                         "/index");
