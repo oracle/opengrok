@@ -30,7 +30,7 @@ CDDL HEADER END
 
       <single_instance />
       <dependency
-          name="fs-local"
+          name="filesystem-local"
           grouping="require_all"
           restart_on="none"
           type="service">
@@ -67,6 +67,18 @@ CDDL HEADER END
           <propval name="duration" type="astring" value="child" />
       </property_group>
 
+      <property_group name="general" type="framework">
+          <propval name="action_authorization" type="astring" value="solaris.smf.manage.opengrok" />
+          <propval name="value_authorization" type="astring" value="solaris.smf.value.opengrok" />
+      </property_group>
+      
+      <property_group  name="opengrok" type="application">
+          <propval name="value_authorization" type="astring"
+                   value="solaris.smf.value.opengrok" />
+          <propval name="action_authorization" type="astring"
+                   value="solaris.smf.manage.opengrok" />
+      </property_group>      
+      
       <instance name="opengrok" enabled="false">
          <exec_method
             type="method"
