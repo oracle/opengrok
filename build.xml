@@ -88,7 +88,7 @@ Use is subject to license terms.
 
     -->
 
-    <property name="version" value="0.6"/>
+    <property name="version" value="0.6beta"/>
     <property name="distname" value="opengrok"/>
 
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>
@@ -115,6 +115,36 @@ Use is subject to license terms.
         <jflex file="src/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="${gensrcdir}"/>
     </target>
     
+    <property name="hg" value="hg"/>
+    <target name="-hg-get-changeset">
+        <exec executable="${hg}"
+              failifexecutionfails="no"
+              outputproperty="changeset">
+            <arg value="log"/>
+            <arg value="-r"/>
+            <arg value="tip"/>
+            <redirector>
+                <outputfilterchain>
+                    <filterreader classname="org.apache.tools.ant.filters.LineContainsRegExp">
+                        <param type="regexp" value="^changeset:"/>
+                    </filterreader>
+                    <tokenfilter>
+                        <replaceregex pattern="^changeset:[^:]*:" replace=""/>
+                    </tokenfilter>
+                </outputfilterchain>
+            </redirector>
+        </exec>
+    </target>
+
+    <target name="-update-build-info" depends="-hg-get-changeset">
+        <mkdir dir="${build.classes.dir}/org/opensolaris/opengrok"/>
+        <propertyfile
+            file="${build.classes.dir}/org/opensolaris/opengrok/info.properties">
+            <entry  key="version" value="${version}"/>
+            <entry  key="changeset" value="${changeset}"/>
+        </propertyfile>        
+    </target>
+        
     <target name="-pre-compile" depends="jflex"/>
     <target name="-post-clean">
         <delete dir="${gensrcdir}"/>
@@ -153,7 +183,7 @@ Use is subject to license terms.
       </manifest>
     </target>
 
-    <target name="-pre-jar" depends="-update-manifest-classpath"/>
+    <target name="-pre-jar" depends="-update-manifest-classpath,-update-build-info"/>
 
     <!--
         Copy the jars from lib to dist/lib manually if we don't have
