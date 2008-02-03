@@ -33,16 +33,16 @@ import java.text.ParseException;
  *
  * @author Trond Norbye
  */
-public interface ExternalRepository {
+public abstract class ExternalRepository {
     /**
      * Get a parser capable of getting history log elements from this repository.
      * @return a specialized parser for this kind of repository
      */
-    Class<? extends HistoryParser> getHistoryParser();
+    abstract Class<? extends HistoryParser> getHistoryParser();
     
-    Class<? extends HistoryParser> getDirectoryHistoryParser();
+    abstract Class<? extends HistoryParser> getDirectoryHistoryParser();
     
-    public boolean fileHasHistory(File file);
+    abstract boolean fileHasHistory(File file);
     
     /**
      * Get an input stream that I may use to read a speciffic version of a
@@ -52,14 +52,15 @@ public interface ExternalRepository {
      * @param rev the revision to get
      * @return An input stream containing the correct revision.
      */
-    public InputStream getHistoryGet(String parent, String basename, String rev);
+    abstract InputStream getHistoryGet(
+            String parent, String basename, String rev);
 
     /**
      * Checks whether this parser can annotate files.
      *
      * @return <code>true</code> if annotation is supported
      */
-    public boolean supportsAnnotation(); 
+    abstract boolean supportsAnnotation();
 
     /**
      * Annotate the specified revision of a file.
@@ -69,14 +70,14 @@ public interface ExternalRepository {
      * @return an <code>Annotation</code> object
      * @throws java.lang.Exception if an error occurs
      */
-    public Annotation annotate(File file, String revision) throws Exception;
+    abstract Annotation annotate(File file, String revision) throws Exception;
 
     /**
      * Check whether the parsed history should be cached.
      *
      * @return <code>true</code> if the history should be cached
      */
-    boolean isCacheable();
+    abstract boolean isCacheable();
     
     /**
      * Create a history log cache for all of the files in this repository.
@@ -86,13 +87,13 @@ public interface ExternalRepository {
      * @throws IOException if an error occurs while creating the cache
      * @throws ParseException if an error occurs while parsing the log information.
      */
-    public void createCache() throws IOException, ParseException;
+    abstract void createCache() throws IOException, ParseException;
     
     /**
      * Update the content in this repository by pulling the changes from the
      * upstream repository..
      * @throws Exception if an error occurs.
      */
-    public void update() throws Exception;
+    abstract void update() throws Exception;
     
 }

@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  * Access to a Mercurial repository.
  * 
  */
-public class MercurialRepository implements ExternalRepository {
+public class MercurialRepository extends ExternalRepository {
     private File directory;
     private String directoryName;
     private String command;

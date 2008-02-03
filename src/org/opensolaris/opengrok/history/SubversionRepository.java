@@ -43,7 +43,7 @@ import org.tigris.subversion.javahl.SVNClient;
 /**
  * Access to a Subversion repository. 
  */
-public class SubversionRepository implements ExternalRepository {
+public class SubversionRepository extends ExternalRepository {
 
     private File directory;
     private String directoryName;

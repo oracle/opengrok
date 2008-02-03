@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  *
  *
  */
-public class TeamwareRepository implements ExternalRepository {
+public class TeamwareRepository extends ExternalRepository {
     private File directory;
     private String directoryName;
     private String command;
