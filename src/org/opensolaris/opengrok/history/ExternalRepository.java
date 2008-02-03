@@ -24,9 +24,11 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An interface for an external repository. 
@@ -34,6 +36,8 @@ import java.text.ParseException;
  * @author Trond Norbye
  */
 public abstract class ExternalRepository {
+    private String directoryName;
+
     /**
      * Get a parser capable of getting history log elements from this repository.
      * @return a specialized parser for this kind of repository
@@ -80,14 +84,60 @@ public abstract class ExternalRepository {
     abstract boolean isCacheable();
     
     /**
+     * Get the name of the root directory for this repository.
+     * @return the name of the root directory
+     */
+    public String getDirectoryName() {
+        return directoryName;
+    }
+
+    /**
+     * Specify the name of the root directory for this repository.
+     * @param directoryName the new name of the root directory
+     */
+    public void setDirectoryName(String directoryName) {
+        this.directoryName = directoryName;
+    }
+
+    /**
      * Create a history log cache for all of the files in this repository.
      * Some SCM's have a more optimal way to query the log information, so
      * the concrete repository could implement a smarter way to generate the
-     * cache instead of creating it for each file beeing accessed.
-     * @throws IOException if an error occurs while creating the cache
-     * @throws ParseException if an error occurs while parsing the log information.
+     * cache instead of creating it for each file being accessed. The default
+     * implementation uses the history parser returned by
+     * {@code getDirectoryHistoryParser()} to parse the repository's history.
+     *
+     * @throws Exception on error
      */
-    abstract void createCache() throws IOException, ParseException;
+    void createCache() throws Exception {
+        HistoryParser p = getDirectoryHistoryParser().newInstance();
+        File directory = new File(getDirectoryName());
+        History history = p.parse(directory, this);
+        if (history != null && history.getHistoryEntries() != null) {
+            HashMap<String, List<HistoryEntry>> map =
+                    new HashMap<String, List<HistoryEntry>>();
+
+            for (HistoryEntry e : history.getHistoryEntries()) {
+                for (String s : e.getFiles()) {
+                    List<HistoryEntry> list = map.get(s);
+                    if (list == null) {
+                        list = new ArrayList<HistoryEntry>();
+                        map.put(s, list);
+                    }
+                    list.add(e);
+                }
+            }
+
+            for (Map.Entry<String, List<HistoryEntry>> e : map.entrySet()) {
+                for (HistoryEntry ent : e.getValue()) {
+                    ent.strip();
+                }
+                History hist = new History();
+                hist.setHistoryEntries(e.getValue());
+                HistoryCache.writeCacheFile(e.getKey(), hist);
+            }
+        }
+    }
     
     /**
      * Update the content in this repository by pulling the changes from the

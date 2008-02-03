@@ -42,8 +42,6 @@ import java.util.regex.Pattern;
  *
  */
 public class TeamwareRepository extends ExternalRepository {
-    private File directory;
-    private String directoryName;
     private String command;
     private boolean verbose;
     private Map<String, String> authors_cache;
@@ -58,8 +56,7 @@ public class TeamwareRepository extends ExternalRepository {
      * @param directory The directory containing the .hg-subdirectory
      */
     public TeamwareRepository(String directory) {
-        this.directory = new File(directory);
-        directoryName = this.directory.getAbsolutePath();
+        setDirectoryName(new File(directory).getAbsolutePath());
         command = System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
     }
     
@@ -223,28 +220,6 @@ public class TeamwareRepository extends ExternalRepository {
                 process.destroy();
             }
         }
-    }
-
-    /**
-     * Get the name of the root directory for this repository
-     * @return the name of the directory containing the .hg subdirectory
-     */
-    public String getDirectoryName() {
-        return directoryName;
-    }
-    
-    /**
-     * Specify the name of the root directory for this repository
-     * @param directoryName the new name of the directory containing the .hg 
-     *        subdirectory
-     */
-    public void setDirectoryName(String directoryName) {
-        this.directoryName = directoryName;
-        this.directory = new File(this.directoryName);
-    }
-    
-    public void createCache() throws IOException, ParseException {
-        // TODO later
     }
 
     public boolean supportsAnnotation() {

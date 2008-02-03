@@ -25,13 +25,8 @@ package org.opensolaris.opengrok.history;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.tigris.subversion.javahl.BlameCallback;
 import org.tigris.subversion.javahl.ClientException;
@@ -45,8 +40,6 @@ import org.tigris.subversion.javahl.SVNClient;
  */
 public class SubversionRepository extends ExternalRepository {
 
-    private File directory;
-    private String directoryName;
     private boolean verbose;
     private boolean ignored;
 
@@ -61,8 +54,7 @@ public class SubversionRepository extends ExternalRepository {
      * @param directory The directory containing the .svn-subdirectory
      */
     public SubversionRepository(String directory) {
-        this.directory = new File(directory);
-        directoryName = this.directory.getAbsolutePath();
+        setDirectoryName(new File(directory).getAbsolutePath());
 
         if (!RuntimeEnvironment.getInstance().isRemoteScmSupported()) {
             // try to figure out if I should ignore this repository
@@ -114,13 +106,13 @@ public class SubversionRepository extends ExternalRepository {
 
         SVNClient client = new SVNClient();
         try {
-            Info info = client.info(directoryName);
+            Info info = client.info(getDirectoryName());
             String wcUrl = info.getUrl();
 
             String svnPath = parent + "/" + basename;
 
             // erase the working copy from the path to get the fragment
-            svnPath = svnPath.substring(directoryName.length());
+            svnPath = svnPath.substring(getDirectoryName().length());
 
             ret = new ByteArrayInputStream(client.fileContent(wcUrl + svnPath, revision));
         } catch (ClientException ex) {
@@ -138,24 +130,6 @@ public class SubversionRepository extends ExternalRepository {
     public Class<? extends HistoryParser> getDirectoryHistoryParser() {
         return SubversionHistoryParser.class;
     }
-    
-    /**
-     * Get the name of the root directory for this repository
-     * @return the name of the directory containing the .svn subdirectory
-     */
-    public String getDirectoryName() {
-        return directoryName;
-    }
-
-    /**
-     * Specify the name of the root directory for this repository
-     * @param directoryName the new name of the directory containing the .svn 
-     *        subdirectory
-     */
-    public void setDirectoryName(String directoryName) {
-        this.directoryName = directoryName;
-        this.directory = new File(this.directoryName);
-    }
 
     public boolean isIgnored() {
         return ignored;
@@ -163,52 +137,6 @@ public class SubversionRepository extends ExternalRepository {
 
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
-    }
-
-    public void createCache() throws IOException, ParseException {
-        if (ignored) {
-            if (RuntimeEnvironment.getInstance().isVerbose()) {
-                System.out.println("Skipping Subversion History Cache for " + directory);
-                System.out.flush();
-            }
-            return;
-        }
-
-        SubversionHistoryParser parser = new SubversionHistoryParser();
-        History history = null;
-
-        try {
-            history = parser.parse(directory, this);
-        } catch (Exception e) {
-            System.err.println("Failed to get info for " + directory);
-            e.printStackTrace();
-        }
-
-        if (history != null && history.getHistoryEntries() != null) {
-            HashMap<String, ArrayList<HistoryEntry>> map = new HashMap<String, ArrayList<HistoryEntry>>();
-            for (HistoryEntry e : history.getHistoryEntries()) {
-                for (String s : e.getFiles()) {
-                    ArrayList<HistoryEntry> list = map.get(s);
-                    if (list == null) {
-                        list = new ArrayList<HistoryEntry>();
-                        list.add(e);
-                        map.put(s, list);
-                    } else {
-                        list.add(e);
-                    }
-                }
-            }
-
-            for (Map.Entry<String, ArrayList<HistoryEntry>> e : map.entrySet()) {
-                for (HistoryEntry ent : e.getValue()) {
-                    ent.strip();
-                }
-
-                History hist = new History();
-                hist.setHistoryEntries(e.getValue());
-                HistoryCache.writeCacheFile(e.getKey(), hist);
-            }
-        }
     }
 
     public Annotation annotate(File file, String revision) throws Exception {
@@ -255,6 +183,7 @@ public class SubversionRepository extends ExternalRepository {
         String command = System.getProperty("org.opensolaris.opengrok.history.Subversion", "svn");
 
         try {
+            File directory = new File(getDirectoryName());
             process = Runtime.getRuntime().exec(new String[] {command, "update"}, null, directory);
             boolean interrupted;
             do {

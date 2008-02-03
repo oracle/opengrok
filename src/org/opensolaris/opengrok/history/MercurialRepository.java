@@ -30,10 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,8 +39,6 @@ import java.util.regex.Pattern;
  * 
  */
 public class MercurialRepository extends ExternalRepository {
-    private File directory;
-    private String directoryName;
     private String command;
     private boolean verbose;
     
@@ -57,8 +52,7 @@ public class MercurialRepository extends ExternalRepository {
      * @param directory The directory containing the .hg-subdirectory
      */
     public MercurialRepository(String directory) {
-        this.directory = new File(directory);
-        directoryName = this.directory.getAbsolutePath();
+        setDirectoryName(new File(directory).getAbsolutePath());
         command = System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
     }
     
@@ -97,6 +91,7 @@ public class MercurialRepository extends ExternalRepository {
     Process getHistoryLogProcess(File file) throws IOException {
         String abs = file.getAbsolutePath();
         String filename = "";
+        String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
@@ -107,12 +102,16 @@ public class MercurialRepository extends ExternalRepository {
         } else {
             argv = new String[] { command, "log", filename };
         }
-        
+
+        File directory = new File(getDirectoryName());
         return Runtime.getRuntime().exec(argv, null, directory);        
     }    
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
+
+        String directoryName = getDirectoryName();
+        File directory = new File(directoryName);
 
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
@@ -211,54 +210,6 @@ public class MercurialRepository extends ExternalRepository {
         }
     }
 
-    /**
-     * Get the name of the root directory for this repository
-     * @return the name of the directory containing the .hg subdirectory
-     */
-    public String getDirectoryName() {
-        return directoryName;
-    }
-    
-    /**
-     * Specify the name of the root directory for this repository
-     * @param directoryName the new name of the directory containing the .hg 
-     *        subdirectory
-     */
-    public void setDirectoryName(String directoryName) {
-        this.directoryName = directoryName;
-        this.directory = new File(this.directoryName);
-    }
-    
-    public void createCache() throws IOException, ParseException {
-        MercurialHistoryParser p = new MercurialHistoryParser();
-        History history = p.parse(directory, this);
-        if (history != null && history.getHistoryEntries() != null) {
-            HashMap<String, ArrayList<HistoryEntry>> map = new HashMap<String, ArrayList<HistoryEntry>>();
-            for (HistoryEntry e : history.getHistoryEntries()) {
-                for (String s : e.getFiles()) {
-                    ArrayList<HistoryEntry> list = map.get(s);
-                    if (list == null) {
-                        list = new ArrayList<HistoryEntry>();
-                        list.add(e);
-                        map.put(s, list);
-                    } else {
-                        list.add(e);
-                    }
-                }
-            }
-            
-            for (Map.Entry<String, ArrayList<HistoryEntry>> e : map.entrySet()) {
-                for (HistoryEntry ent : e.getValue()) {
-                    ent.strip();
-                }
-                
-                History hist = new History();
-                hist.setHistoryEntries(e.getValue());                
-                HistoryCache.writeCacheFile(e.getKey(), hist);
-            }
-        }
-    }
-
     public boolean supportsAnnotation() {
         return true;
     }
@@ -281,6 +232,7 @@ public class MercurialRepository extends ExternalRepository {
     public void update() throws Exception {
         Process process = null;
         try {
+            File directory = new File(getDirectoryName());
             process = Runtime.getRuntime().exec(new String[] {command, "pull"}, null, directory);
             if (waitFor(process) != 0) {
                 return ;                
