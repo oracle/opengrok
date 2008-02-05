@@ -22,19 +22,18 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident	"@(#)SearchEngine.java 1.1     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.search.scope;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -45,8 +44,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.TagFilter;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.search.*;
+import org.opensolaris.opengrok.search.Hit;
+import org.opensolaris.opengrok.search.Summarizer;
+import org.opensolaris.opengrok.search.Summary;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
@@ -83,21 +85,21 @@ public class SearchEngine {
      * Holds value of property symbol.
      */
     private String symbol;
-    
+
     /**
      * Holds value of property indexDatabase.
      */
-    private IndexDatabase indexDatabase;
     private Query query;
     private CompatibleAnalyser analyzer;
     private QueryParser qparser;
     private Context sourceContext;
     private HistoryContext historyContext;
     private Summarizer summer;
-    private Hits hits;
-    private int nhits;
+    private List<org.apache.lucene.search.Hit> hits;
     private char[] content = new char[1024*8];
-    //private LineMatcher[] m;
+    private String source;
+    private String data;
+    
     /**
      * Creates a new instance of SearchEngine
      */
@@ -106,35 +108,56 @@ public class SearchEngine {
         qparser = new QueryParser("full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
+        hits = new ArrayList<org.apache.lucene.search.Hit>();
+        source = RuntimeEnvironment.getInstance().getSourceRootPath();
+        data = RuntimeEnvironment.getInstance().getDataRootPath();
+    }
+    
+    private void searchSingleDatabase(File root) throws Exception {
+                IndexReader ireader = IndexReader.open(root);
+                Searcher searcher = new IndexSearcher(ireader);
+                Hits res = searcher.search(query);
+                if (res.length() > 0) {
+                    Iterator iter = res.iterator();
+                    while (iter.hasNext()) {
+                        org.apache.lucene.search.Hit h = (org.apache.lucene.search.Hit)iter.next();                        
+                        hits.add(h);
+                    }
+                }
+        
     }
     
     /**
      * Execute a search. Before calling this function, you must set the
      * appropriate seach critera with the set-functions.
      *
-     * @return A list containg all the search results.
+     * @return The number of hits
      */
     public int search() {
-        hits = null;
-
+        hits.clear();
+        
+        
         String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
         if (qry.length() > 0) {
             try {
                 query = qparser.parse(qry);
-                
-                IndexReader ireader = IndexReader.open(indexDatabase.getDatabase() +
-                        "/index");
-                Searcher searcher = new IndexSearcher(ireader);
-                hits = searcher.search(query);
-                nhits = hits.length();
-                if (hits.length() == 0) {
-                    hits = null;
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+                File root = new File(env.getDataRootFile(), "index");            
+
+                if (env.hasProjects()) {
+                    // search all projects
+                    for (Project project : env.getProjects()) {
+                        searchSingleDatabase(new File(root, project.getPath()));
+                    }                
+                } else {
+                    // search the index database
+                    searchSingleDatabase(root);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        if (hits != null) {
+        if (hits.size() > 0) {
             sourceContext = null;
             summer = null;
             try {
@@ -154,31 +177,32 @@ public class SearchEngine {
                 }
             } catch (Exception e) {
             }
-            
-            //m = QueryMatchers.getMatchers(query);
-            return hits.length();
         }
-        return 0;
+        return hits.size();
     }
     
     public void more(int start, int end, List<Hit> ret) {
+        if (end > hits.size()) {
+            end = hits.size();
+        }
         for (int ii = start; ii < end; ++ii) {
             boolean alt = (ii % 2 == 0);
             boolean hasContext = false;
             try {
-                Document doc = hits.doc(ii);
+                Document doc = hits.get(ii).getDocument();
                 String filename = doc.get("path");
                 String genre = doc.get("t");
                 String tags = doc.get("tags");
+                int nhits = hits.size();
                 
                 if(sourceContext != null) {
                     try {
-                        if ("p".equals(genre) && (indexDatabase.getSource() != null)) {
-                            hasContext = sourceContext.getContext(new InputStreamReader(new FileInputStream(indexDatabase.getSource() +
+                        if ("p".equals(genre) && (source != null)) {
+                            hasContext = sourceContext.getContext(new InputStreamReader(new FileInputStream(source +
                                     filename)), null, null, null, filename,
                                     tags, nhits > 100, ret);
-                        } else if("x".equals(genre) && indexDatabase.getDatabase() != null && summer != null){
-                            Reader r = new TagFilter(new BufferedReader(new FileReader(indexDatabase.getDatabase() + "/xref" + filename)));
+                        } else if("x".equals(genre) && data != null && summer != null){
+                            Reader r = new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename)));
                             int len = r.read(content);
                             Summary sum = summer.getSummary(new String(content, 0, len));
                             Fragment fragments[] = sum.getFragments();
@@ -205,7 +229,7 @@ public class SearchEngine {
                     }
                 }
                 if (historyContext != null) {
-                    hasContext |= historyContext.getContext(indexDatabase.getSource() + filename, filename, ret);
+                    hasContext |= historyContext.getContext(source + filename, filename, ret);
                 }
                 if(!hasContext) {
                     ret.add(new Hit(filename, "...", "", false, alt));
@@ -307,15 +331,6 @@ public class SearchEngine {
         this.symbol = symbol;
     }
     
-    /**
-     * Setter for property indexDatabase.
-     *
-     * @param indexDatabase New value of property indexDatabase.
-     */
-    public void setIndexDatabase(IndexDatabase indexDatabase) {
-        this.indexDatabase = indexDatabase;
-    }
-
     boolean onlyFilnameSearch() {
         return sourceContext == null && historyContext == null;
     }

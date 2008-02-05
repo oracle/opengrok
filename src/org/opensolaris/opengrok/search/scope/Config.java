@@ -22,15 +22,9 @@
  * Use is subject to license terms.
  */
  
-/*
- * ident	"@(#)Config.java 1.1     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.search.scope;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -52,12 +46,6 @@ public class Config {
      * This is the one and only instance of the Config class
      */
     private static Config instance = new Config();
-
-    /**
-     * The label used in the Preferences to store the location of the index
-     * database
-     */
-    private static final String DATA_ROOT = "DATA_ROOT";
 
     /**
      * The label used to store the display-name of an editor
@@ -87,16 +75,8 @@ public class Config {
      */
     private List<Editor> editors;
 
-    /**
-     * The location of the sources
-     */
-    private String sourceRoot;
-
-    /**
-     * The location of the repositories
-     */
-    private List<IndexDatabase> databases;
-
+    private List<File> configurations;
+    
     /**
      * Create a new instance of Config. This constructor is private in order to
      * enforce a singleton pattern
@@ -104,7 +84,6 @@ public class Config {
     private Config() {
         prefs = Preferences.userNodeForPackage(this.getClass());
         editors = null;
-        sourceRoot = null;
 
         try {
             String[] names = prefs.childrenNames();
@@ -186,82 +165,6 @@ public class Config {
      */
     public static Config getInstance() {
         return instance;
-    }
-
-    /**
-     * Get the directory where the sources are located. The location of the
-     * sources is stored in a file named SRC_ROOT in the root of the index
-     * database. This function will read that file and return the content.
-     *
-     * @return The name of the directory containing the sources
-     */
-    public String getSourceRoot() {
-        if (sourceRoot == null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(getIndexDatabase());
-            sb.append(File.separator);
-            sb.append("SRC_ROOT");
-
-            try {
-                BufferedReader r = new BufferedReader(new FileReader(
-                            sb.toString()));
-                sourceRoot = r.readLine();
-                r.close();
-            } catch (Exception e) {
-                ;
-            }
-        }
-
-        return sourceRoot;
-    }
-
-    /**
-     * Get the name of the directory containing the index database.
-     *
-     * @return The name of the directory containing the index database.
-     */
-    public String getIndexDatabase() {
-        getAvailableIndexDatabases();
-
-        String ret = null;
-
-        if (databases.size() > 0) {
-            ret = databases.get(0).getDatabase();
-        }
-
-        return ret;
-    }
-
-    /**
-     * Store the name of the directory containing the index database.
-     *
-     * @param dataRoot The directory containing the index database
-     */
-    public void setIndexDatabase(String dataRoot) {
-        sourceRoot = null;
-        databases.add(0, new IndexDatabase(dataRoot));
-
-        // remove any "duplicates"
-        int len = databases.size();
-
-        for (int ii = 1; ii < len; ++ii) {
-            if (databases.get(ii).getDatabase().equals(dataRoot)) {
-                databases.remove(ii);
-
-                break;
-            }
-        }
-
-        if (databases.size() > 9) {
-            databases.remove(10);
-        }
-
-        int ii = 0;
-
-        for (IndexDatabase db : databases) {
-            prefs.put("database" + ii, db.getDatabase());
-            ++ii;
-        }
     }
 
     /**
@@ -362,23 +265,49 @@ public class Config {
         } catch (Exception e) {
             ;
         }
-    }
-
-    public List<IndexDatabase> getAvailableIndexDatabases() {
-        if (databases == null) {
-            databases = new ArrayList<IndexDatabase>();
+    }    
+    
+    public List<File> getRecentConfigurations() {
+        if (configurations == null) {
+            configurations = new ArrayList<File>();
 
             for (int ii = 0; ii < 10; ++ii) {
-                String data = prefs.get("database" + ii, null);
+                String data = prefs.get("configuration_" + ii, null);
 
                 if ((data != null) && (data.length() > 0)) {
-                    databases.add(new IndexDatabase(data));
+                    File file = new File(data);
+                    if (file.exists()) {
+                        configurations.add(file);
+                    }
                 }
             }
         }
 
-        return databases;
+        return configurations;
     }
+
+    public void setCurrentConfiguration(File file) {
+        configurations.remove(file);
+        configurations.add(0, file);
+        
+       if (configurations.size() > 9) {
+            configurations.remove(10);
+        }
+
+        int ii = 0;
+
+        for (File f : configurations) {
+            prefs.put("configuration_" + ii, f.getAbsolutePath());
+            ++ii;
+        }        
+        
+        try {
+            prefs.sync();
+        } catch (Exception e) {
+            ;
+        }
+    }
+    
     /**
      * Get the preferred subtree path.
      *

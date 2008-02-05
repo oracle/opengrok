@@ -26,11 +26,8 @@ package org.opensolaris.opengrok.configuration;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -491,17 +488,7 @@ public class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void readConfiguration(File file) throws IOException {
-        XMLDecoder d = new XMLDecoder(
-                new BufferedInputStream(new FileInputStream(file)));
-        Object obj = d.readObject();
-        d.close();
-        
-        if (obj instanceof Configuration) {
-            configuration = (Configuration)obj;
-            System.out.println("Config file " + file.getName() + " successfully read");
-        } else {
-            throw new IOException("Not a valid config file");
-        }
+        configuration = Configuration.read(file);
     }
     
     /**
@@ -510,10 +497,7 @@ public class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(File file) throws IOException {
-        XMLEncoder e = new XMLEncoder(
-                new BufferedOutputStream(new FileOutputStream(file)));
-        e.writeObject(threadConfig.get());
-        e.close();
+        threadConfig.get().write(file);
     }
     
     /**
@@ -532,6 +516,10 @@ public class RuntimeEnvironment {
         } catch (Exception ex) {
             ;
         }
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
     }
     
     private ServerSocket configServerSocket;

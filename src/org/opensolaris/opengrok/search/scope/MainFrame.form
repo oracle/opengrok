@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.4" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
     <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
       <SubComponents>
@@ -24,17 +24,6 @@
             <Property name="text" type="java.lang.String" value="Options"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="databaseMenuItem">
-              <Properties>
-                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/org/opensolaris/opengrok/search/scope/data.gif"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Index database..."/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="databaseMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="editorMenuItem">
               <Properties>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
@@ -61,7 +50,10 @@
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="true"/>
@@ -84,7 +76,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="indexDatabaseCombo" pref="507" max="32767" attributes="0"/>
+                      <Component id="indexDatabaseCombo" pref="516" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseIndexBtn" min="-2" pref="32" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -94,20 +86,20 @@
                       <Component id="searchButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="clearButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="200" max="32767" attributes="0"/>
+                      <EmptySpace pref="199" max="32767" attributes="0"/>
                       <Component id="lbar" min="-2" pref="167" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="moreButton" min="-2" pref="29" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="historyField" alignment="0" pref="543" max="32767" attributes="1"/>
-                  <Component id="definitionField" alignment="0" pref="543" max="32767" attributes="1"/>
-                  <Component id="symbolField" alignment="0" pref="543" max="32767" attributes="1"/>
+                  <Component id="historyField" alignment="0" pref="554" max="32767" attributes="1"/>
+                  <Component id="definitionField" alignment="0" pref="554" max="32767" attributes="1"/>
+                  <Component id="symbolField" alignment="0" pref="554" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="fileField" pref="512" max="32767" attributes="0"/>
+                      <Component id="fileField" pref="522" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="holdPath" min="-2" pref="26" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="fullField" alignment="0" pref="543" max="32767" attributes="1"/>
+                  <Component id="fullField" alignment="0" pref="554" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -116,7 +108,7 @@
               <Component id="summaryLabel" pref="629" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jScrollPane1" alignment="0" pref="651" max="32767" attributes="0"/>
+          <Component id="jScrollPane1" alignment="0" pref="653" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -178,10 +170,8 @@
     </Component>
     <Component class="javax.swing.JTextField" name="fullField">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="false">
-            <Font name="DialogInput" size="12" style="0"/>
-          </FontInfo>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="DialogInput" size="12" style="0"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -204,10 +194,8 @@
     </Component>
     <Component class="javax.swing.JTextField" name="definitionField">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="false">
-            <Font name="DialogInput" size="12" style="0"/>
-          </FontInfo>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="DialogInput" size="12" style="0"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -230,10 +218,8 @@
     </Component>
     <Component class="javax.swing.JTextField" name="symbolField">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="false">
-            <Font name="DialogInput" size="12" style="0"/>
-          </FontInfo>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="DialogInput" size="12" style="0"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -256,10 +242,8 @@
     </Component>
     <Component class="javax.swing.JTextField" name="fileField">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="false">
-            <Font name="DialogInput" size="12" style="0"/>
-          </FontInfo>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="DialogInput" size="12" style="0"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="Config.getInstance().getPath()" type="code"/>
@@ -285,10 +269,8 @@
     </Component>
     <Component class="javax.swing.JTextField" name="historyField">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="false">
-            <Font name="DialogInput" size="12" style="0"/>
-          </FontInfo>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="DialogInput" size="12" style="0"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -360,10 +342,8 @@
     </Container>
     <Component class="javax.swing.JLabel" name="summaryLabel">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="false">
-            <Font name="Dialog" size="12" style="0"/>
-          </FontInfo>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Dialog" size="12" style="0"/>
         </Property>
         <Property name="text" type="java.lang.String" value=" "/>
       </Properties>
@@ -375,13 +355,13 @@
     <Component class="javax.swing.JLabel" name="jLabel6">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="4"/>
-        <Property name="text" type="java.lang.String" value="Search"/>
+        <Property name="text" type="java.lang.String" value="Configuration"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="indexDatabaseCombo">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new IndexDatabaseComboModel()" type="code"/>
+          <Connection code="new org.opensolaris.opengrok.search.scope.ConfigurationComboModel()" type="code"/>
         </Property>
       </Properties>
       <Events>
@@ -434,10 +414,8 @@
     </Component>
     <Component class="javax.swing.JToggleButton" name="holdPath">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-          <FontInfo relative="false">
-            <Font name="Dialog" size="10" style="0"/>
-          </FontInfo>
+        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+          <Font name="Dialog" size="10" style="0"/>
         </Property>
         <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="Config.getInstance().getPathHold()" type="code"/>

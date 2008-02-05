@@ -22,12 +22,9 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident	"@(#)IndexDatabaseComboModel.java 1.1     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.search.scope;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
@@ -38,16 +35,16 @@ import javax.swing.event.ListDataListener;
  *
  * @author Trond Norbye
  */
-public class IndexDatabaseComboModel implements ComboBoxModel {
+public class ConfigurationComboModel implements ComboBoxModel {
     private List<ListDataListener> clients;
     private Object selected;
-    private List<IndexDatabase> data;
+    private List<File> data;
     
-    /** Creates a new instance of IndexDatabaseComboModel */
-    public IndexDatabaseComboModel() {
+    /** Creates a new instance of ConfigurationComboModel */
+    public ConfigurationComboModel() {
         clients = new ArrayList<ListDataListener>();
         selected = null;
-        data = Config.getInstance().getAvailableIndexDatabases();
+        data = Config.getInstance().getRecentConfigurations();
     }
 
     public void refresh() {
@@ -68,17 +65,7 @@ public class IndexDatabaseComboModel implements ComboBoxModel {
      *        to clear the selection
      */
     public void setSelectedItem(Object anItem) {
-        if (anItem instanceof String) {
-            selected = false;
-            for (IndexDatabase db : data) {
-                if (db.getSource().equalsIgnoreCase((String)anItem)) {
-                    selected = db;
-                    break;
-                }
-            }
-        } else {
-            selected = anItem;
-        }
+        selected = anItem;
     }
 
     /**

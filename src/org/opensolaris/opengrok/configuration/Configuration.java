@@ -23,6 +23,14 @@
  */
 package org.opensolaris.opengrok.configuration;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -237,5 +245,29 @@ public class Configuration {
 
     public void setRemoteScmSupported(boolean remoteScmSupported) {
         this.remoteScmSupported = remoteScmSupported;
+    }
+
+    /**
+     * Write the current configuration to a file
+     * @param file the file to write the configuration into
+     * @throws IOException if an error occurs
+     */
+    public void write(File file) throws IOException {
+        XMLEncoder e = new XMLEncoder(
+                new BufferedOutputStream(new FileOutputStream(file)));
+        e.writeObject(this);
+        e.close();
+    }
+
+    public static Configuration read(File file) throws IOException {
+        XMLDecoder d = new XMLDecoder(
+                new BufferedInputStream(new FileInputStream(file)));
+        Object ret = d.readObject();
+        d.close();
+        
+        if (!(ret instanceof Configuration)) {
+            throw new IOException("Not a valid config file");
+        }        
+        return (Configuration)ret;
     }
 }
