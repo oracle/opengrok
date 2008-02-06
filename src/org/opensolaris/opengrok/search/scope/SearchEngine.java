@@ -110,6 +110,20 @@ public class SearchEngine {
         qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
         hits = new ArrayList<org.apache.lucene.search.Hit>();
     }
+
+    public boolean isValidQuery() {
+        boolean ret = false;
+        String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
+        if (qry.length() > 0) {
+            try {
+                qparser.parse(qry);
+                ret = true;
+            } catch (Exception e) {                
+            }
+        }
+        
+        return ret;
+    }
     
     private void searchSingleDatabase(File root) throws Exception {
         IndexReader ireader = IndexReader.open(root);

@@ -39,12 +39,18 @@ class Search {
      * usage Search index "query" prunepath
      */
     public static void main(String[] argv) {
-        String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h] 'query string' ..\n" + "\t -R <configuration.xml> Read configuration from the specified file\n" + "\t -d Symbol Definitions\n" + "\t -r Symbol References\n" + "\t -p Path\n" + "\t -h History";
+        String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" 
+                + "\t -R <configuration.xml> Read configuration from the specified file\n" 
+                + "\t -d Symbol Definitions\n" 
+                + "\t -r Symbol References\n" 
+                + "\t -p Path\n" 
+                + "\t -h History\n"  
+                + "\t -f Full text";
 
         SearchEngine engine = new SearchEngine();
         boolean config = false;
 
-        Getopt getopt = new Getopt(argv, "R:d:r:p:h:");
+        Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:");
         try {
             getopt.parse();
         } catch (Exception e) {
@@ -78,7 +84,10 @@ class Search {
                 case 'h':
                     engine.setHistory(getopt.getOptarg());
                     break;
-
+                case 'f' :
+                    engine.setFreetext(getopt.getOptarg());
+                    break;
+                    
                 default:
                     System.err.println("Unknown option: " + (char) cmd);
                     System.err.println(usage);
@@ -88,6 +97,12 @@ class Search {
 
         if (!config) {
             System.err.println("You must specify a configuration file");
+            System.err.println(usage);
+            System.exit(1);
+        }
+        
+        if (!engine.isValidQuery()) {
+            System.err.println("You did not specify a valid query");
             System.err.println(usage);
             System.exit(1);
         }
