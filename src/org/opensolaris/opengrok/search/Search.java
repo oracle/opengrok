@@ -18,128 +18,94 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
 package org.opensolaris.opengrok.search;
 
-import java.io.*;
-import org.apache.lucene.index.*;
-import org.apache.lucene.search.*;
-import org.apache.lucene.queryParser.*;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.search.scope.SearchEngine;
+import org.opensolaris.opengrok.util.Getopt;
 
 /**
  * Search and list the matching files
  */
 class Search {
-    
+
     /**
      * usage Search index "query" prunepath
      */
     public static void main(String[] argv) {
-	String usage = "USAGE: Search DATA_ROOT [-d | -r | -p | -h] 'query string' ..\n"
-	    + "\t DATA_ROOT is the directory where OpenGrok data files are stored\n"
-	    + "\t -d Symbol Definitions\n"
-	    + "\t -r Symbol References\n"
-	    + "\t -p Path\n"
-	    + "\t -h History"
-	    ;
-	if (argv == null || argv.length < 2) {
-	    System.out.println(usage);
-	    System.exit(1);
-	}
-	StringBuffer q = new  StringBuffer("");
-	StringBuffer defs = new  StringBuffer("");
-	StringBuffer refs = new  StringBuffer("");
-	StringBuffer path = new  StringBuffer("");
-	StringBuffer hist = new  StringBuffer("");
-	String DATA_ROOT = null;
-	
-	for (int i = 0; i < argv.length ; i++) {
-	    if (argv[i].equals("-d")) {
-		if(i+1 < argv.length) {
-		    defs.append(argv[++i] + ' ');
-		}
-	    } else if (argv[i].equals("-r")) {
-		if(i+1 < argv.length) {
-		    refs.append(argv[++i] + ' ');
-		}
-	    } else if (argv[i].equals("-p")) {
-		if(i+1 < argv.length) {
-		    path.append(argv[++i] + ' ');
-		}
-	    } else if (argv[i].equals("-h")) {
-		if(i+1 < argv.length) {
-		    hist.append(argv[++i] + ' ');
-		}
-	    } else if (!argv[i].startsWith("-")) {
-		if (DATA_ROOT == null) {
-		    DATA_ROOT = argv[i];
-		} else {
-		    q.append(argv[i] + ' ');
-		}
-	    } else {
-		System.out.println(usage);
-		System.exit(1);
-	    }
-	}
-	
-	if (q!= null && q.equals("")) q = null;
-	if (defs != null && defs.length() == 0) defs = null;
-	if (refs != null && refs.length() == 0) refs = null;
-	if (hist != null && hist.length() == 0) hist = null;
-	if (path != null && path.length() == 0) path = null;
-	
-	if (q != null || defs != null || refs != null || hist != null || path != null) {
-	    try{
-		CompatibleAnalyser analyzer = new CompatibleAnalyser();
-		String qstr =   (q == null ? "" : q ) +
-		    (defs == null ? "" : " defs:(" + defs+")") +
-		    (refs == null ? "" : " refs:(" + refs+")") +
-		    (path == null ? "" : " path:(" + path+")") +
-		    (hist == null ? "" : " hist:(" + hist+")");
-		
-		QueryParser qparser = new QueryParser("full", analyzer);
-		qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
-                qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
-		Query query = qparser.parse(qstr); //parse the
-		File src_root = new File(DATA_ROOT, "SRC_ROOT");
-		String SRC_ROOT = "";
-		try {
-		    if(src_root.canRead()) {
-			BufferedReader br = new BufferedReader(new FileReader(src_root));
-			SRC_ROOT = br.readLine();
-			if(!(new File(SRC_ROOT)).isDirectory()) {
-			    SRC_ROOT = "";
-			}
-		    } else {
-			SRC_ROOT = "";
-		    }
-		} catch (Exception e) {
-		    e.printStackTrace();
-		    SRC_ROOT = "";
-		}
-		IndexReader ireader = IndexReader.open(DATA_ROOT + "/index");
-		Searcher searcher = new IndexSearcher(ireader);
-		Hits hits = searcher.search(query);
-		
-		if (hits.length() == 0) {
-		    System.err.println("Your search  "+ query.toString() + " did not match any files.");
-		}
-		for (int i = 0; i < hits.length(); i++) {
-		    String rpath = hits.doc(i).get("path");
-		    System.out.println(SRC_ROOT + rpath);
-		}
-	    } catch (Exception e) {
-		e.printStackTrace();
-	    }
-	}
+        String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h] 'query string' ..\n" + "\t -R <configuration.xml> Read configuration from the specified file\n" + "\t -d Symbol Definitions\n" + "\t -r Symbol References\n" + "\t -p Path\n" + "\t -h History";
+
+        SearchEngine engine = new SearchEngine();
+        boolean config = false;
+
+        Getopt getopt = new Getopt(argv, "R:d:r:p:h:");
+        try {
+            getopt.parse();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println(usage);
+            System.exit(1);
+        }
+        
+        int cmd;
+        while ((cmd = getopt.getOpt()) != -1) {
+            switch (cmd) {
+                case 'R':
+                    try {
+                        RuntimeEnvironment.getInstance().readConfiguration(new File(getopt.getOptarg()));
+                        config = true;
+                    } catch (Exception e) {
+                        System.err.println("Failed to read config file: ");
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+                    break;
+                case 'd':
+                    engine.setDefinition(getopt.getOptarg());
+                    break;
+                case 'r':
+                    engine.setSymbol(getopt.getOptarg());
+                    break;
+                case 'p':
+                    engine.setFile(getopt.getOptarg());
+                    break;
+                case 'h':
+                    engine.setHistory(getopt.getOptarg());
+                    break;
+
+                default:
+                    System.err.println("Unknown option: " + (char) cmd);
+                    System.err.println(usage);
+                    System.exit(1);
+            }
+        }
+
+        if (!config) {
+            System.err.println("You must specify a configuration file");
+            System.err.println(usage);
+            System.exit(1);
+        }
+        
+        int nhits = engine.search();
+        if (nhits == 0) {
+            System.err.println("Your search \"" + engine.getQuery() + "\" did not match any files.");
+        } else {
+            List<Hit> hits = new ArrayList<Hit>();
+            engine.more(0, nhits, hits);
+            String root = RuntimeEnvironment.getInstance().getSourceRootPath();
+            for (Hit hit : hits) {
+                File file = new File(root, hit.getFilename());
+                System.out.println(file.getAbsolutePath() + ": [" + hit.getLine() + "]");
+            }
+        }
+    }
+
+    private Search() {
     }
 }

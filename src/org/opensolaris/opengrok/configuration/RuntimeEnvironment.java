@@ -489,6 +489,7 @@ public class RuntimeEnvironment {
      */
     public void readConfiguration(File file) throws IOException {
         configuration = Configuration.read(file);
+        register();
     }
     
     /**
@@ -520,6 +521,7 @@ public class RuntimeEnvironment {
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+        register();
     }
     
     private ServerSocket configServerSocket;

@@ -109,22 +109,24 @@ public class SearchEngine {
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
         hits = new ArrayList<org.apache.lucene.search.Hit>();
-        source = RuntimeEnvironment.getInstance().getSourceRootPath();
-        data = RuntimeEnvironment.getInstance().getDataRootPath();
     }
     
     private void searchSingleDatabase(File root) throws Exception {
-                IndexReader ireader = IndexReader.open(root);
-                Searcher searcher = new IndexSearcher(ireader);
-                Hits res = searcher.search(query);
-                if (res.length() > 0) {
-                    Iterator iter = res.iterator();
-                    while (iter.hasNext()) {
-                        org.apache.lucene.search.Hit h = (org.apache.lucene.search.Hit)iter.next();                        
-                        hits.add(h);
-                    }
-                }
-        
+        IndexReader ireader = IndexReader.open(root);
+        Searcher searcher = new IndexSearcher(ireader);
+        Hits res = searcher.search(query);
+        if (res.length() > 0) {
+            Iterator iter = res.iterator();
+            while (iter.hasNext()) {
+                org.apache.lucene.search.Hit h = (org.apache.lucene.search.Hit) iter.next();
+                hits.add(h);
+            }
+        }
+
+    }
+    
+    public String getQuery() {
+        return query.toString();
     }
     
     /**
@@ -134,9 +136,10 @@ public class SearchEngine {
      * @return The number of hits
      */
     public int search() {
+        source = RuntimeEnvironment.getInstance().getSourceRootPath();
+        data = RuntimeEnvironment.getInstance().getDataRootPath();
         hits.clear();
-        
-        
+                
         String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
         if (qry.length() > 0) {
             try {
