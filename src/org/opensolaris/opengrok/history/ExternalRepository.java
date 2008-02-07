@@ -106,11 +106,21 @@ public abstract class ExternalRepository {
      * cache instead of creating it for each file being accessed. The default
      * implementation uses the history parser returned by
      * {@code getDirectoryHistoryParser()} to parse the repository's history.
+     * If {@code getDirectoryHistoryParser()} returns {@code null}, this
+     * method is a no-op.
      *
      * @throws Exception on error
      */
     void createCache() throws Exception {
-        HistoryParser p = getDirectoryHistoryParser().newInstance();
+        Class<? extends HistoryParser> pClass = getDirectoryHistoryParser();
+
+        // If we don't have a directory parser, we can't create the cache
+        // this way. Just give up and return.
+        if (pClass == null) {
+            return;
+        }
+
+        HistoryParser p = pClass.newInstance();
         File directory = new File(getDirectoryName());
         History history = p.parse(directory, this);
         if (history != null && history.getHistoryEntries() != null) {
