@@ -79,12 +79,12 @@ class SubversionHistoryParser implements HistoryParser {
         // now get the file's info
         info = client.info(file.getPath());
 
-        String fileUrl = info.getUrl();
-        String repoUrl = info.getRepository();
+        //String fileUrl = info.getUrl();
+        //String repoUrl = info.getRepository();
 
         // now we simply erase the repo part of the URL, and the leading path fragment
-        File fileRepo = new File(fileUrl.substring(repoUrl.length())); 
-        File fileRepoSourcePath = new File(fileRepo.getPath().substring(leadingPathFragment.length()));
+        //File fileRepo = new File(fileUrl.substring(repoUrl.length())); 
+        //File fileRepoSourcePath = new File(fileRepo.getPath().substring(leadingPathFragment.length()));
         int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
 
         // Get the entire history, with changed files
@@ -109,14 +109,30 @@ class SubversionHistoryParser implements HistoryParser {
                 entry.setAuthor(msg.getAuthor());
                 entry.setMessage(msg.getMessage());
                 entry.setActive(true);
+
+                // Disabling support for comparing files across renames
+                // until we have a solution that works (preferably for all
+                // SCMs).
+                //
+                // Current problems (intentionally vague here, since I don't
+                // know all the details):
+                //   1. doesn't work along with createCache()
+                //   2. doesn't work correctly for commits that touch files
+                //      in different directories
+                //   3. problems with checkouts of subdirs of a repository
+                /*
                 entry.setRepositoryPath(fileRepo);
                 entry.setSourceRootPath(fileRepoSourcePath);
+                */
 
                 ChangePath[] changedPaths = msg.getChangedPaths();
                 if (changedPaths != null) {
                     for (ChangePath cp : changedPaths) {
                         final String itemPath = cp.getPath();
 
+                        // Disabling support for comparing files across renames
+                        // for now
+                        /*
                         // directory-directory copy
                         if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && fileRepo.getPath().startsWith(itemPath)) {
                             String newRepoLoc = cp.getCopySrcPath() + fileRepo.getPath().substring(itemPath.length());
@@ -128,6 +144,8 @@ class SubversionHistoryParser implements HistoryParser {
                             fileRepo = new File(cp.getCopySrcPath());
                             fileRepoSourcePath = new File(cp.getCopySrcPath().substring(leadingPathFragment.length()));
                         }
+                        */
+
                         if (itemPath.startsWith(leadingPathFragment)) {
                             File f = new File(workingCopy, itemPath.substring(leadingPathFragment.length()));
                             if (f.exists() && !f.isDirectory()) {
