@@ -29,7 +29,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -565,33 +567,103 @@ public class HistoryGuru {
         }
     }
     
+    private void createCache(ExternalRepository repository) {
+        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
+        String path = repository.getDirectoryName();
+        String type = repository.getClass().getSimpleName();
+
+        if (verbose) {
+            System.out.print("Create historycache for " + path + " (" + type + ")");
+            System.out.flush();
+        }
+
+        try {
+            repository.createCache();
+        } catch (Exception e) {
+            System.err.println("An error occured while creating cache for " + path + " (" + type + ")");
+            e.printStackTrace();
+        }
+
+        if (verbose) {
+            System.out.println();
+        }   
+    }
+    
     /**
      * Create the history cache for all of the repositories
      */
     public void createCache() {
-        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
-
+        boolean threading = System.getProperty("org.opensolaris.opengrok.history.threads", null) != null;
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+        
         for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
-            ExternalRepository repository = entry.getValue();
-            
-            String path = entry.getKey();
-            String type = repository.getClass().getSimpleName();
-            
-            if (verbose) {
-                System.out.print("Create historycache for " + path + " (" + type + ")");
-                System.out.flush();
+            if (threading) {
+                final ExternalRepository repos = entry.getValue();
+                Thread t = new Thread(new Runnable() {
+                    public void run() {
+                        createCache(repos);
+                    }                    
+                });
+                t.start();
+                threads.add(t);
+            } else {
+                createCache(entry.getValue());
             }
-            
+        }
+        // Wait for all threads to finish
+        while (threads.size() > 0) {
+            for (Thread t : threads) {
+                if (!t.isAlive()) {
+                    try {
+                        t.join();
+                        threads.remove(t);
+                        break;
+                    } catch (InterruptedException ex) {
+                    }
+                } 
+            }
             try {
-                repository.createCache();
-            } catch (Exception e) {
-                System.err.println("An error occured while creating cache for " + path + " (" + type + ")");
-                e.printStackTrace();
-            }
+                Thread.sleep(1000);
+            } catch (Exception e) {}
+        }
+    }
 
-            if (verbose) {
-                System.out.println();
-            }   
+    public void createCache(List<String> repositories) {
+        boolean threading = System.getProperty("org.opensolaris.opengrok.history.threads", null) != null;
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+        File root = RuntimeEnvironment.getInstance().getSourceRootFile();
+        for (String file : repositories) {
+            final ExternalRepository repos = getRepository(new File(root, file));
+            if (repos != null) {
+                if (threading) {
+                    Thread t = new Thread(new Runnable() {
+                        public void run() {
+                            createCache(repos);
+                        }
+                    });
+                    t.start();
+                    threads.add(t);
+                } else {
+                    createCache(repos);
+                }
+            }
+        }
+        
+        // Wait for all threads to finish
+        while (threads.size() > 0) {
+            for (Thread t : threads) {
+                if (!t.isAlive()) {
+                    try {
+                        t.join();
+                        threads.remove(t);
+                        break;
+                    } catch (InterruptedException ex) {
+                    }
+                } 
+            }    
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {}
         }
     }
 

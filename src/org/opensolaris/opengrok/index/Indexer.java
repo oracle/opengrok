@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.search.scope.MainFrame;
 import org.opensolaris.opengrok.util.Getopt;
 
@@ -64,7 +65,8 @@ public class Indexer {
             "\t          of a file is scanned and a '[..all..]' link is inserted if the\n" +
             "\t          is bigger. Activating this option may slow down the server.\n" +
             "\t-n Do not generate indexes\n" +
-            "\t-H Generate history cache for external repositories\n" +
+            "\t-H Generate history cache for all external repositories\n" +
+            "\t-h /path/to/repos Generate history cache for the specified repos (absolute path from source root)\n" +
             "\t-r on/off Turn on / off support for remote SCM systems\n" +
             "\t-L laf Use \"laf\" as the look'n'feel for the webapp\n" +
             "\t-w root URL of the webapp, default is /source\n" +
@@ -83,7 +85,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHw:i:Ss:ltvm:A:L:";
+    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHh:w:i:Ss:ltvm:A:L:";
 
     /**
      * Program entry point
@@ -106,6 +108,7 @@ public class Indexer {
         } else {
             boolean searchRepositories = false;
             ArrayList<String> subFiles = new ArrayList<String>();
+            ArrayList<String> repositories = new ArrayList<String>();
             String configFilename = null;
             String configHost = null;
             boolean addProjects = false;
@@ -176,6 +179,7 @@ public class Indexer {
                         break;
                     case 'n': runIndex = false; break;
                     case 'H': refreshHistory = true; break;
+                    case 'h' : repositories.add(getopt.getOptarg()); break;
                     case 'r': {
                         if (getopt.getOptarg().equalsIgnoreCase("on")) {
                             env.setRemoteScmSupported(true);
@@ -386,6 +390,8 @@ public class Indexer {
                 
                 if (refreshHistory) {
                     HistoryGuru.getInstance().createCache();
+                } else if (repositories.size() > 0) {
+                    HistoryGuru.getInstance().createCache(repositories);
                 }
 
                 if (listFiles) {
