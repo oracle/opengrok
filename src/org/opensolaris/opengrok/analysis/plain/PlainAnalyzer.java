@@ -60,16 +60,9 @@ public class PlainAnalyzer extends FileAnalyzer {
         plainfull = new PlainFullTokenizer(dummy);
         plainref = new PlainSymbolTokenizer(dummy);
         xref = new PlainXref((Reader) null);
-        //using pref to pass the path to ctags!
-        //Preferences prefs = Preferences.userNodeForPackage(PlainAnalyzer.class);
-        //String ctagsPath = prefs.get("ctags", null);
-        String ctagsPath = RuntimeEnvironment.getInstance().getCtags();
-        if (ctagsPath != null ) {
-            try {
-                ctags = new Ctags(ctagsPath);
-            } catch (IOException e) {
-//                System.err.println("ERROR: running ctags: " + ctagsPath + " searching definitions will not work!");
-            }
+        try {
+            ctags = new Ctags();
+        } catch (IOException e) {
         }
         if(ctags == null) {
             System.err.println("WARNING: unable to run ctags! searching definitions will not work!");
