@@ -244,7 +244,10 @@ public class HistoryGuru {
 
         if (parser != null) {
             try {
-                return new HistoryReader(HistoryCache.get(file, parser, repos));
+                History history = HistoryCache.get(file, parser, repos);
+                if (history != null) {
+                    return new HistoryReader(history);
+                }
             } catch (IOException ioe) {
                 throw ioe;
             } catch (Exception e) {
