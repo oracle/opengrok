@@ -62,6 +62,7 @@ import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sql.SQLAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.tcl.TclAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -124,6 +125,7 @@ public class AnalyzerGuru {
             new GZIPAnalyzerFactory(),
             new JavaAnalyzerFactory(),
             new LispAnalyzerFactory(),
+            new TclAnalyzerFactory(),
             new SQLAnalyzerFactory(),
         };
 
