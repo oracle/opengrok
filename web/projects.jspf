@@ -50,32 +50,15 @@ if (env.hasProjects()) {
     
     // see if a new parameter is passed...
     String p[] = request.getParameterValues("project");
-    if (p != null) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : p) {
-            sb.append(s);
-            sb.append(" ");
-        }
-        project = sb.toString().trim();
+    if (p != null && p.length > 0) {
+        project = p[0];
     }
-    
-    // see that this is a valid project..
+
+    // Check that the project exists
     if (project != null) {
-        StringBuilder sb = new StringBuilder();
-        for (String aproj : project.split(" ")) {
-            boolean valid = false;
-            for (Project proj : projects) {
-                if (proj.getPath().equalsIgnoreCase(aproj)) {
-                    valid = true;
-                    break;
-                }
-            }
-            if (valid) {
-                sb.append(aproj);
-                sb.append(" ");
-            }
+        if (Project.getProject(project) == null) {
+            project = "";    
         }
-        project = sb.toString().trim();
     } else {
         project = "";
     }

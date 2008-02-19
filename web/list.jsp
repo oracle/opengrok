@@ -62,7 +62,7 @@ if (valid) {
                 }
             }
 
-            boolean add = false;
+            boolean set = false;
             if (project != null) {
                boolean found = false;
                for (String aproj : project.split(" ")) {
@@ -72,20 +72,14 @@ if (valid) {
                     }
                }
                if (!found) {
-                   add = true;
+                   set = true;
                }
             } else {
-                add = true;
+                set = true;
             }
             
-            if (add) {
-                if (project == null || project.length() == 0) {
-                    project = activeProject.getPath();
-                } else {
-                    project = project + " " + activeProject.getPath();
-                }
-                // update the cookie
-                Cookie cookie = new Cookie("OpenGrok/project", project);
+            if (set) {
+                Cookie cookie = new Cookie("OpenGrok/project", activeProject.getPath());
                 cookie.setPath(context + "/");
                 response.addCookie(cookie);
             }
