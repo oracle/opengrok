@@ -315,6 +315,8 @@ public class IndexDatabase {
         } else {
             System.err.println("Warning: did not add " + path);
         }
+
+        try { in.close(); } catch (Exception e) {}
     }
 
     /**
