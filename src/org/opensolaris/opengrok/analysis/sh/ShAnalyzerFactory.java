@@ -38,8 +38,6 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
         "KSH",
         "CSH",
         "BASH",
-        "TCL",
-        "TK",
         "PERL",
         "RUBY",
         "PM",
