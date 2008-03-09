@@ -32,7 +32,7 @@ i request
 d none opt ? ? ?
 d none opt/OSOLopengrok 0755 bin bin
 d none opt/OSOLopengrok/lib 0755 bin bin
-f none opt/OSOLopengrok/lib/ant-tools.jar=lib/ant-tools.jar
+f none opt/OSOLopengrok/lib/ant.jar=dist/lib/ant.jar
 f none opt/OSOLopengrok/lib/bcel-5.1.jar=lib/bcel-5.1.jar
 f none opt/OSOLopengrok/lib/jakarta-oro-2.0.8.jar=lib/jakarta-oro-2.0.8.jar
 f none opt/OSOLopengrok/lib/lucene-core-2.2.0.jar=lib/lucene-core-2.2.0.jar

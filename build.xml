@@ -193,6 +193,9 @@ Use is subject to license terms.
       -->
     <target name="-copy-lib-without-netbeans"
             unless="manifest.available+main.class+mkdist.available">
+      <copy todir="${dist.dir}/lib">
+        <fileset file="${file.reference.ant.jar}"/>
+      </copy>
       <copy todir="${dist.dir}">
         <fileset dir="." includes="${opengrok.lib.files}"/>
       </copy>
