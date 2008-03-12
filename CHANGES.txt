@@ -1,3 +1,18 @@
+March 2008 update 0.6
+-------------------------------------------------
+Please see http://src.opensolaris.org/source/history/opengrok/trunk/ for
+full history information, and for the list of contributors. The following is
+just a summary.
+
+New Features:
+   Analyzer-support for Tcl/Tk
+   Analyzer-support for SQL
+   Support for TeamWare repositories
+   Use multiple index databases
+
+Bug fixes:
+   A lot.. See http://src.opensolaris.org/source/history/opengrok/trunk/
+
 August 2007 update 0.5
 -------------------------------------------------
 Please see http://cvs.opensolaris.org/source/history/opengrok/trunk/ for
