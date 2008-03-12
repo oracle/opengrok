@@ -87,9 +87,11 @@ class SubversionHistoryParser implements HistoryParser {
         //File fileRepoSourcePath = new File(fileRepo.getPath().substring(leadingPathFragment.length()));
         int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
 
+        boolean fetchFileInfo = file.isDirectory();
+        
         // Get the entire history, with changed files
         LogMessage[] messages =
-            client.logMessages(file.getPath(), Revision.START, Revision.BASE, false, true);
+            client.logMessages(file.getPath(), Revision.START, Revision.BASE, false, fetchFileInfo);
 
         if (messages != null) {
             // reverse the history so we read it from newest to oldest
@@ -124,41 +126,42 @@ class SubversionHistoryParser implements HistoryParser {
                 entry.setRepositoryPath(fileRepo);
                 entry.setSourceRootPath(fileRepoSourcePath);
                 */
+                if (fetchFileInfo) {
+                    ChangePath[] changedPaths = msg.getChangedPaths();
+                    if (changedPaths != null) {
+                        for (ChangePath cp : changedPaths) {
+                            final String itemPath = cp.getPath();
 
-                ChangePath[] changedPaths = msg.getChangedPaths();
-                if (changedPaths != null) {
-                    for (ChangePath cp : changedPaths) {
-                        final String itemPath = cp.getPath();
-
-                        // Disabling support for comparing files across renames
-                        // for now
-                        /*
-                        // directory-directory copy
-                        if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && fileRepo.getPath().startsWith(itemPath)) {
-                            String newRepoLoc = cp.getCopySrcPath() + fileRepo.getPath().substring(itemPath.length());
-                            fileRepo = new File(newRepoLoc);                        
-                            fileRepoSourcePath = new File(newRepoLoc.substring(leadingPathFragment.length()));
-                        }
-                        // file-file copy
-                        else if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && itemPath.equals(fileRepo)) {
-                            fileRepo = new File(cp.getCopySrcPath());
-                            fileRepoSourcePath = new File(cp.getCopySrcPath().substring(leadingPathFragment.length()));
-                        }
-                        */
-
-                        if (itemPath.startsWith(leadingPathFragment)) {
-                            File f = new File(workingCopy, itemPath.substring(leadingPathFragment.length()));
-                            if (f.exists() && !f.isDirectory()) {
-                                String name = f.getCanonicalPath().substring(rootLength);
-                                entry.addFile(name);
+                            // Disabling support for comparing files across renames
+                            // for now
+                            /*
+                            // directory-directory copy
+                            if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && fileRepo.getPath().startsWith(itemPath)) {
+                                String newRepoLoc = cp.getCopySrcPath() + fileRepo.getPath().substring(itemPath.length());
+                                fileRepo = new File(newRepoLoc);                        
+                                fileRepoSourcePath = new File(newRepoLoc.substring(leadingPathFragment.length()));
                             }
-                        } else {                            
-                            // This is an arbitrary path which is outside of our working copy.
-                            // This link will be broken.
-//                            entry.addFile(itemPath);
-                        }
-                    }
+                            // file-file copy
+                            else if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && itemPath.equals(fileRepo)) {
+                                fileRepo = new File(cp.getCopySrcPath());
+                                fileRepoSourcePath = new File(cp.getCopySrcPath().substring(leadingPathFragment.length()));
+                            }
+                            */
 
+                            if (itemPath.startsWith(leadingPathFragment)) {
+                                File f = new File(workingCopy, itemPath.substring(leadingPathFragment.length()));
+                                if (f.exists() && !f.isDirectory()) {
+                                    String name = f.getCanonicalPath().substring(rootLength);
+                                    entry.addFile(name);
+                                }
+                            } else {                            
+                                // This is an arbitrary path which is outside of our working copy.
+                                // This link will be broken.
+    //                            entry.addFile(itemPath);
+                            }
+                        }
+
+                    }
                 }
                 revisions.put(msg.getRevisionNumber(), entry);
 
