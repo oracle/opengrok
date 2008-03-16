@@ -48,7 +48,7 @@ public class BazaarRepository extends ExternalRepository {
      */
     public BazaarRepository(String directory) {
         setDirectoryName(new File(directory).getAbsolutePath());
-        command = System.getProperty("org.opensolaris.opengrok.history.Bazaar", "/Users/trond/bin/bzr");
+        command = System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr");
     }
     
     /**
