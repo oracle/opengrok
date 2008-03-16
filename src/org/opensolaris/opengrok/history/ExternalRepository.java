@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * An interface for an external repository. 
@@ -138,13 +139,17 @@ public abstract class ExternalRepository {
                 }
             }
 
+            File root = RuntimeEnvironment.getInstance().getSourceRootFile();
             for (Map.Entry<String, List<HistoryEntry>> e : map.entrySet()) {
                 for (HistoryEntry ent : e.getValue()) {
                     ent.strip();
                 }
                 History hist = new History();
                 hist.setHistoryEntries(e.getValue());
-                HistoryCache.writeCacheFile(e.getKey(), hist);
+                File file = new File(root, e.getKey());
+                if (!file.isDirectory()) {
+                    HistoryCache.writeCacheFile(e.getKey(), hist);
+                }
             }
         }
     }
