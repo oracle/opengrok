@@ -467,6 +467,20 @@ public class HistoryGuru {
                 if (name.equals(".hg")) {
                     addMercurialRepository(files[ii].getParentFile(), repos, ignoredNames);
                     return;
+                } else if (name.equals(".bzr")) {
+                    try {
+                        String s = files[ii].getParentFile().getCanonicalPath();
+                        if (RuntimeEnvironment.getInstance().isVerbose()) {
+                            System.out.println("Adding Bazaar repository: <" + s + ">");
+                        }
+                        BazaarRepository rep = new BazaarRepository(s);
+                        addExternalRepository(rep, s, repos);
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getParentFile().getAbsolutePath() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }
+                    return;
                 } else if (name.equals(svnlabel)) {
                     if (isSvnAvailable()) {
                         try {
@@ -574,7 +588,8 @@ public class HistoryGuru {
         boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
-
+        long start = System.currentTimeMillis();
+        
         if (verbose) {
             System.out.print("Create historycache for " + path + " (" + type + ")");
             System.out.flush();
@@ -586,9 +601,9 @@ public class HistoryGuru {
             System.err.println("An error occured while creating cache for " + path + " (" + type + ")");
             e.printStackTrace();
         }
-
+        long stop = System.currentTimeMillis();
         if (verbose) {
-            System.out.println();
+            System.out.println(" (" + (stop - start) + "ms)");
         }   
     }
     

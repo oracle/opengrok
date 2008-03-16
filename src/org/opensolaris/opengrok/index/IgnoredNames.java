@@ -58,6 +58,7 @@ public class IgnoredNames {
         ".svn",
         ".hg",
         ".hgtags",
+        ".bzr",
         "*~",
 	"deleted_files",
 	".make.*",
