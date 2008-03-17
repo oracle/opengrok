@@ -185,11 +185,11 @@ public class Indexer {
                         if (getopt.getOptarg().equalsIgnoreCase("on")) {
                             env.setRemoteScmSupported(true);
                         } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
-                            env.setRemoteScmSupported(true);
+                            env.setRemoteScmSupported(false);
                         } else {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
                             System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
-                            System.err.println("           \"-Q off\" will ignore SCM for remote systems");
+                            System.err.println("           \"-r off\" will ignore SCM for remote systems");
                         }
                     }
                     break;
