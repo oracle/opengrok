@@ -51,7 +51,7 @@ import org.opensolaris.opengrok.util.Getopt;
 public class Indexer {
     private static String usage = "Usage: " +
             "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-p project-path] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] [-d DATA_ROOT] [subtree .. ]\n" +
-            "       opengrok.jar [-O | -l | -t] [-d DATA_ROOT]\n" +
+            "       opengrok.jar [-l | -t] [-d DATA_ROOT]\n" +
             "\t-q run quietly\n" +
             "\t-v Print progress information\n" +
             "\t-e economical - consumes less disk space\n" +
@@ -73,6 +73,7 @@ public class Indexer {
             "\t-i ignore named files or directories\n" +
             "\t-A ext:analyzer Files with extension ext should be analyzed with the named class\n" +
             "\t-m Maximum words in a file to index\n" +
+            "\t-O on/off Turn on / off database optimization\n" +
             "\t-a on/off Allow or disallow leading wildcards in a search\n" +
             "\t-S Search and add \"External\" repositories (Mercurial etc)\n" +
             "\t-s SRC_ROOT is root directory of source tree\n" +
@@ -85,7 +86,7 @@ public class Indexer {
             "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
             "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
 
-    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHh:w:i:Ss:ltvm:A:L:";
+    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHh:w:i:Ss:ltvm:O:A:L:";
 
     /**
      * Program entry point
@@ -189,6 +190,18 @@ public class Indexer {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
                             System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
                             System.err.println("           \"-Q off\" will ignore SCM for remote systems");
+                        }
+                    }
+                    break;
+                    case 'O': {
+                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                            env.setOptimizeDatabase(true);
+                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                            env.setOptimizeDatabase(false);
+                        } else {
+                            System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -O");
+                            System.err.println("       Ex: \"-O on\" will optimize the database as part of the index generation");
+                            System.err.println("           \"-O off\" disable optimization of the index database");
                         }
                     }
                     break;

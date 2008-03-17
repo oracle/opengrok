@@ -482,6 +482,14 @@ public class RuntimeEnvironment {
         threadConfig.get().setRemoteScmSupported(supported);
     }
     
+    public boolean isOptimizeDatabase() {
+        return threadConfig.get().isOptimizeDatabase();
+    }
+
+    public void setOptimizeDatabase(boolean optimizeDatabase) {
+        threadConfig.get().setOptimizeDatabase(optimizeDatabase);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read

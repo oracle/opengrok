@@ -64,6 +64,7 @@ public class Configuration {
     private String bugPattern;
     private String webappLAF;
     private boolean remoteScmSupported;
+    private boolean optimizeDatabase;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -83,6 +84,7 @@ public class Configuration {
         setBugPattern("\\b([12456789][0-9]{6})\\b");
         setWebappLAF("default");
         setRemoteScmSupported(false);
+        setOptimizeDatabase(true);
     }
     
     public String getCtags() {
@@ -245,6 +247,14 @@ public class Configuration {
 
     public void setRemoteScmSupported(boolean remoteScmSupported) {
         this.remoteScmSupported = remoteScmSupported;
+    }
+
+    public boolean isOptimizeDatabase() {
+        return optimizeDatabase;
+    }
+
+    public void setOptimizeDatabase(boolean optimizeDatabase) {
+        this.optimizeDatabase = optimizeDatabase;
     }
 
     /**

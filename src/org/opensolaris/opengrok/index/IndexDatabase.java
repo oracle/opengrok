@@ -67,6 +67,7 @@ public class IndexDatabase {
     private File xrefDir;
     private boolean interrupted;
     private List<IndexChangedListener> listeners;
+    private File dirtyFile;
     private boolean dirty;
 
     /**
@@ -152,6 +153,8 @@ public class IndexDatabase {
             xrefDir = new File(env.getDataRootFile(), "xref");
         }
         listeners = new ArrayList<IndexChangedListener>();
+        dirtyFile = new File(indexDir, "dirty");
+        dirty = dirtyFile.exists();
     }
 
     /**
@@ -199,7 +202,9 @@ public class IndexDatabase {
         }
 
         if (!interrupted && dirty) {
-            optimize();
+            if (RuntimeEnvironment.getInstance().isOptimizeDatabase()) {
+                optimize();
+            }
             createSpellingSuggestions();
         }
     }
@@ -218,6 +223,8 @@ public class IndexDatabase {
             if (RuntimeEnvironment.getInstance().isVerbose()) {
                 System.out.println("done");
             }
+            dirtyFile.delete();
+            dirty = false;
         } catch (IOException e) {
             System.err.println("ERROR: optimizing index: " + e);
         } finally {
@@ -263,6 +270,16 @@ public class IndexDatabase {
         }
     }
 
+    private void setDirty() {
+        try {
+            if (!dirty) {
+                dirtyFile.createNewFile();
+                dirty = true;
+            }
+        } catch (Exception e) { 
+            e.printStackTrace();
+        }
+    }
     /**
      * Remove a stale file (uidIter.term().text()) from the index database 
      * (and the xref file)
@@ -279,7 +296,7 @@ public class IndexDatabase {
         File xrefFile = new File(xrefDir, path);
         xrefFile.delete();
         xrefFile.getParentFile().delete();
-        dirty = true;
+        setDirty();
     }
 
     /**
@@ -311,7 +328,7 @@ public class IndexDatabase {
                 xrefFile.getParentFile().mkdirs();
                 fa.writeXref(xrefDir, path);
             }
-            dirty = true;
+            setDirty();
         } else {
             System.err.println("Warning: did not add " + path);
         }
