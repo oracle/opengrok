@@ -165,6 +165,7 @@ public class IndexDatabase {
         interrupted = false;
         try {
             writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer());
+            writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
             String root;
             File sourceRoot;
 
