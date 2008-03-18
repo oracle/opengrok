@@ -353,12 +353,19 @@ public class HistoryGuru {
      * @param parent The name of the directory
      * @return true if the files in this directory have associated revision history
      */
-    public boolean hasHistory(String parent) {
-        return
-            (new File(parent, "SCCS")).isDirectory() ||
-            (new File(parent, "RCS")).isDirectory() ||
-            (new File(parent, "CVS")).isDirectory() ||
-            (getRepository(new File(parent)) != null);
+    public boolean hasHistory(File file) {
+        ExternalRepository repos = getRepository(file);
+        if (repos != null) {
+            return repos.fileHasHistory(file);
+        }
+        
+        if (!file.isDirectory()) {
+            file = file.getParentFile();
+        } 
+        
+        return (new File(file, "SCCS")).isDirectory() ||
+               (new File(file, "RCS")).isDirectory() ||
+               (new File(file, "CVS")).isDirectory();
     }
 
     /**

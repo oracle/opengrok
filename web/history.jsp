@@ -45,6 +45,10 @@ if (path.length() > 0 && valid) {
     Format df = new SimpleDateFormat("dd-MMM-yyyy");
     Date tstart = new Date();
     File f = new File(rawSource + path);
+    if (!HistoryGuru.getInstance().hasHistory(f)) {
+        response.sendError(404, "No history");
+        return;        
+    }
     HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
 
     if (hr == null) {

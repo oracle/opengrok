@@ -114,7 +114,7 @@ if(resourcePath.length() < rawSource.length()
             parent = (lastSlash != -1) ? path.substring(0, lastSlash) : "";
             int pLastSlash = parent.lastIndexOf('/');
             parentBasename = pLastSlash != -1 ? parent.substring(pLastSlash+1) : parent;
-            noHistory = !(isDir || HistoryGuru.getInstance().hasHistory(rawSource + "/" + parent));
+            noHistory = !HistoryGuru.getInstance().hasHistory(resourceFile);
             noAnnotation = isDir ||
                     !HistoryGuru.getInstance().hasAnnotation(resourceFile);
             annotate = !noAnnotation &&
@@ -148,7 +148,7 @@ if(resourcePath.length() < rawSource.length()
 <div id="bar"><a href="<%=context%>" id="home">Home</a> | 
 <%
 
-if ((!isDir && noHistory) || servlet.startsWith("/hi")) {
+if (noHistory || servlet.startsWith("/hi")) {
 	%> <span class="c" id="history">History</span> |<%
 } else {
 	%><a id="history" href="<%=context%>/history<%=path%>">History</a> |<%
