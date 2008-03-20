@@ -29,17 +29,16 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 public class JarAnalyzerFactory extends FileAnalyzerFactory {
+    public static final JarAnalyzerFactory DEFAULT_INSTANCE =
+            new JarAnalyzerFactory();
 
     private static final String[] SUFFIXES = {
         "JAR", "WAR", "EAR"
     };
 
-    private static final String[] MAGICS = {
-        "PK\003\004"
-    };
-
-    public JarAnalyzerFactory() {
-        super(SUFFIXES, MAGICS, null, null, Genre.XREFABLE);
+    private JarAnalyzerFactory() {
+        // no magics for jar files, ZipAnalyzerFactory will handle it for us
+        super(SUFFIXES, null, null, null, Genre.XREFABLE);
     }
 
     @Override

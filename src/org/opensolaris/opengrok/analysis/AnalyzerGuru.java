@@ -116,12 +116,12 @@ public class AnalyzerGuru {
             new ELFAnalyzerFactory(),
             new JavaClassAnalyzerFactory(),
             new ImageAnalyzerFactory(),
-            new JarAnalyzerFactory(),
-            new ZipAnalyzerFactory(),
+            JarAnalyzerFactory.DEFAULT_INSTANCE,
+            ZipAnalyzerFactory.DEFAULT_INSTANCE,
             new TarAnalyzerFactory(),
             new CAnalyzerFactory(),
             new ShAnalyzerFactory(),
-            new PlainAnalyzerFactory(),
+            PlainAnalyzerFactory.DEFAULT_INSTANCE,
             new GZIPAnalyzerFactory(),
             new JavaAnalyzerFactory(),
             new LispAnalyzerFactory(),
@@ -144,7 +144,9 @@ public class AnalyzerGuru {
             "suffix '" + suffix + "' used in multiple analyzers";
         }
         for (String magic : factory.getMagicStrings()) {
-            magics.put(magic, factory);
+            FileAnalyzerFactory old = magics.put(magic, factory);
+            assert old == null :
+                "magic '" + magic + "' used in multiple analyzers";
         }
         matchers.addAll(factory.getMatchers());
         factories.add(factory);
@@ -434,7 +436,7 @@ public class AnalyzerGuru {
         }
 
         for (FileAnalyzerFactory.Matcher matcher : matchers) {
-            FileAnalyzerFactory fac = matcher.isMagic(content);
+            FileAnalyzerFactory fac = matcher.isMagic(content, in);
             if (fac != null) {
                 return fac;
             }

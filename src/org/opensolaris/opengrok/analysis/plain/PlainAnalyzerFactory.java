@@ -34,11 +34,8 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class PlainAnalyzerFactory extends FileAnalyzerFactory {
 
-    private static PlainAnalyzerFactory DEFAULT_FACTORY;
-
     private static final Matcher MATCHER = new Matcher() {
-            private PlainAnalyzerFactory factory;
-            public FileAnalyzerFactory isMagic(byte[] content) {
+            public FileAnalyzerFactory isMagic(byte[] content, InputStream in) {
                 for(byte b: content) {
                     if (b >= 32 && b < 127) {
                         // ASCII printable characters
@@ -56,15 +53,15 @@ public class PlainAnalyzerFactory extends FileAnalyzerFactory {
                         return null;
                     }
                 }
-                return DEFAULT_FACTORY;
+                return DEFAULT_INSTANCE;
             }
         };
 
-    public PlainAnalyzerFactory() {
+    public final static PlainAnalyzerFactory DEFAULT_INSTANCE =
+            new PlainAnalyzerFactory();
+
+    private PlainAnalyzerFactory() {
         super(null, null, MATCHER, "text/plain", Genre.PLAIN);
-        if (DEFAULT_FACTORY == null) {
-            DEFAULT_FACTORY = this;
-        }
     }
 
     @Override

@@ -1,7 +1,17 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
+import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
+import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzer;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
@@ -53,5 +63,37 @@ public class AnalyzerGuruTest {
         // remove the mapping and verify that it is gone
         AnalyzerGuru.addExtension("UNLIKELY_EXTENSION", null);
         assertNull(AnalyzerGuru.find("file.unlikely_extension"));
+    }
+
+    @Test
+    public void testZip() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ZipOutputStream zos = new ZipOutputStream(baos);
+        zos.putNextEntry(new ZipEntry("dummy"));
+        zos.closeEntry();
+        zos.close();
+        InputStream in = new ByteArrayInputStream(baos.toByteArray());
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "dummy");
+        assertSame(ZipAnalyzer.class, fa.getClass());
+    }
+
+    @Test
+    public void testJar() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JarOutputStream jos = new JarOutputStream(baos);
+        jos.putNextEntry(new JarEntry("dummy"));
+        jos.closeEntry();
+        jos.close();
+        InputStream in = new ByteArrayInputStream(baos.toByteArray());
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "dummy");
+        assertSame(JarAnalyzer.class, fa.getClass());
+    }
+
+    @Test
+    public void testPlainText() throws IOException {
+        ByteArrayInputStream in = new ByteArrayInputStream(
+                "This is a plain text file.".getBytes("US-ASCII"));
+        assertSame(PlainAnalyzer.class,
+                   AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
     }
 }

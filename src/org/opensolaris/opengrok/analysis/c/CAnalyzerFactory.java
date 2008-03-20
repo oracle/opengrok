@@ -54,12 +54,8 @@ public class CAnalyzerFactory extends FileAnalyzerFactory {
         "PHP",
     };
 
-    private static final String[] MAGICS = {
-        "/*"
-    };
-
     public CAnalyzerFactory() {
-        super(SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

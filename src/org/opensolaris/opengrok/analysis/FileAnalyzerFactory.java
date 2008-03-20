@@ -186,11 +186,16 @@ public class FileAnalyzerFactory {
     protected interface Matcher {
         /**
          * Try to match the file contents with an analyzer factory.
+         * If the method reads from the input stream, it must reset the
+         * stream before returning.
+         *
          * @param contents the first few bytes of a file
+         * @param in the input stream from which the full file can be read
          * @return an analyzer factory if the contents match, or {@code null}
          * if they don't match any factory known by this matcher
          */
-        FileAnalyzerFactory isMagic(byte[] contents);
+        FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
+                throws IOException;
     }
 
     /**
