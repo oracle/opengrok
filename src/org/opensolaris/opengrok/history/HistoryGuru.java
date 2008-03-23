@@ -154,8 +154,9 @@ public class HistoryGuru {
             if (repos != null && repos.fileHasHistory(file)) {
                 Class<? extends HistoryParser> parser;
                 parser = repos.getHistoryParser();
-                if (parser != null)
+                if (parser != null) {
                     return parser;
+                }
             }
             break;
         case RCS:
@@ -213,8 +214,9 @@ public class HistoryGuru {
             try {
                 ExternalRepository repos = getRepository(file.getParentFile());
                 History history = HistoryCache.get(file, parser, repos);
-                if (history == null)
+                if (history == null) {
                     return null;
+                }
                 return new HistoryReader(history);
             } catch (IOException ioe) {
                 throw ioe;
@@ -350,7 +352,7 @@ public class HistoryGuru {
     
     /**
      * Does this directory contain files with source control information?
-     * @param parent The name of the directory
+     * @param file The name of the directory
      * @return true if the files in this directory have associated revision history
      */
     public boolean hasHistory(File file) {
@@ -390,6 +392,7 @@ public class HistoryGuru {
         try{
             File f = new File(args[0]);
             File d = new File(".");
+            RuntimeEnvironment.getInstance().setSourceRootFile(d.getCanonicalFile());
             HistoryGuru.getInstance().addExternalRepositories(d.getCanonicalPath());
             System.out.println("-----Reading comments as a reader");
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
