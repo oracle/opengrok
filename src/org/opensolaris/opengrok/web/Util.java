@@ -30,6 +30,7 @@ import java.net.URLEncoder;
 import java.util.StringTokenizer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
@@ -211,7 +212,17 @@ public class Util {
             for (int i = a.length(); i < annotation.getWidestAuthor(); i++) {
                 out.write(" ");
             }
-            Htmlize(a, out);
+            String link = RuntimeEnvironment.getInstance().getUserPage();
+            if (link != null && link.length() > 0) {
+                out.write("<a href=\"");
+                out.write(link);
+                out.write(URIEncode(a));
+                out.write("\">");
+                Htmlize(a, out);
+                out.write("</a>");
+            } else {
+                Htmlize(a, out);
+            }
             out.write(" </span></span>");
         }
     }
