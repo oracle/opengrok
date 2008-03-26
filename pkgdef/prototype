@@ -32,6 +32,8 @@ i request
 d none opt ? ? ?
 d none opt/OSOLopengrok 0755 bin bin
 d none opt/OSOLopengrok/lib 0755 bin bin
+d none opt/OSOLopengrok/man 0755 bin bin
+d none opt/OSOLopengrok/man/sman1 0755 bin bin
 f none opt/OSOLopengrok/lib/ant.jar=dist/lib/ant.jar
 f none opt/OSOLopengrok/lib/bcel-5.1.jar=lib/bcel-5.1.jar
 f none opt/OSOLopengrok/lib/jakarta-oro-2.0.8.jar=lib/jakarta-oro-2.0.8.jar
@@ -43,4 +45,5 @@ f none opt/OSOLopengrok/lib/svn-javahl.jar=lib/svn-javahl.jar
 f none opt/OSOLopengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar
 f none opt/OSOLopengrok/opengrok.jar=dist/opengrok.jar 0555 bin bin
 f none opt/OSOLopengrok/source.war=dist/source.war
+f none opt/OSOLopengrok/man/sman1/opengrok.1=dist/opengrok.1
 s local usr/local/bin/opengrok=../../../opt/OSOLopengrok/opengrok.jar

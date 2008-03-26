@@ -35,11 +35,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.ExternalRepository;
 import org.opensolaris.opengrok.search.scope.MainFrame;
 import org.opensolaris.opengrok.util.Getopt;
 
@@ -49,45 +47,6 @@ import org.opensolaris.opengrok.util.Getopt;
  * in the options
  */
 public class Indexer {
-    private static String usage = "Usage: " +
-            "opengrok.jar [-qe] [-c ctagsToUse] [-H] [-R filename] [-W filename] [-U hostname:port] [-P] [-p project-path] [-w webapproot] [-i ignore_name [ -i ..]] [-n] [-s SRC_ROOT] [-d DATA_ROOT] [subtree .. ]\n" +
-            "       opengrok.jar [-l | -t] [-d DATA_ROOT]\n" +
-            "\t-q run quietly\n" +
-            "\t-v Print progress information\n" +
-            "\t-e economical - consumes less disk space\n" +
-            "\t-c path to ctags\n" +
-            "\t-R Read configuration from file\n" +
-            "\t-W Write the current running configuration\n" +
-            "\t-U Send configuration to hostname:port\n" +
-            "\t-P Generate a project for each toplevel directory\n" +
-            "\t-p Use the project specified by the project path as the default project\n" +
-            "\t-Q on/off Turn on / off quick context scan. By default only the first 32k\n" +
-            "\t          of a file is scanned and a '[..all..]' link is inserted if the\n" +
-            "\t          is bigger. Activating this option may slow down the server.\n" +
-            "\t-n Do not generate indexes\n" +
-            "\t-H Generate history cache for all external repositories\n" +
-            "\t-h /path/to/repos Generate history cache for the specified repos (absolute path from source root)\n" +
-            "\t-r on/off Turn on / off support for remote SCM systems\n" +
-            "\t-L laf Use \"laf\" as the look'n'feel for the webapp\n" +
-            "\t-w root URL of the webapp, default is /source\n" +
-            "\t-i ignore named files or directories\n" +
-            "\t-A ext:analyzer Files with extension ext should be analyzed with the named class\n" +
-            "\t-m Maximum words in a file to index\n" +
-            "\t-O on/off Turn on / off database optimization\n" +
-            "\t-a on/off Allow or disallow leading wildcards in a search\n" +
-            "\t-S Search and add \"External\" repositories (Mercurial etc)\n" +
-            "\t-s SRC_ROOT is root directory of source tree\n" +
-            "\t   default: last used SRC_ROOT\n" +
-            "\t-d DATA_ROOT - is where output of indexer is stored\n" +
-            "\tsubtree - only specified files or directories under SRC_ROOT are processed\n" +
-            "\t   if not specified all files under SRC_ROOT are processed\n" +
-            "\n" +
-            "\t-l list all files in the index\n" +
-            "\t-t lists tokens occuring more than 5 times. Useful for building a unix dictionary\n" +
-            "\n Eg. java -jar opengrok.jar -s /usr/include /var/tmp/opengrok_data rpc";
-
-    private static String options = "d:r:a:qec:Q:R:W:U:Pp:nHh:w:i:Ss:ltvm:O:A:L:";
-
     /**
      * Program entry point
      * @param argv argument vector
@@ -95,17 +54,16 @@ public class Indexer {
     public static void main(String argv[]) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean runIndex = true;
+        CommandLineOptions cmdOptions = new CommandLineOptions();
         
         if(argv.length == 0) {
             if (GraphicsEnvironment.isHeadless()) {
                 System.err.println("No display available for the Graphical User Interface");
-                System.err.println(usage);
+                System.err.println(cmdOptions.getUsage());
                 System.exit(1);
             } else {
                 MainFrame.main(argv);
             }
-            //Run Scope GUI here I am running Indexing GUI for testing
-            //new IndexerWizard(null).setVisible(true);
         } else {
             boolean searchRepositories = false;
             ArrayList<String> subFiles = new ArrayList<String>();
@@ -117,15 +75,15 @@ public class Indexer {
             String defaultProject = null;
             boolean listFiles = false;
             boolean createDict = false;
-
+            
             // Parse command line options:
-            Getopt getopt = new Getopt(argv, options);
+            Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
 
             try {
                 getopt.parse();
             } catch (ParseException ex) {
                 System.err.println("OpenGrok: " + ex.getMessage());
-                System.err.println(usage);
+                System.err.println(cmdOptions.getUsage());
                 System.exit(1);
             }
 
@@ -307,7 +265,7 @@ public class Indexer {
                 
                 if (env.getDataRootPath()  == null) {
                     System.err.println("ERROR: Please specify a DATA ROOT path");
-                    System.err.println(usage);
+                    System.err.println(cmdOptions.getUsage());
                     System.exit(1);
                 }
 
@@ -324,14 +282,14 @@ public class Indexer {
                     }
                     if(line == null) {
                         System.err.println("ERROR: please specify a SRC_ROOT with option -s !");
-                        System.err.println(usage);
+                        System.err.println(cmdOptions.getUsage());
                         System.exit(1);
                     }
                     env.setSourceRoot(line);
 
                     if (!env.getSourceRootFile().isDirectory()) {
                         System.err.println("ERROR: No such directory:" + line);
-                        System.err.println(usage);
+                        System.err.println(cmdOptions.getUsage());
                         System.exit(1);
                     }
                 }
@@ -460,9 +418,14 @@ public class Indexer {
                 }
             } catch (Exception e) {
                 System.err.println("Error: [ main ] " + e);
-                if (env.isVerbose()) e.printStackTrace();
+                if (env.isVerbose()) {
+                    e.printStackTrace();
+                }
                 System.exit(1);
             }
         }
+    }
+
+    private Indexer() {
     }
 }

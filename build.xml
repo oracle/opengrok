@@ -208,6 +208,14 @@ Use is subject to license terms.
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
             <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar,svn-javahl.jar"/>
         </war>
+        <echo message="Generating man page.."/>
+        <java classname="org.opensolaris.opengrok.index.CommandLineOptions" 
+              output="${dist.dir}/opengrok.1" failonerror="true" fork="true">
+            <classpath>
+                <pathelement location="dist/opengrok.jar"/>
+                <pathelement path="${java.class.path}"/>
+            </classpath>
+        </java>
     </target>
 
     <target name="package" depends="jar">

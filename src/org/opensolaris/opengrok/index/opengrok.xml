@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE REFENTRY PUBLIC "-//Sun Microsystems//DTD DocBook V3.0-Based SolBook Subset V2.0//EN">
+<?Pub Inc>
+<refentry id="opengrok-1">
+<refmeta>
+<refentrytitle>opengrok</refentrytitle>
+<manvolnum>1</manvolnum>
+___INSERT_DATE___
+</refmeta>
+<refnamediv>
+<refname>opengrok</refname>
+<refpurpose>a wicked fast source browser</refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+<cmdsynopsis>
+<command>opengrok
+___INSERT_USAGE___
+</command>
+</cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1><title>DESCRIPTION</title>
+<para>
+OpenGrok is a fast and usable source code search and cross reference
+engine written in pure Java. It helps you search, cross-referenece
+and navigate your source tree. It can understand various program file
+formats and version control histories.
+</para>
+</refsect1>
+
+<refsect1><title>OPTIONS</title>
+<variablelist termlength="medium">
+___INSERT_OPTIONS___
+</variablelist>
+</refsect1>
+
+<refsect1><title>FILE FORMATS</title>
+<para>
+OpenGrok can grok various program file formats like C, C++, Shell
+Scripts like ksh, sh, Perl, Java, Java Class files, JAR files, ELF
+files, troff man pages, file archives like Zip, Gzip, BZip2, Tar 
+and meta language files like XML, SGML or HTML.
+</para>
+<para>
+OpenGrok supports various source control systems like Mercurial, CVS,
+Subversion, TeamWare, SCCS and Bazaar.
+</para>
+</refsect1>
+
+<refsect1><title>EXAMPLE</title>
+<example>
+<title>Indexing files in /usr/include and storing the output data to 
+/var/tmp/opengrok_data.</title>
+<screen>$ <userinput>opengrok.jar -s /usr/include -d /var/tmp/opengrok_data</userinput>
+</screen>
+</example>
+
+</refsect1>
+
+<refsect1><title>EXIT STATUS</title>
+<variablelist termlength="medium">
+<varlistentry><term>0</term><listitem><para>command executed successfully</para></listitem></varlistentry>
+<varlistentry><term>1</term><listitem><para>error in executing the command</para></listitem></varlistentry>
+</variablelist>
+</refsect1>
+</refentry>
