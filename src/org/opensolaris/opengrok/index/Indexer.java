@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -75,6 +77,7 @@ public class Indexer {
             String defaultProject = null;
             boolean listFiles = false;
             boolean createDict = false;
+            int noThreads = Runtime.getRuntime().availableProcessors();
             
             // Parse command line options:
             Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
@@ -249,6 +252,14 @@ public class Indexer {
                     case 'L' :
                         env.setWebappLAF(getopt.getOptarg());
                         break;
+                    case 'T' :
+                        try {
+                            noThreads = Integer.parseInt(getopt.getOptarg());
+                        } catch (NumberFormatException exp) {
+                            System.err.println("ERROR: Failed to parse argument to \"-T\": " + exp.getMessage());
+                            System.exit(1);
+                        }
+                        break;
                     default: 
                         System.err.println("Unknown option: " + (char)cmd);
                         System.exit(1);
@@ -374,22 +385,33 @@ public class Indexer {
                 }
                 
                 if (runIndex) {
+                    ExecutorService executor = Executors.newFixedThreadPool(noThreads);
+                    
                     IndexChangedListener progress = new DefaultIndexChangedListener();
                     if (subFiles.isEmpty() || !env.hasProjects()) {
-                        IndexDatabase.updateAll(progress); 
-                    } else {
-                        for (String path : subFiles) {
-                            Project project = Project.getProject(path);
-                            if (project == null) {
-                                System.err.println("Warning: Could not find a project for \"" + path + "\"");
-                            } else {
-                                IndexDatabase db = new IndexDatabase(project);
-                                db.addIndexChangedListener(progress);
-                                db.update();
+                        IndexDatabase.updateAll(executor, progress); 
+                    } else {                        
+                            for (String path : subFiles) {
+                                Project project = Project.getProject(path);
+                                if (project == null) {
+                                    System.err.println("Warning: Could not find a project for \"" + path + "\"");
+                                } else {
+                                    final IndexDatabase db = new IndexDatabase(project);
+                                    db.addIndexChangedListener(progress);
+                                    executor.submit(new Runnable() {
+
+                                        public void run() {
+                                            try {
+                                                db.update();
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
-                }
 
                 if (configHost != null) {
                     String[] cfg = configHost.split(":");

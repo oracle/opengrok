@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -93,33 +94,54 @@ public class IndexDatabase {
     /**
      * Update the index database for all of the projects. Print progress to
      * standard out.
+     * @param executor An executor to run the job
      * @throws java.lang.Exception if an error occurs
      */
-    public static void updateAll() throws Exception {
-        updateAll(null);
+    public static void updateAll(ExecutorService executor) throws Exception {
+        updateAll(executor, null);
     }
 
     /**
      * Update the index database for all of the projects
+     * @param executor An executor to run the job
      * @param listener where to signal the changes to the database
      * @throws java.lang.Exception if an error occurs
      */
-    static void updateAll(IndexChangedListener listener) throws Exception {
+    static void updateAll(ExecutorService executor, IndexChangedListener listener) throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
-                IndexDatabase db = new IndexDatabase(project);
+                final IndexDatabase db = new IndexDatabase(project);
                 if (listener != null) {
                     db.addIndexChangedListener(listener);
                 }
-                db.update();
+                executor.submit(new Runnable() {
+
+                    public void run() {
+                        try {
+                            db.update();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
         } else {
-            IndexDatabase db = new IndexDatabase();
+            final IndexDatabase db = new IndexDatabase();
             if (listener != null) {
                 db.addIndexChangedListener(listener);
             }
-            db.update();
+            
+            executor.submit(new Runnable() {
+
+                public void run() {
+                    try {
+                        db.update();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
 
     }

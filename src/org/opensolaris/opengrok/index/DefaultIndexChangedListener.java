@@ -41,13 +41,17 @@ class DefaultIndexChangedListener implements IndexChangedListener {
     
     public void fileAdded(String path, String analyzer) {
         if (verbose) {
-            System.out.println("Adding: " + path + " (" + analyzer + ")");
+            synchronized (this) {
+                System.out.println("Adding: " + path + " (" + analyzer + ")");
+            }
         }
     }
 
     public void fileRemoved(String path) {
         if (verbose) {
-            System.out.println("Remove stale file: " + path);
+            synchronized (this) {
+                System.out.println("Remove stale file: " + path);
+            }
         }
     }
 }
