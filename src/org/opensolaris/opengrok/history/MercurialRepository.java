@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.history;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,15 +120,18 @@ public class MercurialRepository extends ExternalRepository {
             String argv[] = { command, "cat", "-r", rev, filename };
             process = Runtime.getRuntime().exec(argv, null, directory);
             
-            StringBuilder sb = new StringBuilder();
-            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String s;
-            while ((s = in.readLine()) != null) {
-                sb.append(s);
-                sb.append("\n");
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[32 * 1024];
+            InputStream in = process.getInputStream();
+            int len;
+            
+            while ((len = in.read(buffer)) != -1) {
+                if (len > 0) {
+                    out.write(buffer, 0, len);
+                }
             }
             
-            ret = new BufferedInputStream(new ByteArrayInputStream(sb.toString().getBytes()));
+            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
         } catch (Exception exp) {
             System.err.print("Failed to get history: " + exp.getClass().toString());
             exp.printStackTrace();
