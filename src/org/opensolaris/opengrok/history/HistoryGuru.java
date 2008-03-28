@@ -287,8 +287,8 @@ public class HistoryGuru {
                 previousFile = SCM.RCS;
             } else {
                 File history = SCCSHistoryParser.getSCCSFile(parent, basename);
-                if(history.canRead()) {
-                    in = new BufferedInputStream(new SCCSget(history.getCanonicalPath(), rev));
+                if (history.canRead()) {
+                    in = SCCSget.getRevision(history, rev);
                     in.mark(32);
                     in.read();
                     in.reset();
@@ -327,8 +327,8 @@ public class HistoryGuru {
                 
             case SCCS :
                 history = SCCSHistoryParser.getSCCSFile(parent, basename);
-                if(history != null && history.canRead()) {
-                    in = new BufferedInputStream(new SCCSget(history.getCanonicalPath(), rev));
+                if (history != null && history.canRead()) {
+                    in = SCCSget.getRevision(history, rev);
                     in.mark(32);
                     in.read();
                     in.reset();

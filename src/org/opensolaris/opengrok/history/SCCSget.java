@@ -18,54 +18,51 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)SCCSget.java 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.history;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 
 
-public class SCCSget extends InputStream {
-    private BufferedInputStream stream;
-    
-    public SCCSget(String file) throws IOException, FileNotFoundException {
-        this(file, null);
-    }
-    
-    /**
-     * Pass null in version to get current revision
-     */
-    public SCCSget(String file, String revision) throws IOException, FileNotFoundException {
+public class SCCSget {
+    public static InputStream getRevision(File file, String revision) throws IOException {
+        InputStream ret = null;
         String command = System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
-        
+
         ArrayList<String> argv = new ArrayList<String>();
         argv.add(command);
         argv.add("get");
         argv.add("-p");
         if (revision != null) {
-            argv.add("-r" + revision);
-        }        
-        argv.add(file);
+            argv.add("-r");
+            argv.add(revision);
+        }
+        argv.add(file.getCanonicalPath());
         ProcessBuilder pb = new ProcessBuilder(argv);
-        Process process = pb.start();
-        StringBuilder strbuf = new StringBuilder();
-        String line;
-        
+        Process process = null;
         try {
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader
-                                     (process.getInputStream()));
-            while ((line = in.readLine()) != null) {
-                strbuf.append(line);
-                strbuf.append("\n");
+            process = pb.start();
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[32 * 1024];
+            InputStream in = process.getInputStream();
+            int len;
+
+            while ((len = in.read(buffer)) != -1) {
+                if (len > 0) {
+                    out.write(buffer, 0, len);
+                }
             }
+
+            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
         } finally {
             // is this really the way to do it? seems a bit brutal...
             try {
@@ -74,33 +71,10 @@ public class SCCSget extends InputStream {
                 process.destroy();
             }
         }
-        stream = new BufferedInputStream(new ByteArrayInputStream(strbuf.toString().getBytes()));
+
+        return ret;
     }
 
-    @Override public void reset() throws IOException {
-        try {
-            stream.reset();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-    
-    @Override public void close() throws IOException {
-        if (stream != null) {
-            stream.close();
-        }
-    }
-    
-    @Override public void mark(int readlimit) {
-        stream.mark(readlimit);
-    }
-    
-    @Override public int read(byte[] buffer, int pos, int len) throws IOException {
-        return stream.read(buffer, pos, len);
-    }
-    
-    public int read() throws IOException {
-        throw new IOException("use a BufferedInputStream. just read() is not supported!");
+    private SCCSget() {
     }
 }
