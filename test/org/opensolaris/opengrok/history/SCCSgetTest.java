@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  */
 public class SCCSgetTest {
 
-    private static final String HEADER = "@(#)note.txt	1.21 03/26/08";
+    private static boolean haveSccs = true;
     private File sccsfile;
     private File sccsdir;
 
@@ -52,6 +52,23 @@ public class SCCSgetTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        // Check to see if we have sccs..
+        Process p = null;
+        try {
+            p = Runtime.getRuntime().exec("sccs help help");
+            p.waitFor();
+            haveSccs = (p.exitValue() == 0);
+        } catch (Exception e) {
+            haveSccs = false;
+        } finally {
+            try {
+                if (p != null) {
+                    p.destroy();
+                }
+            } catch (Exception e) {
+                
+            }
+        }
     }
 
     @AfterClass
@@ -60,6 +77,9 @@ public class SCCSgetTest {
 
     @Before
     public void setUp() {
+        if (!haveSccs) {
+            return;
+        }
         try {
             sccsdir = File.createTempFile("s.test", "sccs");
             sccsdir.delete();
@@ -92,7 +112,7 @@ public class SCCSgetTest {
         if (sccsfile != null) {
             sccsfile.delete();
         }
-        
+
         if (sccsdir != null) {
             sccsdir.delete();
         }
@@ -108,7 +128,7 @@ public class SCCSgetTest {
                 out.write(buffer, 0, len);
             }
         }
-        
+
         return out.toString();
     }
 
@@ -117,15 +137,19 @@ public class SCCSgetTest {
      */
     @Test
     public void getRevision() throws Exception {
+        if (!haveSccs) {
+            System.out.println("sccs not available. Skipping test");
+            return;
+        }
         ZipInputStream zstream = new ZipInputStream(SCCSgetTest.class.getResourceAsStream("sccs-revisions.zip"));
         ZipEntry entry;
-        
+
         while ((entry = zstream.getNextEntry()) != null) {
             String expected = readInput(zstream);
             InputStream sccs = SCCSget.getRevision(sccsfile, entry.getName());
             String got = readInput(sccs);
             sccs.close();
-            zstream.closeEntry();            
+            zstream.closeEntry();
             assertEquals(expected, got);
         }
         zstream.close();
