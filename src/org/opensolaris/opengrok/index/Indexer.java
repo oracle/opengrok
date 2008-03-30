@@ -386,32 +386,41 @@ public class Indexer {
                 
                 if (runIndex) {
                     ExecutorService executor = Executors.newFixedThreadPool(noThreads);
-                    
+
                     IndexChangedListener progress = new DefaultIndexChangedListener();
                     if (subFiles.isEmpty() || !env.hasProjects()) {
-                        IndexDatabase.updateAll(executor, progress); 
-                    } else {                        
-                            for (String path : subFiles) {
-                                Project project = Project.getProject(path);
-                                if (project == null) {
-                                    System.err.println("Warning: Could not find a project for \"" + path + "\"");
-                                } else {
-                                    final IndexDatabase db = new IndexDatabase(project);
-                                    db.addIndexChangedListener(progress);
-                                    executor.submit(new Runnable() {
+                        IndexDatabase.updateAll(executor, progress);
+                    } else {
+                        for (String path : subFiles) {
+                            Project project = Project.getProject(path);
+                            if (project == null) {
+                                System.err.println("Warning: Could not find a project for \"" + path + "\"");
+                            } else {
+                                final IndexDatabase db = new IndexDatabase(project);
+                                db.addIndexChangedListener(progress);
+                                executor.submit(new Runnable() {
 
-                                        public void run() {
-                                            try {
-                                                db.update();
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
+                                    public void run() {
+                                        try {
+                                            db.update();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
                                         }
-                                    });
-                                }
+                                    }
+                                });
                             }
                         }
                     }
+                    
+                    executor.shutdown();
+                    while (!executor.isTerminated()) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (Exception e) {
+                            
+                        }
+                    }
+                }
 
                 if (configHost != null) {
                     String[] cfg = configHost.split(":");
