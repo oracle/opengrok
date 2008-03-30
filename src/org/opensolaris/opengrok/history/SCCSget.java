@@ -66,7 +66,9 @@ public class SCCSget {
         } finally {
             // is this really the way to do it? seems a bit brutal...
             try {
-                process.exitValue();
+                if (process != null) {
+                    process.exitValue();
+                }
             } catch (IllegalThreadStateException e) {
                 process.destroy();
             }
