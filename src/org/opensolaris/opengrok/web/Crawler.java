@@ -187,10 +187,6 @@ public class Crawler implements Runnable {
                                 }
 
                                 try {
-                                    String murl = sb.toString();
-                                    if (murl.indexOf("//", 8) != -1) {
-                                        System.out.println(sb.toString() + " " + page.toString());
-                                    }
                                     urls.add(new URL(sb.toString()));
                                 } catch (Exception e) {
                                     e.printStackTrace();
