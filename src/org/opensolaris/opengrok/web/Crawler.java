@@ -27,11 +27,13 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +49,7 @@ import org.opensolaris.opengrok.util.Getopt;
  */
 public class Crawler implements Runnable {
 
-    private static Fifo urls;
+    private Fifo urls;
 
     /**
      * Program entry point
@@ -69,6 +71,8 @@ public class Crawler implements Runnable {
         try {
             root = new URL("http://localhost/source/xref");
         } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
 
         int cmd;
@@ -91,12 +95,13 @@ public class Crawler implements Runnable {
                     break;
             }
         }
-        urls = new Fifo();
-        urls.add(root);
+
+        Fifo.initialize();
 
         List<Thread> threads = new ArrayList<Thread>();
         for (int ii = 0; ii < noThreads; ++ii) {
-            Thread thread = new Thread(new Crawler());
+            Thread thread = new Thread(new Crawler(root));
+            root = null;
             thread.start();
             threads.add(thread);
         }
@@ -116,6 +121,13 @@ public class Crawler implements Runnable {
         System.exit(0);
     }
 
+    public Crawler(URL root) {
+        urls = new Fifo();
+        if (root != null) {
+            urls.add(root);
+        }
+    }
+
     public boolean downloadPage(URL page) {
         boolean ret = true;
         BufferedReader in = null;
@@ -124,54 +136,75 @@ public class Crawler implements Runnable {
             sb.append(page.getProtocol());
             sb.append("://");
             sb.append(page.getHost());
-            if (page.getPort() != 80) {
+            int port = page.getPort();
+            if (port != -1 && port != 80) {
                 sb.append(":" + page.getPort());
             }
 
             int len = sb.length();
-
-            in = new BufferedReader(new InputStreamReader(page.openStream()));
-            if (!page.openConnection().getContentType().startsWith("text/html")) {
+            URLConnection connection = page.openConnection();
+            if (connection == null) {
                 return false;
             }
+
+            String contentType = connection.getContentType();
+            if (contentType == null || !contentType.startsWith("text/html")) {
+                return false;
+            }
+
+            in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
             String content;
 
             while ((content = in.readLine()) != null) {
                 int idx = 0;
                 do {
-                    idx = content.indexOf("<a href=\"", idx);
+                    idx = content.indexOf("<a ", idx);
                     if (idx != -1) {
-                        sb.setLength(len);
-                        int stop = content.indexOf("\"", idx + 9);
-                        String link = content.substring(idx + 9, stop);
-                        if (!(link.startsWith("http") ||
-                                link.startsWith("..") ||
-                                link.startsWith("ftp") ||
-                                link.startsWith("/s?"))) {
-                            if (link.startsWith("/")) {
-                                sb.append(link);
-                            } else {
-                                sb.append(page.getPath());
-                                sb.append("/");
-                                sb.append(link);
-                            }
+                        // is this a href?
+                        idx += 3;
+                        int end = content.indexOf('>', idx);
+                        int href = content.indexOf("href=\"", idx);
 
-                            try {
-                                urls.add(new URL(sb.toString()));
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                        if (end != -1 && href != -1 && href < end) {
+                            idx = href + 6;
+                            sb.setLength(len);
+                            int stop = content.indexOf("\"", idx);
+                            String link = content.substring(idx, stop);
+                            if (!(link.startsWith("http") ||
+                                    link.startsWith("..") ||
+                                    link.startsWith("ftp") ||
+                                    link.indexOf("/s?") != -1)) {
+                                if (link.startsWith("/")) {
+                                    sb.append(link);
+                                } else {
+                                    String path = page.getPath();
+                                    sb.append(path);
+                                    if (!path.endsWith("/")) {
+                                        sb.append("/");
+                                    }
+                                    sb.append(link);
+                                }
 
+                                try {
+                                    String murl = sb.toString();
+                                    if (murl.indexOf("//", 8) != -1) {
+                                        System.out.println(sb.toString() + " " + page.toString());
+                                    }
+                                    urls.add(new URL(sb.toString()));
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                            idx = stop;
                         }
-                        idx = stop + 1;
+                        ++idx;
                     } else {
                         break;
                     }
-
                 } while (true);
             }
-
         } catch (Exception e) {
             if (!(e instanceof FileNotFoundException)) {
                 e.printStackTrace();
@@ -198,19 +231,23 @@ public class Crawler implements Runnable {
     }
 
     public void run() {
-        while (true) {
+        int ii = 180;
+        while (ii > 0) {
             URL url = urls.next();
             try {
                 if (url != null) {
                     if (!downloadPage(url)) {
                         urls.failed(url);
                     }
+                    ii = 180;
                 } else {
                     Thread.sleep(1000);
+                    --ii;
                 }
             } catch (Exception e) {
             }
         }
+        System.out.println("Download thread is terminating (no new work the last 2 minutes)");
     }
 
     /**
@@ -220,14 +257,28 @@ public class Crawler implements Runnable {
      */
     private static class Fifo {
 
-        private Queue<URL> urls;
-        private Connection db;
-        private int limit = 1;
+        private static Queue<URL> urls;
         private int url_queue_len = 1000;
+        private Connection db;
+        private PreparedStatement updateFailed;
+        private PreparedStatement findNext;
+        private PreparedStatement updateNext;
+        private PreparedStatement addUrl;
 
         public Fifo() {
-            urls = new ConcurrentLinkedQueue<URL>();
-            createDb();
+            if (urls == null) {
+                String strUrl = "jdbc:derby:OpenGrokCrawler";
+                try {
+                    db = DriverManager.getConnection(strUrl);
+                    updateFailed = db.prepareStatement("UPDATE Crawler set failures=failures + 1 WHERE url=?");
+                    findNext = db.prepareStatement("SELECT url FROM Crawler WHERE id IN (SELECT MIN(id) FROM Crawler WHERE requests=0)");
+                    updateNext = db.prepareStatement("UPDATE Crawler set requests=requests + 1 WHERE url=?");
+                    addUrl = db.prepareStatement("INSERT INTO Crawler(url, requests, failures) VALUES (?,0,0)");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
+                }
+            }
         }
 
         public static void dump() {
@@ -261,18 +312,18 @@ public class Crawler implements Runnable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
 
-        private void createDb() {
+        private static void initialize() {
             try {
                 Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
             } catch (ClassNotFoundException exp) {
+                urls = new ConcurrentLinkedQueue<URL>();
                 return;
             }
 
             String connectStr = "jdbc:derby:OpenGrokCrawler";
-
+            Connection db = null;
             try {
                 db = DriverManager.getConnection(connectStr);
             } catch (SQLException ex) {
@@ -287,7 +338,7 @@ public class Crawler implements Runnable {
                 }
 
                 try {
-                    PreparedStatement st = db.prepareStatement("CREATE table Crawler ( url VARCHAR(255) primary key, requests int, failures int)");
+                    PreparedStatement st = db.prepareStatement("CREATE table Crawler ( id integer unique not null generated always as identity (start with 1, increment by 1), url VARCHAR(255) primary key, requests int, failures int)");
                     st.execute();
                 } catch (SQLException ex) {
                     ex.printStackTrace();
@@ -297,61 +348,59 @@ public class Crawler implements Runnable {
         }
 
         public void add(URL url) {
-            boolean add = true;
             if (db != null) {
-                synchronized (db) {
-                    PreparedStatement statement = null;
-                    try {
-                        statement = db.prepareStatement("SELECT url,requests FROM Crawler WHERE url=?");
-                        statement.setString(1, url.toString());
-                        ResultSet rs = statement.executeQuery();
-                        if (rs.next()) {
-                            int tot = rs.getInt(2);
-                            if (tot < limit) {
-                                statement = db.prepareStatement("UPDATE Crawler set requests=? WHERE url=?");
-                                statement.setInt(1, tot + 1);
-                                statement.setString(2, url.toString());
-                                statement.execute();
-                            } else {
-                                add = false;
-                            }
-                        } else {
-                            statement = db.prepareStatement("INSERT INTO Crawler(url, requests, failures) VALUES (?,?,?)");
-                            statement.setString(1, url.toString());
-                            statement.setInt(2, 1);
-                            statement.setInt(3, 0);
-                            statement.execute();
-                        }
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                        System.exit(1);
-                    }
+                try {
+                    addUrl.setString(1, url.toString());
+                    addUrl.execute();
+                } catch (SQLIntegrityConstraintViolationException ex) {
+                // Item already exists!
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
                 }
-            }
-
-            if (add && urls.size() < url_queue_len) {
-                urls.add(url);
+            } else {
+                if (urls.size() < url_queue_len) {
+                    urls.add(url);
+                }
             }
         }
 
         public void failed(URL url) {
             if (db != null) {
-                synchronized (db) {
-                    PreparedStatement statement = null;
-                    try {
-                        statement = db.prepareStatement("UPDATE Crawler set failures=failures + 1 WHERE url=?");
-                        statement.setString(1, url.toString());
-                        statement.execute();
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                        System.exit(1);
-                    }
+                try {
+                    updateFailed.setString(1, url.toString());
+                    updateFailed.execute();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
                 }
             }
         }
 
         public URL next() {
-            return urls.poll();
+            URL ret = null;
+
+            if (db != null) {
+                try {
+                    ResultSet rs = findNext.executeQuery();
+                    if (rs.next()) {
+                        try {
+                            ret = new URL(rs.getString(1));
+                            rs.close();
+                            updateNext.setString(1, ret.toString());
+                            updateNext.execute();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
+                }
+            } else {
+                ret = urls.poll();
+            }
+            return ret;
         }
     }
 }
