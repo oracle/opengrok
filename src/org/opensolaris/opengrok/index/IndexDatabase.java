@@ -233,6 +233,46 @@ public class IndexDatabase {
     }
 
     /**
+     * Optimize all index databases
+     * @param executor An executor to run the job
+     * @throws java.lang.Exception if an error occurs
+     */
+    static void optimizeAll(ExecutorService executor) throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.hasProjects()) {
+            for (Project project : env.getProjects()) {
+                final IndexDatabase db = new IndexDatabase(project);
+                if (db.dirty) {
+                    executor.submit(new Runnable() {
+
+                        public void run() {
+                            try {
+                                db.optimize();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }
+        } else {
+            final IndexDatabase db = new IndexDatabase();
+            if (db.dirty) {
+                executor.submit(new Runnable() {
+
+                    public void run() {
+                        try {
+                            db.update();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }
+    }
+    
+    /**
      * Optimize the index database
      */
     public void optimize() {
