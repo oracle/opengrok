@@ -23,10 +23,6 @@
  */
 
 /*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
-/*
  * Cross reference a Java file
  */
 
@@ -36,6 +32,7 @@ import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %public
@@ -51,6 +48,7 @@ import org.opensolaris.opengrok.history.Annotation;
   Writer out;
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   Annotation annotation;
+  Project project;
   private HashMap<String, HashMap<Integer, String>> defs = null;
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
   	this.defs = defs;
@@ -71,6 +69,13 @@ import org.opensolaris.opengrok.history.Annotation;
 	yyline = 2;
 	while(yylex() != YYEOF) {
 	}
+  }
+
+  private void appendProject() throws IOException {
+      if (project != null) {
+          out.write("&project=");
+          out.write(project.getPath());
+      }
   }
 
   public static void main(String argv[]) {
@@ -137,6 +142,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 				                        out.write(urlPrefix);
                                                         out.write("refs=");
 							out.write(id);
+                                                        appendProject();
 							out.write("\" class=\"d\">");
 							out.write(id);
 							out.write("</a>");
@@ -154,27 +160,34 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 						out.write("</span>");
 					}
 				} else {
-				out.write("<a href=\"");
-				out.write(urlPrefix);
-				out.write("defs=");
-				out.write(id);
-				out.write("\">");
-				out.write(id);
-				out.write("</a>");
+                                    out.write("<a href=\"");
+                                    out.write(urlPrefix);
+                                    out.write("defs=");
+                                    out.write(id);
+                                    appendProject();
+                                    out.write("\">");
+                                    out.write(id);
+                                    out.write("</a>");
 				}
 			}
 		}
 
 "<" {File} ">" {out.write("&lt;");
 	out.write("<a href=\""+urlPrefix+"path=");
-	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);out.write("\">");
-	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);out.write("</a>");
+	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);
+        appendProject();
+        out.write("\">");
+	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);
+        out.write("</a>");
 	out.write("&gt;");}
 
 "<" {Path} ">" {out.write("&lt;");
 	out.write("<a href=\""+urlPrefix+"path=");
-	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);out.write("\">");
-	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);out.write("</a>");
+	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);
+        appendProject();
+        out.write("\">");
+	out.write(zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-2);
+        out.write("</a>");
 	out.write("&gt;");}
 
 /*{Hier}	
@@ -247,8 +260,11 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 {File}
 	{
 	out.write("<a href=\""+urlPrefix+"path=");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
+	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        appendProject();
+        out.write("\">");
+	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write("</a>");}
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
 	{

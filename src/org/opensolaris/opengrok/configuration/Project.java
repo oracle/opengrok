@@ -47,6 +47,14 @@ public class Project {
     public String getPath() {
         return path;
     }
+
+    /**
+     * Get the project id
+     * @return the id of the project
+     */
+    public String getId() {
+        return path;
+    }
     
     /**
      * Set a textual description of this project

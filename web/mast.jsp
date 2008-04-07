@@ -18,9 +18,6 @@ CDDL HEADER END
 
 Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
-
-ident	"%Z%%M% %I%     %E% SMI"
-
 --%><%@ page import = "javax.servlet.*,
 java.lang.*,
 javax.servlet.http.*,
@@ -149,12 +146,12 @@ if(resourcePath.length() < rawSource.length()
 <%
 
 if (noHistory || servlet.startsWith("/hi")) {
-	%> <span class="c" id="history">History</span> |<%
+	%> <span class="c" id="history">History</span><%
 } else {
-	%><a id="history" href="<%=context%>/history<%=path%>">History</a> |<%
+	%><a id="history" href="<%=context%>/history<%=path%>">History</a><%
 }
 if (noAnnotation) {
-%> <span class="c" id="annotate">Annotate</span> |<%
+%> | <span class="c" id="annotate">Annotate</span><%
 } else {
    String rev = request.getParameter("r");
     if (rev == null) {
@@ -164,7 +161,7 @@ if (noAnnotation) {
     }
 
     if (Boolean.parseBoolean(request.getParameter("a"))) {
-     %> <span id="toggle-annotate-by-javascript" style="display: none">
+     %> | <span id="toggle-annotate-by-javascript" style="display: none">
 <a href="#" onClick="javascript:toggle_annotations(); return false;">Annotate</a>
 </span>
 <span id="toggle-annotate">
@@ -182,32 +179,35 @@ toggle_ss.style.display = 'none';
 // -->
 </script> <%
     } else {
-        %> <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
+        %> | <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
     }        
- %> | <%       
 }
         if (!isDir) {
            String rev = request.getParameter("r");
            if (rev == null || rev.equals("")) {
-%> <a id="download" href="<%=context%>/raw<%=path%>">Download</a> | <%
+%> | <a id="download" href="<%=context%>/raw<%=path%>">Download</a><%
            } else {
-%> <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a> | <%
+%> | <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a><%
            }
         }
 
-%> <input id="search" name="q" class="q"/>
-<input type="submit" value="Search" class="submit"/><%
-
-if(isDir) {
+        Project proj = Project.getProject(resourceFile);
+        if  (proj != null || !environment.hasProjects()) {
+%> | <input id="search" name="q" class="q"/>
+<input type="submit" value="Search" class="submit"/>
+<%
+        if (proj != null) {
+      %><input type="hidden" name="project" value="<%=proj.getId()%>"/><%
+        }
+        if(isDir) {
                 if(path.length() > 0) {
 	%><input type="checkbox" name="path" value="<%=path%>"/> only in <b><%=path%></b><%
-  }
-} else {
+                }
+        } else {
 	%><input type="checkbox" name="path" value="<%=parent%>"/> only in <b><%=parentBasename%></b><%
-}
-
+        }
 %></div></form><%
-
+        }
 } // date check
     } // not a directory redirect
 }

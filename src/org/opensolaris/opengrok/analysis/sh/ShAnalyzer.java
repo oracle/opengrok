@@ -32,6 +32,7 @@ import org.apache.lucene.analysis.*;
 import java.io.*;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.*;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
@@ -71,6 +72,7 @@ public class ShAnalyzer extends PlainAnalyzer {
      */
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
+        xref.project = project;
         xref.setDefs(super.defs);
         xref.write(out);
     }
@@ -81,10 +83,10 @@ public class ShAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(InputStream in, Writer out,
-                                 Annotation annotation) throws IOException {
+    static void writeXref(InputStream in, Writer out, Annotation annotation, Project project) throws IOException {
         ShXref xref = new ShXref(in);
         xref.annotation = annotation;
+        xref.project = project;
         xref.write(out);
     }
 }

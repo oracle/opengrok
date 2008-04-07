@@ -30,6 +30,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.*;
 import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.*;
 
@@ -51,7 +52,8 @@ import org.opensolaris.opengrok.history.*;
  */
 
 public class FileAnalyzer extends Analyzer {
-
+    protected Project project;
+    
     private final FileAnalyzerFactory factory;
 
     /**
@@ -103,29 +105,24 @@ public class FileAnalyzer extends Analyzer {
     /**
      * Write a cross referenced HTML file.
      * @param out to writer HTML cross-reference
+     * @throws java.io.IOException if an error occurs
      */
     public void writeXref(Writer out) throws IOException {
 	out.write("Error General File X-Ref writer!");
     }
     
-    /**
-     * Write a cross referenced HTML file.
-     * @param xrefdir path of file root xref directory
-     * @param path path from xrefdir
-     */
-    public void writeXref(String xrefdir, String path) throws IOException {
-	//  System.err.println("parent " + xrefdir + " child " + path);
-	Writer out = new BufferedWriter(new FileWriter(new File(xrefdir+ File.separatorChar +path)));
-	writeXref(out);
-	out.close();
-    }
-
     public void writeXref(File xrefDir, String path) throws IOException {
+        if (RuntimeEnvironment.getInstance().hasProjects()) {
+            project = Project.getProject(path);
+        } else {
+            project = null;
+        }
 	Writer out = new BufferedWriter(new FileWriter(new File(xrefDir, path)));
 	writeXref(out);
 	out.close();
     }
     
+    /*
     public static char[] readContent(char[] content, InputStream in, Integer length) throws IOException {
 	InputStreamReader inReader = new InputStreamReader(in);
 	int len = 0;
@@ -145,4 +142,5 @@ public class FileAnalyzer extends Analyzer {
 	length = len;
 	return content;
     }
+     */
 }

@@ -275,14 +275,15 @@ public class AnalyzerGuru {
      * @param in The input stream containing the data
      * @param out Where to write the result
      * @param annotation Annotation information for the file
+     * @param project Project the file belongs to
      * @throws java.io.IOException If an error occurs while creating the
      *                             output
      */
     public static void writeXref(FileAnalyzerFactory factory, InputStream in,
-                                 Writer out, Annotation annotation)
+                                 Writer out, Annotation annotation, Project project)
         throws IOException
     {
-        factory.writeXref(in, out, annotation);
+        factory.writeXref(in, out, annotation, project);
     }
 
     /**

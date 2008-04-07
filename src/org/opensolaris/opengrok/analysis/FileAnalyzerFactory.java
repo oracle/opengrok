@@ -21,7 +21,6 @@
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.InputStream;
@@ -31,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
@@ -38,25 +38,21 @@ import org.opensolaris.opengrok.history.Annotation;
  * provides information about this type of analyzers.
  */
 public class FileAnalyzerFactory {
+
     /** Cached analyzer object for the current thread (analyzer objects can be
      * expensive to allocate). */
     private final ThreadLocal<FileAnalyzer> cachedAnalyzer;
-
     /** List of file extensions on which this kind of analyzer should be
      * used. */
     private final List<String> suffixes;
-
     /** List of magic strings used to recognize files on which this kind of
      * analyzer should be used. */
     private final List<String> magics;
-
     /** List of matchers which delegate files to different types of
      * analyzers. */
     private final List<Matcher> matchers;
-
     /** The content type for the files recognized by this kind of analyzer. */
     private final String contentType;
-
     /** The genre for files recognized by this kind of analyzer. */
     private final Genre genre;
 
@@ -79,8 +75,8 @@ public class FileAnalyzerFactory {
      * Genre.DATA} is used)
      */
     protected FileAnalyzerFactory(String[] suffixes, String[] magics,
-                                  Matcher matcher, String contentType,
-                                  Genre genre) {
+            Matcher matcher, String contentType,
+            Genre genre) {
         cachedAnalyzer = new ThreadLocal<FileAnalyzer>();
         this.suffixes = asList(suffixes);
         this.magics = asList(magics);
@@ -184,6 +180,7 @@ public class FileAnalyzerFactory {
      * Interface for matchers which map file contents to analyzer factories.
      */
     protected interface Matcher {
+
         /**
          * Try to match the file contents with an analyzer factory.
          * If the method reads from the input stream, it must reset the
@@ -203,10 +200,11 @@ public class FileAnalyzerFactory {
      * @param in input source
      * @param out output xref writer
      * @param annotation annotation for the file (could be {@code null})
+     * @param project project the file belongs to (could be {@code null})
+     * @throws java.io.IOException if an error occurs 
      */
-    public void writeXref(InputStream in, Writer out, Annotation annotation)
-        throws IOException
-    {
+    public void writeXref(InputStream in, Writer out, Annotation annotation, Project project)
+            throws IOException {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 }

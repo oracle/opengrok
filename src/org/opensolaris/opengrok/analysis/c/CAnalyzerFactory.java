@@ -30,6 +30,7 @@ import java.io.Writer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class CAnalyzerFactory extends FileAnalyzerFactory {
@@ -64,8 +65,8 @@ public class CAnalyzerFactory extends FileAnalyzerFactory {
     }
 
     @Override
-    public void writeXref(InputStream in, Writer out, Annotation annotation)
+    public void writeXref(InputStream in, Writer out, Annotation annotation, Project project)
         throws IOException {
-        CAnalyzer.writeXref(in, out, annotation);
+        CAnalyzer.writeXref(in, out, annotation, project);
     }
 }

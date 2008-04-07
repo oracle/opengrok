@@ -32,6 +32,7 @@ import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %public
@@ -44,6 +45,7 @@ import org.opensolaris.opengrok.history.Annotation;
   Writer out;
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   Annotation annotation;
+  Project project;
   private HashMap<String, HashMap<Integer, String>> defs = null;
   private int nestedComment;
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
@@ -66,6 +68,13 @@ import org.opensolaris.opengrok.history.Annotation;
         yyline = 2;
         while(yylex() != YYEOF) {
         }
+  }
+
+  private void appendProject() throws IOException {
+      if (project != null) {
+          out.write("&project=");
+          out.write(project.getPath());
+      }
   }
 
   public static void main(String argv[]) {
@@ -125,6 +134,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
                         out.write(urlPrefix);
                         out.write("refs=");
                         out.write(id);
+                        appendProject();
                         out.write("\" class=\"d\">");
                         out.write(id);
                         out.write("</a>");
@@ -146,6 +156,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
                       out.write(urlPrefix);
                       out.write("defs=");
                       out.write(id);
+                      appendProject();
                       out.write("\">");
                       out.write(id);
                       out.write("</a>");
@@ -208,8 +219,11 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 {File}
         {
         out.write("<a href=\""+urlPrefix+"path=");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
+        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        appendProject();
+        out.write("\">");
+        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write("</a>");}
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
         {

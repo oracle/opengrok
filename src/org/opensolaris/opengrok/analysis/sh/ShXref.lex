@@ -22,16 +22,13 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
 package org.opensolaris.opengrok.analysis.sh;
 import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %public
@@ -44,6 +41,7 @@ import org.opensolaris.opengrok.history.Annotation;
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   Writer out;
   Annotation annotation;
+  Project project;
   private HashMap<String, HashMap<Integer, String>> defs = null;
   private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
@@ -97,6 +95,13 @@ import org.opensolaris.opengrok.history.Annotation;
     }
   }
 
+  private void appendProject() throws IOException {
+      if (project != null) {
+          out.write("&project=");
+          out.write(project.getPath());
+      }
+  }
+
   public static void main(String argv[]) {
     if (argv.length <= 1) {
       System.out.println("Usage : java Xref <inputfile> <outfile>");
@@ -140,6 +145,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 			  out.write(urlPrefix);
 			  out.write("refs=");
 			  out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+                          appendProject();
 			  out.write("\">");
 			  out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
 			  out.write("</a>");
@@ -171,6 +177,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 				                        out.write(urlPrefix);
                                                         out.write("refs=");
 							out.write(id);
+                                                        appendProject();
 							out.write("\" class=\"d\">");
 							out.write(id);
 							out.write("</a>");
@@ -188,11 +195,12 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 						out.write("</span>");
 					}
 				} else {
-				out.write("<a href=\""+urlPrefix+"refs=");
-				out.write(id);
-				out.write("\">");
-				out.write(id);
-				out.write("</a>");
+                                    out.write("<a href=\""+urlPrefix+"refs=");
+                                    out.write(id);
+                                    appendProject();
+                                    out.write("\">");
+                                    out.write(id);
+                                    out.write("</a>");
 				}
 			}
 		}
@@ -240,8 +248,11 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 <YYINITIAL, SUBSHELL, BACKQUOTE, STRING, SCOMMENT, QSTRING> {
 {File}
 	{out.write("<a href=\""+urlPrefix+"path=");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
+	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        appendProject();
+        out.write("\">");
+	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write("</a>");}
 
 {Path}
  	{ out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}

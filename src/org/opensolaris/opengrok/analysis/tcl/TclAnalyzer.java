@@ -29,6 +29,7 @@ import org.apache.lucene.analysis.*;
 import java.io.*;
 import org.opensolaris.opengrok.analysis.*;
 import org.opensolaris.opengrok.analysis.plain.*;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class TclAnalyzer extends PlainAnalyzer {
@@ -62,6 +63,7 @@ public class TclAnalyzer extends PlainAnalyzer {
      */
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
+        xref.project = project;
         xref.setDefs(defs);
         xref.write(out);
     }
@@ -72,10 +74,10 @@ public class TclAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(InputStream in, Writer out,
-                                 Annotation annotation) throws IOException {
+    static void writeXref(InputStream in, Writer out, Annotation annotation, Project project) throws IOException {
         TclXref xref = new TclXref(in);
         xref.annotation = annotation;
+        xref.project = project;
         xref.write(out);
     }
 }

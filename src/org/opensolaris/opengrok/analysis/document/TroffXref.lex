@@ -32,6 +32,7 @@ import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %public
@@ -45,6 +46,7 @@ import org.opensolaris.opengrok.history.Annotation;
   boolean p = false;
   Writer out;
   Annotation annotation;
+  Project project;
   private HashMap<String, HashMap<Integer, String>> defs = null;
   public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
   	this.defs = defs;
@@ -67,6 +69,13 @@ import org.opensolaris.opengrok.history.Annotation;
   	this.out = out;
 	while(yylex() != YYEOF) {
 	}
+  }
+
+  private void appendProject() throws IOException {
+      if (project != null) {
+          out.write("&project=");
+          out.write(project.getPath());
+      }
   }
 
   public static void main(String argv[]) {
@@ -181,8 +190,11 @@ T[\{\}] {}
 
 {File}
 	{out.write("<a href=\""+urlPrefix+"path=");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
+	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        appendProject();
+        out.write("\">");
+	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write("</a>");}
 
 {Path}
  	{ out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}

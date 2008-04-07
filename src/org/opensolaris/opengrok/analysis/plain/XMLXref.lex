@@ -22,16 +22,13 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
 package org.opensolaris.opengrok.analysis.plain;
 import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %public
@@ -44,6 +41,8 @@ import org.opensolaris.opengrok.history.Annotation;
   Writer out;
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   Annotation annotation;
+  Project project;
+
   public void write(Writer out) throws IOException {
   	this.out = out;
         Util.readableLine(1, out, annotation);
@@ -57,6 +56,13 @@ import org.opensolaris.opengrok.history.Annotation;
 	zzAtEOF = true;
 	zzStartRead = 0;
 	annotation = null;
+  }
+
+  private void appendProject() throws IOException {
+      if (project != null) {
+          out.write("&project=");
+          out.write(project.getPath());
+      }
   }
 
   public static void main(String argv[]) {
@@ -141,7 +147,7 @@ NameChar = {FileChar}|"."
 {File}|{Path}
 	{String s=yytext();
 	out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
-	out.write(s);out.write("\">");
+	out.write(s);appendProject();out.write("\">");
 	out.write(s);out.write("</a>");} 
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]

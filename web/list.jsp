@@ -18,9 +18,6 @@ CDDL HEADER END
 
 Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
-
-ident	"%Z%%M% %I%     %E% SMI"
-
 --%><%@ page import = "javax.servlet.*,
 java.lang.*,
 javax.servlet.http.*,
@@ -140,7 +137,7 @@ if (valid) {
 if (g == Genre.PLAIN) {
     Annotation annotation = annotate ?
         HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
-    AnalyzerGuru.writeXref(a, in, out, annotation);
+    AnalyzerGuru.writeXref(a, in, out, annotation, Project.getProject(resourceFile));
 } else if (g == Genre.IMAGE) {
 			%><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
 } else if (g == Genre.HTML) {
@@ -210,7 +207,7 @@ if (g == Genre.PLAIN) {
             %><div id="src"><pre><%
             Annotation annotation = annotate ?
                 HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
-            AnalyzerGuru.writeXref(a, bin, out, annotation);
+            AnalyzerGuru.writeXref(a, bin, out, annotation, Project.getProject(resourceFile));
             %></pre></div><%
             } else {
 	    %> Click <a href="<%=context%>/raw<%=path%>">download <%=basename%></a><%

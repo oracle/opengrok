@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class SQLAnalyzer extends PlainAnalyzer {
@@ -46,6 +47,7 @@ public class SQLAnalyzer extends PlainAnalyzer {
      */
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
+        xref.project = project;
         // TODO xref.setDefs(defs);
         xref.write(out);
     }
@@ -58,10 +60,10 @@ public class SQLAnalyzer extends PlainAnalyzer {
      * @param out output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(InputStream in, Writer out,
-                                 Annotation annotation) throws IOException {
+    static void writeXref(InputStream in, Writer out, Annotation annotation, Project project) throws IOException {
         SQLXref xref = new SQLXref(in);
         xref.annotation = annotation;
+        xref.project = project;
         xref.write(out);
     }
 }

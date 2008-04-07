@@ -28,6 +28,7 @@ import java.io.*;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.web.Util;
+import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %class SQLXref
@@ -39,6 +40,7 @@ import org.opensolaris.opengrok.web.Util;
 
     private Writer out;
     Annotation annotation;
+    Project project;
     private final String urlPrefix =
             RuntimeEnvironment.getInstance().getUrlPrefix();
     private int commentLevel;
@@ -58,6 +60,14 @@ import org.opensolaris.opengrok.web.Util;
         yyline = 2;
         while (yylex() != YYEOF);
     }
+
+  private void appendProject() throws IOException {
+      if (project != null) {
+          out.write("&project=");
+          out.write(project.getPath());
+      }
+  }
+
 
 %}
 
@@ -83,7 +93,9 @@ Whitespace = [ \t\f\r]+
         } else {
             // TODO check tags
             out.append("<a href=\"").append(urlPrefix).append("defs=")
-               .append(id).append("\">").append(id).append("</a>");
+               .append(id);
+            appendProject();
+            out.append("\">").append(id).append("</a>");
         }
     }
 
