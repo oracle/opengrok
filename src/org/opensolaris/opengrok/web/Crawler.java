@@ -33,7 +33,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -348,11 +347,13 @@ public class Crawler implements Runnable {
                 try {
                     addUrl.setString(1, url.toString());
                     addUrl.execute();
-                } catch (SQLIntegrityConstraintViolationException ex) {
-                // Item already exists!
                 } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    System.exit(1);
+                    if (ex.getSQLState().startsWith("23")) {
+                        /* Item already exists.. */
+                    } else {
+                        ex.printStackTrace();
+                        System.exit(1);
+                    }
                 }
             } else {
                 if (urls.size() < url_queue_len) {
