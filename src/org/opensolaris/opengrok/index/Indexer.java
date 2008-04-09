@@ -394,12 +394,30 @@ public class Indexer {
                         IndexDatabase.optimizeAll(executor);
                     }
                 } else {
+                    List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+                    
                     for (String path : subFiles) {
                         Project project = Project.getProject(path);
                         if (project == null) {
                             System.err.println("Warning: Could not find a project for \"" + path + "\"");
                         } else {
-                            final IndexDatabase db = new IndexDatabase(project);
+                            IndexDatabase db = new IndexDatabase(project);
+                            int idx = dbs.indexOf(db);
+                            if (idx != -1) {
+                                db = dbs.get(idx);
+                            }
+                            
+                            if (db.addDirectory(path)) {
+                                if (idx == -1) {
+                                    dbs.add(db);
+                                }
+                            } else {
+                                System.err.println("Warning: Directory does not exist \"" + path + "\"");
+                            }
+                        }
+                    }
+                    
+                    for (final IndexDatabase db : dbs) {
                             final boolean update = runIndex;
                             final boolean optimize = env.isOptimizeDatabase();
                             db.addIndexChangedListener(progress);
@@ -416,8 +434,7 @@ public class Indexer {
                                         e.printStackTrace();
                                     }
                                 }
-                            });
-                        }
+                            });                        
                     }                    
                 }
                 

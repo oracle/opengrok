@@ -70,7 +70,8 @@ public class IndexDatabase {
     private List<IndexChangedListener> listeners;
     private File dirtyFile;
     private boolean dirty;
-
+    private List<String> directories;
+    
     /**
      * Create a new instance of the Index Database. Use this constructor if
      * you don't use any projects
@@ -177,8 +178,26 @@ public class IndexDatabase {
         listeners = new ArrayList<IndexChangedListener>();
         dirtyFile = new File(indexDir, "dirty");
         dirty = dirtyFile.exists();
+        directories = new ArrayList<String>();
     }
 
+    /**
+     * By default the indexer will traverse all directories in the project.
+     * If you add directories with this function update will just process
+     * the specified directories.
+     * 
+     * @param dir The directory to scan
+     */
+    public boolean addDirectory(String dir) {
+        File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
+        if (!file.exists()) {
+            return false;
+        } else {
+            directories.add(dir);
+            return true;
+        }
+    }
+    
     /**
      * Update the content of this index database
      * @throws java.lang.Exception if an error occurs
@@ -188,26 +207,34 @@ public class IndexDatabase {
         try {
             writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer());
             writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
-            String root;
-            File sourceRoot;
 
-            if (project != null) {
-                root = project.getPath();
-                sourceRoot = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), project.getPath());
-            } else {
-                root = "";
-                sourceRoot = RuntimeEnvironment.getInstance().getSourceRootFile();
+            if (directories.size() == 0) {
+                if (project != null) {
+                    directories.add(project.getPath());
+                } else {
+                    directories.add("");
+                }
             }
+            
+            for (String dir : directories) {
+                File sourceRoot;
+                if (dir.equals("")) {
+                    sourceRoot = RuntimeEnvironment.getInstance().getSourceRootFile();
+                } else {
+                    sourceRoot = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
+                }
+                
+                String startuid = Util.uid(dir, "");
+                reader = IndexReader.open(indexDirectory);		 // open existing index
+                uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
 
-            String startuid = Util.uid(root, "");
-            reader = IndexReader.open(indexDirectory);		 // open existing index
-            uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
+                indexDown(sourceRoot, dir);
 
-            indexDown(sourceRoot, root);
-
-            while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
-                removeFile();
-                uidIter.next();
+                while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
+                    removeFile();
+                    uidIter.next();
+                }
+                reader.close();                
             }
         } finally {
             if (reader != null) {
@@ -674,4 +701,27 @@ public class IndexDatabase {
 
         return ret;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IndexDatabase other = (IndexDatabase) obj;
+        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.project != null ? this.project.hashCode() : 0);
+        return hash;
+    }
+    
 }
