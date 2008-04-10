@@ -308,7 +308,7 @@ public class Util {
     public static String buildQueryString(String freetext, String defs, String refs, String path, String hist) {
         StringBuilder sb = new StringBuilder();
         if (freetext != null && freetext.length() > 0) {
-            sb.append(freetext);
+            sb.append(freetext.replace("::", "\\:\\:"));
         }
 
         if (defs != null && defs.length() > 0) {
