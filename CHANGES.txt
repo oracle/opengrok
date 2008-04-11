@@ -1,3 +1,23 @@
+April 2008 update 0.6.1
+-------------------------------------------------
+Thgis is a bugfix release.
+
+Please see http://src.opensolaris.org/source/history/opengrok/trunk/ for
+full history information, and for the list of contributors. The following is
+just a summary.
+
+Bug #67: Duplicate magics in the analyzers
+Bug #546: IOException when viewing history for xref root in multi-project installation
+Bug #785: Indexer don't use the value specified with -m
+Bug #779: Add option to disable index optimization upon indexing
+Bug #829: create links to account details in annotate mode
+Bug #966: fails on directory names that contain a plus (+) character
+Bug #989: Can't reindex a subtree
+Bug #988: Make it possible to optimize the index without reingexing
+Bug #1007: Add URL friendly project handling
+Bug #1009: Economical mode generates suggestion database
+Bug #1057: double-colon in search pattern throws an error
+
 March 2008 update 0.6
 -------------------------------------------------
 Please see http://src.opensolaris.org/source/history/opengrok/trunk/ for
