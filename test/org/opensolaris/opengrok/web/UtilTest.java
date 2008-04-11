@@ -132,7 +132,7 @@ public class UtilTest {
         String refs = "";
         String path = "";
         String hist = null;
-        String expResult = "foo:(bar) foo::bar defs:(foo\\:\\:bar)";
+        String expResult = "foo:(bar) foo\\:\\:bar defs:(foo\\:\\:bar)";
         String result = Util.buildQueryString(freetext, defs, refs, path, hist);
         assertEquals(expResult, result);
     }
