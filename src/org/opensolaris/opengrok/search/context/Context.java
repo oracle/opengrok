@@ -22,20 +22,27 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident      "@(#)Context.java 1.2     06/02/22 SMI
- */
-
 /**
  * This is supposed to get the matching lines from sourcefile.
  * since lucene does not easily give the match context.
  */
 package org.opensolaris.opengrok.search.context;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
@@ -44,7 +51,7 @@ import org.opensolaris.opengrok.web.Util;
 
 public class Context {
     private LineMatcher[] m;
-    private int MAXFILEREAD = 32768; //16384;
+    private int MAXFILEREAD = 32768;
     private char[] buffer;
     PlainLineTokenizer tokens;
     Query query;
@@ -152,7 +159,11 @@ public class Context {
         int charsRead = 0;
         boolean truncated = false;
         
-        if (limit && RuntimeEnvironment.getInstance().isQuickContextScan()) {
+        if (!RuntimeEnvironment.getInstance().isQuickContextScan()) {
+            limit = false;
+        }
+        
+        if (limit) {
             try{
                 charsRead = in.read(buffer);
                 // truncate to last line read
