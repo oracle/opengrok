@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import org.apache.lucene.document.DateTools;
@@ -474,7 +475,12 @@ public class IndexDatabase {
             System.err.println("Failed to get file listing for: " + dir.getAbsolutePath());
             return;
         }
-        Arrays.sort(files);
+        Arrays.sort(files, new Comparator<File>() {
+
+                public int compare(File p1, File p2) {
+                    return p1.getName().compareTo(p2.getName());
+                }
+            });
 
         for (File file : files) {
             if (accept(file)) {
