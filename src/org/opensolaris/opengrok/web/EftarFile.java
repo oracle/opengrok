@@ -211,7 +211,7 @@ public class EftarFile {
                 String path = line.substring(0, tab);
                 String desc = line.substring(tab + 1);
                 size += desc.length() + 1 + 15;
-                StringTokenizer toks = new StringTokenizer(path, File.separator);
+                StringTokenizer toks = new StringTokenizer(path, "\\/");
                 Node n = root;
                 while (toks.hasMoreTokens()) {
                     n = n.put(myHash(toks.nextToken()), null);

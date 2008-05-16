@@ -473,6 +473,22 @@ public class HistoryGuru {
             IgnoredNames ignoredNames) {
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
+                // if the parent contains a file named "view.dat" or
+                // the parent is named "vobs"
+                if (new File(files[ii].getParentFile(), "view.dat").exists() ||
+                    files[ii].getParentFile().getName().toLowerCase().equals("vobs")) {
+                    try {
+                        String s = files[ii].getParentFile().getCanonicalPath();
+                        System.out.println("Adding ClearCase repository: <" + s + ">");
+                        ClearCaseRepository rep = new ClearCaseRepository(s);
+                        addExternalRepository(rep, s, repos);
+                        return ;
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }
+                }
                 String name = files[ii].getName().toLowerCase();
                 if (name.equals(".hg")) {
                     addMercurialRepository(files[ii].getParentFile(), repos, ignoredNames);

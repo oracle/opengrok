@@ -73,8 +73,6 @@ while (hr.next()) {
     String rev = hr.getRevision();
     if (rev == null || rev.length() == 0) {
         rev = "";
-    } else {
-        rev = Util.URIEncode(rev);
     }
     alt = !alt;
     %><tr  valign="top" <%= alt ?  "class=\"alt\"" : "" %>><%
@@ -84,7 +82,7 @@ while (hr.next()) {
         if(hr.isActive()) {
 	  String rp = ((hr.getSourceRootPath() == null) ? path : hr.getSourceRootPath().toString());
 	  rp = Util.URIEncodePath(rp);
-%><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + rev %>"><%=rev%></a>&nbsp;</td><td align="center"><input type="radio" name="r1" value="<%=rp%>@<%=rev%>"/>
+%><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center"><input type="radio" name="r1" value="<%=rp%>@<%=rev%>"/>
 <input type="radio" name="r2" value="<%=rp%>@<%=rev%>"/></td><%
         } else {
             striked = true;

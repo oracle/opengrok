@@ -106,7 +106,7 @@ if (valid) {
     } catch (UnsupportedEncodingException e) {
     }
 
-    if (r1 == null || r2 == null || r1.equals("") || r2.equals("") || r1.equals(r2) || !r1.matches("^[0-9]+(\\.[0-9]+)*$") || !r2.matches("^[0-9]+(\\.[0-9]+)*$")) {
+    if (r1 == null || r2 == null || r1.equals("") || r2.equals("") || r1.equals(r2)) {
 %><div class="src"><h3 class="error">Error:</h3>
     Please pick two revisions to compare the changed from the <a href="<%=context%>/history<%=path%>">history</a>
 </div><%

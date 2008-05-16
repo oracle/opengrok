@@ -112,7 +112,7 @@ if (valid) {
 // Else if requesting a previous revision -------------
         if(noHistory) {
                     response.sendError(404, "Revision not found");
-        } else if (rev.matches("^[0-9]+(\\.[0-9]+)*$")) {
+        } else {
             FileAnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             if (g == Genre.PLAIN|| g == Genre.HTML || g == null) {
@@ -166,9 +166,7 @@ if (g == Genre.PLAIN) {
             } else {
     %><div id="src"> Binary file [Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">here</a> to download] </div><%
             }
-            
-        } else {
-	%><h3 class="error">Error: Invalid Revision Number!</h3><%
+
         }
     } else {
 // requesting cross referenced file -------------
