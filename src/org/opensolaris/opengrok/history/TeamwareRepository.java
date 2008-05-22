@@ -94,7 +94,7 @@ public class TeamwareRepository extends ExternalRepository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         try {
             File history = SCCSHistoryParser.getSCCSFile(parent, basename);
-            return SCCSget.getRevision(history, rev);
+            return SCCSget.getRevision(command,history, rev);
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {

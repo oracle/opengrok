@@ -66,6 +66,8 @@ public class HistoryGuru {
     /** The name of the Subversion subdirectory */
     private static final String svnlabel = ".svn";
     
+    private String SCCSCommand = System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
+    
     private boolean isSvnAvailable() {
         if (!initializedSvn) {
             initializedSvn = true;
@@ -288,7 +290,7 @@ public class HistoryGuru {
             } else {
                 File history = SCCSHistoryParser.getSCCSFile(parent, basename);
                 if (history.canRead()) {
-                    in = SCCSget.getRevision(history, rev);
+                    in = SCCSget.getRevision(SCCSCommand,history, rev);
                     in.mark(32);
                     in.read();
                     in.reset();
@@ -328,7 +330,7 @@ public class HistoryGuru {
             case SCCS :
                 history = SCCSHistoryParser.getSCCSFile(parent, basename);
                 if (history != null && history.canRead()) {
-                    in = SCCSget.getRevision(history, rev);
+                    in = SCCSget.getRevision(SCCSCommand,history, rev);
                     in.mark(32);
                     in.read();
                     in.reset();

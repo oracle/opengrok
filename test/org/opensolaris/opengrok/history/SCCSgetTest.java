@@ -146,7 +146,7 @@ public class SCCSgetTest {
 
         while ((entry = zstream.getNextEntry()) != null) {
             String expected = readInput(zstream);
-            InputStream sccs = SCCSget.getRevision(sccsfile, entry.getName());
+            InputStream sccs = SCCSget.getRevision("sccs",sccsfile, entry.getName());
             String got = readInput(sccs);
             sccs.close();
             zstream.closeEntry();

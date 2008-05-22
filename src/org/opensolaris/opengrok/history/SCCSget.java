@@ -33,9 +33,9 @@ import java.util.ArrayList;
 
 
 public class SCCSget {
-    public static InputStream getRevision(File file, String revision) throws IOException {
+           
+    public static InputStream getRevision(String command, File file, String revision) throws IOException {
         InputStream ret = null;
-        String command = System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
 
         ArrayList<String> argv = new ArrayList<String>();
         argv.add(command);
