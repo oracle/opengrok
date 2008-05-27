@@ -56,6 +56,7 @@ public class IgnoredNames {
         "TAGS",
         "tags",
         ".svn",
+        ".git",
         ".hg",
         ".hgtags",
         ".bzr",

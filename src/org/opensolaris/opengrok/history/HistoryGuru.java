@@ -493,6 +493,20 @@ public class HistoryGuru {
                         exp.printStackTrace(System.err);
                     }
                     return;
+                } else if (name.equals(".git")) {
+                    try {
+                        String s = files[ii].getParentFile().getCanonicalPath();
+                        if (RuntimeEnvironment.getInstance().isVerbose()) {
+                            System.out.println("Adding Git repository: <" + s + ">");
+                        }
+                        GitRepository rep = new GitRepository(s);
+                        addExternalRepository(rep, s, repos);
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getParentFile().getAbsolutePath() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }
+                    return;
                 } else if (name.equals(svnlabel)) {
                     if (isSvnAvailable()) {
                         try {
