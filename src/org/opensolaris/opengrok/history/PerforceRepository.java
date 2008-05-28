@@ -81,7 +81,7 @@ public class PerforceRepository  extends ExternalRepository {
     
     @Override
     Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return null;
+        return PerforceHistoryParser.class;
     }
 
     @Override

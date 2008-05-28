@@ -44,11 +44,6 @@ public class Executor {
     public Executor(List<String> cmdList, File workingDirectory) {
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
-        
-        StringBuffer sb = new StringBuffer();
-        for (String c : cmdList) {
-            sb.append(c + ' ');
-        }
     }
 
     public void exec() {
@@ -123,7 +118,7 @@ public class Executor {
         }
         
         public String getString() {
-        	return output;
+            return output;
         }       
     }
 }
