@@ -60,10 +60,11 @@ public class IgnoredNames {
         ".hg",
         ".hgtags",
         ".bzr",
+        ".p4config",
         "*~",
-	"deleted_files",
-	".make.*",
-	".del-*"
+        "deleted_files",
+        ".make.*",
+        ".del-*"
     };
     
     /** The list of exact filenames to ignore */     

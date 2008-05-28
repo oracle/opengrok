@@ -552,6 +552,18 @@ public class HistoryGuru {
                         System.err.println("Repository will be ignored...");
                         exp.printStackTrace(System.err);
                     }
+                } else if (PerforceHistoryParser.isInP4Depot(files[ii])) {
+                    
+                    try {
+                        String s = files[ii].getParentFile().getCanonicalPath();
+                        System.out.println("Adding Perforce repository: <" + s + ">");
+                        PerforceRepository rep = new PerforceRepository();
+                        addExternalRepository(rep, files[ii].getParentFile().getCanonicalPath(), repos);
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }
                 }
             }
         }
