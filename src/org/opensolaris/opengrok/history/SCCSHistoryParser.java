@@ -54,7 +54,7 @@ class SCCSHistoryParser implements HistoryParser {
     DateFormat sccsDateFormat;
     Reader in;
 
-    public History parse(File file, ExternalRepository repos)
+    public History parse(File file, Repository repos)
         throws IOException
     {
         File f = getSCCSFile(file);

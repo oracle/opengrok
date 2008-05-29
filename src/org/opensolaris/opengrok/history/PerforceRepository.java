@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.util.Executor;
  * 
  * @author Emilio Monti - emilmont@gmail.com
  */
-public class PerforceRepository extends ExternalRepository {
+public class PerforceRepository extends Repository {
 
     private final static Pattern annotation_pattern = Pattern.compile("^(\\d+): .*");
 

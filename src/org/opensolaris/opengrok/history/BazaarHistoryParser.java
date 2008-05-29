@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 class BazaarHistoryParser implements HistoryParser {
 
-    public History parse(File file, ExternalRepository repos)
+    public History parse(File file, Repository repos)
             throws IOException, ParseException {
         BazaarRepository mrepos = (BazaarRepository) repos;
         History history = new History();

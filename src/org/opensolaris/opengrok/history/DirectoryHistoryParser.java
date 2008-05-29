@@ -37,7 +37,7 @@ public class DirectoryHistoryParser implements HistoryParser {
     public DirectoryHistoryParser() {
     }
     
-    public History parse(File file, ExternalRepository repository)
+    public History parse(File file, Repository repository)
             throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String filename = file.getCanonicalPath().substring(env.getSourceRootPath().length());
@@ -58,7 +58,7 @@ public class DirectoryHistoryParser implements HistoryParser {
     }
 
     public Annotation annotate(File file, String revision,
-                               ExternalRepository repository) {
+                               Repository repository) {
         return null;
     }
 

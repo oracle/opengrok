@@ -33,7 +33,7 @@ import java.util.ArrayList;
 class ClearCaseHistoryParser implements HistoryParser {
     private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss");
 
-    public History parse(File file, ExternalRepository repos)
+    public History parse(File file, Repository repos)
             throws IOException, ParseException {
         ClearCaseRepository mrepos = (ClearCaseRepository)repos;
         History history = new History();

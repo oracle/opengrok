@@ -108,7 +108,7 @@ public final class WebappListener  implements ServletContextListener  {
                         public void run() {
                             System.out.println("Scanning for repositories...");
                             long start = System.currentTimeMillis();
-                            HistoryGuru.getInstance().addExternalRepositories(source);
+                            HistoryGuru.getInstance().addRepositories(source);
                             long stop = System.currentTimeMillis();
                             System.out.println("Done searching for repositories: " + ((stop - start)/1000) + "s");
                         }

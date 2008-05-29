@@ -34,7 +34,7 @@ import java.io.InputStream;
  * Access to a Git repository.
  * 
  */
-public class GitRepository extends ExternalRepository {
+public class GitRepository extends Repository {
     private String command;
     
     /**

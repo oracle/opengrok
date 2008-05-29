@@ -44,7 +44,7 @@ class GitHistoryParser implements HistoryParser {
     };      
             
             
-    public History parse(File file, ExternalRepository repos)
+    public History parse(File file, Repository repos)
             throws IOException, ParseException {
 
         GitRepository mrepos = (GitRepository) repos;

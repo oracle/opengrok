@@ -31,7 +31,7 @@ import java.util.ArrayList;
  * Access to a ClearCase repository.
  *
  */
-public class ClearCaseRepository extends ExternalRepository {
+public class ClearCaseRepository extends Repository {
     private String command;
     private boolean verbose;
 

@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * Access to a Mercurial repository.
  * 
  */
-public class MercurialRepository extends ExternalRepository {
+public class MercurialRepository extends Repository {
     private String command;
     private boolean verbose;
     

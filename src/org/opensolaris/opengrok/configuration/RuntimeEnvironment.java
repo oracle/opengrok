@@ -38,7 +38,7 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import org.opensolaris.opengrok.history.ExternalRepository;
+import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
@@ -320,7 +320,7 @@ public class RuntimeEnvironment {
      * Get the map of external SCM repositories available
      * @return A map containing all available SCMs
      */
-    public Map<String, ExternalRepository> getRepositories() {
+    public Map<String, Repository> getRepositories() {
         return threadConfig.get().getRepositories();
     }
     
@@ -328,7 +328,7 @@ public class RuntimeEnvironment {
      * Set the map of external SCM repositories
      * @param repositories the repositories to use
      */
-    public void setRepositories(Map<String, ExternalRepository> repositories) {
+    public void setRepositories(Map<String, Repository> repositories) {
         threadConfig.get().setRepositories(repositories);
     }
     

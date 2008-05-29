@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 class MercurialHistoryParser implements HistoryParser {
     
-    public History parse(File file, ExternalRepository repos)
+    public History parse(File file, Repository repos)
             throws IOException, ParseException {
         MercurialRepository mrepos = (MercurialRepository)repos;
         History history = new History();

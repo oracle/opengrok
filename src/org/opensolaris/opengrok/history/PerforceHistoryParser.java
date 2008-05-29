@@ -97,7 +97,7 @@ public class PerforceHistoryParser implements HistoryParser {
      * @param repository Pointer to the PerforceReporitory
      * @return object representing the file's history
      */
-    public History parse(File file, ExternalRepository repository) throws Exception {
+    public History parse(File file, Repository repository) throws Exception {
         if (!isInP4Depot(file)) {
             return null;
         }

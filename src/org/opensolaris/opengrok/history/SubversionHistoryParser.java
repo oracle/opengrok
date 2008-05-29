@@ -51,7 +51,7 @@ class SubversionHistoryParser implements HistoryParser {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-    public History parse(File file, ExternalRepository repos)
+    public History parse(File file, Repository repos)
         throws IOException, ClientException {
         SVNClient client = new SVNClient();
         History history = new History();

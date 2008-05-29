@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensolaris.opengrok.history.ExternalRepository;
+import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
@@ -51,7 +51,7 @@ public class Configuration {
     private List<Project> projects;
     private String sourceRoot;
     private String dataRoot;
-    private Map<String, ExternalRepository> repositories;
+    private Map<String, Repository> repositories;
     private String urlPrefix;
     private boolean generateHtml;
     private Project defaultProject;
@@ -71,7 +71,7 @@ public class Configuration {
         setHistoryCache(true);
         setHistoryCacheTime(30);
         setProjects(new ArrayList<Project>());
-        setRepositories(new HashMap<String, ExternalRepository>());
+        setRepositories(new HashMap<String, Repository>());
         setUrlPrefix("/source/s?");
         setCtags("ctags");
         setIndexWordLimit(60000);
@@ -135,11 +135,11 @@ public class Configuration {
         this.dataRoot = dataRoot;
     }
     
-    public Map<String, ExternalRepository> getRepositories() {
+    public Map<String, Repository> getRepositories() {
         return repositories;
     }
     
-    public void setRepositories(Map<String, ExternalRepository> repositories) {
+    public void setRepositories(Map<String, Repository> repositories) {
         this.repositories = repositories;
     }
     

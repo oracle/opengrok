@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  *
  *
  */
-public class TeamwareRepository extends ExternalRepository {
+public class TeamwareRepository extends Repository {
     private String command;
     private boolean verbose;
     private Map<String, String> authors_cache;

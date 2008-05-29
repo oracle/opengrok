@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  *
  * @author Trond Norbye
  */
-public abstract class ExternalRepository {
+public abstract class Repository {
     private String directoryName;
 
     /**

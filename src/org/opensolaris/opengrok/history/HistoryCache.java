@@ -59,7 +59,7 @@ class HistoryCache {
      */
     static History get(File file,
             Class<? extends HistoryParser> parserClass,
-            ExternalRepository repository)
+            Repository repository)
             throws Exception {
         File cache = getCachedFile(file);
         boolean hasCache = (cache != null) && cache.exists();
@@ -207,7 +207,7 @@ class HistoryCache {
      * Store a history object to file in the same format as writeCache, but
      * this method does not try to synchonize access (so this function must
      * not be called on the same file from multiple threads). It's intended
-     * usage is from the ExternalRepository's createCache.
+     * usage is from the Repository's createCache.
      * @param name the name of the file (relative from source root)
      * @param history the history for this file
      * @throws IOException if an error occurs

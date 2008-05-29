@@ -152,7 +152,7 @@ public class HistoryGuru {
 
         switch (previousFile) {
         case EXTERNAL:
-            ExternalRepository repos = getRepository(file.getParentFile());
+            Repository repos = getRepository(file.getParentFile());
             if (repos != null && repos.fileHasHistory(file)) {
                 Class<? extends HistoryParser> parser;
                 parser = repos.getHistoryParser();
@@ -188,7 +188,7 @@ public class HistoryGuru {
      * <code>HistoryParser</code> does not support annotation
      */
     public Annotation annotate(File file, String rev) throws Exception {
-        ExternalRepository repos = getRepository(file);
+        Repository repos = getRepository(file);
         if (repos != null) {
             return repos.annotate(file, rev);
         }
@@ -214,7 +214,7 @@ public class HistoryGuru {
 
         if (parser != null) {
             try {
-                ExternalRepository repos = getRepository(file.getParentFile());
+                Repository repos = getRepository(file.getParentFile());
                 History history = HistoryCache.get(file, parser, repos);
                 if (history == null) {
                     return null;
@@ -235,7 +235,7 @@ public class HistoryGuru {
     
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
         Class<? extends HistoryParser> parser = null;
-        ExternalRepository repos = getRepository(file);
+        Repository repos = getRepository(file);
         if (repos != null) {
             parser = repos.getDirectoryHistoryParser();
         }
@@ -358,7 +358,7 @@ public class HistoryGuru {
      * @return true if the files in this directory have associated revision history
      */
     public boolean hasHistory(File file) {
-        ExternalRepository repos = getRepository(file);
+        Repository repos = getRepository(file);
         if (repos != null) {
             return repos.fileHasHistory(file);
         }
@@ -381,7 +381,7 @@ public class HistoryGuru {
      */
     public boolean hasAnnotation(File file) {
         if (!file.isDirectory()) {
-            ExternalRepository repos = getRepository(file);
+            Repository repos = getRepository(file);
             if (repos != null) {
                 return repos.supportsAnnotation();
             }
@@ -395,7 +395,7 @@ public class HistoryGuru {
             File f = new File(args[0]);
             File d = new File(".");
             RuntimeEnvironment.getInstance().setSourceRootFile(d.getCanonicalFile());
-            HistoryGuru.getInstance().addExternalRepositories(d.getCanonicalPath());
+            HistoryGuru.getInstance().addRepositories(d.getCanonicalPath());
             System.out.println("-----Reading comments as a reader");
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
             BufferedReader rr = new BufferedReader(hr);
@@ -440,14 +440,14 @@ public class HistoryGuru {
         }
     }
     
-    private void addMercurialRepository(File file, Map<String, ExternalRepository> repos, IgnoredNames ignoredNames) {
+    private void addMercurialRepository(File file, Map<String, Repository> repos, IgnoredNames ignoredNames) {
         try {
             String s = file.getCanonicalPath();
             if (RuntimeEnvironment.getInstance().isVerbose()) {
                 System.out.println("Adding Mercurial repository: <" + s + ">");
             }
             MercurialRepository rep = new MercurialRepository(s);
-            addExternalRepository(rep, s, repos);
+            addRepository(rep, s, repos);
         } catch (IOException exp) {
             System.err.println("Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
             System.err.println("Repository will be ignored...");
@@ -471,7 +471,7 @@ public class HistoryGuru {
         }
     }
     
-    private void addExternalRepositories(File[] files, Map<String, ExternalRepository> repos,
+    private void addRepositories(File[] files, Map<String, Repository> repos,
             IgnoredNames ignoredNames) {
         for (int ii = 0; ii < files.length; ++ii) {
             if (files[ii].isDirectory()) {
@@ -486,7 +486,7 @@ public class HistoryGuru {
                             System.out.println("Adding Bazaar repository: <" + s + ">");
                         }
                         BazaarRepository rep = new BazaarRepository(s);
-                        addExternalRepository(rep, s, repos);
+                        addRepository(rep, s, repos);
                     } catch (IOException exp) {
                         System.err.println("Failed to get canonical path for " + files[ii].getParentFile().getAbsolutePath() + ": " + exp.getMessage());
                         System.err.println("Repository will be ignored...");
@@ -500,7 +500,7 @@ public class HistoryGuru {
                             System.out.println("Adding Git repository: <" + s + ">");
                         }
                         GitRepository rep = new GitRepository(s);
-                        addExternalRepository(rep, s, repos);
+                        addRepository(rep, s, repos);
                     } catch (IOException exp) {
                         System.err.println("Failed to get canonical path for " + files[ii].getParentFile().getAbsolutePath() + ": " + exp.getMessage());
                         System.err.println("Repository will be ignored...");
@@ -515,7 +515,7 @@ public class HistoryGuru {
                                 System.out.println("Adding Subversion repository: <" + s + ">");
                             }
                             SubversionRepository rep = new SubversionRepository(s);                        
-                            addExternalRepository(rep, s, repos);
+                            addRepository(rep, s, repos);
                         } catch (IOException exp) {
                            System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
                            System.err.println("Repository will be ignored...");
@@ -528,7 +528,7 @@ public class HistoryGuru {
                         String s = files[ii].getParentFile().getCanonicalPath();
                         System.out.println("Adding Teamware repository: <" + s + ">");
                         TeamwareRepository rep = new TeamwareRepository(s);
-                        addExternalRepository(rep, s, repos);
+                        addRepository(rep, s, repos);
                     } catch (IOException exp) {
                         System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
                         System.err.println("Repository will be ignored...");
@@ -545,7 +545,7 @@ public class HistoryGuru {
                         String s = files[ii].getParentFile().getCanonicalPath();
                         System.out.println("Adding ClearCase repository: <" + s + ">");
                         ClearCaseRepository rep = new ClearCaseRepository(s);
-                        addExternalRepository(rep, s, repos);
+                        addRepository(rep, s, repos);
                         return ;
                     } catch (IOException exp) {
                         System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
@@ -558,7 +558,7 @@ public class HistoryGuru {
                         String s = files[ii].getParentFile().getCanonicalPath();
                         System.out.println("Adding Perforce repository: <" + s + ">");
                         PerforceRepository rep = new PerforceRepository();
-                        addExternalRepository(rep, files[ii].getParentFile().getCanonicalPath(), repos);
+                        addRepository(rep, files[ii].getParentFile().getCanonicalPath(), repos);
                     } catch (IOException exp) {
                         System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
                         System.err.println("Repository will be ignored...");
@@ -575,7 +575,7 @@ public class HistoryGuru {
                 // Could return null if e.g. the directory is unreadable
                 File[] dirfiles = files[ii].listFiles();
                 if (dirfiles != null) {
-                    addExternalRepositories(files[ii].listFiles(), repos, ignoredNames);
+                    addRepositories(files[ii].listFiles(), repos, ignoredNames);
                 } else {
                     try {
                         String s = files[ii].getCanonicalPath();
@@ -590,7 +590,7 @@ public class HistoryGuru {
         }
     }
     
-    private void addExternalRepository(ExternalRepository rep, String path, Map<String, ExternalRepository> repos) {
+    private void addRepository(Repository rep, String path, Map<String, Repository> repos) {
         repos.put(path, rep);
     }
     
@@ -600,9 +600,9 @@ public class HistoryGuru {
      * 
      * @param dir the root directory to start the search in.
      */
-    public void addExternalRepositories(String dir) {
-        Map<String, ExternalRepository> repos = new HashMap<String, ExternalRepository>();
-        addExternalRepositories((new File(dir)).listFiles(), repos,
+    public void addRepositories(String dir) {
+        Map<String, Repository> repos = new HashMap<String, Repository>();
+        addRepositories((new File(dir)).listFiles(), repos,
                 RuntimeEnvironment.getInstance().getIgnoredNames());
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }
@@ -613,8 +613,8 @@ public class HistoryGuru {
     public void updateRepositories() {
         boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
         
-        for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
-            ExternalRepository repository = entry.getValue();
+        for (Map.Entry<String, Repository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
+            Repository repository = entry.getValue();
             
             String path = entry.getKey();
             String type = repository.getClass().getSimpleName();
@@ -637,7 +637,7 @@ public class HistoryGuru {
         }
     }
     
-    private void createCache(ExternalRepository repository) {
+    private void createCache(Repository repository) {
         boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
@@ -667,9 +667,9 @@ public class HistoryGuru {
         boolean threading = System.getProperty("org.opensolaris.opengrok.history.threads", null) != null;
         ArrayList<Thread> threads = new ArrayList<Thread>();
         
-        for (Map.Entry<String, ExternalRepository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
+        for (Map.Entry<String, Repository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
             if (threading) {
-                final ExternalRepository repos = entry.getValue();
+                final Repository repos = entry.getValue();
                 Thread t = new Thread(new Runnable() {
                     public void run() {
                         createCache(repos);
@@ -704,7 +704,7 @@ public class HistoryGuru {
         ArrayList<Thread> threads = new ArrayList<Thread>();
         File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (String file : repositories) {
-            final ExternalRepository repos = getRepository(new File(root, file));
+            final Repository repos = getRepository(new File(root, file));
             if (repos != null) {
                 if (threading) {
                     Thread t = new Thread(new Runnable() {
@@ -739,8 +739,8 @@ public class HistoryGuru {
     }
 
     
-    private ExternalRepository getRepository(File path) {
-        Map<String, ExternalRepository> repos = RuntimeEnvironment.getInstance().getRepositories();
+    private Repository getRepository(File path) {
+        Map<String, Repository> repos = RuntimeEnvironment.getInstance().getRepositories();
         
         try {
             path = path.getCanonicalFile();
@@ -751,7 +751,7 @@ public class HistoryGuru {
         }
         while (path != null) {
             try {
-                ExternalRepository r = repos.get(path.getCanonicalPath());
+                Repository r = repos.get(path.getCanonicalPath());
                 if (r != null) {
                     return r;
                 }
@@ -768,7 +768,7 @@ public class HistoryGuru {
     private Class<? extends HistoryParser> lookupHistoryParser(File file) {
         Class<? extends HistoryParser> ret = null;
 
-        ExternalRepository rep = getRepository(file.getParentFile());
+        Repository rep = getRepository(file.getParentFile());
         if (rep != null) {
             ret = rep.getHistoryParser();
         }
@@ -778,7 +778,7 @@ public class HistoryGuru {
     
     private InputStream lookupHistoryGet(String parent, String basename,
                                          String rev) {
-        ExternalRepository rep = getRepository(new File(parent));
+        Repository rep = getRepository(new File(parent));
         if (rep != null) {
             return rep.getHistoryGet(parent, basename, rev);
         }

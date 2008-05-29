@@ -42,7 +42,7 @@ import org.apache.commons.jrcs.rcs.Version;
  */
 class RCSHistoryParser implements HistoryParser {
 
-    public History parse(File file, ExternalRepository repos)
+    public History parse(File file, Repository repos)
             throws IOException, ParseException {
         Archive archive = new Archive(getRCSFile(file).getPath());
         Version ver = archive.getRevisionVersion();

@@ -39,6 +39,6 @@ interface HistoryParser {
      * (could be null if no external repository is used)
      * @return the history of the file
      */
-    History parse(File file, ExternalRepository repository)
+    History parse(File file, Repository repository)
         throws Exception;
 }

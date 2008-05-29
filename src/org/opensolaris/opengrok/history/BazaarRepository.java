@@ -34,7 +34,7 @@ import java.io.InputStream;
  * Access to a Bazaar repository.
  * 
  */
-public class BazaarRepository extends ExternalRepository {
+public class BazaarRepository extends Repository {
     private String command;
     
     /**

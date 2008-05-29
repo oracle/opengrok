@@ -315,7 +315,7 @@ public class Indexer {
                     }
                     env.getRepositories().clear();
                     long start = System.currentTimeMillis();
-                    HistoryGuru.getInstance().addExternalRepositories(env.getSourceRootPath());
+                    HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
                     long time = (System.currentTimeMillis() - start) / 1000;
                     if (env.isVerbose()) {
                         System.out.println("Done searching for repositories (" + time + "s)");

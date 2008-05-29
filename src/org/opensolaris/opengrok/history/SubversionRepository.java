@@ -38,7 +38,7 @@ import org.tigris.subversion.javahl.SVNClient;
 /**
  * Access to a Subversion repository. 
  */
-public class SubversionRepository extends ExternalRepository {
+public class SubversionRepository extends Repository {
 
     private boolean verbose;
     private boolean ignored;
