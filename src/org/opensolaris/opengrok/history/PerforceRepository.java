@@ -38,6 +38,35 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public class PerforceRepository extends Repository {
 
+    private static class PerforceChecker {
+
+        private boolean haveP4;
+
+        PerforceChecker() {
+            Process process = null;
+            try {
+                String argv[] = {System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4"), "help"};
+                process = Runtime.getRuntime().exec(argv);
+                process.waitFor();
+                if (process.exitValue() == 0) {
+                    haveP4 = true;
+                }
+            } catch (Exception exp) {
+
+            } finally {
+                // Clean up zombie-processes...
+                if (process != null) {
+                    try {
+                        process.exitValue();
+                    } catch (IllegalThreadStateException exp) {
+                        // the process is still running??? just kill it..
+                        process.destroy();
+                    }
+                }
+            }
+        }
+    }
+    private static PerforceChecker checker = new PerforceChecker();
     private final static Pattern annotation_pattern = Pattern.compile("^(\\d+): .*");
 
     public Annotation annotate(File file, String rev) throws IOException {
@@ -121,5 +150,34 @@ public class PerforceRepository extends Repository {
     @Override
     boolean supportsAnnotation() {
         return true;
+    }
+
+    /**
+     * Check if a given file is in the depot
+     * 
+     * @param file The file to test
+     * @return true if the given file is in the depot, false otherwise
+     */
+    public static boolean isInP4Depot(File file) {
+        if (checker.haveP4) {
+            ArrayList<String> cmd = new ArrayList<String>();
+            cmd.add("p4");
+            if (file.isDirectory()) {
+                cmd.add("dirs");
+            } else {
+                cmd.add("files");
+            }
+            cmd.add(file.getName());
+            Executor executor = new Executor(cmd, file.getParentFile());
+            executor.exec();
+
+            /* OUTPUT:
+            stdout: //depot_path/name
+            stderr: name - no such file(s). 
+             */
+            return (executor.get_stdout().indexOf("//") != -1);
+        } else {
+            return false;
+        }
     }
 }

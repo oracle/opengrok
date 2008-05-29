@@ -552,8 +552,7 @@ public class HistoryGuru {
                         System.err.println("Repository will be ignored...");
                         exp.printStackTrace(System.err);
                     }
-                } else if (PerforceHistoryParser.isInP4Depot(files[ii])) {
-                    
+                } else if (PerforceRepository.isInP4Depot(files[ii])) {                    
                     try {
                         String s = files[ii].getParentFile().getCanonicalPath();
                         System.out.println("Adding Perforce repository: <" + s + ">");

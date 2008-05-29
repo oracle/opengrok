@@ -98,7 +98,7 @@ public class PerforceHistoryParser implements HistoryParser {
      * @return object representing the file's history
      */
     public History parse(File file, Repository repository) throws Exception {
-        if (!isInP4Depot(file)) {
+        if (!PerforceRepository.isInP4Depot(file)) {
             return null;
         }
         
@@ -137,30 +137,5 @@ public class PerforceHistoryParser implements HistoryParser {
         History history = new History();
         history.setHistoryEntries(entries);
         return history;
-    }
-    
-    /**
-     * Check if a given file is in the depot
-     * 
-     * @param file The file to test
-     * @return true if the given file is in the depot, false otherwise
-     */
-    public static boolean isInP4Depot(File file) {
-        ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add("p4");
-        if (file.isDirectory()) {
-            cmd.add("dirs");
-        } else {
-            cmd.add("files");
-        }
-        cmd.add(file.getName());
-        Executor executor = new Executor(cmd, file.getParentFile());
-        executor.exec();
-        
-        /* OUTPUT:
-            stdout: //depot_path/name
-            stderr: name - no such file(s). 
-         */
-        return (executor.get_stdout().indexOf("//") != -1);
-    }
+    }    
 }
