@@ -94,12 +94,13 @@ public class PerforceHistoryParser implements HistoryParser {
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repos Pointer to the SubversionReporitory
+     * @param repository Pointer to the PerforceReporitory
      * @return object representing the file's history
      */
     public History parse(File file, ExternalRepository repository) throws Exception {
-        if (!isInP4Depot(file))
-             return null;
+        if (!isInP4Depot(file)) {
+            return null;
+        }
         
         List<HistoryEntry> entries = null;
         if (file.isDirectory()) {
@@ -141,8 +142,7 @@ public class PerforceHistoryParser implements HistoryParser {
     /**
      * Check if a given file is in the depot
      * 
-     * @param parent Base path name
-     * @param name File name
+     * @param file The file to test
      * @return true if the given file is in the depot, false otherwise
      */
     public static boolean isInP4Depot(File file) {

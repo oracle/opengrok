@@ -31,16 +31,16 @@ import java.util.List;
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class Executor {
+
     private List<String> cmdList;
     private File workingDirectory;
-    
     private String stdoutString = new String("");
     private String stderrString = new String("");
-    
+
     public Executor(List<String> cmdList) {
         this(cmdList, null);
     }
-    
+
     public Executor(List<String> cmdList, File workingDirectory) {
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
@@ -51,7 +51,7 @@ public class Executor {
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
         }
-        
+
         StringPipe stdout = new StringPipe();
         StringPipe stderr = new StringPipe();
         Process process = null;
@@ -78,47 +78,49 @@ public class Executor {
             }
         }
     }
-    
+
     public String get_stdout() {
         return stdoutString;
     }
-    
+
     public BufferedReader get_stdout_reader() {
         return new BufferedReader(new StringReader(stdoutString));
     }
-    
+
     public String get_stderr() {
         return stderrString;
     }
-    
+
     public BufferedReader get_stderr_reader() {
         return new BufferedReader(new StringReader(stderrString));
     }
-    
+
     private class StringPipe extends Thread {
+
         private InputStream input = null;
         private String output = null;
-            
+
         void startListen(InputStream is) {
             input = is;
             this.start();
         }
-        
+
+        @Override
         public void run() {
             try {
                 int byteIn;
                 StringBuffer sb = new StringBuffer();
                 while ((byteIn = input.read()) != -1) {
-                    sb.append((char)byteIn);
+                    sb.append((char) byteIn);
                 }
                 output = sb.toString();
             } catch (IOException ioe) {
-                    System.out.println("Error during process pipe listening: " + ioe.getMessage());
-            }           
+                System.out.println("Error during process pipe listening: " + ioe.getMessage());
+            }
         }
-        
+
         public String getString() {
             return output;
-        }       
+        }
     }
 }
