@@ -26,6 +26,8 @@ package org.opensolaris.opengrok.web;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.StringTokenizer;
 import java.text.DecimalFormat;
@@ -255,16 +257,13 @@ public class Util {
     }
 
     public static String URIEncodePath(String path) {
-        final String SEGMENT_SEP = "/";
-        StringTokenizer pathTokenizer = new StringTokenizer(path, SEGMENT_SEP, true);
-        StringBuilder urlPath = new StringBuilder();
-
-        while (pathTokenizer.hasMoreTokens()) {
-            String token = pathTokenizer.nextToken();
-            urlPath.append(SEGMENT_SEP.equals(token) ? token : URIEncode(token));
+        try {
+           URI uri = new URI(null, null, path, null);
+           return uri.getRawPath();
+        } catch (URISyntaxException ex) {
+            ex.printStackTrace();
+            return "";
         }
-
-        return urlPath.toString();
     }
 
     public static String formQuoteEscape(String q) {

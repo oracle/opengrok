@@ -114,8 +114,10 @@ public class UtilTest {
         assertEquals("", Util.URIEncodePath(""));
         assertEquals("/", Util.URIEncodePath("/"));
         assertEquals("a", Util.URIEncodePath("a"));
-        assertEquals("//x/yz/%23%23/+/+%3F",
-                     Util.URIEncodePath("//x/yz/##/ / ?"));
+        assertEquals("a+b", Util.URIEncodePath("a+b"));
+        assertEquals("a%20b", Util.URIEncodePath("a b"));
+        assertEquals("/a//x/yz/%23%23/%20/%20%3F",
+                     Util.URIEncodePath("/a//x/yz/##/ / ?"));
     }
 
     @Test

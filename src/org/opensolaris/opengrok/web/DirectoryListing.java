@@ -104,7 +104,7 @@ public class DirectoryListing {
                 out.write(alt ? " class=\"alt\"" : "");
 
                 boolean isDir = child.isDirectory();
-                out.write("><td align=\"left\"><tt><a href=\"" + Util.URIEncode(file) + (isDir ? "/\" class=\"r\"" : "\" class=\"p\"") + ">");
+                out.write("><td align=\"left\"><tt><a href=\"" + Util.URIEncodePath(file) + (isDir ? "/\" class=\"r\"" : "\" class=\"p\"") + ">");
                 if (isDir) {
                     out.write("<b>" + file + "</b></a>/");
                 } else {
