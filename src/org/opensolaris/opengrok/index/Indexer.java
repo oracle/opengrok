@@ -260,8 +260,13 @@ public class Indexer {
                             System.exit(1);
                         }
                         break;
+                    case '?':
+                        System.err.println(cmdOptions.getUsage());
+                        System.exit(0);
+                        break;
+                        
                     default: 
-                        System.err.println("Unknown option: " + (char)cmd);
+                        System.err.println("Internal Error - Unimplemented cmdline option: " + (char)cmd);
                         System.exit(1);
                     }
                 }
