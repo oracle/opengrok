@@ -1,0 +1,190 @@
+#!/bin/sh
+#
+# OpenGrok Wrapper (Interactive GUI, Initial Generation and Cron Job Updating)
+#
+
+#
+# Usage
+#
+
+Usage()
+{
+    echo 1>&2
+    echo "Usage: ${0} <update|updateQuietly|updateConfiguration|usage|gui>" 1>&2
+    echo 1>&2
+    exit 1
+}
+
+#
+# Configuration
+#
+if [ -n "${OPENGROK_CONFIGURATION}" -a -f "${OPENGROK_CONFIGURATION}" ]
+then
+    # Load the Local OpenGrok Configuration Environment
+    . "${OPENGROK_CONFIGURATION}"
+else
+    # Use the built-in defaults. This section can be copied to its own
+    # file and tailored to your local requirements. Then simply set 
+    # OPENGROK_CONFIGURATION=/path/to/your/configuration, before using
+    # this wrapper. It will save you hand editing in your settings
+    # on each new release. A sample Cron Entry might look like:
+    # 15 0 * * * OPENGROK_CONFIGURATION=/pkgs/etc/OpenGrok.sh /pkgs/sbin/OpenGrok updateQuietly
+
+    # Note: It is not really possible to ever provided defaults for
+    # these values which will run in every UNIX-like environment.
+    # So I have provided a set which are functional for a given
+    # environment on which you can based you own configuration.
+
+    # Setup a standard execution environment
+    if [ -f /pkgs/sbin/CronExecutionEnvironment.sh ]
+    then
+	. /pkgs/sbin/CronExecutionEnvironment.sh
+    fi
+
+    # REQUIRED: Source Code/Repository Root
+    #           (your source code or the root of all repositories)
+    SRC_ROOT="/data/opengrok/src"
+
+    # REQUIRED: OpenGrok Generate Data Root
+    #           (for Lucene index and hypertext cross-references)
+    #           This area is rebuilt by "update" / "updateQuietly"
+    DATA_ROOT="/data/opengrok/data"
+
+    # OPTIONAL: User Provided Source Path to Description Mapping (Tab Separated Value)
+    #           (The user maintained source of the generated EftarFile file)
+    PATH_DESC="/data/opengrok/etc/paths.tsv"
+
+    # REQUIRED: XML Configuration 
+    #           (the configuration used by Web/GUI interfaces)
+    XML_CONFIGURATION="/data/opengrok/configuration.xml"
+
+    # REQUIRED: Java Archive of OpenGrok
+    #           (user building from source code will find this other key
+    #            files in the "dist" directory after the build is completed)
+    OPENGROK_JAR="/data/opengrok/opengrok.jar"
+
+    # REQUIRED: Exuberant CTags (http://ctags.sf.net)
+    EXUBERANT_CTAGS="/pkgs/64-bit/release/ctags-5.7/bin/ctags"
+
+    # REQUIRED: Java Home
+    JAVA_HOME="/usr/jdk/instances/jdk1.6.0"
+    export JAVA_HOME
+
+    # REQUIRED: Java Virtual Machine
+    JAVA="${JAVA_HOME}/bin/java"
+
+    # OPTIONAL: Uncomment the following line if your source contains Mercurial repositories.
+    SCAN_FOR_REPOSITORY="-S"
+
+    # OPTIONAL: Override Built-in Properties
+    PROPERTIES="-Dorg.opensolaris.opengrok.history.Mercurial=/pkgs/bin/hg"
+
+    # OPTIONAL: JVM Options
+    #JAVA_OPTS="-server -Xmx1024m"
+
+    # DELIVERED: An update program for EftarFile
+    # Usage: <class> inputFile [inputFile ...] outputFile
+    # EftarFile == An Extremely Fast Tagged Attribute Read-only File System
+    EFTAR_UPDATE="org.opensolaris.opengrok.web.EftarFile"
+
+    # HARDCODED: Generated EftarFile (See web/*.jsp)
+    EFTAR_OUTPUT_FILE="${DATA_ROOT}/index/dtags.eftar"
+
+    # Be Quiet? (set indirectly by command line arguments in the main program)
+    QUIET=
+
+    # or alternatively, Be Verbose!
+    #VERBOSE="-v"
+fi
+
+#
+# Implementation
+#
+
+# The variable "DO" can usefully be set to "echo" to aid in script debugging
+
+StdInvocation()
+{
+    ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}			\
+	-jar ${OPENGROK_JAR}					\
+	${SCAN_FOR_REPOSITORY} ${VERBOSE} ${QUIET}		\
+	${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}		\
+	-s ${SRC_ROOT} -d ${DATA_ROOT}				\
+	"${@}"
+}
+
+UpdateGeneratedConfiguration()
+{
+    StdInvocation -W ${XML_CONFIGURATION}
+}
+
+UpdateGeneratedData()
+{
+    StdInvocation -H
+}
+
+UpdateDescriptionCache()
+{
+    # OPTIONAL : Update the EftarFile data
+ 
+    if [ -n "${PATH_DESC}" -o -s "${PATH_DESC}" ]
+    then
+	${DO} ${JAVA} -classpath ${OPENGROK_JAR}		\
+	    ${EFTAR_UPDATE} ${PATH_DESC} ${EFTAR_OUTPUT_FILE}
+    fi
+}
+
+InvokeGUI()
+{
+    ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} &
+}
+
+OpenGrokUsage()
+{
+    ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} '-?'
+}
+
+#
+# Main Program
+#
+
+if [ $# -ne 1 ]
+then
+    Usage
+fi
+
+case "${1}" in
+
+    update)
+	UpdateGeneratedData
+	UpdateDescriptionCache
+	;;
+
+    updateQuietly)
+	QUIET="-q"
+	VERBOSE=""
+	UpdateGeneratedData
+	UpdateDescriptionCache
+	;;
+
+    updateConfiguration)
+	UpdateGeneratedConfiguration
+	;;
+
+    usage)
+        OpenGrokUsage
+	;;
+
+    gui)
+	InvokeGUI
+	;;
+
+    *)
+        Usage
+	;;
+
+esac
+
+#
+# End of File
+#
