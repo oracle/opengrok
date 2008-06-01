@@ -163,6 +163,31 @@ Clicking "Update" will create or update the search index.
 The index can be searched using the cscope like GUI, which lets you customize
 your favorite editor to open the matching files.
 
+---------------------------------------------------
+Using Findbugs
+---------------------------------------------------
+If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
+you have to download Findbugs to your machine, and install it where you have 
+checked out your OpenGrok source code, under the lib/findbugs directory,
+like this:
+
+   cd opengrok/trunk/lib
+   wget http://..../findbugs-x.y.z.tar.gz
+   gtar -xf findbugs-x.y.z.tar.gz
+   mv findbugs-x.y.z findbugs
+
+You can now run ant with the findbugs target:
+
+  ant findbugs
+  ...
+  findbugs:
+   [findbugs] Executing findbugs from ant task
+   [findbugs] Running FindBugs...
+   [findbugs] Warnings generated: nnn
+   [findbugs] Output saved to findbugs/findbugs.html
+
+Now, open findbugs/findbugs.html in a web-browser, and start fixing bugs!
+
 AUTHORS 
 -------
 Chandan B.N, Sun Microsystems. https://blogs.sun.com/chandan

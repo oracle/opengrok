@@ -11,4 +11,6 @@ prj.el
 nbproject/private
 generatedsrc
 lib/JFlex.jar
+lib/findbugs
+findbugs
 manifest.mf

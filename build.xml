@@ -261,5 +261,29 @@ Use is subject to license terms.
         <arg value="${dist.dir}/${distname}-${version}-src.tar.gz"/>
       </exec>
     </target>
+    
+    <target name="findbugs" depends="dist" description="Runs Findbugs on the OpenGrok source code">
+        <fail message="Please install Findbugs in lib-directory to run Findbugs, see README.">
+            <condition>
+                <not>
+                    <and>
+                        <available file="lib/findbugs/lib/findbugs.jar"/>  
+                        <available file="lib/findbugs/lib/findbugs-ant.jar"/>  
+                    </and>
+                </not>
+            </condition>
+        </fail>
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="lib/findbugs/lib/findbugs-ant.jar"/>
+        <mkdir dir="findbugs"/>
+        <findbugs projectname="OpenGrok" home="lib/findbugs" output="html" outputFile="findbugs/findbugs.html" jvmargs="-Xmx512m">
+            <auxClasspath>
+                <fileset dir="${dist.dir}/lib/">
+                    <include name="*.jar"/>
+                </fileset>
+            </auxClasspath>
+            <sourcePath path="src" />
+            <class location="${dist.dir}/opengrok.jar" />
+        </findbugs>
+    </target>
 
 </project>
