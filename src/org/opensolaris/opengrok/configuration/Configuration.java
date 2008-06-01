@@ -65,6 +65,7 @@ public class Configuration {
     private String webappLAF;
     private boolean remoteScmSupported;
     private boolean optimizeDatabase;
+    private boolean useLuceneLocking;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -85,6 +86,7 @@ public class Configuration {
         setWebappLAF("default");
         setRemoteScmSupported(false);
         setOptimizeDatabase(true);
+        setUsingLuceneLocking(false);
     }
     
     public String getCtags() {
@@ -257,6 +259,14 @@ public class Configuration {
         this.optimizeDatabase = optimizeDatabase;
     }
 
+    public boolean isUsingLuceneLocking() {
+        return useLuceneLocking;
+    }
+
+    public void setUsingLuceneLocking(boolean useLuceneLocking) {
+        this.useLuceneLocking = useLuceneLocking;
+    }
+        
     /**
      * Write the current configuration to a file
      * @param file the file to write the configuration into

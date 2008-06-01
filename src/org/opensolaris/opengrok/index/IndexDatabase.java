@@ -169,11 +169,14 @@ public class IndexDatabase {
             }
         }
 
+        if (!env.isUsingLuceneLocking()) {
+            FSDirectory.setDisableLocks(true);
+        }
         indexDirectory = FSDirectory.getDirectory(indexDir);
         spellDirectory = FSDirectory.getDirectory(spellDir);
         ignoredNames = env.getIgnoredNames();
         analyzerGuru = new AnalyzerGuru();
-        if (RuntimeEnvironment.getInstance().isGenerateHtml()) {
+        if (env.isGenerateHtml()) {
             xrefDir = new File(env.getDataRootFile(), "xref");
         }
         listeners = new ArrayList<IndexChangedListener>();

@@ -80,6 +80,7 @@ public class CommandLineOptions {
         options.add(new Option('h', "/path/to/repository", "Generate history cache for the specified repos (absolute path from source root)"));
         options.add(new Option('r', "on/off", "Turn on/off support for remote SCM systems"));
         options.add(new Option('L', "path", "Path to the subdirectory in the web-application containing the requested stylesheet. The following factory-defaults exist: \"default\", \"offwhite\" and \"polished\""));
+        options.add(new Option('l', "on/off", "Turn on/off locking of the Lucene database during index generation"));
         options.add(new Option('O', "on/off", "Turn on/off the optimization of the index database as part of the indexing step"));
         options.add(new Option('a', "on/off", "Allow or disallow leading wildcards in a search"));
         options.add(new Option('w', "webapp-context", "Context of webapp. Default is /source. If you specify a different name, make sure to rename source.war to that name."));

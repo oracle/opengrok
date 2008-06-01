@@ -490,6 +490,14 @@ public class RuntimeEnvironment {
         threadConfig.get().setOptimizeDatabase(optimizeDatabase);
     }
 
+    public boolean isUsingLuceneLocking() {
+        return threadConfig.get().isUsingLuceneLocking();
+    }
+
+    public void setUsingLuceneLocking(boolean useLuceneLocking) {
+        threadConfig.get().setOptimizeDatabase(useLuceneLocking);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read
