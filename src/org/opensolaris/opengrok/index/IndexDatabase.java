@@ -191,8 +191,14 @@ public class IndexDatabase {
      * the specified directories.
      * 
      * @param dir The directory to scan
+     * @return <code>true</code> if the file is added, false oth
      */
     public boolean addDirectory(String dir) {
+        if (dir.startsWith("\\")) {
+            dir.replace('\\', '/');
+        } else if (!dir.startsWith("/")) {
+            dir = "/" + dir;
+        }
         File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
         if (!file.exists()) {
             return false;

@@ -410,10 +410,15 @@ public class Indexer {
                     
                     for (String path : subFiles) {
                         Project project = Project.getProject(path);
-                        if (project == null) {
+                        if (project == null && env.hasProjects()) {
                             System.err.println("Warning: Could not find a project for \"" + path + "\"");
                         } else {
-                            IndexDatabase db = new IndexDatabase(project);
+                            IndexDatabase db;
+                            if (project != null) {
+                                db = new IndexDatabase(project);
+                            } else {
+                                db = new IndexDatabase();                                
+                            }
                             int idx = dbs.indexOf(db);
                             if (idx != -1) {
                                 db = dbs.get(idx);
