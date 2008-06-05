@@ -46,9 +46,10 @@ Using command line interface.
 
 Step.1 - Populate DATA_ROOT Directory
 =====================================
-Option 1. run.sh: There is a sample shell script run.sh that is suitable
+Option 1. OpenGrok: There is a sample shell script OpenGrok that is suitable
 for using in a cronjob to run regularly. Modify the variables in the script
-to point appropriate directories.
+to point appropriate directories, or as the code suggests factor your local
+configuration into a seperate file and simplify future upgrades.
 
 Option 2. opengrok.jar: You can also directly use the Java application. If
 the sources are all located in a directory SRC_ROOT and the data and

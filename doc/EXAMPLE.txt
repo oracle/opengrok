@@ -23,9 +23,10 @@ sources and the database used by OpenGrok. I would suggest something like:
 You should copy the OpenGrok binaries into the bin-directory. The following
 command should do the trick:
 
-$ cp -r run.sh opengrok.jar lib /opengrok/bin
+$ cp -r OpenGrok opengrok.jar lib /opengrok/bin
 
-Edit run.sh and set the following parameters:
+Edit OpenGrok, review the configuration section and set at least the
+following parameters to reflect your system and requirements:
 SRC_ROOT=/opengrok/source
 DATA_ROOT=/opengrok/data
 EXUB_CTAGS=/absolute/path/to/Exubrant/Ctags

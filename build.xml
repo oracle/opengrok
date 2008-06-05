@@ -237,6 +237,7 @@ Use is subject to license terms.
           <include name="paths.tsv"/>
         </tarfileset>
         <tarfileset dir="." prefix="${distname}-${version}" mode="755">
+          <include name="OpenGrok"/>
           <include name="run.sh"/>
           <include name="run-quiet.sh"/>
           <include name="run.bat"/>
