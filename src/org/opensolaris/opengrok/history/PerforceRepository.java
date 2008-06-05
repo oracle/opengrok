@@ -148,7 +148,7 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    boolean supportsAnnotation() {
+    public boolean fileHasAnnotation(File file) {
         return true;
     }
 

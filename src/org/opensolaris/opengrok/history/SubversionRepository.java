@@ -163,7 +163,7 @@ public class SubversionRepository extends Repository {
         return annotation;
     }
 
-    public boolean supportsAnnotation() {
+    public boolean fileHasAnnotation(File file) {
         return true;
     }
 

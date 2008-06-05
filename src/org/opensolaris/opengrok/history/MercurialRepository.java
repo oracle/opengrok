@@ -214,7 +214,7 @@ public class MercurialRepository extends Repository {
         }
     }
 
-    public boolean supportsAnnotation() {
+    public boolean fileHasAnnotation(File file) {
         return true;
     }
 

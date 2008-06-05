@@ -65,7 +65,7 @@ public abstract class Repository {
      *
      * @return <code>true</code> if annotation is supported
      */
-    abstract boolean supportsAnnotation();
+    abstract boolean fileHasAnnotation(File file);
 
     /**
      * Annotate the specified revision of a file.

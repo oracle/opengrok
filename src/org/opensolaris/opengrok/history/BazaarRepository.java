@@ -140,7 +140,7 @@ public class BazaarRepository extends Repository {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean supportsAnnotation() {
+    public boolean fileHasAnnotation(File file) {
         return false;
     }
 

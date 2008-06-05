@@ -383,7 +383,7 @@ public class HistoryGuru {
         if (!file.isDirectory()) {
             Repository repos = getRepository(file);
             if (repos != null) {
-                return repos.supportsAnnotation();
+                return repos.fileHasAnnotation(file);
             }
         }
         

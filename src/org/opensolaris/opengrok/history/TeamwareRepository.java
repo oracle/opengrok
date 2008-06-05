@@ -221,7 +221,7 @@ public class TeamwareRepository extends Repository {
         }
     }
 
-    public boolean supportsAnnotation() {
+    public boolean fileHasAnnotation(File file) {
         return true;
     }
 
