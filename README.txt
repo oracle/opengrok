@@ -189,6 +189,55 @@ You can now run ant with the findbugs target:
 
 Now, open findbugs/findbugs.html in a web-browser, and start fixing bugs!
 
+---------------------------------------------------
+Using Emma
+---------------------------------------------------
+If you want to check test coverage on OpenGrok, download Emma from
+http://emma.sourceforge.net/. Place emma.jar and emma-ant.jar in the
+opengrok/trunk/lib directory.
+
+Now you can instrument your classes, and create a jar file:
+
+   ant emma-instrument
+
+If you are using NetBeans, select File - "opengrok" Properties 
+- libraries - Compile tab. Press the "Add JAR/Folder" and select
+lib/emma.jar and lib/emma_ant.jar
+
+If you are not using netbeans, you have to edit the file 
+nbproject/project.properties, and add "lib/emma.jar" and 
+"lib/emma_ant.jar" to the javac.classpath inside it.
+
+Now you can put the classes into jars and generate distributables:
+
+   ant dist
+
+The classes inside opengrok.jar should now be instrumented.
+If you use opengrok.jar for your own set of tests, you need 
+emma.jar in the classpath.If you want to specify where to store 
+the run time analysis, use these properties:
+
+   emma.coverage.out.file=path/coverage.ec
+   emma.coverage.out.merge=true
+
+The coverage.ec file should be placed in the opengrok/trunk/coverage
+directory for easy analyzation.
+
+If you want to test the coverage of the unit tests, you can
+run the tests:
+
+   ant test   (Or Alt+F6 in NetBeans)
+
+Now you should get some output saying that Emma is placing runtime 
+coverage data into coverage.ec.
+
+To generate reports, run ant again:
+
+   ant emma-report
+
+Look at coverage/coverage.txt, coverage/coverage.xml and 
+coverage/coverage.html to see how complete your tests are.
+
 AUTHORS 
 -------
 Chandan B.N, Sun Microsystems. https://blogs.sun.com/chandan

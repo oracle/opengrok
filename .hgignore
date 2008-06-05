@@ -5,6 +5,7 @@ tags
 TAGS
 build
 dist
+coverage
 opengrok.jar
 source.war
 prj.el

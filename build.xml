@@ -147,10 +147,12 @@ Use is subject to license terms.
         </propertyfile>        
     </target>
         
+    <property name="coverage.dir" value="${basedir}/coverage"/>
     <target name="-pre-compile" depends="jflex"/>
     <target name="-post-clean">
         <delete dir="${gensrcdir}"/>
         <delete file="${manifest.file}"/>
+        <delete dir="${coverage.dir}"/>
     </target>
 
     <!--
@@ -286,5 +288,58 @@ Use is subject to license terms.
             <class location="${dist.dir}/opengrok.jar" />
         </findbugs>
     </target>
-
+    
+    <target name="emma-instrument" depends ="compile" description="Instruments the source code for Emma code coverage analysis">
+        <fail message="Please install emma.jar and emma_ant.jar in lib-directory to run Emma, see README.">
+            <condition>
+                <not>
+                    <and>
+                        <available file="lib/emma.jar"/>  
+                        <available file="lib/emma_ant.jar"/>  
+                    </and>
+                </not>
+            </condition>
+        </fail>
+        <path id="emma.lib" >
+            <pathelement location="lib/emma.jar"/>
+            <pathelement location="lib/emma_ant.jar"/>
+        </path>
+        <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+        <mkdir dir="${coverage.dir}" />
+        <emma enabled="true">
+            <instr instrpath="build/classes"
+                       metadatafile="${coverage.dir}/coverage.em"
+                       mode="overwrite"
+                       filter="+org.opensolaris.*"/>
+        </emma>
+    </target>
+    
+    <target name="-pre-compile-test">
+        <property name="test-sys-prop.emma.coverage.out.file" value="${coverage.dir}/coverage.ec"/>
+        <property name="test-sys-prop.emma.coverage.out.merge" value="true"/>
+    </target>
+    
+    <target name="emma-report" description="Analyze ">
+        <fail message="Please install emma.jar and emma_ant.jar in lib-directory to run Emma, see README.">
+            <condition>
+                <not>
+                    <and>
+                        <available file="lib/emma.jar"/>  
+                        <available file="lib/emma_ant.jar"/>  
+                    </and>
+                </not>
+            </condition>
+        </fail>
+        <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+        <emma enabled="true" >
+            <report sourcepath="src">
+                <!-- collect all EMMA data dumps (metadata and runtime): -->
+                <infileset dir="${coverage.dir}" includes="*.em, *.ec"/>
+                <txt outfile="${coverage.dir}/coverage.txt"/>
+                <xml outfile="${coverage.dir}/coverage.xml"/>
+                <html  outfile="${coverage.dir}/index.html"/>
+            </report>
+        </emma>
+    </target>
+    
 </project>
