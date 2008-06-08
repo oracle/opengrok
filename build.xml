@@ -278,7 +278,7 @@ Use is subject to license terms.
         </fail>
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="lib/findbugs/lib/findbugs-ant.jar"/>
         <mkdir dir="findbugs"/>
-        <findbugs projectname="OpenGrok" home="lib/findbugs" output="html" outputFile="findbugs/findbugs.html" jvmargs="-Xmx512m">
+        <findbugs projectname="OpenGrok" home="lib/findbugs" output="html" excludeFilter="tools/findbugs_filter.xml" outputFile="findbugs/findbugs.html" jvmargs="-Xmx512m">
             <auxClasspath>
                 <fileset dir="${dist.dir}/lib/">
                     <include name="*.jar"/>

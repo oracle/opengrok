@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+   <!-- Remove JFlex generated files from output -->
+  <Match>
+      <Method name="yylex"/>
+      <Bug code="Bx"/>
+  </Match>
+
+  <Match>
+      <Or>
+         <Method name="zzUnpackAction"/>
+         <Method name="zzUnpackAttribute"/>
+         <Method name="zzUnpackRowMap"/>
+         <Method name="zzUnpackTrans"/>
+      </Or>
+      <Bug code="DLS"/>
+  </Match>
+
+  <Match>
+      <Method name="reInit"/>
+      <Bug code="EI2"/>
+  </Match>
+
+  <Match>
+      <Or>
+          <Field name="yychar"/>
+          <Field name="yycolumn"/>
+          <Field name="yyline"/>
+          <Field name="zzAtBOL"/>
+      </Or>
+      <Bug code="UrF"/>
+  </Match>
+
+</FindBugsFilter>
