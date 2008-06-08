@@ -112,7 +112,7 @@ public abstract class Repository {
      *
      * @throws Exception on error
      */
-    void createCache() throws Exception {
+    void createCache(HistoryCache cache) throws Exception {
         Class<? extends HistoryParser> pClass = getDirectoryHistoryParser();
 
         // If we don't have a directory parser, we can't create the cache
@@ -148,7 +148,7 @@ public abstract class Repository {
                 hist.setHistoryEntries(e.getValue());
                 File file = new File(root, e.getKey());
                 if (!file.isDirectory()) {
-                    HistoryCache.writeCacheFile(e.getKey(), hist);
+                    cache.store(hist, file);
                 }
             }
         }

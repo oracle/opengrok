@@ -59,6 +59,9 @@ public class HistoryGuru {
    
     /** Method used on the last file */
     private SCM previousFile;
+    
+    private HistoryCache historyCache;
+    
     /** Is JavaSVN available? */
     private boolean svnAvailable;
     /** Is JavaSVN initialized? */
@@ -99,6 +102,7 @@ public class HistoryGuru {
      */
     private HistoryGuru() {
         previousFile = SCM.UNKNOWN;
+        historyCache = new FileHistoryCache();
     }
     
     /**
@@ -215,7 +219,7 @@ public class HistoryGuru {
         if (parser != null) {
             try {
                 Repository repos = getRepository(file.getParentFile());
-                History history = HistoryCache.get(file, parser, repos);
+                History history = historyCache.get(file, repos);
                 if (history == null) {
                     return null;
                 }
@@ -248,7 +252,7 @@ public class HistoryGuru {
 
         if (parser != null) {
             try {
-                History history = HistoryCache.get(file, parser, repos);
+                History history = historyCache.get(file, repos);
                 if (history != null) {
                     return new HistoryReader(history);
                 }
@@ -648,7 +652,7 @@ public class HistoryGuru {
         }
 
         try {
-            repository.createCache();
+            repository.createCache(historyCache);
         } catch (Exception e) {
             System.err.println("An error occured while creating cache for " + path + " (" + type + ")");
             e.printStackTrace();
