@@ -24,7 +24,6 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +40,8 @@ public class HistoryEntry {
     private StringBuffer message;
     private boolean active;
     private List<String> files;
-
+    private List<String> changeRequests;
+ 
     /* This holds the subversion repository's view of where the file is in a particular revision */
     private File repositoryPath;
 
@@ -52,6 +52,7 @@ public class HistoryEntry {
     public HistoryEntry() {
         message = new StringBuffer();
         files = new ArrayList<String>();
+        changeRequests = new ArrayList<String>();
     }
     
     public HistoryEntry(String revision, Date date, String author,
@@ -61,12 +62,38 @@ public class HistoryEntry {
         this.author = author;
         this.message = new StringBuffer(message);
         this.active = active;
+        this.files = new ArrayList<String>();
+        this.changeRequests = new ArrayList<String>();
     }
     
     public String getLine() {
         return revision + " " + date + " " + author + " " + message + "\n";
     }
-    
+
+    public void dump() {
+        System.err.println("HistoryEntry : revision       = " + revision);
+        System.err.println("HistoryEntry : date           = " + date);
+        System.err.println("HistoryEntry : author         = " + author);
+        System.err.println("HistoryEntry : active         = " + (active ? "True" : "False") );
+        String[] lines = message.toString().split("\n");
+        String separator = "=";
+        for( String line : lines) {
+            System.err.println("HistoryEntry : message        " + separator + " " + line);
+            separator = ">";
+        }
+        separator = "=";
+        for( String cr : changeRequests) {
+            System.err.println("HistoryEntry : changeRequests " + separator + " " + cr);
+            separator = ">";
+        }
+        separator = "=";
+        for( String file : files) {
+            System.err.println("HistoryEntry : files          " + separator + " " + file);
+            separator = ">";
+        }
+        System.err.println();
+   }
+
     public String getAuthor() {
         return author;
     }
@@ -125,8 +152,21 @@ public class HistoryEntry {
         this.files = files;
     }
     
+    @Override
     public String toString() {
         return getLine();
+    }
+    
+    public void addChangeRequest(String changeRequest) {
+        changeRequests.add(changeRequest);
+    }
+    
+    public List<String> getChangeRequests() {
+        return changeRequests;
+    }
+    
+    public void setChangeRequests(List<String> changeRequests) {
+        this.changeRequests = changeRequests;
     }
 
     /** 
