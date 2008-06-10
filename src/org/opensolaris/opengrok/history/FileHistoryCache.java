@@ -93,11 +93,14 @@ class FileHistoryCache implements HistoryCache {
     }
     
     public void store(History history, File file) throws Exception {
-        File dir = file.getParentFile();
+        
+        File cache = getCachedFile(file);
+        
+        File dir = cache.getParentFile();
         if (!dir.isDirectory()) {
             if (!dir.mkdirs()) {
                 throw new IOException(
-                        "Unable to create directory '" + dir + "'.");
+                        "Unable to create cache directory '" + dir + "'.");
             }
         }
 
@@ -116,12 +119,12 @@ class FileHistoryCache implements HistoryCache {
             e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
             e.writeObject(history);
             e.close();
-            if (!file.delete() && file.exists()) {
+            if (!cache.delete() && cache.exists()) {
                 output.delete();
                 throw new IOException(
                         "Cachefile exists, and I could not delete it.");
             }
-            if (!output.renameTo(file)) {
+            if (!output.renameTo(cache)) {
                 output.delete();
                 throw new IOException("Failed to rename cache tmpfile.");
             }
