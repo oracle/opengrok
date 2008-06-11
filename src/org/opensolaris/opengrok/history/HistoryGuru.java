@@ -556,6 +556,18 @@ public class HistoryGuru {
                         System.err.println("Repository will be ignored...");
                         exp.printStackTrace(System.err);
                     }
+                } else if (name.equals(".razor")) {
+                    try {
+                        String s = files[ii].getParentFile().getAbsolutePath();
+                        System.out.println("Adding Razor repository: <" + s + ">");
+                        RazorRepository rep = new RazorRepository(s, files[ii].getCanonicalPath());
+                        addRepository(rep, s, repos);
+                    } catch (IOException exp) {
+                        System.err.println("Failed to get canonical path for " + files[ii].getAbsolutePath() + ": " + exp.getMessage());
+                        System.err.println("Repository will be ignored...");
+                        exp.printStackTrace(System.err);
+                    }
+                    return;
                 } else if (PerforceRepository.isInP4Depot(files[ii])) {                    
                     try {
                         String s = files[ii].getParentFile().getCanonicalPath();

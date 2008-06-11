@@ -61,6 +61,7 @@ public class IgnoredNames {
         ".hgtags",
         ".bzr",
         ".p4config",
+        ".razor",
         "*~",
         "deleted_files",
         ".make.*",
