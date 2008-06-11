@@ -29,14 +29,13 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Iterator;
 
 /**
  * Class for reading history entries. The HistoryReader have
- * tree mutually exclusive usages:
+ * three mutually exclusive usages:
  * <ol>
  *   <li>where you read it as if from a Reader (used by lucene)</li>
  *   <li>you read each entry as one string ( one line = rev + date + author +
