@@ -453,9 +453,15 @@ public class IndexDatabase {
 
         try {
             if (!file.getAbsolutePath().equals(file.getCanonicalPath())) {
-                System.err.println("Warning: ignored link " + file.getAbsolutePath() +
-                        " -> " + file.getCanonicalPath());
-                return false;
+                if (file.getParentFile().equals(file.getCanonicalFile().getParentFile())) {
+                    // Lets support symlinks within the same directory, this
+                    // should probably be extended to within the same repository
+                    return true;
+                } else {
+                    System.err.println("Warning: ignored non-local symlink " + file.getAbsolutePath() +
+                            " -> " + file.getCanonicalPath());
+                    return false;
+                }
             }
         } catch (IOException exp) {
             System.err.println("Warning: Failed to resolve name: " + file.getAbsolutePath());
