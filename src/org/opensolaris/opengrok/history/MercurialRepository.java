@@ -40,7 +40,6 @@ import java.util.regex.Pattern;
  * 
  */
 public class MercurialRepository extends Repository {
-    private String command;
     private boolean verbose;
     
     /**
@@ -49,28 +48,11 @@ public class MercurialRepository extends Repository {
     public MercurialRepository() { }
     
     /**
-     * Creates a new instance of MercurialRepository
-     * @param directory The directory containing the .hg-subdirectory
-     */
-    public MercurialRepository(String directory) {
-        setDirectoryName(new File(directory).getAbsolutePath());
-        command = System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
-    }
-    
-    /**
-     * Set the name of the Mercurial command to use
-     * @param command the name of the command (hg)
-     */
-    public void setCommand(String command) {
-        this.command = command;
-    }
-
-    /**
      * Get the name of the Mercurial command that should be used
      * @return the name of the hg command in use
      */
-    public String getCommand() {
-        return command;
+    private String getCommand() {
+        return System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
     }
     
     /**
@@ -99,9 +81,9 @@ public class MercurialRepository extends Repository {
         
         String argv[];
         if (verbose || file.isDirectory()) {
-            argv = new String[] { command, "log", "-v", filename };
+            argv = new String[] { getCommand(), "log", "-v", filename };
         } else {
-            argv = new String[] { command, "log", filename };
+            argv = new String[] { getCommand(), "log", filename };
         }
 
         File directory = new File(getDirectoryName());
@@ -117,7 +99,7 @@ public class MercurialRepository extends Repository {
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         try {
-            String argv[] = { command, "cat", "-r", rev, filename };
+            String argv[] = { getCommand(), "cat", "-r", rev, filename };
             process = Runtime.getRuntime().exec(argv, null, directory);
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -171,7 +153,7 @@ public class MercurialRepository extends Repository {
      */
     public Annotation annotate(File file, String revision) throws Exception {
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(command);
+        argv.add(getCommand());
         argv.add("annotate");
         argv.add("-u");
         argv.add("-n");
@@ -237,11 +219,11 @@ public class MercurialRepository extends Repository {
         Process process = null;
         try {
             File directory = new File(getDirectoryName());
-            process = Runtime.getRuntime().exec(new String[] {command, "pull"}, null, directory);
+            process = Runtime.getRuntime().exec(new String[] {getCommand(), "pull"}, null, directory);
             if (waitFor(process) != 0) {
                 return ;                
             }
-            process = Runtime.getRuntime().exec(new String[] {command, "update"}, null, directory);
+            process = Runtime.getRuntime().exec(new String[] {getCommand(), "update"}, null, directory);
             if (waitFor(process) != 0) {
                 return ;                
             }        
@@ -263,5 +245,20 @@ public class MercurialRepository extends Repository {
         // print nothing if there is no history.
         return true;
     }
+    
+    @Override
+    boolean isRepositoryFor(File file) {
+        File f = new File(file, ".hg");
+        return f.exists() && f.isDirectory();
+    }
+
+    @Override
+    boolean supportsSubRepositories() {
+        // The forest-extension in Mercurial adds repositories inside the
+        // repositories.
+        return true;
+    }
+    
+    
 }
 

@@ -35,41 +35,24 @@ import java.io.InputStream;
  * 
  */
 public class BazaarRepository extends Repository {
-    private String command;
     
     /**
      * Creates a new instance of BazaarRepository
      */
     public BazaarRepository() { }
-    
-    /**
-     * Creates a new instance of BazaarRepository
-     * @param directory The directory containing the .bzr-subdirectory
-     */
-    public BazaarRepository(String directory) {
-        setDirectoryName(new File(directory).getAbsolutePath());
-        command = System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr");
-    }
-    
-    /**
-     * Set the name of the Bazaar command to use
-     * @param command the name of the command (bzr)
-     */
-    public void setCommand(String command) {
-        this.command = command;
-    }
 
-    /**
+   /**
      * Get the name of the Bazaar command that should be used
      * @return the name of the bzr command in use
      */
-    public String getCommand() {
-        return command;
+    private String getCommand() {
+        return System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr");
     }
-        
+    
     Process getHistoryLogProcess(File file) throws IOException {
         String abs = file.getAbsolutePath();
         String filename = "";
+        String command = getCommand();
         String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
@@ -95,7 +78,7 @@ public class BazaarRepository extends Repository {
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         try {
-            String argv[] = { command, "cat", "-r", rev, filename };
+            String argv[] = { getCommand(), "cat", "-r", rev, filename };
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -159,4 +142,11 @@ public class BazaarRepository extends Repository {
         // print nothing if there is no history.
         return true;
     }
+
+    @Override
+    boolean isRepositoryFor(File file) {
+        File f = new File(file, ".bzr");
+        return f.exists() && f.isDirectory();
+    }
+    
 }

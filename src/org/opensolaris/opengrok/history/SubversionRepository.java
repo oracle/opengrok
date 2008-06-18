@@ -49,21 +49,18 @@ public class SubversionRepository extends Repository {
     public SubversionRepository() {
     }
 
-    /**
-     * Creates a new instance of SubversionRepository
-     * @param directory The directory containing the .svn-subdirectory
-     */
-    public SubversionRepository(String directory) {
-        setDirectoryName(new File(directory).getAbsolutePath());
+    @Override
+    public void setDirectoryName(String directoryName) {
+        super.setDirectoryName(directoryName);
 
         if (!RuntimeEnvironment.getInstance().isRemoteScmSupported()) {
             // try to figure out if I should ignore this repository
             try {
                 SVNClient client = new SVNClient();
-                Info info = client.info(directory);
+                Info info = client.info(directoryName);
                 if (!info.getUrl().startsWith("file")) {
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        System.out.println("Skipping history from remote repository: <" + directory + ">");
+                        System.out.println("Skipping history from remote repository: <" + directoryName + ">");
                     }
                     ignored = true;
                 }
@@ -205,5 +202,11 @@ public class SubversionRepository extends Repository {
                 process.destroy();
             }
         }
+    }
+    
+    @Override
+    boolean isRepositoryFor(File file) {
+        File f = new File(file, ".svn");
+        return f.exists() && f.isDirectory();
     }
 }

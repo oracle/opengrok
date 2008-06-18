@@ -35,42 +35,17 @@ import java.io.InputStream;
  * 
  */
 public class GitRepository extends Repository {
-    private String command;
     
     /**
      * Creates a new instance of GitRepository
      */
     public GitRepository() { }
-    
-    /**
-     * Creates a new instance of GitRepository
-     * @param directory The directory containing the .hg-subdirectory
-     */
-    public GitRepository(String directory) {
-        setDirectoryName(new File(directory).getAbsolutePath());
-        command = System.getProperty("org.opensolaris.opengrok.history.git", "git");
-    }
-    
-    /**
-     * Set the name of the Git command to use
-     * @param command the name of the command (git)
-     */
-    public void setCommand(String command) {
-        this.command = command;
-    }
 
-    /**
-     * Get the name of the Git command that should be used
-     * @return the name of the git command in use
-     */
-    public String getCommand() {
-        return command;
-    }
-        
     Process getHistoryLogProcess(File file) throws IOException {
         String abs = file.getAbsolutePath();
         String filename = "";
         String directoryName = getDirectoryName();
+        String command = System.getProperty("org.opensolaris.opengrok.history.git", "git");
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
@@ -86,6 +61,7 @@ public class GitRepository extends Repository {
 
         String directoryName = getDirectoryName();
         File directory = new File(directoryName);
+        String command = System.getProperty("org.opensolaris.opengrok.history.git", "git");
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         byte[] buffer = new byte[8192];
@@ -163,5 +139,10 @@ public class GitRepository extends Repository {
         return true;
     }
 
+    @Override
+    boolean isRepositoryFor(File file) {
+        File f = new File(file, ".git");
+        return f.exists() && f.isDirectory();
+    }
 }
 

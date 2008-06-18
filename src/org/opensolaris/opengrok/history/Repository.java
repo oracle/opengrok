@@ -161,4 +161,21 @@ public abstract class Repository {
      */
     abstract void update() throws Exception;
     
+    /**
+     * Check if this it the right repository type for the given file.
+     * 
+     * @param file File to check if this is a repository for.
+     * @return true if this is the correct repository for this file/directory.
+     */
+    abstract boolean isRepositoryFor(File file);
+    
+    /**
+     * Returns true if this repository supports sub reporitories (a.k.a. forests).
+     * 
+     * @return true if this repository supports sub repositories
+     */
+    boolean supportsSubRepositories() {
+        return false;
+    }
+    
 }

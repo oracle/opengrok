@@ -444,171 +444,66 @@ public class HistoryGuru {
         }
     }
     
-    private void addMercurialRepository(File file, Map<String, Repository> repos, IgnoredNames ignoredNames) {
-        try {
-            String s = file.getCanonicalPath();
-            if (RuntimeEnvironment.getInstance().isVerbose()) {
-                System.out.println("Adding Mercurial repository: <" + s + ">");
-            }
-            MercurialRepository rep = new MercurialRepository(s);
-            addRepository(rep, s, repos);
-        } catch (IOException exp) {
-            System.err.println("Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
-            System.err.println("Repository will be ignored...");
-            exp.printStackTrace(System.err);
-        }
-
-        // The forest-extension in Mercurial adds repositories inside the
-        // repositories. I don't want to traverse all subdirectories in the
-        // repository searching for .hg-directories, but I will search all the
-        // toplevel directories. 
-        File[] files = file.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                if (f.isDirectory()) {
-                    File child = new File(f, ".hg");
-                    if (child.exists()) {
-                        addMercurialRepository(f, repos, ignoredNames);
-                    }
-                }
-            }
-        }
-    }
-    
     private void addRepositories(File[] files, Map<String, Repository> repos,
             IgnoredNames ignoredNames) {
-        for (int ii = 0; ii < files.length; ++ii) {
-            if (files[ii].isDirectory()) {
-                String name = files[ii].getName().toLowerCase();
-                if (name.equals(".hg")) {
-                    addMercurialRepository(files[ii].getParentFile(), repos, ignoredNames);
-                    return;
-                } else if (name.equals(".bzr")) {
-                    try {
-                        String s = files[ii].getParentFile().getCanonicalPath();
-                        if (RuntimeEnvironment.getInstance().isVerbose()) {
-                            System.out.println("Adding Bazaar repository: <" + s + ">");
-                        }
-                        BazaarRepository rep = new BazaarRepository(s);
-                        addRepository(rep, s, repos);
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getParentFile().getAbsolutePath() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }
-                    return;
-                } else if (name.equals(".git")) {
-                    try {
-                        String s = files[ii].getParentFile().getCanonicalPath();
-                        if (RuntimeEnvironment.getInstance().isVerbose()) {
-                            System.out.println("Adding Git repository: <" + s + ">");
-                        }
-                        GitRepository rep = new GitRepository(s);
-                        addRepository(rep, s, repos);
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getParentFile().getAbsolutePath() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }
-                    return;
-                } else if (name.equals(svnlabel)) {
-                    if (isSvnAvailable()) {
-                        try {
-                            String s = files[ii].getParentFile().getCanonicalPath();
-                            if (RuntimeEnvironment.getInstance().isVerbose()) {
-                                System.out.println("Adding Subversion repository: <" + s + ">");
-                            }
-                            SubversionRepository rep = new SubversionRepository(s);                        
-                            addRepository(rep, s, repos);
-                        } catch (IOException exp) {
-                           System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                           System.err.println("Repository will be ignored...");
-                           exp.printStackTrace(System.err);
-                        }
-                    }
-                    return;
-                } else if (name.equals("codemgr_wsdata")) {
-                    try {
-                        String s = files[ii].getParentFile().getCanonicalPath();
-                        System.out.println("Adding Teamware repository: <" + s + ">");
-                        TeamwareRepository rep = new TeamwareRepository(s);
-                        addRepository(rep, s, repos);
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }
-                    return;
-                } else if (name.equals("cvs") || name.equals("sccs")) {
-                    return;
-                } else if (new File(files[ii].getParentFile(), "view.dat").exists() ||
-                           files[ii].getParentFile().getName().toLowerCase().equals("vobs")) {
-                          // if the parent contains a file named "view.dat" or
-                          // the parent is named "vobs"
-                    try {
-                        String s = files[ii].getParentFile().getCanonicalPath();
-                        System.out.println("Adding ClearCase repository: <" + s + ">");
-                        ClearCaseRepository rep = new ClearCaseRepository(s);
-                        addRepository(rep, s, repos);
-                        return ;
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }
-                } else if (name.equals(".razor")) {
-                    try {
-                        String s = files[ii].getParentFile().getAbsolutePath();
-                        System.out.println("Adding Razor repository: <" + s + ">");
-                        RazorRepository rep = new RazorRepository(s, files[ii].getCanonicalPath());
-                        addRepository(rep, s, repos);
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getAbsolutePath() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }
-                    return;
-                } else if (PerforceRepository.isInP4Depot(files[ii])) {                    
-                    try {
-                        String s = files[ii].getParentFile().getCanonicalPath();
-                        System.out.println("Adding Perforce repository: <" + s + ">");
-                        PerforceRepository rep = new PerforceRepository();
-                        addRepository(rep, files[ii].getParentFile().getCanonicalPath(), repos);
-                    } catch (IOException exp) {
-                        System.err.println("Failed to get canonical path for " + files[ii].getName() + ": " + exp.getMessage());
-                        System.err.println("Repository will be ignored...");
-                        exp.printStackTrace(System.err);
-                    }
-                }
-            }
+
+        if (files == null) {
+            return;
         }
         
-        // Nope, search it's sub-dirs
-        for (int ii = 0; ii < files.length; ++ii) {
-            if (files[ii].isDirectory() &&
-                    !ignoredNames.ignore(files[ii])) {
-                // Could return null if e.g. the directory is unreadable
-                File[] dirfiles = files[ii].listFiles();
-                if (dirfiles != null) {
-                    addRepositories(files[ii].listFiles(), repos, ignoredNames);
-                } else {
-                    try {
-                        String s = files[ii].getCanonicalPath();
-                        System.err.println("Failed to read directory: " + s);
-                    } catch (IOException exp) {
-                        System.err.println("Failed to read directory (could not get canonical path): "
-                                + files[ii].getName() + ": " + exp.getMessage());
-                        exp.printStackTrace(System.err);
-                    }                    
+        for (File file : files) {
+            Repository repository = null;
+            try {
+                repository = RepositoryFactory.getRepository(file);
+            } catch (InstantiationException ie) {
+                System.err.println("Could not create repoitory for '" + file + "', could not instantiate the repository.");
+                ie.printStackTrace(System.err);
+            } catch (IllegalAccessException iae) {
+                System.err.println("Could not create repoitory for '" + file + "', missing access rights.");                
+                iae.printStackTrace(System.err);
+            }
+            if (repository != null) {
+                try {
+                    String path = file.getCanonicalPath();
+                    repository.setDirectoryName(path);
+                    if (RuntimeEnvironment.getInstance().isVerbose()) {
+                        System.out.println("Adding <" + repository.getClass().getName() +  "> repository: <" + path + ">");
+                    }
+                    addRepository(repository, path, repos);
+
+                    // TODO: Search only for one type of repository - the one found here
+                    if (repository.supportsSubRepositories()) {
+                        File subFiles[] = file.listFiles();
+                        if (subFiles != null) {
+                            addRepositories(subFiles, repos, ignoredNames);
+                        } else {
+                            System.err.println("Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                        }
+                    }
+                    
+                } catch (IOException exp) {
+                    System.err.println("Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
+                    System.err.println("Repository will be ignored...");
+                    exp.printStackTrace(System.err);
+                }
+            } else {
+                // Not a repository, search it's sub-dirs
+                if (file.isDirectory() && !ignoredNames.ignore(file)) {
+                    File subFiles[] = file.listFiles();
+                    if (subFiles != null) {
+                        addRepositories(subFiles, repos, ignoredNames);
+                    } else {
+                        System.err.println("Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                    }
                 }
             }
-        }
+        }        
     }
     
     private void addRepository(Repository rep, String path, Map<String, Repository> repos) {
         repos.put(path, rep);
     }
-    
+
     /**
      * Search through the all of the directories and add all of the source
      * repositories found.

@@ -180,4 +180,11 @@ public class PerforceRepository extends Repository {
             return false;
         }
     }
+
+    @Override
+    boolean isRepositoryFor(File file) {
+        return isInP4Depot(file);
+    }
+    
+    
 }

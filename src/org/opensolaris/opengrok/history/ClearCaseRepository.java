@@ -32,7 +32,6 @@ import java.util.ArrayList;
  *
  */
 public class ClearCaseRepository extends Repository {
-    private String command;
     private boolean verbose;
 
     /**
@@ -41,28 +40,11 @@ public class ClearCaseRepository extends Repository {
     public ClearCaseRepository() { }
 
     /**
-     * Creates a new instance of ClearCaseRepository
-     * @param directory The directory containing a vob
-     */
-    public ClearCaseRepository(String directory) {
-        setDirectoryName(new File(directory).getAbsolutePath());
-        command = System.getProperty("org.opensolaris.opengrok.history.ClearCase", "cleartool");
-    }
-
-    /**
-     * Set the name of the ClearCase command to use
-     * @param command the name of the command (cleartool)
-     */
-    public void setCommand(String command) {
-        this.command = command;
-    }
-
-    /**
      * Get the name of the ClearCase command that should be used
      * @return the name of the cleartool command in use
      */
-    public String getCommand() {
-        return command;
+    private String getCommand() {
+        return System.getProperty("org.opensolaris.opengrok.history.ClearCase", "cleartool");
     }
 
     /**
@@ -90,7 +72,7 @@ public class ClearCaseRepository extends Repository {
         }
 
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(command);
+        argv.add(getCommand());
         argv.add("lshistory");
         if (file.isDirectory()) {
             argv.add("-dir");
@@ -122,7 +104,7 @@ public class ClearCaseRepository extends Repository {
             tmp.delete();
 
             String decorated = filename + "@@" + rev;
-            String argv[] = {command, "get", "-to", tmpName, decorated};
+            String argv[] = {getCommand(), "get", "-to", tmpName, decorated};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             BufferedReader lineIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -180,7 +162,7 @@ public class ClearCaseRepository extends Repository {
     public Annotation annotate(File file, String revision) throws Exception {
         ArrayList<String> argv = new ArrayList<String>();
 
-        argv.add(command);
+        argv.add(getCommand());
         argv.add("annotate");
         argv.add("-nheader");
         argv.add("-out");
@@ -248,7 +230,7 @@ public class ClearCaseRepository extends Repository {
             File directory = new File(getDirectoryName());
 
             // Check if this is a snapshot view
-            String[] argv = {command, "catcs"};
+            String[] argv = {getCommand(), "catcs"};
             process = Runtime.getRuntime().exec(argv, null, directory);
             BufferedReader in =
                 new BufferedReader(new InputStreamReader
@@ -265,7 +247,7 @@ public class ClearCaseRepository extends Repository {
             if(snapshot)
             {
                 // It is a snapshot view, we need to update it manually
-                argv = new String[] {command, "update", "-overwrite", "-f"};
+                argv = new String[] {getCommand(), "update", "-overwrite", "-f"};
                 process = Runtime.getRuntime().exec(argv, null, directory);
                 in = new BufferedReader(new InputStreamReader
                                          (process.getInputStream()));
@@ -293,5 +275,17 @@ public class ClearCaseRepository extends Repository {
         // Otherwise, this is harmless, since ClearCase's commands will just
         // print nothing if there is no history.
         return true;
+    }
+
+    @Override
+    boolean isRepositoryFor(File file) {
+        // if the parent contains a file named "view.dat" or
+        // the parent is named "vobs"
+        File f = new File(file, "view.dat");
+        if (f.exists() && f.isDirectory()) {
+            return true;
+        } else {
+            return file.isDirectory() && file.getName().toLowerCase().equals("vobs"); 
+        }
     }
 }

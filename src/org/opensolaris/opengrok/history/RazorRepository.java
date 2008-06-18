@@ -144,11 +144,12 @@ public class RazorRepository extends Repository {
         // Required to restore saved configuration
     }
 
-    public RazorRepository(String openGrokDirectory, String razorGroupDirectory) {
-        setDirectoryName(openGrokDirectory);
-        File opengrokBaseDirectory = new File(openGrokDirectory);
+    @Override
+    public void setDirectoryName(String directoryName) {
+        super.setDirectoryName(directoryName);
+        File opengrokBaseDirectory = new File(directoryName);
         opengrokSourceRootDirectoryPath = opengrokBaseDirectory.getParentFile().getAbsolutePath();
-        razorGroupBaseDirectoryPath = new File(razorGroupDirectory).getAbsolutePath();
+        razorGroupBaseDirectoryPath = new File(directoryName, ".razor").getAbsolutePath();
     }
 
     public String getOpengrokSourceRootDirectoryPath() {
@@ -391,4 +392,12 @@ public class RazorRepository extends Repository {
             return false;
         }
     }
+
+    @Override
+    boolean isRepositoryFor(File file) {
+        File f = new File(file, ".razor");
+        return f.exists() && f.isDirectory();
+    }
+    
+    
 }

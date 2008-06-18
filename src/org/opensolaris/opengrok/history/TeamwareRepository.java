@@ -23,7 +23,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,7 +40,6 @@ import java.util.regex.Pattern;
  *
  */
 public class TeamwareRepository extends Repository {
-    private String command;
     private boolean verbose;
     private Map<String, String> authors_cache;
     
@@ -49,38 +47,17 @@ public class TeamwareRepository extends Repository {
      * Creates a new instance of MercurialRepository
      */
     public TeamwareRepository() { }
-    
-    /**
-     * Creates a new instance of MercurialRepository
-     * @param directory The directory containing the .hg-subdirectory
-     */
-    public TeamwareRepository(String directory) {
-        setDirectoryName(new File(directory).getAbsolutePath());
-        command = System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
-    }
-    
-    /**
-     * Set the name of the SCCS command to use
-     * @param command the name of the command (sccs)
-     */
-    public void setCommand(String command) {
-        this.command = command;
-    }
 
-    /**
-     * Get the name of the SCCS command that should be used
-     * @return the name of the sccs command in use
-     */
-    public String getCommand() {
-        return command;
-    }
-    
     /**
      * Use verbose log messages, or just the summary
      * @return true if verbose log messages are used for this repository
      */
     public boolean isVerbose() {
         return verbose;
+    }
+    
+    private String getCommand() {
+       return System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
     }
         
     /**
@@ -94,7 +71,7 @@ public class TeamwareRepository extends Repository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         try {
             File history = SCCSHistoryParser.getSCCSFile(parent, basename);
-            return SCCSget.getRevision(command,history, rev);
+            return SCCSget.getRevision(getCommand(),history, rev);
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {
@@ -111,7 +88,7 @@ public class TeamwareRepository extends Repository {
         authors_cache = new HashMap<String, String>();
 
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(command);
+        argv.add(getCommand());
         argv.add("prs");
         argv.add("-e");
         argv.add("-d");
@@ -177,7 +154,7 @@ public class TeamwareRepository extends Repository {
         getAuthors(file);
         
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(command);
+        argv.add(getCommand());
         argv.add("get");
         argv.add("-m");
         argv.add("-p");
@@ -241,6 +218,12 @@ public class TeamwareRepository extends Repository {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    boolean isRepositoryFor(File file) {
+        File f = new File(file, "codemgr_wsdata");
+        return f.exists() && f.isDirectory();
     }
 }
 
