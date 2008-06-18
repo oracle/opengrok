@@ -36,6 +36,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -49,6 +51,13 @@ import org.opensolaris.opengrok.util.Getopt;
  * in the options
  */
 public class Indexer {
+   
+   private static Indexer index = new Indexer();
+   private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
+   
+   public static Indexer getInstance() {
+      return index;
+   }
     /**
      * Program entry point
      * @param argv argument vector
@@ -56,6 +65,8 @@ public class Indexer {
     public static void main(String argv[]) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean runIndex = true;
+        boolean update = true;
+        boolean optimizedChanged = false;
         CommandLineOptions cmdOptions = new CommandLineOptions();
         
         if(argv.length == 0) {
@@ -151,6 +162,7 @@ public class Indexer {
                     }
                     break;
                     case 'O': {
+                       boolean oldval = env.isOptimizeDatabase();
                         if (getopt.getOptarg().equalsIgnoreCase("on")) {
                             env.setOptimizeDatabase(true);
                         } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
@@ -159,6 +171,9 @@ public class Indexer {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -O");
                             System.err.println("       Ex: \"-O on\" will optimize the database as part of the index generation");
                             System.err.println("           \"-O off\" disable optimization of the index database");
+                        }
+                       if (oldval != env.isOptimizeDatabase()) {
+                           optimizedChanged = true;
                         }
                     }
                     break;
@@ -286,10 +301,42 @@ public class Indexer {
                     }
                 }
                 
+                getInstance().prepareIndexer(env, searchRepositories, addProjects,
+                    defaultProject,configFilename,refreshHistory,
+                    listFiles,createDict,subFiles,repositories);
+            if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
+                IndexChangedListener progress = new DefaultIndexChangedListener();
+                getInstance().doIndexerExecution(update, noThreads, subFiles,
+                        progress);
+            }
+            getInstance().sendToConfigHost(env, configHost);
+         } catch (IndexerException ex) {
+            System.err.println(ex);
+            System.err.println(cmdOptions.getUsage());
+            System.exit(1);
+         } catch (IOException ioe) {
+            System.err.println("Got IOException " + ioe);
+            System.exit(1);
+         }
+      }
+
+   }
+                
+                
+    
+   public void prepareIndexer(RuntimeEnvironment env,
+           boolean searchRepositories,
+           boolean addProjects,
+           String defaultProject,
+           String configFilename,
+           boolean refreshHistory,
+           boolean listFiles,
+           boolean createDict,
+           ArrayList<String> subFiles,
+           ArrayList<String> repositories) throws IndexerException,IOException {
+                
                 if (env.getDataRootPath()  == null) {
-                    System.err.println("ERROR: Please specify a DATA ROOT path");
-                    System.err.println(cmdOptions.getUsage());
-                    System.exit(1);
+                    throw new IndexerException("ERROR: Please specify a DATA ROOT path");
                 }
 
                 if (env.getSourceRootFile() == null) {
@@ -304,16 +351,12 @@ public class Indexer {
                         }
                     }
                     if(line == null) {
-                        System.err.println("ERROR: please specify a SRC_ROOT with option -s !");
-                        System.err.println(cmdOptions.getUsage());
-                        System.exit(1);
+                        throw new IndexerException("ERROR: please specify a SRC_ROOT with option -s !");
                     }
                     env.setSourceRoot(line);
 
                     if (!env.getSourceRootFile().isDirectory()) {
-                        System.err.println("ERROR: No such directory:" + line);
-                        System.err.println(cmdOptions.getUsage());
-                        System.exit(1);
+                        throw new IndexerException("ERROR: No such directory:" + line);
                     }
                 }
 
@@ -395,12 +438,20 @@ public class Indexer {
                 if (createDict) {
                     IndexDatabase.listFrequentTokens(subFiles);
                 }
+   }
+                
+                
+   public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
+           IndexChangedListener progress) 
+      throws IOException {
+      RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+      env.register();
+      log.info("Starting indexExecution");
                 
                 ExecutorService executor = Executors.newFixedThreadPool(noThreads);
-                IndexChangedListener progress = new DefaultIndexChangedListener();
-                
+ 
                 if (subFiles.isEmpty()) {
-                    if (runIndex) {
+                    if (update) {
                         IndexDatabase.updateAll(executor, progress);
                     } else if (env.isOptimizeDatabase()) {
                         IndexDatabase.optimizeAll(executor);
@@ -435,7 +486,6 @@ public class Indexer {
                     }
                     
                     for (final IndexDatabase db : dbs) {
-                            final boolean update = runIndex;
                             final boolean optimize = env.isOptimizeDatabase();
                             db.addIndexChangedListener(progress);
                             executor.submit(new Runnable() {
@@ -463,11 +513,14 @@ public class Indexer {
 
                     }
                 }
+   }
 
+               
+   public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
                 if (configHost != null) {
                     String[] cfg = configHost.split(":");
                     if (env.isVerbose()) {
-                        System.out.println("Send configuration to: " + configHost);
+                        log.info("Send configuration to: " + configHost);
                     }
 
                     if (cfg.length == 2) {
@@ -475,8 +528,8 @@ public class Indexer {
                             InetAddress host = InetAddress.getByName(cfg[0]);
                             RuntimeEnvironment.getInstance().writeConfiguration(host, Integer.parseInt(cfg[1]));
                         } catch (Exception ex) {
-                            System.err.println("Failed to send configuration to " + configHost);
-                            ex.printStackTrace();
+                            log.log(Level.SEVERE,"Failed to send configuration to " 
+                                    + configHost,ex);
                         }
                     } else {
                         System.err.println("Syntax error: ");
@@ -486,17 +539,9 @@ public class Indexer {
                         System.err.println();
                     }
                     if (env.isVerbose()) {
-                        System.out.println("Configuration successfully updated");
+                        log.info("Configuration successfully updated");
                     }
-                }
-            } catch (Exception e) {
-                System.err.println("Error: [ main ] " + e);
-                if (env.isVerbose()) {
-                    e.printStackTrace();
-                }
-                System.exit(1);
-            }
-        }
+                }       
     }
 
     private Indexer() {

@@ -24,20 +24,13 @@
 package org.opensolaris.opengrok.index;
 
 /**
- * The changes in an index database may be monitored through this interface.
- * 
- * @author Trond Norbye
+ *
+ * @author Jan Berg
  */
-public interface IndexChangedListener {
-    /**
-     * A file is added to the index database
-     * @param path The path to the file (absolute from source root)
-     * @param analyzer The analyzer being used to analyze the file
-     */
-    public void fileAdded(String path, String analyzer);
-    /**
-     * A file is being removed from the index database
-     * @param path The path to the file (absolute from source root)
-     */
-    public void fileRemoved(String path);
+public class IndexerException extends Exception {
+
+   IndexerException(String string) {
+      super(string);
+   }
+
 }

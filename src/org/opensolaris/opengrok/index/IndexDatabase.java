@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Logger;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -72,6 +73,7 @@ public class IndexDatabase {
     private File dirtyFile;
     private boolean dirty;
     private List<String> directories;
+    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
     
     /**
      * Create a new instance of the Index Database. Use this constructor if
@@ -109,7 +111,7 @@ public class IndexDatabase {
      * @param listener where to signal the changes to the database
      * @throws java.lang.Exception if an error occurs
      */
-    static void updateAll(ExecutorService executor, IndexChangedListener listener) throws Exception {
+    static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
@@ -274,7 +276,7 @@ public class IndexDatabase {
      * @param executor An executor to run the job
      * @throws java.lang.Exception if an error occurs
      */
-    static void optimizeAll(ExecutorService executor) throws Exception {
+    static void optimizeAll(ExecutorService executor) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
@@ -557,7 +559,7 @@ public class IndexDatabase {
      * List all files in all of the index databases
      * @throws java.lang.Exception if an error occurs
      */
-    public static void listAllFiles() throws Exception {
+    public static void listAllFiles() throws IOException {
         listAllFiles(null);
     }
 
@@ -567,7 +569,7 @@ public class IndexDatabase {
      *                 for (or null or an empty list to dump all projects)
      * @throws java.lang.Exception if an error occurs
      */
-    public static void listAllFiles(List<String> subFiles) throws Exception {
+    public static void listAllFiles(List<String> subFiles) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (!env.hasProjects()) {
             IndexDatabase db = new IndexDatabase();
@@ -597,7 +599,7 @@ public class IndexDatabase {
      * 
      * @throws java.lang.Exception if an error occurs
      */
-    public void listFiles() throws Exception {
+    public void listFiles() throws IOException {
         IndexReader ireader = null;
         TermEnum iter = null;
 
@@ -629,7 +631,7 @@ public class IndexDatabase {
         listFrequentTokens(null);
     }
 
-    static void listFrequentTokens(ArrayList<String> subFiles) throws Exception {
+    static void listFrequentTokens(ArrayList<String> subFiles) throws IOException {
         final int limit = 4;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -656,7 +658,7 @@ public class IndexDatabase {
         }
     }
 
-    public void listTokens(int freq) throws Exception {
+    public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
         TermEnum iter = null;
 
