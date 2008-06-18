@@ -75,7 +75,7 @@ public class RazorHistoryParser implements HistoryParser {
 
             parseDebug("Processing '" + line + "'");
 
-            if (line.trim().isEmpty()) {
+            if (line.trim().length()==0) {
 
                 if (entry != null && entry.getDate() != null) {
                     entries.add(entry);

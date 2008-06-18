@@ -156,7 +156,7 @@ public class BlameAndAnnotate {
             System.err.println("Annotations for " + annotation.getFilename() + " (" + (revision != null ? revision : "latest") + ")");
             int line = 1;
             String format = "Line %4d : %" + annotation.getWidestRevision() + "s - %s\n";
-            while (!annotation.getRevision(line).isEmpty()) {
+            while (annotation.getRevision(line).length()>0) {
                 System.err.printf(format, line, annotation.getRevision(line), annotation.getAuthor(line));
                 line++;
             }
