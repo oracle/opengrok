@@ -40,6 +40,7 @@ public class RepositoryFactory {
         new GitRepository(),
         new SubversionRepository(),
         new TeamwareRepository(),
+        new RazorRepository(),
         new ClearCaseRepository(),
         new PerforceRepository()
     };
