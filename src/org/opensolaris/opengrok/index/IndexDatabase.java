@@ -541,7 +541,7 @@ public class IndexDatabase {
      * 
      * @param listener the object to receive the events
      */
-    void addIndexChangedListener(IndexChangedListener listener) {
+    public void addIndexChangedListener(IndexChangedListener listener) {
         listeners.add(listener);
     }
 
@@ -551,7 +551,7 @@ public class IndexDatabase {
      * 
      * @param listener the object to remove
      */
-    void removeIndexChangedListener(IndexChangedListener listener) {
+    public void removeIndexChangedListener(IndexChangedListener listener) {
         listeners.remove(listener);
     }
 
