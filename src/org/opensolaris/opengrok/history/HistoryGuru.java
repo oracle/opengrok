@@ -446,6 +446,11 @@ public class HistoryGuru {
     
     private void addRepositories(File[] files, Map<String, Repository> repos,
             IgnoredNames ignoredNames) {
+        addRepositories(files, repos, ignoredNames, true);
+    }
+
+        private void addRepositories(File[] files, Map<String, Repository> repos,
+            IgnoredNames ignoredNames, boolean recursiveSearch) {
 
         if (files == null) {
             return;
@@ -472,10 +477,11 @@ public class HistoryGuru {
                     addRepository(repository, path, repos);
 
                     // TODO: Search only for one type of repository - the one found here
-                    if (repository.supportsSubRepositories()) {
+                    if (recursiveSearch && repository.supportsSubRepositories()) {
                         File subFiles[] = file.listFiles();
                         if (subFiles != null) {
-                            addRepositories(subFiles, repos, ignoredNames);
+                            // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
+                            addRepositories(subFiles, repos, ignoredNames, false); 
                         } else {
                             System.err.println("Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                         }
