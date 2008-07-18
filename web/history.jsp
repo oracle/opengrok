@@ -42,6 +42,12 @@ if (path.length() > 0 && valid) {
         bugRegex = "\\b([12456789][0-9]{6})\\b";
     }
     Pattern bugPattern = Pattern.compile(bugRegex);
+    String reviewPage = environment.getReviewPage();
+    String reviewRegex = environment.getReviewPattern();
+    if(reviewRegex == null || reviewRegex.equals("")) {
+        reviewRegex = "\\b(\\d{4}/\\d{3})\\b";
+    }
+    Pattern reviewPattern = Pattern.compile(reviewRegex);
     Format df = new SimpleDateFormat("dd-MMM-yyyy");
     Date tstart = new Date();
     File f = new File(rawSource + path);
@@ -106,11 +112,16 @@ if(userPage != null && ! userPage.equals("")) {
 	%><%= hr.getAuthor() %><%
 }
 
-%>&nbsp;</td><td><%=
-(bugPage != null && ! bugPage.equals("")) ?
-    bugPattern.matcher(Util.Htmlize(hr.getComment())).replaceAll("<a href=\"" + bugPage + "$1\">$1</a>")
-    :  Util.Htmlize(hr.getComment())
-%><%
+%>&nbsp;</td><td><%
+String cout=Util.Htmlize(hr.getComment());
+if (bugPage != null && ! bugPage.equals("")) {
+        cout=bugPattern.matcher(cout).replaceAll("<a href=\"" + bugPage + "$1\">$1</a>"); }
+    }
+if (reviewPage != null && ! reviewPage.equals("")) {
+    cout=reviewPattern.matcher(cout).replaceAll("<a href=\"" + reviewPage + "$1\">$1</a>"); }
+    }
+	%><%= cout  %>
+<%
 List<String> files = hr.getFiles();
 if(files != null) {%><br/><%
     for (String ifile : files) {

@@ -62,6 +62,8 @@ public class Configuration {
     private String userPage;
     private String bugPage;
     private String bugPattern;
+    private String reviewPage;
+    private String reviewPattern;
     private String webappLAF;
     private boolean remoteScmSupported;
     private boolean optimizeDatabase;
@@ -83,6 +85,8 @@ public class Configuration {
         setUserPage("http://www.opensolaris.org/viewProfile.jspa?username=");
         setBugPage("http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
+        setReviewPage("http://www.opensolaris.org/os/community/arc/caselog/");
+        setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
         setWebappLAF("default");
         setRemoteScmSupported(false);
         setOptimizeDatabase(true);
@@ -233,6 +237,22 @@ public class Configuration {
 
     public String getBugPattern() {
         return bugPattern;
+    }
+    
+    public String getReviewPage() {
+        return reviewPage;
+    }
+
+    public void setReviewPage(String reviewPage) {
+        this.reviewPage = reviewPage;
+    }
+
+    public String getReviewPattern() {
+        return reviewPattern;
+    }
+
+    public void setReviewPattern(String reviewPattern) {
+        this.reviewPattern = reviewPattern;
     }
 
     public String getWebappLAF() {

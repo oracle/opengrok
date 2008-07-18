@@ -466,6 +466,39 @@ public class RuntimeEnvironment {
         threadConfig.get().setBugPattern(bugPattern);
     }
     
+
+    /**
+     * Returns the review(ARC) page for the history listing
+     * @return the URL string fragment preceeding the review page ID
+     */
+    public String getReviewPage() {
+        return threadConfig.get().getReviewPage();
+    }
+
+     /**
+     * Sets the review(ARC) page for the history listing
+     * @param reviewPage the URL fragment preceeding the review page ID
+     */
+    public void setReviewPage(String reviewPage) {
+        threadConfig.get().setReviewPage(reviewPage);
+    }
+
+    /**
+     * Returns the review(ARC) regex for the history listing
+     * @return the regex that is looked for in history comments
+     */
+    public String getReviewPattern() {
+        return threadConfig.get().getReviewPattern();
+    }
+
+    /**
+     * Sets the review(ARC) regex for the history listing
+     * @param reviewPattern the regex to search history comments
+     */
+    public void setReviewPattern(String reviewPattern) {
+        threadConfig.get().setReviewPattern(reviewPattern);
+    }
+    
     public String getWebappLAF() {
         return threadConfig.get().getWebappLAF();
     }
