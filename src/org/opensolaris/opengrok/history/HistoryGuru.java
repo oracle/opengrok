@@ -518,7 +518,7 @@ public class HistoryGuru {
      */
     public void addRepositories(String dir) {
         Map<String, Repository> repos = new HashMap<String, Repository>();
-        addRepositories((new File(dir)).listFiles(), repos,
+        addRepositories(new File[] {new File(dir)}, repos, 
                 RuntimeEnvironment.getInstance().getIgnoredNames());
         RuntimeEnvironment.getInstance().setRepositories(repos);
     }
