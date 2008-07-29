@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
@@ -73,7 +74,7 @@ public class IndexDatabase {
     private File dirtyFile;
     private boolean dirty;
     private List<String> directories;
-    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
+    private static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
     
     /**
      * Create a new instance of the Index Database. Use this constructor if
@@ -125,7 +126,7 @@ public class IndexDatabase {
                         try {
                             db.update();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            log.log(Level.FINE,"Problem updating lucene index database: ",e);
                         }
                     }
                 });
@@ -142,7 +143,7 @@ public class IndexDatabase {
                     try {
                         db.update();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.log(Level.FINE,"Problem updating lucene index database: ",e);
                     }
                 }
             });
@@ -197,7 +198,7 @@ public class IndexDatabase {
      */
     public boolean addDirectory(String dir) {
         if (dir.startsWith("\\")) {
-            dir.replace('\\', '/');
+            dir = dir.replace('\\', '/');
         } else if (!dir.startsWith("/")) {
             dir = "/" + dir;
         }
@@ -288,7 +289,7 @@ public class IndexDatabase {
                             try {
                                 db.optimize();
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                log.log(Level.FINE,"Problem optimizing lucene index database: ",e);
                             }
                         }
                     });
@@ -303,7 +304,7 @@ public class IndexDatabase {
                         try {
                             db.update();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            log.log(Level.FINE,"Problem updating lucene index database: ",e);
                         }
                     }
                 });
@@ -318,17 +319,17 @@ public class IndexDatabase {
         IndexWriter wrt = null;
         try {
             if (RuntimeEnvironment.getInstance().isVerbose()) {
-                System.out.print("Optimizing the index ... ");
+                log.info("Optimizing the index ... ");
             }
             wrt = new IndexWriter(indexDirectory, null, false);
             wrt.optimize();
             if (RuntimeEnvironment.getInstance().isVerbose()) {
-                System.out.println("done");
+                log.info("done");
             }
             dirtyFile.delete();
             dirty = false;
         } catch (IOException e) {
-            System.err.println("ERROR: optimizing index: " + e);
+            log.severe("ERROR: optimizing index: " + e);
         } finally {
             if (wrt != null) {
                 try {
@@ -349,16 +350,16 @@ public class IndexDatabase {
 
         try {
             if (RuntimeEnvironment.getInstance().isVerbose()) {
-                System.out.print("Generating spelling suggestion index ... ");
+                log.info("Generating spelling suggestion index ... ");
             }
             indexReader = IndexReader.open(indexDirectory);
             checker = new SpellChecker(spellDirectory);
             checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));
             if (RuntimeEnvironment.getInstance().isVerbose()) {
-                System.out.println("done");
+                log.info("done");
             }
         } catch (IOException e) {
-            System.err.println("ERROR: Generating spelling: " + e);
+            log.severe("ERROR: Generating spelling: " + e);
         } finally {
             if (indexReader != null) {
                 try {
@@ -379,7 +380,7 @@ public class IndexDatabase {
                 dirty = true;
             }
         } catch (Exception e) { 
-            e.printStackTrace();
+            log.log(Level.FINE,"When creating dirty file: ",e);
         }
     }
     /**
@@ -412,7 +413,7 @@ public class IndexDatabase {
         try {
             in = new BufferedInputStream(new FileInputStream(file));
         } catch (IOException ex) {
-            System.err.println("Warning: " + ex.getMessage());
+            log.warning("Warning: " + ex.getMessage());
             return;
         }
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
@@ -432,7 +433,7 @@ public class IndexDatabase {
             }
             setDirty();
         } else {
-            System.err.println("Warning: did not add " + path);
+            log.warning("Warning: did not add " + path);
         }
 
         try { in.close(); } catch (Exception e) {}
@@ -449,7 +450,7 @@ public class IndexDatabase {
         }
 
         if (!file.canRead()) {
-            System.err.println("Warning: could not read " + file.getAbsolutePath());
+            log.warning("Warning: could not read " + file.getAbsolutePath());
             return false;
         }
 
@@ -460,14 +461,14 @@ public class IndexDatabase {
                     // should probably be extended to within the same repository
                     return true;
                 } else {
-                    System.err.println("Warning: ignored non-local symlink " + file.getAbsolutePath() +
+                    log.warning("Warning: ignored non-local symlink " + file.getAbsolutePath() +
                             " -> " + file.getCanonicalPath());
                     return false;
                 }
             }
         } catch (IOException exp) {
-            System.err.println("Warning: Failed to resolve name: " + file.getAbsolutePath());
-            exp.printStackTrace();
+            log.warning("Warning: Failed to resolve name: " + file.getAbsolutePath());
+            log.log(Level.FINE,"Stack Trace: ",exp);       
         }
 
         return true;
@@ -489,7 +490,7 @@ public class IndexDatabase {
 
         File[] files = dir.listFiles();
         if (files == null) {
-            System.err.println("Failed to get file listing for: " + dir.getAbsolutePath());
+            log.severe("Failed to get file listing for: " + dir.getAbsolutePath());
             return;
         }
         Arrays.sort(files, new Comparator<File>() {
@@ -584,7 +585,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        System.err.println("Warning: Could not find a project for \"" + path + "\"");
+                        log.warning("Warning: Could not find a project for \"" + path + "\"");
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listFiles();
@@ -607,7 +608,7 @@ public class IndexDatabase {
             ireader = IndexReader.open(indexDirectory);	      // open existing index
             iter = ireader.terms(new Term("u", "")); // init uid iterator
             while (iter.term() != null) {
-                System.out.println(Util.uid2url(iter.term().text()));
+                log.info(Util.uid2url(iter.term().text()));
                 iter.next();
             }
         } finally {
@@ -648,7 +649,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        System.err.println("Warning: Could not find a project for \"" + path + "\"");
+                        log.warning("Warning: Could not find a project for \"" + path + "\"");
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listTokens(4);
@@ -668,7 +669,7 @@ public class IndexDatabase {
             while (iter.term() != null) {
                 if (iter.term().field().startsWith("f")) {
                     if (iter.docFreq() > 16 && iter.term().text().length() > freq) {
-                        System.out.println(iter.term().text());
+                        log.warning(iter.term().text());
                     }
                     iter.next();
                 } else {
@@ -717,8 +718,8 @@ public class IndexDatabase {
             try {
                 ret = IndexReader.open(indexDir);
             } catch (Exception ex) {
-                System.err.println("Failed to open index: " + indexDir.getAbsolutePath());
-                ex.printStackTrace();
+                log.severe("Failed to open index: " + indexDir.getAbsolutePath());
+                log.log(Level.FINE,"Stack Trace: ",ex); 
             }
         }
 

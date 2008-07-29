@@ -53,7 +53,7 @@ import org.opensolaris.opengrok.util.Getopt;
 public class Indexer {
    
    private static Indexer index = new Indexer();
-   private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
+   private static final Logger log = Logger.getLogger(Indexer.class.getName());
    
    public static Indexer getInstance() {
       return index;

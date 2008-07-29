@@ -90,8 +90,16 @@ Use is subject to license terms.
 
     <property name="version" value="0.6.1"/>
     <property name="distname" value="opengrok"/>
-
-    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>
+                 
+    <available file="JFlex.jar" type="file" property="JFlex.present">
+        <filepath>
+            <pathelement path="${java.class.path}"/>
+            <pathelement path="lib"/>
+        </filepath>
+    </available>
+    <fail unless="JFlex.present" message="Please download JFlex(http://jflex.de/) and put JFlex.jar it into ./lib directory(or in ant classpath)."/>
+    
+    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>    
     <property name="gensrcdir" value="generatedsrc"/>
     <target name="jflex">
         <mkdir dir="${gensrcdir}"/>

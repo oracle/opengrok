@@ -43,10 +43,9 @@ public class OpenGrokLogger {
    private static int LOGFILESIZELIMIT = 1000000;
    private static int LOGFILESCOUNT = 30;
    private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
-   private static FileHandler fh = null;
-   
-   public static String createLogger(String logpath, Level filelevel, Level consolelevel) {
       
+   public static String setupLogger(String logpath, Level filelevel, Level consolelevel) {
+            
       //defaults to tmp
       if (logpath==null) {
          logpath = "%t";
@@ -64,15 +63,13 @@ public class OpenGrokLogger {
       clearForeignHandlers();
       String logfile = logpath + File.separatorChar + "opengrok%g.%u" + ".log";
       try {
-
-         if (fh == null) {
-            fh = new FileHandler(logfile,
+            FileHandler fh = new FileHandler(logfile,
             LOGFILESIZELIMIT, // size (unlimited)
             LOGFILESCOUNT); // # rotations
             
             fh.setLevel(filelevel);
             fh.setFormatter(new FileLogFormatter());
-         }
+            
          log.addHandler(fh);
          
          ConsoleHandler ch = new ConsoleHandler();
@@ -103,5 +100,5 @@ public class OpenGrokLogger {
          h = l.getHandlers();
       }
    }
-
+   
 }

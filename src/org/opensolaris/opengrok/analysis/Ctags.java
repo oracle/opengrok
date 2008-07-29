@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -42,6 +44,8 @@ public class Ctags {
     private Process ctags;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
+    private static final Logger log = Logger.getLogger(Ctags.class.getName());
+
 
     public Ctags() throws IOException {
         initialize();
@@ -89,13 +93,13 @@ public class Ctags {
 
         defs = null;
         if (file.length() > 0 && !file.equals("\n")) {
-            //System.out.println("doing >" + file + "<");
+            //log.fine("doing >" + file + "<");
             ctagsIn.write(file);
             ctagsIn.flush();
             defs = new HashMap<String, HashMap<Integer, String>>();
             tagFile.setLength(0);
             readTags();
-        //System.out.println("DONE >" + file + "<");
+        //log.fine("DONE >" + file + "<");
         }
         return defs;
     }
@@ -107,16 +111,16 @@ public class Ctags {
     public void readTags() {
         try {
             do {
-                String tagLine = ctagsOut.readLine();
-                //System.out.println("Tagline:-->" + tagLine+"<----ONELINE");
+                String tagLine = ctagsOut.readLine();                
+                //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
-                    System.err.println("Unexpected end of file!");
+                    log.warning("Unexpected end of file!");
                     try {
                         int val = ctags.exitValue();
-                        System.err.println("ctags exited with code: " + val);
-                    } catch (Exception e) {}
-                    Throwable t = new Throwable();
-                    t.printStackTrace();
+                        log.warning("ctags exited with code: " + val);
+                    } catch (Exception e) { log.log(Level.WARNING,"Ctags problem: ",e ); }
+                    Throwable t = new Throwable();                    
+                    log.log(Level.FINE, "Ctag read: " ,t );
                     return ;
                 }
                 
@@ -124,8 +128,8 @@ public class Ctags {
                     return;
                 }
                 int p = tagLine.indexOf('\t');
-                if (p <= 0) {
-                    //System.out.println("SKIPPING LINE - NO TAB");
+                if (p <= 0) {                    
+                    //log.fine("SKIPPING LINE - NO TAB");
                     continue;
                 }
                 String def = tagLine.substring(0, p);
@@ -138,9 +142,9 @@ public class Ctags {
 
                 int lp = tagLine.length();
                 while ((p = tagLine.lastIndexOf('\t', lp - 1)) > 0) {
-                    //System.out.println(" p = " + p + " lp = " + lp);
+                    //log.fine(" p = " + p + " lp = " + lp);
                     String fld = tagLine.substring(p + 1, lp);
-                    //System.out.println("FIELD===" + fld);
+                    //log.fine("FIELD===" + fld);
                     lp = p;
                     if (fld.startsWith("line:")) {
                         int sep = fld.indexOf(':');
@@ -174,7 +178,7 @@ public class Ctags {
                 if (signature != null) {
                     String[] args = signature.split("[ ]*[^a-z0-9_]+[ ]*");
                     for (String arg : args) {
-                        //System.out.println("Param = "+ arg);
+                        //log.fine("Param = "+ arg);
                         int space = arg.lastIndexOf(' ');
                         if (space > 0 && space < arg.length()) {
                             if (arg.charAt(space + 1) == '*') {
@@ -184,7 +188,7 @@ public class Ctags {
                                 }
                             }
                             String argDef = arg.substring(space + 1);
-                            //System.out.println("Param Def = "+ argDef);
+                            //log.fine("Param Def = "+ argDef);
                             HashMap<Integer, String> itaglist = defs.get(argDef);
                             if (itaglist == null) {
                                 itaglist = new HashMap<Integer, String>();
@@ -195,11 +199,11 @@ public class Ctags {
                         }
                     }
                 }
-            //System.out.println("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
+            //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
             } while (true);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.FINE,"CTags parsing problem: ",e) ;
         }
-        System.err.println("SHOULD NOT HAVE COME HERE");
+        log.severe("CTag reader cycle was interrupted!");
     }
 }

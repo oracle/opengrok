@@ -38,6 +38,8 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
@@ -48,6 +50,8 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 public class RuntimeEnvironment {
     private Configuration configuration;
     private ThreadLocal<Configuration> threadConfig;
+    
+    private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
     
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     
@@ -233,13 +237,13 @@ public class RuntimeEnvironment {
             BufferedReader cin = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream()));
             String ctagOut;
             if (!((ctagOut = cin.readLine()) != null && ctagOut.startsWith("Exuberant Ctags"))) {
-                System.err.println("Error: No Exuberant Ctags found in PATH!\n" +
+                log.severe("Error: No Exuberant Ctags found in PATH!\n" +
                         "(tried running " + ctags + ")\n" +
                         "Please use option -c to specify path to a good Exuberant Ctags program");
                 return false;
             }
         } catch (Exception e) {
-            System.err.println("Error: executing " + ctags + "! " +e.getLocalizedMessage() +
+            log.severe("Error: executing " + ctags + "! " +e.getLocalizedMessage() +
                     "\nPlease use option -c to specify path to a good Exuberant Ctags program");
             return false;
         }
@@ -248,7 +252,7 @@ public class RuntimeEnvironment {
         try {
             int ret;
             if ((ret = ctagsProcess.exitValue()) != 0) {
-                System.err.println("Error: ctags returned " + ret);
+                log.severe("Error: ctags returned " + ret);
                 return false;
             }            
         } catch (IllegalThreadStateException exp) {
@@ -581,7 +585,7 @@ public class RuntimeEnvironment {
     public void stopConfigurationListenerThread() {
         try {
             configServerSocket.close();
-        } catch (Exception e) {}
+        } catch (Exception e) { log.log(Level.FINE,"Stopping config listener thread: ",e); }
     }
     
     /**
@@ -603,9 +607,8 @@ public class RuntimeEnvironment {
                     Socket s = null;
                     while (!sock.isClosed()) {
                         try {
-                            System.out.flush();
                             s = sock.accept();
-                            System.out.println((new Date()).toString() + " OpenGrok: Got request from " + s.getInetAddress().getHostAddress());
+                            log.info((new Date()).toString() + " OpenGrok: Got request from " + s.getInetAddress().getHostAddress());
                             String line;
                             BufferedInputStream in = new BufferedInputStream(s.getInputStream());
                             
@@ -615,29 +618,28 @@ public class RuntimeEnvironment {
                             
                             if (obj instanceof Configuration) {
                                 configuration = (Configuration)obj;
-                                System.out.println("Configuration updated: " + configuration.getSourceRoot());
-                                System.out.flush();
+                                log.info("Configuration updated: " + configuration.getSourceRoot());
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            log.log(Level.FINE,"Error reading config file: ",e);
                         } finally {
-                            try { s.close(); } catch (Exception ex) { }
+                            try { s.close(); } catch (Exception ex) { log.log(Level.FINE,"Interrupt closing config listener reader socket: ",ex); }
                         }
                     }
                 }
             });
             t.start();
         } catch (UnknownHostException ex) {
-            ex.printStackTrace();
+            log.log(Level.FINE,"Problem resolving sender: ",ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.log(Level.FINE,"I/O error when waiting for config: ",ex);
         }
         
         if (!ret && configServerSocket != null) {
             try {
                 configServerSocket.close();
             } catch (IOException ex) {
-                ;
+                log.log(Level.FINE,"I/O problem closing reader config socket: ",ex);
             }
         }
         

@@ -48,7 +48,7 @@ public class WildCardMatcher extends LineMatcher {
         }
         pre = pattern.substring(0,idx);
         preLen = pre.length();
-        pattern = pattern.substring(preLen);
+        this.pattern = pattern.substring(preLen);
     }
     
     public int match(String token) {

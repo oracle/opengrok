@@ -12,7 +12,7 @@
   
   <context-param>
     <param-name>CONFIGURATION</param-name>
-    <param-value>/opengrok/configuration.xml</param-value>
+    <param-value>/etc/opengrok/configuration.xml</param-value>
     <description>Full path to the configuration file where OpenGrok can read it's configuration</description>
   </context-param>
   

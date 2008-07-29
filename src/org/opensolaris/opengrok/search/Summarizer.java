@@ -33,7 +33,7 @@ public class Summarizer {
     private static final int SUM_LENGTH = 20;
     
     /** Converts text to tokens. */
-    private static Analyzer ANALYZER;
+    private final Analyzer ANALYZER;
     
     private HashSet<String> highlight = new HashSet<String>();            // put query terms in table
     
@@ -304,8 +304,7 @@ public class Summarizer {
     }
     
     private void getPhrases(PhraseQuery query) {
-        Term[] queryTerms = query.getTerms();
-        String[] terms = new String[queryTerms.length];
+        Term[] queryTerms = query.getTerms();        
         for (int i = 0; i < queryTerms.length; i++) {
             highlight.add(queryTerms[i].text());
         }

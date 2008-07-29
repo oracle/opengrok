@@ -221,9 +221,17 @@ public class TeamwareRepository extends Repository {
     }
     
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor( File file) {
+        boolean isTeamwareRepo = false;
         File f = new File(file, "codemgr_wsdata");
-        return f.exists() && f.isDirectory();
+        if (f.exists() && f.isDirectory()) {
+            isTeamwareRepo = true;
+        }
+        f = new File(file, "Codemgr_wsdata");
+        if (f.exists() && f.isDirectory()) {
+            isTeamwareRepo = true;
+        }
+        return isTeamwareRepo;
     }
 }
 
