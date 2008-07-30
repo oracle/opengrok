@@ -19,7 +19,7 @@ is divided into following sections:
   - cleanup
 
         -->
-<project xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" basedir=".." default="default" name="opengrok-impl">
+<project xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" basedir=".." default="default" name="opengrok-impl">
     <target depends="test,jar,javadoc" description="Build and test whole project." name="default"/>
     <!-- 
                 ======================
@@ -237,7 +237,9 @@ is divided into following sections:
             <attribute default="${build.classes.dir}" name="dir"/>
             <sequential>
                 <nbjpdareload>
-                    <fileset dir="@{dir}" includes="${fix.includes}*.class"/>
+                    <fileset dir="@{dir}" includes="${fix.classes}">
+                        <include name="${fix.includes}*.class"/>
+                    </fileset>
                 </nbjpdareload>
             </sequential>
         </macrodef>
