@@ -27,6 +27,9 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import org.apache.commons.jrcs.rcs.Archive;
+import org.apache.commons.jrcs.rcs.Node;
+import org.apache.commons.jrcs.rcs.Version;
 
 /**
  * Access to an RCS repository.
@@ -62,14 +65,26 @@ public class RCSRepository extends Repository {
 
     @Override
     boolean fileHasAnnotation(File file) {
-        // TODO
-        return false;
+        return fileHasHistory(file);
     }
 
     @Override
     Annotation annotate(File file, String revision) throws Exception {
-        // TODO
-        return null;
+        Archive archive = new Archive(getRCSFile(file).getPath());
+        // If revision is null, use current revision
+        Version version = revision == null ?
+            archive.getRevisionVersion() : archive.getRevisionVersion(revision);
+        // Get the revision with annotation
+        archive.getRevision(version, true);
+        Annotation a = new Annotation(file.getName());
+        // A comment in Archive.getRevisionNodes() says that it is not
+        // considered public API anymore, but it works.
+        for (Node n : archive.getRevisionNodes()) {
+            String rev = n.getVersion().toString();
+            String author = n.getAuthor();
+            a.addLine(rev, author, true);
+        }
+        return a;
     }
 
     @Override
