@@ -44,6 +44,7 @@ public class RepositoryFactory {
         new ClearCaseRepository(),
         new PerforceRepository(),
         new RCSRepository(),
+        new CVSRepository(),
     };
     
     /**

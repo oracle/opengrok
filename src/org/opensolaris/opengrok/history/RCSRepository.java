@@ -45,7 +45,7 @@ public class RCSRepository extends Repository {
 
     @Override
     boolean fileHasHistory(File file) {
-        return getRCSFile(file).exists();
+        return getRCSFile(file) != null;
     }
 
     @Override
@@ -93,11 +93,13 @@ public class RCSRepository extends Repository {
      * RCS history for the specified file.
      *
      * @param file the file whose corresponding RCS file should be found
-     * @return the file which contains the RCS history
+     * @return the file which contains the RCS history, or {@code null} if it
+     * cannot be found
      */
     File getRCSFile(File file) {
         File dir = new File(file.getParentFile(), "RCS");
         String baseName = file.getName();
-        return new File(dir, baseName + ",v");
+        File rcsFile = new File(dir, baseName + ",v");
+        return rcsFile.exists() ? rcsFile : null;
     }
 }
