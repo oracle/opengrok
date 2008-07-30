@@ -242,14 +242,9 @@ public class RazorRepository extends Repository {
 
         // TODO : SCCS & Binary Implementation, Rename & Delete Support
 
-        try {
-            File rcsFile = getRazorArchiveRCSFileFor(file);
-            if (rcsFile != null && rcsFile.exists()) {
-                return BlameAndAnnotate.rcsAnnotate(rcsFile, file.getName(), revision);
-            }
-        } catch (Exception e) {
-            System.err.println("annotate( " + file.getPath() + ", " + revision + ")");
-            e.printStackTrace();
+        File rcsFile = getRazorArchiveRCSFileFor(file);
+        if (rcsFile != null && rcsFile.exists()) {
+            return RCSRepository.annotate(file, revision, rcsFile);
         }
 
         return null;

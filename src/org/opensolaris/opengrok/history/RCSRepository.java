@@ -70,7 +70,13 @@ public class RCSRepository extends Repository {
 
     @Override
     Annotation annotate(File file, String revision) throws Exception {
-        Archive archive = new Archive(getRCSFile(file).getPath());
+        File rcsFile = getRCSFile(file);
+        return rcsFile == null ? null : annotate(file, revision, rcsFile);
+    }
+
+    static Annotation annotate(File file, String revision, File rcsFile)
+            throws Exception {
+        Archive archive = new Archive(rcsFile.getPath());
         // If revision is null, use current revision
         Version version = revision == null ?
             archive.getRevisionVersion() : archive.getRevisionVersion(revision);
