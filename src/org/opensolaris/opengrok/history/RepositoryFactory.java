@@ -42,7 +42,8 @@ public class RepositoryFactory {
         new TeamwareRepository(),
         new RazorRepository(),
         new ClearCaseRepository(),
-        new PerforceRepository()
+        new PerforceRepository(),
+        new RCSRepository(),
     };
     
     /**
