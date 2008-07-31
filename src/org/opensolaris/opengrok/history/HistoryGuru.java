@@ -23,7 +23,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,8 +49,6 @@ public class HistoryGuru {
     private enum SCM { 
         /** Unknown version control system for last file */
         UNKNOWN,
-        /** SCCS was used by the last file */
-        SCCS,
         /** The last file was located in an "external" repository */
         EXTERNAL };
    
@@ -59,40 +56,7 @@ public class HistoryGuru {
     private SCM previousFile;
     
     private HistoryCache historyCache;
-    
-    /** Is JavaSVN available? */
-    private boolean svnAvailable;
-    /** Is JavaSVN initialized? */
-    private boolean initializedSvn;
-    /** The name of the Subversion subdirectory */
-    private static final String svnlabel = ".svn";
-    
-    private String SCCSCommand = System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
-    
-    private boolean isSvnAvailable() {
-        if (!initializedSvn) {
-            initializedSvn = true;
-            try {
-                if (Class.forName("org.tigris.subversion.javahl.SVNClient") != null) {
-                    svnAvailable = true;
-                }
-            } catch (ClassNotFoundException ex) {
-                System.err.println("Could not find the supported Subversion bindings.");
-                System.err.println("Please verify that you have svn-javahl.jar installed.");
-                ex.printStackTrace();
-            } catch (UnsatisfiedLinkError ex) {
-                System.err.println("Failed to initialize Subversion library.");
-                if (File.separatorChar == '/') {
-                    System.err.println("Please verify that you have Subversions native library (libsvnjavahl-1.so) in your LD_LIBRARY_PATH");                    
-                } else {
-                    System.err.println("Please verify that you have the Subversion native library (dll) in your PATH");
-                }
-                ex.printStackTrace();
-            }
-        }
-        return svnAvailable;
-    }
-    
+
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
      * source control system.
@@ -127,13 +91,6 @@ public class HistoryGuru {
         if (hpClass != null) {
             previousFile = SCM.EXTERNAL;
         } else {
-            File sccsfile = SCCSHistoryParser.getSCCSFile(file);
-            if (sccsfile != null && sccsfile.canRead()) {
-                hpClass = SCCSHistoryParser.class;
-                previousFile = SCM.SCCS;
-            }
-        }
-        if (hpClass == null) {
             previousFile = SCM.UNKNOWN;
         }
                 
@@ -146,8 +103,7 @@ public class HistoryGuru {
      */
     private Class<? extends HistoryParser> getHistoryParser(File file) {
 
-        switch (previousFile) {
-        case EXTERNAL:
+        if (previousFile == SCM.EXTERNAL) {
             Repository repos = getRepository(file.getParentFile());
             if (repos != null && repos.fileHasHistory(file)) {
                 Class<? extends HistoryParser> parser;
@@ -156,13 +112,6 @@ public class HistoryGuru {
                     return parser;
                 }
             }
-            break;
-        case SCCS:
-            File sccsfile = SCCSHistoryParser.getSCCSFile(file);
-            if (sccsfile != null && sccsfile.canRead()) {
-                return SCCSHistoryParser.class;
-            }
-            break;
         }
 
         // I did not find a match for the specified system. try to guess..
@@ -272,17 +221,6 @@ public class HistoryGuru {
         if (in != null) {
             previousFile = SCM.EXTERNAL;
         } else {
-            File history = SCCSHistoryParser.getSCCSFile(parent, basename);
-            if (history.canRead()) {
-                in = SCCSget.getRevision(SCCSCommand, history, rev);
-                in.mark(32);
-                in.read();
-                in.reset();
-                previousFile = SCM.SCCS;
-            }
-        }
-        
-        if (in == null) {
             previousFile = SCM.UNKNOWN;
         }
         
@@ -299,25 +237,9 @@ public class HistoryGuru {
      */
     public InputStream getRevision(String parent, String basename, String rev) throws IOException {
         InputStream in = null;
-        File history;
-        
-        switch (previousFile) {
-            case SCCS :
-                history = SCCSHistoryParser.getSCCSFile(parent, basename);
-                if (history != null && history.canRead()) {
-                    in = SCCSget.getRevision(SCCSCommand,history, rev);
-                    in.mark(32);
-                    in.read();
-                    in.reset();
-                }
-                break;
-                
-            case EXTERNAL :
-                in = lookupHistoryGet(parent, basename, rev);
-                break;
-                
-            default:
-                ;
+
+        if (previousFile == SCM.EXTERNAL) {
+            in = lookupHistoryGet(parent, basename, rev);
         }
         
         if (in == null) {
@@ -334,15 +256,7 @@ public class HistoryGuru {
      */
     public boolean hasHistory(File file) {
         Repository repos = getRepository(file);
-        if (repos != null) {
-            return repos.fileHasHistory(file);
-        }
-        
-        if (!file.isDirectory()) {
-            file = file.getParentFile();
-        } 
-        
-        return new File(file, "SCCS").isDirectory();
+        return repos != null && repos.fileHasHistory(file);
     }
 
     /**
