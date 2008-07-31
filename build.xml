@@ -93,6 +93,7 @@ Use is subject to license terms.
                  
     <available file="JFlex.jar" type="file" property="JFlex.present">
         <filepath>
+            <pathelement path="${user.home}/.ant/lib"/>
             <pathelement path="${java.class.path}"/>
             <pathelement path="lib"/>
         </filepath>
