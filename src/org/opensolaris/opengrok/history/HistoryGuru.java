@@ -50,8 +50,6 @@ public class HistoryGuru {
     private enum SCM { 
         /** Unknown version control system for last file */
         UNKNOWN,
-        /** RCS was used by the last file */
-        RCS,
         /** SCCS was used by the last file */
         SCCS,
         /** The last file was located in an "external" repository */
@@ -129,16 +127,10 @@ public class HistoryGuru {
         if (hpClass != null) {
             previousFile = SCM.EXTERNAL;
         } else {
-            File rcsfile = RCSHistoryParser.getRCSFile(file);
-            if (rcsfile != null && rcsfile.exists()) {
-                hpClass = RCSHistoryParser.class;
-                previousFile = SCM.RCS;
-            } else {
-                File sccsfile = SCCSHistoryParser.getSCCSFile(file);
-                if (sccsfile != null && sccsfile.canRead()) {
-                    hpClass = SCCSHistoryParser.class;
-                    previousFile = SCM.SCCS;
-                }
+            File sccsfile = SCCSHistoryParser.getSCCSFile(file);
+            if (sccsfile != null && sccsfile.canRead()) {
+                hpClass = SCCSHistoryParser.class;
+                previousFile = SCM.SCCS;
             }
         }
         if (hpClass == null) {
@@ -163,12 +155,6 @@ public class HistoryGuru {
                 if (parser != null) {
                     return parser;
                 }
-            }
-            break;
-        case RCS:
-            File rcsfile = RCSHistoryParser.getRCSFile(file);
-            if (rcsfile != null && rcsfile.exists()) {
-                return RCSHistoryParser.class;
             }
             break;
         case SCCS:
@@ -286,20 +272,13 @@ public class HistoryGuru {
         if (in != null) {
             previousFile = SCM.EXTERNAL;
         } else {
-            File rcsfile = RCSHistoryParser.getRCSFile(parent, basename);
-            if (rcsfile != null) {
-                String rcspath = rcsfile.getPath();
-                in = new BufferedInputStream(new RCSget(rcspath, rev));
-                previousFile = SCM.RCS;
-            } else {
-                File history = SCCSHistoryParser.getSCCSFile(parent, basename);
-                if (history.canRead()) {
-                    in = SCCSget.getRevision(SCCSCommand,history, rev);
-                    in.mark(32);
-                    in.read();
-                    in.reset();
-                    previousFile = SCM.SCCS;
-                }
+            File history = SCCSHistoryParser.getSCCSFile(parent, basename);
+            if (history.canRead()) {
+                in = SCCSget.getRevision(SCCSCommand, history, rev);
+                in.mark(32);
+                in.read();
+                in.reset();
+                previousFile = SCM.SCCS;
             }
         }
         
@@ -323,14 +302,6 @@ public class HistoryGuru {
         File history;
         
         switch (previousFile) {
-            case RCS :
-                File rcsfile = RCSHistoryParser.getRCSFile(parent, basename);
-                if (rcsfile != null) {
-                    String rcspath = rcsfile.getPath();
-                    in = new BufferedInputStream(new RCSget(rcspath, rev));
-                }
-                break;
-                
             case SCCS :
                 history = SCCSHistoryParser.getSCCSFile(parent, basename);
                 if (history != null && history.canRead()) {
@@ -371,9 +342,7 @@ public class HistoryGuru {
             file = file.getParentFile();
         } 
         
-        return (new File(file, "SCCS")).isDirectory() ||
-               (new File(file, "RCS")).isDirectory() ||
-               (new File(file, "CVS")).isDirectory();
+        return new File(file, "SCCS").isDirectory();
     }
 
     /**
