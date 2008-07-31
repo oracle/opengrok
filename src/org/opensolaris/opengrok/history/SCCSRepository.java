@@ -36,17 +36,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
- *
+ * This class gives access to repositories built on top of SCCS (including
+ * TeamWare).
  */
-public class TeamwareRepository extends Repository {
+public class SCCSRepository extends Repository {
     private boolean verbose;
     private Map<String, String> authors_cache;
     
     /**
      * Creates a new instance of MercurialRepository
      */
-    public TeamwareRepository() { }
+    public SCCSRepository() { }
 
     /**
      * Use verbose log messages, or just the summary
@@ -57,7 +57,7 @@ public class TeamwareRepository extends Repository {
     }
     
     private String getCommand() {
-       return System.getProperty("org.opensolaris.opengrok.history.Teamware", "sccs");
+       return System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
     }
         
     /**
@@ -221,17 +221,8 @@ public class TeamwareRepository extends Repository {
     }
     
     @Override
-    boolean isRepositoryFor( File file) {
-        boolean isTeamwareRepo = false;
-        File f = new File(file, "codemgr_wsdata");
-        if (f.exists() && f.isDirectory()) {
-            isTeamwareRepo = true;
-        }
-        f = new File(file, "Codemgr_wsdata");
-        if (f.exists() && f.isDirectory()) {
-            isTeamwareRepo = true;
-        }
-        return isTeamwareRepo;
+    boolean isRepositoryFor(File file) {
+        return new File(file, "SCCS").isDirectory();
     }
 }
 

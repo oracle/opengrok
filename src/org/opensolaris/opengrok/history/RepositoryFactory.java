@@ -39,7 +39,7 @@ public class RepositoryFactory {
         new BazaarRepository(),
         new GitRepository(),
         new SubversionRepository(),
-        new TeamwareRepository(),
+        new SCCSRepository(),
         new RazorRepository(),
         new ClearCaseRepository(),
         new PerforceRepository(),
