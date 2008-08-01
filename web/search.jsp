@@ -295,7 +295,8 @@ if( hits == null || errorMsg != null) {
                             (refs == null ? "" : "&amp;refs=" + Util.URIEncode(refs)) +
                             (path == null ? "" : "&amp;path=" + Util.URIEncode(path)) +
                             (hist == null ? "" : "&amp;hist=" + Util.URIEncode(hist)) +
-                            (sort == null ? "" : "&amp;sort=" + Util.URIEncode(sort));
+                            (sort == null ? "" : "&amp;sort=" + Util.URIEncode(sort)) +
+                            (project == null ? "" : "&amp;project=" + Util.URIEncode(project));
                     
                     slider = new StringBuilder();
                     int labelStart =1;
