@@ -88,6 +88,25 @@ import org.opensolaris.opengrok.configuration.Project;
      }
   }
 
+  private static String massagePath(String path) {
+    if (isPossiblyJavaClass(path)) {
+      // Bug 2225: If the path is referencing a Java class, replace '.' with
+      // '/' to make the search find the Java source file.
+      return path.replace('.', '/');
+    } else {
+      return path;
+    }
+  }
+
+  private static boolean isPossiblyJavaClass(String s) {
+    // Only match a small subset of possible class names to prevent false
+    // positives:
+    //    - class must be qualified with a package name
+    //    - only letters in package name, starting with lower case
+    //    - class name must be in CamelCase, starting with upper case
+    return s.matches("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
+  }
+
 %}
 WhiteSpace     = [ \t\f\r]
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
@@ -147,7 +166,7 @@ NameChar = {FileChar}|"."
 {File}|{Path}
 	{String s=yytext();
 	out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
-	out.write(s);appendProject();out.write("\">");
+	out.write(massagePath(s));appendProject();out.write("\">");
 	out.write(s);out.write("</a>");} 
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
