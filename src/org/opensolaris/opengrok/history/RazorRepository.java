@@ -22,13 +22,14 @@ package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -124,10 +125,10 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * I'm continuously mapping SRC_ROOT based names into the appropriate
  * subdirectory of the actual repository. 
  * 
- * For the initial implementation, it is assume that RCS is in use, on a UNIX
- * platform, but I will try not to hard-code too much in relation to these
- * assumptions. Also I have not worked Java for almost 8 years now, so please
- * forgive any oversights in this regard.
+ * The current implementation assumes the use of a UNIX platform, but I will
+ * try not to hard-code too much in relation to these assumptions. Also I have
+ * not worked Java for almost 8 years now, so please forgive any oversights
+ * in this regard.
  *  
  * @author Peter Bray <Peter.Darren.Bray@gmail.com>
  */
@@ -177,19 +178,19 @@ public class RazorRepository extends Repository {
     }
 
     File getRazorHistoryFileFor(File file) throws Exception {
-        return pathTranslation(file, "/History/", "");
+        return pathTranslation(file, "/History/", "", "");
     }
 
     File getRazorArchiveRCSFileFor(File file) throws Exception {
-        return pathTranslation(file, "/Archive/RZ_VCS/", ",v");
+        return pathTranslation(file, "/Archive/RZ_VCS/", "", ",v");
     }
 
     File getRazorArchiveBinaryFileFor(File file, String rev) throws Exception {
-        return pathTranslation(file, "/Archive/BINARY/", "@" + rev + ".Z");
+        return pathTranslation(file, "/Archive/BINARY/", "", "@" + rev + ".Z");
     }
 
     File getRazorArchiveSCCSFileFor(File file) throws Exception {
-        return pathTranslation(file, "/Archive/SCCS/", "");
+        return pathTranslation(file, "/Archive/SCCS/", "s.", "");
     }
 
     @Override
@@ -205,7 +206,7 @@ public class RazorRepository extends Repository {
     @Override
     boolean fileHasHistory( File file) {
 
-        // TODO : SCCS & Binary Implementation, Rename & Delete Support
+        // TODO : Rename & Delete Support
 
         try {
             File mappedFile = getRazorHistoryFileFor(file);
@@ -220,13 +221,30 @@ public class RazorRepository extends Repository {
             String rev) {
         // System.err.println("getHistoryGet( " + parent + ", " + basename + ", " + rev + ")");
 
-        // TODO : SCCS & Binary Implementation, Rename & Delete Support
+        // TODO : Rename & Delete Support
 
         try {
+            File binaryFile = getRazorArchiveBinaryFileFor(new File(parent, basename), rev);
+            if (binaryFile != null && binaryFile.exists()) {
+                // TODO : Implement a UNIX Compress decompression input stream
+                // The standard Razor implementation uses UNIX Compress, so we
+                // need to be able to decompress these files. This GZIP based
+                // implementation will be useful to sites using GZIP as a 
+                // UNIX Compress replacement (A supported configuration
+                // according to to the Razor 4.x/5.x manuals)
+                return new GZIPInputStream(new FileInputStream(binaryFile));
+            }
+
             File rcsFile = getRazorArchiveRCSFileFor(new File(parent, basename));
             if (rcsFile != null && rcsFile.exists()) {
                 String rcsPath = rcsFile.getPath();
                 return new BufferedInputStream(new RCSget(rcsPath, rev));
+            }
+
+            File sccsFile = getRazorArchiveSCCSFileFor(new File(parent, basename));
+            if (sccsFile != null && sccsFile.exists()) {
+                String SCCS_COMMAND = System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
+                return SCCSget.getRevision(SCCS_COMMAND, sccsFile, rev);
             }
         } catch (Exception e) {
             System.err.println("getHistoryGet( " + parent + ", " + basename + ", " + rev + ")");
@@ -240,11 +258,17 @@ public class RazorRepository extends Repository {
             throws Exception {
         // System.err.println("annotate( " + file.getPath() + ", " + revision + ")");
 
-        // TODO : SCCS & Binary Implementation, Rename & Delete Support
+        // TODO : Rename & Delete Support
 
         File rcsFile = getRazorArchiveRCSFileFor(file);
         if (rcsFile != null && rcsFile.exists()) {
             return RCSRepository.annotate(file, revision, rcsFile);
+        }
+
+        File sccsFile = getRazorArchiveSCCSFileFor(file);
+        if (sccsFile != null && sccsFile.exists()) {
+            // TODO : Don't create new SCCSRepositories unnecessarily
+            return (new SCCSRepository()).annotate(sccsFile, revision);
         }
 
         return null;
@@ -253,13 +277,22 @@ public class RazorRepository extends Repository {
     @Override
     boolean fileHasAnnotation( File file) {
 
-        // TODO : SCCS & Binary Implementation, Rename & Delete Support
-
-        // Assumes we have Blame installed for RCS annotation support
+        // TODO : Rename & Delete Support
 
         try {
+
             File mappedFile = getRazorArchiveRCSFileFor(file);
-            return mappedFile.exists() && mappedFile.isFile();
+            if (mappedFile.exists() && mappedFile.isFile()) {
+                return true;
+            }
+
+            mappedFile = getRazorArchiveSCCSFileFor(file);
+            if (mappedFile.exists() && mappedFile.isFile()) {
+                return true;
+            }
+
+            return false;
+
         } catch (Exception e) {
             return false;
         }
@@ -340,10 +373,14 @@ public class RazorRepository extends Repository {
         }
     }
 
-    private File pathTranslation(File file, String intermediateElements, String suffix) throws Exception {
+    private File pathTranslation(File file, String intermediateElements, String filePrefix, String fileSuffix) throws Exception {
 
         if (!file.getAbsolutePath().startsWith(opengrokSourceRootDirectoryPath)) {
-            throw new Exception("Invalid Path for Translation '" + file.getPath() + "', '" + intermediateElements + "', '" + suffix + "'");
+            throw new Exception("Invalid Path for Translation '" + file.getPath() + "', '" + intermediateElements + "', '" + filePrefix + "', '" + fileSuffix + "'");
+        }
+
+        if (filePrefix.length() != 0) {
+            file = new File(file.getParent(), filePrefix + file.getName());
         }
 
         String path = razorGroupBaseDirectoryPath + intermediateElements;
@@ -352,47 +389,16 @@ public class RazorRepository extends Repository {
             path += file.getAbsolutePath().substring(opengrokSourceRootDirectoryPath.length() + 1);
         }
 
-        path += suffix;
+        if (fileSuffix.length() != 0) {
+            path += fileSuffix;
+        }
 
         return new File(path);
     }
-    /*
-     * The following are left-overs from the original implementation
-     */
-    private final static Pattern RAZOR_GROUP_PATTERN =
-            Pattern.compile("^(.*)/razor_db/(.*)/RAZOR_UNIVERSE/DOMAIN_\\d\\d/(.*)$");
-
-    public static boolean isInRazorGroupTree(File file) {
-
-        try {
-            // System.err.println("Razor Repository - Absolute  Path = '" + file.getAbsolutePath() + "'");
-            // System.err.println("Razor Repository - Canonical Path = '" + file.getCanonicalPath() + "'");
-            if (file.getAbsolutePath().equals(file.getCanonicalPath())) {
-                // System.err.println("Non-symlink can't be Razor Repository for '" + file.getAbsolutePath() + "'" );
-                return false;
-            }
-
-            Matcher matcher = RAZOR_GROUP_PATTERN.matcher(file.getCanonicalPath());
-            if (matcher.find()) {
-                // String prefix = matcher.group(1);
-                // String universe = matcher.group(2);
-                // String group = matcher.group(3);
-                // System.err.println("Found Razor Universe '" + universe + "' / Group '" + group + "' in '" + prefix + "'");
-                return true;
-            } else {
-                // System.err.println("Non-Razor Repository '" + file.getAbsolutePath() + "'");
-                return false;
-            }
-        } catch (java.io.IOException e) {
-            return false;
-        }
-    }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor( File file) {
         File f = new File(file, ".razor");
         return f.exists() && f.isDirectory();
     }
-    
-    
 }
