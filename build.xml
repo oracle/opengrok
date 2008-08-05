@@ -91,14 +91,22 @@ Use is subject to license terms.
     <property name="version" value="0.6.1"/>
     <property name="distname" value="opengrok"/>
                  
+    <path id="lib.search.path">
+        <pathelement path="${user.home}/.ant/lib"/>
+        <pathelement path="${java.class.path}"/>
+        <pathelement path="lib"/>
+    </path>
+
+    <path id="findbugs.lib.search.path">
+        <pathelement path="${user.home}/.ant/lib/findbugs/lib/"/>
+        <pathelement path="${java.class.path}findbugs/lib/"/>
+        <pathelement path="lib/findbugs/lib/"/>
+    </path>
+
     <available file="JFlex.jar" type="file" property="JFlex.present">
-        <filepath>
-            <pathelement path="${user.home}/.ant/lib"/>
-            <pathelement path="${java.class.path}"/>
-            <pathelement path="lib"/>
-        </filepath>
+        <filepath refid="lib.search.path"/>
     </available>
-    <fail unless="JFlex.present" message="Please download JFlex(http://jflex.de/) and put JFlex.jar it into ./lib directory(or in ant classpath)."/>
+    <fail unless="JFlex.present" message="Please download JFlex (http://jflex.de/) and put JFlex.jar it into ./lib directory (or in ant classpath)."/>
     
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>    
     <property name="gensrcdir" value="generatedsrc"/>
@@ -274,18 +282,24 @@ Use is subject to license terms.
       </exec>
     </target>
     
-    <target name="findbugs" depends="dist" description="Runs Findbugs on the OpenGrok source code">
-        <fail message="Please install Findbugs in lib-directory to run Findbugs, see README.">
-            <condition>
-                <not>
-                    <and>
-                        <available file="lib/findbugs/lib/findbugs.jar"/>  
-                        <available file="lib/findbugs/lib/findbugs-ant.jar"/>  
-                    </and>
-                </not>
-            </condition>
-        </fail>
-        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="lib/findbugs/lib/findbugs-ant.jar"/>
+    <target name="-check_findbugs" description="Check that findbugs jar files are present">
+        <available file="findbugs.jar" type="file" property="findbugs.jar.present">
+            <filepath refid="findbugs.lib.search.path"/>
+        </available>
+        <fail unless="findbugs.jar.present" message="Please install Findbugs findbugs.jar in lib-directory (or in ant classpath) to run Findbugs, see README"/>
+
+        <available file="findbugs-ant.jar" type="file" property="findbugs-ant.jar.present">
+            <filepath refid="findbugs.lib.search.path"/>
+        </available>
+        <fail unless="findbugs-ant.jar.present" message="Please install Findbugs findbugs-ant.jar in lib-directory (or in ant classpath) to run Findbugs, see README"/>
+    </target>
+    
+    <target name="findbugs" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code">
+        <path id="findbugs.lib" >
+            <pathelement location="lib/findbugs/lib/findbugs.jar"/>
+            <pathelement location="lib/findbugs/lib/findbugs-ant.jar"/>
+        </path>
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="findbugs.lib"/>
         <mkdir dir="findbugs"/>
         <findbugs projectname="OpenGrok" home="lib/findbugs" output="html" excludeFilter="tools/findbugs_filter.xml" outputFile="findbugs/findbugs.html" jvmargs="-Xmx512m">
             <auxClasspath>
@@ -298,17 +312,19 @@ Use is subject to license terms.
         </findbugs>
     </target>
     
-    <target name="emma-instrument" depends ="compile" description="Instruments the source code for Emma code coverage analysis">
-        <fail message="Please install emma.jar and emma_ant.jar in lib-directory to run Emma, see README.">
-            <condition>
-                <not>
-                    <and>
-                        <available file="lib/emma.jar"/>  
-                        <available file="lib/emma_ant.jar"/>  
-                    </and>
-                </not>
-            </condition>
-        </fail>
+    <target name="-check_emma" description="Check that emma jar files are present">
+        <available file="emma.jar" type="file" property="emma.jar.present">
+            <filepath refid="lib.search.path"/>
+        </available>
+        <fail unless="emma.jar.present" message="Please install emma.jar in lib-directory  (or in ant classpath) to run Emma, see README."/>
+
+        <available file="emma_ant.jar" type="file" property="emma_ant.jar.present">
+            <filepath refid="lib.search.path"/>
+        </available>
+        <fail unless="emma_ant.jar.present" message="Please install emma_ant.jar in lib-directory  (or in ant classpath) to run Emma, see README."/>
+    </target>
+    
+    <target name="emma-instrument" depends="compile, -check_emma" description="Instruments the source code for Emma code coverage analysis">
         <path id="emma.lib" >
             <pathelement location="lib/emma.jar"/>
             <pathelement location="lib/emma_ant.jar"/>
@@ -328,17 +344,7 @@ Use is subject to license terms.
         <property name="test-sys-prop.emma.coverage.out.merge" value="true"/>
     </target>
     
-    <target name="emma-report" description="Analyze ">
-        <fail message="Please install emma.jar and emma_ant.jar in lib-directory to run Emma, see README.">
-            <condition>
-                <not>
-                    <and>
-                        <available file="lib/emma.jar"/>  
-                        <available file="lib/emma_ant.jar"/>  
-                    </and>
-                </not>
-            </condition>
-        </fail>
+    <target name="emma-report" description="Analyze" depends="-check_emma">
         <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
         <emma enabled="true" >
             <report sourcepath="src">

@@ -194,7 +194,7 @@ Using Emma
 ---------------------------------------------------
 If you want to check test coverage on OpenGrok, download Emma from
 http://emma.sourceforge.net/. Place emma.jar and emma-ant.jar in the
-opengrok/trunk/lib directory.
+opengrok/trunk/lib directory, or ~/.ant/lib.
 
 Now you can instrument your classes, and create a jar file:
 
