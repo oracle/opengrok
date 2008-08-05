@@ -151,7 +151,7 @@ public class IndexDatabase {
 
     }
 
-    private void initialize() throws IOException {
+    private synchronized void initialize() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File indexDir = new File(env.getDataRootFile(), "index");
         File spellDir = new File(env.getDataRootFile(), "spellIndex");
@@ -373,7 +373,7 @@ public class IndexDatabase {
         }
     }
 
-    private void setDirty() {
+    private synchronized void setDirty() {
         try {
             if (!dirty) {
                 dirtyFile.createNewFile();

@@ -57,6 +57,7 @@ import org.opensolaris.opengrok.search.scope.editor.InternalEditor;
 public class MainFrame extends javax.swing.JFrame {
     static final long serialVersionUID = 1L;
     private Integer searchSession;
+    private Object searchSessionLock = new Object();
     private Boolean searching;
     private Object searchingLock = new Object();
     private int nhits;
@@ -583,7 +584,7 @@ public class MainFrame extends javax.swing.JFrame {
         se.setFreetext(fullField.getText().trim());
         se.setHistory(historyField.getText().trim());
         se.setSymbol(symbolField.getText().trim());
-        synchronized(searchSession) {
+        synchronized(searchSessionLock) {
             searchSession++;
         };
         final HitTableModel m = (HitTableModel)hitsTable.getModel();
@@ -653,7 +654,7 @@ public class MainFrame extends javax.swing.JFrame {
                 return;
             }
         }
-        synchronized(searchSession) {
+        synchronized(searchSessionLock) {
             searchSession++;
         };
         definitionField.setText("");

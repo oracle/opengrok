@@ -126,17 +126,17 @@ public class Summarizer {
                     return 1;
                 } else if (excerpt1 == null && excerpt2 == null) {
                     return 0;
-                }
-                
-                int numToks1 = excerpt1.numUniqueTokens();
-                int numToks2 = excerpt2.numUniqueTokens();
-                
-                if (numToks1 < numToks2) {
-                    return -1;
-                } else if (numToks1 == numToks2) {
-                    return excerpt1.numFragments() - excerpt2.numFragments();
                 } else {
-                    return 1;
+                    int numToks1 = excerpt1.numUniqueTokens();
+                    int numToks2 = excerpt2.numUniqueTokens();
+
+                    if (numToks1 < numToks2) {
+                        return -1;
+                    } else if (numToks1 == numToks2) {
+                        return excerpt1.numFragments() - excerpt2.numFragments();
+                    } else {
+                        return 1;
+                    }
                 }
             }
         }

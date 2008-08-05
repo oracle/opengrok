@@ -61,7 +61,7 @@ public class DirectoryHistoryReader extends HistoryReader {
     String icomment;
 
     /** Creates a new instance of DirectoryHistoryReader */
-    public void DirectoryHistoryReader() {
+    public DirectoryHistoryReader() {
 
     }
 

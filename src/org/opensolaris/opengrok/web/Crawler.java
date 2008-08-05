@@ -328,16 +328,15 @@ public class Crawler implements Runnable {
                 connectStr = connectStr + ";create=true";
                 try {
                     db = DriverManager.getConnection(connectStr);
+                    try {
+                        PreparedStatement st = db.prepareStatement("CREATE table Crawler ( id integer unique not null generated always as identity (start with 1, increment by 1), url VARCHAR(255) primary key, requests int, failures int)");
+                        st.execute();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        System.exit(1);
+                    }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
-                }
-
-                try {
-                    PreparedStatement st = db.prepareStatement("CREATE table Crawler ( id integer unique not null generated always as identity (start with 1, increment by 1), url VARCHAR(255) primary key, requests int, failures int)");
-                    st.execute();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    System.exit(1);
                 }
             }
         }

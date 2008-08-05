@@ -166,7 +166,7 @@ class FileHistoryCache implements HistoryCache {
             throw e;
         }
 
-        if (repository != null && repository.isCacheable() && !file.isDirectory()) {
+        if (repository.isCacheable() && !file.isDirectory()) {
             // Don't cache history-information for directories, since the 
             // history information on the directory may change if a file in
             // a sub-directory change. This will cause us to present a stale
