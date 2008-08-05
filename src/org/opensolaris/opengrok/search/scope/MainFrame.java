@@ -58,6 +58,7 @@ public class MainFrame extends javax.swing.JFrame {
     static final long serialVersionUID = 1L;
     private Integer searchSession;
     private Boolean searching;
+    private Object searchingLock = new Object();
     private int nhits;
     private int shownhits;
     
@@ -496,7 +497,7 @@ public class MainFrame extends javax.swing.JFrame {
                         moreButton.setEnabled(true);
                     }
                 }
-                synchronized(searching) {
+                synchronized(searchingLock) {
                     searching = false;
                     searchButton.setEnabled(true);
                 }
@@ -571,7 +572,7 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_hitsTableMouseClicked
     
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-        synchronized(searching) {
+        synchronized(searchingLock) {
             searching = true;
         };
         searchButton.setEnabled(false);
@@ -636,7 +637,7 @@ public class MainFrame extends javax.swing.JFrame {
                         moreButton.setEnabled(true);
                     }
                 }
-                synchronized(searching) {
+                synchronized(searchingLock) {
                     searching = false;
                     searchButton.setEnabled(true);
                 }
@@ -646,7 +647,7 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_searchButtonActionPerformed
     
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
-        synchronized(searching) {
+        synchronized(searchingLock) {
             if(searching) {
                 searching = false;
                 return;
