@@ -40,7 +40,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 public class Ctags {
 
     private StringBuilder tagFile;
-    private HashMap<String, HashMap<Integer, String>> defs;
     private Process ctags;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
@@ -91,24 +90,25 @@ public class Ctags {
             initialize();
         }
 
-        defs = null;
         if (file.length() > 0 && !file.equals("\n")) {
             //log.fine("doing >" + file + "<");
             ctagsIn.write(file);
             ctagsIn.flush();
-            defs = new HashMap<String, HashMap<Integer, String>>();
             tagFile.setLength(0);
-            readTags();
+            HashMap<String, HashMap<Integer, String>> defs =
+                    new HashMap<String, HashMap<Integer, String>>();
+            readTags(defs);
+            return defs;
         //log.fine("DONE >" + file + "<");
         }
-        return defs;
+        return null;
     }
 
     public String tagString() {
         return tagFile.toString();
     }
 
-    public void readTags() {
+    private void readTags(HashMap<String, HashMap<Integer, String>> defs) {
         try {
             do {
                 String tagLine = ctagsOut.readLine();                
