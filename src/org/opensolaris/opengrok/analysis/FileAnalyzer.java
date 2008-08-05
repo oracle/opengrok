@@ -22,17 +22,23 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident	"@(#)FileAnalyzer.java 1.2     05/12/01 SMI"
- */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.*;
-import org.apache.lucene.document.*;
-import org.apache.lucene.analysis.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.zip.GZIPOutputStream;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.*;
 
 /**
  * Base class for all different File Analyzers
@@ -112,35 +118,22 @@ public class FileAnalyzer extends Analyzer {
     }
     
     public void writeXref(File xrefDir, String path) throws IOException {
-        if (RuntimeEnvironment.getInstance().hasProjects()) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        if (env.hasProjects()) {
             project = Project.getProject(path);
         } else {
             project = null;
         }
-	Writer out = new BufferedWriter(new FileWriter(new File(xrefDir, path)));
+
+        Writer out = null;
+        if (env.isCompressXref()) {
+            GZIPOutputStream o;
+            out = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(new File(xrefDir, path + ".gz")))));
+        } else {
+            out = new BufferedWriter(new FileWriter(new File(xrefDir, path)));
+        }
 	writeXref(out);
 	out.close();
     }
-    
-    /*
-    public static char[] readContent(char[] content, InputStream in, Integer length) throws IOException {
-	InputStreamReader inReader = new InputStreamReader(in);
-	int len = 0;
-	do{
-	    int rbytes = inReader.read(content, len, content.length - len);
-	    if(rbytes > 0 ) {
-		if(rbytes == (content.length - len)) {
-		    char[] content2 = new char[content.length * 2];
-		    System.arraycopy(content,0, content2, 0, content.length);
-		    content = content2;
-		}
-		len += rbytes;
-	    } else {
-		break;
-	    }
-	} while(true);
-	length = len;
-	return content;
-    }
-     */
 }

@@ -35,10 +35,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 class FileHistoryCache implements HistoryCache {
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     static class FilePersistenceDelegate extends PersistenceDelegate {
         protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -75,8 +77,7 @@ class FileHistoryCache implements HistoryCache {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        
-        sb.append(".log");
+        sb.append(".gz");
         
         return new File(sb.toString());
     }
@@ -86,7 +87,7 @@ class FileHistoryCache implements HistoryCache {
      */
     private static History readCache(File file) throws IOException {
         XMLDecoder d = new XMLDecoder(
-                new BufferedInputStream(new FileInputStream(file)));
+                new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
         Object obj = d.readObject();
         d.close();
         return (History) obj;
@@ -112,13 +113,13 @@ class FileHistoryCache implements HistoryCache {
         // Generate the file with a temporary name and move it into place when
         // I'm done so I don't have to protect the readers for partially updated
         // files...
+        File output = File.createTempFile("oghist", null, dir);
+        XMLEncoder e = new XMLEncoder(
+                new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(output))));
+        e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
+        e.writeObject(history);
+        e.close();
         synchronized (lock) {
-            File output = File.createTempFile("oghist", null, dir);
-            XMLEncoder e = new XMLEncoder(
-                    new BufferedOutputStream(new FileOutputStream(output)));
-            e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
-            e.writeObject(history);
-            e.close();
             if (!cache.delete() && cache.exists()) {
                 output.delete();
                 throw new IOException(
@@ -145,7 +146,6 @@ class FileHistoryCache implements HistoryCache {
                 e.printStackTrace();
             }
         }
-        
         
         HistoryParser parser = parserClass.newInstance();
         History history = null;

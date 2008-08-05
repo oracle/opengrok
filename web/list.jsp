@@ -1,8 +1,8 @@
-<%-- 
+<%--
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -23,6 +23,7 @@ java.lang.*,
 javax.servlet.http.*,
 java.util.*,
 java.io.*,
+java.util.zip.GZIPInputStream,
 org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.configuration.Project,
 org.opensolaris.opengrok.index.*,
@@ -33,22 +34,22 @@ org.opensolaris.opengrok.history.*
 %><%@include file="mast.jsp"%><%
 String rev = null;
 if(!isDir && ef != null) {
-        try {
-            ef.close();
-        } catch (IOException e) {
-        }
-        ef = null;
+    try {
+        ef.close();
+    } catch (IOException e) {
+    }
+    ef = null;
 }
 
 if (valid) {
     if (isDir) {
-        
+
         // verify that the current path is part of the selected project
         Project activeProject = Project.getProject(resourceFile);
-            
+
         if (activeProject != null) {
             String project = null;
-            
+
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
                 for (Cookie cookie : cookies) {
@@ -74,14 +75,14 @@ if (valid) {
             } else {
                 set = true;
             }
-            
+
             if (set) {
                 Cookie cookie = new Cookie("OpenGrok/project", activeProject.getPath());
                 cookie.setPath(context + "/");
                 response.addCookie(cookie);
             }
         }
-        
+
         // If requesting a Directory listing -------------
         DirectoryListing dl = new DirectoryListing(ef);
         String[] files = resourceFile.list();
@@ -94,14 +95,14 @@ if (valid) {
                     char[] buf = new char[8192];
                     for(int i = 0; i< readMes.size(); i++) {
                         try {
-                        BufferedReader br = new BufferedReader(new FileReader(new File(xdir, (String)readMes.get(i))));
-                        int len = 0;
-		    %><h3><%=(String)readMes.get(i)%></h3><div id="src"><pre><%
-                    while((len = br.read(buf)) > 0) {
-                            out.write(buf, 0, len);
-                    }
-		    %></pre></div><%
-                    br.close();
+                            BufferedReader br = new BufferedReader(new FileReader(new File(xdir, (String)readMes.get(i))));
+                            int len = 0;
+		            %><h3><%=(String)readMes.get(i)%></h3><div id="src"><pre><%
+                            while((len = br.read(buf)) > 0) {
+                                out.write(buf, 0, len);
+                            }
+		            %></pre></div><%
+                            br.close();
                         } catch(IOException e) {
                         }
                     }
@@ -109,81 +110,85 @@ if (valid) {
             }
         }
     } else if ((rev = request.getParameter("r")) != null && !rev.equals("")) {
-// Else if requesting a previous revision -------------
-        if(noHistory) {
-                    response.sendError(404, "Revision not found");
+        // Else if requesting a previous revision -------------
+        if (noHistory) {
+            response.sendError(404, "Revision not found");
         } else {
             FileAnalyzerFactory a = AnalyzerGuru.find(basename);
             Genre g = AnalyzerGuru.getGenre(a);
             if (g == Genre.PLAIN|| g == Genre.HTML || g == null) {
                 InputStream in = null;
-                try{
+                try {
                     in = HistoryGuru.getInstance().getRevision(resourceFile.getParent(), basename, rev);
                 } catch (Exception e) {
                     response.sendError(404, "Revision not found");
                     return;
                 }
-                if(in != null) {
+                if (in != null) {
                     try {
                         if (g == null) {
                             a = AnalyzerGuru.find(in);
                             g = AnalyzerGuru.getGenre(a);
                         }
                         if (g == Genre.DATA || g == Genre.XREFABLE || g == null) {
-		%> <div id="src">Binary file [Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">here</a> to download] </div><%
+		            %><div id="src">Binary file [Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">here</a> to download] </div><%
                         } else {
-		%><div id="src"><span class="pagetitle"><%=basename%> revision <%=rev%> </span><pre>
-<%
-if (g == Genre.PLAIN) {
-    Annotation annotation = annotate ?
-        HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
-    AnalyzerGuru.writeXref(a, in, out, annotation, Project.getProject(resourceFile));
-} else if (g == Genre.IMAGE) {
-			%><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
-} else if (g == Genre.HTML) {
-    char[] buf = new char[8192];
-    Reader br = new InputStreamReader(in);
-    int len = 0;
-    while((len = br.read(buf)) > 0) {
-        out.write(buf, 0, len);
-    }
-} else {
-		    %> Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">download <%=basename%></a><%
-}
+		            %><div id="src"><span class="pagetitle"><%=basename%> revision <%=rev%> </span><pre><%
+                            if (g == Genre.PLAIN) {
+                                Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
+                                AnalyzerGuru.writeXref(a, in, out, annotation, Project.getProject(resourceFile));
+                            } else if (g == Genre.IMAGE) {
+			       %><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
+                            } else if (g == Genre.HTML) {
+                               char[] buf = new char[8192];
+                               Reader br = new InputStreamReader(in);
+                               int len = 0;
+                               while((len = br.read(buf)) > 0) {
+                                   out.write(buf, 0, len);
+                               }
+                            } else {
+		               %> Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">download <%=basename%></a><%
+                            }
                         }
                     } catch (IOException e) {
-        %> <h3 class="error">IO Error</h3> <p> <%=e.getMessage() %> </p> <%
-           
+                        %> <h3 class="error">IO Error</h3> <p> <%=e.getMessage() %> </p> <%
                     }
-      %></pre></div><%
-      in.close();
+                    %></pre></div><%
+                    in.close();
                 } else {
-    	%> <h3 class="error">Error reading file</h3> <%
+    	            %> <h3 class="error">Error reading file</h3> <%
                 }
-                
             } else if(g == Genre.IMAGE) {
-	%><div id="src"><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/></div><%
+	        %><div id="src"><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/></div><%
             } else {
-    %><div id="src"> Binary file [Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">here</a> to download] </div><%
+                %><div id="src"> Binary file [Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">here</a> to download] </div><%
             }
-
         }
     } else {
-// requesting cross referenced file -------------
-        
-        String xrefSource = environment.getDataRootPath() + "/xref";
-        String resourceXFile = xrefSource + path;
-        File xrefFile = new File(resourceXFile);
-        if(xrefFile.exists() && !annotate) {
-            char[] buf = new char[8192];
-            BufferedReader br = new BufferedReader(new FileReader(resourceXFile));
-            int len = 0;
-        %><div id="src"><pre><%
-        while((len = br.read(buf)) > 0) {
-                out.write(buf, 0, len);
+        // requesting cross referenced file -------------
+        File xrefSource = new File(environment.getDataRootFile(), "/xref");
+        File xrefFile = new File(xrefSource, path + ".gz");
+        Reader fileReader = null;
+
+        if (environment.isCompressXref() && xrefFile.exists()) {
+            fileReader = new InputStreamReader(new GZIPInputStream(new FileInputStream(xrefFile)));
+        } else {
+            xrefFile = new File(xrefSource, path);
+            if (xrefFile.exists()) {
+                fileReader = new FileReader(xrefFile);
+            }
         }
-        %></pre></div><%
-        br.close();
+
+        if (fileReader != null && !annotate) {
+            char[] buf = new char[8192];
+            BufferedReader br = new BufferedReader(fileReader);
+            int len = 0;
+            %><div id="src"><pre><%
+            while((len = br.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            %></pre></div><%
+            br.close();
         } else {
             BufferedInputStream bin = new BufferedInputStream(new FileInputStream(resourceFile));
             FileAnalyzerFactory a = AnalyzerGuru.find(basename);
@@ -202,19 +207,18 @@ if (g == Genre.PLAIN) {
                     out.write(buf, 0, len);
                 }
             } else if(g == Genre.PLAIN) {
-            %><div id="src"><pre><%
-            Annotation annotation = annotate ?
-                HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
-            AnalyzerGuru.writeXref(a, bin, out, annotation, Project.getProject(resourceFile));
-            %></pre></div><%
+                %><div id="src"><pre><%
+                Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
+                AnalyzerGuru.writeXref(a, bin, out, annotation, Project.getProject(resourceFile));
+                %></pre></div><%
             } else {
-	    %> Click <a href="<%=context%>/raw<%=path%>">download <%=basename%></a><%
-        }
+	        %> Click <a href="<%=context%>/raw<%=path%>">download <%=basename%></a><%
+            }
         }
     }
 %><%@include file="foot.jspf"%><%
 }
-if(ef != null) {
+if (ef != null) {
     try {
         ef.close();
     } catch (IOException e) {

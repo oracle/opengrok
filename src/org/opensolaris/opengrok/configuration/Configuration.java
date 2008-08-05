@@ -68,6 +68,7 @@ public class Configuration {
     private boolean remoteScmSupported;
     private boolean optimizeDatabase;
     private boolean useLuceneLocking;
+    private boolean compressXref;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -91,6 +92,7 @@ public class Configuration {
         setRemoteScmSupported(false);
         setOptimizeDatabase(true);
         setUsingLuceneLocking(false);
+        setCompressXref(true);
     }
     
     public String getCtags() {
@@ -286,7 +288,15 @@ public class Configuration {
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
         this.useLuceneLocking = useLuceneLocking;
     }
-        
+
+    public void setCompressXref(boolean compressXref) {
+        this.compressXref = compressXref;
+    }
+
+    public boolean isCompressXref() {
+        return compressXref;
+    }
+
     /**
      * Write the current configuration to a file
      * @param file the file to write the configuration into

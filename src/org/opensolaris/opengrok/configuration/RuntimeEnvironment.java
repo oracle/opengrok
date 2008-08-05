@@ -312,6 +312,23 @@ public class RuntimeEnvironment {
         threadConfig.get().setGenerateHtml(generateHtml);
     }
     
+    /**
+     * Set if we should compress the xref files or not
+     * @param compressXref set to true if the generated html files should be
+     *                     compressed
+     */
+    public void setCompressXref(boolean compressXref) {
+        threadConfig.get().setCompressXref(compressXref);
+    }
+
+    /**
+     * Are we using copressed HTML files?
+     * @return true if the html-files should be compressed. false otherwise
+     */
+    public boolean isCompressXref() {
+        return threadConfig.get().isCompressXref();
+    }
+
     public boolean isQuickContextScan() {
         return threadConfig.get().isQuickContextScan();
     }
