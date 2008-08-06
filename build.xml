@@ -90,6 +90,8 @@ Use is subject to license terms.
 
     <property name="version" value="0.6.1"/>
     <property name="distname" value="opengrok"/>
+    
+    <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
                  
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
@@ -98,8 +100,8 @@ Use is subject to license terms.
     </path>
 
     <path id="findbugs.lib.search.path">
-        <pathelement path="${user.home}/.ant/lib/findbugs/lib/"/>
-        <pathelement path="${java.class.path}findbugs/lib/"/>
+        <pathelement path="${findbugs.home}/lib/"/>
+        <pathelement path="${java.class.path}/findbugs/lib/"/>
         <pathelement path="lib/findbugs/lib/"/>
     </path>
 
@@ -286,22 +288,22 @@ Use is subject to license terms.
         <available file="findbugs.jar" type="file" property="findbugs.jar.present">
             <filepath refid="findbugs.lib.search.path"/>
         </available>
-        <fail unless="findbugs.jar.present" message="Please install Findbugs findbugs.jar in lib-directory (or in ant classpath) to run Findbugs, see README"/>
+        <fail unless="findbugs.jar.present" message="Please install Findbugs findbugs.jar in ~/.ant/lib-directory (or in ant classpath) to run Findbugs, see README"/>
 
         <available file="findbugs-ant.jar" type="file" property="findbugs-ant.jar.present">
             <filepath refid="findbugs.lib.search.path"/>
         </available>
-        <fail unless="findbugs-ant.jar.present" message="Please install Findbugs findbugs-ant.jar in lib-directory (or in ant classpath) to run Findbugs, see README"/>
+        <fail unless="findbugs-ant.jar.present" message="Please install Findbugs findbugs-ant.jar in ~/.ant/lib-directory (or in ant classpath) to run Findbugs, see README"/>
     </target>
     
-    <target name="findbugs" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code">
+    <target name="findbugs" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate HTML output">
         <path id="findbugs.lib" >
-            <pathelement location="lib/findbugs/lib/findbugs.jar"/>
-            <pathelement location="lib/findbugs/lib/findbugs-ant.jar"/>
+            <pathelement location="${findbugs.home}/lib/findbugs.jar"/>
+            <pathelement location="${findbugs.home}/lib/findbugs-ant.jar"/>
         </path>
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="findbugs.lib"/>
         <mkdir dir="findbugs"/>
-        <findbugs projectname="OpenGrok" home="lib/findbugs" output="html" excludeFilter="tools/findbugs_filter.xml" outputFile="findbugs/findbugs.html" jvmargs="-Xmx512m">
+        <findbugs projectname="OpenGrok" home="${findbugs.home}" output="html" excludeFilter="tools/findbugs_filter.xml" outputFile="findbugs/findbugs.html" jvmargs="-Xmx512m">
             <auxClasspath>
                 <fileset dir="${dist.dir}/lib/">
                     <include name="*.jar"/>
@@ -312,14 +314,14 @@ Use is subject to license terms.
         </findbugs>
     </target>
     
-    <target name="findbugs-xml" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate xml output">
+    <target name="findbugs-xml" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate XML output">
         <path id="findbugs.lib" >
-            <pathelement location="lib/findbugs/lib/findbugs.jar"/>
-            <pathelement location="lib/findbugs/lib/findbugs-ant.jar"/>
+            <pathelement location="${findbugs.home}/lib/findbugs.jar"/>
+            <pathelement location="${findbugs.home}/lib/findbugs-ant.jar"/>
         </path>
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="findbugs.lib"/>
         <mkdir dir="findbugs"/>
-        <findbugs projectname="OpenGrok" home="lib/findbugs" output="xml" excludeFilter="tools/findbugs_filter.xml" outputFile="findbugs/findbugs.xml" jvmargs="-Xmx512m">
+        <findbugs projectname="OpenGrok" home="${findbugs.home}" output="xml" excludeFilter="tools/findbugs_filter.xml" outputFile="findbugs/findbugs.xml" jvmargs="-Xmx512m">
             <auxClasspath>
                 <fileset dir="${dist.dir}/lib/">
                     <include name="*.jar"/>

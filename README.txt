@@ -172,7 +172,7 @@ you have to download Findbugs to your machine, and install it where you have
 checked out your OpenGrok source code, under the lib/findbugs directory,
 like this:
 
-   cd opengrok/trunk/lib
+   cd ~/.ant/lib
    wget http://..../findbugs-x.y.z.tar.gz
    gtar -xf findbugs-x.y.z.tar.gz
    mv findbugs-x.y.z findbugs
@@ -188,6 +188,15 @@ You can now run ant with the findbugs target:
    [findbugs] Output saved to findbugs/findbugs.html
 
 Now, open findbugs/findbugs.html in a web-browser, and start fixing bugs!
+
+If you want to install findbugs some other place than ~/.ant/lib, you can untar the
+.tar.gz file to a directory, and use the findbugs.home property to tell ant where to find
+findbugs, like this (if you have installed fundbugs under the lib directory):
+
+  ant findbugs -Dfindbugs.home=lib/findbug
+
+There is also a findbugs-xml ant target that can be used to generate XML files that can
+later be parsed, e.g. by Hudson.
 
 ---------------------------------------------------
 Using Emma
