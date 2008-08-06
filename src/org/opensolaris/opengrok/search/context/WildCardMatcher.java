@@ -34,7 +34,6 @@ public class WildCardMatcher extends LineMatcher {
     String pattern = "";
     String pre = "";
     int preLen = 0;
-    boolean fieldMatch = false;
     
     public WildCardMatcher(String pattern) {
         this.pattern = pattern;
@@ -52,12 +51,6 @@ public class WildCardMatcher extends LineMatcher {
     }
     
     public int match(String token) {
-/*        if(token.startsWith(pre))
-            System.out.println(pre + ":" + pattern + " == " + token + " len =" + preLen);
-        if(WildcardTermEnum.wildcardEquals(pattern, 0, token, preLen)) {
-            System.out.println(pre + ":" + pattern + " == " + token + " len =" + preLen);
-            System.out.println("MATCHED");
-        }*/
         if(token.startsWith(pre) && WildcardTermEnum.wildcardEquals(pattern, 0, token, 0)) {
             return MATCHED;
         }

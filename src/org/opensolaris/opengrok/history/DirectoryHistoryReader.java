@@ -52,7 +52,6 @@ import org.opensolaris.opengrok.index.IndexDatabase;
 public class DirectoryHistoryReader extends HistoryReader {
 
     public LinkedHashMap<Date, HashMap<String, HashMap<String, ArrayList<String>>>> hash = new LinkedHashMap<Date, HashMap<String, HashMap<String, ArrayList<String>>>>();
-    Format df;
     Iterator<Date> diter;
     Date idate;
     Iterator<String> aiter;

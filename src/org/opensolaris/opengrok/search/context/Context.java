@@ -54,7 +54,6 @@ public class Context {
     private int MAXFILEREAD = 32768;
     private char[] buffer;
     PlainLineTokenizer tokens;
-    Query query;
     String queryAsURI;
     private static Set<String> tokenFields = new HashSet<String>(3);
     static {
@@ -68,7 +67,7 @@ public class Context {
      */
     public Context(Query query) {
         QueryMatchers qm = new QueryMatchers();
-        m = qm.getMatchers(this.query = query, tokenFields);
+        m = qm.getMatchers(query, tokenFields);
         if(m != null) {
         queryAsURI = Util.URIEncode(query.toString());
         //System.err.println("Found Matchers = "+ m.length + " for " + query);

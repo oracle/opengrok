@@ -31,7 +31,6 @@ import java.util.*;
 import java.io.*;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.configuration.Project;
 
 %%
@@ -42,15 +41,9 @@ import org.opensolaris.opengrok.configuration.Project;
 %line
 %{
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
-  char tab;
   boolean p = false;
   Writer out;
-  Annotation annotation;
   Project project;
-  private HashMap<String, HashMap<Integer, String>> defs = null;
-  public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
-  	this.defs = defs;
-  }
 
   public void setURL(String urlPrefix) {
     this.urlPrefix = urlPrefix;
@@ -62,7 +55,6 @@ import org.opensolaris.opengrok.configuration.Project;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
-	annotation = null;
   }
 
   public void write(Writer out) throws IOException {
@@ -162,7 +154,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 ^\.TS   {yybegin(TBL);out.write("<table border=\"1\" cellpadding=\"2\" rules=\"all\" bgcolor=\"#ddddcc\"><tr><td>");}
 <TBL> {
-tab\(.\) { tab = yycharat(4); }
+tab\(.\) { char tab = yycharat(4); }
 \.$    { yybegin(TBLL); }
 .    {}
 }
@@ -183,9 +175,6 @@ T[\{\}] {}
 				out.write(" (at] ");
 			}
 		}
-		//out.write("<a href=\"mailto:");
-		//out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-		//out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");
 	}
 
 {File}

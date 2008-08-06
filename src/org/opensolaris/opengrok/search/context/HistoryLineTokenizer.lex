@@ -46,7 +46,6 @@ import org.apache.lucene.analysis.*;
   int markedPos=0;
   int matchStart=-1;
   int rest=0;
-  int fld=0;
   boolean wait = false;
   boolean dumpRest = false;
   Writer out;
@@ -131,7 +130,6 @@ stopset.add( "1.0");
 	rest = 0;
 	markedPos=0;
 	matchStart=-1;
-	fld=0;
   }
 
   public void holdOn() {

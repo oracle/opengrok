@@ -43,7 +43,6 @@ import org.opensolaris.opengrok.search.Hit;
 public class HistoryContext {
     private LineMatcher[] m;
     HistoryLineTokenizer tokens;
-    String filename;
     private static Set<String> tokenFields = new HashSet<String>(1);
     static {
         tokenFields.add("hist");
@@ -55,7 +54,6 @@ public class HistoryContext {
         if(m != null) {
             tokens = new HistoryLineTokenizer((Reader)null);
         }
-        filename = null;
     }
     public boolean isEmpty() {
         return m == null;
@@ -65,7 +63,6 @@ public class HistoryContext {
             return false;
         }
         File f = new File(filename);
-        this.filename = filename;
         return getHistoryContext(HistoryGuru.getInstance().getHistoryReader(f),
                                  path, null, hits);
         

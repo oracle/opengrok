@@ -34,10 +34,8 @@ package org.opensolaris.opengrok.search.context;
 
 public class PrefixMatcher extends LineMatcher {
     private String prefix;
-    private int cur;
     public PrefixMatcher(String prefix) {
         this.prefix  = prefix;
-        cur = 0;
     }
     
     public int match(String token) {

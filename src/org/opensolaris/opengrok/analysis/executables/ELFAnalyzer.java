@@ -43,12 +43,10 @@ import java.util.*;
  * @author Chandan
  */
 public class ELFAnalyzer extends FileAnalyzer {
-    private StringBuffer sb;
     private char[] content;
     private int len;
     private int[] readables;
     PlainFullTokenizer plainfull;
-//    PlainSymbolTokenizer plainref;
     StringReader dummy = new StringReader("");
     
     /** Creates a new instance of ELFAnalyzer */
@@ -56,8 +54,6 @@ public class ELFAnalyzer extends FileAnalyzer {
 	super(factory);
 	content = new char[16*1024];
 	plainfull = new PlainFullTokenizer(dummy);
-	CharBuffer cb;
-//        plainref = new PlainSymbolTokenizer(dummy);
     }
     
     public void analyze(Document doc, InputStream in) {

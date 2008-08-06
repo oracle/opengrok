@@ -44,7 +44,6 @@ import java.util.*;
 
 public class JarAnalyzer extends FileAnalyzer {
     private byte[] content;
-    private int len;
 
     private LinkedList<String> defs;
     private LinkedList<String> refs;

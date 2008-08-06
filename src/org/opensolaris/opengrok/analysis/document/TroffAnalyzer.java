@@ -108,7 +108,6 @@ public class TroffAnalyzer extends FileAnalyzer {
      */
     static void writeXref(InputStream in, Writer out, Annotation annotation, Project project) throws IOException {
 	TroffXref xref = new TroffXref(in);
-        xref.annotation = annotation;
         xref.project = project;
 	out.write("</pre>");
 	xref.write(out);
