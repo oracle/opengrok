@@ -270,7 +270,7 @@ public class Crawler implements Runnable {
                     updateNext = db.prepareStatement("UPDATE Crawler set requests=requests + 1 WHERE url=?");
                     addUrl = db.prepareStatement("INSERT INTO Crawler(url, requests, failures) VALUES (?,0,0)");
                 } catch (SQLException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                     System.exit(1);
                 }
             }
@@ -295,13 +295,23 @@ public class Crawler implements Runnable {
 
             try {
                 PreparedStatement st = db.prepareStatement("SELECT url,requests,failures FROM Crawler");
-                ResultSet rs = st.executeQuery();
-                while (rs.next()) {
-                    System.out.print(rs.getString(1));
-                    System.out.print("  ");
-                    System.out.print(rs.getInt(2));
-                    System.out.print("  ");
-                    System.out.println(rs.getInt(3));
+                try {
+                    ResultSet rs = st.executeQuery();
+                    try {
+                        while (rs.next()) {
+                            System.out.print(rs.getString(1));
+                            System.out.print("  ");
+                            System.out.print(rs.getInt(2));
+                            System.out.print("  ");
+                            System.out.println(rs.getInt(3));
+                        }
+                    } finally {
+                        rs.close();
+                        rs = null;
+                    }
+                } finally {
+                    st.close();
+                    st = null;
                 }
                 db.close();
             } catch (Exception e) {
@@ -320,24 +330,39 @@ public class Crawler implements Runnable {
             String connectStr = "jdbc:derby:OpenGrokCrawler";
             Connection db = null;
             try {
-                db = DriverManager.getConnection(connectStr);
-            } catch (SQLException ex) {
-            }
-
-            if (db == null) {
-                connectStr = connectStr + ";create=true";
                 try {
                     db = DriverManager.getConnection(connectStr);
-                    try {
-                        PreparedStatement st = db.prepareStatement("CREATE table Crawler ( id integer unique not null generated always as identity (start with 1, increment by 1), url VARCHAR(255) primary key, requests int, failures int)");
-                        st.execute();
-                    } catch (SQLException ex) {
-                        ex.printStackTrace();
-                        System.exit(1);
-                    }
                 } catch (SQLException ex) {
-                    ex.printStackTrace();
                 }
+
+                if (db == null) {
+                    connectStr = connectStr + ";create=true";
+                    try {
+                        db = DriverManager.getConnection(connectStr);
+                        try {
+                            PreparedStatement st = db.prepareStatement("CREATE table Crawler ( id integer unique not null generated always as identity (start with 1, increment by 1), url VARCHAR(255) primary key, requests int, failures int)");
+                            try {
+                                st.execute();
+                            } finally {
+                                st.close();
+                                ;
+                                st = null;
+                            }
+                        } catch (SQLException ex) {
+                            ex.printStackTrace();
+                            System.exit(1);
+                        }
+                    } catch (SQLException ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                }
+            } finally {
+                try {
+                    db.close();
+                } catch (SQLException sqle) {
+                    sqle.printStackTrace(System.err);
+                }
+                db = null;
             }
         }
 
@@ -379,15 +404,20 @@ public class Crawler implements Runnable {
             if (db != null) {
                 try {
                     ResultSet rs = findNext.executeQuery();
-                    if (rs.next()) {
-                        try {
-                            ret = new URL(rs.getString(1));
-                            rs.close();
-                            updateNext.setString(1, ret.toString());
-                            updateNext.execute();
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    try {
+                        if (rs.next()) {
+                            try {
+                                ret = new URL(rs.getString(1));
+                                rs.close();
+                                updateNext.setString(1, ret.toString());
+                                updateNext.execute();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
+                    } finally {
+                        rs.close();
+                        rs = null;
                     }
                 } catch (SQLException ex) {
                     ex.printStackTrace();

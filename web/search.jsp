@@ -158,11 +158,11 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     } catch (BooleanQuery.TooManyClauses e) {
         errorMsg = "<b>Error:</b> Too many results for wildcard!";
     } catch (ParseException e) {
-        errorMsg = "<b>Error:</b><br/>" + Util.Htmlize(qstr) + "<br/>" + Util.Htmlize(e.getMessage());
+        errorMsg = "<b>Error:</b><br/>" + Util.htmlize(qstr) + "<br/>" + Util.htmlize(e.getMessage());
     } catch (FileNotFoundException e) {
         errorMsg = "<b>Error:</b> Index database not found";
     } catch (Exception e) {
-        errorMsg = "<b>Error:</b> " + Util.Htmlize(e.getMessage());
+        errorMsg = "<b>Error:</b> " + Util.htmlize(e.getMessage());
     }
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....

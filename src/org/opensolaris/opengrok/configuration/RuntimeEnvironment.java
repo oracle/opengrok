@@ -233,14 +233,23 @@ public class RuntimeEnvironment {
             ctagsProcess = Runtime.getRuntime().exec(new String[] {ctags, "--version" });
         } catch (Exception e) {
         }
+        if (ctagsProcess == null) {
+            log.severe("Error: executing " + ctags + "! " +
+                    "\nPlease use option -c to specify path to a good Exuberant Ctags program");
+            return false;
+        }
         try {
             BufferedReader cin = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream()));
-            String ctagOut;
-            if (!((ctagOut = cin.readLine()) != null && ctagOut.startsWith("Exuberant Ctags"))) {
-                log.severe("Error: No Exuberant Ctags found in PATH!\n" +
-                        "(tried running " + ctags + ")\n" +
-                        "Please use option -c to specify path to a good Exuberant Ctags program");
-                return false;
+            try {
+                String ctagOut;
+                if (!((ctagOut = cin.readLine()) != null && ctagOut.startsWith("Exuberant Ctags"))) {
+                    log.severe("Error: No Exuberant Ctags found in PATH!\n" +
+                            "(tried running " + ctags + ")\n" +
+                            "Please use option -c to specify path to a good Exuberant Ctags program");
+                    return false;
+                }
+            } finally {
+                cin.close();
             }
         } catch (Exception e) {
             log.severe("Error: executing " + ctags + "! " +e.getLocalizedMessage() +

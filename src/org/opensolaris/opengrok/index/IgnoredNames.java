@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.index;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,7 @@ import org.apache.oro.io.GlobFilenameFilter;
  *
  * @author Chandan
  */
-public class IgnoredNames {
+public class IgnoredNames implements Serializable {
     private static final String[] defaultPatterns = {
         "SCCS",
         "CVS",

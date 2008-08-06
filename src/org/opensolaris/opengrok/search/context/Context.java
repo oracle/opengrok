@@ -127,12 +127,12 @@ public class Context {
                                         out.write("\"><span class=\"l\">");
                                         out.write(desc[1]);
                                         out.write("</span> ");
-                                        out.write(Util.Htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
+                                        out.write(Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
                                         out.write("</a> <i> ");
                                         out.write(desc[2]);
                                         out.write(" </i><br/>");
                                     } else  {
-                                        Hit hit = new Hit(path, Util.Htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"), desc[1], false, alt);
+                                        Hit hit = new Hit(path, Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"), desc[1], false, alt);
                                         hits.add(hit);
                                         anything = true;
                                     }

@@ -145,9 +145,8 @@ public class CommandLineOptions {
         PrintWriter out = new PrintWriter(wrt);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(
-                this.getClass().getResourceAsStream("opengrok.xml"), "US-ASCII"));
+                CommandLineOptions.class.getResourceAsStream("opengrok.xml"), "US-ASCII"));
 
-        String line;
         spool(reader, out, "___INSERT_DATE___");
         out.print("<refmiscinfo class=\"date\">");
         out.print(DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));

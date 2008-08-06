@@ -202,9 +202,6 @@
                   <Connection code="Preferences.userNodeForPackage(Indexer.class).getBoolean(&quot;xref&quot;, true)&#xa;" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="For Online Source Searching Browsing"/>
-                <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                  <Insets value="[0, 0, 0, 0]"/>
-                </Property>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="economicalActionPerformed"/>
@@ -314,7 +311,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="SrcRootPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="StatusPanel" min="-2" pref="114" max="-2" attributes="0"/>
+              <Component id="StatusPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="14" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="badv" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -344,7 +341,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="1"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="dataRootText" pref="331" max="32767" attributes="1"/>
+                          <Component id="dataRootText" pref="353" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="bchoosedata" min="-2" pref="90" max="-2" attributes="1"/>
                       </Group>
@@ -425,7 +422,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="jLabel5" min="-2" max="-2" attributes="1"/>
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="srcRootText" pref="314" max="32767" attributes="1"/>
+                          <Component id="srcRootText" pref="364" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="bchoosesrc" min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -513,7 +510,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="warnStatus" min="-2" pref="347" max="-2" attributes="1"/>
                               <Component id="runStatus" alignment="0" min="-2" pref="365" max="-2" attributes="1"/>
-                              <Component id="iprogress" alignment="0" pref="395" max="32767" attributes="1"/>
+                              <Component id="iprogress" alignment="0" pref="407" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                   </Group>
@@ -528,7 +525,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="bcancel" alignment="0" pref="87" max="32767" attributes="0"/>
+                      <Component id="bcancel" alignment="0" pref="90" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="warnStatus1" min="-2" max="-2" attributes="0"/>

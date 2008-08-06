@@ -341,7 +341,7 @@ import org.opensolaris.opengrok.search.Hit;
 		out.write("\"><span class=\"l\">");
 		out.write(desc[1]);
 		out.write("</span> ");
-		out.write(Util.Htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
+		out.write(Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
 		out.write("</a> <i> ");
 		out.write(desc[2]);
 		out.write(" </i><br/>");
@@ -349,7 +349,7 @@ import org.opensolaris.opengrok.search.Hit;
         } else {
 	   for(Integer rem : tags.keySet()) {
 		String[] desc = tags.get(rem);
-                hit = new Hit(url, "<html>" + Util.Htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"), 
+                hit = new Hit(url, "<html>" + Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"), 
                               desc[1], false, alt);
                 hit.setTag(desc[2]);
                 hits.add(hit);

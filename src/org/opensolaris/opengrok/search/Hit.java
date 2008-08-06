@@ -186,7 +186,7 @@ public class Hit implements Comparable {
                     o.toString() + " " + o.getClass().toString());
         }
     }
-    
+
     /**
      * Getter for property binary.
      *

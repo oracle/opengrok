@@ -28,7 +28,7 @@ public class UtilTest {
     }
 
     @Test
-    public void Htmlize() {
+    public void htmlize() {
         String[][] input_output = {
             { "This is a test", "This is a test" },
             { "Newline\nshould become <br/>",
@@ -38,10 +38,10 @@ public class UtilTest {
         };
         for (String[] in_out : input_output) {
             // 1 arg
-            assertEquals(in_out[1], Util.Htmlize(in_out[0]));
+            assertEquals(in_out[1], Util.htmlize(in_out[0]));
             // 2 args
             StringBuilder sb = new StringBuilder();
-            Util.Htmlize(in_out[0], sb);
+            Util.htmlize(in_out[0], sb);
             assertEquals(in_out[1], sb.toString());
         }
     }

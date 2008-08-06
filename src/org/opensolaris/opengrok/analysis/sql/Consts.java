@@ -44,15 +44,19 @@ class Consts {
     private static void populateKeywordSet(Set<String> set, String file)
             throws IOException
     {
+        String line;
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
                     Consts.class.getResourceAsStream(file), "US-ASCII"));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            line = line.trim().toLowerCase(Locale.US);
-            if (!line.startsWith("#")) {
-                set.add(line);
+        try {
+            while ((line = reader.readLine()) != null) {
+                line = line.trim().toLowerCase(Locale.US);
+                if (!line.startsWith("#")) {
+                    set.add(line);
+                }
             }
+        } finally {
+            reader.close();;
         }
     }
 

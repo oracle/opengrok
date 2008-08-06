@@ -120,13 +120,7 @@ public class Summarizer {
         //
         SortedSet<Excerpt> excerptSet = new TreeSet<Excerpt>(new Comparator<Excerpt>() {
             public int compare(Excerpt excerpt1, Excerpt excerpt2) {
-                if (excerpt1 == null && excerpt2 != null) {
-                    return -1;
-                } else if (excerpt1 != null && excerpt2 == null) {
-                    return 1;
-                } else if (excerpt1 == null && excerpt2 == null) {
-                    return 0;
-                } else {
+                if (excerpt1 != null && excerpt2 != null) {
                     int numToks1 = excerpt1.numUniqueTokens();
                     int numToks2 = excerpt2.numUniqueTokens();
 
@@ -137,9 +131,14 @@ public class Summarizer {
                     } else {
                         return 1;
                     }
-                }
+                } else if (excerpt1 == null && excerpt2 != null) {
+                    return -1;
+                } else if (excerpt1 != null && excerpt2 == null) {
+                    return 1;
+                } else 
+                    return 0;
+                } 
             }
-        }
         );
         
         //

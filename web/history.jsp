@@ -113,8 +113,8 @@ if(userPage != null && ! userPage.equals("")) {
 }
 
 %>&nbsp;</td><td><%
-String cout=Util.Htmlize(hr.getComment());
-if (bugPage != null && ! bugPage.equals("")) {
+String cout=Util.htmlize(hr.getComment());
+if (bugPage != null && ! bugPage.equals("")){
         cout=bugPattern.matcher(cout).replaceAll("<a href=\"" + bugPage + "$1\">$1</a>"); }
 if (reviewPage != null && ! reviewPage.equals("")) {
     cout=reviewPattern.matcher(cout).replaceAll("<a href=\"" + reviewPage + "$1\">$1</a>"); }

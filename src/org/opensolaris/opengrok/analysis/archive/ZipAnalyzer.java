@@ -92,6 +92,6 @@ public class ZipAnalyzer extends FileAnalyzer {
      * @param out Writer to store HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-        Util.Htmlize(content, len, out);
+        Util.htmlize(content, len, out);
     }
 }

@@ -46,9 +46,9 @@ public class Util {
      * @return a string representing the character sequence in HTML
      */
 
-    public static String Htmlize(CharSequence q) {
+    public static String htmlize(CharSequence q) {
         StringBuilder sb = new StringBuilder(q.length() * 2);
-        Htmlize(q, sb);
+        htmlize(q, sb);
         return sb.toString();
     }
 
@@ -60,27 +60,27 @@ public class Util {
      * @param out the object to append the character sequence to
      * @exception IOException if an I/O error occurs
      */
-    public static void Htmlize(CharSequence q, Appendable out)
+    public static void htmlize(CharSequence q, Appendable out)
             throws IOException {
         for (int i = 0; i < q.length(); i++) {
-            Htmlize(q.charAt(i), out);
+            htmlize(q.charAt(i), out);
         }
     }
 
     /**
      * Append a character sequence to a <code>StringBuilder</code>
      * object. Escape special characters for HTML. This method is identical to
-     * <code>Htmlize(CharSequence,Appendable)</code>, except that it is
+     * <code>htmlize(CharSequence,Appendable)</code>, except that it is
      * guaranteed not to throw <code>IOException</code> because it uses a
      * <code>StringBuilder</code>.
      *
      * @param q a character sequence
      * @param out the object to append the character sequence to
-     * @see #Htmlize(CharSequence, Appendable)
+     * @see #htmlize(CharSequence, Appendable)
      */
-    public static void Htmlize(CharSequence q, StringBuilder out) {
+    public static void htmlize(CharSequence q, StringBuilder out) {
         try {
-            Htmlize(q, (Appendable) out);
+            htmlize(q, (Appendable) out);
         } catch (IOException ioe) {
             // StringBuilder's append methods are not declared to throw
             // IOException, so this should never happen.
@@ -88,10 +88,10 @@ public class Util {
         }
     }
 
-    public static void Htmlize(char[] cs, int length, Appendable out)
+    public static void htmlize(char[] cs, int length, Appendable out)
             throws IOException {
         for (int i = 0; i < length && i < cs.length; i++) {
-            Htmlize(cs[i], out);
+            htmlize(cs[i], out);
         }
     }
 
@@ -104,7 +104,7 @@ public class Util {
      * @param out the object to append the character to
      * @exception IOException if an I/O error occurs
      */
-    private static void Htmlize(char c, Appendable out) throws IOException {
+    private static void htmlize(char c, Appendable out) throws IOException {
         switch (c) {
             case '&':
                 out.append("&amp;");
@@ -201,7 +201,7 @@ public class Util {
                 out.write("\">");
             }
 
-            Htmlize(r, out);
+            htmlize(r, out);
 
             if (enabled) {
                 out.write("</a>");
@@ -220,10 +220,10 @@ public class Util {
                 out.write(link);
                 out.write(URIEncode(a));
                 out.write("\">");
-                Htmlize(a, out);
+                htmlize(a, out);
                 out.write("</a>");
             } else {
-                Htmlize(a, out);
+                htmlize(a, out);
             }
             out.write(" </span></span>");
         }

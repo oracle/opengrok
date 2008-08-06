@@ -217,7 +217,7 @@ if(format.equals("s")) {
                             for (int i=0; i < rev.size(); i++) {
                                 Delta d = rev.getDelta(i);
                                 if(format.equals("t")) {
-	%><%=Util.Htmlize(d.toString())%><%
+	%><%=Util.htmlize(d.toString())%><%
                                     } else {
                                         Chunk c1 = d.getOriginal();
                                         Chunk c2 = d.getRevised();
@@ -228,20 +228,20 @@ if(format.equals("s")) {
                                         
                                         int i1 = cn1, i2 = cn2;
                                         for (; i1 <= cl1 && i2 <= cl2; i1++, i2++) {
-                                            String[] ss = diffline(Util.Htmlize((String)file1[i1]), Util.Htmlize((String)file2[i2]));
+                                            String[] ss = diffline(Util.htmlize((String)file1[i1]), Util.htmlize((String)file2[i2]));
                                             file1[i1] = ss[0];
                                             file2[i2] = ss[1];
                                         }
                                         if(i1 <= cl1) {
                                             for(int h=i1; h<= cl1; h++) {
-                                                file1[h] = Util.Htmlize((String)file1[h]);
+                                                file1[h] = Util.htmlize((String)file1[h]);
                                             }
                                             file1[i1] = "<span class=\"d\">" + file1[i1];
                                             file1[cl1] = file1[cl1] + "</span>";
                                         }
                                         if(i2 <= cl2) {
                                             for(int h=i2; h<= cl2; h++) {
-                                                file2[h] = Util.Htmlize((String)file2[h]);
+                                                file2[h] = Util.htmlize((String)file2[h]);
                                             }
                                             file2[i2] = "<span class=\"a\">" + file2[i2];
                                             file2[cl2] = file2[cl2] + "</span>";
@@ -253,16 +253,16 @@ if(format.equals("s")) {
 	  %><tr class="k"><td><%
           if (full || (cn2 - ln2 < 20)) {
               for (int j = ln2; j < cn2; j++) {
-		 	%><i><%=readableLine(++ln2)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+		 	%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
               }
           } else {
               for (int j = ln2; j < ln2+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
               }
 		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                 ln2 = cn2-8;
                 for (int j = cn2 - 8; j < cn2; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                 }
           }
 	  %></td></tr><%
@@ -293,29 +293,29 @@ if(format.equals("s")) {
 	    %><tr class="k"><td><%
             if(full || cn2 - ln2 < 20) {
                 for(int j = ln1; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                 }
 		%></td><td><%
                 for(int j = ln2; j  < cn2 ; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                 }
             } else {
                 for(int j = ln1; j < ln1+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                 }
 		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                 ln1 = cn1-8;
                 for (int j = cn1 - 8; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                 }
 	     %></td><td><%
              for (int j = ln2; j < ln2+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
              }
 		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                 ln2 = cn2-8;
                 for (int j = cn2 - 8; j < cn2; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                 }
             }
 	    %></td></tr><%    
@@ -336,16 +336,16 @@ if(format.equals("s")) {
                                             if (cn1 > ln1) {
                                                 if(full || cn1 - ln1 < 20) {
                                                     for(int j = ln1; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                                                     }
                                                 } else {
                                                     for(int j = ln1; j < ln1+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                                                     }
 		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln1%>">view full</a>) --- <br/><br/><%
                 ln1 = cn1-8;
                 for (int j = cn1 - 8; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                 }
                                                 }
                                             }
@@ -362,16 +362,16 @@ if(format.equals("s")) {
                                             if (cn2 > ln2) {
                                                 if(full || cn2 - ln2 < 20) {
                                                     for(int j = ln2; j  < cn2 ; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                                                     }
                                                 } else {
                                                     for (int j = ln2; j < ln2+8; j++) {
-				%><i><%=readableLine(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+				%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                                                     }
 			%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                         ln2 = cn2-8;
                         for (int j = cn2 - 8; j < cn2; j++) {
-				%><i><%=readableLine(++ln2)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+				%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                         }
                                                 }
                                             }
@@ -393,22 +393,22 @@ if(format.equals("s")) {
                                     if (full || file1.length - ln1 < 20) {
 		%><tr><td><%
                 for (int j = ln1; j < file1.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                 }
 		%></td><td><%
                 for (int j = ln2; j < file2.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                 }
 		%></td></tr></table><%
                                         } else {
 		%><tr><td><%
                 for (int j = ln1; j < ln1 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                 }
 
 		%><br/> --- <b><%=file1.length - ln1 - 8%> unchanged lines hidden</b> --- </td><td><%
                 for (int j = ln2; j < ln2 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                 }
 		%><br/>--- <b><%=file1.length - ln1 - 8%> unchanged lines hidden</b> ---</td></tr></table><%
                                         }
@@ -416,24 +416,24 @@ if(format.equals("s")) {
                                         if (full || file2.length - ln2 < 20) {
 		%><tr><td><%
                 for (int j = ln2; j < file2.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                 }
 		%></td></tr></table><%
                                         } else {
 		%><tr><td><%
                 for (int j = ln2; j < ln2 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                 }
 		%><br/>--- <b><%=file2.length - ln2 - 8%> unchanged lines hidden</b> ---</td></tr></table><%
                                         }
                                     } else if (format.equals("o")) {
                                     if (full || file1.length - ln1 < 20) {
                                         for (int j = ln1; j < file1.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                                             }
                                         } else {
                                             for (int j = ln1; j < ln1 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file1[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                                             }
 
 		%><br/> --- <b><%=file1.length - ln1 - 8%> unchanged lines hidden</b> ---<br/><%
@@ -441,11 +441,11 @@ if(format.equals("s")) {
                                     } else if (format.equals("n")) {
                                     if (full || file2.length - ln2 < 20) {
                                         for (int j = ln2; j < file2.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                                             }
                                         } else {
                                             for (int j = ln2; j < ln2 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.Htmlize((String)file2[j])%><br/><%
+		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                                             }
 		%><br/> --- <b><%=file2.length - ln2 - 8%> unchanged lines hidden</b> ---<br/><%
                                         }
@@ -463,7 +463,7 @@ if(format.equals("s")) {
                     }
                 }
             } catch (FileNotFoundException e) {
-		 %><div class="src"><h3 class="error">Error Opening files! <%=Util.Htmlize(e.getMessage())%></h3></div><%
+		 %><div class="src"><h3 class="error">Error Opening files! <%=Util.htmlize(e.getMessage())%></h3></div><%
             }
             if(in1 != null)
                 in1.close();

@@ -127,7 +127,7 @@ if (resourcePath.length() < rawSource.length()
             if(hr.isActive()) {
 %>
 <item>
-    <title><%=Util.Htmlize(hr.getComment())%></title>
+    <title><%=Util.htmlize(hr.getComment())%></title>
     <description><%
     if(isDir) {
         List<String> files = hr.getFiles();

@@ -635,7 +635,7 @@ public class IndexerWizard extends javax.swing.JFrame {
         } else {
             // save the ctags that worked for us!
             Preferences prefs = Preferences.userNodeForPackage(IndexerWizard.class);
-            if(prefs.get("ctags","") != ctagsText.getText())
+            if(prefs.get("ctags","").equals(ctagsText.getText()))
                 prefs.put("ctags", ctagsText.getText());
             try{
                 prefs.flush();
