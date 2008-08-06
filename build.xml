@@ -312,6 +312,24 @@ Use is subject to license terms.
         </findbugs>
     </target>
     
+    <target name="findbugs-xml" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate xml output">
+        <path id="findbugs.lib" >
+            <pathelement location="lib/findbugs/lib/findbugs.jar"/>
+            <pathelement location="lib/findbugs/lib/findbugs-ant.jar"/>
+        </path>
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="findbugs.lib"/>
+        <mkdir dir="findbugs"/>
+        <findbugs projectname="OpenGrok" home="lib/findbugs" output="xml" excludeFilter="tools/findbugs_filter.xml" outputFile="findbugs/findbugs.xml" jvmargs="-Xmx512m">
+            <auxClasspath>
+                <fileset dir="${dist.dir}/lib/">
+                    <include name="*.jar"/>
+                </fileset>
+            </auxClasspath>
+            <sourcePath path="src" />
+            <class location="${dist.dir}/opengrok.jar" />
+        </findbugs>
+    </target>
+
     <target name="-check_emma" description="Check that emma jar files are present">
         <available file="emma.jar" type="file" property="emma.jar.present">
             <filepath refid="lib.search.path"/>
