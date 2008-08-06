@@ -34,7 +34,7 @@ import java.util.ArrayList;
  *
  */
 public class Getopt {
-    class Option {
+    static class Option {
         char option;
         String argument;
     };

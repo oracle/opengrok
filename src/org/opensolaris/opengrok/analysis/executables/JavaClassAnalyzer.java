@@ -302,7 +302,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 i	= ((ConstantString)c).getStringIndex();
                 v[i]=1;
                 c	= cp.getConstant(i, org.apache.bcel.Constants.CONSTANT_Utf8);
-                str =  new String(((ConstantUtf8)c).getBytes());
+                str =  ((ConstantUtf8)c).getBytes();
                 break;
                 
             case org.apache.bcel.Constants.CONSTANT_Utf8:    str = ((ConstantUtf8)c).getBytes();         break;

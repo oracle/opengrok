@@ -185,7 +185,7 @@ public class IgnoredNames {
      * lists, I need to detect when an object is beeing added to this list 
      * (So I may populate it to the correct list as well)
      */
-    public class PatternList extends ArrayList<String> {
+    public static class PatternList extends ArrayList<String> {
         private IgnoredNames owner;
         
         public PatternList(IgnoredNames owner) {

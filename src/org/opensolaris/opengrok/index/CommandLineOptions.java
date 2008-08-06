@@ -35,7 +35,7 @@ import java.util.List;
 
 public class CommandLineOptions {
 
-    class Option {
+    static class Option {
 
         char option;
         String argument;

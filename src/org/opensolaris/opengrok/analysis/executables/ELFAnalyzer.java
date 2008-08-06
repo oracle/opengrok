@@ -283,7 +283,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 		"\ne_shstrndx: "+e_shstrndx);
 	}
     }
-    class ELFSection {
+    static class ELFSection {
 	public int sh_name;
 	public int sh_type;
 	public int sh_flags;
@@ -322,7 +322,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 		"\nsh_entsize: " + sh_entsize );
 	}
     }
-    class ELFSymbol {
+    static class ELFSymbol {
 	public int st_name;
 	public int st_value;
 	public int st_size;
@@ -350,7 +350,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	    return(" st_name : " + st_name + "(" + st_size + ") = " + st_value + stype);
 	}
     }
-    class ELFDynamic {
+    static class ELFDynamic {
 	public long d_tag;
 	public long d_val;
 	

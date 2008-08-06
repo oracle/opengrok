@@ -182,7 +182,7 @@ import org.opensolaris.opengrok.search.Hit;
 		switch(buf[i]) {
 		case '\n':
 			++lineNo;
-			Integer ln = new Integer(lineNo);
+			Integer ln = Integer.valueOf(lineNo);
 			boolean hi = tags.containsKey(ln);
 
 			out.write("</a>");
@@ -226,7 +226,7 @@ import org.opensolaris.opengrok.search.Hit;
 		switch(buf[i]) {
 		case '\n':
 			++lineNo;
-			Integer ln = new Integer(lineNo);
+			Integer ln = Integer.valueOf(lineNo);
 			boolean hi = tags.containsKey(ln);
 			if(prevHi){
 			   String[] desc = tags.remove(prevLn);
@@ -268,7 +268,7 @@ import org.opensolaris.opengrok.search.Hit;
 	}
 
 	if(curLinePos == markedPos) {
-			Integer ln = new Integer(markedLine);
+			Integer ln = Integer.valueOf(markedLine);
 			prevHi = tags.containsKey(ln);
 			prevLn = ln;
 			if (prevHi) {

@@ -61,7 +61,8 @@ public class Results {
             dirDocs.add(doc);
         }
         
-        for (String parent: dirHash.keySet()) {
+        for (Map.Entry<String, ArrayList<Document>> entry: dirHash.entrySet()) {
+            String parent = entry.getKey();
             String tag = (desc != null) ? " - <i>" + desc.get(parent) + "</i>": "";
             
             out.write("<tr class=\"dir\"><td colspan=\"2\">&nbsp;&nbsp;<a href=\"");
@@ -69,7 +70,7 @@ public class Results {
             out.write("/\">" + parent + "/</a>" + tag + "</td></tr>");
 
             boolean alt = false;
-            for (Document doc: dirHash.get(parent)) {
+            for (Document doc: entry.getValue()) {
                 String rpath = doc.get("path");
                 String self = rpath.substring(rpath.lastIndexOf('/')+1, rpath.length());
                 String selfUrl = Util.URIEncodePath(urlPrefix + rpath);

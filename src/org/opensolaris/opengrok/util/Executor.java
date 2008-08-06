@@ -34,8 +34,8 @@ public class Executor {
 
     private List<String> cmdList;
     private File workingDirectory;
-    private String stdoutString = new String("");
-    private String stderrString = new String("");
+    private String stdoutString = "";
+    private String stderrString = "";
 
     public Executor(List<String> cmdList) {
         this(cmdList, null);
@@ -95,7 +95,7 @@ public class Executor {
         return new BufferedReader(new StringReader(stderrString));
     }
 
-    private class StringPipe extends Thread {
+    private static class StringPipe extends Thread {
 
         private InputStream input = null;
         private String output = null;

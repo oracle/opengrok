@@ -46,7 +46,7 @@ public class Summarizer {
      * Class Excerpt represents a single passage found in the
      * document, with some appropriate regions highlit.
      */
-    class Excerpt {
+    static class Excerpt {
         Vector<Summary.Fragment> passages = new Vector<Summary.Fragment>();
         SortedSet<String> tokenSet = new TreeSet<String>();
         int numTerms = 0;
