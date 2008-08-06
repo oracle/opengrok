@@ -44,27 +44,26 @@ class BazaarHistoryParser implements HistoryParser {
         BazaarRepository mrepos = (BazaarRepository) repos;
         History history = new History();
 
-        Exception exception = null;
         Process process = null;
+
+        process = mrepos.getHistoryLogProcess(file);
+        if (process == null) {
+            return null;
+        }
+
+        SimpleDateFormat df =
+                new SimpleDateFormat("EEE yyyy-MM-dd hh:mm:ss ZZZZ");
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+
+        String mydir = mrepos.getDirectoryName() + File.separator;
+        int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+
+        HistoryEntry entry = null;
+        int state = 0;
+        InputStream is = process.getInputStream();
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
         try {
-            process = mrepos.getHistoryLogProcess(file);
-            if (process == null) {
-                return null;
-            }
-
-            SimpleDateFormat df =
-                    new SimpleDateFormat("EEE yyyy-MM-dd hh:mm:ss ZZZZ");
-            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-
-            String mydir = mrepos.getDirectoryName() + File.separator;
-            int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-
-            InputStream is = process.getInputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
             String s;
-
-            HistoryEntry entry = null;
-            int state = 0;
             int ident = 0;
             while ((s = in.readLine()) != null) {
                 int nident = 0;
@@ -131,17 +130,17 @@ class BazaarHistoryParser implements HistoryParser {
                             entry.addFile(name);
                         }
                         break;
-                }
+                    }
             }
-
-            if (entry != null && state == 4) {
-                entries.add(entry);
-            }
-
-            history.setHistoryEntries(entries);
-        } catch (Exception e) {
-            exception = e;
+        } finally {
+            in.close();
         }
+
+        if (entry != null && state == 4) {
+            entries.add(entry);
+        }
+
+        history.setHistoryEntries(entries);
 
         // Clean up zombie-processes...
         if (process != null) {
@@ -150,17 +149,6 @@ class BazaarHistoryParser implements HistoryParser {
             } catch (IllegalThreadStateException exp) {
                 // the process is still running??? just kill it..
                 process.destroy();
-            }
-        }
-
-        if (exception != null) {
-            if (exception instanceof IOException) {
-                throw (IOException) exception;
-            } else if (exception instanceof ParseException) {
-                throw (ParseException) exception;
-            } else {
-                System.err.println("Got exception while parsing history for: " + file.getAbsolutePath());
-                exception.printStackTrace();
             }
         }
 

@@ -219,8 +219,13 @@ public class SearchEngine {
                                     filename)), null, null, null, filename,
                                     tags, nhits > 100, ret);
                         } else if("x".equals(genre) && data != null && summer != null){
+                            int len;
                             Reader r = new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename)));
-                            int len = r.read(content);
+                            try {
+                                len = r.read(content);
+                            } finally {
+                                r.close();
+                            }
                             Summary sum = summer.getSummary(new String(content, 0, len));
                             Fragment fragments[] = sum.getFragments();
                             for (int jj = 0; jj < fragments.length; ++jj) {

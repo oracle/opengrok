@@ -217,7 +217,7 @@ public class DirectoryHistoryReader extends HistoryReader {
     }
 
     public Date getDate() {
-        return idate;
+        return (Date) idate.clone();
     }
 
     public String getAuthor() {

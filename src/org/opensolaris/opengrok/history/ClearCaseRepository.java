@@ -101,14 +101,22 @@ public class ClearCaseRepository extends Repository {
             String tmpName = tmp.getAbsolutePath();
 
             // cleartool can't get to a previously existing file
-            tmp.delete();
+            boolean deleteSuccess = tmp.delete();
+            if (!deleteSuccess) {
+                System.err.print("Failed to delete temporary file: " + tmpName);
+            }
 
             String decorated = filename + "@@" + rev;
             String argv[] = {getCommand(), "get", "-to", tmpName, decorated};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             BufferedReader lineIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            while (lineIn.readLine() != null) { }
+            try {
+                String line;
+                while ((line = lineIn.readLine()) != null) { }
+            } finally {
+                lineIn.close();
+            }
 
             process.exitValue();
 
@@ -179,20 +187,24 @@ public class ClearCaseRepository extends Repository {
         pb.directory(file.getParentFile());
         Process process = pb.start();
         try {
+            Annotation a = new Annotation(file.getName());
             BufferedReader in =
                 new BufferedReader(new InputStreamReader
                                      (process.getInputStream()));
-            Annotation a = new Annotation(file.getName());
-            String line;
-            int lineno = 0;
-            while ((line = in.readLine()) != null) {
-                ++lineno;
-                String parts[] = line.split("\\|");
-                String aAuthor = parts[0];
-                String aRevision = parts[1];
-                aRevision = aRevision.replace('\\', '/');
+            try {
+                String line;
+                int lineno = 0;
+                while ((line = in.readLine()) != null) {
+                    ++lineno;
+                    String parts[] = line.split("\\|");
+                    String aAuthor = parts[0];
+                    String aRevision = parts[1];
+                    aRevision = aRevision.replace('\\', '/');
 
-                a.addLine(aRevision, aAuthor, true);
+                    a.addLine(aRevision, aAuthor, true);
+                }
+            } finally {
+                in.close();
             }
             return a;
         } finally {
@@ -232,27 +244,35 @@ public class ClearCaseRepository extends Repository {
             // Check if this is a snapshot view
             String[] argv = {getCommand(), "catcs"};
             process = Runtime.getRuntime().exec(argv, null, directory);
+            boolean snapshot = false;
             BufferedReader in =
                 new BufferedReader(new InputStreamReader
                                      (process.getInputStream()));
-            boolean snapshot = false;
-            String line;
-            while (!snapshot && (line = in.readLine()) != null) {
-                snapshot = line.startsWith("load");
+            try {
+                String line;
+                while (!snapshot && (line = in.readLine()) != null) {
+                    snapshot = line.startsWith("load");
+                }
+            } finally {
+                in.close();
             }
             if (waitFor(process) != 0) {
                 return ;
             }
 
-            if(snapshot)
-            {
+            if (snapshot) {
                 // It is a snapshot view, we need to update it manually
                 argv = new String[] {getCommand(), "update", "-overwrite", "-f"};
                 process = Runtime.getRuntime().exec(argv, null, directory);
                 in = new BufferedReader(new InputStreamReader
                                          (process.getInputStream()));
                 // consume output
-                while ((line = in.readLine()) != null) { }
+                try {
+                    String line;
+                    while ((line = in.readLine()) != null) { }
+                } finally {
+                    in.close();
+                }
 
                 if (waitFor(process) != 0) {
                     return ;

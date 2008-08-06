@@ -61,102 +61,104 @@ public class RazorHistoryParser implements HistoryParser {
             return null;
         }
 
-        BufferedReader contents = new BufferedReader(new FileReader(mappedFile.getAbsolutePath()));
-        String line;
-
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         HistoryEntry entry = null;
 
+        String line;
         boolean ignoreEntry = false;
         boolean seenActionType = false;
         boolean lastWasTitle = true;
 
-        while ((line = contents.readLine()) != null) {
+        BufferedReader contents = new BufferedReader(new FileReader(mappedFile.getAbsolutePath()));
+        try {
+            while ((line = contents.readLine()) != null) {
 
-            parseDebug("Processing '" + line + "'");
+                parseDebug("Processing '" + line + "'");
 
-            if (line.trim().length()==0) {
+                if (line.trim().length() == 0) {
 
-                if (entry != null && entry.getDate() != null) {
-                    entries.add(entry);
-                    if (DUMP_HISTORY_ENTRY_ADDITIONS) {
-                        entry.dump();
-                    }
-                }
-                entry = new HistoryEntry();
-                ignoreEntry = false;
-                seenActionType = false;
-
-            } else if (!ignoreEntry) {
-
-                if (!seenActionType) {
-                    Matcher matcher = ACTION_TYPE_PATTERN.matcher(line);
-
-                    if (matcher.find()) {
-
-                        seenActionType = true;
-                        if (entry != null && entry.getDate() != null) {
-                            entries.add(entry);
-                            if (DUMP_HISTORY_ENTRY_ADDITIONS) {
-                                entry.dump();
-                            }
+                    if (entry != null && entry.getDate() != null) {
+                        entries.add(entry);
+                        if (DUMP_HISTORY_ENTRY_ADDITIONS) {
+                            entry.dump();
                         }
-                        entry = new HistoryEntry();
+                    }
+                    entry = new HistoryEntry();
+                    ignoreEntry = false;
+                    seenActionType = false;
 
-                        String actionType = matcher.group(1);
-                        String userName = matcher.group(2);
-                        String revision = matcher.group(3);
-                        String state = matcher.group(4);
-                        String dateTime = matcher.group(5);
-                        parseDebug("New History Event Seen : actionType = " + actionType + ", userName = " + userName + ", revision = " + revision + ", state = " + state + ", dateTime = " + dateTime);
-                        if (actionType.startsWith("INTRODUCE") ||
-                                actionType.contains("CHECK-IN") ||
-                                actionType.equals("CHECK-POINT") ||
-                                actionType.equals("REVERT")) {
-                            entry.setAuthor(userName);
-                            entry.setRevision(revision);
-                            entry.setActive(state.equals("Active"));
-                            Date date = DATE_TIME_FORMAT.parse(dateTime);
-                            entry.setDate(date);
-                            ignoreEntry = false;
+                } else if (!ignoreEntry) {
+
+                    if (!seenActionType) {
+                        Matcher matcher = ACTION_TYPE_PATTERN.matcher(line);
+
+                        if (matcher.find()) {
+
+                            seenActionType = true;
+                            if (entry != null && entry.getDate() != null) {
+                                entries.add(entry);
+                                if (DUMP_HISTORY_ENTRY_ADDITIONS) {
+                                    entry.dump();
+                                }
+                            }
+                            entry = new HistoryEntry();
+
+                            String actionType = matcher.group(1);
+                            String userName = matcher.group(2);
+                            String revision = matcher.group(3);
+                            String state = matcher.group(4);
+                            String dateTime = matcher.group(5);
+                            parseDebug("New History Event Seen : actionType = " + actionType + ", userName = " + userName + ", revision = " + revision + ", state = " + state + ", dateTime = " + dateTime);
+                            if (actionType.startsWith("INTRODUCE") ||
+                                    actionType.contains("CHECK-IN") ||
+                                    actionType.equals("CHECK-POINT") ||
+                                    actionType.equals("REVERT")) {
+                                entry.setAuthor(userName);
+                                entry.setRevision(revision);
+                                entry.setActive(state.equals("Active"));
+                                Date date = DATE_TIME_FORMAT.parse(dateTime);
+                                entry.setDate(date);
+                                ignoreEntry = false;
+                            } else {
+                                ignoreEntry = true;
+                            }
                         } else {
-                            ignoreEntry = true;
+                            parseProblem("Expecting actionType and got '" + line + "'");
                         }
                     } else {
-                        parseProblem("Expecting actionType and got '" + line + "'");
-                    }
-                } else {
-                    Matcher matcher = ADDITIONAL_INFO_PATTERN.matcher(line);
+                        Matcher matcher = ADDITIONAL_INFO_PATTERN.matcher(line);
 
-                    if (matcher.find()) {
-                        String infoType = matcher.group(1);
-                        String details = matcher.group(2);
+                        if (matcher.find()) {
+                            String infoType = matcher.group(1);
+                            String details = matcher.group(2);
 
-                        if (infoType.equals("TITLE")) {
-                            parseDebug("Setting Message : '" + details + "'");
-                            entry.setMessage(details);
-                            lastWasTitle = true;
-                        } else if (infoType.equals("ISSUE")) {
-                            parseDebug("Adding CR : '" + details + "'");
-                            entry.addChangeRequest(details);
-                        } else {
-                            parseDebug("Ignoring Info Type Line '" + line + "'");
-                        }
-                    } else {
-                        if (!line.startsWith("##") && line.startsWith("#")) {
-                            parseDebug("Seen Comment : '" + line + "'");
-                            if (lastWasTitle) {
-                                entry.appendMessage("");
-                                lastWasTitle = false;
+                            if (infoType.equals("TITLE")) {
+                                parseDebug("Setting Message : '" + details + "'");
+                                entry.setMessage(details);
+                                lastWasTitle = true;
+                            } else if (infoType.equals("ISSUE")) {
+                                parseDebug("Adding CR : '" + details + "'");
+                                entry.addChangeRequest(details);
+                            } else {
+                                parseDebug("Ignoring Info Type Line '" + line + "'");
                             }
-                            entry.appendMessage(line.substring(1));
                         } else {
-                            parseProblem("Expecting addlInfo and got '" + line + "'");
+                            if (!line.startsWith("##") && line.startsWith("#")) {
+                                parseDebug("Seen Comment : '" + line + "'");
+                                if (lastWasTitle) {
+                                    entry.appendMessage("");
+                                    lastWasTitle = false;
+                                }
+                                entry.appendMessage(line.substring(1));
+                            } else {
+                                parseProblem("Expecting addlInfo and got '" + line + "'");
+                            }
                         }
                     }
-
                 }
             }
+        } finally {
+            contents.close();
         }
 
         if (entry != null && entry.getDate() != null) {

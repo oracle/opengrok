@@ -50,54 +50,50 @@ class ClearCaseHistoryParser implements HistoryParser {
 
             InputStream is = process.getInputStream();
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
-
-            String s;
-            HistoryEntry entry = null;
-            while ((s = in.readLine()) != null) {
-                if(!s.equals("create version") &&
-                   !s.equals("create directory version"))
-                {
-                    // skip this history entry
-                    while ((s = in.readLine()) != null && !s.equals("."))
-                    {
+            try {
+                String s;
+                HistoryEntry entry = null;
+                while ((s = in.readLine()) != null) {
+                    if (!s.equals("create version") &&
+                            !s.equals("create directory version")) {
+                        // skip this history entry
+                        while ((s = in.readLine()) != null && !s.equals(".")) {
                         // skip .. skip ..
-                    }
-                    continue;
-                }
-
-                entry = new HistoryEntry();
-                if((s = in.readLine()) != null)
-                {
-                    entry.setDate(FORMAT.parse(s));
-                }
-                if((s = in.readLine()) != null)
-                {
-                    entry.setAuthor(s);
-                }
-                if((s = in.readLine()) != null)
-                {
-                    s = s.replace('\\', '/');
-                    entry.setRevision(s);
-                }
-
-                StringBuffer message = new StringBuffer();
-                String glue = "";
-                while ((s = in.readLine()) != null && !s.equals("."))
-                {
-                    if(s.equals(""))
-                    {
-                        // avoid empty lines in comments
+                        }
                         continue;
                     }
-                    message.append(glue);
-                    message.append(s.trim());
-                    glue = "\n";
+
+                    entry = new HistoryEntry();
+                    if ((s = in.readLine()) != null) {
+                        entry.setDate(FORMAT.parse(s));
+                    }
+                    if ((s = in.readLine()) != null) {
+                        entry.setAuthor(s);
+                    }
+                    if ((s = in.readLine()) != null) {
+                        s = s.replace('\\', '/');
+                        entry.setRevision(s);
+                    }
+
+                    StringBuffer message = new StringBuffer();
+                    String glue = "";
+                    while ((s = in.readLine()) != null && !s.equals(".")) {
+                        if (s.equals("")) {
+                            // avoid empty lines in comments
+                            continue;
+                        }
+                        message.append(glue);
+                        message.append(s.trim());
+                        glue = "\n";
+                    }
+                    entry.setMessage(message.toString());
+
+                    entry.setActive(true);
+
+                    entries.add(entry);
                 }
-                entry.setMessage(message.toString());
-
-                entry.setActive(true);
-
-                entries.add(entry);
+            } finally {
+                in.close();
             }
 
             history.setHistoryEntries(entries);
