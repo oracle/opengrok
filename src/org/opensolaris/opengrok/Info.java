@@ -35,23 +35,32 @@ import java.util.Properties;
 public class Info {
     private static final Properties properties = new Properties();
 
+    private static String VERSION = "";
+    private static String REVISION = "";
+    
     static {
         try {
             InputStream in = Info.class.getResourceAsStream("info.properties");
             if (in != null) {
                 properties.load(in);
             }
+            VERSION = properties.getProperty("version", "unknown");
+            REVISION = properties.getProperty("changeset", "unknown");
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
     }
 
     public static String getVersion() {
-        return "OpenGrok v" + properties.getProperty("version", "unknown");
+        return VERSION;
+    }
+    
+    public static String getFullVersion() {
+        return "OpenGrok v" + VERSION + " rev " + REVISION;
     }
     
     public static String getRevision() {
-        return properties.getProperty("changeset", "unknown");        
+        return REVISION;        
     }
     
     private Info() {
