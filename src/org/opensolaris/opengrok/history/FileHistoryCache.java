@@ -121,16 +121,12 @@ class FileHistoryCache implements HistoryCache {
         e.close();
         synchronized (lock) {
             if (!cache.delete() && cache.exists()) {
-                if (!output.delete()) {
-                    throw new IOException("Failed to delete cache output tmpfile and cache file.");                    
-                }
+                output.delete();
                 throw new IOException(
                         "Cachefile exists, and I could not delete it.");
             }
             if (!output.renameTo(cache)) {
-                if (!output.delete()) {
-                    throw new IOException("Failed to delete cache output tmpfile after rename failed.");                    
-                }
+                output.delete();
                 throw new IOException("Failed to rename cache tmpfile.");
             }
         }

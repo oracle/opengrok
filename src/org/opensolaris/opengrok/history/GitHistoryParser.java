@@ -50,25 +50,25 @@ class GitHistoryParser implements HistoryParser {
         GitRepository mrepos = (GitRepository) repos;
         History history = new History();
         
+        Exception exception = null;
         Process process = null;
-
-        process = mrepos.getHistoryLogProcess(file);
-        if (process == null) {
-            return null;
-        }
-
-        SimpleDateFormat df =
-                new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-
-        InputStream is = process.getInputStream();
-        String mydir = mrepos.getDirectoryName() + File.separator;
-        int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-        String s;
-        HistoryEntry entry = null;
-        ParseState state = ParseState.HEADER;
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
         try {
+            process = mrepos.getHistoryLogProcess(file);
+            if (process == null) {
+                return null;
+            }
+
+            SimpleDateFormat df =
+                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
+            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+
+            InputStream is = process.getInputStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+            String mydir = mrepos.getDirectoryName() + File.separator;
+            int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+            String s;
+            HistoryEntry entry = null;
+            ParseState state = ParseState.HEADER;
             while ((s = in.readLine()) != null) {
                 if (state == ParseState.HEADER) {
 
@@ -95,7 +95,7 @@ class GitHistoryParser implements HistoryParser {
                     if (s.trim().startsWith("git-svn-id:")) {
                         // file listing
                         state = ParseState.FILES;
-
+                        
                         // next line is empty, discard it
                         s = in.readLine();
                         continue;
@@ -115,15 +115,15 @@ class GitHistoryParser implements HistoryParser {
                     }
                 }
             }
-        } finally {
-            in.close();
-        }
 
-        if (entry != null) {
-            entries.add(entry);
-        }
+            if (entry != null) {
+                entries.add(entry);
+            }
 
-        history.setHistoryEntries(entries);
+            history.setHistoryEntries(entries);
+        } catch (Exception e) {
+            exception = e;
+        }
 
         // Clean up zombie-processes...
         if (process != null) {
@@ -132,6 +132,17 @@ class GitHistoryParser implements HistoryParser {
             } catch (IllegalThreadStateException exp) {
                 // the process is still running??? just kill it..
                 process.destroy();
+            }
+        }
+
+        if (exception != null) {
+            if (exception instanceof IOException) {
+                throw (IOException) exception;
+            } else if (exception instanceof ParseException) {
+                throw (ParseException) exception;
+            } else {
+                System.err.println("Got exception while parsing history for: " + file.getAbsolutePath());
+                exception.printStackTrace();
             }
         }
 

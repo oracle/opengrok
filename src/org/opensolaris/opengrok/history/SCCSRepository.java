@@ -103,23 +103,19 @@ public class SCCSRepository extends Repository {
             BufferedReader in =
                 new BufferedReader(new InputStreamReader
                                      (process.getInputStream()));
-            try {
-                String line;
-                int lineno = 0;
-                while ((line = in.readLine()) != null) {
-                    ++lineno;
-                    Matcher matcher = AUTHOR_PATTERN.matcher(line);
-                    if (matcher.find()) {
-                        String rev = matcher.group(1);
-                        String auth = matcher.group(2);
-                        authors_cache.put(rev, auth);
-                    } else {
-                        System.err.println("Error: did not find annotation in line " + lineno);
-                        System.err.println("[" + line + "]");
-                    }
+            String line;
+            int lineno = 0;
+            while ((line = in.readLine()) != null) {
+                ++lineno;
+                Matcher matcher = AUTHOR_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    String rev = matcher.group(1);
+                    String auth = matcher.group(2);
+                    authors_cache.put(rev, auth);
+                } else {
+                    System.err.println("Error: did not find annotation in line " + lineno);
+                    System.err.println("[" + line + "]");
                 }
-            } finally {
-                in.close();
             }
         } finally {
             // is this really the way to do it? seems a bit brutal...
@@ -170,31 +166,26 @@ public class SCCSRepository extends Repository {
         pb.directory(file.getCanonicalFile().getParentFile());
         Process process = pb.start();
         try {
-            Annotation a = new Annotation(file.getName());
             BufferedReader in =
                 new BufferedReader(new InputStreamReader
                                      (process.getInputStream()));
-            try {
-                String line;
-                int lineno = 0;
-                while ((line = in.readLine()) != null) {
-                    ++lineno;
-                    Matcher matcher = ANNOTATION_PATTERN.matcher(line);
-                    if (matcher.find()) {
-                        String rev = matcher.group(1);
-                        String author = authors_cache.get(rev);
-                        if (author == null) {
-                            author = "unknown";
-                        }
-
-                        a.addLine(rev, author, true);
-                    } else {
-                        System.err.println("Error: did not find annotation in line " + lineno);
-                        System.err.println("[" + line + "]");
-                    }
+            Annotation a = new Annotation(file.getName());
+            String line;
+            int lineno = 0;
+            while ((line = in.readLine()) != null) {
+                ++lineno;
+                Matcher matcher = ANNOTATION_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    String rev = matcher.group(1);
+                    String author = authors_cache.get(rev);
+                    if (author == null)
+                        author = "unknown";
+                    
+                    a.addLine(rev, author, true);
+                } else {
+                    System.err.println("Error: did not find annotation in line " + lineno);
+                    System.err.println("[" + line + "]");
                 }
-            } finally {
-                in.close();
             }
             return a;
         } finally {

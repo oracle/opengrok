@@ -167,27 +167,23 @@ public class MercurialRepository extends Repository {
         pb.directory(file.getParentFile());
         Process process = pb.start();
         try {
-            Annotation a = new Annotation(file.getName());
-            String line;
-            int lineno = 0;
             BufferedReader in =
                 new BufferedReader(new InputStreamReader
                                      (process.getInputStream()));
-            try {
-                while ((line = in.readLine()) != null) {
-                    ++lineno;
-                    Matcher matcher = ANNOTATION_PATTERN.matcher(line);
-                    if (matcher.find()) {
-                        String author = matcher.group(1);
-                        String rev = matcher.group(2);
-                        a.addLine(rev, author, true);
-                    } else {
-                        System.err.println("Error: did not find annotation in line " + lineno);
-                        System.err.println("[" + line + "]");
-                    }
+            Annotation a = new Annotation(file.getName());
+            String line;
+            int lineno = 0;
+            while ((line = in.readLine()) != null) {
+                ++lineno;
+                Matcher matcher = ANNOTATION_PATTERN.matcher(line);
+                if (matcher.find()) {
+                    String author = matcher.group(1);
+                    String rev = matcher.group(2);
+                    a.addLine(rev, author, true);
+                } else {
+                    System.err.println("Error: did not find annotation in line " + lineno);
+                    System.err.println("[" + line + "]");
                 }
-            } finally {
-                in.close();
             }
             return a;
         } finally {

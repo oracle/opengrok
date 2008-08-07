@@ -44,23 +44,25 @@ class MercurialHistoryParser implements HistoryParser {
         MercurialRepository mrepos = (MercurialRepository)repos;
         History history = new History();
         
-        Process process = mrepos.getHistoryLogProcess(file);
-        if (process == null) {
-            return null;
-        }
-
-        SimpleDateFormat df =
-                new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-
-        String mydir = mrepos.getDirectoryName() + File.separator;
-        int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-        String s;
-        boolean description = false;
-        HistoryEntry entry = null;
-        InputStream is = process.getInputStream();
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        Exception exception = null;
+        Process process = null;
         try {
+            process = mrepos.getHistoryLogProcess(file);
+            if (process == null) {
+                return null;
+            }
+            
+            SimpleDateFormat df =
+                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
+            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            
+            InputStream is = process.getInputStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+            String mydir = mrepos.getDirectoryName() + File.separator;
+            int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+            String s;
+            boolean description = false;
+            HistoryEntry entry = null;
             while ((s = in.readLine()) != null) {
                 if (s.startsWith("changeset:")) {
                     if (entry != null) {
@@ -100,14 +102,15 @@ class MercurialHistoryParser implements HistoryParser {
                     entry.appendMessage(s);
                 }
             }
-        } finally {
-            in.close();
+            
+            if (entry != null) {
+                entries.add(entry);
+            }
+            
+            history.setHistoryEntries(entries);            
+        } catch (Exception e) {
+            exception = e;
         }
-        if (entry != null) {
-            entries.add(entry);
-        }
-
-        history.setHistoryEntries(entries);
         
         // Clean up zombie-processes...
         if (process != null) {
@@ -116,6 +119,17 @@ class MercurialHistoryParser implements HistoryParser {
             } catch (IllegalThreadStateException exp) {
                 // the process is still running??? just kill it..
                 process.destroy();
+            }
+        }
+        
+        if (exception != null) {
+            if (exception instanceof IOException) {
+                throw (IOException)exception;
+            } else if (exception instanceof ParseException) {
+                throw (ParseException)exception;
+            } else {
+                System.err.println("Got exception while parsing history for: " + file.getAbsolutePath());
+                exception.printStackTrace();
             }
         }
         

@@ -455,6 +455,7 @@ public class MainFrame extends javax.swing.JFrame {
         Thread t = new Thread() {
             public void run() {
                 long start = System.currentTimeMillis();
+                int mySession = searchSession;
                 int inc = 7;
                 int i = shownhits;
                 int e = shownhits;
@@ -592,7 +593,8 @@ public class MainFrame extends javax.swing.JFrame {
         Thread t = new Thread() {
             public void run() {
                 long start = System.currentTimeMillis();
-                nhits = m.search(searchSession);
+                int mySession;
+                nhits = m.search(mySession = searchSession);
                 setDefaultColumnWidth();
                 int inc = 7;
                 int i = 0;
