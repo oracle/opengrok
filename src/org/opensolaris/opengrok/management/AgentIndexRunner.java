@@ -65,7 +65,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     private long lastIndexFinish = 0;
     private long lastIndexUsedTime = 0;
     private Exception lastException = null;
-    private Set notifListeners = new HashSet();
+    private Set<NotificationHolder> notifListeners = new HashSet<NotificationHolder>();
     private static long sequenceNo = 0;
     private StringBuilder notifications = new StringBuilder();
     private final static int MAXMESSAGELENGTH = 50000;
