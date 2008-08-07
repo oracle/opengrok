@@ -41,19 +41,17 @@ public class DirectoryHistoryParser implements HistoryParser {
             throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String filename = file.getCanonicalPath().substring(env.getSourceRootPath().length());
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         HistoryReader hr = new DirectoryHistoryReader(filename);
-        try {
-            while (hr.next()) {
-                HistoryEntry ent = new HistoryEntry(
-                        hr.getRevision(), hr.getDate(), hr.getAuthor(),
-                        hr.getComment(), hr.isActive());
-                ent.setFiles(hr.getFiles());
-                entries.add(ent);
-            }
-        } finally {
-            hr.close();
+        
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        while (hr.next()) {
+            HistoryEntry ent = new HistoryEntry(
+                hr.getRevision(), hr.getDate(), hr.getAuthor(),
+                hr.getComment(), hr.isActive());
+            ent.setFiles(hr.getFiles());
+            entries.add(ent);
         }
+
         History history = new History();
         history.setHistoryEntries(entries);
         return history;

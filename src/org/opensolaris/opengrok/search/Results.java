@@ -87,23 +87,13 @@ public class Results {
                         if ("p".equals(genre) && srcRoot != null) {
                             sourceContext.getContext(new FileReader(srcRoot + rpath), out, urlPrefix, morePrefix, rpath,
                                     tags, true, null);
-                        } else if("x".equals(genre) && dataRoot != null && summer != null) {
-                            int len;
+                        } else if("x".equals(genre) && dataRoot != null && summer != null){
                             Reader r = new TagFilter(new BufferedReader(new FileReader(dataRoot + "/xref" + rpath)));
-                            try {
-                                len = r.read(content);
-                            } finally {
-                                r.close();
-                            }
+                            int len = r.read(content);
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
                         } else if("h".equals(genre) && srcRoot != null && summer != null){
-                            int len;
                             Reader r = new TagFilter(new BufferedReader(new FileReader(srcRoot + rpath)));
-                            try {
-                                len = r.read(content);
-                            } finally {
-                                r.close();
-                            }
+                            int len = r.read(content);
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
                         } else {
                             sourceContext.getContext(null, out, urlPrefix, morePrefix, rpath, tags, true, null);
