@@ -125,6 +125,13 @@ public class Definitions implements Serializable {
     }
 
     void addTag(int line, String symbol, String type, String text) {
+        // The strings are frequently repeated (a symbol can be used in
+        // multiple definitions, multiple definitions can have the same type,
+        // one line can contain multiple definitions). Intern them to minimize
+        // the space consumed by them (see bug #809).
+        symbol = symbol.intern();
+        type = type.intern();
+        text = text.intern();
         tags.add(new Tag(line, symbol, type, text));
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {
