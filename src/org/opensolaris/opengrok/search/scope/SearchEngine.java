@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
@@ -43,6 +44,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -209,7 +211,11 @@ public class SearchEngine {
                 Document doc = hits.get(ii).getDocument();
                 String filename = doc.get("path");
                 String genre = doc.get("t");
-                String tags = doc.get("tags");
+                Definitions tags = null;
+                Fieldable tagsField = doc.getFieldable("tags");
+                if (tagsField != null) {
+                    tags = Definitions.deserialize(tagsField.binaryValue());
+                }
                 int nhits = hits.size();
                 
                 if(sourceContext != null) {
@@ -252,6 +258,8 @@ public class SearchEngine {
                     ret.add(new Hit(filename, "...", "", false, alt));
                 }
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }

@@ -34,7 +34,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.Date;
 import java.util.HashSet;
@@ -44,6 +43,7 @@ import java.util.TreeMap;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.web.Util;
@@ -89,7 +89,9 @@ public class Context {
      * @return Did it get any matching context?
      */
     private boolean alt = true;
-    public boolean getContext(Reader in, Writer out, String urlPrefix, String morePrefix, String path, String tags, boolean limit, List<Hit> hits) {
+    public boolean getContext(Reader in, Writer out, String urlPrefix,
+                              String morePrefix, String path, Definitions tags,
+                              boolean limit, List<Hit> hits) {
         alt = !alt;
         if (m == null) {
             return false;
@@ -97,48 +99,49 @@ public class Context {
         boolean anything = false;
         TreeMap<Integer, String[]> matchingTags = null;
         if (tags != null) {
-            BufferedReader ctagsIn = new BufferedReader(new StringReader(tags)); //XXX
-            String tagLine;
             matchingTags = new TreeMap<Integer, String[]>();
             try {
-                while ((tagLine = ctagsIn.readLine()) != null) {
-                    //System.err.println(" read tagline : " + tagLine);
-                    int p = tagLine.indexOf('\t');
-                    if (p > 0) {
-                        String tag = tagLine.substring(0, p);//.toLowerCase();
-                        //System.err.println(" matching " + tag);
-                        for (int i = 0; i< m.length; i++) {
-                            if (m[i].match(tag) == LineMatcher.MATCHED) {
-                                /*
-                                 * desc[1] is line number
-                                 * desc[2] is type
-                                 * desc[3] is  matching line;
-                                 */
-                                String desc[] = tagLine.split("\t",4);
-                                if (in != null) {
-                                    matchingTags.put(new Integer(desc[1]), desc);
+                for (Definitions.Tag tag : tags.getTags()) {
+                    for (int i = 0; i < m.length; i++) {
+                        if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
+                            /*
+                             * desc[1] is line number
+                             * desc[2] is type
+                             * desc[3] is  matching line;
+                             */
+                            String[] desc = {
+                                tag.symbol,
+                                Integer.toString(tag.line),
+                                tag.type,
+                                tag.text,
+                            };
+                            if (in != null) {
+                                matchingTags.put(tag.line, desc);
+                            } else {
+                                if (out != null) {
+                                    out.write("<a class=\"s\" href=\"");
+                                    out.write(urlPrefix);
+                                    out.write(path);
+                                    out.write("#");
+                                    out.write(desc[1]);
+                                    out.write("\"><span class=\"l\">");
+                                    out.write(desc[1]);
+                                    out.write("</span> ");
+                                    out.write(Util.htmlize(desc[3]).replaceAll(
+                                            desc[0], "<b>" + desc[0] + "</b>"));
+                                    out.write("</a> <i> ");
+                                    out.write(desc[2]);
+                                    out.write(" </i><br/>");
                                 } else {
-                                    if (out != null) {
-                                        out.write("<a class=\"s\" href=\"");
-                                        out.write(urlPrefix);
-                                        out.write(path);
-                                        out.write("#");
-                                        out.write(desc[1]);
-                                        out.write("\"><span class=\"l\">");
-                                        out.write(desc[1]);
-                                        out.write("</span> ");
-                                        out.write(Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
-                                        out.write("</a> <i> ");
-                                        out.write(desc[2]);
-                                        out.write(" </i><br/>");
-                                    } else  {
-                                        Hit hit = new Hit(path, Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"), desc[1], false, alt);
-                                        hits.add(hit);
-                                        anything = true;
-                                    }
+                                    Hit hit = new Hit(path,
+                                            Util.htmlize(desc[3]).replaceAll(
+                                            desc[0], "<b>" + desc[0] + "</b>"),
+                                            desc[1], false, alt);
+                                    hits.add(hit);
+                                    anything = true;
                                 }
-                                break;
                             }
+                            break;
                         }
                     }
                 }

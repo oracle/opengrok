@@ -24,6 +24,12 @@
 
 package org.opensolaris.opengrok.analysis;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Definitions {
+public class Definitions implements Serializable {
     /** Map from symbol to the line numbers on which the symbol is defined. */
     private final Map<String, Set<Integer>> symbols;
     /** List of all the tags. */
@@ -100,7 +106,7 @@ public class Definitions {
     /**
      * Class that represents a single tag.
      */
-    public static class Tag {
+    public static class Tag implements Serializable {
         /** Line number of the tag. */
         public final int line;
         /** The symbol used in the definition. */
@@ -126,5 +132,33 @@ public class Definitions {
             symbols.put(symbol, lines);
         }
         lines.add(line);
+    }
+
+    /**
+     * Create a binary representation of this object.
+     * @return a byte array representing this object
+     * @throws IOException if an error happens when writing to the array
+     */
+    public byte[] serialize() throws IOException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        new ObjectOutputStream(bytes).writeObject(this);
+        return bytes.toByteArray();
+    }
+
+    /**
+     * Deserialize a binary representation of a {@code Definitions} object.
+     * @param bytes a byte array containing the {@code Definitions} object
+     * @return a {@code Definitions} object
+     * @throws IOException if an I/O error happens when reading the array
+     * @throws ClassNotFoundException if the class definition for an object
+     * stored in the byte array cannot be found
+     * @throws ClassCastException if the array contains an object of another
+     * type than {@code Definitions}
+     */
+    public static Definitions deserialize(byte[] bytes)
+            throws IOException, ClassNotFoundException {
+        ObjectInputStream in =
+                new ObjectInputStream(new ByteArrayInputStream(bytes));
+        return (Definitions) in.readObject();
     }
 }

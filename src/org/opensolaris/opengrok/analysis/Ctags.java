@@ -38,7 +38,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public class Ctags {
 
-    private StringBuilder tagFile;
     private Process ctags;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
@@ -72,7 +71,6 @@ public class Ctags {
         });
         ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
-        tagFile = new StringBuilder(512);
     }
 
     public Definitions doCtags(String file) throws IOException {
@@ -93,17 +91,12 @@ public class Ctags {
             //log.fine("doing >" + file + "<");
             ctagsIn.write(file);
             ctagsIn.flush();
-            tagFile.setLength(0);
             Definitions defs = new Definitions();
             readTags(defs);
             return defs;
         //log.fine("DONE >" + file + "<");
         }
         return null;
-    }
-
-    public String tagString() {
-        return tagFile.toString();
     }
 
     private void readTags(Definitions defs) {
@@ -169,7 +162,6 @@ public class Ctags {
                 final String type =
                         inher == null ? kind : kind + " in " + inher;
                 defs.addTag(Integer.parseInt(lnum), def, type, match);
-                tagFile.append(def + '\t' + lnum + '\t' + kind + (inher != null ? (" in " + inher) : "") + '\t' + match + '\n');
                 if (signature != null) {
                     String[] args = signature.split("[ ]*[^a-z0-9_]+[ ]*");
                     for (String arg : args) {
@@ -186,7 +178,6 @@ public class Ctags {
                             //log.fine("Param Def = "+ argDef);
                             defs.addTag(Integer.valueOf(lnum), argDef,
                                         "argument", def + signature);
-                            tagFile.append(argDef + '\t' + lnum + "\targument\t" + def + signature + '\n');
                         }
                     }
                 }

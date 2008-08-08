@@ -33,6 +33,7 @@ import java.util.*;
 
 import org.apache.lucene.search.*;
 import org.apache.lucene.document.*;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.web.*;
 import org.opensolaris.opengrok.search.context.HistoryContext;
@@ -45,8 +46,7 @@ public class Results {
             String morePrefix,
             String srcRoot,
             String dataRoot,
-            EftarFileReader desc
-            ) throws IOException {
+            EftarFileReader desc) throws IOException, ClassNotFoundException {
         char[] content = new char[1024*8];
         LinkedHashMap<String, ArrayList<Document>> dirHash = new LinkedHashMap<String, ArrayList<Document>>();
         for (int i = start; i < end; i++) {
@@ -82,7 +82,11 @@ public class Results {
                         selfUrl + "\">"+self+"</a>&nbsp;</td><td><tt class=\"con\">");
                 if (sourceContext != null) {
                     String genre = doc.get("t");
-                    String tags = doc.get("tags");
+                    Definitions tags = null;
+                    Fieldable tagsField = doc.getFieldable("tags");
+                    if (tagsField != null) {
+                        tags = Definitions.deserialize(tagsField.binaryValue());
+                    }
                     try {
                         if ("p".equals(genre) && srcRoot != null) {
                             sourceContext.getContext(new FileReader(srcRoot + rpath), out, urlPrefix, morePrefix, rpath,
