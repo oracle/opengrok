@@ -1,0 +1,130 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ */
+
+/*
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ */
+
+package org.opensolaris.opengrok.analysis;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class Definitions {
+    /** Map from symbol to the line numbers on which the symbol is defined. */
+    private final Map<String, Set<Integer>> symbols;
+    /** List of all the tags. */
+    private final List<Tag> tags;
+
+    Definitions() {
+        symbols = new HashMap<String, Set<Integer>>();
+        tags = new ArrayList<Tag>();
+    }
+
+    /**
+     * Get all symbols used in definitions.
+     * @return a set containing all the symbols
+     */
+    public Set<String> getSymbols() {
+        return symbols.keySet();
+    }
+
+    /**
+     * Check if there is a tag for a symbol.
+     * @param symbol the symbol to check
+     * @return {@code true} iff there is a tag for {@code symbol}
+     */
+    public boolean hasSymbol(String symbol) {
+        return symbols.containsKey(symbol);
+    }
+
+    /**
+     * Check whether the specified symbol is defined on the given line.
+     * @param symbol the symbol to look for
+     * @param lineNumber the line to check
+     * @return {@code true} iff {@code symbol} is defined on the specified line
+     */
+    public boolean hasDefinitionAt(String symbol, int lineNumber) {
+        Set<Integer> lines = symbols.get(symbol);
+        return lines != null && lines.contains(lineNumber);
+    }
+
+    /**
+     * Return the number of occurrences of definitions with the specified
+     * symbol.
+     * @param symbol the symbol to count the occurrences of
+     * @return the number of times the specified symbol is defined
+     */
+    public int occurrences(String symbol) {
+        Set<Integer> lines = symbols.get(symbol);
+        return lines == null ? 0 : lines.size();
+    }
+
+    /**
+     * Return the number of distinct symbols.
+     * @return number of distinct symbols
+     */
+    public int numberOfSymbols() {
+        return symbols.size();
+    }
+
+    /**
+     * Get a list of all tags.
+     * @return all tags
+     */
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    /**
+     * Class that represents a single tag.
+     */
+    public static class Tag {
+        /** Line number of the tag. */
+        public final int line;
+        /** The symbol used in the definition. */
+        public final String symbol;
+        /** The type of the tag. */
+        public final String type;
+        /** The full line on which the definition occurs. */
+        public final String text;
+
+        private Tag(int line, String symbol, String type, String text) {
+            this.line = line;
+            this.symbol = symbol;
+            this.type = type;
+            this.text = text;
+        }
+    }
+
+    void addTag(int line, String symbol, String type, String text) {
+        tags.add(new Tag(line, symbol, type, text));
+        Set<Integer> lines = symbols.get(symbol);
+        if (lines == null) {
+            lines = new HashSet<Integer>();
+            symbols.put(symbol, lines);
+        }
+        lines.add(line);
+    }
+}

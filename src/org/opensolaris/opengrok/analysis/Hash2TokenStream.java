@@ -37,8 +37,8 @@ public final class Hash2TokenStream extends TokenStream {
     String term;
     String terms[];
     Iterator<String> keys;
-    public Hash2TokenStream(HashMap<String, HashMap<Integer, String>> h){
-	keys = h.keySet().iterator();
+    public Hash2TokenStream(Set<String> symbols){
+        keys = symbols.iterator();
     }
     
     public Token next() {

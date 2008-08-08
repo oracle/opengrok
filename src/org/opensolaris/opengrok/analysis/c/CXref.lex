@@ -29,6 +29,7 @@
 package org.opensolaris.opengrok.analysis.c;
 import java.util.*;
 import java.io.*;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -46,8 +47,8 @@ import org.opensolaris.opengrok.configuration.Project;
   String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   Annotation annotation;
   Project project;
-  private HashMap<String, HashMap<Integer, String>> defs = null;
-  public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
+  private Definitions defs;
+  public void setDefs(Definitions defs) {
   	this.defs = defs;
   }
 
@@ -120,11 +121,8 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
  			if(Consts.kwd.contains(id)) {
 				out.write("<b>");out.write(id);out.write("</b>");
 			} else {
-				HashMap<Integer, String> tags;
-				if(defs != null && (tags = defs.get(id)) != null) {
-					int sz = 0;
-					boolean written = false;
-					if (tags.containsKey(new Integer(yyline-1))) {
+				if (defs != null && defs.hasSymbol(id)) {
+					if (defs.hasDefinitionAt(id, yyline-1)) {
 							out.write("<a class=\"d\" name=\"");
 							out.write(id);
 							out.write("\"/>");
@@ -136,9 +134,8 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
 							out.write("\" class=\"d\">");
 							out.write(id);
 							out.write("</a>");
-							written = true;
 							break;
-					} else if (tags.size() == 1) {
+					} else if (defs.occurrences(id) == 1) {
 						out.write("<a class=\"f\" href=\"#");
 						out.write(id);
 						out.write("\">");

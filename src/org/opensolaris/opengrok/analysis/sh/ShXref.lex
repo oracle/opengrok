@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.analysis.sh;
 import java.util.*;
 import java.io.*;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.web.Util;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -42,11 +43,11 @@ import org.opensolaris.opengrok.configuration.Project;
   Writer out;
   Annotation annotation;
   Project project;
-  private HashMap<String, HashMap<Integer, String>> defs = null;
+  private Definitions defs;
   private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
 
-  public void setDefs(HashMap<String, HashMap<Integer, String>> defs) {
+  public void setDefs(Definitions defs) {
   	this.defs = defs;
   }
 
@@ -165,11 +166,8 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  			if(Consts.shkwd.contains(id)) {
 				out.write("<b>");out.write(id);out.write("</b>");
 			} else {
-				HashMap<Integer, String> tags;
-				if(defs != null && (tags = defs.get(id)) != null) {
-					int sz = 0;
-					boolean written = false;
-					if (tags.containsKey(new Integer(yyline-1))) {
+				if (defs != null && defs.hasSymbol(id)) {
+					if (defs.hasDefinitionAt(id, yyline-1)) {
 							out.write("<a class=\"d\" name=\"");
 							out.write(id);
 							out.write("\"/>");
@@ -181,9 +179,8 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 							out.write("\" class=\"d\">");
 							out.write(id);
 							out.write("</a>");
-							written = true;
 							break;
-					} else if (tags.size() == 1) {
+					} else if (defs.occurrences(id) == 1) {
 						out.write("<a class=\"f\" href=\"#");
 						out.write(id);
 						out.write("\">");

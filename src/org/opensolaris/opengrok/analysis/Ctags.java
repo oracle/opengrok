@@ -27,7 +27,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -76,7 +75,7 @@ public class Ctags {
         tagFile = new StringBuilder(512);
     }
 
-    public HashMap<String, HashMap<Integer, String>> doCtags(String file) throws IOException {
+    public Definitions doCtags(String file) throws IOException {
         boolean ctagsRunning = true;
         try {
             ctags.exitValue();
@@ -95,8 +94,7 @@ public class Ctags {
             ctagsIn.write(file);
             ctagsIn.flush();
             tagFile.setLength(0);
-            HashMap<String, HashMap<Integer, String>> defs =
-                    new HashMap<String, HashMap<Integer, String>>();
+            Definitions defs = new Definitions();
             readTags(defs);
             return defs;
         //log.fine("DONE >" + file + "<");
@@ -108,7 +106,7 @@ public class Ctags {
         return tagFile.toString();
     }
 
-    private void readTags(HashMap<String, HashMap<Integer, String>> defs) {
+    private void readTags(Definitions defs) {
         try {
             do {
                 String tagLine = ctagsOut.readLine();                
@@ -168,12 +166,9 @@ public class Ctags {
                         continue;
                     }
                 }
-                HashMap<Integer, String> taglist = defs.get(def);
-                if (taglist == null) {
-                    taglist = new HashMap<Integer, String>();
-                    defs.put(def, taglist);
-                }
-                taglist.put(new Integer(lnum), kind);
+                final String type =
+                        inher == null ? kind : kind + " in " + inher;
+                defs.addTag(Integer.parseInt(lnum), def, type, match);
                 tagFile.append(def + '\t' + lnum + '\t' + kind + (inher != null ? (" in " + inher) : "") + '\t' + match + '\n');
                 if (signature != null) {
                     String[] args = signature.split("[ ]*[^a-z0-9_]+[ ]*");
@@ -189,12 +184,8 @@ public class Ctags {
                             }
                             String argDef = arg.substring(space + 1);
                             //log.fine("Param Def = "+ argDef);
-                            HashMap<Integer, String> itaglist = defs.get(argDef);
-                            if (itaglist == null) {
-                                itaglist = new HashMap<Integer, String>();
-                                defs.put(argDef, itaglist);
-                            }
-                            itaglist.put(new Integer(lnum), "a");
+                            defs.addTag(Integer.valueOf(lnum), argDef,
+                                        "argument", def + signature);
                             tagFile.append(argDef + '\t' + lnum + "\targument\t" + def + signature + '\n');
                         }
                     }

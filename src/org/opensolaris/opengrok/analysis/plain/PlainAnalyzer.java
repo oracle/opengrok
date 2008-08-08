@@ -31,10 +31,7 @@ import org.apache.lucene.document.*;
 import org.apache.lucene.analysis.*;
 import java.io.*;
 import org.opensolaris.opengrok.analysis.*;
-import java.util.*;
-import java.util.prefs.*;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
@@ -51,7 +48,7 @@ public class PlainAnalyzer extends FileAnalyzer {
     private PlainXref xref;
     private static final Reader dummy = new StringReader(" ");
     private Ctags ctags;
-    protected HashMap<String, HashMap<Integer, String>> defs;
+    protected Definitions defs;
     
     /** Creates a new instance of PlainAnalyzer */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {
@@ -95,7 +92,7 @@ public class PlainAnalyzer extends FileAnalyzer {
 	    String fullpath;
 	    if((fullpath = doc.get("fullpath")) != null && ctags != null) {
                 defs = ctags.doCtags(fullpath+"\n");
-                if(defs != null && defs.size() > 0) {
+                if(defs != null && defs.numberOfSymbols() > 0) {
                     doc.add(new Field("defs", dummy));
                     doc.add(new Field("refs", dummy)); //XXX adding a refs field only if it has defs?
                     doc.add(new Field("tags", ctags.tagString(), Field.Store.YES, Field.Index.UN_TOKENIZED));
@@ -113,7 +110,7 @@ public class PlainAnalyzer extends FileAnalyzer {
             plainref.reInit(content, len);
             return plainref;
         } else if("defs".equals(fieldName)) {
-            return new Hash2TokenStream(defs);
+            return new Hash2TokenStream(defs.getSymbols());
         }
         return super.tokenStream(fieldName, reader);
     }
