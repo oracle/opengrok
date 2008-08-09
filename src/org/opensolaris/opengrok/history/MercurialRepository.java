@@ -98,13 +98,14 @@ public class MercurialRepository extends Repository {
 
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
+        InputStream in = null;
         try {
             String argv[] = { getCommand(), "cat", "-r", rev, filename };
             process = Runtime.getRuntime().exec(argv, null, directory);
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            InputStream in = process.getInputStream();
+            in = process.getInputStream();
             int len;
             
             while ((len = in.read(buffer)) != -1) {
@@ -118,6 +119,13 @@ public class MercurialRepository extends Repository {
             System.err.print("Failed to get history: " + exp.getClass().toString());
             exp.printStackTrace();
         } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
             // Clean up zombie-processes...
             if (process != null) {
                 try {
@@ -165,12 +173,13 @@ public class MercurialRepository extends Repository {
         argv.add(file.getName());
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getParentFile());
-        Process process = pb.start();
+        Process process = null;
+        BufferedReader in = null;
+        Annotation ret = null;
         try {
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader
-                                     (process.getInputStream()));
-            Annotation a = new Annotation(file.getName());
+            process = pb.start();
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            ret = new Annotation(file.getName());
             String line;
             int lineno = 0;
             while ((line = in.readLine()) != null) {
@@ -179,21 +188,30 @@ public class MercurialRepository extends Repository {
                 if (matcher.find()) {
                     String author = matcher.group(1);
                     String rev = matcher.group(2);
-                    a.addLine(rev, author, true);
+                    ret.addLine(rev, author, true);
                 } else {
                     System.err.println("Error: did not find annotation in line " + lineno);
                     System.err.println("[" + line + "]");
                 }
             }
-            return a;
         } finally {
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // Just ignore
+                }
+            }
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
             }
         }
+        return ret;
     }
 
     public boolean fileHasAnnotation(File file) {
