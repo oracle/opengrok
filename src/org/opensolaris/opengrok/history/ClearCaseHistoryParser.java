@@ -38,8 +38,8 @@ class ClearCaseHistoryParser implements HistoryParser {
         ClearCaseRepository mrepos = (ClearCaseRepository)repos;
         History history = new History();
 
-        Exception exception = null;
         Process process = null;
+        BufferedReader in = null;
         try {
             process = mrepos.getHistoryLogProcess(file);
             if (process == null) {
@@ -49,7 +49,7 @@ class ClearCaseHistoryParser implements HistoryParser {
             ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
             InputStream is = process.getInputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
+            in = new BufferedReader(new InputStreamReader(is));
 
             String s;
             HistoryEntry entry = null;
@@ -101,28 +101,23 @@ class ClearCaseHistoryParser implements HistoryParser {
             }
 
             history.setHistoryEntries(entries);
-        } catch (Exception e) {
-            exception = e;
-        }
-
-        // Clean up zombie-processes...
-        if (process != null) {
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException exp) {
-                // the process is still running??? just kill it..
-                process.destroy();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException exp) {
+                    // ignore
+                }
             }
-        }
 
-        if (exception != null) {
-            if (exception instanceof IOException) {
-                throw (IOException)exception;
-            } else if (exception instanceof ParseException) {
-                throw (ParseException)exception;
-            } else {
-                System.err.println("Got exception while parsing history for: " + file.getAbsolutePath());
-                exception.printStackTrace();
+            // Clean up zombie-processes...
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException exp) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
             }
         }
 

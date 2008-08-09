@@ -57,6 +57,7 @@ public class DirectoryHistoryParser implements HistoryParser {
 
         History history = new History();
         history.setHistoryEntries(entries);
+        hr.close();
         return history;
     }
 

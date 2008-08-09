@@ -94,20 +94,25 @@ public class ClearCaseRepository extends Repository {
         String directoryName = getDirectoryName();
         File directory = new File(directoryName);
 
-       String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
+        String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
+        BufferedReader lineIn = null;
         try {
             final File tmp = File.createTempFile("opengrok", "tmp");
             String tmpName = tmp.getAbsolutePath();
 
             // cleartool can't get to a previously existing file
-            tmp.delete();
+            if (tmp.exists()) {
+                if (!tmp.delete()) {
+                    System.err.println("Failed to remove temporary file used by history cache");
+                }
+            }
 
             String decorated = filename + "@@" + rev;
             String argv[] = {getCommand(), "get", "-to", tmpName, decorated};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
-            BufferedReader lineIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            lineIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
             while (lineIn.readLine() != null) { }
 
             process.exitValue();
@@ -130,6 +135,13 @@ public class ClearCaseRepository extends Repository {
             System.err.print("Failed to get history: " + exp.getClass().toString());
             exp.printStackTrace();
         } finally {
+            if (lineIn != null) {
+                try {
+                    lineIn.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
             // Clean up zombie-processes...
             if (process != null) {
                 try {
@@ -177,11 +189,11 @@ public class ClearCaseRepository extends Repository {
         argv.add(file.getName());
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getParentFile());
-        Process process = pb.start();
+        Process process = null;
+        BufferedReader in = null;
         try {
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader
-                                     (process.getInputStream()));
+            process = pb.start();
+            in =new BufferedReader(new InputStreamReader(process.getInputStream()));
             Annotation a = new Annotation(file.getName());
             String line;
             int lineno = 0;
@@ -196,11 +208,20 @@ public class ClearCaseRepository extends Repository {
             }
             return a;
         } finally {
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException exp) {
+                    // ignore
+                }
+            }
+
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    process.destroy();
+                }
             }
         }
     }
@@ -226,14 +247,14 @@ public class ClearCaseRepository extends Repository {
 
     public void update() throws Exception {
         Process process = null;
+        BufferedReader in = null;
         try {
             File directory = new File(getDirectoryName());
 
             // Check if this is a snapshot view
             String[] argv = {getCommand(), "catcs"};
             process = Runtime.getRuntime().exec(argv, null, directory);
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader
+            in = new BufferedReader(new InputStreamReader
                                      (process.getInputStream()));
             boolean snapshot = false;
             String line;
@@ -243,9 +264,9 @@ public class ClearCaseRepository extends Repository {
             if (waitFor(process) != 0) {
                 return ;
             }
-
-            if(snapshot)
-            {
+            in.close();
+            in = null; // To avoid double close in finally clause
+            if(snapshot) {
                 // It is a snapshot view, we need to update it manually
                 argv = new String[] {getCommand(), "update", "-overwrite", "-f"};
                 process = Runtime.getRuntime().exec(argv, null, directory);
@@ -259,12 +280,19 @@ public class ClearCaseRepository extends Repository {
                 }
             }
         } finally {
-
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    process.destroy();
+                }
             }
         }
     }

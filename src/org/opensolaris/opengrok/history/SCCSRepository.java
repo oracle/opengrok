@@ -97,12 +97,11 @@ public class SCCSRepository extends Repository {
 
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getCanonicalFile().getParentFile());
-        Process process = pb.start();
-        
+        Process process = null;
+        BufferedReader in = null;
         try {
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader
-                                     (process.getInputStream()));
+            process = pb.start();
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             int lineno = 0;
             while ((line = in.readLine()) != null) {
@@ -118,11 +117,20 @@ public class SCCSRepository extends Repository {
                 }
             }
         } finally {
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    process.destroy();
+                }
             }
         }
     }
@@ -164,11 +172,11 @@ public class SCCSRepository extends Repository {
         argv.add(file.getCanonicalPath());
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getCanonicalFile().getParentFile());
-        Process process = pb.start();
+        Process process = null;
+        BufferedReader in = null;
         try {
-            BufferedReader in =
-                new BufferedReader(new InputStreamReader
-                                     (process.getInputStream()));
+            process = pb.start();
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Annotation a = new Annotation(file.getName());
             String line;
             int lineno = 0;
@@ -178,8 +186,9 @@ public class SCCSRepository extends Repository {
                 if (matcher.find()) {
                     String rev = matcher.group(1);
                     String author = authors_cache.get(rev);
-                    if (author == null)
+                    if (author == null) {
                         author = "unknown";
+                    }
                     
                     a.addLine(rev, author, true);
                 } else {
@@ -189,11 +198,19 @@ public class SCCSRepository extends Repository {
             }
             return a;
         } finally {
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    process.destroy();
+                }
             }
         }
     }
