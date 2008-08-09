@@ -47,11 +47,19 @@ public class PerforceRepository extends Repository {
             try {
                 String argv[] = {System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4"), "help"};
                 process = Runtime.getRuntime().exec(argv);
-                process.waitFor();
+                boolean done = false;
+                do {
+                    try {
+                        process.waitFor();
+                        done = true;
+                    } catch (InterruptedException exp) {
+                        // Ignore
+                    }
+                } while (!done);
                 if (process.exitValue() == 0) {
                     haveP4 = true;
                 }
-            } catch (Exception exp) {
+            } catch (IOException exp) {
 
             } finally {
                 // Clean up zombie-processes...
