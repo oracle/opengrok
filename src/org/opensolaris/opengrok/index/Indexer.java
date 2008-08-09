@@ -427,7 +427,7 @@ public class Indexer {
                 
                 if (refreshHistory) {
                     HistoryGuru.getInstance().createCache();
-                } else if (repositories.size() > 0) {
+                } else if (repositories != null && repositories.size() > 0) {
                     HistoryGuru.getInstance().createCache(repositories);
                 }
 
@@ -450,7 +450,7 @@ public class Indexer {
                 
                 ExecutorService executor = Executors.newFixedThreadPool(noThreads);
  
-                if (subFiles.isEmpty()) {
+                if (subFiles == null || subFiles.isEmpty()) {
                     if (update) {
                         IndexDatabase.updateAll(executor, progress);
                     } else if (env.isOptimizeDatabase()) {
