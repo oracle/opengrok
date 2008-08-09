@@ -23,8 +23,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,25 +43,14 @@ public class HistoryGuru {
     /** The one and only instance of the HistoryGuru */
     private static HistoryGuru instance = new HistoryGuru();
 
-    /** The different SourceControlSystems currently supported */
-    private enum SCM { 
-        /** Unknown version control system for last file */
-        UNKNOWN,
-        /** The last file was located in an "external" repository */
-        EXTERNAL };
-   
-    /** Method used on the last file */
-    private SCM previousFile;
-    
+    /** The history cache to use */
     private HistoryCache historyCache;
 
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
      * source control system.
-     * @todo Set the revision system according to the users preferences, and call the various setups..
      */
     private HistoryGuru() {
-        previousFile = SCM.UNKNOWN;
         historyCache = new FileHistoryCache();
     }
     
@@ -76,47 +63,19 @@ public class HistoryGuru {
     }
     
     /**
-     * Try to guess the correct history parser to use. Create an RCS, SCCS or Subversion
-     * HistoryParser if it looks like the file is managed by the appropriate
-     * revision control system.
-     *
-     * @param file The the file to get the history parser for
-     * @throws java.io.IOException If an error occurs while trying to access the filesystem
-     * @return A subclass of HistorParser that may be used to read out history
-     * data for a named file
-     */
-    private Class<? extends HistoryParser> guessHistoryParser(File file)
-    {
-        Class<? extends HistoryParser> hpClass = lookupHistoryParser(file);
-        if (hpClass != null) {
-            previousFile = SCM.EXTERNAL;
-        } else {
-            previousFile = SCM.UNKNOWN;
-        }
-                
-        return hpClass;
-    }
-    
-    
-    /**
      * Get the <code>HistoryParser</code> to use for the specified file.
      */
     private Class<? extends HistoryParser> getHistoryParser(File file) {
-
-        if (previousFile == SCM.EXTERNAL) {
-            Repository repos = getRepository(file.getParentFile());
-            if (repos != null && repos.fileHasHistory(file)) {
-                Class<? extends HistoryParser> parser;
-                parser = repos.getHistoryParser();
-                if (parser != null) {
-                    return parser;
-                }
+        Repository repos = getRepository(file.getParentFile());
+        if (repos != null && repos.fileHasHistory(file)) {
+            Class<? extends HistoryParser> parser;
+            parser = repos.getHistoryParser();
+            if (parser != null) {
+                return parser;
             }
         }
-
-        // I did not find a match for the specified system. try to guess..
-        return guessHistoryParser(file);
-}
+        return null;
+    }
 
     /**
      * Annotate the specified revision of a file.
@@ -125,6 +84,7 @@ public class HistoryGuru {
      * @param rev the revision to annotate (<code>null</code> means BASE)
      * @return file annotation, or <code>null</code> if the
      * <code>HistoryParser</code> does not support annotation
+     * @throws Exception In an error occurs while creating the annotations
      */
     public Annotation annotate(File file, String rev) throws Exception {
         Repository repos = getRepository(file);
@@ -137,8 +97,6 @@ public class HistoryGuru {
 
     /**
      * Get the appropriate history reader for the file specified by parent and basename.
-     * If configured, it will try to use the configured system. If the file is under another
-     * revision control system, it will try to guess the correct system.
      *
      * @param file The file to get the history reader for
      * @throws java.io.IOException If an error occurs while trying to access the filesystem
@@ -172,6 +130,13 @@ public class HistoryGuru {
         return null;
     }
     
+    /**
+     * Get the appropriate history reader for a specific directory.
+     *
+     * @param file The directpru to get the history reader for
+     * @throws java.io.IOException If an error occurs while trying to access the filesystem
+     * @return A HistorReader that may be used to read out history data for a named file
+     */
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
         Class<? extends HistoryParser> parser = null;
         Repository repos = getRepository(file);
@@ -206,28 +171,6 @@ public class HistoryGuru {
     }
 
     /**
-     * Get a named revision of the specified file. Try to guess out the source
-     * control system that is used.
-     *
-     * @param parent The directory containing the file
-     * @param basename The name of the file
-     * @param rev The revision to get
-     * @throws java.io.IOException If an error occurs while reading out the version
-     * @return An InputStream containing the named revision of the file.
-     */
-    private InputStream guessGetRevision(String parent, String basename, String rev) throws IOException {
-        InputStream in = lookupHistoryGet(parent, basename, rev);
-        
-        if (in != null) {
-            previousFile = SCM.EXTERNAL;
-        } else {
-            previousFile = SCM.UNKNOWN;
-        }
-        
-        return in;
-    }
-    
-    /**
      * Get a named revision of the specified file.
      * @param parent The directory containing the file
      * @param basename The name of the file
@@ -236,17 +179,11 @@ public class HistoryGuru {
      * @return An InputStream containing the named revision of the file.
      */
     public InputStream getRevision(String parent, String basename, String rev) throws IOException {
-        InputStream in = null;
-
-        if (previousFile == SCM.EXTERNAL) {
-            in = lookupHistoryGet(parent, basename, rev);
+        Repository rep = getRepository(new File(parent));
+        if (rep != null) {
+            return rep.getHistoryGet(parent, basename, rev);
         }
-        
-        if (in == null) {
-            in = guessGetRevision(parent, basename, rev);
-        }
-        
-        return in;
+        return null;
     }
     
     /**
@@ -277,62 +214,12 @@ public class HistoryGuru {
         return false;
     }
 
-    public static void main(String[] args) {
-        try{
-            File f = new File(args[0]);
-            File d = new File(".");
-            RuntimeEnvironment.getInstance().setSourceRootFile(d.getCanonicalFile());
-            HistoryGuru.getInstance().addRepositories(d.getCanonicalPath());
-            System.out.println("-----Reading comments as a reader");
-            HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
-            BufferedReader rr = new BufferedReader(hr);
-            int c;
-            BufferedOutputStream br = new BufferedOutputStream(System.out);
-            while((c = rr.read()) != -1) {
-                br.write((char)c);
-            }
-            br.flush();
-            
-            System.out.println("-----Reading comments as lines");
-            hr = HistoryGuru.getInstance().getHistoryReader(f);
-            while(hr.next()) {
-                System.out.println(hr.getLine() + "----------------------");
-            }
-            hr.close();
-            
-            System.out.println("-----Reading comments structure");
-            hr = HistoryGuru.getInstance().getHistoryReader(f);
-            while(hr.next()) {
-                System.out.println("REV  = " + hr.getRevision() + "\nDATE = "+ hr.getDate() + "\nAUTH = " +
-                        hr.getAuthor() + "\nLOG  = " + hr.getComment() + "\nACTV = " + hr.isActive() + "\n-------------------");
-            }
-            hr.close();
-
-            System.out.println("-----Annotate");
-            Annotation annotation = HistoryGuru.getInstance().annotate(
-                    f, (args.length > 1 ? args[1] : null));
-            if (annotation == null) {
-                System.out.println("<null>");
-            } else {
-                for (int i = 1; i <= annotation.size(); i++) {
-                    System.out.println("Line " + i + "\t" +
-                                       annotation.getRevision(i) + ", " +
-                                       annotation.getAuthor(i));
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Exception " + e +
-                               "\nUsage: HistoryGuru file [annotate-rev]");
-            e.printStackTrace();
-        }
-    }
-    
     private void addRepositories(File[] files, Map<String, Repository> repos,
             IgnoredNames ignoredNames) {
         addRepositories(files, repos, ignoredNames, true);
     }
 
-        private void addRepositories(File[] files, Map<String, Repository> repos,
+    private void addRepositories(File[] files, Map<String, Repository> repos,
             IgnoredNames ignoredNames, boolean recursiveSearch) {
 
         if (files == null) {
@@ -562,26 +449,5 @@ public class HistoryGuru {
         }
 
         return null;
-    }
-    
-    private Class<? extends HistoryParser> lookupHistoryParser(File file) {
-        Class<? extends HistoryParser> ret = null;
-
-        Repository rep = getRepository(file.getParentFile());
-        if (rep != null) {
-            ret = rep.getHistoryParser();
-        }
-        
-        return ret;
-    }
-    
-    private InputStream lookupHistoryGet(String parent, String basename,
-                                         String rev) {
-        Repository rep = getRepository(new File(parent));
-        if (rep != null) {
-            return rep.getHistoryGet(parent, basename, rev);
-        }
-        return null;
-    }
-   
+    }    
 }
