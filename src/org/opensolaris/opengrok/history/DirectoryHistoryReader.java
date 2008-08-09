@@ -44,8 +44,9 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexDatabase;
 
 /**
- * Comment that describes the contents of this DirectoryHistoryReader.java
- * Created on November 7, 2005
+ * Generate SCM history for directory by using the Index database. (Please note
+ * that SCM systems that supports changesets consisting of multiple files should
+ * implement their own HistoryReader!)
  *
  * @author Chandan
  */

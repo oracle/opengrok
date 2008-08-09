@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
+ * HistoryParser that use the Lucene index to generate the history log.
+ * (Please note that SCM systems that supports changesets consisting of
+ * multiple files should implement their own HistoryParser!)
  *
  * @author Trond Norbye
  */
