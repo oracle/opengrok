@@ -61,10 +61,10 @@ public class DirectoryListingTest {
             this.size = size;
         }
 
-        public void create() throws Exception {
+        private void create() throws Exception {
             File file = new File(directory, name);
-            if (!file.exists() && !file.createNewFile()) {
-                throw new Exception("Failed to create file");
+            if (!file.exists()) {
+                assertTrue("Failed to create file", file.createNewFile());
             }
 
             long val = lastModified;
@@ -72,9 +72,8 @@ public class DirectoryListingTest {
                 val = System.currentTimeMillis();
             }
 
-            if (!file.setLastModified(val)) {
-                throw new Exception("Failed to set modification time");
-            }
+            assertTrue("Failed to set modification time",
+                       file.setLastModified(val));
 
             if (size > 0) {
                 FileOutputStream out = new FileOutputStream(file);
@@ -113,12 +112,10 @@ public class DirectoryListingTest {
     @Before
     public void setUp() throws Exception {
         directory = File.createTempFile("directory", "");
-        if (directory.exists() && !directory.delete()) {
-            throw new Exception("Failed to remove test-directory");
+        if (directory.exists()) {
+            assertTrue("Failed to remove test directory", directory.delete());
         }
-        if (!directory.mkdir()) {
-            throw new Exception("Failed to create test-directory");
-        }
+        assertTrue("Failed to create test directory", directory.mkdir());
 
         entries = new FileEntry[2];
         entries[0] = new FileEntry("foo", 0, 0);
@@ -248,15 +245,10 @@ public class DirectoryListingTest {
         instance.listTo(directory, out);
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        if (factory == null) {
-            throw new Exception("Internal error. Failed to create / initialize XML parser (DocumentBuilderFactory)");
-        }
+        assertNotNull("DocumentBuilderFactory is null", factory);
 
         DocumentBuilder builder = factory.newDocumentBuilder();
-
-        if (builder == null) {
-            throw new Exception("Internal error. Failed to create / initialize XML parser (DocumentBuilder)");
-        }
+        assertNotNull("DocumentBuilder is null", out);
 
         String str = out.toString();
         Document document = builder.parse(new ByteArrayInputStream(str.getBytes()));

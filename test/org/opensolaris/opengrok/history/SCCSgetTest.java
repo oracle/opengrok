@@ -76,7 +76,7 @@ public class SCCSgetTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         if (!haveSccs) {
             return;
         }
@@ -103,7 +103,7 @@ public class SCCSgetTest {
                 sccsfile.delete();
                 sccsdir.delete();
             }
-            fail("Failed to set up the test-file");
+            throw ex;
         }
     }
 

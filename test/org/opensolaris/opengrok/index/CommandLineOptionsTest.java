@@ -62,7 +62,7 @@ public class CommandLineOptionsTest {
      * Test of getCommandString method, of class CommandLineOptions.
      */
     @Test
-    public void testCommandLineOptions() {
+    public void testCommandLineOptions() throws IOException {
         CommandLineOptions instance = new CommandLineOptions();
         String cmdString = instance.getCommandString();
         assertNotNull(cmdString);
@@ -83,10 +83,6 @@ public class CommandLineOptionsTest {
         }
 
         assertNotNull(instance.getUsage());
-        try {
-            assertNotNull(instance.getManPage());
-        } catch (IOException exp) {
-            fail("Got an exception during generation of man page: " + exp);
-        }
+        assertNotNull(instance.getManPage());
     }
 }

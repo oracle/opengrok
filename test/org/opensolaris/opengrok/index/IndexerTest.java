@@ -60,7 +60,7 @@ public class IndexerTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         File sourceBundle = null;
         try {
             sourceRoot = File.createTempFile("source", "opengrok");
@@ -89,8 +89,6 @@ public class IndexerTest {
             copyFile(in, out);
             out.close();
             extractArchive(sourceBundle);
-        } catch (IOException ex) {
-            fail("Failed to up the test-file");
         } finally {
             if (sourceBundle != null) {
                 sourceBundle.delete();
