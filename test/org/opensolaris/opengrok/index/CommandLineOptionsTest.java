@@ -63,7 +63,6 @@ public class CommandLineOptionsTest {
      */
     @Test
     public void testCommandLineOptions() {
-        System.out.println("testCommandLineOptions");
         CommandLineOptions instance = new CommandLineOptions();
         String cmdString = instance.getCommandString();
         assertNotNull(cmdString);
