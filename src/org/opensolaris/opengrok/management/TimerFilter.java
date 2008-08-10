@@ -33,7 +33,7 @@ import javax.management.timer.TimerNotification;
  */
 public class TimerFilter implements NotificationFilter {
 
-    private Integer id = null;
+    private final Integer id;
 
     /** Creates a new instance of TimerFilter */
     public TimerFilter(Integer id) {
@@ -42,7 +42,8 @@ public class TimerFilter implements NotificationFilter {
 
     public boolean isNotificationEnabled(Notification n) {
 
-        if (n.getType().equals("timer.notification")) {
+        if (n.getType().equals("timer.notification") &&
+                n instanceof TimerNotification) {
             TimerNotification timerNotif = (TimerNotification) n;
             if (timerNotif.getNotificationID().equals(id)) {
                 return true;

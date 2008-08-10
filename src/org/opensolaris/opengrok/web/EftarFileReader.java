@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Date;
 import java.util.StringTokenizer;
 
 
@@ -110,8 +109,11 @@ public class EftarFileReader {
             } else {
                 tagString = new byte[numChildren];
             }
-            f.read(tagString);
-            return new String(tagString);
+            int len = f.read(tagString);
+            if (len == -1) {
+                throw new EOFException();
+            }
+            return new String(tagString, 0, len);
         }
 
         @Override
@@ -185,8 +187,11 @@ public class EftarFileReader {
         if (tagOffset != 0) {
             f.seek(tagOffset);
             byte[] desc = new byte[tagLength];
-            f.read(desc);
-            return new String(desc);
+            int len = f.read(desc);
+            if (len == -1) {
+                throw new EOFException();
+            }
+            return new String(desc, 0, len);
         }
         return "";
     }

@@ -76,15 +76,6 @@ class SubversionHistoryParser implements HistoryParser {
         // the front of each file, if possible.
         final String leadingPathFragment = wcUrl.substring(wcRepoUrl.length());
 
-        // now get the file's info
-        info = client.info(file.getPath());
-
-        //String fileUrl = info.getUrl();
-        //String repoUrl = info.getRepository();
-
-        // now we simply erase the repo part of the URL, and the leading path fragment
-        //File fileRepo = new File(fileUrl.substring(repoUrl.length())); 
-        //File fileRepoSourcePath = new File(fileRepo.getPath().substring(leadingPathFragment.length()));
         int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
 
         boolean fetchFileInfo = file.isDirectory();

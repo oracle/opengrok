@@ -40,7 +40,7 @@ public final class HistoryAnalyzer extends Analyzer {
     
     /** An array containing some common English words that are not usually useful
     for searching. */
-    public static final String[] ENGLISH_STOP_WORDS = {
+    private static final String[] ENGLISH_STOP_WORDS = {
         "a", "an", "and", "are", "as", "at", "be", "but", "by",
         "for", "if", "in", "into", "is", "it",
         "no", "not", "of", "on", "or", "s", "such",

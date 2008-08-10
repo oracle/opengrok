@@ -95,10 +95,12 @@ public class Results {
                             Reader r = new TagFilter(new BufferedReader(new FileReader(dataRoot + "/xref" + rpath)));
                             int len = r.read(content);
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
+                            r.close();
                         } else if("h".equals(genre) && srcRoot != null && summer != null){
                             Reader r = new TagFilter(new BufferedReader(new FileReader(srcRoot + rpath)));
                             int len = r.read(content);
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
+                            r.close();
                         } else {
                             sourceContext.getContext(null, out, urlPrefix, morePrefix, rpath, tags, true, null);
                         }
