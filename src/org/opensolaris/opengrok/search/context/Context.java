@@ -51,7 +51,7 @@ import org.opensolaris.opengrok.web.Util;
 
 public class Context {
     private LineMatcher[] m;
-    private int MAXFILEREAD = 32768;
+    static final int MAXFILEREAD = 32768;
     private char[] buffer;
     PlainLineTokenizer tokens;
     String queryAsURI;

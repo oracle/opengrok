@@ -305,7 +305,7 @@ import org.opensolaris.opengrok.search.Hit;
   }
   public void dumpRest() throws IOException {
 	if(dumpRest) {
-		for(int i=0; i<zzEndRead && i<100; i++) {
+		for(int i=0; rest+i<zzEndRead && i<100; i++) {
 			if(zzBuffer[rest+i] == '\n') {
                            if (out != null) {
 				printWithNum(zzBuffer, rest, rest+i-1, markedLine);
