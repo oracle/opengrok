@@ -31,6 +31,7 @@ import java.io.StringWriter;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 public class CommandLineOptions {
@@ -178,6 +179,16 @@ public class CommandLineOptions {
         reader.close();
 
         return wrt.toString();
+    }
+
+    /**
+     * Not intended for normal use, but for the JUnit test suite to validate
+     * that all options contains a description :-)
+     * 
+     * @return an iterator to iterate through all of the command line options
+     */
+    public Iterator<Option> getOptionsIterator() {
+        return options.iterator();
     }
 
     /**
