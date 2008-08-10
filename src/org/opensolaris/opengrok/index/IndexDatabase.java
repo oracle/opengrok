@@ -72,7 +72,9 @@ public class IndexDatabase {
     private boolean interrupted;
     private List<IndexChangedListener> listeners;
     private File dirtyFile;
+    private final Object lock = new Object();
     private boolean dirty;
+    private boolean running;
     private List<String> directories;
     private static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
     
@@ -160,15 +162,20 @@ public class IndexDatabase {
             spellDir = new File(spellDir, project.getPath());
         }
 
-        if (!indexDir.exists() || !spellDir.exists()) {
-            indexDir.mkdirs();
-            spellDir.mkdirs();
-            // to avoid race conditions, just recheck..
-            if (!indexDir.exists()) {
-                throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
+        if (!indexDir.exists()) {
+            if (!indexDir.mkdirs()) {
+                // to avoid race conditions, just recheck..
+                if (!indexDir.exists()) {
+                    throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
+                }
             }
-            if (!spellDir.exists()) {
-                throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
+        }
+        
+        if (!spellDir.exists()) {
+            if (!spellDir.mkdirs()) {
+                if (!spellDir.exists()) {
+                    throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
+                }
             }
         }
 
@@ -215,8 +222,14 @@ public class IndexDatabase {
      * Update the content of this index database
      * @throws java.lang.Exception if an error occurs
      */
-    public synchronized void update() throws Exception {
-        interrupted = false;
+    public void update() throws Exception {
+        synchronized (lock) {
+            if (running) {
+                throw new Exception("Indexer already running!");
+            }
+            running = true;
+            interrupted = false;
+        }
         try {
             writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer());
             writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
@@ -262,9 +275,12 @@ public class IndexDatabase {
                 } catch (IOException e) {
                 }
             }
+            synchronized (lock) {
+                running = false;
+            }
         }
 
-        if (!interrupted && dirty) {
+        if (!isInterrupted() && isDirty()) {
             if (RuntimeEnvironment.getInstance().isOptimizeDatabase()) {
                 optimize();
             }
@@ -282,7 +298,7 @@ public class IndexDatabase {
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
                 final IndexDatabase db = new IndexDatabase(project);
-                if (db.dirty) {
+                if (db.isDirty()) {
                     executor.submit(new Runnable() {
 
                         public void run() {
@@ -297,7 +313,7 @@ public class IndexDatabase {
             }
         } else {
             final IndexDatabase db = new IndexDatabase();
-            if (db.dirty) {
+            if (db.isDirty()) {
                 executor.submit(new Runnable() {
 
                     public void run() {
@@ -316,6 +332,13 @@ public class IndexDatabase {
      * Optimize the index database
      */
     public void optimize() {
+        synchronized (lock) {
+            if (running) {
+                log.warning("Optimize terminated... Someone else is updating / optimizing it!");
+                return ;
+            }
+            running = true;
+        }
         IndexWriter wrt = null;
         try {
             if (RuntimeEnvironment.getInstance().isVerbose()) {
@@ -326,8 +349,15 @@ public class IndexDatabase {
             if (RuntimeEnvironment.getInstance().isVerbose()) {
                 log.info("done");
             }
-            dirtyFile.delete();
-            dirty = false;
+            synchronized (lock) {
+                if (dirtyFile.exists()) {
+                    if (!dirtyFile.delete()) {
+                        log.fine("Failed to remove \"dirty-file\": " +
+                                dirtyFile.getAbsolutePath());
+                    }
+                }
+                dirty = false;
+            }
         } catch (IOException e) {
             log.severe("ERROR: optimizing index: " + e);
         } finally {
@@ -337,7 +367,9 @@ public class IndexDatabase {
                 } catch (IOException e) {
                 }
             }
-
+            synchronized (lock) {
+                running = false;
+            }
         }
     }
 
@@ -373,14 +405,26 @@ public class IndexDatabase {
         }
     }
 
-    private synchronized void setDirty() {
-        try {
-            if (!dirty) {
-                dirtyFile.createNewFile();
-                dirty = true;
+    private boolean isDirty() {
+        synchronized (lock) {
+            return dirty;
+        }
+    }
+
+    private void setDirty() {
+        synchronized (lock) {
+            try {
+                if (!dirty) {
+                    if (!dirtyFile.createNewFile()) {
+                        if (!dirtyFile.exists()) {
+                           log.log(Level.FINE, "Failed to create \"dirty-file\": ", dirtyFile.getAbsolutePath());
+                        }
+                    }
+                    dirty = true;
+                }
+            } catch (IOException e) {
+                log.log(Level.FINE,"When creating dirty file: ",e);
             }
-        } catch (Exception e) { 
-            log.log(Level.FINE,"When creating dirty file: ",e);
         }
     }
     /**
@@ -397,8 +441,18 @@ public class IndexDatabase {
         writer.deleteDocuments(uidIter.term());
 
         File xrefFile = new File(xrefDir, path);
-        xrefFile.delete();
-        xrefFile.getParentFile().delete();
+        File parent = xrefFile.getParentFile();
+
+        if (!xrefFile.delete()) {
+            log.info("Failed to remove obsolete xref-file: " +
+                    xrefFile.getAbsolutePath());
+        }
+
+        if (!parent.delete()) {
+            // Ignore. The directory is most likely not empty, but to check
+            // would just increase the disk IO even more..
+        }
+
         setDirty();
     }
 
@@ -428,7 +482,12 @@ public class IndexDatabase {
             Genre g = fa.getFactory().getGenre();
             if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
                 File xrefFile = new File(xrefDir, path);
-                xrefFile.getParentFile().mkdirs();
+                if (!xrefFile.getParentFile().mkdirs()) {
+                    // The failure was most likely because the file already
+                    // existed. But to check for the file first and only
+                    // add it if it doesn't exists would only increase the
+                    // file IO...
+                }
                 fa.writeXref(xrefDir, path);
             }
             setDirty();
@@ -480,7 +539,7 @@ public class IndexDatabase {
      * @param path the path
      */
     private void indexDown(File dir, String parent) throws IOException {
-        if (interrupted) {
+        if (isInterrupted()) {
             return;
         }
 
@@ -533,7 +592,15 @@ public class IndexDatabase {
      * soon as possible)
      */
     public void interrupt() {
-        interrupted = true;
+        synchronized (lock) {
+            interrupted = true;
+        }
+    }
+
+    private boolean isInterrupted() {
+        synchronized (lock) {
+            return interrupted;
+        }        
     }
 
     /**
@@ -558,7 +625,7 @@ public class IndexDatabase {
 
     /**
      * List all files in all of the index databases
-     * @throws java.lang.Exception if an error occurs
+     * @throws IOException if an error occurs
      */
     public static void listAllFiles() throws IOException {
         listAllFiles(null);
@@ -568,7 +635,7 @@ public class IndexDatabase {
      * List all files in some of the index databases
      * @param subFiles Subdirectories for the various projects to list the files
      *                 for (or null or an empty list to dump all projects)
-     * @throws java.lang.Exception if an error occurs
+     * @throws IOException if an error occurs
      */
     public static void listAllFiles(List<String> subFiles) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -598,7 +665,7 @@ public class IndexDatabase {
     /**
      * List all of the files in this index database
      * 
-     * @throws java.lang.Exception if an error occurs
+     * @throws IOException If an IO error occurs while reading from the database
      */
     public void listFiles() throws IOException {
         IndexReader ireader = null;
