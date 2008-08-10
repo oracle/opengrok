@@ -127,7 +127,6 @@ public class Ctags {
                 int mstart = tagLine.indexOf('\t', p + 1);
                 String lnum = "-1";
                 String signature = null;
-                String match = null;
                 String kind = null;
                 String inher = null;
 
@@ -150,15 +149,15 @@ public class Ctags {
                         inher = fld;
                     }
                 }
-                if (p > 0) {
-                    if (p - mstart > 6) {
-                        match = tagLine.substring(mstart + 3, p - 4);
-                        match = match.replaceAll("\\/", "/");
-                        match = match.replaceAll("[ \t]+", " ");
-                    } else {
-                        continue;
-                    }
+
+                final String match;
+                if ((p > 0) && (p - mstart > 6)) {
+                    match = tagLine.substring(mstart + 3, p - 4).
+                            replaceAll("\\/", "/").replaceAll("[ \t]+", " ");
+                } else {
+                    continue;
                 }
+
                 final String type =
                         inher == null ? kind : kind + " in " + inher;
                 defs.addTag(Integer.parseInt(lnum), def, type, match);
