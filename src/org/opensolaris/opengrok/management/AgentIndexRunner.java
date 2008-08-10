@@ -56,7 +56,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     private final static String NOTIFICATIONEXCEPTIONTYPE = "ogaexception";
     private final static String NOTIFICATIONINFOSTRINGTYPE = "ogainfostring";
     private final static String NOTIFICATIONINFOLONGTYPE = "ogainfolong";
-    private static boolean enabled = true;
+    private boolean enabled;
     private transient Thread indexThread = null;
     private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
     private final Management jagmgt;
