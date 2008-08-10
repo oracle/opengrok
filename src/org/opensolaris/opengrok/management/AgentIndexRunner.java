@@ -65,7 +65,8 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     private long lastIndexFinish = 0;
     private long lastIndexUsedTime = 0;
     private Exception lastException = null;
-    private Set<NotificationHolder> notifListeners = new HashSet<NotificationHolder>();
+    private final Set<NotificationHolder> notifListeners =
+            new HashSet<NotificationHolder>();
     private static long sequenceNo = 0;
     private StringBuilder notifications = new StringBuilder();
     private final static int MAXMESSAGELENGTH = 50000;
@@ -342,11 +343,6 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
 
     private void doNotify(String type, String msg, Object userdata) {
         try {
-            if (notifListeners == null) {
-                log.info("notiflisteners is null");
-                return;
-            }
-
             log.info("start notifying " + notifListeners.size() + " listeners");
             //String str = "JET Finished";
             //String obj = JAGConstants.jetFinishedNType;
@@ -355,26 +351,22 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
             Notification notif = new Notification(type, this, sequenceNo, ts, msg);
             notif.setUserData(userdata);
             synchronized (notifListeners) {
-                Iterator it = notifListeners.iterator();
-                while (it.hasNext()) {
-                    Object obj = it.next();
-                    if (obj instanceof NotificationHolder) {
-                        NotificationHolder nl = (NotificationHolder) obj;
-                        log.fine("having one with obj " + nl.getObj().toString());
-                        try {
-                            if ((nl.getFilter() == null) ||
-                                    nl.getFilter().isNotificationEnabled(notif)) {
-                                nl.getNL().handleNotification(notif, nl.getObj());
-                            }
-                        } catch (Exception exnot) {
-                            log.info("Ex " + exnot);
+                for (NotificationHolder nl : notifListeners) {
+                    log.fine("having one with obj " + nl.getObj());
+                    try {
+                        if ((nl.getFilter() == null) ||
+                                nl.getFilter().isNotificationEnabled(notif)) {
+                            nl.getNL().handleNotification(notif, nl.getObj());
                         }
+                    } catch (Exception exnot) {
+                        log.log(Level.INFO, "Ex " + exnot, exnot);
                     }
                 }
             }
         } catch (Exception ex) {
-            log.severe("Exception " + ex);
-            log.severe("Exception during notification sending: " + ex.getMessage());
+            log.log(Level.SEVERE,
+                    "Exception during notification sending: " + ex.getMessage(),
+                    ex);
         }
     }
 } 

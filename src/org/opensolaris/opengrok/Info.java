@@ -35,8 +35,8 @@ import java.util.Properties;
 public class Info {
     private static final Properties properties = new Properties();
 
-    private static String VERSION = "";
-    private static String REVISION = "";
+    private static final String VERSION;
+    private static final String REVISION;
     
     static {
         try {

@@ -33,7 +33,6 @@ import javax.management.remote.rmi.RMIConnectorServer;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,14 +88,11 @@ public class OGAgent {
         String javaver = System.getProperty("java.version");
 
         Properties props = new Properties(System.getProperties());
-        try {
-            // Load default values
-            InputStream in = Info.class.getResourceAsStream("oga.properties");
-            if (in != null) {
-                props.load(in);
-            }
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+        // Load default values
+        InputStream in = Info.class.getResourceAsStream("oga.properties");
+        if (in != null) {
+            props.load(in);
+            in.close();
         }
 
         if (cfgfile != null) {
@@ -153,10 +149,10 @@ public class OGAgent {
 
             connectorServer.start();
         } catch (java.net.MalformedURLException e) {
-            log.severe("Could not create connector server: " + e.toString());
+            log.log(Level.SEVERE, "Could not create connector server: " + e, e);
             System.exit(1);
         } catch (java.io.IOException e) {
-            log.severe("Could not start connector server: " + e.toString());
+            log.log(Level.SEVERE, "Could not start connector server: " + e, e);
             System.exit(2);
         }
 

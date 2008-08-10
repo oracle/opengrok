@@ -33,12 +33,12 @@ public class Summarizer {
     private static final int SUM_LENGTH = 20;
     
     /** Converts text to tokens. */
-    private final Analyzer ANALYZER;
+    private final Analyzer analyzer;
     
     private HashSet<String> highlight = new HashSet<String>();            // put query terms in table
     
     public Summarizer(Query query, Analyzer a) {
-        ANALYZER = a;
+        analyzer = a;
         getTerms(query);
     }
     
@@ -265,7 +265,7 @@ public class Summarizer {
     
     private Token[] getTokens(String text) throws IOException {
         ArrayList<Token> result = new ArrayList<Token>();
-        TokenStream ts = ANALYZER.tokenStream("full", new StringReader(text));
+        TokenStream ts = analyzer.tokenStream("full", new StringReader(text));
         for (Token token = ts.next(); token != null; token = ts.next()) {
             result.add(token);
         }
