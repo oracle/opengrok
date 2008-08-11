@@ -68,6 +68,7 @@ public class IgnoredNames implements Serializable {
         ".make.*",
         ".del-*"
     };
+    static final long serialVersionUID = 1L;
     
     /** The list of exact filenames to ignore */     
     private Set<String> ignore;
