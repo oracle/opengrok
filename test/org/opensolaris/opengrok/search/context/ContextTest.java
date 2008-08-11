@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.search.context;
 
 import java.io.CharArrayReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import org.apache.lucene.index.Term;
@@ -63,4 +64,30 @@ public class ContextTest {
         assertTrue("No match on line #1", s.contains("href=\"#1\""));
     }
 
+    /**
+     * Test that we get the [all...] link if a very long line crosses the
+     * buffer boundary. Bug 383.
+     */
+    @Test
+    public void testAllLinkWithLongLines() {
+        // Create input which consists of one single line longer than
+        // Context.MAXFILEREAD.
+        StringBuilder sb = new StringBuilder();
+        sb.append("search_for_me");
+        while (sb.length() <= Context.MAXFILEREAD) {
+            sb.append(" more words");
+        }
+        Reader in = new StringReader(sb.toString());
+        StringWriter out = new StringWriter();
+
+        Term t = new Term("full", "search_for_me");
+        TermQuery tq = new TermQuery(t);
+        Context c = new Context(tq);
+
+        boolean match =
+                c.getContext(in, out, "", "", "", null, true, null);
+        assertTrue("No match found", match);
+        String s = out.toString();
+        assertTrue("No [all...] link", s.contains(">all</a>...]"));
+    }
 }

@@ -168,12 +168,16 @@ public class Context {
         if (limit) {
             try{
                 charsRead = in.read(buffer);
-                // truncate to last line read
                 if (charsRead == MAXFILEREAD) {
+                    // we probably only read parts of the file, so set the
+                    // truncated flag to enable the [all...] link that
+                    // requests all matches
+                    truncated = true;
+                    // truncate to last line read (don't look more than 100
+                    // characters back)
                     for(int i = charsRead - 1; i > charsRead-100; i--) {
                         if(buffer[i] == '\n') {
                             charsRead = i;
-                            truncated = true;
                             break;
                         }
                     }
