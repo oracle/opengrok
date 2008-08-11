@@ -107,8 +107,8 @@ public class OGAgent {
                 " JMX Agent, with java version " + javaver);
         //create mbeanserver
 
-        String connprotocol = props.getProperty("oga.connection.protocol", "jmxmp");
-        connectorport = Integer.parseInt(props.getProperty("oga.connection." + connprotocol + ".port", Integer.toString(connectorport)));
+        String connprotocol = props.getProperty("org.opensolaris.opengrok.management.connection.protocol", "jmxmp");
+        connectorport = Integer.parseInt(props.getProperty("org.opensolaris.opengrok.management.connection." + connprotocol + ".port", Integer.toString(connectorport)));
         log.fine("Using protocol " + connprotocol + ", port: " + connectorport);
 
         try {
@@ -167,14 +167,14 @@ public class OGAgent {
         server.invoke(timer, "start", null, null);
         log.info("Started timer service");
 
-        boolean enabled = Boolean.valueOf(properties.getProperty("oga.indexer.enabled")).booleanValue();
-        int period = Integer.parseInt(properties.getProperty("oga.indexer.sleeptime"));
+        boolean enabled = Boolean.valueOf(properties.getProperty("org.opensolaris.opengrok.management.indexer.enabled")).booleanValue();
+        int period = Integer.parseInt(properties.getProperty("org.opensolaris.opengrok.management.indexer.sleeptime"));
         log.fine("Indexer enabled: " + enabled);
         log.fine("Indexer period: " + period + " seconds");
         //instantiate and register resource purger
         ObjectName indexRunner = new ObjectName("OGA:name=AgentIndexRunner," + "source=timer");
         server.registerMBean(AgentIndexRunner.getInstance(enabled), indexRunner);
-        // Add index notification to timer (read from oga.indexer.sleeptime property).
+        // Add index notification to timer (read from org.opensolaris.opengrok.management.indexer.sleeptime property).
         Date date = new Date(System.currentTimeMillis() + Timer.ONE_SECOND * 5);
         Long longPeriod = Long.valueOf(period * Timer.ONE_SECOND);
         Integer id = (Integer) server.invoke(timer, "addNotification",
@@ -197,17 +197,17 @@ public class OGAgent {
     }
 
     private void createLogger(Properties props) {
-        String OGAlogpath = props.getProperty("oga.logging.path");
+        String OGAlogpath = props.getProperty("org.opensolaris.opengrok.management.logging.path");
 
         Level loglevel = null;
         try {
-            loglevel = Level.parse(props.getProperty("oga.logging.filelevel"));
+            loglevel = Level.parse(props.getProperty("org.opensolaris.opengrok.management.logging.filelevel"));
         } catch (Exception exll) {
             loglevel = Level.FINE;
         }
         Level consoleloglevel = null;
         try {
-            consoleloglevel = Level.parse(props.getProperty("oga.logging.consolelevel"));
+            consoleloglevel = Level.parse(props.getProperty("org.opensolaris.opengrok.management.logging.consolelevel"));
         } catch (Exception excl) {
             consoleloglevel = Level.INFO;
         }

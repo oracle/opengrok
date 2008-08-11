@@ -23,13 +23,6 @@
  */
 package org.opensolaris.opengrok.management;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -61,21 +54,21 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     }
 
     private void updateProperties() {
-        update = Boolean.parseBoolean(
-                ogaProperties.getProperty("opengrok.indexer.updatedatabase"));
-        noThreads = Integer.parseInt(ogaProperties.getProperty("opengrok.indexer.numberofthreads"));
-        configurationFile = ogaProperties.getProperty("opengrok.configuration.file");
-        String subfiles = ogaProperties.getProperty("opengrok.indexer.subfiles");
+        update = Boolean.parseBoolean(ogaProperties.getProperty("org.opensolaris.opengrok.indexer.updatedatabase"));
+        noThreads = Integer.parseInt(ogaProperties.getProperty("org.opensolaris.opengrok.indexer.numberofthreads"));
+        configurationFile = ogaProperties.getProperty("org.opensolaris.opengrok.configuration.file");
+        String subfiles = ogaProperties.getProperty("org.opensolaris.opengrok.indexer.subfiles");
         if (subfiles != null) {
             subFiles = subfiles.split(",");
         }
-        publishHost = ogaProperties.getProperty("opengrok.indexer.publishserver.url");
+        publishHost = ogaProperties.getProperty("org.opensolaris.opengrok.indexer.publishserver.url");
 
     }
 
     /**
      * Static factory method to get an instance of Management.
      * @param ogaProperties The properties to use
+     * @return A management instance to use
      */
     public static synchronized Management getInstance(Properties ogaProperties) {
         if (managementInstance == null) {
