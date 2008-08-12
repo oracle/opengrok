@@ -99,7 +99,11 @@ public class HistoryEntry {
     }
     
     public Date getDate() {
-        return (Date) date.clone();
+        if (date != null) {
+            return (Date) date.clone();
+        } else {
+            return null;
+        }
     }
     
     public String getMessage() {
@@ -115,7 +119,11 @@ public class HistoryEntry {
     }
     
     public void setDate(Date date) {
-        this.date = (Date) date.clone();
+        if (date != null) {
+            this.date = (Date) date.clone();
+        } else {
+            date = null;
+        }
     }
     
     public boolean isActive() {
