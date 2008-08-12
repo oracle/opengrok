@@ -23,30 +23,21 @@
  */
 package org.opensolaris.opengrok.index;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  *
  * @author Trond Norbye
  */
 public class IndexerTest {
-
-    private File sourceRoot;
-    private File dataRoot;
+    TestRepository repository;
 
     public IndexerTest() {
     }
@@ -61,49 +52,13 @@ public class IndexerTest {
 
     @Before
     public void setUp() throws IOException {
-        File sourceBundle = null;
-        try {
-            sourceRoot = File.createTempFile("source", "opengrok");
-            dataRoot = File.createTempFile("data", "opengrok");
-            sourceBundle = File.createTempFile("srcbundle", ".zip");
-
-            if (sourceRoot.exists()) {
-                assertTrue(sourceRoot.delete());
-            }
-
-            if (dataRoot.exists()) {
-                assertTrue(dataRoot.delete());
-            }
-
-            if (sourceBundle.exists()) {
-                assertTrue(sourceBundle.delete());
-            }
-
-            assertTrue(sourceRoot.mkdirs());
-            assertTrue(dataRoot.mkdirs());
-
-            // unzip source-root
-            InputStream in = IndexerTest.class.getResourceAsStream("source.zip");
-            assertNotNull(in);
-            FileOutputStream out = new FileOutputStream(sourceBundle);
-            copyFile(in, out);
-            out.close();
-            extractArchive(sourceBundle);
-        } finally {
-            if (sourceBundle != null) {
-                sourceBundle.delete();
-            }
-        }
+        repository = new TestRepository();
+        repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
     }
 
     @After
     public void tearDown() {
-        if (sourceRoot != null) {
-            removeDirs(sourceRoot);
-        }
-        if (dataRoot != null) {
-            removeDirs(dataRoot);
-        }
+        repository.destroy();
     }
 
     /**
@@ -115,8 +70,8 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
         if (env.validateExuberantCtags()) {
-            env.setSourceRootFile(sourceRoot);
-            env.setDataRoot(dataRoot);
+            env.setSourceRootFile(repository.getSourceRoot());
+            env.setDataRoot(repository.getDataRoot());
             env.setVerbose(true);
             Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
@@ -134,51 +89,10 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
         if (env.validateExuberantCtags()) {
-            String[] argv = { "-S", "-P", "-p", "/c", "-H", "-Q", "off", "-s", sourceRoot.getAbsolutePath(), "-d", dataRoot.getAbsolutePath(), "-v"};
+            String[] argv = { "-S", "-P", "-p", "/c", "-H", "-Q", "off", "-s", repository.getSourceRoot().getAbsolutePath(), "-d", repository.getDataRoot().getAbsolutePath(), "-v"};
             Indexer.main(argv);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
-    }
-
-    private void extractArchive(File sourceBundle) throws IOException {
-        ZipFile zipfile = new ZipFile(sourceBundle);
-
-        Enumeration<? extends ZipEntry> e = zipfile.entries();
-
-        while (e.hasMoreElements()) {
-            ZipEntry ze = e.nextElement();
-            File file = new File(sourceRoot, ze.getName());
-            if (ze.isDirectory()) {
-                file.mkdirs();
-            } else {
-                InputStream in = zipfile.getInputStream(ze);
-                assertNotNull(in);
-                FileOutputStream out = new FileOutputStream(file);
-                assertNotNull(out);
-                copyFile(in, out);
-            }
-        }
-    }
-
-    private void removeDirs(File root) {
-        for (File f : root.listFiles()) {
-            if (f.isDirectory()) {
-                removeDirs(f);
-            } else {
-                f.delete();
-            }
-        }
-        root.delete();
-    }
-
-    private void copyFile(InputStream in, OutputStream out) throws IOException {
-        byte[] array = new byte[8192];
-        int nr;
-
-        while ((nr = in.read(array)) > 0) {
-            out.write(array, 0, nr);
-        }
-        out.flush();
     }
 }
