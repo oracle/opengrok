@@ -58,7 +58,7 @@ public class HistoryEntry {
     public HistoryEntry(String revision, Date date, String author,
             String message, boolean active) {
         this.revision = revision;
-        this.date = date;
+        setDate(date);
         this.author = author;
         this.message = new StringBuffer(message);
         this.active = active;
@@ -99,7 +99,7 @@ public class HistoryEntry {
     }
     
     public Date getDate() {
-        return date;
+        return (Date) date.clone();
     }
     
     public String getMessage() {
@@ -115,7 +115,7 @@ public class HistoryEntry {
     }
     
     public void setDate(Date date) {
-        this.date = date;
+        this.date = (Date) date.clone();
     }
     
     public boolean isActive() {
