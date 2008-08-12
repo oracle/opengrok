@@ -89,7 +89,7 @@ public class OGAgent {
 
         Properties props = new Properties(System.getProperties());
         // Load default values
-        InputStream in = Info.class.getResourceAsStream("oga.properties");
+        InputStream in = OGAgent.class.getResourceAsStream("oga.properties");
         if (in != null) {
             props.load(in);
             in.close();
