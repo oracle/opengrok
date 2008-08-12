@@ -363,7 +363,7 @@ Use is subject to license terms.
     </target>    
 
     <target name="-check_emma" description="Check that emma jar files are present">
-        <available file="emma.jar" type="file" property="emma.jar.present">evt
+        <available file="emma.jar" type="file" property="emma.jar.present">
             <filepath refid="lib.search.path"/>
         </available>
         <fail unless="emma.jar.present" message="Please install emma.jar in lib-directory  (or in ant classpath) to run Emma, see README."/>
