@@ -42,7 +42,6 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.search.scope.MainFrame;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**
@@ -70,13 +69,8 @@ public class Indexer {
         CommandLineOptions cmdOptions = new CommandLineOptions();
         
         if(argv.length == 0) {
-            if (GraphicsEnvironment.isHeadless()) {
-                System.err.println("No display available for the Graphical User Interface");
-                System.err.println(cmdOptions.getUsage());
-                System.exit(1);
-            } else {
-                MainFrame.main(argv);
-            }
+            System.err.println(cmdOptions.getUsage());
+            System.exit(1);
         } else {
             boolean searchRepositories = false;
             ArrayList<String> subFiles = new ArrayList<String>();

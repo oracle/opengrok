@@ -27,7 +27,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.search.scope.SearchEngine;
+import org.opensolaris.opengrok.search.SearchEngine;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**

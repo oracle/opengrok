@@ -22,7 +22,7 @@
  * Use is subject to license terms.
  */
 
-package org.opensolaris.opengrok.search.scope;
+package org.opensolaris.opengrok.search;
 
 import java.io.BufferedReader;
 import java.io.File;
