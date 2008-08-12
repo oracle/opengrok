@@ -92,6 +92,7 @@ Use is subject to license terms.
     <property name="distname" value="opengrok"/>
     
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
+    <property name="checkstyle.home" value="${user.home}/.ant/lib/checkstyle"/>
                  
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
@@ -103,6 +104,12 @@ Use is subject to license terms.
         <pathelement path="${findbugs.home}/lib/"/>
         <pathelement path="${java.class.path}/findbugs/lib/"/>
         <pathelement path="lib/findbugs/lib/"/>
+    </path>
+
+    <path id="checkstyle.lib.search.path">
+        <pathelement path="${checkstyle.home}/"/>
+        <pathelement path="${java.class.path}/checkstyle/"/>
+        <pathelement path="lib/checkstyle/lib/"/>
     </path>
 
     <available file="JFlex.jar" type="file" property="JFlex.present">
@@ -331,9 +338,32 @@ Use is subject to license terms.
             <class location="${dist.dir}/opengrok.jar" />
         </findbugs>
     </target>
+    
+    <target name="-check_checkstyle" description="Check that checkstyle jar files are present">
+        <available file="checkstyle-all.jar" type="file" property="checkstyle.jar.present">
+            <filepath refid="checkstyle.lib.search.path"/>
+        </available>
+        <fail unless="checkstyle.jar.present" message="Please install checkstyle-all.jar in lib-directory  (or in ant classpath) to run Checkstyle, see README."/>
+
+        <available file="sun_checks.xml" type="file" property="checkstyle.checks.present">
+            <filepath refid="checkstyle.lib.search.path"/>
+        </available>
+        <fail unless="checkstyle.checks.present" message="Please install sun_checks.xml in lib-directory  (or in ant classpath) to run Checkstyle, see README."/>
+    </target>    
+    
+    <target name="checkstyle" depends="compile, -check_checkstyle" description="Run checkstyle on OpenGrok source code">
+        <taskdef resource="checkstyletask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
+        <mkdir dir="checkstyle"/>
+        <checkstyle config="${checkstyle.home}/sun_checks.xml">
+            <fileset dir="src" includes="**/*.java"/>
+            <formatter type="plain"/>
+            <formatter type="plain"  toFile="checkstyle/checkstyle_errors.txt"/>
+            <formatter type="xml" toFile="checkstyle/checkstyle_errors.xml"/>
+        </checkstyle>
+    </target>    
 
     <target name="-check_emma" description="Check that emma jar files are present">
-        <available file="emma.jar" type="file" property="emma.jar.present">
+        <available file="emma.jar" type="file" property="emma.jar.present">evt
             <filepath refid="lib.search.path"/>
         </available>
         <fail unless="emma.jar.present" message="Please install emma.jar in lib-directory  (or in ant classpath) to run Emma, see README."/>
