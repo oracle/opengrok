@@ -11,7 +11,7 @@
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file at LICENSE.txt.
  * If applicable, add the following below this CDDL HEADER, with the
- * s enclosed by brackets "[]" replaced with your own identifying
+ * fields enclosed by brackets "[]" replaced with your own identifying
  * information: Portions Copyright [yyyy] [name of copyright owner]
  *
  * CDDL HEADER END
