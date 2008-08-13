@@ -90,4 +90,34 @@ public class ContextTest {
         String s = out.toString();
         assertTrue("No [all...] link", s.contains(">all</a>...]"));
     }
+
+    /**
+     * Test that a line with more than 100 characters after the first match
+     * is truncated, and that &hellip; is appended to show that the line is
+     * truncated. Bug 383.
+     */
+    @Test
+    public void testLongTruncatedLine() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("search_for_me");
+        while (sb.length() <= 100) {
+            sb.append(" more words");
+        }
+        sb.append("should not be found");
+
+        Reader in = new StringReader(sb.toString());
+        StringWriter out = new StringWriter();
+
+        Term t = new Term("full", "search_for_me");
+        TermQuery tq = new TermQuery(t);
+        Context c = new Context(tq);
+
+        boolean match =
+                c.getContext(in, out, "", "", "", null, true, null);
+        assertTrue("No match found", match);
+        String s = out.toString();
+        assertTrue("Match not listed", s.contains("<b>search_for_me</b>"));
+        assertFalse("Line not truncated", s.contains("should not be found"));
+        assertTrue("Ellipsis not found", s.contains("&hellip;"));
+    }
 }
