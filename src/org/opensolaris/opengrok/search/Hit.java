@@ -30,7 +30,7 @@ import java.io.File;
  *
  * @author Trond Norbye
  */
-public class Hit implements Comparable {
+public class Hit implements Comparable<Hit> {
     /**
      * Holds value of property filename.
      */
@@ -174,17 +174,10 @@ public class Hit implements Comparable {
      * @param o The object to compare this object with
      *
      * @return the result of a toString().compareTo() of the filename
-     *
-     * @throws java.lang.ClassCastException if o is an instance of another
-     *         class than Hit
      */
-    public int compareTo(Object o) throws ClassCastException {
-        if (o instanceof Hit) {
-            return getFilename().compareTo(((Hit)o).getFilename());
-        } else {
-            throw new ClassCastException("Not an instance of Hit. " +
-                    o.toString() + " " + o.getClass().toString());
-        }
+    @Override
+    public int compareTo(Hit o) throws ClassCastException {
+        return filename.compareTo(o.filename);
     }
 
     /**
@@ -233,5 +226,22 @@ public class Hit implements Comparable {
      */
     public boolean getAlt() {
         return alt;
+    }
+
+    /**
+     * Check if two objects are equal. Only consider the {@code filename} field
+     * to match the return value of the {@link #compareTo(Hit)} method.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Hit) {
+            return compareTo((Hit) o) == 0;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return filename.hashCode();
     }
 }
