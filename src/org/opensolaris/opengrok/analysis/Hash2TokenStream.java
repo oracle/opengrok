@@ -21,14 +21,10 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
 package org.opensolaris.opengrok.analysis;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Set;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 

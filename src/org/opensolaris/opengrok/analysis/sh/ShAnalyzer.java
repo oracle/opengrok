@@ -21,17 +21,18 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
 package org.opensolaris.opengrok.analysis.sh;
 
-import org.apache.lucene.document.*;
-import org.apache.lucene.analysis.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.plain.*;
+import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 

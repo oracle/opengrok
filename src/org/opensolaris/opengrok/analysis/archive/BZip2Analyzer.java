@@ -21,19 +21,21 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
-
 package org.opensolaris.opengrok.analysis.archive;
 
-import org.apache.lucene.analysis.*;
-import java.io.*;
-import org.opensolaris.opengrok.analysis.*;
-import org.opensolaris.opengrok.analysis.plain.*;
-import org.apache.lucene.document.*;
-import org.apache.tools.bzip2.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.tools.bzip2.CBZip2InputStream;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 /**
  * Analyzes a BZip2 file
@@ -41,7 +43,6 @@ import org.apache.tools.bzip2.*;
  *
  * @author Chandan
  */
-
 public class BZip2Analyzer extends FileAnalyzer {
     private Genre g;
     
@@ -59,8 +60,12 @@ public class BZip2Analyzer extends FileAnalyzer {
     private FileAnalyzer fa;
     public void analyze(Document doc, InputStream in) {
 	try {
-	    if (in.read() != 'B') { throw new IOException("Not BZIP2 format"); };
-	    if (in.read() != 'Z') { throw new IOException("Not BZIP2 format"); };
+	    if (in.read() != 'B') { 
+                throw new IOException("Not BZIP2 format");
+            }
+	    if (in.read() != 'Z') { 
+                throw new IOException("Not BZIP2 format");
+            }
 	    BufferedInputStream gzis = new BufferedInputStream(new CBZip2InputStream(in));
 	    String path = doc.get("path");
 	    if(path != null && 

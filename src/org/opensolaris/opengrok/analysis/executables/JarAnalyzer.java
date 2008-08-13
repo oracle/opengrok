@@ -21,19 +21,28 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)JarAnalyzer.java 1.1     05/11/11 SMI"
- */
 package org.opensolaris.opengrok.analysis.executables;
 
-import org.apache.lucene.analysis.*;
-import java.io.*;
-import org.opensolaris.opengrok.analysis.*;
-import org.opensolaris.opengrok.analysis.plain.*;
-import org.apache.lucene.document.*;
-import java.util.zip.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.LinkedList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.List2TokenStream;
+import org.opensolaris.opengrok.analysis.TagFilter;
+import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 /**
  * Analyzes JAR, WAR, EAR (Java Archive) files.

@@ -21,14 +21,12 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)HistoryReader.java 1.2     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.history;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.Date;
 import java.util.List;
 import java.util.Iterator;

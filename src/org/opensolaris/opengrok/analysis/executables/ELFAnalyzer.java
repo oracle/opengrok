@@ -21,20 +21,24 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"%Z%%M% %I%     %E% SMI"
- */
 package org.opensolaris.opengrok.analysis.executables;
 
-import java.io.*;
-import org.opensolaris.opengrok.analysis.*;
-import org.opensolaris.opengrok.analysis.plain.*;
-import org.apache.lucene.document.*;
-import org.apache.lucene.analysis.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.util.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
+import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.HashMap;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 /**
  * Analyzes ELF (Executable and Linking Format) files.
@@ -67,7 +71,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	    } else {
 		String fullpath = doc.get("fullpath");
 		FileInputStream fin = new FileInputStream(fullpath);
-		parseELF((FileInputStream) fin);
+		parseELF(fin);
 		if (len > 0) {
 		    doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
 		    //doc.add(Field.Text("refs", " "));
@@ -81,8 +85,9 @@ public class ELFAnalyzer extends FileAnalyzer {
     public void parseELF(FileInputStream f) throws IOException, Exception {
 	FileChannel fch = f.getChannel();
 	MappedByteBuffer fmap = fch.map(FileChannel.MapMode.READ_ONLY, 0, fch.size());
-	if(fmap.getInt() != 0x7f454c46)
-	    throw new IOException("not an ELF File");
+	if(fmap.getInt() != 0x7f454c46) {
+            throw new IOException("not an ELF File");
+        }
 	int shstrtab = 0;
 	HashMap<String,Integer> sectionMap = new HashMap<String, Integer>();
 	ELFHeader eh;
@@ -184,8 +189,9 @@ public class ELFAnalyzer extends FileAnalyzer {
     }
     
     private String getName(int tab, int stroff, MappedByteBuffer fmap) {
-	if(tab == 0)
-	    return null;
+	if(tab == 0) {
+            return null;
+        }
 	StringBuilder sb = new StringBuilder(20);
 	byte c;
 	int start = tab + stroff;

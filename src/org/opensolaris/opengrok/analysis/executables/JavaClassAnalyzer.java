@@ -21,20 +21,45 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)JavaClassAnalyzer.java 1.2     06/02/22 SMI"
- */
 package org.opensolaris.opengrok.analysis.executables;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import org.apache.bcel.classfile.Attribute;
+import org.apache.bcel.classfile.ClassFormatException;
+import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.Code;
+import org.apache.bcel.classfile.Constant;
+import org.apache.bcel.classfile.ConstantCP;
+import org.apache.bcel.classfile.ConstantClass;
+import org.apache.bcel.classfile.ConstantDouble;
+import org.apache.bcel.classfile.ConstantFloat;
+import org.apache.bcel.classfile.ConstantInteger;
+import org.apache.bcel.classfile.ConstantLong;
+import org.apache.bcel.classfile.ConstantNameAndType;
+import org.apache.bcel.classfile.ConstantPool;
+import org.apache.bcel.classfile.ConstantString;
+import org.apache.bcel.classfile.ConstantUtf8;
+import org.apache.bcel.classfile.ExceptionTable;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.LocalVariable;
+import org.apache.bcel.classfile.LocalVariableTable;
+import org.apache.bcel.classfile.Utility;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.opensolaris.opengrok.analysis.*;
-import org.opensolaris.opengrok.analysis.plain.*;
-import org.apache.lucene.document.*;
-import org.apache.lucene.analysis.*;
-import org.apache.bcel.classfile.*;
-import java.util.*;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.List2TokenStream;
+import org.opensolaris.opengrok.analysis.TagFilter;
+import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 
@@ -140,7 +165,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         out.write('\n');
         String aflg = null;
         out.write(aflg = Utility.accessToString(c.getAccessFlags(), true));
-        if(aflg != null) out.write(' ');
+        if(aflg != null) {
+            out.write(' ');
+        }
         
         v[c.getClassNameIndex()] = 1;
         out.write(tagDef(t = c.getClassName()));
@@ -185,7 +212,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             out.write('\t');
             String aflgs;
             out.write(aflgs = Utility.accessToString(fld.getAccessFlags()));
-            if(aflgs != null && aflgs.length() > 0) out.write(' ');
+            if(aflgs != null && aflgs.length() > 0) {
+                out.write(' ');
+            }
             out.write(Utility.signatureToString(fld.getSignature()));
             out.write(' ');
             out.write(tagDef(t = fld.getName()));
@@ -198,7 +227,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             out.write('\t');
             String aflgs;
             out.write(aflgs = Utility.accessToString(m.getAccessFlags()));
-            if(aflgs != null && aflgs.length() > 0) out.write(' ');
+            if(aflgs != null && aflgs.length() > 0) {
+                out.write(' ');
+            }
             String sig = m.getSignature();
             out.write(Utility.methodSignatureReturnType(sig, false));
             out.write(' ');
@@ -213,8 +244,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                     refs.add(t.substring(0, spi));
                     defs.add(t.substring(spi+1));
                 }
-                if(i < args.length - 1)
+                if(i < args.length - 1) {
                     out.write(", ");
+                }
             }
             out.write(") ");
             ArrayList<LocalVariable[]> locals = new ArrayList<LocalVariable[]>();
@@ -265,8 +297,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
      * @param out Writer to write HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-    	if(xref != null)
-        	out.write(xref);
+    	if(xref != null) {
+            out.write(xref);
+        }
     }
     
     private void printLocal(Writer out, LocalVariable l) throws IOException {

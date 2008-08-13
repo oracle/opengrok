@@ -21,15 +21,13 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)TagFilter.java 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.analysis;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FilterReader;
+import java.io.Reader;
+import java.util.HashMap;
 
 /**
  * A reader that reads only plain text from a HTML or XML file
@@ -61,8 +59,9 @@ public class TagFilter extends FilterReader {
             buf[start++] = (char) c;
             n++;
         }
-        if (c == -1 && n == 0 && len != 0)
+        if (c == -1 && n == 0 && len != 0) {
             return -1;
+        }
         return n;
     }
     

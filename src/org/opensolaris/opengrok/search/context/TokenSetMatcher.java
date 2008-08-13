@@ -21,14 +21,9 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)TokenSetMatcher.java 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.search.context;
 
-import java.util.*;
+import java.util.HashSet;
 
 public class TokenSetMatcher extends LineMatcher {
     private HashSet tokenSet;
@@ -37,8 +32,9 @@ public class TokenSetMatcher extends LineMatcher {
     }
     
     public int match(String token) {
-        if (tokenSet.contains(token))
+        if (tokenSet.contains(token)) {
             return MATCHED;
+        }
         return NOT_MATCHED;
     }
 }

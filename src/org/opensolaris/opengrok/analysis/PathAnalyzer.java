@@ -21,15 +21,11 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)PathAnalyzer.java 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.Reader;
-import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 
 public final class PathAnalyzer extends Analyzer {
     public TokenStream tokenStream(String fieldName, Reader reader) {

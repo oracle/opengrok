@@ -21,18 +21,19 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)QueryMatchers.java 1.2     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.search.context;
 
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Set;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
 
 /**
  * Utility class used to extract the terms used in a query
@@ -67,21 +68,22 @@ public final class QueryMatchers {
         if (matchers.size() == 0) {
             return null;
         }
-        LineMatcher[] m = (LineMatcher[]) matchers.toArray(new LineMatcher[matchers.size()]);
+        LineMatcher[] m = matchers.toArray(new LineMatcher[matchers.size()]);
         return (m);
     }
     
     private void getTerms(Query query) {
-        if (query instanceof BooleanQuery)
+        if (query instanceof BooleanQuery) {
             getBooleans((BooleanQuery) query);
-        else if (query instanceof PhraseQuery)
+        } else if (query instanceof PhraseQuery) {
             getPhrases((PhraseQuery) query);
-        else if (query instanceof WildcardQuery)
+        } else if (query instanceof WildcardQuery) {
             getWildTerm((WildcardQuery) query);
-        else if (query instanceof TermQuery)
+        } else if (query instanceof TermQuery) {
             getTerm((TermQuery) query);
-        else if (query instanceof PrefixQuery)
+        } else if (query instanceof PrefixQuery) {
             getPrefix((PrefixQuery) query);
+        }
     }
     
     private final void getBooleans(BooleanQuery query) {
@@ -96,11 +98,11 @@ public final class QueryMatchers {
     private  final void getPhrases(PhraseQuery query) {
         Term[] queryTerms = query.getTerms();
         if(queryTerms.length > 0 && fields.contains(queryTerms[0].field())){
-            String[] terms = new String[queryTerms.length];
+            String[] termsArray = new String[queryTerms.length];
             for (int i = 0; i < queryTerms.length; i++) {
-                terms[i] = queryTerms[i].text().toLowerCase();
+                termsArray[i] = queryTerms[i].text().toLowerCase();
             }
-            matchers.add(new PhraseMatcher(terms));
+            matchers.add(new PhraseMatcher(termsArray));
         }
     }
     
