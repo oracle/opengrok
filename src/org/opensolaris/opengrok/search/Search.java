@@ -27,24 +27,23 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.search.SearchEngine;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**
  * Search and list the matching files
  */
-class Search {
+final class Search {
 
     /**
      * usage Search index "query" prunepath
      */
     public static void main(String[] argv) {
-        String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" 
-                + "\t -R <configuration.xml> Read configuration from the specified file\n" 
-                + "\t -d Symbol Definitions\n" 
-                + "\t -r Symbol References\n" 
-                + "\t -p Path\n" 
-                + "\t -h History\n"  
+        String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n"
+                + "\t -R <configuration.xml> Read configuration from the specified file\n"
+                + "\t -d Symbol Definitions\n"
+                + "\t -r Symbol References\n"
+                + "\t -p Path\n"
+                + "\t -h History\n"
                 + "\t -f Full text";
 
         SearchEngine engine = new SearchEngine();
