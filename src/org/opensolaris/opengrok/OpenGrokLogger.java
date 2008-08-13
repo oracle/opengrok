@@ -42,17 +42,22 @@ public class OpenGrokLogger {
     private static int LOGFILESIZELIMIT = 1000000;
     private static int LOGFILESCOUNT = 30;
     private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
+    
+    public static Logger getLogger() {
+        return log;
+    } 
 
     public static String setupLogger(String logpath, Level filelevel, Level consolelevel) {
+        System.out.println("Logging to " + logpath);
         if (logpath == null) {
             logpath = "%t";
-        }
-        System.out.println("Logging to " + logpath);
-        File jlp = new File(logpath);
-        if (!jlp.exists() && !jlp.mkdirs()) {
-            throw new RuntimeException("could not make logpath: " +
-                    jlp.getAbsolutePath());
-        }
+        } else {
+            File jlp = new File(logpath);
+            if (!jlp.exists() && !jlp.mkdirs()) {
+                throw new RuntimeException("could not make logpath: " +
+                        jlp.getAbsolutePath());
+            }
+       }
 
         clearForeignHandlers();
         String logfile = logpath + File.separatorChar + "opengrok%g.%u" + ".log";
