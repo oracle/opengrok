@@ -305,11 +305,25 @@ import org.opensolaris.opengrok.search.Hit;
   }
   public void dumpRest() throws IOException {
 	if(dumpRest) {
-		for(int i=0; rest+i<zzEndRead && i<100; i++) {
-			if(zzBuffer[rest+i] == '\n') {
+        final int maxLooks = 100;
+        for (int i=0; ; i++) {
+            final boolean endOfBuffer = (i >= zzEndRead - rest);
+            final boolean newline = !endOfBuffer && zzBuffer[rest+i] == '\n';
+            if (endOfBuffer || newline || i >= maxLooks) {
                            if (out != null) {
 				printWithNum(zzBuffer, rest, rest+i-1, markedLine);
-				//out.write(zzBuffer, rest, i);
+
+                // Assume that this line has been truncated if we don't find
+                // a newline after looking at maxLooks characters, or if we
+                // reach the end of the buffer and the size of the buffer is
+                // Context.MAXFILEREAD (which means that the file has probably
+                // been truncated).
+                if (!newline &&
+                      ((i >= maxLooks) ||
+                       (endOfBuffer && zzEndRead == Context.MAXFILEREAD))) {
+                    out.write(" (&hellip;)");
+                }
+
 				out.write("</a>");
 				if (prevHi) {
 					out.write(" <i> ");
