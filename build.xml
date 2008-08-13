@@ -354,7 +354,7 @@ Use is subject to license terms.
     <target name="checkstyle" depends="compile, -check_checkstyle" description="Run checkstyle on OpenGrok source code">
         <taskdef resource="checkstyletask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
         <mkdir dir="checkstyle"/>
-        <checkstyle config="${checkstyle.home}/sun_checks.xml">
+        <checkstyle config="${checkstyle.home}/sun_checks.xml" failOnViolation="false">
             <fileset dir="src" includes="**/*.java"/>
             <formatter type="plain"/>
             <formatter type="plain"  toFile="checkstyle/checkstyle_errors.txt"/>
