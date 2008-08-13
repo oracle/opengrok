@@ -31,4 +31,16 @@
       <Bug code="UrF"/>
   </Match>
 
+  <!-- Some of the lex classes rename yylex() to next() -->
+  <Match>
+    <And>
+      <Or>
+	<Class name="org.opensolaris.opengrok.search.context.PlainLineTokenizer"/>
+	<Class name="org.opensolaris.opengrok.analysis.tcl.TclSymbolTokenizer"/>
+      </Or>
+      <Method name="next"/>
+    </And>
+    <Bug code="SF"/>
+  </Match>
+
 </FindBugsFilter>
