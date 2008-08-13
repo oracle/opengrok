@@ -38,7 +38,6 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryReader;
-import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
  * Gets different versions of a file

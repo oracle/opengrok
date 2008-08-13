@@ -29,7 +29,6 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.util.StringTokenizer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;

@@ -27,13 +27,11 @@ package org.opensolaris.opengrok.web;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
