@@ -255,19 +255,19 @@ To check that your code follows the standard coding conventions,
 you can use checkstyle from http://checkstyle.sourceforge.net/
 
 First you must download checkstyle from http://checkstyle.sourceforge.net/ ,
-Version 4.4 has been tested, but newer versions should work. Extract the package
-you have downloaded, and create a symbolic link to it from ~/.ant/lib/checkstyle,
+You need Version 5.0-beta01 (or newer). Extract the package you have
+downloaded, and create a symbolic link to it from ~/.ant/lib/checkstyle,
 e.g. like this:
 
    cd ~/.ant/lib
-   unzip ~/Desktop/checkstyle-4.4.zip
-   ln -s checkstyle-4.4 checkstyle
+   unzip ~/Desktop/checkstyle-5.0-beta01.zip
+   ln -s checkstyle-5.0-beta01 checkstyle
 
 You also have to create symbolic links to the jar files:
 
    cd checkstyle
-   ln -s checkstyle-4.4.jar checkstyle.jar
-   ln -s checkstyle-all-4.4.jar checkstyle-all.jar
+   ln -s checkstyle-5.0-beta01.jar checkstyle.jar
+   ln -s checkstyle-all-5.0-beta01.jar checkstyle-all.jar
 
 To run checkstyle on the source code, just run ant checkstyle:
 
@@ -275,9 +275,10 @@ To run checkstyle on the source code, just run ant checkstyle:
 
 Output from the command will bw stored in the checkstyle directory.
 
-If you want to install checkstyle some other place than ~/.ant/lib, you can untar the
-.tar.gz file to a directory, and use the checkstyle.home property to tell ant where to find
-checkstyle, like this (if you have installed checkstyle under the lib directory):
+If you want to install checkstyle some other place than ~/.ant/lib, you can
+untar the .tar.gz file to a directory, and use the checkstyle.home property
+to tell ant where to find checkstyle, like this (if you have installed 
+checkstyle under the lib directory):
 
   ant checkstyle -Dcheckstyle.home=lib/checkstyle
 
