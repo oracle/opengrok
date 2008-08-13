@@ -5,19 +5,22 @@
 <module name="Checker">
     <module name="NewlineAtEndOfFile"/>
     <module name="TreeWalker">
+        <module name="Header">
+            <property name="headerFile" value="checkstyle/fileheader.txt"/>
+        </module>
         <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <module name="ImportOrder"/>
         <module name="FileLength"/>
-        <module name="LineLength">
-            <property name="max" value="120"/>
-        </module>
         <module name="MethodLength"/>
         <module name="AnonInnerLength">
             <property name="max" value="60"/>
         </module>
         <module name="ParameterNumber"/>
         <module name="NeedBraces"/>
+        <module name="GenericWhitespace"/>
+        <module name="MethodParamPad"/>
+        <module name="NoWhitespaceAfter"/>
     </module>
 </module>
