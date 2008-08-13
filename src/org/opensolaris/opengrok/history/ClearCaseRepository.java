@@ -32,12 +32,14 @@ import java.util.ArrayList;
  *
  */
 public class ClearCaseRepository extends Repository {
+
     private boolean verbose;
 
     /**
      * Creates a new instance of ClearCaseRepository
      */
-    public ClearCaseRepository() { }
+    public ClearCaseRepository() {
+    }
 
     /**
      * Get the name of the ClearCase command that should be used
@@ -113,18 +115,17 @@ public class ClearCaseRepository extends Repository {
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             lineIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            while (lineIn.readLine() != null) { }
+            while (lineIn.readLine() != null) {
+            }
 
             process.exitValue();
 
-            ret = new BufferedInputStream(new FileInputStream(tmp)
-            {
-                public void close() throws IOException
-                {
+            ret = new BufferedInputStream(new FileInputStream(tmp) {
+
+                public void close() throws IOException {
                     super.close();
                     // delete the temporary file on close
-                    if(!tmp.delete())
-                    {
+                    if (!tmp.delete()) {
                         // failed, lets do the next best thing then ..
                         // delete it on JVM exit
                         tmp.deleteOnExit();
@@ -193,7 +194,7 @@ public class ClearCaseRepository extends Repository {
         BufferedReader in = null;
         try {
             process = pb.start();
-            in =new BufferedReader(new InputStreamReader(process.getInputStream()));
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Annotation a = new Annotation(file.getName());
             String line;
             int lineno = 0;
@@ -238,9 +239,8 @@ public class ClearCaseRepository extends Repository {
 
         do {
             try {
-               return process.waitFor();
+                return process.waitFor();
             } catch (InterruptedException exp) {
-
             }
         } while (true);
     }
@@ -254,29 +254,28 @@ public class ClearCaseRepository extends Repository {
             // Check if this is a snapshot view
             String[] argv = {getCommand(), "catcs"};
             process = Runtime.getRuntime().exec(argv, null, directory);
-            in = new BufferedReader(new InputStreamReader
-                                     (process.getInputStream()));
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             boolean snapshot = false;
             String line;
             while (!snapshot && (line = in.readLine()) != null) {
                 snapshot = line.startsWith("load");
             }
             if (waitFor(process) != 0) {
-                return ;
+                return;
             }
             in.close();
             in = null; // To avoid double close in finally clause
-            if(snapshot) {
+            if (snapshot) {
                 // It is a snapshot view, we need to update it manually
-                argv = new String[] {getCommand(), "update", "-overwrite", "-f"};
+                argv = new String[]{getCommand(), "update", "-overwrite", "-f"};
                 process = Runtime.getRuntime().exec(argv, null, directory);
-                in = new BufferedReader(new InputStreamReader
-                                         (process.getInputStream()));
+                in = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 // consume output
-                while ((line = in.readLine()) != null) { }
+                while ((line = in.readLine()) != null) {
+                }
 
                 if (waitFor(process) != 0) {
-                    return ;
+                    return;
                 }
             }
         } finally {
@@ -306,14 +305,14 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor( File file) {
         // if the parent contains a file named "view.dat" or
         // the parent is named "vobs"
         File f = new File(file, "view.dat");
         if (f.exists() && f.isDirectory()) {
             return true;
         } else {
-            return file.isDirectory() && file.getName().toLowerCase().equals("vobs"); 
+            return file.isDirectory() && file.getName().toLowerCase().equals("vobs");
         }
     }
 }
