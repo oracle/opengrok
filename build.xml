@@ -344,17 +344,12 @@ Use is subject to license terms.
             <filepath refid="checkstyle.lib.search.path"/>
         </available>
         <fail unless="checkstyle.jar.present" message="Please install checkstyle-all.jar in lib-directory  (or in ant classpath) to run Checkstyle, see README."/>
-
-        <available file="sun_checks.xml" type="file" property="checkstyle.checks.present">
-            <filepath refid="checkstyle.lib.search.path"/>
-        </available>
-        <fail unless="checkstyle.checks.present" message="Please install sun_checks.xml in lib-directory  (or in ant classpath) to run Checkstyle, see README."/>
     </target>    
     
     <target name="checkstyle" depends="compile, -check_checkstyle" description="Run checkstyle on OpenGrok source code">
         <taskdef resource="checkstyletask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
         <mkdir dir="checkstyle"/>
-        <checkstyle config="${checkstyle.home}/sun_checks.xml" failOnViolation="false">
+        <checkstyle config="checkstyle/style.xml" failOnViolation="false">
             <fileset dir="src" includes="**/*.java"/>
             <formatter type="plain"/>
             <formatter type="plain"  toFile="checkstyle/checkstyle_errors.txt"/>

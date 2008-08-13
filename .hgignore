@@ -15,3 +15,5 @@ lib/JFlex.jar
 lib/findbugs
 findbugs
 manifest.mf
+checkstyle/checkstyle_errors.txt
+checkstyle/checkstyle_errors.xml
