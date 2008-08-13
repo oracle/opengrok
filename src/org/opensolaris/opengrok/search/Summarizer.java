@@ -15,12 +15,30 @@
  */
 package org.opensolaris.opengrok.search;
 
-import java.io.*;
-import java.util.*;
-
-import org.apache.lucene.index.*;
-import org.apache.lucene.analysis.*;
-import org.apache.lucene.search.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.Vector;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.Token;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.PrefixQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
 
 
 /** Implements hit summarization. */
@@ -101,7 +119,13 @@ public class Summarizer {
     
     /** Returns a summary for the given pre-tokenized text. */
     public Summary getSummary(String text) throws IOException {
-        if (text == null) return null;
+        if (text == null) {
+            return null;
+            // Simplistic implementation.  Finds the first fragments in the document
+            // containing any query terms.
+            //
+            // TODO: check that phrases in the query are matched in the fragment
+        }
         // Simplistic implementation.  Finds the first fragments in the document
         // containing any query terms.
         //
@@ -109,8 +133,9 @@ public class Summarizer {
         
         Token[] tokens = getTokens(text);             // parse text to token array
         
-        if (tokens.length == 0)
+        if (tokens.length == 0) {
             return new Summary();
+        }
         
         
         //
@@ -135,8 +160,9 @@ public class Summarizer {
                     return -1;
                 } else if (excerpt1 != null && excerpt2 == null) {
                     return 1;
-                } else 
+                } else {
                     return 0;
+                }
                 } 
             }
         );
@@ -244,7 +270,7 @@ public class Summarizer {
         double tokenCount = 0;
         Summary s = new Summary();
         while (tokenCount <= SUM_LENGTH && excerptSet.size() > 0) {
-            Excerpt excerpt = (Excerpt) excerptSet.last();
+            Excerpt excerpt = excerptSet.last();
             excerptSet.remove(excerpt);
             
             double tokenFraction = (1.0 * excerpt.getNumTerms()) / excerpt.numFragments();
@@ -258,8 +284,9 @@ public class Summarizer {
             }
         }
         
-        if (tokenCount > 0 && lastExcerptPos < tokens.length)
+        if (tokenCount > 0 && lastExcerptPos < tokens.length) {
             s.add(new Summary.Ellipsis());
+        }
         return s;
     }
     
@@ -269,7 +296,7 @@ public class Summarizer {
         for (Token token = ts.next(); token != null; token = ts.next()) {
             result.add(token);
         }
-        return (Token[])result.toArray(new Token[result.size()]);
+        return result.toArray(new Token[result.size()]);
     }
     
     
@@ -281,16 +308,17 @@ public class Summarizer {
      */
     
     private void getTerms(Query query) {
-        if (query instanceof BooleanQuery)
+        if (query instanceof BooleanQuery) {
             getBooleans((BooleanQuery) query);
-        else if (query instanceof PhraseQuery)
+        } else if (query instanceof PhraseQuery) {
             getPhrases((PhraseQuery) query);
-        else if (query instanceof WildcardQuery)
+        } else if (query instanceof WildcardQuery) {
             getWildTerm((WildcardQuery) query);
-        else if (query instanceof TermQuery)
+        } else if (query instanceof TermQuery) {
             getTerm((TermQuery) query);
-        else if (query instanceof PrefixQuery)
+        } else if (query instanceof PrefixQuery) {
             getPrefix((PrefixQuery) query);
+        }
     }
     
     private void getBooleans(BooleanQuery query) {

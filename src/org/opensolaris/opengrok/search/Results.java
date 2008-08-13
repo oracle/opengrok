@@ -21,23 +21,25 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident      "@(#)Results.java 1.2     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.search;
 
-import java.io.*;
-import java.util.*;
-
-import org.apache.lucene.search.*;
-import org.apache.lucene.document.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.search.Hits;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
-import org.opensolaris.opengrok.web.*;
-import org.opensolaris.opengrok.search.context.HistoryContext;
 import org.opensolaris.opengrok.search.context.Context;
+import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.web.EftarFileReader;
+import org.opensolaris.opengrok.web.Util;
 
 public class Results {
     public static void prettyPrintHTML(Hits hits, int start, int end, Writer out,
@@ -75,8 +77,9 @@ public class Results {
                 String self = rpath.substring(rpath.lastIndexOf('/')+1, rpath.length());
                 String selfUrl = Util.URIEncodePath(urlPrefix + rpath);
                 out.write("<tr ");
-                if(alt)
+                if(alt) {
                     out.write(" class=\"alt\"");
+                }
                 alt ^= true;
                 out.write("><td class=\"f\"><a href=\"" +
                         selfUrl + "\">"+self+"</a>&nbsp;</td><td><tt class=\"con\">");
