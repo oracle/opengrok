@@ -98,7 +98,6 @@ public class ClearCaseRepository extends Repository {
 
         String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
-        BufferedReader lineIn = null;
         try {
             final File tmp = File.createTempFile("opengrok", "tmp");
             String tmpName = tmp.getAbsolutePath();
@@ -114,9 +113,7 @@ public class ClearCaseRepository extends Repository {
             String argv[] = {getCommand(), "get", "-to", tmpName, decorated};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
-            lineIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            while (lineIn.readLine() != null) {
-            }
+            drainStream(process.getInputStream());
 
             process.exitValue();
 
@@ -136,13 +133,6 @@ public class ClearCaseRepository extends Repository {
             System.err.print("Failed to get history: " + exp.getClass().toString());
             exp.printStackTrace();
         } finally {
-            if (lineIn != null) {
-                try {
-                    lineIn.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
             // Clean up zombie-processes...
             if (process != null) {
                 try {
@@ -155,6 +145,24 @@ public class ClearCaseRepository extends Repository {
         }
 
         return ret;
+    }
+
+    /**
+     * Drain all data from a stream and close it.
+     * @param in the stream to drain
+     * @throws IOException if an I/O error occurs
+     */
+    private static void drainStream(InputStream in) throws IOException {
+        while (true) {
+            long skipped = in.skip(32768L);
+            if (skipped == 0) {
+                // No bytes skipped, check if we've reached EOF with read()
+                if (in.read() == -1) {
+                    break;
+                }
+            }
+        }
+        in.close();
     }
 
     public Class<? extends HistoryParser> getHistoryParser() {
