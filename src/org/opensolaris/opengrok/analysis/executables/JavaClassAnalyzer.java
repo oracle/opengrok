@@ -77,9 +77,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         super(factory);
     }
     
-    private LinkedList<String>defs;
-    private LinkedList<String>refs;
-    private LinkedList<String>full;
+    private LinkedList<String> defs;
+    private LinkedList<String> refs;
+    private LinkedList<String> full;
     private String xref;
     private String fullText;
     private JavaClass c;
