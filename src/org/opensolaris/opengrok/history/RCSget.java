@@ -21,21 +21,16 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)RCSget.java 1.3     05/12/02 SMI"
- */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import org.apache.commons.jrcs.diff.PatchFailedException;
-import java.io.IOException;
 import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
 import org.apache.commons.jrcs.rcs.NodeNotFoundException;

@@ -39,8 +39,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**

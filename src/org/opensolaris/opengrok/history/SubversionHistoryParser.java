@@ -28,15 +28,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.tigris.subversion.javahl.ChangePath;
 import org.tigris.subversion.javahl.ClientException;
 import org.tigris.subversion.javahl.Info;
-import org.tigris.subversion.javahl.SVNClient;
-import org.tigris.subversion.javahl.Revision;
 import org.tigris.subversion.javahl.LogMessage;
+import org.tigris.subversion.javahl.Revision;
+import org.tigris.subversion.javahl.SVNClient;
 
 /**
  * Parse source history for a Subversion Repository

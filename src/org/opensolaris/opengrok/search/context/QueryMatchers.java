@@ -23,8 +23,8 @@
  */
 package org.opensolaris.opengrok.search.context;
 
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;

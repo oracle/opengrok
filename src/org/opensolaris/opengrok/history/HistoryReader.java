@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Date;
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Class for reading history entries. The HistoryReader have

@@ -23,8 +23,8 @@
  */
 package org.opensolaris.opengrok.management;
 
-import javax.management.NotificationListener;
 import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
 
 /**
  * @author Jan S Berg

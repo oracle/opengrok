@@ -27,8 +27,8 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.management.MBeanRegistration;
-import javax.management.ObjectName;
 import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import org.opensolaris.opengrok.Info;
 
 public final class Management implements ManagementMBean, MBeanRegistration {
