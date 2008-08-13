@@ -263,8 +263,9 @@ public class AnalyzerGuru {
     public static String getContentType(InputStream in, String file) throws IOException {
         FileAnalyzerFactory factory = find(in, file);
         String type = null;
-        if (factory != null)
+        if (factory != null) {
             type = factory.getContentType();
+        }
         return type;
     }
 

@@ -21,11 +21,6 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)SingleTokenMatcher.java 1.2     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.search.context;
 
 public class SingleTokenMatcher extends LineMatcher {
@@ -35,8 +30,9 @@ public class SingleTokenMatcher extends LineMatcher {
     }
     
     public int match(String line) {
-        if (mt.equals(line))
+        if (mt.equals(line)) {
             return MATCHED;
+        }
         return NOT_MATCHED;
     }
 }

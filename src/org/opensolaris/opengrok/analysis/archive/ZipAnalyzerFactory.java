@@ -64,9 +64,13 @@ public class ZipAnalyzerFactory extends FileAnalyzerFactory {
         public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException {
             assert in.markSupported();
-            if (contents.length < MAGIC.length) return null;
+            if (contents.length < MAGIC.length) {
+                return null;
+            }
             for (int i = 0; i < MAGIC.length; i++) {
-                if (contents[i] != MAGIC[i]) return null;
+                if (contents[i] != MAGIC[i]) {
+                    return null;
+                }
             }
 
             byte[] buf = new byte[1024];

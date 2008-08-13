@@ -22,16 +22,11 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident	"@(#)PrefixMatcher.java 1.1     05/11/11 SMI"
- */
-/*
- * Matches a term against a prefix
- *
- */
-
 package org.opensolaris.opengrok.search.context;
 
+/**
+ * Matches a term against a prefix
+ */
 public class PrefixMatcher extends LineMatcher {
     private String prefix;
     public PrefixMatcher(String prefix) {
@@ -39,8 +34,9 @@ public class PrefixMatcher extends LineMatcher {
     }
     
     public int match(String token) {
-        if (token.startsWith(prefix))
+        if (token.startsWith(prefix)) {
             return MATCHED;
+        }
         return NOT_MATCHED;
     }
 }

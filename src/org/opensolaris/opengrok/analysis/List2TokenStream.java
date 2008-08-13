@@ -21,11 +21,6 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)List2TokenStream.java 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.util.LinkedList;
@@ -61,10 +56,11 @@ public final class List2TokenStream extends TokenStream {
                 return null;
             }
         }
-        if(si < subTokens.length)
-            return new Token(subTokens[si++],0,0);
-        else
+        if (si < subTokens.length) {
+            return new Token(subTokens[si++], 0, 0);
+        } else {
             return null;
+        }
     }
     
     public void close() {
