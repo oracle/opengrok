@@ -42,8 +42,7 @@ public class TimerFilter implements NotificationFilter {
 
     public boolean isNotificationEnabled(Notification n) {
 
-        if (n.getType().equals("timer.notification") &&
-                n instanceof TimerNotification) {
+        if (n instanceof TimerNotification) {
             TimerNotification timerNotif = (TimerNotification) n;
             if (timerNotif.getNotificationID().equals(id)) {
                 return true;
