@@ -16,6 +16,7 @@
  *
  * CDDL HEADER END
  */
+
 package org.opensolaris.opengrok.util;
 
 import java.io.BufferedReader;

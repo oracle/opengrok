@@ -16,6 +16,7 @@
  *
  * CDDL HEADER END
  */
+
 package org.opensolaris.opengrok.management.client;
 
 import java.awt.event.ActionEvent;

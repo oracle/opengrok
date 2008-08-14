@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -21,11 +21,6 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)LineMatcher.java 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.search.context;
 /**
  * Base class for matching a line against terms

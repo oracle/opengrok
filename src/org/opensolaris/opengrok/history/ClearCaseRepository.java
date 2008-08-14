@@ -16,6 +16,7 @@
  *
  * CDDL HEADER END
  */
+
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
