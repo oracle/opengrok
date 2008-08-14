@@ -354,7 +354,7 @@ public class Indexer {
                 }
 
                 if (!env.validateExuberantCtags()) {
-                    System.exit(1);
+                    throw new IndexerException("Didn't find Exuberant Ctags");
                 }
 
                 if (searchRepositories) {
