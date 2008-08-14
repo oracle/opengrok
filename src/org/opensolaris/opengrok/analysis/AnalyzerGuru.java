@@ -510,12 +510,11 @@ public class AnalyzerGuru {
         return null;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         AnalyzerGuru af = new AnalyzerGuru();
         System.out.println("<pre wrap=true>");
         for (String arg : args) {
             try {
-                FileAnalyzerFactory an = AnalyzerGuru.find(arg);
                 File f = new File(arg);
                 BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
                 FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, arg);
@@ -553,8 +552,11 @@ public class AnalyzerGuru {
                 Writer out = new OutputStreamWriter(System.out);
                 fa.writeXref(out);
                 out.flush();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 System.err.println("ERROR: " + e.getMessage());
+                e.printStackTrace();
+            } catch (RuntimeException e) {
+                System.err.println("RUNTIME ERROR: " + e.getMessage());
                 e.printStackTrace();
             }
         }
