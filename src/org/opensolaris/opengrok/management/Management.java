@@ -197,11 +197,11 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     }
 
     public void setSubFiles(String[] sublist) {
-        this.subFiles = sublist;
+        this.subFiles = (sublist == null) ? null : (String[]) sublist.clone();
     }
 
     public String[] getSubFiles() {
-        return this.subFiles;
+        return (subFiles == null) ? null : (String[]) subFiles.clone();
     }
 
     public String getConfigurationFile() {
