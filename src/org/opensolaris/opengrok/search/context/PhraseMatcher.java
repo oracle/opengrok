@@ -27,8 +27,8 @@ package org.opensolaris.opengrok.search.context;
  * Matches a term against a set of tokens
  *
  */
-public class PhraseMatcher extends LineMatcher {
-    private String[] phraseTerms;
+class PhraseMatcher extends LineMatcher {
+    private final String[] phraseTerms;
     private int cur;
     
     public PhraseMatcher(String[] phraseTerms) {
