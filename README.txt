@@ -273,7 +273,7 @@ To run checkstyle on the source code, just run ant checkstyle:
 
    ant checkstyle
 
-Output from the command will bw stored in the checkstyle directory.
+Output from the command will be stored in the checkstyle directory.
 
 If you want to install checkstyle some other place than ~/.ant/lib, you can
 untar the .tar.gz file to a directory, and use the checkstyle.home property
@@ -281,6 +281,41 @@ to tell ant where to find checkstyle, like this (if you have installed
 checkstyle under the lib directory):
 
   ant checkstyle -Dcheckstyle.home=lib/checkstyle
+
+---------------------------------------------------
+Using PMD
+---------------------------------------------------
+
+To check the quality of the OpenGrok code you can also use PMD
+from http://pmd.sourceforge.net/.
+
+How to install:
+
+  cd ~/.ant/lib
+  unzip ~/Desktop/pmd-bin-4.2.2.zip
+  ln -s pmd-4.2.2/ pmd
+
+You also have to make links to the jar files:
+
+  cd ~/.ant/lib/pmd/lib
+  ln -s pmd-4.2.2.jar pmd.jar
+  ln -s jaxen-1.1.1.jar jaxen.jar
+
+To run PMD on the rource code, just run ant pmd:
+
+  ant pmd
+
+Outout from the command will be stored in the pmd subdirectory.
+
+  % ls pmd
+  pmd_report.html  pmd_report.xml
+
+If you want to install PMD some other place than ~/.ant/lib, you can
+unzip the .zip file to a directory, and use the pmd.home property
+to tell ant where to find PMD, like this (if you have installed 
+PMD under the lib directory):
+
+  ant pmd -Dpmd.home=lib/pmd-4.2.3
 
 AUTHORS 
 -------

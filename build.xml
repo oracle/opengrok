@@ -93,6 +93,7 @@ Use is subject to license terms.
     
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
     <property name="checkstyle.home" value="${user.home}/.ant/lib/checkstyle"/>
+    <property name="pmd.home" value="${user.home}/.ant/lib/pmd"/>
                  
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
@@ -110,6 +111,12 @@ Use is subject to license terms.
         <pathelement path="${checkstyle.home}/"/>
         <pathelement path="${java.class.path}/checkstyle/"/>
         <pathelement path="lib/checkstyle/lib/"/>
+    </path>
+
+    <path id="pmd.lib.search.path">
+        <pathelement path="${pmd.home}/lib/"/>
+        <pathelement path="${java.class.path}/pmd/lib/"/>
+        <pathelement path="lib/pmd/lib/"/>
     </path>
 
     <available file="JFlex.jar" type="file" property="JFlex.present">
@@ -344,18 +351,56 @@ Use is subject to license terms.
             <filepath refid="checkstyle.lib.search.path"/>
         </available>
         <fail unless="checkstyle.jar.present" message="Please install checkstyle-all.jar in lib-directory  (or in ant classpath) to run Checkstyle, see README."/>
-    </target>    
+    </target>
     
     <target name="checkstyle" depends="compile, -check_checkstyle" description="Run checkstyle on OpenGrok source code">
         <taskdef resource="checkstyletask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
-        <mkdir dir="checkstyle"/>
         <checkstyle config="checkstyle/style.xml" failOnViolation="false">
             <fileset dir="src" includes="**/*.java"/>
             <formatter type="plain"/>
             <formatter type="plain"  toFile="checkstyle/checkstyle_errors.txt"/>
             <formatter type="xml" toFile="checkstyle/checkstyle_errors.xml"/>
         </checkstyle>
-    </target>    
+    </target>
+
+    <target name="-check_pmd" description="Check that pmd jar files are present">
+        <available file="pmd.jar" type="file" property="pmd.jar.present">
+            <filepath refid="pmd.lib.search.path"/>
+        </available>
+        <fail unless="pmd.jar.present" message="Please install pmd.jar in lib-directory  (or in ant classpath) to run PMD, see README."/>
+    </target>
+    
+    <target name="pmd" depends="compile, -check_pmd" description="Run PMD on OpenGrok source code">
+        <path id="pmd.lib" >
+            <pathelement location="${pmd.home}/lib/pmd.jar"/>
+            <pathelement location="${pmd.home}/lib/jaxen.jar"/>
+        </path>
+        <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
+        <mkdir dir="pmd"/>
+        <pmd shortFilenames="true" targetjdk="1.6" failuresPropertyName="pmd.num.warnings">
+            <ruleset>rulesets/basic.xml</ruleset>
+            <ruleset>rulesets/braces.xml</ruleset>
+            <ruleset>rulesets/clone.xml</ruleset>
+            <ruleset>rulesets/design.xml</ruleset>
+            <ruleset>rulesets/favorites.xml</ruleset>
+            <ruleset>rulesets/finalizers.xml</ruleset>
+            <ruleset>rulesets/imports.xml</ruleset>
+            <ruleset>rulesets/junit.xml</ruleset>
+            <ruleset>rulesets/logging-java.xml</ruleset>
+            <ruleset>rulesets/migrating.xml</ruleset>
+            <!-- Enable when we have fever reported warnings -->
+            <!-- <ruleset>rulesets/optimizations.xml</ruleset> -->
+            <ruleset>rulesets/strictexception.xml</ruleset>
+            <ruleset>rulesets/strings.xml</ruleset>
+            <ruleset>rulesets/sunsecure.xml</ruleset>
+            <ruleset>rulesets/typeresolution.xml</ruleset>
+            <ruleset>rulesets/unusedcode.xml</ruleset>
+            <formatter type="html" toFile="pmd/pmd_report.html"/>
+            <formatter type="xml" toFile="pmd/pmd_report.xml"/>
+            <fileset dir="src" includes="**/*.java"/>
+        </pmd>
+        <echo message="PMD finished, found ${pmd.num.warnings} warnings."/>
+    </target>
 
     <target name="-check_emma" description="Check that emma jar files are present">
         <available file="emma.jar" type="file" property="emma.jar.present">
