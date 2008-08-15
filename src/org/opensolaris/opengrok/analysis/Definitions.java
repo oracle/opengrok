@@ -129,14 +129,14 @@ public class Definitions implements Serializable {
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
-        symbol = symbol.intern();
-        type = type.intern();
-        text = text.intern();
-        tags.add(new Tag(line, symbol, type, text));
-        Set<Integer> lines = symbols.get(symbol);
+        final String internedSymbol = symbol.intern();
+        final String internedType = type.intern();
+        final String internedText = text.intern();
+        tags.add(new Tag(line, internedSymbol, internedType, internedText));
+        Set<Integer> lines = symbols.get(internedSymbol);
         if (lines == null) {
             lines = new HashSet<Integer>();
-            symbols.put(symbol, lines);
+            symbols.put(internedSymbol, lines);
         }
         lines.add(line);
     }
