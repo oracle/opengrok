@@ -32,12 +32,6 @@
     <param-name>SRC_ROOT</param-name>
     <param-value>/directory/containing/src</param-value>
     <description>REQUIRED: Full path to source tree</description>
-  </context-param>
-
-  <context-param>
-    <param-name>SCAN_REPOS</param-name>
-    <param-value>false</param-value>
-    <description>Set this variable to true if you would like the web application to scan for external repositories (Mercurial)</description>
   </context-param-->
 
   <listener>

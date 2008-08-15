@@ -29,128 +29,95 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.HistoryGuru;
 
 /**
  * Populate the Mercurial Repositories
  * @author Trond Norbye
  */
-public final class WebappListener  implements ServletContextListener  {
-    
-    private String getFileName(ServletContext context, String variable, boolean directory) {
+public final class WebappListener implements ServletContextListener {
+
+    private String getFileName(final ServletContext context, final String variable, final boolean directory) {
         String value = context.getInitParameter(variable);
         if (value == null) {
-            System.err.println("OpenGrok: configuration error. " + variable + " not specified in web.xml");
+            OpenGrokLogger.getLogger().log(Level.WARNING, "OpenGrok: configuration error. " + variable + " not specified in web.xml");
             return null;
         }
         File file = new File(value);
         if (!file.exists()) {
-            System.err.println("OpenGrok: " + variable + " configuration error. " + value + " does not exist.");
+            OpenGrokLogger.getLogger().log(Level.WARNING, "OpenGrok: " + variable + " configuration error. " + value + " does not exist.");
             return null;
         }
-        
-        if (directory) {
-            if (!file.isDirectory()) {
-                System.err.println("OpenGrok: " + variable + " configuration error. " + value + " is not a directory.");
-                return null;
-            }
+
+        if (directory && !file.isDirectory()) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "OpenGrok: " + variable + " configuration error. " + value + " is not a directory.");
+            return null;
         }
-        
+
         String can = null;
         try {
             can = file.getCanonicalPath();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path: ", ex);
         }
-        
-        if (can == null) {
-            System.err.println("OpenGrok: " + variable + " configuration error. Failed to get canonical name for " + value + " is not a directory.");
-            return null;
-        }
-        
         return can;
     }
-    
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
+
+    public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        
+
         String config = context.getInitParameter("CONFIGURATION");
-        if (config != null) {
-            try {
-                env.readConfiguration(new File(config));
-            } catch (IOException ex) {
-                System.err.println("OpenGrok Configuration error. Failed to read config file: ");
-                ex.printStackTrace();
-            }
-        } else {
+        if (config == null) {
             String value;
-            
+
             if ((value = getFileName(context, "SRC_ROOT", true)) == null) {
                 return;
             }
             env.setSourceRoot(value);
-            
+
             if ((value = getFileName(context, "DATA_ROOT", true)) == null) {
                 return;
             }
             env.setDataRoot(value);
-            
-            String scanrepos = context.getInitParameter("SCAN_REPOS");
-            if (scanrepos != null && scanrepos.equalsIgnoreCase("true")) {
-                final String source = env.getSourceRootPath();
-                if (source != null) {
-                    Thread t = new Thread(new Runnable() {
-                        public void run() {
-                            System.out.println("Scanning for repositories...");
-                            long start = System.currentTimeMillis();
-                            HistoryGuru.getInstance().addRepositories(source);
-                            long stop = System.currentTimeMillis();
-                            System.out.println("Done searching for repositories: " + ((stop - start)/1000) + "s");
-                        }
-                    });
-                    
-                    t.setDaemon(true);
-                    t.start();
-                }
-            } else {
-                System.out.println("Will not scan for external repositories...");
+        } else {
+            try {
+                env.readConfiguration(new File(config));
+            } catch (IOException ex) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "OpenGrok Configuration error. Failed to read config file: ", ex);
             }
         }
-        
+
         String address = context.getInitParameter("ConfigAddress");
         if (address != null && address.length() > 0) {
-            System.out.println("Will listen for configuration on [" + address + "]");
+            OpenGrokLogger.getLogger().log(Level.INFO, "Will listen for configuration on [" + address + "]");
             String[] cfg = address.split(":");
             if (cfg.length == 2) {
                 try {
-                    InetAddress host = InetAddress.getByName(cfg[0]);
                     SocketAddress addr = new InetSocketAddress(InetAddress.getByName(cfg[0]), Integer.parseInt(cfg[1]));
                     if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
-                        System.err.println("OpenGrok: Failed to start configuration listener thread");
+                        OpenGrokLogger.getLogger().log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread");
                     }
                 } catch (NumberFormatException ex) {
-                    System.err.println("OpenGrok: Failed to start configuration listener thread:");
-                    ex.printStackTrace();
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
                 } catch (UnknownHostException ex) {
-                    System.err.println("OpenGrok: Failed to start configuration listener thread:");
-                    ex.printStackTrace();
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
                 }
             } else {
-                
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Incorrect format for the configuration address: ");
                 for (int i = 0; i < cfg.length; ++i) {
-                    System.out.println("[" + cfg[i] + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "[" + cfg[i] + "]");
                 }
             }
         }
     }
-    
-    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+
+    public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
     }
 }
-

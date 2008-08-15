@@ -111,7 +111,6 @@ change the :
 	        <Parameter name="DATA_ROOT" value="/path/to/data/root" override="false" />
 		<Parameter name="SRC_ROOT" value="/path/to/src/root" override="false" />
 		<Parameter name="HEADER" value='...' override="false" />
-	        <Parameter name="SCAN_REPOS" value="false" override="false" />
 	    </Context>
 
           - Create a Context file for the webapp
