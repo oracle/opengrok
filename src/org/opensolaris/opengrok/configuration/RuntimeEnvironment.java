@@ -47,7 +47,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  * The RuntimeEnvironment class is used as a placeholder for the current
  * configuration this execution context (classloader) is using.
  */
-public class RuntimeEnvironment {
+public final class RuntimeEnvironment {
     private Configuration configuration;
     private ThreadLocal<Configuration> threadConfig;
     

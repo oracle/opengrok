@@ -44,7 +44,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  * configuration object for each page request. Class and methods should have
  * package scope, but that didn't work with the XMLDecoder/XMLEncoder.
  */
-public class Configuration {
+public final class Configuration {
     private String ctags;
     private boolean historyCache;
     private int historyCacheTime;
