@@ -122,7 +122,7 @@ public class HistoryEntry {
         if (date != null) {
             this.date = (Date) date.clone();
         } else {
-            date = null;
+            this.date = null;
         }
     }
     
