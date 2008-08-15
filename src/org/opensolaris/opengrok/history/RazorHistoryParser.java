@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * A History Parser for Razor
@@ -178,10 +180,10 @@ public class RazorHistoryParser implements HistoryParser {
     }
 
     private void parseDebug(String message) {
-        // System.err.println( "RazorHistoryParser: " + message );
+        OpenGrokLogger.getLogger().log(Level.FINE, "RazorHistoryParser: " + message );
     }
 
     private void parseProblem(String message) {
-        System.err.println("PROBLEM: RazorHistoryParser - " + message);
+        OpenGrokLogger.getLogger().log(Level.SEVERE, "PROBLEM: RazorHistoryParser - " + message);
     }
 }

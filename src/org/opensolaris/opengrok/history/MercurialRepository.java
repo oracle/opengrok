@@ -32,8 +32,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Access to a Mercurial repository.
@@ -116,8 +118,7 @@ public class MercurialRepository extends Repository {
             
             ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
         } catch (Exception exp) {
-            System.err.print("Failed to get history: " + exp.getClass().toString());
-            exp.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString());
         } finally {
             if (in != null) {
                 try {
@@ -190,8 +191,8 @@ public class MercurialRepository extends Repository {
                     String rev = matcher.group(2);
                     ret.addLine(rev, author, true);
                 } else {
-                    System.err.println("Error: did not find annotation in line " + lineno);
-                    System.err.println("[" + line + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + 
+                            lineno + ": [" + line + "]");
                 }
             }
         } finally {
@@ -276,7 +277,4 @@ public class MercurialRepository extends Repository {
         // repositories.
         return true;
     }
-    
-    
 }
-

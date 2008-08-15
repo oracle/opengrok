@@ -32,8 +32,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * This class gives access to repositories built on top of SCCS (including
@@ -112,8 +114,9 @@ public class SCCSRepository extends Repository {
                     String auth = matcher.group(2);
                     authors_cache.put(rev, auth);
                 } else {
-                    System.err.println("Error: did not find annotation in line " + lineno);
-                    System.err.println("[" + line + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Error: did not find authors in line " + lineno +
+                            ": [" + line + "]");
                 }
             }
         } finally {
@@ -192,8 +195,9 @@ public class SCCSRepository extends Repository {
                     
                     a.addLine(rev, author, true);
                 } else {
-                    System.err.println("Error: did not find annotation in line " + lineno);
-                    System.err.println("[" + line + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Error: did not find annotations in line " + lineno +
+                            ": [" + line + "]");
                 }
             }
             return a;

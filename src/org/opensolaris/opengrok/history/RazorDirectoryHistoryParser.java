@@ -22,6 +22,8 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * A Directory History Parser for Razor
@@ -38,7 +40,7 @@ public class RazorDirectoryHistoryParser extends DirectoryHistoryParser {
         File mappedDirectory = repo.getRazorHistoryFileFor(directory);
 
         if (!mappedDirectory.isDirectory()) {
-            System.err.println("RazorDirectoryHistory::parse( " + directory.getPath() + " ) is NOT A DIRECTORY");
+            OpenGrokLogger.getLogger().log(Level.WARNING, "RazorDirectoryHistory::parse( " + directory.getPath() + " ) is NOT A DIRECTORY");
             return null;
         }
 

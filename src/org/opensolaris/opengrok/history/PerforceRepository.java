@@ -27,9 +27,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -109,8 +111,8 @@ public class PerforceRepository extends Repository {
                     String author = revAuthor.get(revision);
                     a.addLine(revision, author, true);
                 } else {
-                    System.err.println("Error: did not find annotation in line " + lineno);
-                    System.err.println("[" + line + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Error: did not find annotation in line " + lineno + ": [" + line + "]");
                 }
             }
         } catch (IOException e) {
@@ -194,6 +196,4 @@ public class PerforceRepository extends Repository {
     boolean isRepositoryFor(File file) {
         return isInP4Depot(file);
     }
-    
-    
 }

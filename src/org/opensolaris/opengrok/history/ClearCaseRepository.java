@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Access to a ClearCase repository.
@@ -106,7 +108,7 @@ public class ClearCaseRepository extends Repository {
             // cleartool can't get to a previously existing file
             if (tmp.exists()) {
                 if (!tmp.delete()) {
-                    System.err.println("Failed to remove temporary file used by history cache");
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary file used by history cache");
                 }
             }
 
@@ -131,8 +133,7 @@ public class ClearCaseRepository extends Repository {
                 }
             });
         } catch (Exception exp) {
-            System.err.print("Failed to get history: " + exp.getClass().toString());
-            exp.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {

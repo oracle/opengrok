@@ -27,9 +27,11 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
 import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.Node;
 import org.apache.commons.jrcs.rcs.Version;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Access to an RCS repository.
@@ -56,8 +58,8 @@ public class RCSRepository extends Repository {
         try {
             return new RCSget(new File(parent, basename).getPath(), rev);
         } catch (IOException ioe) {
-            System.err.println("Failed to retrieve revision " + rev +
-                               " of " + basename);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    "Failed to retrieve revision " + rev + " of " + basename);
             ioe.printStackTrace();
             return null;
         }

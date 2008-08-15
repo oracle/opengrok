@@ -27,6 +27,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.tigris.subversion.javahl.BlameCallback;
 import org.tigris.subversion.javahl.ClientException;
@@ -60,7 +62,7 @@ public class SubversionRepository extends Repository {
                 Info info = client.info(directoryName);
                 if (!info.getUrl().startsWith("file")) {
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        System.out.println("Skipping history from remote repository: <" + directoryName + ">");
+                        OpenGrokLogger.getLogger().log(Level.INFO, "Skipping history from remote repository: <" + directoryName + ">");
                     }
                     ignored = true;
                 }
@@ -95,7 +97,7 @@ public class SubversionRepository extends Repository {
             try {
                 revision = Revision.getInstance(Long.parseLong(rev));
             } catch (NumberFormatException exp) {
-                System.err.println("Failed to retrieve rev (" + rev + "): Not a valid Subversion revision format");
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): Not a valid Subversion revision format");
                 exp.printStackTrace();
                 return null;
             }
@@ -113,7 +115,7 @@ public class SubversionRepository extends Repository {
 
             ret = new ByteArrayInputStream(client.fileContent(wcUrl + svnPath, revision));
         } catch (ClientException ex) {
-            System.err.println("Failed to retrieve rev (" + rev + "): " + ex.toString());
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): " + ex.toString());
             ex.printStackTrace();
         }        
         

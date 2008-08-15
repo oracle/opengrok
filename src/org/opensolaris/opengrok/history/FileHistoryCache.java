@@ -35,8 +35,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 class FileHistoryCache implements HistoryCache {
@@ -122,14 +124,14 @@ class FileHistoryCache implements HistoryCache {
         synchronized (lock) {
             if (!cache.delete() && cache.exists()) {
                 if (!output.delete()) {
-                    System.err.print("Failed to remove temporary history cache file");
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary history cache file");
                 }
                 throw new IOException(
                         "Cachefile exists, and I could not delete it.");
             }
             if (!output.renameTo(cache)) {
                 if (!output.delete()) {
-                    System.err.print("Failed to remove temporary history cache file");
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary history cache file");
                 }
                 throw new IOException("Failed to rename cache tmpfile.");
             }
@@ -145,9 +147,8 @@ class FileHistoryCache implements HistoryCache {
             try {
                 return readCache(cache);
             } catch (Exception e) {
-                System.err.println("Error when reading cache file '" +
-                        cache + "':");
-                e.printStackTrace();
+                OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "Error when reading cache file '" + cache + "':", e);
             }
         }
         
@@ -165,8 +166,8 @@ class FileHistoryCache implements HistoryCache {
             return null;
         }
         catch (Exception e) {
-            System.err.println("Failed to parse " + file.getAbsolutePath());
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    "Failed to parse " + file.getAbsolutePath(), e);
             throw e;
         }
 
@@ -185,9 +186,8 @@ class FileHistoryCache implements HistoryCache {
                     try {
                         store(history, cache);
                     } catch (Exception e) {
-                        System.err.println("Error when writing cache file '" +
-                                cache + "':");
-                        e.printStackTrace();
+                        OpenGrokLogger.getLogger().log(Level.WARNING, 
+                                "Error when writing cache file '" + cache + "':", e);
                     }
                 }
             }

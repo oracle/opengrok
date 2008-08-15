@@ -27,6 +27,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Collect all information of a given revision
@@ -71,27 +74,28 @@ public class HistoryEntry {
     }
 
     public void dump() {
-        System.err.println("HistoryEntry : revision       = " + revision);
-        System.err.println("HistoryEntry : date           = " + date);
-        System.err.println("HistoryEntry : author         = " + author);
-        System.err.println("HistoryEntry : active         = " + (active ? "True" : "False") );
+        Logger log = OpenGrokLogger.getLogger();
+
+        log.log(Level.INFO, "HistoryEntry : revision       = " + revision);
+        log.log(Level.INFO, "HistoryEntry : date           = " + date);
+        log.log(Level.INFO, "HistoryEntry : author         = " + author);
+        log.log(Level.INFO, "HistoryEntry : active         = " + (active ? "True" : "False") );
         String[] lines = message.toString().split("\n");
         String separator = "=";
-        for( String line : lines) {
-            System.err.println("HistoryEntry : message        " + separator + " " + line);
+        for (String line : lines) {
+            log.log(Level.INFO, "HistoryEntry : message        " + separator + " " + line);
             separator = ">";
         }
         separator = "=";
-        for( String cr : changeRequests) {
-            System.err.println("HistoryEntry : changeRequests " + separator + " " + cr);
+        for (String cr : changeRequests) {
+            log.log(Level.INFO, "HistoryEntry : changeRequests " + separator + " " + cr);
             separator = ">";
         }
         separator = "=";
-        for( String file : files) {
-            System.err.println("HistoryEntry : files          " + separator + " " + file);
+        for (String file : files) {
+            log.log(Level.INFO, "HistoryEntry : files          " + separator + " " + file);
             separator = ">";
         }
-        System.err.println();
    }
 
     public String getAuthor() {

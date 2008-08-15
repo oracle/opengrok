@@ -61,7 +61,6 @@ public class DirectoryHistoryReader extends HistoryReader {
 
     /** Creates a new instance of DirectoryHistoryReader */
     public DirectoryHistoryReader() {
-
     }
 
     public DirectoryHistoryReader(String path) throws IOException {
@@ -174,19 +173,11 @@ public class DirectoryHistoryReader extends HistoryReader {
         fls.add(path);
     }
 
+    @Override
     public void close() {
     }
 
-    public static void main(String[] arg) throws Throwable {
-        Date start = new Date();
-        DirectoryHistoryReader dhr = new DirectoryHistoryReader(arg[0]);
-        while (dhr.next()) {
-            System.out.println(dhr.getDate() + ":" + dhr.getAuthor() + " = " + dhr.getComment());
-        }
-
-        System.out.println("time taken = " + ((new Date()).getTime() - start.getTime()));
-    }
-
+    @Override
     public boolean next() throws IOException {
         if (diter == null) {
             diter = hash.keySet().iterator();
@@ -208,30 +199,37 @@ public class DirectoryHistoryReader extends HistoryReader {
         return true;
     }
 
+    @Override
     public String getLine() {
         return null;
     }
 
+    @Override
     public String getRevision() {
         return null;
     }
 
+    @Override
     public Date getDate() {
         return (Date) idate.clone();
     }
 
+    @Override
     public String getAuthor() {
         return iauthor;
     }
 
+    @Override
     public String getComment() {
         return icomment;
     }
 
+    @Override
     public ArrayList<String> getFiles() {
         return hash.get(idate).get(iauthor).get(icomment);
     }
 
+    @Override
     public boolean isActive() {
         return true;
     }

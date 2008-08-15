@@ -28,8 +28,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -217,8 +219,7 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet( String parent, String basename,
-            String rev) {
+    InputStream getHistoryGet( String parent, String basename, String rev) {
         // System.err.println("getHistoryGet( " + parent + ", " + basename + ", " + rev + ")");
 
         // TODO : Rename & Delete Support
@@ -247,8 +248,7 @@ public class RazorRepository extends Repository {
                 return SCCSget.getRevision(SCCS_COMMAND, sccsFile, rev);
             }
         } catch (Exception e) {
-            System.err.println("getHistoryGet( " + parent + ", " + basename + ", " + rev + ")");
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "getHistoryGet( " + parent + ", " + basename + ", " + rev + ")", e);
         }
         return null;
     }

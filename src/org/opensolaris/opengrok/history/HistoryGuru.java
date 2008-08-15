@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
@@ -159,7 +161,6 @@ public class HistoryGuru {
             } catch (IOException ioe) {
                 throw ioe;
             } catch (Exception e) {
-                e.printStackTrace();
                 IOException ioe =
                         new IOException("Error while constructing HistoryReader");
                 ioe.initCause(e);
@@ -231,18 +232,16 @@ public class HistoryGuru {
             try {
                 repository = RepositoryFactory.getRepository(file);
             } catch (InstantiationException ie) {
-                System.err.println("Could not create repoitory for '" + file + "', could not instantiate the repository.");
-                ie.printStackTrace(System.err);
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not create repoitory for '" + file + "', could not instantiate the repository.", ie);
             } catch (IllegalAccessException iae) {
-                System.err.println("Could not create repoitory for '" + file + "', missing access rights.");                
-                iae.printStackTrace(System.err);
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not create repoitory for '" + file + "', missing access rights.", iae);
             }
             if (repository != null) {
                 try {
                     String path = file.getCanonicalPath();
                     repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        System.out.println("Adding <" + repository.getClass().getName() +  "> repository: <" + path + ">");
+                        OpenGrokLogger.getLogger().log(Level.INFO, "Adding <" + repository.getClass().getName() +  "> repository: <" + path + ">");
                     }
                     addRepository(repository, path, repos);
 
@@ -253,14 +252,13 @@ public class HistoryGuru {
                             // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
                             addRepositories(subFiles, repos, ignoredNames, false); 
                         } else {
-                            System.err.println("Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                         }
                     }
                     
                 } catch (IOException exp) {
-                    System.err.println("Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
-                    System.err.println("Repository will be ignored...");
-                    exp.printStackTrace(System.err);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Repository will be ignored...", exp);
                 }
             } else {
                 // Not a repository, search it's sub-dirs
@@ -269,7 +267,7 @@ public class HistoryGuru {
                     if (subFiles != null) {
                         addRepositories(subFiles, repos, ignoredNames);
                     } else {
-                        System.err.println("Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                     }
                 }
             }
@@ -306,19 +304,13 @@ public class HistoryGuru {
             String type = repository.getClass().getSimpleName();
             
             if (verbose) {
-                System.out.print("Update " + type + " repository in " + path);
-                System.out.flush();
+                OpenGrokLogger.getLogger().log(Level.INFO, "Update " + type + " repository in " + path);
             }
             
             try {
                 repository.update();
             } catch (Exception e) {
-                System.err.println("An error occured while updating " + path + " (" + type + ")");
-                e.printStackTrace();
-            }
-
-            if (verbose) {
-                System.out.println();
+                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating " + path + " (" + type + ")", e);
             }
         }
     }
@@ -330,19 +322,17 @@ public class HistoryGuru {
         long start = System.currentTimeMillis();
         
         if (verbose) {
-            System.out.print("Create historycache for " + path + " (" + type + ")");
-            System.out.flush();
+            OpenGrokLogger.getLogger().log(Level.INFO, "Create historycache for " + path + " (" + type + ")");
         }
 
         try {
             repository.createCache(historyCache);
         } catch (Exception e) {
-            System.err.println("An error occured while creating cache for " + path + " (" + type + ")");
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating cache for " + path + " (" + type + ")", e);
         }
         long stop = System.currentTimeMillis();
         if (verbose) {
-            System.out.println(" (" + (stop - start) + "ms)");
+            OpenGrokLogger.getLogger().log(Level.INFO, "Creating historycache for " + path + " took (" + (stop - start) + "ms)");
         }   
     }
     
@@ -431,8 +421,7 @@ public class HistoryGuru {
         try {
             path = path.getCanonicalFile();
         } catch (IOException e) {
-            System.err.println("Failed to get canonical path for " + path);
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + path, e);
             return null;
         }
         while (path != null) {
@@ -442,8 +431,7 @@ public class HistoryGuru {
                     return r;
                 }
             } catch (IOException e) {
-                System.err.println("Failed to get canonical path for " + path);
-                e.printStackTrace();
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + path, e);
             }
             path = path.getParentFile();
         }

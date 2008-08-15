@@ -29,7 +29,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import org.apache.commons.jrcs.diff.PatchFailedException;
 import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
@@ -41,23 +40,7 @@ import org.apache.commons.jrcs.rcs.ParseException;
  */
 public class RCSget extends InputStream {
     private BufferedInputStream stream;
-    
-    public static void main(String[] args) {
-        try{
-            long t1 = (new Date()).getTime();
-            RCSget rr = new RCSget(args[0], args[1]);
-            byte[] text = new byte[1024];
-            int l;
-            while ((l = rr.read(text)) > 0) {
-                System.out.write(text, 0 , l);
-            }
-            System.err.println("Took " + ((new Date()).getTime() - t1));
-        } catch (Exception e) {
-            System.err.println("Usage RCSget file revision " + e);
-            e.printStackTrace();
-        }
-    }
-    
+        
     /**
      * Pass null in version to get current revision
      */
@@ -97,6 +80,7 @@ public class RCSget extends InputStream {
         }
     }
     
+    @Override
     public void reset() throws IOException {
         try {
             stream.reset();
@@ -106,16 +90,19 @@ public class RCSget extends InputStream {
         }
     }
     
+    @Override
     public void close() throws IOException {
         if (stream != null) {
             stream.close();
         }
     }
     
+    @Override
     public void mark(int readlimit) {
         stream.mark(readlimit);
     }
     
+    @Override
     public int read(byte[] buffer, int pos, int len) throws IOException {
         return stream.read(buffer, pos, len);
     }

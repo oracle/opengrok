@@ -29,6 +29,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Access to a Git repository.
@@ -83,8 +85,7 @@ public class GitRepository extends Repository {
             
             ret = new BufferedInputStream(new ByteArrayInputStream(output.toByteArray()));
         } catch (Exception exp) {
-            System.err.print("Failed to get history: " + exp.getClass().toString());
-            exp.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
