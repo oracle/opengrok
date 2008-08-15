@@ -37,14 +37,15 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * 
  */
 public class BazaarRepository extends Repository {
-    
+
     /**
-     * Creates a new instance of BazaarRepository
+     * Creates a new instance of BazaarRepository.
      */
     public BazaarRepository() { }
 
    /**
-     * Get the name of the Bazaar command that should be used
+     * Get the name of the Bazaar command that should be used.
+     * 
      * @return the name of the bzr command in use
      */
     private String getCommand() {
@@ -59,17 +60,17 @@ public class BazaarRepository extends Repository {
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
-        
+
         String argv[];
         if (file.isDirectory()) {
-            argv = new String[] { command, "log", "-v", filename };
+            argv = new String[] {command, "log", "-v", filename};
         } else {
-            argv = new String[] { command, "log", filename };
+            argv = new String[] {command, "log", filename};
         }
 
         File directory = new File(getDirectoryName());
-        return Runtime.getRuntime().exec(argv, null, directory);        
-    }    
+        return Runtime.getRuntime().exec(argv, null, directory);
+    }
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
@@ -80,7 +81,7 @@ public class BazaarRepository extends Repository {
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         try {
-            String argv[] = { getCommand(), "cat", "-r", rev, filename };
+            String argv[] = {getCommand(), "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();

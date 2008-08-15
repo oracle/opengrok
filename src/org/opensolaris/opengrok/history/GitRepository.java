@@ -52,7 +52,7 @@ public class GitRepository extends Repository {
             filename = abs.substring(directoryName.length() + 1);
         }
         
-        String[] argv = new String[] { command, "log", "--name-only", "--pretty=fuller", filename };
+        String[] argv = new String[] {command, "log", "--name-only", "--pretty=fuller", filename};
 
         File directory = new File(getDirectoryName());
         return Runtime.getRuntime().exec(argv, null, directory);        
@@ -71,7 +71,7 @@ public class GitRepository extends Repository {
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         try {
-            String argv[] = { command, "show", rev + ":" + filename };
+            String argv[] = {command, "show", rev + ":" + filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
             
             InputStream in = process.getInputStream();

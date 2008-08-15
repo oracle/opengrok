@@ -83,9 +83,9 @@ public class MercurialRepository extends Repository {
         
         String argv[];
         if (verbose || file.isDirectory()) {
-            argv = new String[] { getCommand(), "log", "-v", filename };
+            argv = new String[] {getCommand(), "log", "-v", filename};
         } else {
-            argv = new String[] { getCommand(), "log", filename };
+            argv = new String[] {getCommand(), "log", filename};
         }
 
         File directory = new File(getDirectoryName());
@@ -102,7 +102,7 @@ public class MercurialRepository extends Repository {
         Process process = null;
         InputStream in = null;
         try {
-            String argv[] = { getCommand(), "cat", "-r", rev, filename };
+            String argv[] = {getCommand(), "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();

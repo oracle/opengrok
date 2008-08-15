@@ -47,7 +47,7 @@ class FileHistoryCache implements HistoryCache {
     static class FilePersistenceDelegate extends PersistenceDelegate {
         protected Expression instantiate(Object oldInstance, Encoder out) {
             File f = (File)oldInstance;
-            return new Expression(oldInstance, f.getClass(), "new", new Object[] { f.toString() });
+            return new Expression(oldInstance, f.getClass(), "new", new Object[] {f.toString()});
         }
     }
             

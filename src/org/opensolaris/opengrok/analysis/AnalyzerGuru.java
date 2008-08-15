@@ -185,7 +185,7 @@ public class AnalyzerGuru {
      * @param file Name of the file to be analyzed
      * @return An analyzer suited for that file content
      * @throws java.io.IOException If an error occurs while accessing the
-     *                             data in the input stream. 
+     *                             data in the input stream.
      */
     public static FileAnalyzer getAnalyzer(InputStream in, String file) throws IOException {
         FileAnalyzerFactory factory = find(in, file);
@@ -489,9 +489,9 @@ public class AnalyzerGuru {
 
     /** Byte-order markers. */
     private static final String[] BOMS = {
-        new String(new char[] { 0xEF, 0xBB, 0xBF }), // UTF-8 BOM
-        new String(new char[] { 0xFE, 0xFF }),       // UTF-16BE BOM
-        new String(new char[] { 0xFF, 0xFE }),       // UTF-16LE BOM
+        new String(new char[] {0xEF, 0xBB, 0xBF}), // UTF-8 BOM
+        new String(new char[] {0xFE, 0xFF}),       // UTF-16BE BOM
+        new String(new char[] {0xFF, 0xFE}),       // UTF-16LE BOM
     };
 
     /**

@@ -36,7 +36,7 @@ public class ZipAnalyzerFactory extends FileAnalyzerFactory {
         "ZIP"
     };
 
-    private static final byte[] MAGIC = { 'P', 'K', 3, 4 };
+    private static final byte[] MAGIC = {'P', 'K', 3, 4};
 
     // Derived from /usr/src/cmd/file/file.c in OpenSolaris
     private static final Matcher MATCHER = new Matcher() {
