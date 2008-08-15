@@ -40,11 +40,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzerFactory;
@@ -219,7 +221,7 @@ public class AnalyzerGuru {
                 // date = hr.getLastCommentDate() //RFE
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occurred while reading history: ", e);
         }
         doc.add(new Field("date", date, Field.Store.YES, Field.Index.UN_TOKENIZED));
         if (path != null) {
@@ -509,57 +511,5 @@ public class AnalyzerGuru {
             }
         }
         return null;
-    }
-
-    public static void main(String[] args) {
-        AnalyzerGuru af = new AnalyzerGuru();
-        System.out.println("<pre wrap=true>");
-        for (String arg : args) {
-            try {
-                File f = new File(arg);
-                BufferedInputStream in = new BufferedInputStream(new FileInputStream(f));
-                FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, arg);
-                System.out.println("\nANALYZER = " + fa);
-                Document doc = af.getDocument(f, in, arg, fa);
-                System.out.println("\nDOCUMENT = " + doc);
-
-                Iterator iterator = doc.getFields().iterator();
-                while (iterator.hasNext()) {
-                    org.apache.lucene.document.Field field = (org.apache.lucene.document.Field) iterator.next();
-                    if (field.isTokenized()) {
-                        Reader r = field.readerValue();
-                        if (r == null) {
-                            r = new StringReader(field.stringValue());
-                        }
-                        TokenStream ts = fa.tokenStream(field.name(), r);
-                        System.out.println("\nFIELD = " + field.name() + " TOKEN STREAM = " + ts.getClass().getName());
-                        Token t;
-                        while ((t = ts.next()) != null) {
-                            System.out.print(t.termText());
-                            System.out.print(' ');
-                        }
-                        System.out.println();
-                    }
-                    if (field.isStored()) {
-                        System.out.println("\nFIELD = " + field.name());
-                        if (field.readerValue() == null) {
-                            System.out.println(field.stringValue());
-                        } else {
-                            System.out.println("STORING THE READER");
-                        }
-                    }
-                }
-                System.out.println("Writing XREF--------------");
-                Writer out = new OutputStreamWriter(System.out);
-                fa.writeXref(out);
-                out.flush();
-            } catch (IOException e) {
-                System.err.println("ERROR: " + e.getMessage());
-                e.printStackTrace();
-            } catch (RuntimeException e) {
-                System.err.println("RUNTIME ERROR: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
     }
 }
