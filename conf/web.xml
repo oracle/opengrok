@@ -77,7 +77,7 @@
   <servlet>
     <servlet-name>raw</servlet-name>
     <display-name>Raw Source lister</display-name>
-    <servlet-class>org.opensolaris.opengrok.web.raw</servlet-class>
+    <jsp-file>/raw.jsp</jsp-file>
   </servlet>
   <servlet>
     <servlet-name>error</servlet-name>
