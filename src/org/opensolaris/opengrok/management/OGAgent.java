@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.management;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -74,6 +75,12 @@ public class OGAgent {
         oga = new OGAgent();
         try {
             oga.runOGA();
+        } catch (MalformedURLException e) {
+            log.log(Level.SEVERE, "Could not create connector server: " + e, e);
+            System.exit(1);
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Could not start connector server: " + e, e);
+            System.exit(2);
         } catch (Exception ex) {
             Logger.getLogger(OGAgent.class.getName()).log(Level.SEVERE, null, ex);
             System.exit(1);
@@ -83,7 +90,7 @@ public class OGAgent {
     public OGAgent() {
     }
 
-    public final void runOGA() throws Exception {
+    public final void runOGA() throws MalformedURLException, IOException, Exception {
         String machinename = java.net.InetAddress.getLocalHost().getHostName();
         String javaver = System.getProperty("java.version");
 
@@ -134,27 +141,18 @@ public class OGAgent {
 
         // Create and start connector server
         log.fine("Starting JMX connector");
-        try {
-            HashMap<String, Object> env = new HashMap<String, Object>();
-            JMXServiceURL url = new JMXServiceURL(connprotocol, machinename, connectorport);
-            JMXConnectorServer connectorServer = null;
+        HashMap<String, Object> env = new HashMap<String, Object>();
+        JMXServiceURL url = new JMXServiceURL(connprotocol, machinename, connectorport);
+        JMXConnectorServer connectorServer = null;
 
-            if ("jmxmp".equals(connprotocol)) {
-                connectorServer = new JMXMPConnectorServer(url, env, server);
-            } else if ("rmi".equals(connprotocol) || "iiop".equals(connprotocol)) {
-                connectorServer = new RMIConnectorServer(url, env, server);
-            } else {
-                throw new IOException("Unknown connector protocol");
-            }
-
-            connectorServer.start();
-        } catch (java.net.MalformedURLException e) {
-            log.log(Level.SEVERE, "Could not create connector server: " + e, e);
-            System.exit(1);
-        } catch (java.io.IOException e) {
-            log.log(Level.SEVERE, "Could not start connector server: " + e, e);
-            System.exit(2);
+        if ("jmxmp".equals(connprotocol)) {
+            connectorServer = new JMXMPConnectorServer(url, env, server);
+        } else if ("rmi".equals(connprotocol) || "iiop".equals(connprotocol)) {
+            connectorServer = new RMIConnectorServer(url, env, server);
+        } else {
+            throw new IOException("Unknown connector protocol");
         }
+        connectorServer.start();
 
         log.info("OGA is ready and running...");
     }

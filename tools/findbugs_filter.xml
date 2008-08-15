@@ -43,4 +43,13 @@
     <Bug code="SF"/>
   </Match>
 
+  <!-- exitListener must be allowed to call System.exit() -->
+  <Match>
+      <And>
+        <Class name="org.opensolaris.opengrok.management.client.OpenGrokTrayApp$2"/>
+        <Method name="actionPerformed"/>
+      </And>
+      <Bug code="Dm"/>
+  </Match>
+
 </FindBugsFilter>
