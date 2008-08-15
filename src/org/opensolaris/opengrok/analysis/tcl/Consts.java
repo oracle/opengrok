@@ -24,12 +24,13 @@
 package org.opensolaris.opengrok.analysis.tcl;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /**
   * Holds static hash set containing Tcl keywords
   */
 public class Consts {
-    public static final HashSet<String> kwd = new HashSet<String>();
+    public static final Set<String> kwd = new HashSet<String>();
     static {
         // Tcl cmds
         kwd.add("after");

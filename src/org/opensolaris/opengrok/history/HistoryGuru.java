@@ -122,10 +122,7 @@ public class HistoryGuru {
             } catch (IOException ioe) {
                 throw ioe;
             } catch (Exception e) {
-                IOException ioe =
-                    new IOException("Error while constructing HistoryReader");
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException("Error while constructing HistoryReader", e);
             }
         }
 
@@ -161,10 +158,7 @@ public class HistoryGuru {
             } catch (IOException ioe) {
                 throw ioe;
             } catch (Exception e) {
-                IOException ioe =
-                        new IOException("Error while constructing HistoryReader");
-                ioe.initCause(e);
-                throw ioe;
+                throw new IOException("Error while constructing HistoryReader", e);
             }
         }
 

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -402,7 +403,7 @@ public class AnalyzerGuru {
                 file = file.substring(i + 1);
             }
         }
-        file = file.toUpperCase();
+        file = file.toUpperCase(Locale.US);
         int dotpos = file.lastIndexOf('.');
         if (dotpos >= 0) {
             FileAnalyzerFactory factory =

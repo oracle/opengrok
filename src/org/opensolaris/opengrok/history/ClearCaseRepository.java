@@ -89,8 +89,7 @@ public class ClearCaseRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         File directory = new File(getDirectoryName());
         pb.directory(directory);
-        Process process = pb.start();
-        return process;
+        return pb.start();
     }
 
     public InputStream getHistoryGet(String parent, String basename, String rev) {
@@ -282,6 +281,7 @@ public class ClearCaseRepository extends Repository {
                 in = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 // consume output
                 while ((line = in.readLine()) != null) {
+                    // do nothing
                 }
 
                 if (waitFor(process) != 0) {
@@ -322,7 +322,7 @@ public class ClearCaseRepository extends Repository {
         if (f.exists() && f.isDirectory()) {
             return true;
         } else {
-            return file.isDirectory() && file.getName().toLowerCase().equals("vobs");
+            return file.isDirectory() && file.getName().equalsIgnoreCase("vobs");
         }
     }
 }

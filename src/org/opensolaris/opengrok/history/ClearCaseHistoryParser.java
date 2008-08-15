@@ -59,9 +59,10 @@ class ClearCaseHistoryParser implements HistoryParser {
                    !s.equals("create directory version"))
                 {
                     // skip this history entry
-                    while ((s = in.readLine()) != null && !s.equals("."))
-                    {
-                        // skip .. skip ..
+                    while ((s = in.readLine()) != null) {
+                        if (s.equals(".")) {
+                            break;
+                        }
                     }
                     continue;
                 }
@@ -85,8 +86,7 @@ class ClearCaseHistoryParser implements HistoryParser {
                 String glue = "";
                 while ((s = in.readLine()) != null && !s.equals("."))
                 {
-                    if(s.equals(""))
-                    {
+                    if (s.equals("")) {
                         // avoid empty lines in comments
                         continue;
                     }

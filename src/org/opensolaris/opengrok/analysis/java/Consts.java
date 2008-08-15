@@ -24,12 +24,13 @@
 package org.opensolaris.opengrok.analysis.java;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /**
   * Holds static hash set containing the Java keywords
   */
 public class Consts{
-    public static final HashSet<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<String>() ;
     static {
         kwd.add( "abstract" );
         kwd.add( "assert" );

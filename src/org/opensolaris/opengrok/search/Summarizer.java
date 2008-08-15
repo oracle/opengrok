@@ -23,11 +23,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Vector;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
@@ -65,7 +64,7 @@ public class Summarizer {
      * document, with some appropriate regions highlit.
      */
     static class Excerpt {
-        Vector<Summary.Fragment> passages = new Vector<Summary.Fragment>();
+        ArrayList<Summary.Fragment> passages = new ArrayList<Summary.Fragment>();
         SortedSet<String> tokenSet = new TreeSet<String>();
         int numTerms = 0;
         
@@ -112,8 +111,8 @@ public class Summarizer {
         /**
          * Return an Enum for all the fragments
          */
-        public Enumeration elements() {
-            return passages.elements();
+        public List<Summary.Fragment> elements() {
+            return passages;
         }
     }
     
@@ -141,7 +140,7 @@ public class Summarizer {
         //
         // Create a SortedSet that ranks excerpts according to
         // how many query terms are present.  An excerpt is
-        // a Vector full of Fragments and Highlights
+        // a List full of Fragments and Highlights
         //
         SortedSet<Excerpt> excerptSet = new TreeSet<Excerpt>(new Comparator<Excerpt>() {
             public int compare(Excerpt excerpt1, Excerpt excerpt2) {
@@ -274,8 +273,7 @@ public class Summarizer {
             excerptSet.remove(excerpt);
             
             double tokenFraction = (1.0 * excerpt.getNumTerms()) / excerpt.numFragments();
-            for (Enumeration e = excerpt.elements(); e.hasMoreElements(); ) {
-                Summary.Fragment f = (Summary.Fragment) e.nextElement();
+            for (Summary.Fragment f: excerpt.elements()) {
                 // Don't add fragments if it takes us over the max-limit
                 if (tokenCount + tokenFraction <= SUM_LENGTH) {
                     s.add(f);
@@ -370,7 +368,7 @@ public class Summarizer {
         StringBuffer queryBuf = new StringBuffer();
         for (int i = 1; i < argv.length; i++) {
             queryBuf.append(argv[i]);
-            queryBuf.append(" ");
+            queryBuf.append(' ');
         }
         
         //

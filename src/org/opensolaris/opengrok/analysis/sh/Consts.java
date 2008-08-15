@@ -25,11 +25,12 @@
 package org.opensolaris.opengrok.analysis.sh;
 
 import java.util.HashSet;
+import java.util.Set;
 /**
  * Shell keyword hash
  */
 public class Consts{
-    public static final HashSet<String> shkwd = new HashSet<String>() ;
+    public static final Set<String> shkwd = new HashSet<String>() ;
     static {
         // Built-in shell commands mentioned in shell_builtins(1)
         shkwd.add( ":" );

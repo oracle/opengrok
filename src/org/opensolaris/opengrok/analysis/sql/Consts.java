@@ -55,7 +55,7 @@ class Consts {
                 }
             }
         } finally {
-            reader.close();;
+            reader.close();
         }
     }
 

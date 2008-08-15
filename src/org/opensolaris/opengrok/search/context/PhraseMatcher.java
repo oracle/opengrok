@@ -32,7 +32,7 @@ class PhraseMatcher extends LineMatcher {
     private int cur;
     
     public PhraseMatcher(String[] phraseTerms) {
-        this.phraseTerms  = phraseTerms;
+        this.phraseTerms  = (String[]) phraseTerms.clone();
         cur = 0;
     }
     

@@ -29,12 +29,13 @@
 package org.opensolaris.opengrok.analysis.c;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /**
   * Holds static hash set containing the C keywords
   */
 public class Consts{
-    public static final HashSet<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<String>() ;
     static {
         // CPP
         kwd.add( "ident" );

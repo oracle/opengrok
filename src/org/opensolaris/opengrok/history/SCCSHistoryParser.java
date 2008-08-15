@@ -103,11 +103,7 @@ class SCCSHistoryParser implements HistoryParser {
         }
         // to flag that revision needs to be re populated if you really need it
         revision = null;
-        if (record.length() > 2) {
-            return true;
-        } else {
-            return false;
-        }
+        return (record.length() > 2);
     }
 
     private void initFields() {
