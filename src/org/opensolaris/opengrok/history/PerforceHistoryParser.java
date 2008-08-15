@@ -63,9 +63,9 @@ public class PerforceHistoryParser implements HistoryParser {
                 /* New entry */
                 entry = new HistoryEntry();
                 entry.setRevision(matcher.group(1));
-                int year = new Integer(matcher.group(2)).intValue();
-                int month = new Integer(matcher.group(3)).intValue();
-                int day = new Integer(matcher.group(4)).intValue();
+                int year = Integer.parseInt(matcher.group(2));
+                int month = Integer.parseInt(matcher.group(3));
+                int day = Integer.parseInt(matcher.group(4));
                 Calendar calendar = new GregorianCalendar(year, month, day); 
                 entry.setDate(calendar.getTime());
                 entry.setAuthor(matcher.group(5));
@@ -97,8 +97,9 @@ public class PerforceHistoryParser implements HistoryParser {
      * @param file the file to parse history for
      * @param repository Pointer to the PerforceReporitory
      * @return object representing the file's history
+     * @throws IOException if a problem occurs while executing p4 command
      */
-    public History parse(File file, Repository repository) throws Exception {
+    public History parse(File file, Repository repository) throws IOException {
         if (!PerforceRepository.isInP4Depot(file)) {
             return null;
         }
@@ -121,9 +122,9 @@ public class PerforceHistoryParser implements HistoryParser {
             while (matcher.find()) {
                 HistoryEntry entry = new HistoryEntry();
                 entry.setRevision(matcher.group(1));
-                int year = new Integer(matcher.group(2)).intValue();
-                int month = new Integer(matcher.group(3)).intValue();
-                int day = new Integer(matcher.group(4)).intValue();
+                int year = Integer.parseInt(matcher.group(2));
+                int month = Integer.parseInt(matcher.group(3));
+                int day = Integer.parseInt(matcher.group(4));
                 Calendar calendar = new GregorianCalendar(year, month, day); 
                 entry.setDate(calendar.getTime());
                 entry.setAuthor(matcher.group(5));
