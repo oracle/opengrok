@@ -151,7 +151,6 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     
     public void getContent(Writer out) throws IOException {
         String t;
-        String linkend = "</a>";
         cp = c.getConstantPool();
         v = new int[cp.getLength()+1];
         out.write(linkPath(t = c.getSourceFileName()));

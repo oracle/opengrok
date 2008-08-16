@@ -128,7 +128,6 @@ public class FileAnalyzer extends Analyzer {
 
         Writer out = null;
         if (env.isCompressXref()) {
-            GZIPOutputStream o;
             out = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(new File(xrefDir, path + ".gz")))));
         } else {
             out = new BufferedWriter(new FileWriter(new File(xrefDir, path)));

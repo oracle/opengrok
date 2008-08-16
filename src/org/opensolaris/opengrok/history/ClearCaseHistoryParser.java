@@ -36,7 +36,7 @@ class ClearCaseHistoryParser implements HistoryParser {
 
     public History parse(File file, Repository repos)
             throws IOException, ParseException {
-        ClearCaseRepository mrepos = (ClearCaseRepository)repos;
+        ClearCaseRepository mrepos = (ClearCaseRepository) repos;
         History history = new History();
 
         Process process = null;
@@ -55,9 +55,8 @@ class ClearCaseHistoryParser implements HistoryParser {
             String s;
             HistoryEntry entry = null;
             while ((s = in.readLine()) != null) {
-                if(!s.equals("create version") &&
-                   !s.equals("create directory version"))
-                {
+                if (!s.equals("create version") &&
+                   !s.equals("create directory version")) {
                     // skip this history entry
                     while ((s = in.readLine()) != null) {
                         if (s.equals(".")) {
@@ -68,24 +67,20 @@ class ClearCaseHistoryParser implements HistoryParser {
                 }
 
                 entry = new HistoryEntry();
-                if((s = in.readLine()) != null)
-                {
+                if ((s = in.readLine()) != null) {
                     entry.setDate(FORMAT.parse(s));
                 }
-                if((s = in.readLine()) != null)
-                {
+                if ((s = in.readLine()) != null) {
                     entry.setAuthor(s);
                 }
-                if((s = in.readLine()) != null)
-                {
+                if ((s = in.readLine()) != null) {
                     s = s.replace('\\', '/');
                     entry.setRevision(s);
                 }
 
                 StringBuffer message = new StringBuffer();
                 String glue = "";
-                while ((s = in.readLine()) != null && !s.equals("."))
-                {
+                while ((s = in.readLine()) != null && !s.equals(".")) {
                     if (s.equals("")) {
                         // avoid empty lines in comments
                         continue;

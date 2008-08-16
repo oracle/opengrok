@@ -95,7 +95,6 @@ public class HistoryContext {
         tokens.setHitList(hits);
         tokens.setFilename(path);
         
-        String line;
         int matchedLines = 0;
         try {
             while(in.next() && matchedLines < 10) {
