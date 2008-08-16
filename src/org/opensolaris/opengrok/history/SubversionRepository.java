@@ -97,8 +97,7 @@ public class SubversionRepository extends Repository {
             try {
                 revision = Revision.getInstance(Long.parseLong(rev));
             } catch (NumberFormatException exp) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): Not a valid Subversion revision format");
-                exp.printStackTrace();
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): Not a valid Subversion revision format", exp);
                 return null;
             }
         }
@@ -115,8 +114,7 @@ public class SubversionRepository extends Repository {
 
             ret = new ByteArrayInputStream(client.fileContent(wcUrl + svnPath, revision));
         } catch (ClientException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): " + ex.toString());
-            ex.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): " + ex.toString(), ex);
         }        
         
         return ret;

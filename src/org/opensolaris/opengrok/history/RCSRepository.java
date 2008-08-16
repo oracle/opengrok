@@ -59,8 +59,7 @@ public class RCSRepository extends Repository {
             return new RCSget(new File(parent, basename).getPath(), rev);
         } catch (IOException ioe) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                    "Failed to retrieve revision " + rev + " of " + basename);
-            ioe.printStackTrace();
+                    "Failed to retrieve revision " + rev + " of " + basename, ioe);
             return null;
         }
     }

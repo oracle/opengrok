@@ -32,6 +32,7 @@ import java.io.Writer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
@@ -68,8 +69,8 @@ public class PlainAnalyzer extends FileAnalyzer {
             ctags = new Ctags();
         } catch (IOException e) {
         }
-        if(ctags == null) {
-            System.err.println("WARNING: unable to run ctags! searching definitions will not work!");
+        if (ctags == null) {
+            OpenGrokLogger.getLogger().severe("WARNING: unable to run ctags! searching definitions will not work!");
         }
     }
 

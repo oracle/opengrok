@@ -116,7 +116,8 @@ public class PerforceRepository extends Repository {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                    "Error: Could not read annotations for " + file, e);
         }
         return a;
     }

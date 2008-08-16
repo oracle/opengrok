@@ -77,7 +77,7 @@ class FileHistoryCache implements HistoryCache {
             }
             sb.append(add);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.INFO, "Could not get path for: " + file, ex);
         }
         sb.append(".gz");
         
@@ -148,7 +148,7 @@ class FileHistoryCache implements HistoryCache {
                 return readCache(cache);
             } catch (Exception e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, 
-                        "Error when reading cache file '" + cache + "':", e);
+                        "Error when reading cache file '" + cache, e);
             }
         }
         

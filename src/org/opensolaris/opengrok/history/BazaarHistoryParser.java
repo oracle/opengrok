@@ -32,6 +32,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -105,7 +107,8 @@ class BazaarHistoryParser implements HistoryParser {
                                 Date date = df.parse(s.substring("timestamp:".length()).trim());
                                 entry.setDate(date);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                OpenGrokLogger.getLogger().log(Level.INFO, 
+                                        "Failed to parse history timestamp for " + file, e);
                             }
                             ++state;
                         }

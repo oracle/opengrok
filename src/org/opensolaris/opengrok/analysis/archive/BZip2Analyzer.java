@@ -28,10 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
@@ -93,7 +95,8 @@ public class BZip2Analyzer extends FileAnalyzer {
 		}
 	    }
 	} catch (Exception e) {
-	    System.err.println("BZIP2 Analyzer " + e);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    "Could not read from BZip2", e);
 	}
     }
     

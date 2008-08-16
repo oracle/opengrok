@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.logging.Level;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -38,6 +39,7 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexDatabase;
@@ -93,7 +95,7 @@ public class DirectoryHistoryReader extends HistoryReader {
                     try {
                         cdate = DateTools.stringToDate(doc.get("date"));
                     } catch (java.text.ParseException ex) {
-                        ex.printStackTrace();
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get date for " + path, ex);
                         cdate = new Date();
                     }
                     String comment = "none", cauthor = "nobody";
@@ -147,7 +149,7 @@ public class DirectoryHistoryReader extends HistoryReader {
 
     public void put(Date date, String author, String comment, String path) {
         long time = date.getTime();
-        date.setTime(time - (time % 3600000l)); //
+        date.setTime(time - (time % 3600000l));
         HashMap<String, HashMap<String, ArrayList<String>>> ac;
         HashMap<String, ArrayList<String>> cf;
         ArrayList<String> fls;

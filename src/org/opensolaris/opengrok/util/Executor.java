@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.List;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Wrapper to Java Process API
@@ -66,9 +68,11 @@ public class Executor {
             stdoutString = stdout.getString();
             stderrString = stdout.getString();
         } catch (IOException e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    "Failed to read from process: " + cmdList.get(0), e);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    "Waiting for process interrupted: "  + cmdList.get(0), e);
         } finally {
             try {
                 if (process != null) {
@@ -116,7 +120,8 @@ public class Executor {
                 }
                 output = sb.toString();
             } catch (IOException ioe) {
-                System.out.println("Error during process pipe listening: " + ioe.getMessage());
+                OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                        "Error during process pipe listening", ioe);
             }
         }
 

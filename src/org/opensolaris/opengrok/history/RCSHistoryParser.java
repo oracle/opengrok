@@ -31,10 +31,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.Node;
 import org.apache.commons.jrcs.rcs.ParseException;
 import org.apache.commons.jrcs.rcs.Version;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 
 /**
@@ -123,7 +125,8 @@ class RCSHistoryParser implements HistoryParser {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    "Failed to retrieve CVS file of parent: " + parent + ", name: " + name, e);
         }
         return null;
     }

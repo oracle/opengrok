@@ -37,6 +37,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -103,7 +104,7 @@ public class FileAnalyzer extends Analyzer {
         }
         
         if (RuntimeEnvironment.getInstance().isVerbose()) {
-            System.out.println("Have no analyzer for: " + fieldName);
+            OpenGrokLogger.getLogger().info("Have no analyzer for: " + fieldName);
         }
 	return null;
     }

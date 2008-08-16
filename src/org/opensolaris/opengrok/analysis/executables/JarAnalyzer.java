@@ -32,11 +32,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedList;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -115,7 +117,7 @@ public class JarAnalyzer extends FileAnalyzer {
 		doc.add(new Field("refs",dummy));
 	    }
 	} catch (IOException e) {
-	    e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to read from ZIP ", e);
 	}
     }
     

@@ -82,12 +82,7 @@ public class RCSget extends InputStream {
     
     @Override
     public void reset() throws IOException {
-        try {
-            stream.reset();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        stream.reset();
     }
     
     @Override
