@@ -34,8 +34,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
@@ -119,13 +121,13 @@ public class HistoryContext {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get history context for " + path, e);
         }
         return matchedLines > 0;
     }
     
     public static void main(String[] args) {
-        try{
+        try {
             QueryParser parser = new QueryParser("hist", new CompatibleAnalyser());
             Query qry = parser.parse(args[0]);            
             System.out.println("Query = " + qry.toString());

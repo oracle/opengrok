@@ -201,7 +201,7 @@ public class CommandLineOptions {
         try {
             System.out.println(co.getManPage());
         } catch (IOException exp) {
-            exp.printStackTrace();
+            exp.printStackTrace(System.err);
             System.exit(1);
         }
         System.exit(0);

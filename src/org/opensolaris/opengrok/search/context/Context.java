@@ -40,8 +40,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -148,14 +150,14 @@ public class Context {
             } catch (IOException e) {
                 if (hits != null) {
                     // @todo verify why we ignore all exceptions?
-                    e.printStackTrace();
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
                 }
             }
         }
         /**
          * Just to get the matching tag send a null in
          */ 
-        if(in == null) {
+        if (in == null) {
             return anything;
         }
         int charsRead = 0;
@@ -175,8 +177,8 @@ public class Context {
                     truncated = true;
                     // truncate to last line read (don't look more than 100
                     // characters back)
-                    for(int i = charsRead - 1; i > charsRead-100; i--) {
-                        if(buffer[i] == '\n') {
+                    for (int i = charsRead - 1; i > charsRead-100; i--) {
+                        if (buffer[i] == '\n') {
                             charsRead = i;
                             break;
                         }
@@ -185,7 +187,7 @@ public class Context {
             } catch (IOException e) {
                 return anything;
             }
-            if(charsRead == 0) {
+            if (charsRead == 0) {
                 return anything;
             }
             
@@ -227,7 +229,7 @@ public class Context {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
         } finally {
             try {
                 in.close();
@@ -249,7 +251,7 @@ public class Context {
             long span =  ((new Date()).getTime() - start.getTime());
             System.err.println("took: "+ span + " msec");
         } catch (Exception e) {
-            e.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Exception getting context", e);
         }
     }
 }

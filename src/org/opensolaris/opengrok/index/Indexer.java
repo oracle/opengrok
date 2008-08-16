@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -67,7 +68,7 @@ public class Indexer {
         boolean optimizedChanged = false;
         CommandLineOptions cmdOptions = new CommandLineOptions();
         
-        if(argv.length == 0) {
+        if (argv.length == 0) {
             System.err.println(cmdOptions.getUsage());
             System.exit(1);
         } else {
@@ -304,11 +305,12 @@ public class Indexer {
             }
             getInstance().sendToConfigHost(env, configHost);
          } catch (IndexerException ex) {
-            System.err.println(ex);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Exception running indexer", ex);
             System.err.println(cmdOptions.getUsage());
             System.exit(1);
          } catch (IOException ioe) {
             System.err.println("Got IOException " + ioe);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Exception running indexer", ioe);
             System.exit(1);
          }
       }

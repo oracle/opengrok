@@ -35,6 +35,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
@@ -43,6 +44,7 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
@@ -170,7 +172,7 @@ public class SearchEngine {
                     searchSingleDatabase(root);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Exception searching", e);
             }
         }
         if (hits.size() > 0) {
@@ -260,9 +262,9 @@ public class SearchEngine {
                     ret.add(new Hit(filename, "...", "", false, alt));
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Exception searching", e);
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Exception searching", e);
             }
         }
         

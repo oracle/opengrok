@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 
 /**
@@ -253,7 +255,7 @@ public class EftarFile {
             EftarFile ef = new EftarFile();
             ef.create(args);
         } catch (Exception e) {
-            System.err.println("EftarFile: Error in " + e.getStackTrace()[0] + "\n\t" + e.getMessage());
+            OpenGrokLogger.getLogger().log(Level.WARNING, "EftarFile error", e);
         }
     }
 }

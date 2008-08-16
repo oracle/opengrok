@@ -33,6 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
@@ -140,7 +142,7 @@ public class DirectoryListing {
             dl.listTo(tolist, out);
             out.close();
         } catch (Exception e) {
-            System.out.println(" ERROR " + e + "\n Usage DirListing <dir> <output.html>");
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Usage DirListing <dir> <output.html>", e);
         }
     }
 }
