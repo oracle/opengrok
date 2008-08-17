@@ -558,7 +558,7 @@ public final class RuntimeEnvironment {
     }
 
     public void setUsingLuceneLocking(boolean useLuceneLocking) {
-        threadConfig.get().setOptimizeDatabase(useLuceneLocking);
+        threadConfig.get().setUsingLuceneLocking(useLuceneLocking);
     }
 
     /**
