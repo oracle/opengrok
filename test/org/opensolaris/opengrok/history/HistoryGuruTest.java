@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,27 +79,33 @@ public class HistoryGuruTest {
 
     @Test
     public void testAddRepositories() throws IOException {
-        System.out.println("addRepositories");
         HistoryGuru instance = HistoryGuru.getInstance();
         instance.addRepositories(repository.getSourceRoot().getCanonicalPath());
     }
 
     @Test
     public void testCreateCache() {
-        System.out.println("createCache");
         HistoryGuru instance = HistoryGuru.getInstance();
         instance.createCache();
     }
 
     @Test
-    public void historyReader() throws IOException {
-        System.out.println("historyReader");
+    public void testUpdateRepositories() {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        instance.updateRepositories();
+    }
 
+    
+    @Test
+    public void historyReader() throws IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (instance.hasHistory(f)) {
-
+                InputStream in = instance.getRevision(f.getParent(), f.getName(), null);
+                assertNotNull(in);
+                in.close();
                 Reader r = instance.getHistoryReader(f);
+                assertNotNull(r);
                 try {
                     r.close();
                 } catch (IOException e) {
@@ -109,7 +116,6 @@ public class HistoryGuruTest {
 
     @Test
     public void annotation() throws Exception {
-        System.out.println("annotation");
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (instance.hasAnnotation(f)) {
