@@ -31,6 +31,8 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -260,7 +262,7 @@ public class Util {
            URI uri = new URI(null, null, path, null);
            return uri.getRawPath();
         } catch (URISyntaxException ex) {
-            ex.printStackTrace();
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not encode path " + path, ex);
             return "";
         }
     }

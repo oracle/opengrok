@@ -202,6 +202,7 @@ public class EftarFileReader {
         }
     }
 
+    @SuppressWarnings("PMD.SystemPrintln")
     public static void main(String[] args) throws Throwable {
         EftarFileReader fr = new EftarFileReader(args[0]);
         for (int i = 1; i < args.length; i++) {

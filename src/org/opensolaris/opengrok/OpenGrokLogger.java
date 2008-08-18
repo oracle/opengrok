@@ -37,6 +37,7 @@ import java.util.logging.Logger;
  * 
  * @author Jan S Berg
  */
+@SuppressWarnings({"PMD.MoreThanOneLogger", "PMD.SystemPrintln"})
 public class OpenGrokLogger {
 
     private static int LOGFILESIZELIMIT = 1000000;

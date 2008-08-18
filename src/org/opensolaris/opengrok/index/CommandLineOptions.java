@@ -196,6 +196,7 @@ public class CommandLineOptions {
      * 
      * @param argv argument vector. not used.
      */
+    @SuppressWarnings("PMD.SystemPrintln")
     public static void main(String[] argv) {
         CommandLineOptions co = new CommandLineOptions();
         try {

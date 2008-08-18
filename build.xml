@@ -399,7 +399,7 @@ Use is subject to license terms.
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
         </pmd>
-        <echo message="PMD finished, found ${pmd.num.warnings} warnings."/>
+        <echo message="PMD finished, found ${pmd.num.warnings} warnings, see pmd/pmd_report.html."/>
     </target>
 
     <target name="-check_emma" description="Check that emma jar files are present">

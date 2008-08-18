@@ -60,6 +60,7 @@ public class OpenGrokTrayApp {
     /**
      * @param args the command line arguments
      */
+    @SuppressWarnings("PMD.SystemPrintln")
     public static void main(String[] args) {
         try {
             for (int i = 0; i < args.length; i++) {
@@ -327,15 +328,13 @@ public class OpenGrokTrayApp {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
-                System.err.println("TrayIcon could not be added.");
+                log.log(Level.WARNING, "TrayIcon could not be added.", e);
             }
             log.info("Created, ready for action");
 
         } else {
-
             //  System Tray is not supported
-            System.err.println("System Tray is NOT supported");
-
+            log.severe("System Tray is NOT supported");
         }
     }
 }

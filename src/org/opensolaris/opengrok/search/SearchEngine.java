@@ -243,12 +243,9 @@ public class SearchEngine {
                                     hasContext = true;
                                 }
                             }
-//                    } else if("h".equals(genre) && indexDatabase.getSource() != null && summer != null){
-//                        Reader r = new TagFilter(new BufferedReader(new FileReader(srcRoot + rpath)));
-//                        int len = r.read(content);
-//                        out.write(summer.getSummary(new String(content, 0, len)).toString());
                         } else {
                             System.out.println(genre);
+                            OpenGrokLogger.getLogger().warning("Unknown genre: " + genre);
                             hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, ret);
                         }
                     } catch (FileNotFoundException exp) {

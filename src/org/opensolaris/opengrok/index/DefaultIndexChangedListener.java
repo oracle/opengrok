@@ -31,6 +31,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * 
  * @author Trond Norbye
  */
+@SuppressWarnings("PMD.SystemPrintln")
 class DefaultIndexChangedListener implements IndexChangedListener {
 
     private boolean verbose;

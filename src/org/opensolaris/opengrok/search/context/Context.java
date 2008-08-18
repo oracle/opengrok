@@ -241,6 +241,7 @@ public class Context {
         return anything;
     }
     
+    @SuppressWarnings("PMD.SystemPrintln")
     public static void main(String[] args) {
         try{
             QueryParser parser = new QueryParser("full", new CompatibleAnalyser());

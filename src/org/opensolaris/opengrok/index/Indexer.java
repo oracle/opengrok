@@ -49,6 +49,7 @@ import org.opensolaris.opengrok.util.Getopt;
  * as well as generates Xref, file stats etc., if specified
  * in the options
  */
+@SuppressWarnings({"PMD.AvoidPrintStackTrace","PMD.SystemPrintln"})
 public class Indexer {
    
    private static Indexer index = new Indexer();

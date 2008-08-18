@@ -245,6 +245,7 @@ public class EftarFile {
         write(args[args.length - 1]);
     }
 
+    @SuppressWarnings("PMD.SystemPrintln")
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Usage inputFile [inputFile ...] outputFile");

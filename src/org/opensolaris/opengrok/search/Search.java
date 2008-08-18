@@ -32,6 +32,7 @@ import org.opensolaris.opengrok.util.Getopt;
 /**
  * Search and list the matching files
  */
+@SuppressWarnings({"PMD.AvoidPrintStackTrace","PMD.SystemPrintln"})
 final class Search {
 
     /**

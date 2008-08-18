@@ -350,6 +350,7 @@ public class Summarizer {
      * Tests Summary-generation.  User inputs the name of a
      * text file and a query string
      */
+    @SuppressWarnings("PMD.SystemPrintln")
     public static void main(String argv[]) throws Exception {
         // Test arglist
         if (argv.length < 2) {

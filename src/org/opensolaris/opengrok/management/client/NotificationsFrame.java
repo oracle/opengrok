@@ -136,6 +136,7 @@ public class NotificationsFrame extends javax.swing.JFrame {
       pack();
    }// </editor-fold>//GEN-END:initComponents
 
+@SuppressWarnings("unused")
 private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
 // TODO add your handling code here:
     this.dispose();

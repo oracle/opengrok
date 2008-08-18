@@ -126,6 +126,7 @@ public class HistoryContext {
         return matchedLines > 0;
     }
     
+    @SuppressWarnings({"PMD.AvoidPrintStackTrace","PMD.SystemPrintln"})
     public static void main(String[] args) {
         try {
             QueryParser parser = new QueryParser("hist", new CompatibleAnalyser());
