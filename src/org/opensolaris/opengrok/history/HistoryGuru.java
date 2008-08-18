@@ -190,7 +190,7 @@ public class HistoryGuru {
      */
     public boolean hasHistory(File file) {
         Repository repos = getRepository(file);
-        return repos != null && repos.fileHasHistory(file);
+        return repos != null && repos.isWorking() && repos.fileHasHistory(file);
     }
 
     /**
@@ -203,7 +203,7 @@ public class HistoryGuru {
     public boolean hasAnnotation(File file) {
         if (!file.isDirectory()) {
             Repository repos = getRepository(file);
-            if (repos != null) {
+            if (repos != null && repos.isWorking()) {
                 return repos.fileHasAnnotation(file);
             }
         }

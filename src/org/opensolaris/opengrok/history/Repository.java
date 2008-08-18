@@ -113,6 +113,9 @@ public abstract class Repository {
      * @throws Exception on error
      */
     void createCache(HistoryCache cache) throws Exception {
+        if (!isWorking()) {
+            return;
+        }
         Class<? extends HistoryParser> pClass = getDirectoryHistoryParser();
 
         // If we don't have a directory parser, we can't create the cache
@@ -179,4 +182,13 @@ public abstract class Repository {
         return false;
     }
     
+    /**
+     * Returns true if this repository is usable in this context (for SCM
+     * systems that use external binaries, the binary must be availabe etc)
+     * 
+     * @return true if the HistoryGuru may use the repository
+     */
+    protected boolean isWorking() {
+        return true;
+    }
 }

@@ -42,32 +42,19 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * TeamWare).
  */
 public class SCCSRepository extends Repository {
-    private boolean verbose;
+    private static ScmChecker sccsBinary = new ScmChecker(new String[] {
+        System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs"),
+        "help", "help" });
+
     private Map<String, String> authors_cache;
     
     /**
      * Creates a new instance of MercurialRepository
      */
     public SCCSRepository() { }
-
-    /**
-     * Use verbose log messages, or just the summary
-     * @return true if verbose log messages are used for this repository
-     */
-    public boolean isVerbose() {
-        return verbose;
-    }
     
     private String getCommand() {
        return System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
-    }
-        
-    /**
-     * Specify if verbose log messages or just the summary should be used
-     * @param verbose set to true if verbose messages should be used
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {
@@ -244,6 +231,11 @@ public class SCCSRepository extends Repository {
     @Override
     boolean isRepositoryFor(File file) {
         return new File(file, "SCCS").isDirectory();
+    }
+
+    @Override
+    protected boolean isWorking() {
+        return sccsBinary.available;
     }
 }
 

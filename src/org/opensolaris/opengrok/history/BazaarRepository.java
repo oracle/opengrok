@@ -37,7 +37,10 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * 
  */
 public class BazaarRepository extends Repository {
-
+    private static ScmChecker bzrBinary = new ScmChecker(new String[] {
+        System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr"),
+        "--help" });
+    
     /**
      * Creates a new instance of BazaarRepository.
      */
@@ -151,4 +154,8 @@ public class BazaarRepository extends Repository {
         return f.exists() && f.isDirectory();
     }
     
+    @Override
+    protected boolean isWorking() {
+        return bzrBinary.available;
+    }
 }
