@@ -117,7 +117,9 @@ public class ClearCaseRepository extends Repository {
 
             drainStream(process.getInputStream());
 
-            process.exitValue();
+            if(waitFor(process) != 0) {
+                return null;
+            }
 
             ret = new BufferedInputStream(new FileInputStream(tmp) {
 
