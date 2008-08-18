@@ -391,16 +391,17 @@ public class AnalyzerGuru {
      * @return the analyzer factory to use
      */
     public static FileAnalyzerFactory find(String file) {
+        String path = file;
         int i = 0;
-        if ((i = file.lastIndexOf('/')) > 0 || (i = file.lastIndexOf('\\')) > 0) {
-            if (i + 1 < file.length()) {
-                file = file.substring(i + 1);
+        if ((i = path.lastIndexOf('/')) > 0 || (i = path.lastIndexOf('\\')) > 0) {
+            if (i + 1 < path.length()) {
+                path = path.substring(i + 1);
             }
         }
-        int dotpos = file.lastIndexOf('.');
+        int dotpos = path.lastIndexOf('.');
         if (dotpos >= 0) {
             FileAnalyzerFactory factory =
-                ext.get(file.substring(dotpos + 1).toUpperCase(Locale.US));
+                ext.get(path.substring(dotpos + 1).toUpperCase(Locale.US));
             if (factory != null) {
                 return factory;
             }
