@@ -42,7 +42,9 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * 
  */
 public class MercurialRepository extends Repository {
-    private boolean verbose;
+    private static ScmChecker hgBinary = new ScmChecker(new String[] {
+        System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg"),
+        "--help" });
     
     /**
      * Creates a new instance of MercurialRepository
@@ -56,23 +58,7 @@ public class MercurialRepository extends Repository {
     private String getCommand() {
         return System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
     }
-    
-    /**
-     * Use verbose log messages, or just the summary
-     * @return true if verbose log messages are used for this repository
-     */
-    public boolean isVerbose() {
-        return verbose;
-    }
         
-    /**
-     * Specify if verbose log messages or just the summary should be used
-     * @param verbose set to true if verbose messages should be used
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-    
     Process getHistoryLogProcess(File file) throws IOException {
         String abs = file.getAbsolutePath();
         String filename = "";
@@ -82,7 +68,7 @@ public class MercurialRepository extends Repository {
         }
         
         String argv[];
-        if (verbose || file.isDirectory()) {
+        if (file.isDirectory()) {
             argv = new String[] {getCommand(), "log", "-v", filename};
         } else {
             argv = new String[] {getCommand(), "log", filename};
@@ -276,5 +262,10 @@ public class MercurialRepository extends Repository {
         // The forest-extension in Mercurial adds repositories inside the
         // repositories.
         return true;
+    }
+
+    @Override
+    protected boolean isWorking() {
+        return hgBinary.available;
     }
 }

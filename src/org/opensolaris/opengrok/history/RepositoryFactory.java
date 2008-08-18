@@ -26,6 +26,8 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * This is a factory class for the different repositories.
@@ -58,6 +60,9 @@ public class RepositoryFactory {
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
                 res = rep.getClass().newInstance();
+                if (!rep.isWorking()) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, res.getClass().getSimpleName() + " not working (missing binaries?): " + file.getPath());
+                }
                 break;
             }
         }

@@ -37,6 +37,9 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * 
  */
 public class GitRepository extends Repository {
+    private static ScmChecker gitBinary = new ScmChecker(new String[] {
+        System.getProperty("org.opensolaris.opengrok.history.git", "git"),
+        "--help" });
     
     /**
      * Creates a new instance of GitRepository
@@ -144,6 +147,11 @@ public class GitRepository extends Repository {
     boolean isRepositoryFor(File file) {
         File f = new File(file, ".git");
         return f.exists() && f.isDirectory();
+    }
+
+    @Override
+    protected boolean isWorking() {
+        return gitBinary.available;
     }
 }
 

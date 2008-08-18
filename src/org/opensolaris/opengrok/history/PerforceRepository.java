@@ -40,44 +40,7 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class PerforceRepository extends Repository {
-
-    private static class PerforceChecker {
-
-        private boolean haveP4;
-
-        PerforceChecker() {
-            Process process = null;
-            try {
-                String argv[] = {System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4"), "help"};
-                process = Runtime.getRuntime().exec(argv);
-                boolean done = false;
-                do {
-                    try {
-                        process.waitFor();
-                        done = true;
-                    } catch (InterruptedException exp) {
-                        // Ignore
-                    }
-                } while (!done);
-                if (process.exitValue() == 0) {
-                    haveP4 = true;
-                }
-            } catch (IOException exp) {
-
-            } finally {
-                // Clean up zombie-processes...
-                if (process != null) {
-                    try {
-                        process.exitValue();
-                    } catch (IllegalThreadStateException exp) {
-                        // the process is still running??? just kill it..
-                        process.destroy();
-                    }
-                }
-            }
-        }
-    }
-    private static PerforceChecker checker = new PerforceChecker();
+    private static ScmChecker p4Binary = new ScmChecker(new String[] {System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4"), "help"});
     private final static Pattern annotation_pattern = Pattern.compile("^(\\d+): .*");
 
     public Annotation annotate(File file, String rev) throws IOException {
@@ -171,7 +134,7 @@ public class PerforceRepository extends Repository {
      * @return true if the given file is in the depot, false otherwise
      */
     public static boolean isInP4Depot(File file) {
-        if (checker.haveP4) {
+        if (p4Binary.available) {
             ArrayList<String> cmd = new ArrayList<String>();
             cmd.add("p4");
             if (file.isDirectory()) {
@@ -196,5 +159,10 @@ public class PerforceRepository extends Repository {
     @Override
     boolean isRepositoryFor(File file) {
         return isInP4Depot(file);
+    }
+
+    @Override
+    protected boolean isWorking() {
+        return p4Binary.available;
     }
 }
