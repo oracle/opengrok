@@ -28,7 +28,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
-public class JarAnalyzerFactory extends FileAnalyzerFactory {
+public final class JarAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "JAR", "WAR", "EAR"
     };

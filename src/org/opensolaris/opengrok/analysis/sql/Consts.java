@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 class Consts {
     private static final Set<String> reservedKeywords = new HashSet<String>();
     static {

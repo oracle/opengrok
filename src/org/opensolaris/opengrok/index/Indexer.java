@@ -50,7 +50,7 @@ import org.opensolaris.opengrok.util.Getopt;
  * in the options
  */
 @SuppressWarnings({"PMD.AvoidPrintStackTrace","PMD.SystemPrintln"})
-public class Indexer {
+public final class Indexer {
    
    private static Indexer index = new Indexer();
    private static final Logger log = Logger.getLogger(Indexer.class.getName());

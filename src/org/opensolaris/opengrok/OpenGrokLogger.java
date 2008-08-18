@@ -37,8 +37,8 @@ import java.util.logging.Logger;
  * 
  * @author Jan S Berg
  */
-@SuppressWarnings({"PMD.MoreThanOneLogger", "PMD.SystemPrintln"})
-public class OpenGrokLogger {
+@SuppressWarnings({"PMD.MoreThanOneLogger", "PMD.SystemPrintln", "PMD.AvoidThrowingRawExceptionTypes"})
+public final class OpenGrokLogger {
 
     private static int LOGFILESIZELIMIT = 1000000;
     private static int LOGFILESCOUNT = 30;
@@ -50,9 +50,7 @@ public class OpenGrokLogger {
 
     public static String setupLogger(String logpath, Level filelevel, Level consolelevel) {
         System.out.println("Logging to " + logpath);
-        if (logpath == null) {
-            logpath = "%t";
-        } else {
+        if (logpath != null) {
             File jlp = new File(logpath);
             if (!jlp.exists() && !jlp.mkdirs()) {
                 throw new RuntimeException("could not make logpath: " +
@@ -61,7 +59,11 @@ public class OpenGrokLogger {
        }
 
         clearForeignHandlers();
-        String logfile = logpath + File.separatorChar + "opengrok%g.%u" + ".log";
+        String logfile = logpath; 
+        if (logpath == null) {
+            logfile = "%t";
+        }
+        logfile = logfile + File.separatorChar + "opengrok%g.%u" + ".log";
         try {
             FileHandler fh = new FileHandler(logfile,
                     LOGFILESIZELIMIT, // size (unlimited)

@@ -23,6 +23,7 @@ package org.opensolaris.opengrok.history;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -373,20 +374,22 @@ public class RazorRepository extends Repository {
         }
     }
 
-    private File pathTranslation(File file, String intermediateElements, String filePrefix, String fileSuffix) throws Exception {
+    private File pathTranslation(File file, String intermediateElements, String filePrefix, String fileSuffix) throws IOException {
+        
+        File f = file;
 
-        if (!file.getAbsolutePath().startsWith(opengrokSourceRootDirectoryPath)) {
-            throw new Exception("Invalid Path for Translation '" + file.getPath() + "', '" + intermediateElements + "', '" + filePrefix + "', '" + fileSuffix + "'");
+        if (!f.getAbsolutePath().startsWith(opengrokSourceRootDirectoryPath)) {
+            throw new IOException("Invalid Path for Translation '" + f.getPath() + "', '" + intermediateElements + "', '" + filePrefix + "', '" + fileSuffix + "'");
         }
 
         if (filePrefix.length() != 0) {
-            file = new File(file.getParent(), filePrefix + file.getName());
+            f = new File(f.getParent(), filePrefix + f.getName());
         }
 
         String path = razorGroupBaseDirectoryPath + intermediateElements;
 
-        if (file.getAbsolutePath().length() > opengrokSourceRootDirectoryPath.length()) {
-            path += file.getAbsolutePath().substring(opengrokSourceRootDirectoryPath.length() + 1);
+        if (f.getAbsolutePath().length() > opengrokSourceRootDirectoryPath.length()) {
+            path += f.getAbsolutePath().substring(opengrokSourceRootDirectoryPath.length() + 1);
         }
 
         if (fileSuffix.length() != 0) {

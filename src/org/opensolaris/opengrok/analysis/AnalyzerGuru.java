@@ -397,11 +397,10 @@ public class AnalyzerGuru {
                 file = file.substring(i + 1);
             }
         }
-        file = file.toUpperCase(Locale.US);
         int dotpos = file.lastIndexOf('.');
         if (dotpos >= 0) {
             FileAnalyzerFactory factory =
-                ext.get(file.substring(dotpos + 1).toUpperCase());
+                ext.get(file.substring(dotpos + 1).toUpperCase(Locale.US));
             if (factory != null) {
                 return factory;
             }

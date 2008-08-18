@@ -200,10 +200,11 @@ public class SearchEngine {
     }
     
     public void more(int start, int end, List<Hit> ret) {
+        int len = end;
         if (end > hits.size()) {
-            end = hits.size();
+            len = hits.size();
         }
-        for (int ii = start; ii < end; ++ii) {
+        for (int ii = start; ii < len; ++ii) {
             boolean alt = (ii % 2 == 0);
             boolean hasContext = false;
             try {
@@ -224,14 +225,14 @@ public class SearchEngine {
                                     filename)), null, null, null, filename,
                                     tags, nhits > 100, ret);
                         } else if("x".equals(genre) && data != null && summer != null){
-                            int len = 0;
+                            int l = 0;
                             Reader r = new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename)));
                             try {
-                                len = r.read(content);
+                                l = r.read(content);
                             } finally {
                                 r.close();
                             }
-                            Summary sum = summer.getSummary(new String(content, 0, len));
+                            Summary sum = summer.getSummary(new String(content, 0, l));
                             Fragment fragments[] = sum.getFragments();
                             for (int jj = 0; jj < fragments.length; ++jj) {
                                 String match = fragments[jj].toString();

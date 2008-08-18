@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  *
  * @author Chandan
  */
-public class HistoryGuru {
+public final class HistoryGuru {
     /** The one and only instance of the HistoryGuru */
     private static HistoryGuru instance = new HistoryGuru();
 
@@ -413,23 +413,24 @@ public class HistoryGuru {
     
     private Repository getRepository(File path) {
         Map<String, Repository> repos = RuntimeEnvironment.getInstance().getRepositories();
-        
+
+        File canonicalPath = path;
         try {
-            path = path.getCanonicalFile();
+            canonicalPath = path.getCanonicalFile();
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + path, e);
             return null;
         }
-        while (path != null) {
+        while (canonicalPath != null) {
             try {
-                Repository r = repos.get(path.getCanonicalPath());
+                Repository r = repos.get(canonicalPath.getCanonicalPath());
                 if (r != null) {
                     return r;
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + path, e);
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + canonicalPath, e);
             }
-            path = path.getParentFile();
+            canonicalPath = canonicalPath.getParentFile();
         }
 
         return null;

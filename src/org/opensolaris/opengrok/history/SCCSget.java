@@ -32,7 +32,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 
-public class SCCSget {
+public final class SCCSget {
            
     public static InputStream getRevision(String command, File file, String revision) throws IOException {
         InputStream ret = null;

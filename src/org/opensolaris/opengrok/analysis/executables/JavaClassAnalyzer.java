@@ -322,17 +322,17 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         
         switch(tag) {
             case org.apache.bcel.Constants.CONSTANT_Class:
-                i	= ((ConstantClass)c).getNameIndex();
+                i	= ((ConstantClass) c).getNameIndex();
                 v[i]=1;
-                c	= cp.getConstant(i, org.apache.bcel.Constants.CONSTANT_Utf8);
-                str = Utility.compactClassName(((ConstantUtf8)c).getBytes(), false);
+                Constant con = cp.getConstant(i, org.apache.bcel.Constants.CONSTANT_Utf8);
+                str = Utility.compactClassName(((ConstantUtf8) con).getBytes(), false);
                 break;
                 
             case org.apache.bcel.Constants.CONSTANT_String:
                 i	= ((ConstantString)c).getStringIndex();
                 v[i]=1;
-                c	= cp.getConstant(i, org.apache.bcel.Constants.CONSTANT_Utf8);
-                str =  ((ConstantUtf8)c).getBytes();
+                Constant con2 = cp.getConstant(i, org.apache.bcel.Constants.CONSTANT_Utf8);
+                str =  ((ConstantUtf8) con2).getBytes();
                 break;
                 
             case org.apache.bcel.Constants.CONSTANT_Utf8:    str = ((ConstantUtf8)c).getBytes();         break;
@@ -366,7 +366,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 break;
                 
             default: // Never reached
-                throw new RuntimeException("Unknown constant type " + tag);
+                throw new ClassFormatException("Unknown constant type " + tag);
         }
         return str;
     }

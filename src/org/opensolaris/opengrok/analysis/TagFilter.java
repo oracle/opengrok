@@ -54,9 +54,10 @@ public class TagFilter extends FilterReader {
     
     public final int read(char[] buf, int start, int len) throws java.io.IOException {
         int n=0;
+        int pos = start;
         int c;
-        while((c = this.read()) > -1 && n <= len && start < buf.length) {
-            buf[start++] = (char) c;
+        while((c = this.read()) > -1 && n <= len && pos < buf.length) {
+            buf[pos++] = (char) c;
             n++;
         }
         if (c == -1 && n == 0 && len != 0) {

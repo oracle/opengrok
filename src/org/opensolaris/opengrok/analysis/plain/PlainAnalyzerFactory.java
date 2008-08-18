@@ -33,7 +33,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class PlainAnalyzerFactory extends FileAnalyzerFactory {
+public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
 
     private static final Matcher MATCHER = new Matcher() {
             public FileAnalyzerFactory isMagic(byte[] content, InputStream in) {

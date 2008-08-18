@@ -31,7 +31,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzerFactory;
 
-public class ZipAnalyzerFactory extends FileAnalyzerFactory {
+public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "ZIP"
     };

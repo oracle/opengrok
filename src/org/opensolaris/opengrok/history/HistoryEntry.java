@@ -122,7 +122,7 @@ public class HistoryEntry {
         this.author = author;
     }
     
-    public void setDate(Date date) {
+    public final void setDate(Date date) {
         if (date != null) {
             this.date = (Date) date.clone();
         } else {

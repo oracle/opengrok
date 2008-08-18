@@ -32,7 +32,8 @@ import java.util.Properties;
  * 
  * @author Trond Norbye
  */
-public class Info {
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
+public final class Info {
     private static final Properties properties = new Properties();
 
     private static final String VERSION;

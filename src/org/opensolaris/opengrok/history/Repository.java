@@ -188,6 +188,7 @@ public abstract class Repository {
      * 
      * @return true if the HistoryGuru may use the repository
      */
+    @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
     protected boolean isWorking() {
         return true;
     }

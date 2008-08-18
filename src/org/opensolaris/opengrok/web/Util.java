@@ -79,6 +79,7 @@ public class Util {
      * @param out the object to append the character sequence to
      * @see #htmlize(CharSequence, Appendable)
      */
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     public static void htmlize(CharSequence q, StringBuilder out) {
         try {
             htmlize(q, (Appendable) out);

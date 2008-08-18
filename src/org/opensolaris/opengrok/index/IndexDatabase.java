@@ -204,16 +204,17 @@ public class IndexDatabase {
      * @return <code>true</code> if the file is added, false oth
      */
     public boolean addDirectory(String dir) {
-        if (dir.startsWith("\\")) {
-            dir = dir.replace('\\', '/');
-        } else if (!dir.startsWith("/")) {
-            dir = "/" + dir;
+        String directory = dir;
+        if (directory.startsWith("\\")) {
+            directory = directory.replace('\\', '/');
+        } else if (!directory.startsWith("/")) {
+            directory = "/" + directory;
         }
-        File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
+        File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), directory);
         if (!file.exists()) {
             return false;
         } else {
-            directories.add(dir);
+            directories.add(directory);
             return true;
         }
     }

@@ -147,7 +147,7 @@ public class DirectoryHistoryReader extends HistoryReader {
         }
     }
 
-    public void put(Date date, String author, String comment, String path) {
+    public final void put(Date date, String author, String comment, String path) {
         long time = date.getTime();
         date.setTime(time - (time % 3600000l));
         HashMap<String, HashMap<String, ArrayList<String>>> ac;

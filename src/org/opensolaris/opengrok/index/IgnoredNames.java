@@ -39,7 +39,7 @@ import org.apache.oro.io.GlobFilenameFilter;
  *
  * @author Chandan
  */
-public class IgnoredNames implements Serializable {
+public final class IgnoredNames implements Serializable {
     private static final String[] defaultPatterns = {
         "SCCS",
         "CVS",

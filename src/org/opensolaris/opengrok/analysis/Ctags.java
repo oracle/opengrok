@@ -109,9 +109,10 @@ public class Ctags {
                     try {
                         int val = ctags.exitValue();
                         log.warning("ctags exited with code: " + val);
-                    } catch (Exception e) { log.log(Level.WARNING,"Ctags problem: ",e ); }
-                    Throwable t = new Throwable();                    
-                    log.log(Level.FINE, "Ctag read: " ,t );
+                    } catch (Exception e) {
+                        log.log(Level.WARNING, "Ctags problem: ", e); 
+                    }
+                    log.fine("Ctag read");
                     return ;
                 }
                 

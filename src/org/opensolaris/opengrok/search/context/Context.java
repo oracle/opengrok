@@ -163,11 +163,12 @@ public class Context {
         int charsRead = 0;
         boolean truncated = false;
         
+        boolean lim = limit;
         if (!RuntimeEnvironment.getInstance().isQuickContextScan()) {
-            limit = false;
+            lim = false;
         }
         
-        if (limit) {
+        if (lim) {
             try{
                 charsRead = in.read(buffer);
                 if (charsRead == MAXFILEREAD) {
@@ -206,7 +207,7 @@ public class Context {
             String token;
             int matchState = LineMatcher.NOT_MATCHED;
             int matchedLines = 0;
-            while ((token = tokens.next()) != null && (!limit || matchedLines < 10)) {
+            while ((token = tokens.next()) != null && (!lim || matchedLines < 10)) {
                 for (int i = 0; i< m.length; i++) {
                     matchState = m[i].match(token);
                     if (matchState == LineMatcher.MATCHED) {
@@ -223,7 +224,7 @@ public class Context {
             }
             anything = matchedLines > 0;
             tokens.dumpRest();
-            if (limit && (truncated || matchedLines == 10)) {
+            if (lim && (truncated || matchedLines == 10)) {
                 if (out != null) {
                     out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?t=" +  queryAsURI + "\">all</a>...]");
                 }
