@@ -66,7 +66,7 @@ public class Executor {
             stdout.join();
             stderr.join();
             stdoutString = stdout.getString();
-            stderrString = stdout.getString();
+            stderrString = stderr.getString();
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, 
                     "Failed to read from process: " + cmdList.get(0), e);
