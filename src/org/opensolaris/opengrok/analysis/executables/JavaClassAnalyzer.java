@@ -190,20 +190,18 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
         out.write(" {\n");
         
-        for (Attribute a: c.getAttributes()) {
-            switch(a.getTag()) {
-                case org.apache.bcel.Constants.ATTR_CODE:
-                    for(Attribute ca: ((Code)a).getAttributes()) {
-                        if(ca.getTag() == org.apache.bcel.Constants.ATTR_LOCAL_VARIABLE_TABLE) {
-                            for (LocalVariable l: ((LocalVariableTable)ca).getLocalVariableTable()) {
-                                printLocal(out,l);
-                            }
+        for (Attribute a : c.getAttributes()) {
+            if (a.getTag() == org.apache.bcel.Constants.ATTR_CODE) {
+                for (Attribute ca : ((Code) a).getAttributes()) {
+                    if (ca.getTag() == org.apache.bcel.Constants.ATTR_LOCAL_VARIABLE_TABLE) {
+                        for (LocalVariable l : ((LocalVariableTable) ca).getLocalVariableTable()) {
+                            printLocal(out, l);
                         }
                     }
-                    break;
-                case org.apache.bcel.Constants.ATTR_SOURCE_FILE:
-                    v[a.getNameIndex()]=1;
-                    break;
+                }
+            } else if (a.getTag() == org.apache.bcel.Constants.ATTR_SOURCE_FILE) {
+                v[a.getNameIndex()] = 1;
+                break;
             }
         }
         

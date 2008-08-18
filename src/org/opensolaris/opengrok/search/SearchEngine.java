@@ -244,7 +244,6 @@ public class SearchEngine {
                                 }
                             }
                         } else {
-                            System.out.println(genre);
                             OpenGrokLogger.getLogger().warning("Unknown genre: " + genre);
                             hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, ret);
                         }

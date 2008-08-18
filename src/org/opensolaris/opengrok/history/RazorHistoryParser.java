@@ -119,7 +119,10 @@ public class RazorHistoryParser implements HistoryParser {
                             entry.setAuthor(userName);
                             entry.setRevision(revision);
                             entry.setActive(state.equals("Active"));
-                            Date date = DATE_TIME_FORMAT.parse(dateTime);
+                            Date date = null;
+                            synchronized (DATE_TIME_FORMAT) {
+                                date = DATE_TIME_FORMAT.parse(dateTime);
+                            }
                             entry.setDate(date);
                             ignoreEntry = false;
                         } else {

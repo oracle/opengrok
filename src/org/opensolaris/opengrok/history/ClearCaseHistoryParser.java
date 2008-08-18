@@ -68,7 +68,9 @@ class ClearCaseHistoryParser implements HistoryParser {
 
                 entry = new HistoryEntry();
                 if ((s = in.readLine()) != null) {
-                    entry.setDate(FORMAT.parse(s));
+                    synchronized (FORMAT) {
+                        entry.setDate(FORMAT.parse(s));
+                    }
                 }
                 if ((s = in.readLine()) != null) {
                     entry.setAuthor(s);

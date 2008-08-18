@@ -200,6 +200,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
         this.subFiles = (sublist == null) ? null : (String[]) sublist.clone();
     }
 
+    @SuppressWarnings("PMD.MethodReturnsInternalArray")
     public String[] getSubFiles() {
         return (subFiles == null) ? null : (String[]) subFiles.clone();
     }

@@ -594,7 +594,7 @@ public final class RuntimeEnvironment {
         try {
             sock.close();
         } catch (Exception ex) {
-            ;
+            log.log(Level.INFO, "Couldn't close socket after writing configuration.", ex);
         }
     }
 
@@ -611,7 +611,7 @@ public final class RuntimeEnvironment {
     public void stopConfigurationListenerThread() {
         try {
             configServerSocket.close();
-        } catch (Exception e) { log.log(Level.FINE,"Stopping config listener thread: ",e); }
+        } catch (Exception e) { log.log(Level.FINE, "Stopping config listener thread: ", e); }
     }
     
     /**
@@ -649,7 +649,7 @@ public final class RuntimeEnvironment {
                         } catch (IOException e) {
                             log.log(Level.FINE,"Error reading config file: ",e);
                         } finally {
-                            try { s.close(); } catch (Exception ex) { log.log(Level.FINE,"Interrupt closing config listener reader socket: ",ex); }
+                            try { s.close(); } catch (Exception ex) { log.log(Level.FINE, "Interrupt closing config listener reader socket: ", ex); }
                         }
                     }
                 }

@@ -124,9 +124,7 @@ public class Indexer {
                     case 'c': env.setCtags(getopt.getOptarg()); break;
                     case 'w': {
                         String webapp = getopt.getOptarg();
-                        if (webapp.startsWith("/") || webapp.startsWith("http")) {
-                            ;
-                        } else {
+                        if (!webapp.startsWith("/") && !webapp.startsWith("http")) {
                             webapp = "/" + webapp;
                         }
                         if (webapp.endsWith("/")) {

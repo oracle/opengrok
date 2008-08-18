@@ -256,6 +256,7 @@ public class ClearCaseRepository extends Repository {
         } while (true);
     }
 
+    @SuppressWarnings("PMD.EmptyWhileStmt")
     public void update() throws Exception {
         Process process = null;
         BufferedReader in = null;

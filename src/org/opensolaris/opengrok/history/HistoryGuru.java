@@ -104,6 +104,7 @@ public class HistoryGuru {
      * @throws java.io.IOException If an error occurs while trying to access the filesystem
      * @return A HistorReader that may be used to read out history data for a named file
      */
+    @SuppressWarnings("PMD.AvoidRethrowingException")
     public HistoryReader getHistoryReader(File file) throws IOException {
         if (file.isDirectory()) {
             return getDirectoryHistoryReader(file);
@@ -136,6 +137,7 @@ public class HistoryGuru {
      * @throws java.io.IOException If an error occurs while trying to access the filesystem
      * @return A HistorReader that may be used to read out history data for a named file
      */
+    @SuppressWarnings("PMD.AvoidRethrowingException")
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
         Class<? extends HistoryParser> parser = null;
         Repository repos = getRepository(file);

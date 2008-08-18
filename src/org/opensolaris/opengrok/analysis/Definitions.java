@@ -106,7 +106,7 @@ public class Definitions implements Serializable {
     /**
      * Class that represents a single tag.
      */
-    public static class Tag implements Serializable {
+    private static class Tag implements Serializable {
         /** Line number of the tag. */
         public final int line;
         /** The symbol used in the definition. */

@@ -174,6 +174,7 @@ public abstract class Repository {
      * 
      * @return true if this repository supports sub repositories
      */
+    @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
     boolean supportsSubRepositories() {
         return false;
     }
