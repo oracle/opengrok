@@ -432,7 +432,9 @@ Use is subject to license terms.
     <target name="-pre-compile-test">
         <property name="test-sys-prop.emma.coverage.out.file" value="${coverage.dir}/coverage.ec"/>
         <property name="test-sys-prop.emma.coverage.out.merge" value="true"/>
+    </target>
 
+    <target name="-post-compile-test">
         <!-- Generate ZIP files used for unit testing -->
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip" basedir="testdata/sources" update="true"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" basedir="testdata/repositories" update="true"/>
