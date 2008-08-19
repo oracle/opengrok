@@ -453,4 +453,6 @@ Use is subject to license terms.
         </emma>
     </target>
     
+    <target name="code-coverage" depends="clean, emma-instrument, test, emma-report" description="Make test code coverage reports based on the OpenGrok unit tests"/>
+    
 </project>
