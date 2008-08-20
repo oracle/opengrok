@@ -53,6 +53,7 @@ public class CAnalyzerFactory extends FileAnalyzerFactory {
         "XS",                   // Mainly found in perl directories
         "X",                    // rpcgen input files
         "PHP",
+        "HXX",
     };
 
     public CAnalyzerFactory() {

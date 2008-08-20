@@ -10,6 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
+import org.opensolaris.opengrok.analysis.c.CAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
@@ -95,5 +96,12 @@ public class AnalyzerGuruTest {
                 "This is a plain text file.".getBytes("US-ASCII"));
         assertSame(PlainAnalyzer.class,
                    AnalyzerGuru.getAnalyzer(in, "dummy").getClass());
+    }
+
+    @Test
+    public void rfe2969() {
+        FileAnalyzerFactory faf = AnalyzerGuru.find("foo.hxx");
+        assertNotNull(faf);
+        assertSame(CAnalyzerFactory.class, faf.getClass());
     }
 }
