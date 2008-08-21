@@ -124,9 +124,6 @@ CDDL HEADER END
                    expects C date format. -->
                    <envvar name="LC_ALL" value="C"/>
 
-                   <!-- Additional directories to look for libraries in.
-                   (Subversions java binding etc) -->
-                   <envvar name="LD_LIBRARY_PATH" value="/usr/lib/svn"/>
                </method_environment>
             </method_context>
          </exec_method>

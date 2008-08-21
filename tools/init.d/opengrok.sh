@@ -53,7 +53,6 @@ LC_ALL=C; export LC_ALL
 
 # Additional directories to look for libraries in. 
 # (Subversions java binding etc)
-LD_LIBRARY_PATH=/opt/csw/lib/svn; export LD_LIBRARY_PATH
 
 case "$1" in
     start)

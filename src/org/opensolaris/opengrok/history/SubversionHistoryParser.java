@@ -23,20 +23,21 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.logging.Level;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.tigris.subversion.javahl.ChangePath;
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.Info;
-import org.tigris.subversion.javahl.LogMessage;
-import org.tigris.subversion.javahl.Revision;
-import org.tigris.subversion.javahl.SVNClient;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
  * Parse source history for a Subversion Repository
@@ -44,6 +45,67 @@ import org.tigris.subversion.javahl.SVNClient;
  * @author Trond Norbye
  */
 class SubversionHistoryParser implements HistoryParser {
+
+    private static class Handler extends DefaultHandler2 {
+
+        final String prefix;
+        final String home;
+        final int length;
+        final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        HistoryEntry entry;
+        StringBuilder sb;
+
+        Handler(final SubversionRepository repos) {
+            this.home = repos.getDirectoryName();
+            this.prefix = repos.reposPath;
+            this.length = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+            sb = new StringBuilder();
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qname, Attributes attr) throws SAXException {
+            if ("logentry".equals(qname)) {
+                entry = new HistoryEntry();
+                entry.setActive(true);
+                entry.setRevision(attr.getValue("revision"));
+            }
+            sb.setLength(0);
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qname) throws SAXException {
+            String s = sb.toString();
+            if ("author".equals(qname)) {
+                entry.setAuthor(s);
+            } else if ("date".equals(qname)) {
+                try {
+                    entry.setDate(format.parse(s));
+                } catch (ParseException ex) {
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to parse: " + s, ex);
+                }
+            } else if ("path".equals(qname)) {
+                if (s.startsWith(prefix)) {
+                    File file = new File(home, s.substring(prefix.length()));
+                    String path = file.getAbsolutePath().substring(length);
+                    entry.addFile(path.intern());
+                } else {
+                    OpenGrokLogger.getLogger().log(Level.FINE, "Skipping file outside repository: " + s);
+                }
+            } else if ("msg".equals(qname)) {
+                entry.setMessage(s);
+            } if (qname.equals("logentry")) {
+                entries.add(entry);
+            }
+            sb.setLength(0);
+        }
+
+        @Override
+        public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
+            sb.append(arg0, arg1, arg2);
+        }
+    }
+
     /**
      * Parse the history for the specified file.
      *
@@ -52,117 +114,57 @@ class SubversionHistoryParser implements HistoryParser {
      * @return object representing the file's history
      */
     public History parse(File file, Repository repos)
-        throws IOException, ClientException {
-        SVNClient client = new SVNClient();
-        History history = new History();
-
-        // Get the working copy's view of the file.
-        // This will reconcile the repository's view of the file
-        // and OpenGrok's view of the file.
-        String workingCopy = null;
-
-        SubversionRepository srep = (SubversionRepository)repos;
-        if (srep.isIgnored()) {
+            throws IOException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser saxParser = null;
+        try {
+            saxParser = factory.newSAXParser();
+        } catch (ParserConfigurationException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to create SAX parser", ex);
+        } catch (SAXException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to create SAX parser", ex);
+        }
+        if (saxParser == null) {
             return null;
         }
-        workingCopy = srep.getDirectoryName();
-        Info info = client.info(workingCopy);
 
-        String wcUrl = info.getUrl();
-        String wcRepoUrl = info.getRepository();
+        assert (repos instanceof SubversionRepository);
+        SubversionRepository srepos = (SubversionRepository) repos;
+        History history = null;
 
-        // Reconcile the path. If the source root is an arbitrary directory in the repository,
-        // (e.g. /trunk), and not the whole repository, this path will need to be removed from
-        // the front of each file, if possible.
-        final String leadingPathFragment = wcUrl.substring(wcRepoUrl.length());
-
-        int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-
-        boolean fetchFileInfo = file.isDirectory();
-        
-        // Get the entire history, with changed files
-        LogMessage[] messages =
-            client.logMessages(file.getPath(), Revision.START, Revision.BASE, false, fetchFileInfo);
-
-        if (messages != null) {
-            // reverse the history so we read it from newest to oldest
-            // Reversing the Revision params on logMessages()
-            // will not give any history at all
-
-            List<LogMessage> messageList = Arrays.asList(messages);
-            Collections.reverse(messageList);
-
-            final LinkedHashMap<Long, HistoryEntry> revisions =
-                new LinkedHashMap<Long, HistoryEntry>();
-
-            for (LogMessage msg : messageList) {
-                HistoryEntry entry = new HistoryEntry();
-                entry.setRevision(msg.getRevision().toString());
-                entry.setDate(msg.getDate());
-                entry.setAuthor(msg.getAuthor());
-                entry.setMessage(msg.getMessage());
-                entry.setActive(true);
-
-                // Disabling support for comparing files across renames
-                // until we have a solution that works (preferably for all
-                // SCMs).
-                //
-                // Current problems (intentionally vague here, since I don't
-                // know all the details):
-                //   1. doesn't work along with createCache()
-                //   2. doesn't work correctly for commits that touch files
-                //      in different directories
-                //   3. problems with checkouts of subdirs of a repository
-                /*
-                entry.setRepositoryPath(fileRepo);
-                entry.setSourceRootPath(fileRepoSourcePath);
-                */
-                if (fetchFileInfo) {
-                    ChangePath[] changedPaths = msg.getChangedPaths();
-                    if (changedPaths != null) {
-                        for (ChangePath cp : changedPaths) {
-                            final String itemPath = cp.getPath();
-
-                            // Disabling support for comparing files across renames
-                            // for now
-                            /*
-                            // directory-directory copy
-                            if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && fileRepo.getPath().startsWith(itemPath)) {
-                                String newRepoLoc = cp.getCopySrcPath() + fileRepo.getPath().substring(itemPath.length());
-                                fileRepo = new File(newRepoLoc);                        
-                                fileRepoSourcePath = new File(newRepoLoc.substring(leadingPathFragment.length()));
-                            }
-                            // file-file copy
-                            else if (cp.getAction() == 'A' && cp.getCopySrcPath() != null && itemPath.equals(fileRepo)) {
-                                fileRepo = new File(cp.getCopySrcPath());
-                                fileRepoSourcePath = new File(cp.getCopySrcPath().substring(leadingPathFragment.length()));
-                            }
-                            */
-
-                            if (itemPath.startsWith(leadingPathFragment)) {
-                                File f = new File(workingCopy, itemPath.substring(leadingPathFragment.length()));
-                                if (f.exists() && !f.isDirectory()) {
-                                    String name = f.getCanonicalPath().substring(rootLength);
-                                    entry.addFile(name);
-                                }
-                            } else {                            
-                                // This is an arbitrary path which is outside of our working copy.
-                                // This link will be broken.
-    //                            entry.addFile(itemPath);
-                            }
-                        }
-
-                    }
+        Process process = null;
+        BufferedInputStream in = null;
+        try {
+            process = srepos.getHistoryLogProcess(file);
+            if (process == null) {
+                return null;
+            }
+            in = new BufferedInputStream(process.getInputStream());
+            Handler handler = new Handler(srepos);
+            try {
+                saxParser.parse(in, handler);
+                history = new History();
+                history.setHistoryEntries(handler.entries);
+            } catch (Exception e) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "An error occurred while parsing the xml output", e);
+            }
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException exp) {
+                    // Ignore..
                 }
-                revisions.put(msg.getRevisionNumber(), entry);
-
             }
 
-            ArrayList<HistoryEntry> entries =
-                new ArrayList<HistoryEntry>(revisions.values());
-
-            history.setHistoryEntries(entries);
-
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException exp) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
+            }
         }
 
         return history;

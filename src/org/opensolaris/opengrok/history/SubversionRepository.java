@@ -23,100 +23,169 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.logging.Level;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.tigris.subversion.javahl.BlameCallback;
-import org.tigris.subversion.javahl.ClientException;
-import org.tigris.subversion.javahl.Info;
-import org.tigris.subversion.javahl.LogMessage;
-import org.tigris.subversion.javahl.Revision;
-import org.tigris.subversion.javahl.SVNClient;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.DefaultHandler2;
 
 /**
- * Access to a Subversion repository. 
+ * Access to a Subversion repository.
+ *
+ * @todo The current implementation does <b>not</b> support nestet
+ * repositories as described in http://svnbook.red-bean.com/en/1.0/ch07s03.html
+ *
+ * @author Trond Norbye
  */
 public class SubversionRepository extends Repository {
 
-    private boolean verbose;
-    private boolean ignored;
+    protected String reposPath;
+    private static ScmChecker svnBinary = new ScmChecker(new String[]{
+                getCommand(), "--help"
+            });
 
-    /**
-     * Creates a new instance of SubversionRepository
-     */
-    public SubversionRepository() {
+    private static final String getCommand() {
+        return System.getProperty("org.opensolaris.opengrok.history.Subversion", "svn");
+    }
+
+    private String getValue(Node node) {
+        StringBuffer sb = new StringBuffer();
+        Node n = node.getFirstChild();
+        while (n != null) {
+            if (n.getNodeType() == n.TEXT_NODE) {
+                sb.append(n.getNodeValue());
+            }
+
+            n = n.getNextSibling();
+        }
+        return sb.toString();
     }
 
     @Override
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);
 
-        if (!RuntimeEnvironment.getInstance().isRemoteScmSupported()) {
-            // try to figure out if I should ignore this repository
-            try {
-                SVNClient client = new SVNClient();
-                Info info = client.info(directoryName);
-                if (!info.getUrl().startsWith("file")) {
-                    if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        OpenGrokLogger.getLogger().log(Level.INFO, "Skipping history from remote repository: <" + directoryName + ">");
-                    }
-                    ignored = true;
-                }
-            } catch (Exception e) {
+        if (isWorking()) {
+            String argv[] = new String[]{getCommand(), "info", "--xml"};
+            File directory = new File(getDirectoryName());
 
+            Process process = null;
+            InputStream in = null;
+            try {
+                process = Runtime.getRuntime().exec(argv, null, directory);
+                in = process.getInputStream();
+
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document document = builder.parse(in);
+
+                String url = getValue(document.getElementsByTagName("url").item(0));
+                String root = getValue(document.getElementsByTagName("root").item(0));
+
+                reposPath = url.substring(root.length());
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                    }
+                }
+                if (process != null) {
+                    try {
+                        process.exitValue();
+                    } catch (IllegalThreadStateException exp) {
+                        // the process is still running??? just kill it..
+                        process.destroy();
+                    }
+                }
             }
         }
     }
 
     /**
-     * Use verbose log messages, or just the summary
-     * @return true if verbose log messages are used for this repository
+     * Get a handle to a svn log process for the given file.
+     *
+     * @param file THe file to get subversion log from
+     * @return A handle to the process, or null
+     * @throws java.io.IOException if an error occurs
      */
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    /**
-     * Specify if verbose log messages or just the summary should be used
-     * @param verbose set to true if verbose messages should be used
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+    protected Process getHistoryLogProcess(final File file) throws IOException {
+        String abs = file.getAbsolutePath();
+        String filename;
+        String directoryName = getDirectoryName();
+        if (abs.length() > directoryName.length()) {
+            filename = abs.substring(directoryName.length() + 1);
+        } else {
+            filename = "";
+        }
+        String argv[] = new String[]{getCommand(), "log", "--xml", "-v", filename};
+        File directory = new File(getDirectoryName());
+        return Runtime.getRuntime().exec(argv, null, directory);
     }
 
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
-        
-        Revision revision = Revision.WORKING;
-        
-        if (rev != null) {
-            try {
-                revision = Revision.getInstance(Long.parseLong(rev));
-            } catch (NumberFormatException exp) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): Not a valid Subversion revision format", exp);
-                return null;
+
+        String directoryName = getDirectoryName();
+        File directory = new File(directoryName);
+
+        String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
+        Process process = null;
+        InputStream in = null;
+        try {
+            String argv[] = {getCommand(), "cat", "-r", rev, filename};
+            process = Runtime.getRuntime().exec(argv, null, directory);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[32 * 1024];
+            in = process.getInputStream();
+            int len;
+
+            while ((len = in.read(buffer)) != -1) {
+                if (len > 0) {
+                    out.write(buffer, 0, len);
+                }
+            }
+
+            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
+        } catch (Exception exp) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString());
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            // Clean up zombie-processes...
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException exp) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
             }
         }
 
-        SVNClient client = new SVNClient();
-        try {
-            Info info = client.info(getDirectoryName());
-            String wcUrl = info.getUrl();
-
-            String svnPath = parent + "/" + basename;
-
-            // erase the working copy from the path to get the fragment
-            svnPath = svnPath.substring(getDirectoryName().length());
-
-            ret = new ByteArrayInputStream(client.fileContent(wcUrl + svnPath, revision));
-        } catch (ClientException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to retrieve rev (" + rev + "): " + ex.toString(), ex);
-        }        
-        
         return ret;
     }
 
@@ -128,36 +197,102 @@ public class SubversionRepository extends Repository {
         return SubversionHistoryParser.class;
     }
 
-    public boolean isIgnored() {
-        return ignored;
-    }
+    private static class AnnotateHandler extends DefaultHandler2 {
 
-    public void setIgnored(boolean ignored) {
-        this.ignored = ignored;
+        String rev;
+        String author;
+        final Annotation annotation;
+        final StringBuilder sb;
+
+        AnnotateHandler(String filename) {
+            annotation = new Annotation(filename);
+            sb = new StringBuilder();
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qname, Attributes attr) throws SAXException {
+            sb.setLength(0);
+            if ("entry".equals(qname)) {
+                rev = null;
+                author = null;
+            } else if ("commit".equals(qname)) {
+                rev = attr.getValue("revision");
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qname) throws SAXException {
+            if ("author".equals(qname)) {
+                author = sb.toString();
+            } else if ("entry".equals(qname)) {
+                annotation.addLine(rev, author, true);
+            }
+        }
+
+        @Override
+        public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
+            sb.append(arg0, arg1, arg2);
+        }
     }
 
     public Annotation annotate(File file, String revision) throws Exception {
-        SVNClient client = new SVNClient();
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser saxParser = null;
+        try {
+            saxParser = factory.newSAXParser();
+        } catch (ParserConfigurationException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, null, ex);
+        } catch (SAXException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, null, ex);
+        }
+        if (saxParser == null) {
+            return null;
+        }
 
-        // we need to find the first revision where the file appeared at this location
-        // in order to find out if it should be disabled because of a copy
-        LogMessage[] messages =
-                client.logMessages(file.getPath(), Revision.START, Revision.BASE, true, false, 1);
 
-        final long oldestRevOnThisPath = (messages != null && messages.length > 0) ? messages[0].getRevisionNumber() : 0;
+        ArrayList<String> argv = new ArrayList<String>();
+        argv.add(getCommand());
+        argv.add("annotate");
+        argv.add("--xml");
+        if (revision != null) {
+            argv.add("-r");
+            argv.add(revision);
+        }
+        argv.add(file.getName());
+        ProcessBuilder pb = new ProcessBuilder(argv);
+        pb.directory(file.getParentFile());
+        Process process = null;
+        BufferedInputStream in = null;
+        Annotation ret = null;
+        try {
+            process = pb.start();
+            in = new BufferedInputStream(process.getInputStream());
 
-        final Annotation annotation = new Annotation(file.getName());
-        BlameCallback callback = new BlameCallback() {
-
-            public void singleLine(Date changed, long revision,
-                    String author, String line) {
-                annotation.addLine(Long.toString(revision), author, oldestRevOnThisPath <= revision);
+            AnnotateHandler handler = new AnnotateHandler(file.getName());
+            try {
+                saxParser.parse(in, handler);
+                ret = handler.annotation;
+            } catch (Exception e) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "An error occurred while parsing the xml output", e);
             }
-            };
-
-        Revision rev = (revision == null) ? Revision.BASE : Revision.getInstance(Long.parseLong(revision));
-        client.blame(file.getPath(), Revision.START, rev, callback);
-        return annotation;
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // Just ignore
+                }
+            }
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
+            }
+        }
+        return ret;
     }
 
     public boolean fileHasAnnotation(File file) {
@@ -167,7 +302,7 @@ public class SubversionRepository extends Repository {
     public boolean isCacheable() {
         return true;
     }
-    
+
     public boolean fileHasHistory(File file) {
         // TODO: Research how to cheaply test if a file in a given
         // SVN repo has history.  If there is a cheap test, then this
@@ -177,11 +312,10 @@ public class SubversionRepository extends Repository {
 
     public void update() throws Exception {
         Process process = null;
-        String command = System.getProperty("org.opensolaris.opengrok.history.Subversion", "svn");
 
         try {
             File directory = new File(getDirectoryName());
-            process = Runtime.getRuntime().exec(new String[] {command, "update"}, null, directory);
+            process = Runtime.getRuntime().exec(new String[]{getCommand(), "update"}, null, directory);
             boolean interrupted;
             do {
                 interrupted = false;
@@ -194,7 +328,7 @@ public class SubversionRepository extends Repository {
                 }
             } while (interrupted);
         } finally {
-            
+
             // is this really the way to do it? seems a bit brutal...
             try {
                 process.exitValue();
@@ -203,10 +337,15 @@ public class SubversionRepository extends Repository {
             }
         }
     }
-    
+
     @Override
-    boolean isRepositoryFor(File file) {
+    boolean isRepositoryFor( File file) {
         File f = new File(file, ".svn");
         return f.exists() && f.isDirectory();
+    }
+
+    @Override
+    protected boolean isWorking() {
+        return svnBinary.available;
     }
 }

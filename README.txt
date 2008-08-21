@@ -125,28 +125,6 @@ change the :
 
 	    This file will contain something like the Context described above.
 
-Optional Step 4 -- Subversion setup 
------------------------------------ 
-Some additional setup is needed if you are using Subversion. OpenGrok uses
-the Subversion javahl bindings, which must be installed separately.
-
-svn-javahl.jar must be inserted in OpenGrok's classpath (you may do
-this by copying the file into the lib-subdirectory in your OpenGrok
-installation).
-svn-javahl.jar is also needed by the web application, and you may
-either copy the jar-file into WEB-INF/lib-directory or insert it into the
-common directory for all web applications (For Tomcat 5.x, this is
-`TOMCAT/common/lib/svn-javahl.jar')
-
-The path to the native library svnjavahl needs to be added to
-java.library.path for both the OpenGrok application and the OpenGrok
-web application.
-
-ex:
-  java -Djava.library.path=/usr/lib/svn -jar opengrok.jar ....
-or, by using LD_LIBRARY_PATH
-  LD_LIBRARY_PATH=/usr/lib/svn java -jar opengrok.jar ...
-
 ---------------------------------------------------
 Using Standalone Swing GUI
 ---------------------------------------------------

@@ -241,7 +241,7 @@ Use is subject to license terms.
             <fileset dir="web"/>
             <fileset dir="conf" excludes="web.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
-            <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar,svn-javahl.jar"/>
+            <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
         </war>
         <echo message="Generating man page.."/>
         <java classname="org.opensolaris.opengrok.index.CommandLineOptions" 
