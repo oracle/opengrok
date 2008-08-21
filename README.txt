@@ -126,22 +126,6 @@ change the :
 	    This file will contain something like the Context described above.
 
 ---------------------------------------------------
-Using Standalone Swing GUI
----------------------------------------------------
-opengrok.jar when invoked without any arguments, opens up the GUI search window.
-The interface is similar to cscope. 
-
-To create an index, first select the browse button for "Search" drop down list.
-Choose a directory to store the index (DATA_ROOT), and select the source tree 
-(SRC_ROOT). You may have to also select path to ctags in the Advanced Options, 
-if exuberant ctags can not be found in the PATH.
-
-Clicking "Update" will create or update the search index.
-
-The index can be searched using the cscope like GUI, which lets you customize
-your favorite editor to open the matching files.
-
----------------------------------------------------
 Using Findbugs
 ---------------------------------------------------
 If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
