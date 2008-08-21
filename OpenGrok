@@ -10,7 +10,7 @@
 Usage()
 {
     echo 1>&2
-    echo "Usage: ${0} <update|updateQuietly|updateConfiguration|usage|gui>" 1>&2
+    echo "Usage: ${0} <update|updateQuietly|updateConfiguration|usage>" 1>&2
     echo 1>&2
     exit 1
 }
@@ -134,11 +134,6 @@ UpdateDescriptionCache()
     fi
 }
 
-InvokeGUI()
-{
-    ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} &
-}
-
 OpenGrokUsage()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} '-?'
@@ -173,10 +168,6 @@ case "${1}" in
 
     usage)
         OpenGrokUsage
-	;;
-
-    gui)
-	InvokeGUI
 	;;
 
     *)
