@@ -98,7 +98,7 @@ class FileHistoryCache implements HistoryCache {
     public void store(History history, File file) throws Exception {
         
         File cache = getCachedFile(file);
-        
+
         File dir = cache.getParentFile();
         if (!dir.isDirectory()) {
             if (!dir.mkdirs()) {
@@ -184,7 +184,7 @@ class FileHistoryCache implements HistoryCache {
                              (time > env.getHistoryReaderTimeLimit()))) {
                     // retrieving the history takes too long, cache it!
                     try {
-                        store(history, cache);
+                        store(history, file);
                     } catch (Exception e) {
                         OpenGrokLogger.getLogger().log(Level.WARNING, 
                                 "Error when writing cache file '" + cache + "':", e);
