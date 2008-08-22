@@ -188,10 +188,10 @@ public class OpenGrokTrayApp {
                     if (!agentConnected) {
                         tryAgentConnect();
                     }
-                    if (!agentConnected) {
-                        currentIcon = noConnectionImage;
-                    } else {
+                    if (agentConnected) {
                         currentIcon = opengrokImage;
+                    } else {
+                        currentIcon = noConnectionImage;
                     }
                     trayIcon.setImage(currentIcon);
                 }

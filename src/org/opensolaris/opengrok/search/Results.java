@@ -70,8 +70,8 @@ public final class Results {
         
         for (Map.Entry<String, ArrayList<Document>> entry: dirHash.entrySet()) {
             String parent = entry.getKey();
-            String tag = (desc != null) ? " - <i>" + desc.get(parent) + "</i>": "";
-            
+            String tag = (desc == null) ? "" : " - <i>" + desc.get(parent) + "</i>";
+
             out.write("<tr class=\"dir\"><td colspan=\"2\">&nbsp;&nbsp;<a href=\"");
             out.write(Util.URIEncodePath(urlPrefix + parent));
             out.write("/\">" + parent + "/</a>" + tag + "</td></tr>");

@@ -60,6 +60,8 @@ public class BZip2Analyzer extends FileAnalyzer {
     }
     
     private FileAnalyzer fa;
+    
+    @SuppressWarnings("PMD.ConfusingTernary")
     public void analyze(Document doc, InputStream in) {
 	try {
 	    if (in.read() != 'B') { 
@@ -76,7 +78,7 @@ public class BZip2Analyzer extends FileAnalyzer {
 		String newname = path.substring(0, path.lastIndexOf('.'));
 		//System.err.println("BZIPPED OF = " + newname);
 		fa = AnalyzerGuru.getAnalyzer(gzis, newname);
-		if(fa != null && fa.getClass() != BZip2Analyzer.class) {
+		if (fa != null && fa.getClass() != BZip2Analyzer.class) {
 		    if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
 			this.g = Genre.XREFABLE;
 		    } else {
@@ -112,10 +114,8 @@ public class BZip2Analyzer extends FileAnalyzer {
      * @param out Writer to store HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-	if(fa != null) {
-	    if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
-		fa.writeXref(out);
-	    }
+	if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
+            fa.writeXref(out);
 	}
     }
 }

@@ -162,16 +162,16 @@ public class EftarFile {
                 out.writeShort((short) childnode.children.size());
             } else {
                 out.writeShort(0);
-                if (childnode.tag != null) {
-                    out.writeShort((short) childnode.tag.length());
-                } else {
+                if (childnode.tag == null) {
                     out.writeShort((short) 0);
+                } else {
+                    out.writeShort((short) childnode.tag.length());
                 }
             }
-            if (childnode.tag != null) {
-                out.writeShort((short) (childnode.tagOffset - offset));
-            } else {
+            if (childnode.tag == null) {
                 out.writeShort(0);
+            } else {
+                out.writeShort((short) (childnode.tagOffset - offset));
             }
             offset += RECORD_LENGTH;
         }

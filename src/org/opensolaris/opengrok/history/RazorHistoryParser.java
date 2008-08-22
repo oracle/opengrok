@@ -49,6 +49,7 @@ public class RazorHistoryParser implements HistoryParser {
             Pattern.compile("^##(TITLE|NOTES|AUDIT|ISSUE):\\s+(.*)\\s*$");
     private final static boolean DUMP_HISTORY_ENTRY_ADDITIONS = false;
 
+    @SuppressWarnings("PMD.ConfusingTernary")
     public History parse(File file, Repository repository) throws IOException {
 
         RazorRepository repo = (RazorRepository) repository;

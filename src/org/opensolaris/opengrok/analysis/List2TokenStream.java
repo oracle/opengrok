@@ -40,7 +40,9 @@ public final class List2TokenStream extends TokenStream {
         if(subTokens == null || subTokens.length == si) {
             try {
                 String tok = l.remove(0);
-                if(tok != null) {
+                if (tok == null) {
+                    return null;
+                } else {
                     if(tok.indexOf('.') > 0) {
                         subTokens = tok.split("[^a-z0-9A-Z_]+");
                         //System.err.println("split " + tok + " into "+ subTokens.length);
@@ -49,8 +51,6 @@ public final class List2TokenStream extends TokenStream {
                         return new Token(tok,0,0);
                     }
                     si = 0;
-                } else {
-                    return null;
                 }
             } catch (NoSuchElementException nop) {
                 return null;

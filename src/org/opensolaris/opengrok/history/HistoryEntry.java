@@ -106,11 +106,7 @@ public class HistoryEntry {
     }
     
     public Date getDate() {
-        if (date != null) {
-            return (Date) date.clone();
-        } else {
-            return null;
-        }
+        return (date == null) ? null : (Date) date.clone();
     }
     
     public String getMessage() {
@@ -126,10 +122,10 @@ public class HistoryEntry {
     }
     
     public final void setDate(Date date) {
-        if (date != null) {
-            this.date = (Date) date.clone();
-        } else {
+        if (date == null) {
             this.date = null;
+        } else {
+            this.date = (Date) date.clone();
         }
     }
     

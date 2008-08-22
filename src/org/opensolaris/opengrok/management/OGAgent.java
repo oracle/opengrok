@@ -119,10 +119,10 @@ public class OGAgent {
 
         ArrayList mbservs = MBeanServerFactory.findMBeanServer(null);
         log.fine("Finding MBeanservers, size " + mbservs.size());
-        if (!mbservs.isEmpty()) {
-            server = (MBeanServer) mbservs.get(0);
-        } else {
+        if (mbservs.isEmpty()) {
             server = MBeanServerFactory.createMBeanServer();
+        } else {
+            server = (MBeanServer) mbservs.get(0);
         }
 
         //instantiate and register OGAManagement

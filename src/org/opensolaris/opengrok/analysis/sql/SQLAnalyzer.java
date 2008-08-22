@@ -48,7 +48,7 @@ public class SQLAnalyzer extends PlainAnalyzer {
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.project = project;
-        // TODO xref.setDefs(defs);
+        // @TODO xref.setDefs(defs);
         xref.write(out);
     }
 

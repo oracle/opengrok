@@ -57,10 +57,10 @@ public class RCSget extends InputStream {
             Archive archive = new Archive(file, in);
             Object[] lines;
             
-            if (version != null) {
-                lines = archive.getRevision(version, false);
-            } else {
+            if (version == null) {
                 lines = archive.getRevision(false);
+            } else {
+                lines = archive.getRevision(version, false);
             }
             
             StringBuilder sb = new StringBuilder();

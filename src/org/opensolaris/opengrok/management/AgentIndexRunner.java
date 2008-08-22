@@ -141,11 +141,11 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 doNotify(NOTIFICATIONINFOLONGTYPE, "FinishedIndexing", Long.valueOf(lastIndexFinish));
                 lastIndexUsedTime = lastIndexFinish - lastIndexStart;
                 String publishhost = jagmgt.getInstance().getPublishServerURL();
-                if (publishhost != null) {
+                if (publishhost == null) {
+                    log.warning("No publishhost given, not sending updates");
+                } else {
                     index.sendToConfigHost(env, publishhost);
                     doNotify(NOTIFICATIONINFOSTRINGTYPE, "Published index", publishhost);
-                } else {
-                    log.warning("No publishhost given, not sending updates");
                 }
 
 
@@ -302,7 +302,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
             }
         }
         if (!removed) {
-            throw new ListenerNotFoundException("Didnt remove the given NotificationListener");
+            throw new ListenerNotFoundException("Didn't remove the given NotificationListener");
         }
     }
 
@@ -313,18 +313,16 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
             Iterator it = notifListeners.iterator();
             while (it.hasNext()) {
                 NotificationHolder mnf = (NotificationHolder) it.next();
-                if (mnf.getNL().equals(notiflistener)) {
-                    if ((mnf.getFilter() == null) || mnf.getFilter().equals(filt)) {
-                        if ((mnf.getFilter() == null) || mnf.getObj().equals(obj)) {
+                if (mnf.getNL().equals(notiflistener) 
+                       && ((mnf.getFilter() == null) || mnf.getFilter().equals(filt)) 
+                       && ((mnf.getFilter() == null) || mnf.getObj().equals(obj))) {
                             it.remove();
                             removed = true;
-                        }
-                    }
                 }
             }
         }
         if (!removed) {
-            throw new ListenerNotFoundException("Didnt remove the given NotificationListener");
+            throw new ListenerNotFoundException("Didn't remove the given NotificationListener");
         }
     }
 

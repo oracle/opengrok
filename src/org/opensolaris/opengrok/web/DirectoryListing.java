@@ -120,12 +120,12 @@ public class DirectoryListing {
 
                 if (parentFNode != null && parentFNode.childOffset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, file);
-                    if (briefDesc != null) {
+                    if (briefDesc == null) {
+                        out.write("<td></td>");
+                    } else {
                         out.write("<td align=\"left\">");
                         out.write(briefDesc);
                         out.write("</td>");
-                    } else {
-                        out.write("<td></td>");
                     }
                 }
                 out.write("</tr>");

@@ -119,8 +119,6 @@ public final class HistoryGuru {
                     return null;
                 }
                 return new HistoryReader(history);
-            } catch (IOException ioe) {
-                throw ioe;
             } catch (Exception e) {
                 throw new IOException("Error while constructing HistoryReader", e);
             }
@@ -215,6 +213,7 @@ public final class HistoryGuru {
         addRepositories(files, repos, ignoredNames, true);
     }
 
+    @SuppressWarnings("PMD.ConfusingTernary")
     private void addRepositories(File[] files, Map<String, Repository> repos,
             IgnoredNames ignoredNames, boolean recursiveSearch) {
 
@@ -240,14 +239,14 @@ public final class HistoryGuru {
                     }
                     addRepository(repository, path, repos);
 
-                    // TODO: Search only for one type of repository - the one found here
+                    // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
                         File subFiles[] = file.listFiles();
-                        if (subFiles != null) {
+                        if (subFiles == null) {
+                            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                        } else {
                             // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
                             addRepositories(subFiles, repos, ignoredNames, false); 
-                        } else {
-                            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                         }
                     }
                     
@@ -259,10 +258,10 @@ public final class HistoryGuru {
                 // Not a repository, search it's sub-dirs
                 if (file.isDirectory() && !ignoredNames.ignore(file)) {
                     File subFiles[] = file.listFiles();
-                    if (subFiles != null) {
-                        addRepositories(subFiles, repos, ignoredNames);
-                    } else {
+                    if (subFiles == null) {
                         OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                    } else {
+                        addRepositories(subFiles, repos, ignoredNames);
                     }
                 }
             }

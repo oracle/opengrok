@@ -65,10 +65,10 @@ public class RazorDirectoryHistoryParser extends DirectoryHistoryParser {
                 File mappedFile = repo.getRazorHistoryFileFor(file);
                 String opengrokName = repo.getOpenGrokFileNameFor(file);
 
-                if (!mappedFile.isDirectory()) {
-                    entry.addFile(opengrokName);
-                } else {
+                if (mappedFile.isDirectory()) {
                     traverse(file, repo, entry);
+                } else {
+                    entry.addFile(opengrokName);
                 }
             }
         }

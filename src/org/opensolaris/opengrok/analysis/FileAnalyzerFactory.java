@@ -86,7 +86,7 @@ public class FileAnalyzerFactory {
             this.matchers = Collections.singletonList(matcher);
         }
         this.contentType = contentType;
-        this.genre = (genre != null) ? genre : Genre.DATA;
+        this.genre = (genre == null) ? Genre.DATA : genre;
     }
 
     /**

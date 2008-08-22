@@ -57,7 +57,7 @@ public class PerforceRepository extends Repository {
         cmd.add("p4");
         cmd.add("annotate");
         cmd.add("-q");
-        cmd.add(file.getPath() + ((rev != null) ? ("#" + rev) : ("")));
+        cmd.add(file.getPath() + ((rev == null) ? "" : "#" + rev));
 
         Executor executor = new Executor(cmd, file.getParentFile());
         executor.exec();
@@ -96,7 +96,7 @@ public class PerforceRepository extends Repository {
         cmd.add("p4");
         cmd.add("print");
         cmd.add("-q");
-        cmd.add(basename + ((rev != null) ? ("#" + rev) : ("")));
+        cmd.add(basename + ((rev == null) ? "" : "#" + rev));
         Executor executor = new Executor(cmd, new File(parent));
         executor.exec();
         return new ByteArrayInputStream(executor.get_stdout().getBytes());
@@ -104,7 +104,7 @@ public class PerforceRepository extends Repository {
 
     @Override
     void update() {
-    /* TODO */
+    /* @TODO */
     }
 
     @Override

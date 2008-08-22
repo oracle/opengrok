@@ -39,12 +39,13 @@ import org.opensolaris.opengrok.util.Executor;
 public class PerforceHistoryParser implements HistoryParser {
     
     private final static Pattern revision_regexp = Pattern.compile("#(\\d+) change \\d+ \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)");
+
     public static List<HistoryEntry> getRevisions(File file, String rev) throws IOException {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("p4");
         cmd.add("filelog");
         cmd.add("-l");
-        cmd.add(file.getName()+((rev!=null)?("#"+rev):("")));
+        cmd.add(file.getName() + ((rev == null) ? "" : "#"+rev));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
         

@@ -82,7 +82,7 @@ public class AnalyzerGuru {
     private static final Map<String, FileAnalyzerFactory>
         ext = new HashMap<String, FileAnalyzerFactory>();
 
-    // TODO: have a comparator
+    // @TODO: have a comparator
     /** Map from magic strings to analyzer factories. */
     private static final SortedMap<String, FileAnalyzerFactory>
         magics = new TreeMap<String, FileAnalyzerFactory>();
@@ -393,10 +393,9 @@ public class AnalyzerGuru {
     public static FileAnalyzerFactory find(String file) {
         String path = file;
         int i = 0;
-        if ((i = path.lastIndexOf('/')) > 0 || (i = path.lastIndexOf('\\')) > 0) {
-            if (i + 1 < path.length()) {
-                path = path.substring(i + 1);
-            }
+        if (((i = path.lastIndexOf('/')) > 0 || (i = path.lastIndexOf('\\')) > 0) 
+            && (i + 1 < path.length())) {
+            path = path.substring(i + 1);
         }
         int dotpos = path.lastIndexOf('.');
         if (dotpos >= 0) {

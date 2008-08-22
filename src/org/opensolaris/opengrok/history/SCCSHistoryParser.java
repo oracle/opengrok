@@ -180,9 +180,7 @@ class SCCSHistoryParser implements HistoryParser {
                             break;
                         case 'd':
                             d = in.read();
-                            if (d != ' ') {
-                                return (d);
-                            } else {
+                            if (d == ' ') {
                                 dt = in.read();
                                 if (dt == 'R') {
                                     active = false;
@@ -191,6 +189,8 @@ class SCCSHistoryParser implements HistoryParser {
                                 }
                                 passRecord = true;
                                 field = 1;
+                            } else {
+                                return (d);
                             }
                             break;
                         case -1:

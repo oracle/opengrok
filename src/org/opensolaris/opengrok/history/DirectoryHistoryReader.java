@@ -63,6 +63,7 @@ public class DirectoryHistoryReader extends HistoryReader {
     Iterator<String> citer;
     String icomment;
 
+    @SuppressWarnings("PMD.ConfusingTernary")
     public DirectoryHistoryReader(String path) throws IOException {
         IndexReader ireader = null;
         IndexSearcher searcher = null;
@@ -108,7 +109,9 @@ public class DirectoryHistoryReader extends HistoryReader {
                             hr = HistoryGuru.getInstance().getHistoryReader(f);
                         } catch (IOException e) {
                         }
-                        if (hr != null) {
+                        if (hr == null) {
+                            put(cdate, "-", "", rpath);
+                        } else {
                             try {
                                 while (hr.next()) {
                                     if (hr.isActive()) {
@@ -123,8 +126,6 @@ public class DirectoryHistoryReader extends HistoryReader {
                             } catch (IOException e) {
                                 put(cdate, "-", "", rpath);
                             }
-                        } else {
-                            put(cdate, "-", "", rpath);
                         }
                     }
                 }

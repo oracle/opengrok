@@ -47,7 +47,7 @@ public class AgentConnection implements NotificationListener {
     private static final String objStrName = "OGA:name=AgentIndexRunner,source=timer";
     private static final Logger logger = Logger.getLogger("org.opensolaris.opengrok");
     private String agenturl = "";
-    private JMXConnector jmxconn = null; // TODO: Set to private
+    private JMXConnector jmxconn = null;
     private boolean connected = false;
     private ActionListener actionListener = null;
     private boolean listenerRegistered = false;

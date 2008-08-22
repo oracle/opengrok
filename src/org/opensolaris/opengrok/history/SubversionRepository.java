@@ -308,7 +308,7 @@ public class SubversionRepository extends Repository {
     }
 
     public boolean fileHasHistory(File file) {
-        // TODO: Research how to cheaply test if a file in a given
+        // @TODO: Research how to cheaply test if a file in a given
         // SVN repo has history.  If there is a cheap test, then this
         // code can be refined, boosting performance.
         return true;

@@ -167,6 +167,7 @@ public final class IgnoredNames implements Serializable {
         }
     }    
     
+    @SuppressWarnings("PMD.ConfusingTernary")
     private void addPattern(String pattern) {
         if (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1) {
             patterns.add(new GlobFilenameFilter(pattern));

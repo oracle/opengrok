@@ -68,6 +68,7 @@ public class TagFilter extends FilterReader {
         return n;
     }
     
+    @Override
     public final int read() throws java.io.IOException {
         int c;
         while ((c = in.read()) != -1) {
@@ -84,12 +85,12 @@ public class TagFilter extends FilterReader {
                 if(c == ';') {
                     Character ec = escs.get(new String(esctag,0,esc));
                     esc = -1;
-                    if(ec != null) {
-                        p = false;
-                        return ec.charValue();
-                    } else {
+                    if(ec == null) {
                         p = true;
                         return ' ';
+                    } else {
+                        p = false;
+                        return ec.charValue();
                     }
                 } else if (sp) {
                     esc = -1;

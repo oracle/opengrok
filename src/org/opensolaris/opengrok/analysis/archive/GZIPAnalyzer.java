@@ -61,38 +61,37 @@ public class GZIPAnalyzer extends FileAnalyzer {
     private FileAnalyzer fa;
     
     public void analyze(Document doc, InputStream in) {
-	try {
-	    BufferedInputStream gzis = new BufferedInputStream(new GZIPInputStream(in));
-	    String path = doc.get("path");
-	    if(path != null && 
-		(path.endsWith(".gz") || path.endsWith(".GZ") || path.endsWith(".Gz"))) {
-		String newname = path.substring(0, path.length() - 3);
-		//System.err.println("GZIPPED OF = " + newname);
-		fa = AnalyzerGuru.getAnalyzer(gzis, newname);
-		if(fa != null) { // cant recurse!
-		    if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
-			this.g = Genre.XREFABLE;
-		    } else {
-			this.g = Genre.DATA;
-		    }
-		    fa.analyze(doc, gzis);
-		    if(doc.get("t") != null) {
-			doc.removeField("t");
-			if (g == Genre.XREFABLE) {
-			    doc.add(new Field("t", "x", Field.Store.YES, Field.Index.UN_TOKENIZED));
-			}
-		    }
-		    return;
-		} else {
-		    fa = null;
-		    this.g = Genre.DATA;
+        try {
+            BufferedInputStream gzis = new BufferedInputStream(new GZIPInputStream(in));
+            String path = doc.get("path");
+            if (path != null &&
+                    (path.endsWith(".gz") || path.endsWith(".GZ") || path.endsWith(".Gz"))) {
+                String newname = path.substring(0, path.length() - 3);
+                //System.err.println("GZIPPED OF = " + newname);
+                fa = AnalyzerGuru.getAnalyzer(gzis, newname);
+                if (fa == null) {
+                    this.g = Genre.DATA;
                     OpenGrokLogger.getLogger().info("Did not analyze " + newname);
-		}
-	    }
-	} catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                } else { // cant recurse!
+                    if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
+                        this.g = Genre.XREFABLE;
+                    } else {
+                        this.g = Genre.DATA;
+                    }
+                    fa.analyze(doc, gzis);
+                    if (doc.get("t") != null) {
+                        doc.removeField("t");
+                        if (g == Genre.XREFABLE) {
+                            doc.add(new Field("t", "x", Field.Store.YES, Field.Index.UN_TOKENIZED));
+                        }
+                    }
+                    return;
+                }
+            }
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "Could not read from GZip", e);
-	}
+        }
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
@@ -107,10 +106,8 @@ public class GZIPAnalyzer extends FileAnalyzer {
      * @param out Writer to store HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-	if(fa != null) {
-	    if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
-		fa.writeXref(out);
-	    }
+	if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
+            fa.writeXref(out);
 	}
     }
 }

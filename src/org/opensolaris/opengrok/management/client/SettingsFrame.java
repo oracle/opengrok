@@ -249,7 +249,6 @@ public class SettingsFrame extends javax.swing.JFrame {
 
 @SuppressWarnings("unused")
 private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
-// TODO add your handling code here:
     saveSettings();
     this.dispose();
 }//GEN-LAST:event_closeButtonActionPerformed

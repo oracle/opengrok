@@ -117,10 +117,15 @@ public class Context {
                                 tag.type,
                                 tag.text,
                             };
-                            if (in != null) {
-                                matchingTags.put(tag.line, desc);
-                            } else {
-                                if (out != null) {
+                            if (in == null) {
+                                if (out == null) {
+                                    Hit hit = new Hit(path,
+                                            Util.htmlize(desc[3]).replaceAll(
+                                            desc[0], "<b>" + desc[0] + "</b>"),
+                                            desc[1], false, alt);
+                                    hits.add(hit);
+                                    anything = true;
+                                } else {
                                     out.write("<a class=\"s\" href=\"");
                                     out.write(urlPrefix);
                                     out.write(path);
@@ -134,14 +139,9 @@ public class Context {
                                     out.write("</a> <i> ");
                                     out.write(desc[2]);
                                     out.write(" </i><br/>");
-                                } else {
-                                    Hit hit = new Hit(path,
-                                            Util.htmlize(desc[3]).replaceAll(
-                                            desc[0], "<b>" + desc[0] + "</b>"),
-                                            desc[1], false, alt);
-                                    hits.add(hit);
-                                    anything = true;
                                 }
+                            } else {
+                                matchingTags.put(tag.line, desc);
                             }
                             break;
                         }
@@ -224,10 +224,8 @@ public class Context {
             }
             anything = matchedLines > 0;
             tokens.dumpRest();
-            if (lim && (truncated || matchedLines == 10)) {
-                if (out != null) {
-                    out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?t=" +  queryAsURI + "\">all</a>...]");
-                }
+            if (lim && (truncated || matchedLines == 10) && out != null) {
+                out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?t=" +  queryAsURI + "\">all</a>...]");
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);

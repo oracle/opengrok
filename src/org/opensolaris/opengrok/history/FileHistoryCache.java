@@ -100,11 +100,8 @@ class FileHistoryCache implements HistoryCache {
         File cache = getCachedFile(file);
 
         File dir = cache.getParentFile();
-        if (!dir.isDirectory()) {
-            if (!dir.mkdirs()) {
-                throw new IOException(
-                        "Unable to create cache directory '" + dir + "'.");
-            }
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            throw new IOException("Unable to create cache directory '" + dir + "'.");
         }
 
         // We have a problem that multiple threads may access the cache layer
@@ -177,17 +174,15 @@ class FileHistoryCache implements HistoryCache {
             // history log until a the current directory is updated and 
             // invalidates the cache entry.           
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            if (env.useHistoryCache()) {
-                if ((cache != null) &&
+            if (env.useHistoryCache() && (cache != null) &&
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                     // retrieving the history takes too long, cache it!
-                    try {
-                        store(history, file);
-                    } catch (Exception e) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, 
-                                "Error when writing cache file '" + cache + "':", e);
-                    }
+                try {
+                    store(history, file);
+                } catch (IOException e) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                            "Error when writing cache file '" + cache + "':", e);
                 }
             }
         }        

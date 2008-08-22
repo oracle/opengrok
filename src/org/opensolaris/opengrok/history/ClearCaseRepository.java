@@ -99,10 +99,8 @@ public class ClearCaseRepository extends Repository {
             String tmpName = tmp.getAbsolutePath();
 
             // cleartool can't get to a previously existing file
-            if (tmp.exists()) {
-                if (!tmp.delete()) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary file used by history cache");
-                }
+            if (tmp.exists() && !tmp.delete()) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary file used by history cache");
             }
 
             String decorated = filename + "@@" + rev;
@@ -152,11 +150,9 @@ public class ClearCaseRepository extends Repository {
     private static void drainStream(InputStream in) throws IOException {
         while (true) {
             long skipped = in.skip(32768L);
-            if (skipped == 0) {
-                // No bytes skipped, check if we've reached EOF with read()
-                if (in.read() == -1) {
-                    break;
-                }
+            if (skipped == 0 && in.read() == -1) {
+                // No bytes skipped, checked that we've reached EOF with read()
+                break;
             }
         }
         in.close();

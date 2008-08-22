@@ -101,7 +101,7 @@ public class PlainAnalyzer extends FileAnalyzer {
                 defs = ctags.doCtags(fullpath+"\n");
                 if(defs != null && defs.numberOfSymbols() > 0) {
                     doc.add(new Field("defs", dummy));
-                    doc.add(new Field("refs", dummy)); //XXX adding a refs field only if it has defs?
+                    doc.add(new Field("refs", dummy)); //@FIXME adding a refs field only if it has defs?
                     byte[] tags = defs.serialize();
                     doc.add(new Field("tags", tags, Field.Store.YES));
                 }

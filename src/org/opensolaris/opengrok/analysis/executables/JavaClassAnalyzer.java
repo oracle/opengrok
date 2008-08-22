@@ -218,7 +218,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             out.write(tagDef(t = fld.getName()));
             defs.add(t); refs.add(t);
             out.write('\n');
-            //TODO show Attributes
+            // @TODO show Attributes
         }
         
         for(org.apache.bcel.classfile.Method m: c.getMethods()) {

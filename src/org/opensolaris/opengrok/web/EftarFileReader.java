@@ -104,10 +104,10 @@ public class EftarFileReader {
             }
             f.seek(offset + (long) tagOffset);
             byte[] tagString;
-            if (childOffset != 0) {
-                tagString = new byte[childOffset - tagOffset];
-            } else {
+            if (childOffset == 0) {
                 tagString = new byte[numChildren];
+            } else {
+                tagString = new byte[childOffset - tagOffset];
             }
             int len = f.read(tagString);
             if (len == -1) {
@@ -176,10 +176,10 @@ public class EftarFileReader {
             }
             if (next.tagOffset != 0) {
                 tagOffset = next.offset + next.tagOffset;
-                if (next.childOffset != 0) {
-                    tagLength = next.childOffset - next.tagOffset;
-                } else {
+                if (next.childOffset == 0) {
                     tagLength = next.numChildren;
+                } else {
+                    tagLength = next.childOffset - next.tagOffset;
                 }
             }
             n = next;

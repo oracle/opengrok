@@ -459,10 +459,10 @@ public final class Indexer {
                             System.err.println("Warning: Could not find a project for \"" + path + "\"");
                         } else {
                             IndexDatabase db;
-                            if (project != null) {
-                                db = new IndexDatabase(project);
-                            } else {
+                            if (project == null) {
                                 db = new IndexDatabase();                                
+                            } else {
+                                db = new IndexDatabase(project);
                             }
                             int idx = dbs.indexOf(db);
                             if (idx != -1) {

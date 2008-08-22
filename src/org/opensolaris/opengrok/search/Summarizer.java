@@ -120,12 +120,12 @@ public class Summarizer {
             // Simplistic implementation.  Finds the first fragments in the document
             // containing any query terms.
             //
-            // TODO: check that phrases in the query are matched in the fragment
+            // @TODO: check that phrases in the query are matched in the fragment
         }
         // Simplistic implementation.  Finds the first fragments in the document
         // containing any query terms.
         //
-        // TODO: check that phrases in the query are matched in the fragment
+        // @TODO: check that phrases in the query are matched in the fragment
         
         Token[] tokens = getTokens(text);             // parse text to token array
         
@@ -139,6 +139,7 @@ public class Summarizer {
         // how many query terms are present.  An excerpt is
         // a List full of Fragments and Highlights
         //
+        @SuppressWarnings("PMD.ConfusingTernary")
         SortedSet<Excerpt> excerptSet = new TreeSet<Excerpt>(new Comparator<Excerpt>() {
             public int compare(Excerpt excerpt1, Excerpt excerpt2) {
                 if (excerpt1 != null && excerpt2 != null) {

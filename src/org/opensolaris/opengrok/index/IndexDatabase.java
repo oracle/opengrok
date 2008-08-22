@@ -149,9 +149,9 @@ public class IndexDatabase {
                 }
             });
         }
-
     }
 
+    @SuppressWarnings("PMD.CollapsibleIfStatements")
     private synchronized void initialize() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         File indexDir = new File(env.getDataRootFile(), "index");
@@ -161,20 +161,16 @@ public class IndexDatabase {
             spellDir = new File(spellDir, project.getPath());
         }
 
-        if (!indexDir.exists()) {
-            if (!indexDir.mkdirs()) {
-                // to avoid race conditions, just recheck..
-                if (!indexDir.exists()) {
-                    throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
-                }
+        if (!indexDir.exists() && !indexDir.mkdirs()) {
+            // to avoid race conditions, just recheck..
+            if (!indexDir.exists()) {
+                throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
             }
         }
         
-        if (!spellDir.exists()) {
-            if (!spellDir.mkdirs()) {
-                if (!spellDir.exists()) {
-                    throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
-                }
+        if (!spellDir.exists() && !spellDir.mkdirs()) {
+            if (!spellDir.exists()) {
+                throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
             }
         }
 
@@ -210,11 +206,11 @@ public class IndexDatabase {
             directory = "/" + directory;
         }
         File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), directory);
-        if (!file.exists()) {
-            return false;
-        } else {
+        if (file.exists()) {
             directories.add(directory);
             return true;
+        } else {
+            return false;
         }
     }
     
@@ -235,10 +231,10 @@ public class IndexDatabase {
             writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
 
             if (directories.isEmpty()) {
-                if (project != null) {
-                    directories.add(project.getPath());
-                } else {
+                if (project == null) {
                     directories.add("");
+                } else {
+                    directories.add(project.getPath());
                 }
             }
             
@@ -343,11 +339,9 @@ public class IndexDatabase {
                 log.info("done");
             }
             synchronized (lock) {
-                if (dirtyFile.exists()) {
-                    if (!dirtyFile.delete()) {
-                        log.fine("Failed to remove \"dirty-file\": " +
-                                dirtyFile.getAbsolutePath());
-                    }
+                if (dirtyFile.exists() && !dirtyFile.delete()) {
+                    log.fine("Failed to remove \"dirty-file\": " +
+                            dirtyFile.getAbsolutePath());
                 }
                 dirty = false;
             }
@@ -407,11 +401,9 @@ public class IndexDatabase {
     private void setDirty() {
         synchronized (lock) {
             try {
-                if (!dirty) {
-                    if (!dirtyFile.createNewFile()) {
-                        if (!dirtyFile.exists()) {
-                           log.log(Level.FINE, "Failed to create \"dirty-file\": ", dirtyFile.getAbsolutePath());
-                        }
+                if (!dirty && !dirtyFile.createNewFile()) {
+                    if (!dirtyFile.exists()) {
+                       log.log(Level.FINE, "Failed to create \"dirty-file\": ", dirtyFile.getAbsolutePath());
                     }
                     dirty = true;
                 }
@@ -470,7 +462,9 @@ public class IndexDatabase {
         }
 
         Document d = analyzerGuru.getDocument(file, in, path, fa);
-        if (d != null) {
+        if (d == null) {
+            log.warning("Warning: did not add " + path);
+        } else {
             writer.addDocument(d, fa);
             Genre g = fa.getFactory().getGenre();
             if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
@@ -484,8 +478,6 @@ public class IndexDatabase {
                 fa.writeXref(xrefDir, path);
             }
             setDirty();
-        } else {
-            log.warning("Warning: did not add " + path);
         }
 
         try { in.close(); } catch (Exception e) {}
@@ -558,7 +550,9 @@ public class IndexDatabase {
                 if (file.isDirectory()) {
                     indexDown(file, path);
                 } else {
-                    if (uidIter != null) {
+                    if (uidIter == null) {
+                        addFile(file, path);
+                    } else {
                         String uid = Util.uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND));	 // construct uid for doc
                         while (uidIter.term() != null && uidIter.term().field().equals("u") &&
                                 uidIter.term().text().compareTo(uid) < 0) {
@@ -572,8 +566,6 @@ public class IndexDatabase {
                         } else {
                             addFile(file, path);
                         }
-                    } else {
-                        addFile(file, path);
                     }
                 }
             }
@@ -632,10 +624,7 @@ public class IndexDatabase {
      */
     public static void listAllFiles(List<String> subFiles) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (!env.hasProjects()) {
-            IndexDatabase db = new IndexDatabase();
-            db.listFiles();
-        } else {
+        if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
                 for (Project project : env.getProjects()) {
                     IndexDatabase db = new IndexDatabase(project);
@@ -652,6 +641,9 @@ public class IndexDatabase {
                     }
                 }
             }
+        } else {
+            IndexDatabase db = new IndexDatabase();
+            db.listFiles();
         }
     }
 
@@ -696,10 +688,7 @@ public class IndexDatabase {
         final int limit = 4;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (!env.hasProjects()) {
-            IndexDatabase db = new IndexDatabase();
-            db.listTokens(limit);
-        } else {
+        if (env.hasProjects()) {
             if (subFiles == null || subFiles.isEmpty()) {
                 for (Project project : env.getProjects()) {
                     IndexDatabase db = new IndexDatabase(project);
@@ -716,6 +705,9 @@ public class IndexDatabase {
                     }
                 }
             }
+        } else {
+            IndexDatabase db = new IndexDatabase();
+            db.listTokens(limit);
         }
     }
 
@@ -767,10 +759,10 @@ public class IndexDatabase {
 
         if (env.hasProjects()) {
             Project p = Project.getProject(path);
-            if (p != null) {
-                indexDir = new File(indexDir, p.getPath());
-            } else {
+            if (p == null) {
                 return null;
+            } else {
+                indexDir = new File(indexDir, p.getPath());
             }
         }
 
@@ -804,7 +796,7 @@ public class IndexDatabase {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 41 * hash + (this.project != null ? this.project.hashCode() : 0);
+        hash = 41 * hash + (this.project == null ? 0 : this.project.hashCode());
         return hash;
     }
     
