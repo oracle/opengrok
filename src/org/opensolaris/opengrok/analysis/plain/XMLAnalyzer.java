@@ -47,8 +47,8 @@ public class XMLAnalyzer extends FileAnalyzer {
     
     private char[] content;
     private int len;
-    private PlainFullTokenizer plainfull;
-    private XMLXref xref;
+    private final PlainFullTokenizer plainfull;
+    private final XMLXref xref;
     private static final Reader dummy = new StringReader("");
     
     /**

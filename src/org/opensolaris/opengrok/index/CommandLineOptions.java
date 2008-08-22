@@ -62,7 +62,7 @@ public class CommandLineOptions {
             return sb.toString();
         }
     }
-    private List<Option> options;
+    private final List<Option> options;
 
     public CommandLineOptions() {
         options = new ArrayList<Option>();

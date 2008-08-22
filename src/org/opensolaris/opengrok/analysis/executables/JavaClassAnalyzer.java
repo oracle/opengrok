@@ -70,7 +70,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Chandan
  */
 public class JavaClassAnalyzer extends FileAnalyzer {
-    private String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
+    private final String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
    
     /** Creates a new instance of JavaClassAnalyzer */
     protected JavaClassAnalyzer(FileAnalyzerFactory factory) {
@@ -83,7 +83,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     private String xref;
     private String fullText;
     private JavaClass c;
-    private Reader dummy = new StringReader("");
+    private final Reader dummy = new StringReader("");
 
     public void analyze(Document doc, InputStream in) {
         defs = new LinkedList<String>();
@@ -270,7 +270,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 }
             }
             out.write("\n");
-            if (locals.size()>0) {
+            if (!locals.isEmpty()) {
                 for(LocalVariable[] ls: locals) {
                     for(LocalVariable l: ls) {
                         printLocal(out, l);

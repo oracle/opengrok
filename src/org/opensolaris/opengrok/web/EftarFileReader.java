@@ -39,7 +39,7 @@ import java.util.StringTokenizer;
  */
 public class EftarFileReader {
 
-    private RandomAccessFile f;
+    private final RandomAccessFile f;
 
     class FNode {
 

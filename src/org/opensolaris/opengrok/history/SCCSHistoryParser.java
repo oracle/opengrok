@@ -33,6 +33,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Reads and filters out junk from a SCCS history file
@@ -67,7 +68,7 @@ class SCCSHistoryParser implements HistoryParser {
         passRecord = true;
         active = true;
         field = 0;
-        sccsDateFormat =  new SimpleDateFormat("yy/MM/dd");
+        sccsDateFormat =  new SimpleDateFormat("yy/MM/dd", Locale.getDefault());
 
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         while (next()) {

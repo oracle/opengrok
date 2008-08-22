@@ -41,7 +41,12 @@ import org.opensolaris.opengrok.search.context.HistoryContext;
 import org.opensolaris.opengrok.web.EftarFileReader;
 import org.opensolaris.opengrok.web.Util;
 
-public class Results {
+public final class Results {
+    
+    private Results() {
+        // Util class, should not be constructed
+    }
+    
     public static void prettyPrintHTML(Hits hits, int start, int end, Writer out,
             Context sourceContext, HistoryContext historyContext,
             Summarizer summer, String urlPrefix,

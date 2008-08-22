@@ -34,7 +34,7 @@ import org.opensolaris.opengrok.management.OGAgent;
 public class SettingsFrame extends javax.swing.JFrame {
 
     private static final long serialVersionUID = -5229330170574558105L;
-    private SettingsPersistence properties;
+    private final SettingsPersistence properties;
 
     /** 
      * Creates new form SettingsFrame 

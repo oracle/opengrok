@@ -88,6 +88,9 @@ public class OGAgent {
         }
     }
 
+    /**
+     * Use the runOGA method to start the agent.
+     */
     public OGAgent() {
     }
 
@@ -122,7 +125,7 @@ public class OGAgent {
         try {
             ArrayList mbservs = MBeanServerFactory.findMBeanServer(null);
             log.fine("Finding MBeanservers, size " + mbservs.size());
-            if (mbservs.size() > 0) {
+            if (!mbservs.isEmpty()) {
                 server = (MBeanServer) mbservs.get(0);
             } else {
                 server = MBeanServerFactory.createMBeanServer();

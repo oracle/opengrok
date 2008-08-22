@@ -26,7 +26,7 @@ package org.opensolaris.opengrok.search.context;
 import java.util.HashSet;
 
 public class TokenSetMatcher extends LineMatcher {
-    private HashSet tokenSet;
+    private final HashSet tokenSet;
     public TokenSetMatcher(HashSet tokenSet) {
         this.tokenSet  = tokenSet;
     }

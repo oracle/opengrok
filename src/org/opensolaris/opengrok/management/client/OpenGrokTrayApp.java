@@ -45,7 +45,7 @@ public class OpenGrokTrayApp {
 
     private static TrayIcon trayIcon;
     private static String cfgfile;
-    private SettingsPersistence settings;
+    private final SettingsPersistence settings;
     private final static Logger log = OpenGrokLogger.getLogger();
     public static final String OPENGROKICONURL = "opengrok.gif";
     public static final String INDEXWARNINGICONURL = "opengrok_indexwarning.gif";

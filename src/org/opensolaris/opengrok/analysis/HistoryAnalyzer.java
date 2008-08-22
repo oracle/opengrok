@@ -31,7 +31,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 public final class HistoryAnalyzer extends Analyzer {
-    private Set stopWords;
+    private final Set stopWords;
     
     /** An array containing some common English words that are not usually useful
     for searching. */

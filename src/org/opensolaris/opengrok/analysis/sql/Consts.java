@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Set;
 
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
-class Consts {
+public final class Consts {
     private static final Set<String> reservedKeywords = new HashSet<String>();
     static {
         try {
@@ -41,6 +41,10 @@ class Consts {
         }
     }
 
+    private Consts() {
+        // Util class, can not be constructed.
+    }
+    
     private static void populateKeywordSet(Set<String> set, String file)
             throws IOException
     {

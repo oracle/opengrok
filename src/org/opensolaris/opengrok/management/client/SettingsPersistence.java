@@ -40,7 +40,7 @@ public class SettingsPersistence {
     public final static String LOGGINGPATHKEY = "org.opensolaris.opengrok.management.logging.path";
     public final static String FILELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.filelevel";
     public final static String CONSOLELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.consolelevel";
-    private Properties ogcProperties = new Properties();
+    private final Properties ogcProperties = new Properties();
     private File propertyFile;
     private boolean existingSettings = false;
 

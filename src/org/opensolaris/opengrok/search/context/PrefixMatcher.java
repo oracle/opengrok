@@ -27,7 +27,7 @@ package org.opensolaris.opengrok.search.context;
  * Matches a term against a prefix
  */
 public class PrefixMatcher extends LineMatcher {
-    private String prefix;
+    private final String prefix;
     public PrefixMatcher(String prefix) {
         this.prefix  = prefix;
     }

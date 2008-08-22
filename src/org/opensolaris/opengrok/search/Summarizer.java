@@ -52,7 +52,7 @@ public class Summarizer {
     /** Converts text to tokens. */
     private final Analyzer analyzer;
     
-    private HashSet<String> highlight = new HashSet<String>();            // put query terms in table
+    private final HashSet<String> highlight = new HashSet<String>();            // put query terms in table
     
     public Summarizer(Query query, Analyzer a) {
         analyzer = a;

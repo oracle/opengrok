@@ -47,8 +47,8 @@ public class TroffAnalyzer extends FileAnalyzer {
     private char[] content;
     private int len;
     
-    private TroffFullTokenizer troffull;
-    private TroffXref xref;
+    private final TroffFullTokenizer troffull;
+    private final TroffXref xref;
     Reader dummy = new StringReader("");
     /**
      * Creates a new instance of TroffAnalyzer

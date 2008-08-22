@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +41,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 public class RazorHistoryParser implements HistoryParser {
 
     private final static SimpleDateFormat DATE_TIME_FORMAT =
-            new SimpleDateFormat("yyyy/MM/dd,hh:mm:ss");
+            new SimpleDateFormat("yyyy/MM/dd,hh:mm:ss", Locale.getDefault());
     private final static Pattern ACTION_TYPE_PATTERN =
             Pattern.compile("^(INTRODUCE|CHECK-OUT|CHECK-IN|UN-CHECK-OUT|RENAME|EDIT_PROPS|ALTERED|CHECK-POINT|REVERT|INTRODUCE_AND_EDIT|BRANCH|BUMP|MERGE-CHECK-IN|PROMOTE)\\s+(.*)\\s+([\\.0-9]+)?\\s+(.*)\\s+(.*)\\s*$");
     private final static Pattern ADDITIONAL_INFO_PATTERN =
@@ -114,11 +115,11 @@ public class RazorHistoryParser implements HistoryParser {
                         parseDebug("New History Event Seen : actionType = " + actionType + ", userName = " + userName + ", revision = " + revision + ", state = " + state + ", dateTime = " + dateTime);
                         if (actionType.startsWith("INTRODUCE") ||
                                 actionType.contains("CHECK-IN") ||
-                                actionType.equals("CHECK-POINT") ||
-                                actionType.equals("REVERT")) {
+                                "CHECK-POINT".equals(actionType) ||
+                                "REVERT".equals(actionType)) {
                             entry.setAuthor(userName);
                             entry.setRevision(revision);
-                            entry.setActive(state.equals("Active"));
+                            entry.setActive("Active".equals(state));
                             Date date = null;
                             synchronized (DATE_TIME_FORMAT) {
                                 date = DATE_TIME_FORMAT.parse(dateTime);
@@ -138,11 +139,11 @@ public class RazorHistoryParser implements HistoryParser {
                         String infoType = matcher.group(1);
                         String details = matcher.group(2);
 
-                        if (infoType.equals("TITLE")) {
+                        if ("TITLE".equals(infoType)) {
                             parseDebug("Setting Message : '" + details + "'");
                             entry.setMessage(details);
                             lastWasTitle = true;
-                        } else if (infoType.equals("ISSUE")) {
+                        } else if ("ISSUE".equals(infoType)) {
                             parseDebug("Adding CR : '" + details + "'");
                             entry.addChangeRequest(details);
                         } else {

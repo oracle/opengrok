@@ -49,7 +49,7 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  */
 public final class RuntimeEnvironment {
     private Configuration configuration;
-    private ThreadLocal<Configuration> threadConfig;
+    private final ThreadLocal<Configuration> threadConfig;
     
     private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
     
@@ -160,7 +160,7 @@ public final class RuntimeEnvironment {
      */
     public boolean hasProjects() {
         List<Project> proj = getProjects();
-        return (proj != null && proj.size() > 0);
+        return (proj != null && !proj.isEmpty());
     }
     
     /**

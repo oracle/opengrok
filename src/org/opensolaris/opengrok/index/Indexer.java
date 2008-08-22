@@ -421,7 +421,7 @@ public final class Indexer {
                 
                 if (refreshHistory) {
                     HistoryGuru.getInstance().createCache();
-                } else if (repositories != null && repositories.size() > 0) {
+                } else if (repositories != null && !repositories.isEmpty()) {
                     HistoryGuru.getInstance().createCache(repositories);
                 }
 

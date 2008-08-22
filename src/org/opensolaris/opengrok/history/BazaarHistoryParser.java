@@ -32,6 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -55,7 +56,7 @@ class BazaarHistoryParser implements HistoryParser {
             }
 
             SimpleDateFormat df =
-                    new SimpleDateFormat("EEE yyyy-MM-dd hh:mm:ss ZZZZ");
+                    new SimpleDateFormat("EEE yyyy-MM-dd hh:mm:ss ZZZZ", Locale.getDefault());
             ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
             String mydir = mrepos.getDirectoryName() + File.separator;
@@ -76,7 +77,7 @@ class BazaarHistoryParser implements HistoryParser {
                 }
 
                 s = s.trim();
-                if (s.equals("------------------------------------------------------------")) {
+                if ("------------------------------------------------------------".equals(s)) {
                     if (entry != null && state == 4) {
                         entries.add(entry);
                     }
@@ -133,6 +134,9 @@ class BazaarHistoryParser implements HistoryParser {
                             String name = f.getCanonicalPath().substring(rootLength);
                             entry.addFile(name);
                         }
+                        break;
+                    default:
+                        OpenGrokLogger.getLogger().warning("Unknown parser state: " + state);
                         break;
                 }
             }

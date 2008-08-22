@@ -349,9 +349,11 @@ public class ELFAnalyzer extends FileAnalyzer {
 	    int type = st_info & 0xf;
 	    String stype = " NULL ";
 	    switch(type) {
-		case 2 : stype = " FUNCTION "; break;
 		case 1 : stype = " OBJECT "; break;
+		case 2 : stype = " FUNCTION "; break;
 		case 4 : stype = " FILE "; break;
+                default:
+                    stype = "NULL"; break;
 	    }
 	    return(" st_name : " + st_name + "(" + st_size + ") = " + st_value + stype);
 	}

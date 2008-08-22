@@ -59,7 +59,7 @@ public class RazorDirectoryHistoryParser extends DirectoryHistoryParser {
     private void traverse(File directory, RazorRepository repo, HistoryEntry entry) throws Exception {
 
         for (String filename : directory.list()) {
-            if (!filename.equals(".razor")) {
+            if (!".razor".equals(filename)) {
                 File file = new File(directory, filename);
                 File mappedFile = repo.getRazorHistoryFileFor(file);
                 String opengrokName = repo.getOpenGrokFileNameFor(file);

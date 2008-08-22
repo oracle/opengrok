@@ -39,15 +39,15 @@ public class CompatibleAnalyser extends Analyzer {
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
-        if (fieldName.equals("full")) {
+        if ("full".equals(fieldName)) {
             return new PlainFullTokenizer(reader);
-        } else if (fieldName.equals("refs")) {
+        } else if ("refs".equals(fieldName)) {
             return new PlainSymbolTokenizer(reader);
-        } else if (fieldName.equals("defs")) {
+        } else if ("defs".equals(fieldName)) {
             return new PlainSymbolTokenizer(reader);
-        } else if (fieldName.equals("path") || fieldName.equals("project")) {
+        } else if ("path".equals(fieldName) || "project".equals(fieldName)) {
             return pather.tokenStream(fieldName, reader);
-        } else if (fieldName.equals("hist")) {
+        } else if ("hist".equals(fieldName)) {
             return historer.tokenStream(fieldName, reader);
         } 
         return new PlainFullTokenizer(reader);

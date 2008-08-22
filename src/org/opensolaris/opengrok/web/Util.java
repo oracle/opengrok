@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.history.Annotation;
 /**
  * File for useful functions
  */
-public class Util {
+public final class Util {
     /**
      * Return a string which represents a <code>CharSequence</code> in HTML.
      *
@@ -47,6 +47,10 @@ public class Util {
      * @return a string representing the character sequence in HTML
      */
 
+    private Util() {
+        // Util class, should not be constructed
+    }
+    
     public static String htmlize(CharSequence q) {
         StringBuilder sb = new StringBuilder(q.length() * 2);
         htmlize(q, sb);

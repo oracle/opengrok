@@ -27,12 +27,13 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * Parse a stream of ClearCase log comments.
  */
 class ClearCaseHistoryParser implements HistoryParser {
-    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss");
+    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.getDefault());
 
     public History parse(File file, Repository repos)
             throws IOException, ParseException {
@@ -55,11 +56,11 @@ class ClearCaseHistoryParser implements HistoryParser {
             String s;
             HistoryEntry entry = null;
             while ((s = in.readLine()) != null) {
-                if (!s.equals("create version") &&
-                   !s.equals("create directory version")) {
+                if (!"create version".equals(s) &&
+                   !"create directory version".equals(s)) {
                     // skip this history entry
                     while ((s = in.readLine()) != null) {
-                        if (s.equals(".")) {
+                        if (".".equals(s)) {
                             break;
                         }
                     }
@@ -82,8 +83,8 @@ class ClearCaseHistoryParser implements HistoryParser {
 
                 StringBuffer message = new StringBuffer();
                 String glue = "";
-                while ((s = in.readLine()) != null && !s.equals(".")) {
-                    if (s.equals("")) {
+                while ((s = in.readLine()) != null && !".".equals(s)) {
+                    if ("".equals(s)) {
                         // avoid empty lines in comments
                         continue;
                     }

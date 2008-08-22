@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -43,8 +44,8 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  */
 public class DirectoryListing {
 
-    private EftarFileReader desc;
-    private long now;
+    private final EftarFileReader desc;
+    private final long now;
 
     public DirectoryListing() {
         desc = null;
@@ -77,10 +78,10 @@ public class DirectoryListing {
     public ArrayList listTo(File dir, Writer out, String path, String[] files) throws IOException {
         Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
         boolean alt = true;
-        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy");
+        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         out.write("<table cellspacing=\"0\" border=\"0\" id=\"dirlist\">");
         EftarFileReader.FNode parentFNode = null;
-        if (!path.equals("")) {
+        if (!"".equals(path)) {
             out.write("<tr><td colspan=\"4\"><a href=\"..\"><i>Up to higher level directory</i></a></td></tr>");
         }
         if (desc != null) {

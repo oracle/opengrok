@@ -87,7 +87,7 @@ public class Ctags {
             initialize();
         }
 
-        if (file.length() > 0 && !file.equals("\n")) {
+        if (file.length() > 0 && !"\n".equals(file)) {
             //log.fine("doing >" + file + "<");
             ctagsIn.write(file);
             ctagsIn.flush();
@@ -116,7 +116,7 @@ public class Ctags {
                     return ;
                 }
                 
-                if (tagLine.equals("__ctags_done_with_file__")) {
+                if ("__ctags_done_with_file__".equals(tagLine)) {
                     return;
                 }
                 int p = tagLine.indexOf('\t');

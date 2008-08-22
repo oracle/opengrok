@@ -51,7 +51,8 @@ public class TarAnalyzer extends FileAnalyzer {
     
     private static final Reader dummy = new StringReader("");
     
-    private PlainFullTokenizer plainfull;
+    private final PlainFullTokenizer plainfull;
+
     protected TarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
         content = new char[64*1024];

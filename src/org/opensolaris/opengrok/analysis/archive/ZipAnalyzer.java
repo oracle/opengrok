@@ -50,7 +50,7 @@ public class ZipAnalyzer extends FileAnalyzer {
 
     private static final Reader dummy = new StringReader("");
     
-    private PlainFullTokenizer plainfull;
+    private final PlainFullTokenizer plainfull;
 
     protected ZipAnalyzer(FileAnalyzerFactory factory) {
         super(factory);

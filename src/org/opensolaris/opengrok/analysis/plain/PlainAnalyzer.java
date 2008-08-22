@@ -50,9 +50,9 @@ import org.opensolaris.opengrok.history.Annotation;
 public class PlainAnalyzer extends FileAnalyzer {
     protected char[] content;
     protected int len;
-    private PlainFullTokenizer plainfull;
-    private PlainSymbolTokenizer plainref;
-    private PlainXref xref;
+    private final PlainFullTokenizer plainfull;
+    private final PlainSymbolTokenizer plainref;
+    private final PlainXref xref;
     private static final Reader dummy = new StringReader(" ");
     private Ctags ctags;
     protected Definitions defs;

@@ -39,7 +39,8 @@ public class TagFilter extends FilterReader {
     private int esc;
     private boolean p;
     private char[] esctag;
-    private HashMap<String, Character> escs;
+    private final HashMap<String, Character> escs;
+
     public TagFilter(Reader in) {
         super(in);
         pass = true;

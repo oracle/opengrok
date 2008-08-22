@@ -97,8 +97,12 @@ public class SubversionRepository extends Repository {
                 String root = getValue(document.getElementsByTagName("root").item(0));
 
                 reposPath = url.substring(root.length());
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (SAXException saxe) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Parser error parsing svn output", saxe);                
+            } catch (ParserConfigurationException pce) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Parser configuration error parsing svn output", pce);
+            } catch (IOException ioe) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "IOException reading from svn process", ioe);
             } finally {
 
                 if (in != null) {

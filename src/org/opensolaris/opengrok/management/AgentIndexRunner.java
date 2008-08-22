@@ -68,7 +68,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     private final Set<NotificationHolder> notifListeners =
             new HashSet<NotificationHolder>();
     private static long sequenceNo = 0;
-    private StringBuilder notifications = new StringBuilder();
+    private final StringBuilder notifications = new StringBuilder();
     private final static int MAXMESSAGELENGTH = 50000;
 
     /**
@@ -97,16 +97,18 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     }
 
     public void postRegister(Boolean registrationDone) {
+        // not used
     }
 
     public void preDeregister() {
+        // not used
     }
 
     public void postDeregister() {
+        // not used
     }
 
     public void run() {
-
         try {
             //Indexer ind = new Indexer();
             log.info("Running...");

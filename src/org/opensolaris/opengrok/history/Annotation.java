@@ -35,7 +35,7 @@ public class Annotation {
     private final ArrayList<Line> lines = new ArrayList<Line>();
     private int widestRevision;
     private int widestAuthor;
-    private String filename;
+    private final String filename;
     
     public Annotation(String filename) {
         this.filename = filename;

@@ -48,7 +48,7 @@ import org.opensolaris.opengrok.search.Hit;
  * since lucene does not easily give the match context.
  */
 public class HistoryContext {
-    private LineMatcher[] m;
+    private final LineMatcher[] m;
     HistoryLineTokenizer tokens;
     private static Set<String> tokenFields = new HashSet<String>(1);
     static {

@@ -91,13 +91,13 @@ public class SearchEngine {
      * Holds value of property indexDatabase.
      */
     private Query query;
-    private CompatibleAnalyser analyzer;
-    private QueryParser qparser;
+    private final CompatibleAnalyser analyzer;
+    private final QueryParser qparser;
     private Context sourceContext;
     private HistoryContext historyContext;
     private Summarizer summer;
-    private List<org.apache.lucene.search.Hit> hits;
-    private char[] content = new char[1024*8];
+    private final List<org.apache.lucene.search.Hit> hits;
+    private final char[] content = new char[1024*8];
     private String source;
     private String data;
     
@@ -175,7 +175,7 @@ public class SearchEngine {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Exception searching", e);
             }
         }
-        if (hits.size() > 0) {
+        if (!hits.isEmpty()) {
             sourceContext = null;
             summer = null;
             try {

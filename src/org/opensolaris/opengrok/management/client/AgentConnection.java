@@ -43,8 +43,8 @@ import javax.management.remote.JMXServiceURL;
 public class AgentConnection implements NotificationListener {
 
     private MBeanServerConnection server = null;
-    private ObjectName objName = null;
-    private String objStrName = "OGA:name=AgentIndexRunner,source=timer";
+    private final ObjectName objName;
+    private final String objStrName = "OGA:name=AgentIndexRunner,source=timer";
     private static final Logger logger = Logger.getLogger("org.opensolaris.opengrok");
     private String agenturl = "";
     private JMXConnector jmxconn = null; // TODO: Set to private

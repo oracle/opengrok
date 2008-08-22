@@ -35,7 +35,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
 
     private static Management managementInstance = null;
     private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
-    private Properties ogaProperties = null;
+    private final Properties ogaProperties;
     private final long startTime; // Stores the time this bean is created
     private Boolean update = Boolean.FALSE;
     private Integer noThreads = Integer.valueOf(1);
@@ -116,12 +116,15 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     }
 
     public void postRegister(Boolean registrationDone) {
+        // not used
     }
 
     public void preDeregister() {
+        // not used
     }
 
     public void postDeregister() {
+        // not used
     }
 
     /**

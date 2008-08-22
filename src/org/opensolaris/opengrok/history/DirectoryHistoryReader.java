@@ -177,6 +177,7 @@ public class DirectoryHistoryReader extends HistoryReader {
 
     @Override
     public void close() {
+        // don't close input
     }
 
     @Override

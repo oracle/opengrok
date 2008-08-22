@@ -32,6 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -59,7 +60,7 @@ class GitHistoryParser implements HistoryParser {
             }
 
             SimpleDateFormat df =
-                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ");
+                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.getDefault());
             ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
             InputStream is = process.getInputStream();

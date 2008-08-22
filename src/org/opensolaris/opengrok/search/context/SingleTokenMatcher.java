@@ -24,7 +24,7 @@
 package org.opensolaris.opengrok.search.context;
 
 public class SingleTokenMatcher extends LineMatcher {
-    private String mt;
+    private final String mt;
     public SingleTokenMatcher(String token) {
         this.mt = token;
     }

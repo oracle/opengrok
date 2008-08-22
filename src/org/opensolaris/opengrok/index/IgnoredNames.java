@@ -71,15 +71,15 @@ public final class IgnoredNames implements Serializable {
     static final long serialVersionUID = 1L;
     
     /** The list of exact filenames to ignore */     
-    private Set<String> ignore;
+    private final Set<String> ignore;
     /** The list of filenames with wildcards to ignore */
-    private List<FileFilter> patterns;
+    private final List<FileFilter> patterns;
     /** The list of paths that should be ignored */
-    private List<String> path;
+    private final List<String> path;
     /** The full list of all patterns. This list will be saved in the
      * configuration file (if used)
      */
-    private List<String> ignoredPatterns;
+    private final List<String> ignoredPatterns;
     
     public IgnoredNames() {
         ignore = new HashSet<String>();
@@ -188,7 +188,7 @@ public final class IgnoredNames implements Serializable {
      * (So I may populate it to the correct list as well)
      */
     public static class PatternList extends ArrayList<String> {
-        private IgnoredNames owner;
+        private final IgnoredNames owner;
         
         public PatternList(IgnoredNames owner) {
             this.owner = owner;

@@ -40,7 +40,7 @@ public class Summary {
     
     /** A fragment of text within a summary. */
     public static class Fragment {
-        private String text;
+        private final String text;
         
         /** Constructs a fragment for the given text. */
         public Fragment(String text) { this.text = text; }
@@ -82,7 +82,7 @@ public class Summary {
         public String toString() { return "<b> ... </b>"; }
     }
     
-    private ArrayList<Fragment> fragments = new ArrayList<Fragment>();
+    private final ArrayList<Fragment> fragments = new ArrayList<Fragment>();
     
     private static final Fragment[] FRAGMENT_PROTO = new Fragment[0];
     

@@ -94,6 +94,7 @@ public class FileAnalyzer extends Analyzer {
     }
     
     public void analyze(Document doc, InputStream in) {
+        // not used
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {

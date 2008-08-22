@@ -46,7 +46,7 @@ public final class HistoryGuru {
     private static HistoryGuru instance = new HistoryGuru();
 
     /** The history cache to use */
-    private HistoryCache historyCache;
+    private final HistoryCache historyCache;
 
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
@@ -86,7 +86,6 @@ public final class HistoryGuru {
      * @param rev the revision to annotate (<code>null</code> means BASE)
      * @return file annotation, or <code>null</code> if the
      * <code>HistoryParser</code> does not support annotation
-     * @throws Exception In an error occurs while creating the annotations
      */
     public Annotation annotate(File file, String rev) throws Exception {
         Repository repos = getRepository(file);
@@ -354,7 +353,7 @@ public final class HistoryGuru {
             }
         }
         // Wait for all threads to finish
-        while (threads.size() > 0) {
+        while (!threads.isEmpty()) {
             for (Thread t : threads) {
                 if (!t.isAlive()) {
                     try {
@@ -367,7 +366,9 @@ public final class HistoryGuru {
             }
             try {
                 Thread.sleep(1000);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                OpenGrokLogger.getLogger().log(Level.INFO, "Woken up during sleep for threads to finish", e);
+            }
         }
     }
 
@@ -393,7 +394,7 @@ public final class HistoryGuru {
         }
         
         // Wait for all threads to finish
-        while (threads.size() > 0) {
+        while (!threads.isEmpty()) {
             for (Thread t : threads) {
                 if (!t.isAlive()) {
                     try {
@@ -406,7 +407,9 @@ public final class HistoryGuru {
             }    
             try {
                 Thread.sleep(1000);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                OpenGrokLogger.getLogger().log(Level.INFO, "Woken up during sleep for threads to finish", e);
+            }
         }
     }
 

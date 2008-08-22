@@ -34,7 +34,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * 
  * @author austvik
  */
-public class RepositoryFactory {
+public final class RepositoryFactory {
 
     private static Repository repositories[] = {
         new MercurialRepository(),
@@ -48,6 +48,10 @@ public class RepositoryFactory {
         new RCSRepository(),
         new CVSRepository(),
     };
+
+    private RepositoryFactory() {
+        // Factory class, should not be constructed
+    }
     
     /**
      * Returns a repository for the given file, or null if no repository was found.

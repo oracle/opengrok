@@ -110,10 +110,10 @@ public class JarAnalyzer extends FileAnalyzer {
 		}
 	    }
 	    doc.add(new Field("full", new TagFilter(new StringReader(fullText.toString()))));
-	    if(defs.size() > 0) {
+	    if(!defs.isEmpty()) {
 		doc.add(new Field("defs",dummy));
 	    }
-	    if(refs.size() > 0) {
+	    if(!refs.isEmpty()) {
 		doc.add(new Field("refs",dummy));
 	    }
 	} catch (IOException e) {

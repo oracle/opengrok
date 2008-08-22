@@ -31,9 +31,9 @@ import javax.management.NotificationListener;
  */
 public class NotificationHolder {
 
-    private NotificationListener notl = null;
-    private Object obNL = null;
-    private NotificationFilter nfilt = null;
+    private final NotificationListener notl;
+    private final Object obNL;
+    private final NotificationFilter nfilt;
 
     public NotificationHolder(NotificationListener nl, NotificationFilter nf, Object obj) {
         notl = nl;

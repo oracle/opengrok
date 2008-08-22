@@ -235,7 +235,7 @@ public class IndexDatabase {
             writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer());
             writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
 
-            if (directories.size() == 0) {
+            if (directories.isEmpty()) {
                 if (project != null) {
                     directories.add(project.getPath());
                 } else {
@@ -245,7 +245,7 @@ public class IndexDatabase {
             
             for (String dir : directories) {
                 File sourceRoot;
-                if (dir.equals("")) {
+                if ("".equals(dir)) {
                     sourceRoot = RuntimeEnvironment.getInstance().getSourceRootFile();
                 } else {
                     sourceRoot = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);

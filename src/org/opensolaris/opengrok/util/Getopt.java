@@ -39,7 +39,7 @@ public class Getopt {
         String argument;
     };
     
-    private ArrayList<Option> options;
+    private final ArrayList<Option> options;
     private int current;
     private int optind;
     private String[] argv;
