@@ -326,8 +326,8 @@ public final class Indexer {
            boolean refreshHistory,
            boolean listFiles,
            boolean createDict,
-           ArrayList<String> subFiles,
-           ArrayList<String> repositories) throws IndexerException,IOException {
+           List<String> subFiles,
+           List<String> repositories) throws IndexerException,IOException {
                 
                 if (env.getDataRootPath()  == null) {
                     throw new IndexerException("ERROR: Please specify a DATA ROOT path");

@@ -32,6 +32,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -77,9 +78,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         super(factory);
     }
     
-    private LinkedList<String> defs;
-    private LinkedList<String> refs;
-    private LinkedList<String> full;
+    private List<String> defs;
+    private List<String> refs;
+    private List<String> full;
     private String xref;
     private String fullText;
     private JavaClass c;
@@ -113,10 +114,10 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
     }
 
-    public LinkedList<String> getDefs() {
+    public List<String> getDefs() {
         return defs;
     }
-    public LinkedList<String> getRefs() {
+    public List<String> getRefs() {
         return refs;
     }
     public String getFull() {

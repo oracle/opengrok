@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.search.context;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -43,9 +44,9 @@ import org.apache.lucene.search.WildcardQuery;
  *
  */
 public final class QueryMatchers {
-    private HashSet<String> terms;
+    private Set<String> terms;
     private String term;
-    private ArrayList<LineMatcher> matchers;
+    private List<LineMatcher> matchers;
     private Set fields;
     /**
      * Get the terms from a query and returs a list of DFAs which match
@@ -54,7 +55,7 @@ public final class QueryMatchers {
      * @param query
      * @return list of LineMatching DFAs
      */
-    public final LineMatcher[] getMatchers(Query query, Set fields) {
+    public LineMatcher[] getMatchers(Query query, Set fields) {
         terms = new HashSet<String>();
         matchers = new ArrayList<LineMatcher>();
         this.fields = fields;
@@ -65,7 +66,7 @@ public final class QueryMatchers {
         } else if (terms.size() > 1) {
             matchers.add(0, new TokenSetMatcher(terms));
         }
-        if (matchers.size() == 0) {
+        if (matchers.isEmpty()) {
             return null;
         }
         LineMatcher[] m = matchers.toArray(new LineMatcher[matchers.size()]);
@@ -86,7 +87,7 @@ public final class QueryMatchers {
         }
     }
     
-    private final void getBooleans(BooleanQuery query) {
+    private void getBooleans(BooleanQuery query) {
         BooleanClause[] queryClauses = query.getClauses();
         for (int i = 0; i < queryClauses.length; i++) {
             if (!queryClauses[i].isProhibited()) {
@@ -95,7 +96,7 @@ public final class QueryMatchers {
         }
     }
     
-    private  final void getPhrases(PhraseQuery query) {
+    private void getPhrases(PhraseQuery query) {
         Term[] queryTerms = query.getTerms();
         if(queryTerms.length > 0 && fields.contains(queryTerms[0].field())){
             String[] termsArray = new String[queryTerms.length];
@@ -106,18 +107,18 @@ public final class QueryMatchers {
         }
     }
     
-    private final void getTerm(TermQuery query) {
+    private void getTerm(TermQuery query) {
         if(fields.contains(query.getTerm().field())) {
             terms.add(term = query.getTerm().text().toLowerCase());
         }
     }
     
-    private final void getWildTerm(WildcardQuery query) {
+    private void getWildTerm(WildcardQuery query) {
         if(fields.contains(query.getTerm().field())) {
             matchers.add(new WildCardMatcher(query.getTerm().text().toLowerCase()));
         }
     }
-    private final void getPrefix(PrefixQuery query) {
+    private void getPrefix(PrefixQuery query) {
         if(fields.contains(query.getPrefix().field())) {
             matchers.add(new PrefixMatcher(query.getPrefix().text().toLowerCase()));
         }

@@ -16,6 +16,7 @@
 package org.opensolaris.opengrok.search;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /** A document summary dynamically generated to match a query. */
 public class Summary {
@@ -82,7 +83,7 @@ public class Summary {
         public String toString() { return "<b> ... </b>"; }
     }
     
-    private final ArrayList<Fragment> fragments = new ArrayList<Fragment>();
+    private final List<Fragment> fragments = new ArrayList<Fragment>();
     
     private static final Fragment[] FRAGMENT_PROTO = new Fragment[0];
     

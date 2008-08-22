@@ -33,58 +33,58 @@ public interface ManagementMBean {
     /**
      * Stops the agent, so it is not restarted.
      */
-    public void stop();
+    void stop();
 
     /**
      * Get the xml based configuration file
      * @return String with the file path and name for xml configuration
      */
-    public String getConfigurationFile();
+    String getConfigurationFile();
 
     /**
      * Get the URL to the Publish Server we want to
      * publish the indexed data
      * @return String URL to the server (hostname:port)
      */
-    public String getPublishServerURL();
+    String getPublishServerURL();
 
     /**
      * Set update index database property
      */
-    public void setUpdateIndexDatabase(Boolean val);
+    void setUpdateIndexDatabase(Boolean val);
 
     /**
      * Get the udate database property
      */
-    public Boolean getUpdateIndexDatabase();
+    Boolean getUpdateIndexDatabase();
 
     /**
      * Set number of Threads to use for indexing
      */
-    public void setNumberOfThreads(Integer val);
+    void setNumberOfThreads(Integer val);
 
     /**
      * Get number of Threads to use for indexing
      */
-    public Integer getNumberOfThreads();
+    Integer getNumberOfThreads();
 
     /**
      * Set subfiles
      * @param sublist
      */
-    public void setSubFiles(String[] sublist);
+    void setSubFiles(String[] sublist);
 
     /**
      * Get subfiles
      * @return get StringArray of subfiles to run through
      */
-    public String[] getSubFiles();
+    String[] getSubFiles();
 
     /**
      * Get a selected property from JAG configuration.
      * @return String with property value
      */
-    public String getProperty(String key);
+    String getProperty(String key);
 
     /**
      * Set a selected property in the JAG configuration.
@@ -93,42 +93,42 @@ public interface ManagementMBean {
      * @param key the String key for the property to be set.
      * $param value the String value for the property to be set.
      */
-    public void setProperty(String key, String value);
+    void setProperty(String key, String value);
 
     /**
      * Get the selected System property
      * @return String with property value
      */
-    public String getSystemProperty(String key);
+    String getSystemProperty(String key);
 
     /**
      * Set a selected System property
      * @param key the String key for the property to be set.
      * $param value the String value for the property to be set.
      */
-    public void setSystemProperty(String key, String value);
+    void setSystemProperty(String key, String value);
 
     /**
      * Get the selected Environment property
      * @return String with Environment property value
      */
-    public String getSystemEnvProperty(String key);
+    String getSystemEnvProperty(String key);
 
     /**
      * Get the time (in milliseconds since 1970) when the agent was started
      * @return long time when the agent was started, in milliseconds.
      */
-    public long getStartTime();
+    long getStartTime();
 
     /**
      * Get a Date object with the time the agent was started.
      * @return Date with the starting date
      */
-    public Date getStartDate();
+    Date getStartDate();
 
     /**
      * Get the version tag for the agent
      * @return String the version tag for this agent
      */
-    public String getVersion();
+    String getVersion();
 }

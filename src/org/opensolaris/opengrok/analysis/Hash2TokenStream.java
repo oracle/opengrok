@@ -64,5 +64,6 @@ public final class Hash2TokenStream extends TokenStream {
     
     @Override
     public void close() {
+        // Nothing to close
     }
 }

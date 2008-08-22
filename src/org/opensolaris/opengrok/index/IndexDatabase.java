@@ -64,7 +64,6 @@ public class IndexDatabase {
     private FSDirectory indexDirectory;
     private FSDirectory spellDirectory;
     private IndexWriter writer;
-    private IndexReader reader;
     private TermEnum uidIter;
     private IgnoredNames ignoredNames;
     private AnalyzerGuru analyzerGuru;
@@ -252,24 +251,21 @@ public class IndexDatabase {
                 }
                 
                 String startuid = Util.uid(dir, "");
-                reader = IndexReader.open(indexDirectory);		 // open existing index
-                uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
+                IndexReader reader = IndexReader.open(indexDirectory);		 // open existing index
+                try {
+                    uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
 
-                indexDown(sourceRoot, dir);
+                    indexDown(sourceRoot, dir);
 
-                while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
-                    removeFile();
-                    uidIter.next();
+                    while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
+                        removeFile();
+                        uidIter.next();
+                    }
+                } finally {
+                    reader.close();
                 }
-                reader.close();                
             }
         } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                }
-            }
             if (writer != null) {
                 try {
                     writer.close();
@@ -700,7 +696,7 @@ public class IndexDatabase {
         listFrequentTokens(null);
     }
 
-    static void listFrequentTokens(ArrayList<String> subFiles) throws IOException {
+    static void listFrequentTokens(List<String> subFiles) throws IOException {
         final int limit = 4;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();

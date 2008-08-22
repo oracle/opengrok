@@ -49,7 +49,6 @@ import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 public class ELFAnalyzer extends FileAnalyzer {
     private char[] content;
     private int len;
-    private int[] readables;
     PlainFullTokenizer plainfull;
     StringReader dummy = new StringReader("");
     
@@ -99,7 +98,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	shstrtab = fmap.getInt(eh.e_shoff + (eh.e_shstrndx) * eh.e_shentsize + 16);
 	fmap.position(eh.e_shoff);
 	sections = new ELFSection[eh.e_shnum];
-	readables = new int[eh.e_shnum];
+	int[] readables = new int[eh.e_shnum];
 	int ri = 0;
 	for(int i = 0 ; i< eh.e_shnum; i++) {
 	    sections[i] = new ELFSection(fmap);

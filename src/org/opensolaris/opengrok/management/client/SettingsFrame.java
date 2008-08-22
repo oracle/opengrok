@@ -31,6 +31,7 @@ import org.opensolaris.opengrok.management.OGAgent;
  *
  * @author  Jan S Berg
  */
+@SuppressWarnings("PMD.SingularField")
 public class SettingsFrame extends javax.swing.JFrame {
 
     private static final long serialVersionUID = -5229330170574558105L;

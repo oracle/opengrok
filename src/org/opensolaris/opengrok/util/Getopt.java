@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.util;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple implementation of the getopt(3c). It does just implement what I
@@ -39,11 +40,11 @@ public class Getopt {
         String argument;
     };
     
-    private final ArrayList<Option> options;
+    private final List<Option> options;
     private int current;
     private int optind;
-    private String[] argv;
-    private String opts;
+    private final String[] argv;
+    private final String opts;
     
     /**
      * Creates a new instance of Getopt

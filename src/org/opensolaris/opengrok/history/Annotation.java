@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class representing file annotation, i.e., revision and author for the last
@@ -32,7 +33,7 @@ import java.util.ArrayList;
  */
 public class Annotation {
 
-    private final ArrayList<Line> lines = new ArrayList<Line>();
+    private final List<Line> lines = new ArrayList<Line>();
     private int widestRevision;
     private int widestAuthor;
     private final String filename;

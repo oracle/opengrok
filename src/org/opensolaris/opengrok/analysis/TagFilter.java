@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.FilterReader;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A reader that reads only plain text from a HTML or XML file
@@ -39,7 +40,7 @@ public class TagFilter extends FilterReader {
     private int esc;
     private boolean p;
     private char[] esctag;
-    private final HashMap<String, Character> escs;
+    private final Map<String, Character> escs;
 
     public TagFilter(Reader in) {
         super(in);

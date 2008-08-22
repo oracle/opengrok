@@ -86,7 +86,7 @@ public class FileAnalyzer extends Analyzer {
         return factory.getGenre();
     }
 
-    private HistoryAnalyzer hista;
+    private final HistoryAnalyzer hista;
     /** Creates a new instance of FileAnalyzer */
     public FileAnalyzer(FileAnalyzerFactory factory) {
         this.factory = factory;

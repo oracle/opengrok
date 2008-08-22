@@ -40,7 +40,10 @@ public class HistoryEntry {
     private String revision;
     private Date date;
     private String author;
+
+    @SuppressWarnings("PMD.AvoidStringBufferField")
     private final StringBuffer message;
+
     private boolean active;
     private List<String> files;
     private List<String> changeRequests;

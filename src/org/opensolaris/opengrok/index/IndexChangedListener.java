@@ -34,10 +34,10 @@ public interface IndexChangedListener {
      * @param path The path to the file (absolute from source root)
      * @param analyzer The analyzer being used to analyze the file
      */
-    public void fileAdded(String path, String analyzer);
+    void fileAdded(String path, String analyzer);
     /**
      * A file is being removed from the index database
      * @param path The path to the file (absolute from source root)
      */
-    public void fileRemoved(String path);
+    void fileRemoved(String path);
 }

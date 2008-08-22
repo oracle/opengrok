@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
@@ -52,7 +53,7 @@ class SubversionHistoryParser implements HistoryParser {
         final String prefix;
         final String home;
         final int length;
-        final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        final List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
         HistoryEntry entry;
         StringBuilder sb;

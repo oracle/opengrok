@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -61,7 +62,7 @@ public class EftarFile {
 
         public long hash;
         public String tag;
-        public java.util.TreeMap<Long, Node> children;
+        public Map<Long, Node> children;
         public long tagOffset;
         public long childOffset;
         public long myOffset;

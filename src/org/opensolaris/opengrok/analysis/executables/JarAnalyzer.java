@@ -32,6 +32,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -56,9 +57,8 @@ import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 public class JarAnalyzer extends FileAnalyzer {
     private byte[] content;
 
-    private LinkedList<String> defs;
-    private LinkedList<String> refs;
-    private StringBuilder fullText;
+    private List<String> defs;
+    private List<String> refs;
     private StringWriter xref;
 
     private static final Reader dummy = new StringReader("");
@@ -70,7 +70,7 @@ public class JarAnalyzer extends FileAnalyzer {
     public void analyze(Document doc, InputStream in) {
 	defs = new LinkedList<String>();
 	refs = new LinkedList<String>();
-	fullText = new StringBuilder();
+	StringBuilder fullText = new StringBuilder();
 	xref = new StringWriter();
 	try {
 	    ZipInputStream zis = new ZipInputStream(in);

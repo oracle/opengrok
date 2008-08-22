@@ -24,22 +24,23 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 
 public final class List2TokenStream extends TokenStream {
-    private LinkedList<String> l;
+    private List<String> l;
     private String[] subTokens;
     private int si;
-    public List2TokenStream(LinkedList<String> l){
+    public List2TokenStream(List<String> l){
         this.l = l;
         subTokens = null;
     }
     public Token next() {
         if(subTokens == null || subTokens.length == si) {
             try {
-                String tok = l.remove();
+                String tok = l.remove(0);
                 if(tok != null) {
                     if(tok.indexOf('.') > 0) {
                         subTokens = tok.split("[^a-z0-9A-Z_]+");

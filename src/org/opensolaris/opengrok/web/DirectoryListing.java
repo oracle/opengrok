@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -75,7 +76,7 @@ public class DirectoryListing {
      * @throws java.io.IOException
      *
      */
-    public ArrayList listTo(File dir, Writer out, String path, String[] files) throws IOException {
+    public List listTo(File dir, Writer out, String path, String[] files) throws IOException {
         Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
         boolean alt = true;
         Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());

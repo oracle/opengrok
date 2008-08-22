@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.lucene.analysis.Analyzer;
@@ -52,7 +53,7 @@ public class Summarizer {
     /** Converts text to tokens. */
     private final Analyzer analyzer;
     
-    private final HashSet<String> highlight = new HashSet<String>();            // put query terms in table
+    private final Set<String> highlight = new HashSet<String>();            // put query terms in table
     
     public Summarizer(Query query, Analyzer a) {
         analyzer = a;
@@ -64,8 +65,8 @@ public class Summarizer {
      * document, with some appropriate regions highlit.
      */
     static class Excerpt {
-        ArrayList<Summary.Fragment> passages = new ArrayList<Summary.Fragment>();
-        SortedSet<String> tokenSet = new TreeSet<String>();
+        List<Summary.Fragment> passages = new ArrayList<Summary.Fragment>();
+        Set<String> tokenSet = new TreeSet<String>();
         int numTerms = 0;
         
         /**

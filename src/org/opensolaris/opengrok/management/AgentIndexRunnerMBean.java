@@ -28,38 +28,38 @@ package org.opensolaris.opengrok.management;
  */
 public interface AgentIndexRunnerMBean {
 
-    public void enable();
+    void enable();
 
-    public void disable();
+    void disable();
 
     /**
      * Last index time in System.currentmillis
      * of successful index update
      * @return long when last time the indexing finished
      */
-    public long lastIndexTimeFinished();
+    long lastIndexTimeFinished();
 
     /**
      * Last index time in System.currentmillis
      * @return long when last time indexing started
      */
-    public long lastIndexTimeStarted();
+    long lastIndexTimeStarted();
 
     /**
      * Last index time usage for successful indexing (no exceptions)
      * @return long how long the last index lasted
      */
-    public long lastIndexTimeUsed();
+    long lastIndexTimeUsed();
 
     /**
      * Start indexing outside the timer
      * @param waitForFinished wait for it to finish or just return when started
      */
-    public void index(boolean waitForFinished);
+    void index(boolean waitForFinished);
 
     /**
      * Get Exception from last run
      * @return Exception if any or null if no Exceptions.
      */
-    public Exception getExceptions();
+    Exception getExceptions();
 }

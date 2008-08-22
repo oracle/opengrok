@@ -27,6 +27,7 @@ import java.util.Date;
  *
  * @author  Jan S Berg
  */
+@SuppressWarnings("PMD.SingularField")
 public class NotificationsFrame extends javax.swing.JFrame {
 
     private static final long serialVersionUID = -7314367696755820002L;
