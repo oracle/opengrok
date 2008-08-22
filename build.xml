@@ -435,9 +435,20 @@ Use is subject to license terms.
     </target>
 
     <target name="-post-compile-test">
-        <!-- Generate ZIP files used for unit testing -->
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip" basedir="testdata/sources" update="true"/>
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" basedir="testdata/repositories" update="true"/>
+        <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
+        <copy todir="testdata/repositories/mercurial/.hg">
+            <fileset dir="testdata/repositories/mercurial/hg"/>
+        </copy>
+        <copy file="testdata/repositories/mercurial/hgignore" tofile="testdata/repositories/mercurial/.hgignore"/>
+        
+        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip" basedir="testdata/sources" update="false"/>
+        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
+                basedir="testdata/repositories" 
+                excludes="mercurial/hg/**, mercurial/hgignore"
+                update="false"/>
+                
+          <delete dir="testdata/repositories/mercurial/.hg"/>
+          <delete file="testdata/repositories/mercurial/.hgignore"/>
     </target>
     
     <target name="emma-report" description="Analyze" depends="-check_emma">
