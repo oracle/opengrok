@@ -45,18 +45,22 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 class RCSHistoryParser implements HistoryParser {
 
     public History parse(File file, Repository repos)
-            throws IOException, ParseException {
-        Archive archive = new Archive(getRCSFile(file).getPath());
-        Version ver = archive.getRevisionVersion();
-        Node n = archive.findNode(ver);
-        n = n.root();
+            throws IOException {
+        try {
+            Archive archive = new Archive(getRCSFile(file).getPath());
+            Version ver = archive.getRevisionVersion();
+            Node n = archive.findNode(ver);
+            n = n.root();
 
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        traverse(n, entries);
+            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            traverse(n, entries);
 
-        History history = new History();
-        history.setHistoryEntries(entries);
-        return history;
+            History history = new History();
+            history.setHistoryEntries(entries);
+            return history;
+        } catch (ParseException pe) {
+            throw new IOException("Could not parse file " + file.getPath(), pe);
+        }
     }
 
     private void traverse(Node n, List<HistoryEntry> history) {

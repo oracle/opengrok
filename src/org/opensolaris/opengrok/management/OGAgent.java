@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.NotificationFilter;
@@ -88,7 +89,7 @@ public class OGAgent {
         }
     }
 
-    public final void runOGA() throws MalformedURLException, IOException, Exception {
+    public final void runOGA() throws MalformedURLException, IOException, JMException {
         String machinename = java.net.InetAddress.getLocalHost().getHostName();
         String javaver = System.getProperty("java.version");
 
@@ -116,26 +117,21 @@ public class OGAgent {
         connectorport = Integer.parseInt(props.getProperty("org.opensolaris.opengrok.management.connection." + connprotocol + ".port", Integer.toString(connectorport)));
         log.fine("Using protocol " + connprotocol + ", port: " + connectorport);
 
-        try {
-            ArrayList mbservs = MBeanServerFactory.findMBeanServer(null);
-            log.fine("Finding MBeanservers, size " + mbservs.size());
-            if (!mbservs.isEmpty()) {
-                server = (MBeanServer) mbservs.get(0);
-            } else {
-                server = MBeanServerFactory.createMBeanServer();
-            }
-
-            //instantiate and register OGAManagement
-            ObjectName manager = new ObjectName("OGA:name=Management");
-            server.registerMBean(Management.getInstance(props), manager);
-
-            //instantiate and register Timer service and resource purger
-            createIndexTimer(props);
-            log.info("MBeans registered");
-        } catch (Exception ex) {
-            log.log(Level.SEVERE, "ERR " + ex.getMessage(), ex);
-            throw ex;
+        ArrayList mbservs = MBeanServerFactory.findMBeanServer(null);
+        log.fine("Finding MBeanservers, size " + mbservs.size());
+        if (!mbservs.isEmpty()) {
+            server = (MBeanServer) mbservs.get(0);
+        } else {
+            server = MBeanServerFactory.createMBeanServer();
         }
+
+        //instantiate and register OGAManagement
+        ObjectName manager = new ObjectName("OGA:name=Management");
+        server.registerMBean(Management.getInstance(props), manager);
+
+        //instantiate and register Timer service and resource purger
+        createIndexTimer(props);
+        log.info("MBeans registered");
 
         // Create and start connector server
         log.fine("Starting JMX connector");
@@ -155,7 +151,7 @@ public class OGAgent {
         log.info("OGA is ready and running...");
     }
 
-    private void createIndexTimer(Properties properties) throws Exception {
+    private void createIndexTimer(Properties properties) throws IOException, JMException {
 
         //instantiate, register and start the Timer service
         ObjectName timer = new ObjectName("service:name=timer");

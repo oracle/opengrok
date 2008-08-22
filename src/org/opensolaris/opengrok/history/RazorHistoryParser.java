@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,7 +49,7 @@ public class RazorHistoryParser implements HistoryParser {
             Pattern.compile("^##(TITLE|NOTES|AUDIT|ISSUE):\\s+(.*)\\s*$");
     private final static boolean DUMP_HISTORY_ENTRY_ADDITIONS = false;
 
-    public History parse(File file, Repository repository) throws Exception {
+    public History parse(File file, Repository repository) throws IOException {
 
         RazorRepository repo = (RazorRepository) repository;
 
@@ -122,7 +123,11 @@ public class RazorHistoryParser implements HistoryParser {
                             entry.setActive("Active".equals(state));
                             Date date = null;
                             synchronized (DATE_TIME_FORMAT) {
-                                date = DATE_TIME_FORMAT.parse(dateTime);
+                                try {
+                                    date = DATE_TIME_FORMAT.parse(dateTime);
+                                } catch (ParseException pe) {
+                                  OpenGrokLogger.getLogger().log(Level.INFO, "Could not parse date: " + dateTime, pe);  
+                                }
                             }
                             entry.setDate(date);
                             ignoreEntry = false;

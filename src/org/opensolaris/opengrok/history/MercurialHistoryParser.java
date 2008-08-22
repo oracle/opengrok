@@ -33,6 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -41,7 +43,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 class MercurialHistoryParser implements HistoryParser {
     
     public History parse(File file, Repository repos)
-            throws IOException, ParseException {
+            throws IOException {
         MercurialRepository mrepos = (MercurialRepository)repos;
         History history = new History();
         
@@ -81,7 +83,12 @@ class MercurialHistoryParser implements HistoryParser {
                     entry.setAuthor(s.substring("user:".length()).trim());
                     description = false;
                 } else if (s.startsWith("date:") && entry != null) {
-                    Date date = df.parse(s.substring("date:".length()).trim());
+                    Date date = new Date();
+                    try {
+                        date = df.parse(s.substring("date:".length()).trim());
+                    } catch (ParseException pe) {
+                        OpenGrokLogger.getLogger().log(Level.INFO, "Could not parse date: " + s, pe);
+                    }
                     entry.setDate(date);
                     description = false;
                 } else if (s.startsWith("files:") && entry != null) {

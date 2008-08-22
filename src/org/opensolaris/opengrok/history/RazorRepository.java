@@ -176,19 +176,19 @@ public class RazorRepository extends Repository {
         return new File(opengrokSourceRootDirectoryPath + path);
     }
 
-    File getRazorHistoryFileFor(File file) throws Exception {
+    File getRazorHistoryFileFor(File file) throws IOException {
         return pathTranslation(file, "/History/", "", "");
     }
 
-    File getRazorArchiveRCSFileFor(File file) throws Exception {
+    File getRazorArchiveRCSFileFor(File file) throws IOException {
         return pathTranslation(file, "/Archive/RZ_VCS/", "", ",v");
     }
 
-    File getRazorArchiveBinaryFileFor(File file, String rev) throws Exception {
+    File getRazorArchiveBinaryFileFor(File file, String rev) throws IOException {
         return pathTranslation(file, "/Archive/BINARY/", "", "@" + rev + ".Z");
     }
 
-    File getRazorArchiveSCCSFileFor(File file) throws Exception {
+    File getRazorArchiveSCCSFileFor(File file) throws IOException {
         return pathTranslation(file, "/Archive/SCCS/", "s.", "");
     }
 
@@ -252,7 +252,7 @@ public class RazorRepository extends Repository {
 
     @Override
     Annotation annotate( File file, String revision)
-            throws Exception {
+            throws IOException {
         // System.err.println("annotate( " + file.getPath() + ", " + revision + ")");
 
         // TODO : Rename & Delete Support
@@ -301,12 +301,12 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    void update() throws Exception {
+    void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    void createCache( HistoryCache cache) throws Exception {
+    void createCache( HistoryCache cache) throws IOException, InstantiationException, IllegalAccessException {
 
         Class<? extends HistoryParser> dhpClass = getDirectoryHistoryParser();
         Class<? extends HistoryParser> fhpClass = getHistoryParser();

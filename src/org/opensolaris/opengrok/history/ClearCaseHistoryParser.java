@@ -28,6 +28,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Parse a stream of ClearCase log comments.
@@ -36,7 +38,7 @@ class ClearCaseHistoryParser implements HistoryParser {
     private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.getDefault());
 
     public History parse(File file, Repository repos)
-            throws IOException, ParseException {
+            throws IOException {
         ClearCaseRepository mrepos = (ClearCaseRepository) repos;
         History history = new History();
 
@@ -70,7 +72,11 @@ class ClearCaseHistoryParser implements HistoryParser {
                 entry = new HistoryEntry();
                 if ((s = in.readLine()) != null) {
                     synchronized (FORMAT) {
-                        entry.setDate(FORMAT.parse(s));
+                        try {
+                            entry.setDate(FORMAT.parse(s));
+                        } catch (ParseException pe) {
+                            OpenGrokLogger.getLogger().log(Level.INFO, "Could not parse date: " + s, pe);
+                        }
                     }
                 }
                 if ((s = in.readLine()) != null) {

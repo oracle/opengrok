@@ -126,7 +126,7 @@ public class SearchEngine {
         return ret;
     }
     
-    private void searchSingleDatabase(File root) throws Exception {
+    private void searchSingleDatabase(File root) throws IOException {
         IndexReader ireader = IndexReader.open(root);
         Searcher searcher = new IndexSearcher(ireader);
         Hits res = searcher.search(query);

@@ -43,7 +43,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 class BazaarHistoryParser implements HistoryParser {
 
     public History parse(File file, Repository repos)
-            throws IOException, ParseException {
+            throws IOException {
         BazaarRepository mrepos = (BazaarRepository) repos;
         History history = new History();
 
@@ -107,7 +107,7 @@ class BazaarHistoryParser implements HistoryParser {
                             try {
                                 Date date = df.parse(s.substring("timestamp:".length()).trim());
                                 entry.setDate(date);
-                            } catch (Exception e) {
+                            } catch (ParseException e) {
                                 OpenGrokLogger.getLogger().log(Level.INFO, 
                                         "Failed to parse history timestamp for " + file, e);
                             }

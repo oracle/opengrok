@@ -32,6 +32,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
@@ -347,7 +348,7 @@ public class Summarizer {
      * text file and a query string
      */
     @SuppressWarnings("PMD.SystemPrintln")
-    public static void main(String argv[]) throws Exception {
+    public static void main(String argv[]) throws IOException, ParseException {
         // Test arglist
         if (argv.length < 2) {
             System.out.println("Usage: java org.apache.nutch.searcher.Summarizer <textfile> <queryStr>");

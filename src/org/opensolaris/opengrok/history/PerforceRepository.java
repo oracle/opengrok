@@ -103,7 +103,7 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    void update() throws Exception {
+    void update() {
     /* TODO */
     }
 

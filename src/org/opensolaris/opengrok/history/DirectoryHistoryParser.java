@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -36,8 +37,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public class DirectoryHistoryParser implements HistoryParser {
     
-    public History parse(File file, Repository repository)
-            throws Exception {
+    public History parse(File file, Repository repository) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String filename = file.getCanonicalPath().substring(env.getSourceRootPath().length());
         HistoryReader hr = new DirectoryHistoryReader(filename);

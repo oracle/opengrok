@@ -21,6 +21,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -33,7 +34,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 public class RazorDirectoryHistoryParser extends DirectoryHistoryParser {
 
     @Override
-    public History parse(File directory, Repository repository) throws Exception {
+    public History parse(File directory, Repository repository) throws IOException {
 
         RazorRepository repo = (RazorRepository) repository;
 
@@ -56,7 +57,7 @@ public class RazorDirectoryHistoryParser extends DirectoryHistoryParser {
         return history;
     }
 
-    private void traverse(File directory, RazorRepository repo, HistoryEntry entry) throws Exception {
+    private void traverse(File directory, RazorRepository repo, HistoryEntry entry) throws IOException {
 
         for (String filename : directory.list()) {
             if (!".razor".equals(filename)) {

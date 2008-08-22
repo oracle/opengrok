@@ -33,6 +33,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -46,7 +48,7 @@ class GitHistoryParser implements HistoryParser {
             
             
     public History parse(File file, Repository repos)
-            throws IOException, ParseException {
+            throws IOException {
 
         GitRepository mrepos = (GitRepository) repos;
         History history = new History();
@@ -84,7 +86,12 @@ class GitHistoryParser implements HistoryParser {
                     } else if (s.startsWith("Author:") && entry != null) {
                         entry.setAuthor(s.substring("Author:".length()).trim());
                     } else if (s.startsWith("AuthorDate:") && entry != null) {
-                        Date date = df.parse(s.substring("AuthorDate:".length()).trim());
+                        Date date = new Date();
+                        try {
+                            df.parse(s.substring("AuthorDate:".length()).trim());
+                        } catch (ParseException pe) {
+                            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to parse author date: " + s, pe);
+                        }
                         entry.setDate(date);
                     } else if (s.trim().equals("")) {
                         // We are done reading the heading, start to read the message

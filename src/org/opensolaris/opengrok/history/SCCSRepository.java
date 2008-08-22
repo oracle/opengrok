@@ -141,7 +141,7 @@ public class SCCSRepository extends Repository {
      * @param revision revision to annotate
      * @return file annotation
      */
-    public Annotation annotate(File file, String revision) throws Exception {
+    public Annotation annotate(File file, String revision) throws IOException {
         
         //System.out.println("annotating " + file.getCanonicalPath());
         getAuthors(file);
@@ -209,7 +209,7 @@ public class SCCSRepository extends Repository {
         return false;
     }
 
-    public void update() throws Exception {
+    public void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -222,7 +222,7 @@ public class SCCSRepository extends Repository {
         }
         return false;
     }
-    
+
     @Override
     boolean isRepositoryFor(File file) {
         return new File(file, "SCCS").isDirectory();

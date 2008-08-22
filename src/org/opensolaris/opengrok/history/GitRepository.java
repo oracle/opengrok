@@ -114,7 +114,7 @@ public class GitRepository extends Repository {
      * @param revision revision to annotate
      * @return file annotation
      */
-    public Annotation annotate(File file, String revision) throws Exception {
+    public Annotation annotate(File file, String revision) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -126,7 +126,7 @@ public class GitRepository extends Repository {
         return true;
     }
     
-    public void update() throws Exception {
+    public void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

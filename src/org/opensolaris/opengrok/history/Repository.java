@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,9 +74,9 @@ public abstract class Repository {
      * @param file the file to annotate
      * @param revision revision of the file
      * @return an <code>Annotation</code> object
-     * @throws java.lang.Exception if an error occurs
+     * @throws java.io.IOException if an error occurs
      */
-    abstract Annotation annotate(File file, String revision) throws Exception;
+    abstract Annotation annotate(File file, String revision) throws IOException;
 
     /**
      * Check whether the parsed history should be cached.
@@ -112,7 +113,7 @@ public abstract class Repository {
      *
      * @throws Exception on error
      */
-    void createCache(HistoryCache cache) throws Exception {
+    void createCache(HistoryCache cache) throws IOException, InstantiationException, IllegalAccessException {
         if (!isWorking()) {
             return;
         }
@@ -162,7 +163,7 @@ public abstract class Repository {
      * upstream repository..
      * @throws Exception if an error occurs.
      */
-    abstract void update() throws Exception;
+    abstract void update() throws IOException;
     
     /**
      * Check if this it the right repository type for the given file.

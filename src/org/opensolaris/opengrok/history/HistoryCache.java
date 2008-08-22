@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.IOException;
 
 interface HistoryCache {
 
@@ -36,14 +37,13 @@ interface HistoryCache {
      * @param repository The external repository to read the history from (can
      * be <code>null</code>)
      */
-    History get(File file, Repository repository) throws Exception;
+    History get(File file, Repository repository) throws IOException;
 
     /**
      * Store the history for the given file.
      * 
      * @param history The history to store
      * @param file The file to store information for
-     * @throws java.lang.Exception
      */
-    void store(History history, File file) throws Exception;
+    void store(History history, File file) throws IOException;
 }

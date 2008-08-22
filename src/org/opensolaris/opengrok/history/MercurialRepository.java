@@ -141,7 +141,7 @@ public class MercurialRepository extends Repository {
      * @param revision revision to annotate
      * @return file annotation
      */
-    public Annotation annotate(File file, String revision) throws Exception {
+    public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<String>();
         argv.add(getCommand());
         argv.add("annotate");
@@ -215,7 +215,7 @@ public class MercurialRepository extends Repository {
         } while (true);
     }
     
-    public void update() throws Exception {
+    public void update() throws IOException {
         Process process = null;
         try {
             File directory = new File(getDirectoryName());

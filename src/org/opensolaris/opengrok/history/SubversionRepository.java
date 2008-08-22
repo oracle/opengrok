@@ -239,7 +239,7 @@ public class SubversionRepository extends Repository {
         }
     }
 
-    public Annotation annotate(File file, String revision) throws Exception {
+    public Annotation annotate(File file, String revision) throws IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = null;
         try {
@@ -314,7 +314,7 @@ public class SubversionRepository extends Repository {
         return true;
     }
 
-    public void update() throws Exception {
+    public void update() throws IOException {
         Process process = null;
 
         try {

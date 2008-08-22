@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -33,9 +34,11 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
+import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
@@ -60,28 +63,30 @@ public class ELFAnalyzer extends FileAnalyzer {
     }
     
     public void analyze(Document doc, InputStream in) {
-	try {
-	    if(in instanceof FileInputStream) {
-		parseELF((FileInputStream) in);
-		if (len > 0) {
-		    doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
-		    //doc.add(Field.Text("refs", " "));
-		}
-	    } else {
-		String fullpath = doc.get("fullpath");
-		FileInputStream fin = new FileInputStream(fullpath);
-		parseELF(fin);
-		if (len > 0) {
-		    doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
-		    //doc.add(Field.Text("refs", " "));
-		}
-	    }
-	} catch (Exception e) {
-	    //System.err.println(e);
-	}
+        try {
+            if (in instanceof FileInputStream) {
+                parseELF((FileInputStream) in);
+                if (len > 0) {
+                    doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
+                }
+            } else {
+                String fullpath = doc.get("fullpath");
+                try {
+                    FileInputStream fin = new FileInputStream(fullpath);
+                    parseELF(fin);
+                    if (len > 0) {
+                        doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
+                    }
+                } catch (FileNotFoundException fnfe) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not open file " + fullpath, fnfe);
+                }
+            }
+        } catch (IOException ioe) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Error analyzing ELF file", ioe);
+        }
     }
 
-    public void parseELF(FileInputStream f) throws IOException, Exception {
+    public void parseELF(FileInputStream f) throws IOException {
 	FileChannel fch = f.getChannel();
 	MappedByteBuffer fmap = fch.map(FileChannel.MapMode.READ_ONLY, 0, fch.size());
 	if(fmap.getInt() != 0x7f454c46) {
@@ -91,9 +96,6 @@ public class ELFAnalyzer extends FileAnalyzer {
 	HashMap<String,Integer> sectionMap = new HashMap<String, Integer>();
 	ELFHeader eh;
 	ELFSection[] sections;
-	//ELFSymbol[] symbols;
-	// ELFSymbol[] dynsyms;
-	// ELFDynamic[] dyns;
 	eh = new ELFHeader(fmap);
 	shstrtab = fmap.getInt(eh.e_shoff + (eh.e_shstrndx) * eh.e_shentsize + 16);
 	fmap.position(eh.e_shoff);
@@ -116,44 +118,8 @@ public class ELFAnalyzer extends FileAnalyzer {
 	    || ".data".equals(sname) || ".data1".equals(sname)
 	    ||".rodata".equals(sname) || ".rodata1".equals(sname)) {
 		readables[ri++] = i;
- /*           } else if(".dynsym".equals(sname)) {
-		int strOffset = sectionMap.get(".dynstr");
-		fmap.position(sections[i].sh_offset);
-		int numSym = sections[i].sh_size/sections[i].sh_entsize;
-		for (int symi = 0; symi < numSym; symi++) {
-		    fmap.position(sections[i].sh_offset + symi * sections[i].sh_entsize);
-		    ELFSymbol sym = new ELFSymbol(fmap);
-		    if(sym.st_name != 0) {
-			String symbol = getName(sym.st_name, strOffset, fmap);
-			symTab.append(sname + " [ "+ symi + "]"+ symbol + sym.toString());
-			symTab.append("\n");
-		    }
-		}
-	    } else if(".symtab".equals(sname)) {
-		int strOffset = sectionMap.get(".strtab");
-		fmap.position(sections[i].sh_offset);
-		int numSym = sections[i].sh_size/sections[i].sh_entsize;
-		for (int symi = 0; symi < numSym; symi++) {
-		    fmap.position(sections[i].sh_offset + symi * sections[i].sh_entsize);
-		    ELFSymbol sym = new ELFSymbol(fmap);
-		    if(sym.st_name != 0) {
-			String symbol = getName(sym.st_name, strOffset, fmap);
-			symTab.append(sname + " [ "+ symi + "]"+ symbol + sym.toString());
-			symTab.append("\n");
-		    }
-		}
-  */
 	    }
 	}
-/*        if(len + symTab.length() > content.length) {
-		int max = content.length * 2 + symTab.length();
-		char[] content2 = new char[max];
-		System.arraycopy(content, 0, content2, 0, len);
-		content = content2;
-	}
-	System.err.println("SYmbolTable = <pre>" + symTab + " </html>");
-	symTab.getChars(0,symTab.length(), content, len);
- */
 	boolean lastPrintable = false;
 	len = 0;
 	for(int i = 0 ; i < ri ; i++) {
@@ -243,7 +209,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	public int e_shnum;
 	public int e_shstrndx;
 	
-	public ELFHeader(MappedByteBuffer fmap) throws IOException, Exception {
+	public ELFHeader(MappedByteBuffer fmap) {
 	    fmap.position(4);
 	    ei_class = fmap.get();
 	    ei_data = fmap.get();
@@ -300,7 +266,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	public int sh_addralign;
 	public int sh_entsize;
 	
-	public ELFSection(MappedByteBuffer fmap ) throws IOException {
+	public ELFSection(MappedByteBuffer fmap ) {
 	    sh_name = fmap.getInt();
 	    sh_type = fmap.getInt();
 	    sh_flags = fmap.getInt();
@@ -335,7 +301,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	public int st_other;
 	public int st_shndx;
 	
-	public ELFSymbol(MappedByteBuffer fmap) throws IOException {
+	public ELFSymbol(MappedByteBuffer fmap) {
 	    st_name = fmap.getInt();
 	    st_value = fmap.getInt();
 	    st_size = fmap.getInt();
@@ -361,7 +327,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	public long d_tag;
 	public long d_val;
 	
-	public ELFDynamic(MappedByteBuffer fmap) throws IOException {
+	public ELFDynamic(MappedByteBuffer fmap) {
 	    d_tag = fmap.getInt();
 	    d_val = fmap.getInt();
 	}

@@ -239,7 +239,7 @@ public class EftarFile {
         out.close();
     }
 
-    public void create(String[] args) throws Exception {
+    public void create(String[] args) throws IOException, FileNotFoundException {
         for (int i = 0; i < args.length - 1; i++) {
             readInput(args[i]);
         }

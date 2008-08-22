@@ -101,9 +101,9 @@ public class IndexDatabase {
      * Update the index database for all of the projects. Print progress to
      * standard out.
      * @param executor An executor to run the job
-     * @throws java.lang.Exception if an error occurs
+     * @throws IOException if an error occurs
      */
-    public static void updateAll(ExecutorService executor) throws Exception {
+    public static void updateAll(ExecutorService executor) throws IOException {
         updateAll(executor, null);
     }
 
@@ -111,7 +111,7 @@ public class IndexDatabase {
      * Update the index database for all of the projects
      * @param executor An executor to run the job
      * @param listener where to signal the changes to the database
-     * @throws java.lang.Exception if an error occurs
+     * @throws IOException if an error occurs
      */
     static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -220,12 +220,12 @@ public class IndexDatabase {
     
     /**
      * Update the content of this index database
-     * @throws java.lang.Exception if an error occurs
+     * @throws IOException if an error occurs
      */
-    public void update() throws Exception {
+    public void update() throws IOException {
         synchronized (lock) {
             if (running) {
-                throw new Exception("Indexer already running!");
+                throw new IOException("Indexer already running!");
             }
             running = true;
             interrupted = false;
@@ -288,7 +288,7 @@ public class IndexDatabase {
     /**
      * Optimize all index databases
      * @param executor An executor to run the job
-     * @throws java.lang.Exception if an error occurs
+     * @throws IOException if an error occurs
      */
     static void optimizeAll(ExecutorService executor) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -299,11 +299,7 @@ public class IndexDatabase {
                     executor.submit(new Runnable() {
 
                         public void run() {
-                            try {
-                                db.optimize();
-                            } catch (Exception e) {
-                                log.log(Level.FINE,"Problem optimizing lucene index database: ",e);
-                            }
+                            db.optimize();
                         }
                     });
                 }
@@ -316,7 +312,7 @@ public class IndexDatabase {
                     public void run() {
                         try {
                             db.update();
-                        } catch (Exception e) {
+                        } catch (IOException e) {
                             log.log(Level.FINE,"Problem updating lucene index database: ",e);
                         }
                     }
@@ -679,20 +675,20 @@ public class IndexDatabase {
             if (iter != null) {
                 try {
                     iter.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                 }
             }
 
             if (ireader != null) {
                 try {
                     ireader.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                 }
             }
         }
     }
 
-    static void listFrequentTokens() throws Exception {
+    static void listFrequentTokens() throws IOException {
         listFrequentTokens(null);
     }
 
@@ -744,14 +740,14 @@ public class IndexDatabase {
             if (iter != null) {
                 try {
                     iter.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                 }
             }
 
             if (ireader != null) {
                 try {
                     ireader.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                 }
             }
         }

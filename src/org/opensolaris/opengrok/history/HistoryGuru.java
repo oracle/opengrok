@@ -87,7 +87,7 @@ public final class HistoryGuru {
      * @return file annotation, or <code>null</code> if the
      * <code>HistoryParser</code> does not support annotation
      */
-    public Annotation annotate(File file, String rev) throws Exception {
+    public Annotation annotate(File file, String rev) throws IOException {
         Repository repos = getRepository(file);
         if (repos != null) {
             return repos.annotate(file, rev);

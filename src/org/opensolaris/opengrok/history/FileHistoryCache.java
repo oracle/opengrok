@@ -95,7 +95,7 @@ class FileHistoryCache implements HistoryCache {
         return (History) obj;
     }
     
-    public void store(History history, File file) throws Exception {
+    public void store(History history, File file) throws IOException {
         
         File cache = getCachedFile(file);
 
@@ -138,7 +138,7 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
-    public History get(File file, Repository repository) throws Exception {
+    public History get(File file, Repository repository) throws IOException {
         Class<? extends HistoryParser> parserClass;
         parserClass = repository.getHistoryParser();
         File cache = getCachedFile(file);
@@ -152,23 +152,22 @@ class FileHistoryCache implements HistoryCache {
             }
         }
         
-        HistoryParser parser = parserClass.newInstance();
         History history = null;
         long time;
         try {
+            HistoryParser parser = parserClass.newInstance();
             time = System.currentTimeMillis();
             history = parser.parse(file, repository);
             time = System.currentTimeMillis() - time;
+        } catch (InstantiationException ex) {
+            throw new IOException("Could not create history parser", ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException("No access permissions to create history parser", ex);
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
             // An example is a non-SCCS file somewhere in an SCCS-controlled
             // workspace.
             return null;
-        }
-        catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, 
-                    "Failed to parse " + file.getAbsolutePath(), e);
-            throw e;
         }
 
         if (repository.isCacheable() && !file.isDirectory()) {

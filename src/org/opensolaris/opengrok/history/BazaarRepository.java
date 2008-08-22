@@ -119,7 +119,7 @@ public class BazaarRepository extends Repository {
         return BazaarHistoryParser.class;
     }
 
-    public Annotation annotate(File file, String revision) throws Exception {
+    public Annotation annotate(File file, String revision) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -131,7 +131,7 @@ public class BazaarRepository extends Repository {
         return true;
     }
     
-    public void update() throws Exception {
+    public void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

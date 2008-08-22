@@ -28,8 +28,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
+import org.apache.commons.jrcs.diff.PatchFailedException;
 import org.apache.commons.jrcs.rcs.Archive;
+import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
 import org.apache.commons.jrcs.rcs.Node;
+import org.apache.commons.jrcs.rcs.ParseException;
 import org.apache.commons.jrcs.rcs.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
 
@@ -70,28 +73,35 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    Annotation annotate(File file, String revision) throws Exception {
+    Annotation annotate(File file, String revision) throws IOException {
         File rcsFile = getRCSFile(file);
         return rcsFile == null ? null : annotate(file, revision, rcsFile);
     }
 
     static Annotation annotate(File file, String revision, File rcsFile)
-            throws Exception {
-        Archive archive = new Archive(rcsFile.getPath());
-        // If revision is null, use current revision
-        Version version = revision == null ?
-            archive.getRevisionVersion() : archive.getRevisionVersion(revision);
-        // Get the revision with annotation
-        archive.getRevision(version, true);
-        Annotation a = new Annotation(file.getName());
-        // A comment in Archive.getRevisionNodes() says that it is not
-        // considered public API anymore, but it works.
-        for (Node n : archive.getRevisionNodes()) {
-            String rev = n.getVersion().toString();
-            String author = n.getAuthor();
-            a.addLine(rev, author, true);
+            throws IOException {
+        try {
+            Archive archive = new Archive(rcsFile.getPath());
+            // If revision is null, use current revision
+            Version version = revision == null ? archive.getRevisionVersion() : archive.getRevisionVersion(revision);
+            // Get the revision with annotation
+            archive.getRevision(version, true);
+            Annotation a = new Annotation(file.getName());
+            // A comment in Archive.getRevisionNodes() says that it is not
+            // considered public API anymore, but it works.
+            for (Node n : archive.getRevisionNodes()) {
+                String rev = n.getVersion().toString();
+                String author = n.getAuthor();
+                a.addLine(rev, author, true);
+            }
+            return a;
+        } catch (ParseException pe) {
+            throw new IOException("Parse exception annotating RCS repository", pe);
+        } catch (InvalidFileFormatException iffe) {
+            throw new IOException("File format exception annotating RCS repository", iffe);
+        } catch (PatchFailedException pfe) {
+            throw new IOException("Patch failed exception annotating RCS repository", pfe);
         }
-        return a;
     }
 
     @Override
@@ -100,7 +110,7 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    void update() throws Exception {
+    void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
