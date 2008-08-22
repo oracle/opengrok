@@ -48,11 +48,6 @@ public class SCCSRepository extends Repository {
 
     private Map<String, String> authors_cache;
     
-    /**
-     * Creates a new instance of MercurialRepository
-     */
-    public SCCSRepository() { }
-    
     private String getCommand() {
        return System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
     }

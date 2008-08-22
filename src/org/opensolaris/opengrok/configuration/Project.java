@@ -74,12 +74,6 @@ public class Project {
     }
     
     /**
-     * Creates a new instance of Project
-     */
-    public Project() {
-    }
-    
-    /**
      * Create a new instance of Project with a given description and path
      * @param description the description of this project
      * @param path the path to where this project is located (relative from source root)

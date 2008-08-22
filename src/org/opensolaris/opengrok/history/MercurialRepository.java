@@ -47,11 +47,6 @@ public class MercurialRepository extends Repository {
         "--help" });
     
     /**
-     * Creates a new instance of MercurialRepository
-     */
-    public MercurialRepository() { }
-    
-    /**
      * Get the name of the Mercurial command that should be used
      * @return the name of the hg command in use
      */

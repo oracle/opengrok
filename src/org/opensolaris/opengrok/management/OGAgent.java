@@ -88,12 +88,6 @@ public class OGAgent {
         }
     }
 
-    /**
-     * Use the runOGA method to start the agent.
-     */
-    public OGAgent() {
-    }
-
     public final void runOGA() throws MalformedURLException, IOException, Exception {
         String machinename = java.net.InetAddress.getLocalHost().getHostName();
         String javaver = System.getProperty("java.version");

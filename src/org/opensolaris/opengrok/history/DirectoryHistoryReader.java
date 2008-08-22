@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
@@ -54,17 +55,13 @@ import org.opensolaris.opengrok.index.IndexDatabase;
  */
 public class DirectoryHistoryReader extends HistoryReader {
 
-    public HashMap<Date, HashMap<String, HashMap<String, ArrayList<String>>>> hash = new LinkedHashMap<Date, HashMap<String, HashMap<String, ArrayList<String>>>>();
+    public Map<Date, HashMap<String, HashMap<String, ArrayList<String>>>> hash = new LinkedHashMap<Date, HashMap<String, HashMap<String, ArrayList<String>>>>();
     Iterator<Date> diter;
     Date idate;
     Iterator<String> aiter;
     String iauthor;
     Iterator<String> citer;
     String icomment;
-
-    /** Creates a new instance of DirectoryHistoryReader */
-    public DirectoryHistoryReader() {
-    }
 
     public DirectoryHistoryReader(String path) throws IOException {
         IndexReader ireader = null;

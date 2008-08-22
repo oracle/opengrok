@@ -71,11 +71,6 @@ public class Summarizer {
         
         /**
          */
-        public Excerpt() {
-        }
-        
-        /**
-         */
         public void addToken(String token) {
             tokenSet.add(token);
         }

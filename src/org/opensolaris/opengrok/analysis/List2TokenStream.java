@@ -23,7 +23,6 @@
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import org.apache.lucene.analysis.Token;

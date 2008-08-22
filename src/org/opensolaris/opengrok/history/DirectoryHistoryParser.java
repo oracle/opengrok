@@ -36,10 +36,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public class DirectoryHistoryParser implements HistoryParser {
     
-    /** Creates a new instance of DirectoryHistoryParser */
-    public DirectoryHistoryParser() {
-    }
-    
     public History parse(File file, Repository repository)
             throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();

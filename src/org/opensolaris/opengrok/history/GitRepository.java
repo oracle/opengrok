@@ -41,11 +41,6 @@ public class GitRepository extends Repository {
         System.getProperty("org.opensolaris.opengrok.history.git", "git"),
         "--help" });
     
-    /**
-     * Creates a new instance of GitRepository
-     */
-    public GitRepository() { }
-
     Process getHistoryLogProcess(File file) throws IOException {
         String abs = file.getAbsolutePath();
         String filename = "";

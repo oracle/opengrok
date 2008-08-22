@@ -52,8 +52,9 @@ public class HistoryReader extends Reader {
     private Reader input;
 
     HistoryReader() {
+        // So that DirectoryHistoryReader can inherit this class
     }
-
+    
     HistoryReader(History history) {
         entries = history.getHistoryEntries();
         iterator = entries.iterator();

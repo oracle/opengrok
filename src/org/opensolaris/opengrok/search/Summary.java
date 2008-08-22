@@ -87,9 +87,6 @@ public class Summary {
     
     private static final Fragment[] FRAGMENT_PROTO = new Fragment[0];
     
-    /** Constructs an empty Summary.*/
-    public Summary() {}
-    
     /** Adds a fragment to a summary.*/
     public void add(Fragment fragment) { fragments.add(fragment); }
     

@@ -144,10 +144,6 @@ public class RazorRepository extends Repository {
     // The base directory of that Razor Group (.razor symlink destination)
     private String razorGroupBaseDirectoryPath;
 
-    public RazorRepository() {
-        // Required to restore saved configuration
-    }
-
     @Override
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);

@@ -39,12 +39,6 @@ public class ClearCaseRepository extends Repository {
     private boolean verbose;
 
     /**
-     * Creates a new instance of ClearCaseRepository
-     */
-    public ClearCaseRepository() {
-    }
-
-    /**
      * Get the name of the ClearCase command that should be used
      * @return the name of the cleartool command in use
      */

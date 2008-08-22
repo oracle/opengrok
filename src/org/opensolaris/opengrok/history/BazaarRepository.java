@@ -41,11 +41,6 @@ public class BazaarRepository extends Repository {
         System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr"),
         "--help" });
     
-    /**
-     * Creates a new instance of BazaarRepository.
-     */
-    public BazaarRepository() { }
-
    /**
      * Get the name of the Bazaar command that should be used.
      * 
