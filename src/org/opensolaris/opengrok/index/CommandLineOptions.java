@@ -36,8 +36,10 @@ import java.util.List;
 
 public class CommandLineOptions {
 
-    static class Option {
+    private final static String ON_OFF = "on/off";
 
+    static class Option {
+        
         char option;
         String argument;
         String description;
@@ -75,15 +77,15 @@ public class CommandLineOptions {
         options.add(new Option('U', "host:port", "Send the current configuration to the specified address (This is most likely the web-app configured with ConfigAddress)"));
         options.add(new Option('P', null, "Generate a project for each of the top-level directories in source root"));
         options.add(new Option('p', "/path/to/default/project", "This is the path to the project that should be selected by default in the web application. You should strip off the source root."));
-        options.add(new Option('Q', "on/off", "Turn on/off quick context scan. By default only the first 32k of a file is scanned, and a '[..all..]' link is inserted if the file is bigger. Activating this may slow the server down (Note: this is setting only affects the web application)"));
+        options.add(new Option('Q', ON_OFF, "Turn on/off quick context scan. By default only the first 32k of a file is scanned, and a '[..all..]' link is inserted if the file is bigger. Activating this may slow the server down (Note: this is setting only affects the web application)"));
         options.add(new Option('n', null, "Do not generate indexes, but process all other command line options"));
         options.add(new Option('H', null, "Generate history cache for all external repositories"));
         options.add(new Option('h', "/path/to/repository", "Generate history cache for the specified repos (absolute path from source root)"));
-        options.add(new Option('r', "on/off", "Turn on/off support for remote SCM systems"));
+        options.add(new Option('r', ON_OFF, "Turn on/off support for remote SCM systems"));
         options.add(new Option('L', "path", "Path to the subdirectory in the web-application containing the requested stylesheet. The following factory-defaults exist: \"default\", \"offwhite\" and \"polished\""));
-        options.add(new Option('l', "on/off", "Turn on/off locking of the Lucene database during index generation"));
-        options.add(new Option('O', "on/off", "Turn on/off the optimization of the index database as part of the indexing step"));
-        options.add(new Option('a', "on/off", "Allow or disallow leading wildcards in a search"));
+        options.add(new Option('l', ON_OFF, "Turn on/off locking of the Lucene database during index generation"));
+        options.add(new Option('O', ON_OFF, "Turn on/off the optimization of the index database as part of the indexing step"));
+        options.add(new Option('a', ON_OFF, "Allow or disallow leading wildcards in a search"));
         options.add(new Option('w', "webapp-context", "Context of webapp. Default is /source. If you specify a different name, make sure to rename source.war to that name."));
         options.add(new Option('i', "pattern", "Ignore the named files or directories"));
         options.add(new Option('A', "ext:analyzer", "Files with the named extension should be analyzed with the specified class"));

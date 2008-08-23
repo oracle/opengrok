@@ -65,7 +65,7 @@ public final class OpenGrokLogger {
         } else {
             logfile = new StringBuffer(logpath);
         }
-        logfile.append(File.separatorChar).append("opengrok%g.%u").append(".log");
+        logfile.append(File.separatorChar).append("opengrok%g.%u.log");
         try {
             FileHandler fh = new FileHandler(logfile.toString(),
                     LOGFILESIZELIMIT, // size (unlimited)

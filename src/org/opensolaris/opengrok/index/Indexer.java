@@ -52,6 +52,9 @@ import org.opensolaris.opengrok.util.Getopt;
 @SuppressWarnings({"PMD.AvoidPrintStackTrace","PMD.SystemPrintln"})
 public final class Indexer {
    
+    private final static String ON = "on";
+    private final static String OFF = "off";
+    
    private static Indexer index = new Indexer();
    private static final Logger log = Logger.getLogger(Indexer.class.getName());
    
@@ -144,9 +147,9 @@ public final class Indexer {
                     case 'H': refreshHistory = true; break;
                     case 'h' : repositories.add(getopt.getOptarg()); break;
                     case 'r': {
-                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                        if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                             env.setRemoteScmSupported(true);
-                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                        } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
                             env.setRemoteScmSupported(false);
                         } else {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
@@ -157,9 +160,9 @@ public final class Indexer {
                     break;
                     case 'O': {
                        boolean oldval = env.isOptimizeDatabase();
-                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                        if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                             env.setOptimizeDatabase(true);
-                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                        } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
                             env.setOptimizeDatabase(false);
                         } else {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -O");
@@ -191,9 +194,9 @@ public final class Indexer {
                         break;
                     case 'S' : searchRepositories = true; break;
                     case 'Q' : 
-                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                        if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                             env.setQuickContextScan(true);
-                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                        } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
                             env.setQuickContextScan(false);
                         } else {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -Q");
@@ -212,9 +215,9 @@ public final class Indexer {
                         break;
                     }
                     case 'a' : 
-                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                        if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                             env.setAllowLeadingWildcard(true);
-                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                        } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
                             env.setAllowLeadingWildcard(false);
                         } else {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -a");
@@ -266,9 +269,9 @@ public final class Indexer {
                         }
                         break;
                     case 'l' : 
-                        if (getopt.getOptarg().equalsIgnoreCase("on")) {
+                        if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                             env.setUsingLuceneLocking(true);
-                        } else if (getopt.getOptarg().equalsIgnoreCase("off")) {
+                        } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
                             env.setUsingLuceneLocking(false);
                         } else {
                             System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -l");
