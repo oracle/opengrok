@@ -159,7 +159,7 @@ public class OGAgent {
         server.invoke(timer, "start", null, null);
         log.info("Started timer service");
 
-        boolean enabled = Boolean.valueOf(properties.getProperty("org.opensolaris.opengrok.management.indexer.enabled")).booleanValue();
+        boolean enabled = Boolean.parseBoolean(properties.getProperty("org.opensolaris.opengrok.management.indexer.enabled"));
         int period = Integer.parseInt(properties.getProperty("org.opensolaris.opengrok.management.indexer.sleeptime"));
         log.fine("Indexer enabled: " + enabled);
         log.fine("Indexer period: " + period + " seconds");

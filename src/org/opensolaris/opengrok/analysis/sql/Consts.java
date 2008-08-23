@@ -55,7 +55,7 @@ public final class Consts {
         try {
             while ((line = reader.readLine()) != null) {
                 line = line.trim().toLowerCase(Locale.US);
-                if (!line.startsWith("#")) {
+                if (line.charAt(0) != '#') {
                     set.add(line);
                 }
             }

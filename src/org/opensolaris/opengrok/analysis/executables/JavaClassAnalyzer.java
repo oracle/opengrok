@@ -336,11 +336,11 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 str =  ((ConstantUtf8) con2).getBytes();
                 break;
                 
-            case org.apache.bcel.Constants.CONSTANT_Utf8:    str = ((ConstantUtf8)c).getBytes();         break;
-            case org.apache.bcel.Constants.CONSTANT_Double:  str = "" + ((ConstantDouble)c).getBytes();  break;
-            case org.apache.bcel.Constants.CONSTANT_Float:   str = "" + ((ConstantFloat)c).getBytes();   break;
-            case org.apache.bcel.Constants.CONSTANT_Long:    str = "" + ((ConstantLong)c).getBytes();    break;
-            case org.apache.bcel.Constants.CONSTANT_Integer: str = "" + ((ConstantInteger)c).getBytes(); break;
+            case org.apache.bcel.Constants.CONSTANT_Utf8:    str = ((ConstantUtf8)c).toString();         break;
+            case org.apache.bcel.Constants.CONSTANT_Double:  str = ((ConstantDouble)c).toString();  break;
+            case org.apache.bcel.Constants.CONSTANT_Float:   str = ((ConstantFloat)c).toString();   break;
+            case org.apache.bcel.Constants.CONSTANT_Long:    str = ((ConstantLong)c).toString();    break;
+            case org.apache.bcel.Constants.CONSTANT_Integer: str = ((ConstantInteger)c).toString(); break;
             
             case org.apache.bcel.Constants.CONSTANT_NameAndType:
                 i = ((ConstantNameAndType)c).getNameIndex();

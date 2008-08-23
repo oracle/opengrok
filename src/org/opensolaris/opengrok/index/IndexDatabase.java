@@ -198,11 +198,12 @@ public class IndexDatabase {
      * @param dir The directory to scan
      * @return <code>true</code> if the file is added, false oth
      */
+    @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public boolean addDirectory(String dir) {
         String directory = dir;
         if (directory.startsWith("\\")) {
             directory = directory.replace('\\', '/');
-        } else if (!directory.startsWith("/")) {
+        } else if (directory.charAt(0) != '/') {
             directory = "/" + directory;
         }
         File file = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), directory);

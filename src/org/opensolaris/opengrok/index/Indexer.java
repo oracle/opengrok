@@ -62,6 +62,7 @@ public final class Indexer {
      * Program entry point
      * @param argv argument vector
      */
+    @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public static void main(String argv[]) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean runIndex = true;
@@ -124,7 +125,7 @@ public final class Indexer {
                     case 'c': env.setCtags(getopt.getOptarg()); break;
                     case 'w': {
                         String webapp = getopt.getOptarg();
-                        if (!webapp.startsWith("/") && !webapp.startsWith("http")) {
+                        if (webapp.charAt(0) != '/' && !webapp.startsWith("http")) {
                             webapp = "/" + webapp;
                         }
                         if (webapp.endsWith("/")) {

@@ -24,7 +24,7 @@
 package org.opensolaris.opengrok.management;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -129,10 +129,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 int noThreads = jagmgt.getInstance().getNumberOfThreads().intValue();
                 boolean update = jagmgt.getInstance().getUpdateIndexDatabase().booleanValue();
                 String[] sublist = jagmgt.getInstance().getSubFiles();
-                List<String> subFiles = new ArrayList<String>();
-                for (int i = 0; i < sublist.length; i++) {
-                    subFiles.add(sublist[i]);
-                }
+                List<String> subFiles = Arrays.asList(sublist);
                 log.info("Starting index, update " + update + " noThreads " + noThreads + " subfiles " + subFiles.size());
                 index.doIndexerExecution(update, noThreads, subFiles, this);
                 log.info("Finished indexing");

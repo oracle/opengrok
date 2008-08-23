@@ -59,13 +59,15 @@ public final class OpenGrokLogger {
        }
 
         clearForeignHandlers();
-        String logfile = logpath; 
+        StringBuffer logfile;
         if (logpath == null) {
-            logfile = "%t";
+            logfile = new StringBuffer("%t");
+        } else {
+            logfile = new StringBuffer(logpath);
         }
-        logfile = logfile + File.separatorChar + "opengrok%g.%u" + ".log";
+        logfile.append(File.separatorChar).append("opengrok%g.%u").append(".log");
         try {
-            FileHandler fh = new FileHandler(logfile,
+            FileHandler fh = new FileHandler(logfile.toString(),
                     LOGFILESIZELIMIT, // size (unlimited)
                     LOGFILESCOUNT); // # rotations
 

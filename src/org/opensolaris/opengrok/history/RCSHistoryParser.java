@@ -108,7 +108,7 @@ class RCSHistoryParser implements HistoryParser {
                 if (root.canRead()) {
                     BufferedReader rootReader = new BufferedReader(new FileReader(root));
                     String cvsroot = rootReader.readLine();
-                    if (cvsroot != null && cvsroot.startsWith("/")) {
+                    if (cvsroot != null && cvsroot.charAt(0) == '/') {
                         File repository = new File(CVSdir, "Repository");
                         BufferedReader repoReader = new BufferedReader(new FileReader(repository));
                         String repo = repoReader.readLine();

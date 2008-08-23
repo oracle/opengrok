@@ -156,7 +156,7 @@ public class RazorHistoryParser implements HistoryParser {
                             parseDebug("Ignoring Info Type Line '" + line + "'");
                         }
                     } else {
-                        if (!line.startsWith("##") && line.startsWith("#")) {
+                        if (!line.startsWith("##") && line.charAt(0) == '#') {
                             parseDebug("Seen Comment : '" + line + "'");
                             if (lastWasTitle) {
                                 entry.appendMessage("");

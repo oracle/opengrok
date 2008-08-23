@@ -374,17 +374,18 @@ public class RazorRepository extends Repository {
             f = new File(f.getParent(), filePrefix + f.getName());
         }
 
-        String path = razorGroupBaseDirectoryPath + intermediateElements;
+        StringBuffer path = new StringBuffer(razorGroupBaseDirectoryPath);
+        path.append(intermediateElements);
 
         if (f.getAbsolutePath().length() > opengrokSourceRootDirectoryPath.length()) {
-            path += f.getAbsolutePath().substring(opengrokSourceRootDirectoryPath.length() + 1);
+            path.append(f.getAbsolutePath().substring(opengrokSourceRootDirectoryPath.length() + 1));
         }
 
         if (fileSuffix.length() != 0) {
-            path += fileSuffix;
+            path.append(fileSuffix);
         }
 
-        return new File(path);
+        return new File(path.toString());
     }
 
     @Override
