@@ -64,9 +64,9 @@ public class MercurialRepository extends Repository {
         
         String argv[];
         if (file.isDirectory()) {
-            argv = new String[] {getCommand(), "log", "-v", filename};
+            argv = new String[] {getCommand(), "log", "--template", "changeset:   {rev}:{node|short}\\n{branches}{tags}{parents}user:        {author}\\ndate:        {date|isodate}\\n{files}{file_copies}\\ndescription:\\n{desc|strip}\\n\\n\\n", filename};
         } else {
-            argv = new String[] {getCommand(), "log", filename};
+            argv = new String[] {getCommand(), "log", "--template", "changeset:   {rev}:{node|short}\\n{branches}{tags}{parents}user:        {author}\\ndate:        {date|isodate}\\ndescription:\\n{desc|strip}\\n\\n", filename};
         }
 
         File directory = new File(getDirectoryName());

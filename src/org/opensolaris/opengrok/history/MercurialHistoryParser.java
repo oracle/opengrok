@@ -56,7 +56,7 @@ class MercurialHistoryParser implements HistoryParser {
             }
             
             SimpleDateFormat df =
-                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.getDefault());
+                    new SimpleDateFormat("yyyy-MM-dd hh:mm ZZZZ", Locale.getDefault());
             ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
             
             InputStream is = process.getInputStream();
