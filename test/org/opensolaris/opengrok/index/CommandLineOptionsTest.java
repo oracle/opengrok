@@ -85,4 +85,13 @@ public class CommandLineOptionsTest {
         assertNotNull(instance.getUsage());
         assertNotNull(instance.getManPage());
     }
+    
+    @Test
+    public void bug3042() {
+        CommandLineOptions instance = new CommandLineOptions();
+        String cmdString = instance.getCommandString();
+        int idx = cmdString.indexOf("?");
+        assertTrue(idx != -1);
+        assertEquals("-?\n\tHelp", instance.getCommandUsage('?'));
+    }
 }
