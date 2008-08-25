@@ -94,4 +94,13 @@ public class CommandLineOptionsTest {
         assertTrue(idx != -1);
         assertEquals("-?\n\tHelp", instance.getCommandUsage('?'));
     }
+    
+    @Test
+    public void rfe3041() {
+        CommandLineOptions instance = new CommandLineOptions();
+        String cmdString = instance.getCommandString();
+        int idx = cmdString.indexOf("V");
+        assertTrue(idx != -1);
+        assertEquals("-V\n\tPrint version and quit", instance.getCommandUsage('V'));        
+    }
 }

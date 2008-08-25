@@ -95,6 +95,7 @@ public class CommandLineOptions {
         options.add(new Option('d', "/path/to/data/root", "The directory where OpenGrok stores the generated data"));
         options.add(new Option('T', "number", "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));
         options.add(new Option('?', null, "Help"));
+        options.add(new Option('V', null, "Print version and quit"));
     }
 
     public String getCommandString() {

@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Project;
@@ -279,6 +280,11 @@ public final class Indexer {
                             System.err.println("           \"-l off\" will disable locks in Lucene");
                         }  
                         break;
+                    case 'V' :
+                        System.out.println(Info.getFullVersion());
+                        System.exit(0);
+                        break;
+                        
                     case '?':
                         System.err.println(cmdOptions.getUsage());
                         System.exit(0);
