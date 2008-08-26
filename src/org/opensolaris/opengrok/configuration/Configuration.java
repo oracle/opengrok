@@ -69,6 +69,7 @@ public final class Configuration {
     private boolean optimizeDatabase;
     private boolean useLuceneLocking;
     private boolean compressXref;
+    private boolean indexVersionedFilesOnly;
     
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -93,6 +94,7 @@ public final class Configuration {
         setOptimizeDatabase(true);
         setUsingLuceneLocking(false);
         setCompressXref(true);
+        setIndexVersionedFilesOnly(false);
     }
     
     public String getCtags() {
@@ -297,6 +299,13 @@ public final class Configuration {
         return compressXref;
     }
 
+    public boolean isIndexVersionedFilesOnly() {
+        return indexVersionedFilesOnly;
+    }
+
+    public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
+        this.indexVersionedFilesOnly = indexVersionedFilesOnly;
+    }
     /**
      * Write the current configuration to a file
      * @param file the file to write the configuration into

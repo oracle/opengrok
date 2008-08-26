@@ -1,0 +1,13 @@
+h10765
+s 00001/00000/00000
+d D 1.1 08/08/26 22:43:56 trond 1 0
+c date and time created 08/08/26 22:43:56 by trond
+e
+u
+U
+f e 0
+t
+T
+I 1
+This is a versioned textfile
+E 1

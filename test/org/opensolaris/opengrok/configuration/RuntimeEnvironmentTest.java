@@ -309,6 +309,14 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
+    public void testIndexVersionedFilesOnly() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        assertFalse(instance.isIndexVersionedFilesOnly());
+        instance.setIndexVersionedFilesOnly(true);
+        assertTrue(instance.isIndexVersionedFilesOnly());
+    }
+
+    @Test
     public void testConfigListenerThread() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         SocketAddress addr = new InetSocketAddress(0);

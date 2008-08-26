@@ -80,6 +80,10 @@ public class TestRepository {
         if (sourceRoot != null) {
             FileUtilities.removeDirs(sourceRoot);
         }
+        purgeData();
+    }
+
+    public void purgeData() {
         if (dataRoot != null) {
             FileUtilities.removeDirs(dataRoot);
         }

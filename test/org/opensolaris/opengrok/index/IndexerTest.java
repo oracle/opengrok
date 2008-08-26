@@ -24,13 +24,18 @@
 package org.opensolaris.opengrok.index;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.util.TestRepository;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -91,6 +96,47 @@ public class IndexerTest {
         if (env.validateExuberantCtags()) {
             String[] argv = { "-S", "-P", "-p", "/c", "-H", "-Q", "off", "-s", repository.getSourceRoot().getAbsolutePath(), "-d", repository.getDataRoot().getAbsolutePath(), "-v"};
             Indexer.main(argv);
+        } else {
+            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+        }
+    }
+
+    private class MyIndexChangeListener implements org.opensolaris.opengrok.index.IndexChangedListener {
+        List<String> files = new ArrayList<String>();
+
+        public void fileAdded(String path, String analyzer) {
+            files.add(path);
+        }
+
+        public void fileRemoved(String path) {
+            files.add(path);
+        }
+    }
+
+    @Test
+    public void testRFE2575() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
+        env.setSourceRootFile(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+        HistoryGuru.getInstance().addRepositories(repository.getSourceRoot().getAbsolutePath());
+
+        if (env.validateExuberantCtags()) {
+            Project project = new Project();
+            project.setPath("/rfe2575");
+            IndexDatabase idb = new IndexDatabase(project);
+            assertNotNull(idb);
+            MyIndexChangeListener listener = new MyIndexChangeListener();
+            idb.addIndexChangedListener(listener);
+            idb.update();
+            assertEquals(2, listener.files.size());
+            repository.purgeData();
+            RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(true);
+            idb = new IndexDatabase(project);
+            listener = new MyIndexChangeListener();
+            idb.addIndexChangedListener(listener);
+            idb.update();
+            assertEquals(1, listener.files.size());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }

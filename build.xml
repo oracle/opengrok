@@ -424,11 +424,15 @@ Use is subject to license terms.
         </copy>
         <copy file="testdata/repositories/mercurial/hgignore" tofile="testdata/repositories/mercurial/.hgignore"/>
         
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip" basedir="testdata/sources" update="false"/>
+        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
+              basedir="testdata/sources"
+              update="false"
+              defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
                 basedir="testdata/repositories" 
                 excludes="mercurial/hg/**, mercurial/hgignore"
-                update="false"/>
+                update="false"
+                defaultexcludes="no"/>
                 
           <delete dir="testdata/repositories/mercurial/.hg"/>
           <delete file="testdata/repositories/mercurial/.hgignore"/>

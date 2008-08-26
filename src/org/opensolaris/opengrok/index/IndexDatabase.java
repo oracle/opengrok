@@ -50,6 +50,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -76,6 +77,7 @@ public class IndexDatabase {
     private boolean running;
     private List<String> directories;
     private static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
+    private boolean indexVersionedFilesOnly = RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
     
     /**
      * Create a new instance of the Index Database. Use this constructor if
@@ -514,6 +516,13 @@ public class IndexDatabase {
         } catch (IOException exp) {
             log.warning("Warning: Failed to resolve name: " + file.getAbsolutePath());
             log.log(Level.FINE,"Stack Trace: ",exp);       
+        }
+
+        if (indexVersionedFilesOnly) {
+            if (!file.isDirectory() && !HistoryGuru.getInstance().hasHistory(file)) {
+                log.log(Level.FINE, "Skipping " + file.getAbsolutePath() + " (no history)");
+                return false;
+            }
         }
 
         return true;

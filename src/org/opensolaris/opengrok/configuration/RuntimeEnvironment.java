@@ -560,6 +560,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setUsingLuceneLocking(useLuceneLocking);
     }
 
+    public boolean isIndexVersionedFilesOnly() {
+        return threadConfig.get().isIndexVersionedFilesOnly();
+    }
+
+    public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
+        threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read
