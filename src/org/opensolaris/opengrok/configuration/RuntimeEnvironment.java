@@ -598,6 +598,10 @@ public final class RuntimeEnvironment {
         }
     }
 
+    protected void writeConfiguration() throws IOException {
+        writeConfiguration(configServerSocket.getInetAddress(), configServerSocket.getLocalPort());
+    }
+
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
         register();
@@ -630,12 +634,11 @@ public final class RuntimeEnvironment {
             final ServerSocket sock = configServerSocket;
             Thread t = new Thread(new Runnable() {
                 public void run() {
-                    Socket s = null;
                     while (!sock.isClosed()) {
+                        Socket s = null;
                         try {
                             s = sock.accept();
-                            log.info((new Date()).toString() + " OpenGrok: Got request from " + s.getInetAddress().getHostAddress());
-                            String line;
+                            log.info(" OpenGrok: Got request from " + s.getInetAddress().getHostAddress());
                             BufferedInputStream in = new BufferedInputStream(s.getInputStream());
                             
                             XMLDecoder d = new XMLDecoder(new BufferedInputStream(in));
@@ -647,9 +650,15 @@ public final class RuntimeEnvironment {
                                 log.info("Configuration updated: " + configuration.getSourceRoot());
                             }
                         } catch (IOException e) {
-                            log.log(Level.FINE,"Error reading config file: ",e);
+                            log.log(Level.WARNING, "Error reading config file: ",e);
                         } finally {
-                            try { s.close(); } catch (Exception ex) { log.log(Level.FINE, "Interrupt closing config listener reader socket: ", ex); }
+                            if (s != null) {
+                                try {
+                                    s.close();
+                                } catch (IOException ex) {
+                                    log.log(Level.WARNING, "Interrupt closing config listener reader socket: ", ex);
+                                }
+                            }
                         }
                     }
                 }

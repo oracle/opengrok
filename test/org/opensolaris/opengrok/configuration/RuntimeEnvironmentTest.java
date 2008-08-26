@@ -25,6 +25,8 @@ package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -304,5 +306,19 @@ public class RuntimeEnvironmentTest {
         assertFalse(instance.isUsingLuceneLocking());
         instance.setUsingLuceneLocking(true);
         assertTrue(instance.isUsingLuceneLocking());
+    }
+
+    @Test
+    public void testConfigListenerThread() throws IOException {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        SocketAddress addr = new InetSocketAddress(0);
+        assertTrue(instance.startConfigurationListenerThread(addr));
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException exp) {
+            // do nothing
+        }
+        instance.writeConfiguration();
+        instance.stopConfigurationListenerThread();
     }
 }
