@@ -24,36 +24,40 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.logging.Level;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 public final class List2TokenStream extends TokenStream {
+
     private List<String> l;
     private String[] subTokens;
     private int si;
-    public List2TokenStream(List<String> l){
+
+    public List2TokenStream(List<String> l) {
         this.l = l;
         subTokens = null;
     }
+
     public Token next() {
-        if(subTokens == null || subTokens.length == si) {
-            try {
-                String tok = l.remove(0);
-                if (tok == null) {
-                    return null;
-                } else {
-                    if(tok.indexOf('.') > 0) {
-                        subTokens = tok.split("[^a-z0-9A-Z_]+");
-                        //System.err.println("split " + tok + " into "+ subTokens.length);
-                    } else {
-                        subTokens = null;
-                        return new Token(tok,0,0);
-                    }
-                    si = 0;
-                }
-            } catch (NoSuchElementException nop) {
+        if (l == null || l.isEmpty()) {
+            OpenGrokLogger.getLogger().log(Level.FINE, "Cannot get tokens from an empty list!");
+            return null;
+        }
+
+        if (subTokens == null || subTokens.length == si) {
+            String tok = l.remove(0);
+            if (tok == null) {
                 return null;
+            } else {
+                if (tok.indexOf('.') > 0) {
+                    subTokens = tok.split("[^a-z0-9A-Z_]+");
+                } else {
+                    subTokens = null;
+                    return new Token(tok, 0, 0);
+                }
+                si = 0;
             }
         }
         if (si < subTokens.length) {
@@ -62,7 +66,8 @@ public final class List2TokenStream extends TokenStream {
             return null;
         }
     }
-    
+
+    @Override
     public void close() {
         l = null;
     }
