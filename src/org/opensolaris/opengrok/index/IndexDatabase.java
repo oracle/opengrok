@@ -127,7 +127,7 @@ public class IndexDatabase {
                         try {
                             db.update();
                         } catch (Exception e) {
-                            log.log(Level.FINE,"Problem updating lucene index database: ",e);
+                            log.log(Level.WARNING,"Problem updating lucene index database: ",e);
                         }
                     }
                 });
