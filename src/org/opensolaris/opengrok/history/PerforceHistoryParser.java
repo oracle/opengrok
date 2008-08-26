@@ -50,10 +50,10 @@ public class PerforceHistoryParser implements HistoryParser {
         executor.exec();
         
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        BufferedReader output_reader = new BufferedReader(executor.getOutputReader());
+        BufferedReader reader = new BufferedReader(executor.getOutputReader());
         String line;
         HistoryEntry entry = null;
-        while ((line = output_reader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             Matcher matcher = revision_regexp.matcher(line);
             if (matcher.find()) {
                 /* An entry finishes when a new entry starts ... */
@@ -83,6 +83,7 @@ public class PerforceHistoryParser implements HistoryParser {
                 }
             }
         }
+        reader.close();
         /* ... an entry can also finish when the log is finished */
         if (entry != null) {
             entries.add(entry);

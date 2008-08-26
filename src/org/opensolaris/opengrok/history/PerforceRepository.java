@@ -62,11 +62,11 @@ public class PerforceRepository extends Repository {
         Executor executor = new Executor(cmd, file.getParentFile());
         executor.exec();
 
-        BufferedReader output_reader = new BufferedReader(executor.getOutputReader());
+        BufferedReader reader = new BufferedReader(executor.getOutputReader());
         String line;
         int lineno = 0;
         try {
-            while ((line = output_reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 ++lineno;
                 Matcher matcher = annotation_pattern.matcher(line);
                 if (matcher.find()) {
@@ -82,6 +82,7 @@ public class PerforceRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "Error: Could not read annotations for " + file, e);
         }
+        reader.close();
         return a;
     }
 
