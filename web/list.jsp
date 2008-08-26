@@ -24,6 +24,8 @@ javax.servlet.http.*,
 java.util.*,
 java.io.*,
 java.util.zip.GZIPInputStream,
+java.util.logging.Level,
+org.opensolaris.opengrok.OpenGrokLogger,
 org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.configuration.Project,
 org.opensolaris.opengrok.index.*,
@@ -91,20 +93,40 @@ if (valid) {
             List<String> readMes = dl.listTo(resourceFile, out, path, files);
             if(readMes != null && readMes.size() > 0) {
                 File xdir = new File(environment.getDataRootPath() + "/xref" + path);
-                if(xdir.exists() && xdir.isDirectory()) {
+                if (xdir.exists() && xdir.isDirectory()) {
                     char[] buf = new char[8192];
                     for (String readme : readMes) {
-                        try {
-                            Reader br = new FileReader(new File(xdir, readme));
-                            int len = 0;
-		            %><h3><%=readme%></h3><div id="src"><pre><%
-                            while((len = br.read(buf)) > 0) {
-                                out.write(buf, 0, len);
-                            }
-		            %></pre></div><%
-                            br.close();
-                        } catch(IOException e) {
+                      File readmeFile = new File(xdir, readme + ".gz");
+                      Reader br = null;
+                      try {
+                        if (environment.isCompressXref() && readmeFile.exists()) {
+                          br = new InputStreamReader(new GZIPInputStream(new FileInputStream(readmeFile)));
+                        } else {
+                          readmeFile = new File(xdir, readme);
+                          if (readmeFile.exists()) {
+                            br = new FileReader(readmeFile);
+                          }
                         }
+
+                        if (br != null) {
+                          int len = 0;
+                          %><h3><%=readme%></h3><div id="src"><pre><%
+                          while((len = br.read(buf)) > 0) {
+                              out.write(buf, 0, len);
+                          }
+                          %></pre></div><%
+                        }
+                      } catch(IOException e) {
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading/writing readme:", e);
+                      } finally {
+                        if (br != null) {
+                          try {
+                            br.close();
+                          } catch (IOException e) {
+                            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing file:", e);
+                          }
+                        }
+                      }
                     }
                 }
             }
