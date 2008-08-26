@@ -74,16 +74,6 @@ public class Project {
     }
     
     /**
-     * Create a new instance of Project with a given description and path
-     * @param description the description of this project
-     * @param path the path to where this project is located (relative from source root)
-     */
-    public Project(String description, String path) {
-        this.description = description;
-        this.path = path;
-    }
-
-    /**
      * Get the project for a specific file
      * @param path the file to lookup (relative from source root)
      * @return the project that this file belongs to (or null if the file 

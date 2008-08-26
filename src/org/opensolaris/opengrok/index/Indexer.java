@@ -387,7 +387,11 @@ public final class Indexer {
                     projects.clear();
                     for (File file : files) {
                         if (!file.getName().startsWith(".") && file.isDirectory()) {
-                            projects.add(new Project(file.getName(), "/" + file.getName()));
+                            Project p = new Project();
+                            String name = file.getName();
+                            p.setDescription(name);
+                            p.setPath("/" + name);
+                            projects.add(p);
                         }
                     }
 
