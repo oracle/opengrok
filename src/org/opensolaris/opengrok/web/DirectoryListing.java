@@ -76,7 +76,7 @@ public class DirectoryListing {
      * @throws java.io.IOException
      *
      */
-    public List listTo(File dir, Writer out, String path, String[] files) throws IOException {
+    public List<String> listTo(File dir, Writer out, String path, String[] files) throws IOException {
         Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
         boolean alt = true;
         Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());

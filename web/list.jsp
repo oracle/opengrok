@@ -88,16 +88,16 @@ if (valid) {
         String[] files = resourceFile.list();
         if (files != null) {
             Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-            ArrayList readMes = dl.listTo(resourceFile, out, path, files);
+            List<String> readMes = dl.listTo(resourceFile, out, path, files);
             if(readMes != null && readMes.size() > 0) {
                 File xdir = new File(environment.getDataRootPath() + "/xref" + path);
                 if(xdir.exists() && xdir.isDirectory()) {
                     char[] buf = new char[8192];
-                    for(int i = 0; i< readMes.size(); i++) {
+                    for (String readme : readMes) {
                         try {
-                            BufferedReader br = new BufferedReader(new FileReader(new File(xdir, (String)readMes.get(i))));
+                            Reader br = new FileReader(new File(xdir, readme));
                             int len = 0;
-		            %><h3><%=(String)readMes.get(i)%></h3><div id="src"><pre><%
+		            %><h3><%=readme%></h3><div id="src"><pre><%
                             while((len = br.read(buf)) > 0) {
                                 out.write(buf, 0, len);
                             }
