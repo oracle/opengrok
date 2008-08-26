@@ -19,11 +19,13 @@
 
 package org.opensolaris.opengrok.util;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -37,8 +39,8 @@ public class Executor {
 
     private List<String> cmdList;
     private File workingDirectory;
-    private String stdoutString = "";
-    private String stderrString = "";
+    private byte[] stdout;
+    private byte[] stderr;
 
     public Executor(List<String> cmdList) {
         this(cmdList, null);
@@ -55,18 +57,18 @@ public class Executor {
             processBuilder.directory(workingDirectory);
         }
 
-        StringPipe stdout = new StringPipe();
-        StringPipe stderr = new StringPipe();
+        Spooler spoolOut = new Spooler();
+        Spooler spoolErr = new Spooler();
         Process process = null;
         try {
             process = processBuilder.start();
-            stdout.startListen(process.getInputStream());
-            stderr.startListen(process.getErrorStream());
+            spoolOut.startListen(process.getInputStream());
+            spoolErr.startListen(process.getErrorStream());
             process.waitFor();
-            stdout.join();
-            stderr.join();
-            stdoutString = stdout.getString();
-            stderrString = stderr.getString();
+            spoolOut.join();
+            spoolErr.join();
+            stdout = spoolOut.getBytes();
+            stderr = spoolErr.getBytes();
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, 
                     "Failed to read from process: " + cmdList.get(0), e);
@@ -84,26 +86,38 @@ public class Executor {
         }
     }
 
-    public String get_stdout() {
-        return stdoutString;
+    public String getOutputString() {
+        return new String(stdout);
     }
 
-    public BufferedReader get_stdout_reader() {
-        return new BufferedReader(new StringReader(stdoutString));
+    public Reader getOutputReader() {
+        return new InputStreamReader(getOutputStream());
     }
 
-    public String get_stderr() {
-        return stderrString;
+    public InputStream getOutputStream() {
+        return new ByteArrayInputStream(stdout);
     }
 
-    public BufferedReader get_stderr_reader() {
-        return new BufferedReader(new StringReader(stderrString));
+    public String getErrorString() {
+        return new String(stderr);
     }
 
-    private static class StringPipe extends Thread {
+    public Reader getErrorReader() {
+        return new InputStreamReader(getErrorStream());
+    }
+
+    public InputStream getErrorStream() {
+        return new ByteArrayInputStream(stderr);
+    }
+
+    private static class Spooler extends Thread {
 
         private InputStream input = null;
-        private String output = null;
+        private ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+
+        public byte[] getBytes() {
+            return bytes.toByteArray();
+        }
 
         void startListen(InputStream is) {
             input = is;
@@ -113,20 +127,18 @@ public class Executor {
         @Override
         public void run() {
             try {
-                int byteIn;
-                StringBuffer sb = new StringBuffer();
-                while ((byteIn = input.read()) != -1) {
-                    sb.append((char) byteIn);
+                byte[] buffer = new byte[8092];
+                int len;
+
+                while ((len = input.read(buffer)) != -1) {
+                    if (len > 0) {
+                        bytes.write(buffer, 0, len);
+                    }
                 }
-                output = sb.toString();
             } catch (IOException ioe) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE, 
                         "Error during process pipe listening", ioe);
             }
-        }
-
-        public String getString() {
-            return output;
         }
     }
 }

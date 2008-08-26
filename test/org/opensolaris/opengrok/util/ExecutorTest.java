@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,22 +61,46 @@ public class ExecutorTest {
     }
 
     @Test
-    public void test() throws IOException {
+    public void testString() throws IOException {
         List<String> cmdList = new ArrayList<String>();
         cmdList.add("echo");
         cmdList.add("testing org.opensolaris.opengrok.util.Executor");
         Executor instance = new Executor(cmdList);
         instance.exec();
-        assertTrue(instance.get_stdout().startsWith("testing org.opensolaris.opengrok.util.Executor"));
-        String err = instance.get_stderr();
+        assertTrue(instance.getOutputString().startsWith("testing org.opensolaris.opengrok.util.Executor"));
+        String err = instance.getErrorString();
         assertEquals(0, err.length());
-        BufferedReader in = instance.get_stdout_reader();
+    }
+
+    @Test
+    public void testReader() throws IOException {
+        List<String> cmdList = new ArrayList<String>();
+        cmdList.add("echo");
+        cmdList.add("testing org.opensolaris.opengrok.util.Executor");
+        Executor instance = new Executor(cmdList);
+        instance.exec();
+        BufferedReader in = new BufferedReader(instance.getOutputReader());
         assertEquals("testing org.opensolaris.opengrok.util.Executor", in.readLine());
         in.close();
-        in = instance.get_stderr_reader();
+        in = new BufferedReader(instance.getErrorReader());
         assertNull(in.readLine());
         in.close();
     }
 
-
+    @Test
+    public void testStream() throws IOException {
+        List<String> cmdList = new ArrayList<String>();
+        cmdList.add("echo");
+        cmdList.add("testing org.opensolaris.opengrok.util.Executor");
+        Executor instance = new Executor(cmdList, new File("."));
+        instance.exec();
+        assertNotNull(instance.getOutputStream());
+        assertNotNull(instance.getErrorStream());
+        BufferedReader in = new BufferedReader(instance.getOutputReader());
+        assertEquals("testing org.opensolaris.opengrok.util.Executor", in.readLine());
+        in.close();
+        in = new BufferedReader(instance.getErrorReader());
+        assertNull(in.readLine());
+        in.close();
+    }
 }

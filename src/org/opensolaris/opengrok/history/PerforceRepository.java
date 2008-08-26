@@ -62,7 +62,7 @@ public class PerforceRepository extends Repository {
         Executor executor = new Executor(cmd, file.getParentFile());
         executor.exec();
 
-        BufferedReader output_reader = executor.get_stdout_reader();
+        BufferedReader output_reader = new BufferedReader(executor.getOutputReader());
         String line;
         int lineno = 0;
         try {
@@ -99,7 +99,7 @@ public class PerforceRepository extends Repository {
         cmd.add(basename + ((rev == null) ? "" : "#" + rev));
         Executor executor = new Executor(cmd, new File(parent));
         executor.exec();
-        return new ByteArrayInputStream(executor.get_stdout().getBytes());
+        return new ByteArrayInputStream(executor.getOutputString().getBytes());
     }
 
     @Override
@@ -150,7 +150,7 @@ public class PerforceRepository extends Repository {
             stdout: //depot_path/name
             stderr: name - no such file(s). 
              */
-            return (executor.get_stdout().indexOf("//") != -1);
+            return (executor.getOutputString().indexOf("//") != -1);
         } else {
             return false;
         }

@@ -50,7 +50,7 @@ public class PerforceHistoryParser implements HistoryParser {
         executor.exec();
         
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        BufferedReader output_reader = executor.get_stdout_reader();
+        BufferedReader output_reader = new BufferedReader(executor.getOutputReader());
         String line;
         HistoryEntry entry = null;
         while ((line = output_reader.readLine()) != null) {
@@ -118,7 +118,7 @@ public class PerforceHistoryParser implements HistoryParser {
                 Directory changelog:
                 Change 177601 on 2008/02/12 by user@host 'description'
              */
-            Matcher matcher = change_pattern.matcher(executor.get_stdout());
+            Matcher matcher = change_pattern.matcher(executor.getOutputString());
             entries = new ArrayList<HistoryEntry>();
             while (matcher.find()) {
                 HistoryEntry entry = new HistoryEntry();
