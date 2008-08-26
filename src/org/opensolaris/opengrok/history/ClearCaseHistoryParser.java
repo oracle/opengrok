@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * Parse a stream of ClearCase log comments.
  */
 class ClearCaseHistoryParser implements HistoryParser {
-    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.getDefault());
+    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.US);
 
     public History parse(File file, Repository repos)
             throws IOException {

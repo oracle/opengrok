@@ -56,7 +56,7 @@ class BazaarHistoryParser implements HistoryParser {
             }
 
             SimpleDateFormat df =
-                    new SimpleDateFormat("EEE yyyy-MM-dd hh:mm:ss ZZZZ", Locale.getDefault());
+                    new SimpleDateFormat("EEE yyyy-MM-dd hh:mm:ss ZZZZ", Locale.US);
             ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
             String mydir = mrepos.getDirectoryName() + File.separator;

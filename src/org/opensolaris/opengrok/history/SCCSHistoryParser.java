@@ -68,7 +68,7 @@ class SCCSHistoryParser implements HistoryParser {
         passRecord = true;
         active = true;
         field = 0;
-        sccsDateFormat =  new SimpleDateFormat("yy/MM/dd", Locale.getDefault());
+        sccsDateFormat =  new SimpleDateFormat("yy/MM/dd", Locale.US);
 
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         while (next()) {

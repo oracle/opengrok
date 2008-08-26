@@ -62,7 +62,7 @@ class GitHistoryParser implements HistoryParser {
             }
 
             SimpleDateFormat df =
-                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.getDefault());
+                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.US);
             ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
             InputStream is = process.getInputStream();
