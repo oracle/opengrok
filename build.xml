@@ -377,7 +377,7 @@ Use is subject to license terms.
         </path>
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
         <mkdir dir="pmd"/>
-        <pmd shortFilenames="true" targetjdk="1.6" failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
+        <pmd targetjdk="1.6" failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
