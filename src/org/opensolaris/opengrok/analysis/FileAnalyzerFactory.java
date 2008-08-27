@@ -121,7 +121,7 @@ public class FileAnalyzerFactory {
      * Get the list of file extensions recognized by this analyzer.
      * @return list of suffixes
      */
-    public final List<String> getSuffixes() {
+    final List<String> getSuffixes() {
         return suffixes;
     }
 
@@ -135,7 +135,7 @@ public class FileAnalyzerFactory {
      *
      * @return list of magic strings
      */
-    public final List<String> getMagicStrings() {
+    final List<String> getMagicStrings() {
         return magics;
     }
 
@@ -145,7 +145,7 @@ public class FileAnalyzerFactory {
      *
      * @return list of matchers
      */
-    public final List<Matcher> getMatchers() {
+    final List<Matcher> getMatchers() {
         return matchers;
     }
 
@@ -153,7 +153,7 @@ public class FileAnalyzerFactory {
      * Get the content type (MIME type) for analyzers returned by this factory.
      * @return content type (could be {@code null} if it is unknown)
      */
-    public final String getContentType() {
+    final String getContentType() {
         return contentType;
     }
 
