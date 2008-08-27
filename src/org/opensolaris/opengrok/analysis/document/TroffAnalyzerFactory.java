@@ -39,7 +39,7 @@ public class TroffAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public TroffAnalyzerFactory() {
-        super(null, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

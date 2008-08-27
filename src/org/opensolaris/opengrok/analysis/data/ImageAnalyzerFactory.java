@@ -37,7 +37,7 @@ public class ImageAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ImageAnalyzerFactory() {
-        super(SUFFIXES, null, null, null, Genre.IMAGE);
+        super(null, SUFFIXES, null, null, null, Genre.IMAGE);
     }
 
     @Override

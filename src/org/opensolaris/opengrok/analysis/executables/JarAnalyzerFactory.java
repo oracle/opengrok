@@ -38,7 +38,7 @@ public final class JarAnalyzerFactory extends FileAnalyzerFactory {
 
     private JarAnalyzerFactory() {
         // no magics for jar files, ZipAnalyzerFactory will handle it for us
-        super(SUFFIXES, null, null, null, Genre.XREFABLE);
+        super(null, SUFFIXES, null, null, null, Genre.XREFABLE);
     }
 
     @Override

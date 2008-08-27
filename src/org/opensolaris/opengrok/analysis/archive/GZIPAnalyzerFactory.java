@@ -37,7 +37,7 @@ public class GZIPAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public GZIPAnalyzerFactory() {
-        super(SUFFIXES, MAGICS, null, null, null);
+        super(null, SUFFIXES, MAGICS, null, null, null);
     }
 
     @Override

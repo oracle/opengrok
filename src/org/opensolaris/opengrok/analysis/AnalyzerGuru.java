@@ -78,6 +78,10 @@ public class AnalyzerGuru {
     private static final FileAnalyzerFactory
         DEFAULT_ANALYZER_FACTORY = new FileAnalyzerFactory();
 
+    /** Map from file names to analyzer factories. */
+    private static final Map<String, FileAnalyzerFactory>
+        FILE_NAMES = new HashMap<String, FileAnalyzerFactory>();
+
     /** Map from file extensions to analyzer factories. */
     private static final Map<String, FileAnalyzerFactory>
         ext = new HashMap<String, FileAnalyzerFactory>();
@@ -133,6 +137,11 @@ public class AnalyzerGuru {
      * Register a {@code FileAnalyzerFactory} instance.
      */
     private static void registerAnalyzer(FileAnalyzerFactory factory) {
+        for (String name : factory.getFileNames()) {
+            FileAnalyzerFactory old = FILE_NAMES.put(name, factory);
+            assert old == null :
+                "name '" + name + "' used in multiple analyzers";
+        }
         for (String suffix : factory.getSuffixes()) {
             FileAnalyzerFactory old = ext.put(suffix, factory);
             assert old == null :
@@ -405,8 +414,8 @@ public class AnalyzerGuru {
                 return factory;
             }
         }
-        // file doesn't have any of the extensions we know
-        return null;
+        // file doesn't have any of the extensions we know, try full match
+        return FILE_NAMES.get(path.toUpperCase(Locale.US));
     }
 
     /**

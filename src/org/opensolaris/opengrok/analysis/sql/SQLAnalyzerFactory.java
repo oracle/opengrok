@@ -39,7 +39,7 @@ public class SQLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public SQLAnalyzerFactory() {
-        super(SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

@@ -104,4 +104,15 @@ public class AnalyzerGuruTest {
         assertNotNull(faf);
         assertSame(CAnalyzerFactory.class, faf.getClass());
     }
+
+    /**
+     * Test that matching of full names works. Bug #859.
+     */
+    @Test
+    public void matchesFullName() {
+        FileAnalyzerFactory faf = AnalyzerGuru.find("/path/to/Makefile");
+        assertSame(ShAnalyzerFactory.class, faf.getClass());
+        faf = AnalyzerGuru.find("GNUMakefile");
+        assertSame(ShAnalyzerFactory.class, faf.getClass());
+    }
 }

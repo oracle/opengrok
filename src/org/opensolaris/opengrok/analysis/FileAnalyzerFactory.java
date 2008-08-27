@@ -42,6 +42,8 @@ public class FileAnalyzerFactory {
     /** Cached analyzer object for the current thread (analyzer objects can be
      * expensive to allocate). */
     private final ThreadLocal<FileAnalyzer> cachedAnalyzer;
+    /** List of file names on which this kind of analyzer should be used. */
+    private final List<String> names;
     /** List of file extensions on which this kind of analyzer should be
      * used. */
     private final List<String> suffixes;
@@ -60,13 +62,14 @@ public class FileAnalyzerFactory {
      * Create an instance of {@code FileAnalyzerFactory}.
      */
     FileAnalyzerFactory() {
-        this(null, null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
     /**
      * Construct an instance of {@code FileAnalyzerFactory}. This constructor
      * should be used by subclasses to override default values.
      *
+     * @param names list of file names to recognize (possibly {@code null})
      * @param suffixes list of suffixes to recognize (possibly {@code null})
      * @param magics list of magic strings to recognize (possibly {@code null})
      * @param matcher a matcher for this analyzer (possibly {@code null})
@@ -74,10 +77,12 @@ public class FileAnalyzerFactory {
      * @param genre the genre for this analyzer (if {@code null}, {@code
      * Genre.DATA} is used)
      */
-    protected FileAnalyzerFactory(String[] suffixes, String[] magics,
+    protected FileAnalyzerFactory(
+            String[] names, String[] suffixes, String[] magics,
             Matcher matcher, String contentType,
             Genre genre) {
         cachedAnalyzer = new ThreadLocal<FileAnalyzer>();
+        this.names = asList(names);
         this.suffixes = asList(suffixes);
         this.magics = asList(magics);
         if (matcher == null) {
@@ -100,6 +105,16 @@ public class FileAnalyzerFactory {
             return Collections.emptyList();
         }
         return Collections.unmodifiableList(Arrays.asList(a));
+    }
+
+    /**
+     * Get the list of file names recognized by this analyzer (names must
+     * match exactly, ignoring case).
+     *
+     * @return list of file names
+     */
+    final List<String> getFileNames() {
+        return names;
     }
 
     /**

@@ -33,6 +33,10 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class ShAnalyzerFactory extends FileAnalyzerFactory {
+    private static final String[] NAMES = {
+        "MAKEFILE", "GNUMAKEFILE"
+    };
+
     private static final String[] SUFFIXES = {
         "SH",
         "KSH",
@@ -46,7 +50,6 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
         "PL",
         "P5",
         "AWK",
-        "MAKEFILE",
         "GMK",
         "CONF",
         "COM",
@@ -62,7 +65,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ShAnalyzerFactory() {
-        super(SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(NAMES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

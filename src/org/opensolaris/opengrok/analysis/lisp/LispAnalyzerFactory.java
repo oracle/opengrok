@@ -42,7 +42,7 @@ public class LispAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public LispAnalyzerFactory() {
-        super(SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

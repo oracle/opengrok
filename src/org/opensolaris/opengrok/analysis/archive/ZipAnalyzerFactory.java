@@ -99,7 +99,7 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
             new ZipAnalyzerFactory();
 
     private ZipAnalyzerFactory() {
-        super(SUFFIXES, null, MATCHER, null, Genre.XREFABLE);
+        super(null, SUFFIXES, null, MATCHER, null, Genre.XREFABLE);
     }
 
     @Override

@@ -57,7 +57,7 @@ public class CAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public CAnalyzerFactory() {
-        super(SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
