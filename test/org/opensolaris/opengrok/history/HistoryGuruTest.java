@@ -55,7 +55,7 @@ public class HistoryGuruTest {
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
-        FileUtilities.getAllFiles(repository.getSourceRoot(), files, true);
+        FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, true);
         RuntimeEnvironment.getInstance().setVerbose(true);
     }
 
@@ -80,7 +80,7 @@ public class HistoryGuruTest {
     @Test
     public void testAddRepositories() throws IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
-        instance.addRepositories(repository.getSourceRoot().getCanonicalPath());
+        instance.addRepositories(repository.getSourceRoot());
     }
 
     @Test

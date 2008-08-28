@@ -67,8 +67,8 @@ public class TestRepository {
             FileUtilities.copyFile(inputBundle, out);
             out.close();
             FileUtilities.extractArchive(sourceBundle, sourceRoot);
-            RuntimeEnvironment.getInstance().setSourceRootFile(sourceRoot);
-            RuntimeEnvironment.getInstance().setDataRoot(dataRoot);
+            RuntimeEnvironment.getInstance().setSourceRoot(sourceRoot.getAbsolutePath());
+            RuntimeEnvironment.getInstance().setDataRoot(dataRoot.getAbsolutePath());
         } finally {
             if (sourceBundle != null) {
                 sourceBundle.delete();
@@ -89,11 +89,11 @@ public class TestRepository {
         }
     }
 
-    public File getSourceRoot() {
-        return sourceRoot;
+    public String getSourceRoot() {
+        return sourceRoot.getAbsolutePath();
     }
 
-    public File getDataRoot() {
-        return dataRoot;
+    public String getDataRoot() {
+        return dataRoot.getAbsolutePath();
     }
 }

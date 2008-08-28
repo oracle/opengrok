@@ -75,7 +75,7 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
         if (env.validateExuberantCtags()) {
-            env.setSourceRootFile(repository.getSourceRoot());
+            env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(true);
             Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null);
@@ -94,7 +94,7 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
         if (env.validateExuberantCtags()) {
-            String[] argv = { "-S", "-P", "-p", "/c", "-H", "-Q", "off", "-s", repository.getSourceRoot().getAbsolutePath(), "-d", repository.getDataRoot().getAbsolutePath(), "-v"};
+            String[] argv = { "-S", "-P", "-p", "/c", "-H", "-Q", "off", "-s", repository.getSourceRoot(), "-d", repository.getDataRoot(), "-v"};
             Indexer.main(argv);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -117,9 +117,9 @@ public class IndexerTest {
     public void testRFE2575() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
-        env.setSourceRootFile(repository.getSourceRoot());
+        env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
-        HistoryGuru.getInstance().addRepositories(repository.getSourceRoot().getAbsolutePath());
+        HistoryGuru.getInstance().addRepositories(repository.getSourceRoot());
 
         if (env.validateExuberantCtags()) {
             Project project = new Project();

@@ -99,15 +99,6 @@ public final class RuntimeEnvironment {
     
     /**
      * Set the path to where the index database is stored
-     * @param data the index database
-     * @throws IOException if the path cannot be resolved
-     */
-    public void setDataRoot(File data) throws IOException {
-        threadConfig.get().setDataRoot(data.getCanonicalPath());
-    }
-    
-    /**
-     * Set the path to where the index database is stored
      * @param dataRoot the index database
      */
     public void setDataRoot(String dataRoot) {
@@ -134,15 +125,6 @@ public final class RuntimeEnvironment {
         }
         
         return ret;
-    }
-    
-    /**
-     * Specify the source root
-     * @param source the location of the sources
-     * @throws IOException if the name cannot be resolved
-     */
-    public void setSourceRootFile(File source) throws IOException {
-        threadConfig.get().setSourceRoot(source.getCanonicalPath());
     }
     
     /**

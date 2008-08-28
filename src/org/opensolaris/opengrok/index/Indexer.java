@@ -177,16 +177,21 @@ public final class Indexer {
                     break;
                     case 'v': env.setVerbose(true); break;
 
-                    case 's': {
-                        File file = new File(getopt.getOptarg());
-                        if (!file.isDirectory()) {
-                            System.err.println("ERROR: No such directory: " + file.toString());
+                    case 's':
+                        try {
+                            File file = new File(getopt.getOptarg());
+                            if (!file.isDirectory()) {
+                                System.err.println("ERROR: No such directory: " + file.toString());
+                                System.exit(1);
+                            }
+
+                            env.setSourceRoot(file.getCanonicalPath());
+                        } catch (IOException e) {
+                            System.err.println("ERROR: Failed to get canonical path for " + getopt.getOptarg());
+                            e.printStackTrace();
                             System.exit(1);
                         }
-
-                        env.setSourceRootFile(file);
                         break;
-                    }
                     case 'd': 
                         env.setDataRoot(getopt.getOptarg());
                         break;
