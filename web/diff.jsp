@@ -259,7 +259,7 @@ if(format.equals("s")) {
               for (int j = ln2; j < ln2+8; j++) {
 			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
               }
-		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
+		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                 ln2 = cn2-8;
                 for (int j = cn2 - 8; j < cn2; j++) {
 			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
@@ -303,7 +303,7 @@ if(format.equals("s")) {
                 for(int j = ln1; j < ln1+8; j++) {
 			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                 }
-		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
+		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                 ln1 = cn1-8;
                 for (int j = cn1 - 8; j < cn1; j++) {
 			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
@@ -312,7 +312,7 @@ if(format.equals("s")) {
              for (int j = ln2; j < ln2+8; j++) {
 			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
              }
-		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
+		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                 ln2 = cn2-8;
                 for (int j = cn2 - 8; j < cn2; j++) {
 			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
@@ -342,7 +342,7 @@ if(format.equals("s")) {
                                                     for(int j = ln1; j < ln1+8; j++) {
 			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
                                                     }
-		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln1%>">view full</a>) --- <br/><br/><%
+		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln1%>">view full</a>) --- <br/><br/><%
                 ln1 = cn1-8;
                 for (int j = cn1 - 8; j < cn1; j++) {
 			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
@@ -368,7 +368,7 @@ if(format.equals("s")) {
                                                     for (int j = ln2; j < ln2+8; j++) {
 				%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
                                                     }
-			%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=r1%>&r2=<%=r2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
+			%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
                         ln2 = cn2-8;
                         for (int j = cn2 - 8; j < cn2; j++) {
 				%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
