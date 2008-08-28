@@ -177,24 +177,24 @@ public final class Indexer {
                     break;
                     case 'v': env.setVerbose(true); break;
 
-                    case 's':
-                        try {
-                            File file = new File(getopt.getOptarg());
-                            if (!file.isDirectory()) {
-                                System.err.println("ERROR: No such directory: " + file.toString());
-                                System.exit(1);
+                    case 's': {
+                                env.setSourceRoot(getopt.getOptarg());
+                                File file = env.getSourceRootFile();
+                                if (!file.isDirectory()) {
+                                    System.err.println("ERROR: source root must be a directory: " + file.toString());
+                                    System.exit(1);
+                                }
                             }
-
-                            env.setSourceRoot(file.getCanonicalPath());
-                        } catch (IOException e) {
-                            System.err.println("ERROR: Failed to get canonical path for " + getopt.getOptarg());
-                            e.printStackTrace();
-                            System.exit(1);
-                        }
-                        break;
-                    case 'd': 
-                        env.setDataRoot(getopt.getOptarg());
-                        break;
+                            break;
+                    case 'd': {
+                                env.setDataRoot(getopt.getOptarg());
+                                File file = env.getDataRootFile();
+                                if (!file.isDirectory()) {
+                                    System.err.println("ERROR: data root must be a directory: " + file.toString());
+                                    System.exit(1);
+                                }
+                            }
+                            break;
                     case 'i':  
                         env.getIgnoredNames().add(getopt.getOptarg()); 
                         break;
@@ -349,24 +349,7 @@ public final class Indexer {
                 }
 
                 if (env.getSourceRootFile() == null) {
-                    File srcConfig = new File(env.getDataRootPath(), "SRC_ROOT");
-                    String line = null;
-                    if(srcConfig.exists()) {
-                        try {
-                            BufferedReader sr = new BufferedReader(new FileReader(srcConfig));
-                            line = sr.readLine();
-                            sr.close();
-                        } catch (IOException e) {
-                        }
-                    }
-                    if(line == null) {
-                        throw new IndexerException("ERROR: please specify a SRC_ROOT with option -s !");
-                    }
-                    env.setSourceRoot(line);
-
-                    if (!env.getSourceRootFile().isDirectory()) {
-                        throw new IndexerException("ERROR: No such directory:" + line);
-                    }
+                    throw new IndexerException("ERROR: please specify a SRC_ROOT with option -s !");
                 }
 
                 if (!env.validateExuberantCtags()) {

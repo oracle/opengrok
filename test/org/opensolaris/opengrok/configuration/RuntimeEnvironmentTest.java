@@ -323,4 +323,18 @@ public class RuntimeEnvironmentTest {
         instance.writeConfiguration();
         instance.stopConfigurationListenerThread();
     }
+
+    @Test
+    public void testBug3095() throws IOException {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        File file = new File("foobar");
+        assertTrue(file.createNewFile());
+        assertFalse(file.isAbsolute());
+        instance.setDataRoot(file.getName());
+        File f = instance.getDataRootFile();
+        assertNotNull(f);
+        assertEquals("foobar", f.getName());
+        assertTrue(f.isAbsolute());
+        assertTrue(file.delete());
+    }
 }

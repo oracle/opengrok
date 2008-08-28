@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
@@ -75,6 +76,19 @@ public final class RuntimeEnvironment {
         };
     }
 
+    private String getCanonicalPath(String s) {
+        try {
+            File file = new File(s);
+            if (!file.exists()) {
+                return s;
+            }
+            return file.getCanonicalPath();
+        } catch (IOException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get canonical path", ex);
+            return s;
+        }
+    }
+
     /**
      * Get the path to the where the index database is stored
      * @return the path to the index database
@@ -102,7 +116,7 @@ public final class RuntimeEnvironment {
      * @param dataRoot the index database
      */
     public void setDataRoot(String dataRoot) {
-        threadConfig.get().setDataRoot(dataRoot);
+        threadConfig.get().setDataRoot(getCanonicalPath(dataRoot));
     }
     
     /**
@@ -132,7 +146,7 @@ public final class RuntimeEnvironment {
      * @param sourceRoot the location of the sources
      */
     public void setSourceRoot(String sourceRoot) {
-        threadConfig.get().setSourceRoot(sourceRoot);
+        threadConfig.get().setSourceRoot(getCanonicalPath(sourceRoot));
     }
     
     /**
