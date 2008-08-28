@@ -175,7 +175,6 @@ public class Hit implements Comparable<Hit> {
      *
      * @return the result of a toString().compareTo() of the filename
      */
-    @Override
     public int compareTo(Hit o) throws ClassCastException {
         return filename.compareTo(o.filename);
     }

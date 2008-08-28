@@ -70,13 +70,13 @@ public class RCSget extends InputStream {
             }
             stream = new BufferedInputStream(new ByteArrayInputStream(sb.toString().getBytes()));
         } catch (ParseException e) {
-            throw (new IOException(e));
+            throw (new IOException(e.getMessage()));
         } catch (InvalidFileFormatException e) {
-            throw (new IOException("Error: Invalid RCS file format", e));
+            throw (new IOException("Error: Invalid RCS file format " + e.getMessage()));
         } catch (PatchFailedException e) {
-            throw (new IOException(e));
+            throw (new IOException(e.getMessage()));
         } catch (NodeNotFoundException e) {
-            throw (new IOException("Revision " + version + " not found", e));
+            throw (new IOException("Revision " + version + " not found" + e.getMessage()));
         }
     }
     

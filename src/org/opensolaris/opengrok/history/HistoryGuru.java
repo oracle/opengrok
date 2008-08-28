@@ -120,7 +120,7 @@ public final class HistoryGuru {
                 }
                 return new HistoryReader(history);
             } catch (Exception e) {
-                throw new IOException("Error while constructing HistoryReader", e);
+                throw new IOException("Error while constructing HistoryReader "+ e.getMessage());
             }
         }
 
@@ -157,7 +157,7 @@ public final class HistoryGuru {
             } catch (IOException ioe) {
                 throw ioe;
             } catch (Exception e) {
-                throw new IOException("Error while constructing HistoryReader", e);
+                throw new IOException("Error while constructing HistoryReader "+ e.getMessage());
             }
         }
 

@@ -96,11 +96,11 @@ public class RCSRepository extends Repository {
             }
             return a;
         } catch (ParseException pe) {
-            throw new IOException("Parse exception annotating RCS repository", pe);
+            throw new IOException("Parse exception annotating RCS repository " + pe.getMessage());
         } catch (InvalidFileFormatException iffe) {
-            throw new IOException("File format exception annotating RCS repository", iffe);
+            throw new IOException("File format exception annotating RCS repository "+ iffe.getMessage());
         } catch (PatchFailedException pfe) {
-            throw new IOException("Patch failed exception annotating RCS repository", pfe);
+            throw new IOException("Patch failed exception annotating RCS repository "+ pfe.getMessage());
         }
     }
 

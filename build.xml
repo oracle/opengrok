@@ -94,6 +94,24 @@ Use is subject to license terms.
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
     <property name="checkstyle.home" value="${user.home}/.ant/lib/checkstyle"/>
     <property name="pmd.home" value="${user.home}/.ant/lib/pmd"/>
+
+
+    <condition property="jvm.new">
+       <and>
+	<not>
+          <equals arg1="${ant.java.version}" arg2="1.5"/>
+	</not>
+	<not>
+          <equals arg1="${ant.java.version}" arg2="1.4"/>
+	</not>  
+       </and>
+    </condition>
+
+    <target name="-exclude-client" unless="jvm.new">	    
+	<echo>Detected JDK lower than 1.6 , excluding building of systray client ... </echo>
+	<property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
+    </target>
+    
                  
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
@@ -103,19 +121,19 @@ Use is subject to license terms.
 
     <path id="findbugs.lib.search.path">
         <pathelement path="${findbugs.home}/lib/"/>
-        <pathelement path="${java.class.path}/findbugs/lib/"/>
+        <pathelement path="${java.class.path}"/>
         <pathelement path="lib/findbugs/lib/"/>
     </path>
 
     <path id="checkstyle.lib.search.path">
         <pathelement path="${checkstyle.home}/"/>
-        <pathelement path="${java.class.path}/checkstyle/"/>
+        <pathelement path="${java.class.path}"/>
         <pathelement path="lib/checkstyle/lib/"/>
     </path>
 
     <path id="pmd.lib.search.path">
         <pathelement path="${pmd.home}/lib/"/>
-        <pathelement path="${java.class.path}/pmd/lib/"/>
+        <pathelement path="${java.class.path}"/>
         <pathelement path="lib/pmd/lib/"/>
     </path>
 
@@ -197,7 +215,7 @@ Use is subject to license terms.
       <manifest file="manifest.mf" mode="replace"/>
     </target>
 
-    <target name="-pre-init" depends="-touch-manifest"/>
+    <target name="-pre-init" depends="-touch-manifest, -exclude-client"/>
 
     <!--
         Initialize a property holding a list of jar files on which
