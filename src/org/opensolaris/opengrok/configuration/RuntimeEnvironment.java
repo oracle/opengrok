@@ -118,7 +118,9 @@ public final class RuntimeEnvironment {
     public void setDataRoot(String dataRoot) {
         final File file = new File(dataRoot);
         if (!file.exists()) {
-           file.mkdirs();
+            if (!file.mkdirs()) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to create dataroot: " + dataRoot);
+            }
         }
         threadConfig.get().setDataRoot(getCanonicalPath(dataRoot));
     }
