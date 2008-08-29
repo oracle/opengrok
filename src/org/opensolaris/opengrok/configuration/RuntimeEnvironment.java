@@ -116,6 +116,10 @@ public final class RuntimeEnvironment {
      * @param dataRoot the index database
      */
     public void setDataRoot(String dataRoot) {
+        final File file = new File(dataRoot);
+        if (!file.exists()) {
+           file.mkdirs();
+        }
         threadConfig.get().setDataRoot(getCanonicalPath(dataRoot));
     }
     

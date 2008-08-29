@@ -337,4 +337,15 @@ public class RuntimeEnvironmentTest {
         assertTrue(f.isAbsolute());
         assertTrue(file.delete());
     }
+    
+    @Test
+    public void testBug3154() throws IOException {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        File file = File.createTempFile("dataroot", null);
+        assertTrue(file.delete());
+        assertFalse(file.exists());
+        instance.setDataRoot(file.getAbsolutePath());
+        assertTrue(file.exists());
+        assertTrue(file.delete());
+    }
 }
