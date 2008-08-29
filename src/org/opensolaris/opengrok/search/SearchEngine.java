@@ -117,7 +117,7 @@ public class SearchEngine {
         String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
         if (qry.length() > 0) {
             try {
-                qparser.parse(qry);
+                query = qparser.parse(qry);
                 ret = true;
             } catch (Exception e) {                
             }
@@ -143,7 +143,7 @@ public class SearchEngine {
     public String getQuery() {
         return query.toString();
     }
-    
+
     /**
      * Execute a search. Before calling this function, you must set the
      * appropriate seach critera with the set-functions.
@@ -355,9 +355,5 @@ public class SearchEngine {
      */
     public void setSymbol(String symbol) {
         this.symbol = symbol;
-    }
-    
-    boolean onlyFilnameSearch() {
-        return sourceContext == null && historyContext == null;
     }
 }
