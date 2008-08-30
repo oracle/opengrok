@@ -93,7 +93,8 @@ public class OGAgent {
         String machinename = java.net.InetAddress.getLocalHost().getHostName();
         String javaver = System.getProperty("java.version");
 
-        Properties props = new Properties(System.getProperties());
+        Properties props = new Properties();
+
         // Load default values
         InputStream in = OGAgent.class.getResourceAsStream("oga.properties");
         if (in != null) {
@@ -101,11 +102,15 @@ public class OGAgent {
             in.close();
         }
 
+        // Load properties from config file, if one is specified
         if (cfgfile != null) {
             FileInputStream is = new FileInputStream(cfgfile);
             props.load(is);
             is.close();
         }
+
+        // System properties should override default properties
+        props.putAll(System.getProperties());
 
         createLogger(props);
 
