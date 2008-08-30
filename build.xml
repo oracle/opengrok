@@ -483,7 +483,7 @@ Use is subject to license terms.
     <target name="emma-report" description="Analyze" depends="-check_emma">
         <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
         <emma enabled="true" >
-            <report sourcepath="src">
+            <report sourcepath="${src.dir},${src.generatedsrc.dir}">
                 <!-- collect all EMMA data dumps (metadata and runtime): -->
                 <infileset dir="${coverage.dir}" includes="*.em, *.ec"/>
                 <txt outfile="${coverage.dir}/coverage.txt"/>
