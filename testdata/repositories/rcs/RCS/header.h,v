@@ -1,0 +1,26 @@
+head	1.1;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.1
+date	2008.08.30.13.06.48;	author kah;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial revision
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@#include <stdlib.h>
+#include <stdio.h>
+@

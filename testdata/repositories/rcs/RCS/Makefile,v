@@ -1,0 +1,51 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2008.08.30.13.09.23;	author kah;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2008.08.30.13.06.48;	author kah;	state Exp;
+branches;
+next	;
+
+
+desc
+@Initial revision
+@
+
+
+1.2
+log
+@Fixed typo
+@
+text
+@testprog: main.o
+	$(LINK.c) -o testprog main.o
+
+main.o: main.c header.h
+	$(COMPILE.c) main.c
+
+clean:
+	$(RM) main.o testprog
+
+lint: main.c header.h
+	$(LINT) main.c
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d2 1
+a2 1
+	$(LINK.c) -o testsprog main.o
+@
