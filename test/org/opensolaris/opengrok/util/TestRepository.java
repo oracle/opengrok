@@ -43,24 +43,13 @@ public class TestRepository {
     public void create(InputStream inputBundle) throws IOException {
         File sourceBundle = null;
         try {
-            sourceRoot = File.createTempFile("source", "opengrok");
-            dataRoot = File.createTempFile("data", "opengrok");
+            sourceRoot = FileUtilities.createTemporaryDirectory("source");
+            dataRoot = FileUtilities.createTemporaryDirectory("data");
             sourceBundle = File.createTempFile("srcbundle", ".zip");
-
-            if (sourceRoot.exists()) {
-                assertTrue(sourceRoot.delete());
-            }
-
-            if (dataRoot.exists()) {
-                assertTrue(dataRoot.delete());
-            }
 
             if (sourceBundle.exists()) {
                 assertTrue(sourceBundle.delete());
             }
-
-            assertTrue(sourceRoot.mkdirs());
-            assertTrue(dataRoot.mkdirs());
 
             assertNotNull(inputBundle);
             FileOutputStream out = new FileOutputStream(sourceBundle);

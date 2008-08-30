@@ -74,11 +74,7 @@ public class OGAgentTest {
      */
     private void createLogDir() throws IOException {
         assertNull(logDir);
-        File file = File.createTempFile("logdir", "opengrok");
-        assertTrue(file.exists());
-        assertTrue(file.delete());
-        assertTrue(file.mkdir());
-        logDir = file;
+        logDir = FileUtilities.createTemporaryDirectory("logdir");
     }
 
     /**

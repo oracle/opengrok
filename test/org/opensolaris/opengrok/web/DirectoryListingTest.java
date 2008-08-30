@@ -35,6 +35,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.util.FileUtilities;
 import static org.junit.Assert.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -111,11 +112,7 @@ public class DirectoryListingTest {
 
     @Before
     public void setUp() throws Exception {
-        directory = File.createTempFile("directory", "");
-        if (directory.exists()) {
-            assertTrue("Failed to remove test directory", directory.delete());
-        }
-        assertTrue("Failed to create test directory", directory.mkdir());
+        directory = FileUtilities.createTemporaryDirectory("directory");
 
         entries = new FileEntry[2];
         entries[0] = new FileEntry("foo", 0, 0);
