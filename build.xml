@@ -436,6 +436,7 @@ Use is subject to license terms.
     </target>
 
     <target name="-post-compile-test">
+        <antcall target="-create-svn-repository"/>
         <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
         <copy todir="testdata/repositories/mercurial/.hg">
             <fileset dir="testdata/repositories/mercurial/hg"/>
@@ -454,6 +455,29 @@ Use is subject to license terms.
                 
           <delete dir="testdata/repositories/mercurial/.hg"/>
           <delete file="testdata/repositories/mercurial/.hgignore"/>
+          <delete dir="testdata/repositories/svn"/>
+    </target>
+
+    <target name="-create-svn-repository">
+      <delete dir="testdata/repositories/svn"/>
+      <delete dir="${build.test.reposroots}/svn"/>
+      <mkdir dir="${build.test.reposroots}"/>
+      <exec command="svnadmin" failifexecutionfails="false">
+        <arg value="create"/>
+        <arg value="${build.test.reposroots}/svn"/>
+      </exec>
+      <exec command="svn" failifexecutionfails="false">
+        <arg value="import"/>
+        <arg value="testdata/sources"/>
+        <arg value="file://${build.test.reposroots}/svn"/>
+        <arg value="-m"/>
+        <arg value="Initial import"/>
+      </exec>
+      <exec command="svn" failifexecutionfails="false">
+        <arg value="checkout"/>
+        <arg value="file://${build.test.reposroots}/svn"/>
+        <arg value="testdata/repositories/svn"/>
+      </exec>
     </target>
     
     <target name="emma-report" description="Analyze" depends="-check_emma">
