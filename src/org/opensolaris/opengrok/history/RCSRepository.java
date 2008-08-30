@@ -96,12 +96,25 @@ public class RCSRepository extends Repository {
             }
             return a;
         } catch (ParseException pe) {
-            throw new IOException("Parse exception annotating RCS repository " + pe.getMessage());
+            throw wrapInIOException(
+                    "Parse exception annotating RCS repository", pe);
         } catch (InvalidFileFormatException iffe) {
-            throw new IOException("File format exception annotating RCS repository "+ iffe.getMessage());
+            throw wrapInIOException(
+                    "File format exception annotating RCS repository", iffe);
         } catch (PatchFailedException pfe) {
-            throw new IOException("Patch failed exception annotating RCS repository "+ pfe.getMessage());
+            throw wrapInIOException(
+                    "Patch failed exception annotating RCS repository", pfe);
         }
+    }
+
+    /**
+     * Wrap a {@code Throwable} in an {@code IOException} and return it.
+     */
+    static IOException wrapInIOException(String message, Throwable t) {
+        // IOException's constructor takes a Throwable, but only in JDK 6
+        IOException ioe = new IOException(message + ": " + t.getMessage());
+        ioe.initCause(t);
+        return ioe;
     }
 
     @Override

@@ -103,7 +103,6 @@ public final class HistoryGuru {
      * @throws java.io.IOException If an error occurs while trying to access the filesystem
      * @return A HistorReader that may be used to read out history data for a named file
      */
-    @SuppressWarnings("PMD.AvoidRethrowingException")
     public HistoryReader getHistoryReader(File file) throws IOException {
         if (file.isDirectory()) {
             return getDirectoryHistoryReader(file);
@@ -112,15 +111,10 @@ public final class HistoryGuru {
         Class<? extends HistoryParser> parser = getHistoryParser(file);
 
         if (parser != null) {
-            try {
-                Repository repos = getRepository(file.getParentFile());
-                History history = historyCache.get(file, repos);
-                if (history == null) {
-                    return null;
-                }
+            Repository repos = getRepository(file.getParentFile());
+            History history = historyCache.get(file, repos);
+            if (history != null) {
                 return new HistoryReader(history);
-            } catch (Exception e) {
-                throw new IOException("Error while constructing HistoryReader "+ e.getMessage());
             }
         }
 
@@ -134,7 +128,6 @@ public final class HistoryGuru {
      * @throws java.io.IOException If an error occurs while trying to access the filesystem
      * @return A HistorReader that may be used to read out history data for a named file
      */
-    @SuppressWarnings("PMD.AvoidRethrowingException")
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
         Class<? extends HistoryParser> parser = null;
         Repository repos = getRepository(file);
@@ -149,15 +142,9 @@ public final class HistoryGuru {
         }
 
         if (parser != null) {
-            try {
-                History history = historyCache.get(file, repos);
-                if (history != null) {
-                    return new HistoryReader(history);
-                }
-            } catch (IOException ioe) {
-                throw ioe;
-            } catch (Exception e) {
-                throw new IOException("Error while constructing HistoryReader "+ e.getMessage());
+            History history = historyCache.get(file, repos);
+            if (history != null) {
+                return new HistoryReader(history);
             }
         }
 

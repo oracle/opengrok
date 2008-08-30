@@ -59,7 +59,8 @@ class RCSHistoryParser implements HistoryParser {
             history.setHistoryEntries(entries);
             return history;
         } catch (ParseException pe) {
-            throw new IOException("Could not parse file " + file.getPath()+" "+ pe.getMessage());
+            throw RCSRepository.wrapInIOException(
+                    "Could not parse file " + file.getPath(), pe);
         }
     }
 

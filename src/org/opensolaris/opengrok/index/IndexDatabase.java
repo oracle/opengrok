@@ -77,7 +77,6 @@ public class IndexDatabase {
     private boolean running;
     private List<String> directories;
     private static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
-    private boolean indexVersionedFilesOnly = RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
     
     /**
      * Create a new instance of the Index Database. Use this constructor if
@@ -518,14 +517,18 @@ public class IndexDatabase {
             log.log(Level.FINE,"Stack Trace: ",exp);       
         }
 
-        if (indexVersionedFilesOnly) {
-            if (!file.isDirectory() && !HistoryGuru.getInstance().hasHistory(file)) {
-                log.log(Level.FINE, "Skipping " + file.getAbsolutePath() + " (no history)");
-                return false;
-            }
+        if (file.isDirectory()) {
+            // always accept directories so that their files can be examined
+            return true;
         }
 
-        return true;
+        if (HistoryGuru.getInstance().hasHistory(file)) {
+            // versioned files should always be accepted
+            return true;
+        }
+
+        // this is an unversioned file, check if it should be indexed
+        return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
     }
 
     /**

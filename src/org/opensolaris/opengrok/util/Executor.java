@@ -112,8 +112,8 @@ public class Executor {
 
     private static class Spooler extends Thread {
 
-        private InputStream input = null;
-        private ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        private InputStream input;
+        private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
         public byte[] getBytes() {
             return bytes.toByteArray();
