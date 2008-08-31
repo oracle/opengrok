@@ -29,9 +29,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
@@ -60,6 +62,7 @@ public class TroffAnalyzer extends FileAnalyzer {
 	content = new char[12*1024];
     }
     
+    @Override
     public void analyze(Document doc, InputStream in) {
 	try {
 	    len = 0;
@@ -78,6 +81,7 @@ public class TroffAnalyzer extends FileAnalyzer {
 		}
 	    } while(true);
 	} catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
 	    return;
 	}
 	doc.add(new Field("full", new StringReader("")));

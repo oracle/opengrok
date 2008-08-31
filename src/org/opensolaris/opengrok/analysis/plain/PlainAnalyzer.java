@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -68,12 +69,14 @@ public class PlainAnalyzer extends FileAnalyzer {
         try {
             ctags = new Ctags();
         } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating ctags", e);
         }
         if (ctags == null) {
             OpenGrokLogger.getLogger().severe("WARNING: unable to run ctags! searching definitions will not work!");
         }
     }
 
+    @Override
     public void analyze(Document doc, InputStream in) {
         try {
             InputStreamReader inReader = new InputStreamReader(in);
@@ -92,6 +95,7 @@ public class PlainAnalyzer extends FileAnalyzer {
 		}
 	    } while(true);
         } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
             return;
         }
         doc.add(new Field("full", dummy));
@@ -107,6 +111,7 @@ public class PlainAnalyzer extends FileAnalyzer {
                 }
             }
         } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
         }
     }    
     

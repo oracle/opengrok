@@ -105,7 +105,7 @@ public class MercurialRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // Ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
                 }
             }
             // Clean up zombie-processes...
@@ -181,7 +181,7 @@ public class MercurialRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // Just ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
                 }
             }
             if (process != null) {

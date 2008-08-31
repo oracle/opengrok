@@ -33,6 +33,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -56,6 +57,7 @@ import org.apache.bcel.classfile.Utility;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.List2TokenStream;
@@ -86,6 +88,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     private JavaClass c;
     private final Reader dummy = new StringReader("");
 
+    @Override
     public void analyze(Document doc, InputStream in) {
         defs = new LinkedList<String>();
         refs = new LinkedList<String>();
@@ -104,8 +107,11 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             }
             fullText = out.toString();
         } catch (EOFException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
         } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
         } catch (org.apache.bcel.classfile.ClassFormatException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
         }
         if(fullText != null && fullText.length() > 0) {
             doc.add(new Field("defs", dummy));

@@ -268,6 +268,7 @@ public class IndexDatabase {
                 try {
                     writer.close();
                 } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing writer", e);                    
                 }
             }
             synchronized (lock) {
@@ -354,6 +355,7 @@ public class IndexDatabase {
                 try {
                     wrt.close();
                 } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing writer", e);
                 }
             }
             synchronized (lock) {
@@ -386,6 +388,7 @@ public class IndexDatabase {
                 try {
                     indexReader.close();
                 } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing reader", e);
                 }
             }
             if (spellDirectory != null) {
@@ -483,7 +486,11 @@ public class IndexDatabase {
             setDirty();
         }
 
-        try { in.close(); } catch (Exception e) {}
+        try { 
+            in.close();
+        } catch (IOException e) {
+            log.log(Level.WARNING, "An error occured while closing stream", e);
+        }
     }
 
     /**
@@ -682,6 +689,7 @@ public class IndexDatabase {
                 try {
                     iter.close();
                 } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing index reader", e);
                 }
             }
 
@@ -689,6 +697,7 @@ public class IndexDatabase {
                 try {
                     ireader.close();
                 } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing index reader", e);
                 }
             }
         }
@@ -747,6 +756,7 @@ public class IndexDatabase {
                 try {
                     iter.close();
                 } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing index reader", e);
                 }
             }
 
@@ -754,6 +764,7 @@ public class IndexDatabase {
                 try {
                     ireader.close();
                 } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing index reader", e);
                 }
             }
         }

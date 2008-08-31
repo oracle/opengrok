@@ -185,6 +185,7 @@ public class SearchEngine {
                 }
                 summer = new Summarizer(query, analyzer);
             } catch (Exception e) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary", e);
             }
             
             historyContext = null;
@@ -194,6 +195,7 @@ public class SearchEngine {
                     historyContext = null;
                 }
             } catch (Exception e) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting history context", e);
             }
         }
         return hits.size();

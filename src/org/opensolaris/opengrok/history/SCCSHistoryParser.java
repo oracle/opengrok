@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.logging.Level;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Reads and filters out junk from a SCCS history file
@@ -115,6 +117,7 @@ class SCCSHistoryParser implements HistoryParser {
                 try {
                     rdate = sccsDateFormat.parse(f[2] + " " + f[3]);
                 } catch (ParseException e) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while parsing date", e);
                     rdate = null;
                 }
                 author = f[4];

@@ -214,7 +214,7 @@ public Annotation annotate(File file, String revision) throws IOException {
                 try {
                     in.close();
                 } catch (IOException exp) {
-                    // ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream.", exp);
                 }
             }
 
@@ -286,7 +286,7 @@ public Annotation annotate(File file, String revision) throws IOException {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream.", e);
                 }
             }
             if (process != null) {

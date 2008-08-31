@@ -520,6 +520,11 @@ public final class Indexer {
                                 db.optimize();
                             }
                         } catch (Exception e) {
+                            if (update) {
+                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating index", e);                                
+                            } else {
+                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while optimizing index", e);
+                            }
                             e.printStackTrace();
                         }
                     }

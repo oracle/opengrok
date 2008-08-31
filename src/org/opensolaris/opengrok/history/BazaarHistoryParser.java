@@ -151,7 +151,7 @@ class BazaarHistoryParser implements HistoryParser {
                 try {
                     in.close();
                 } catch (IOException exp) {
-                    // ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream.", exp);
                 }
             }
 

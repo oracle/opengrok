@@ -127,7 +127,7 @@ public class RazorHistoryParser implements HistoryParser {
                                 try {
                                     date = DATE_TIME_FORMAT.parse(dateTime);
                                 } catch (ParseException pe) {
-                                  OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + dateTime, pe);  
+                                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + dateTime, pe);  
                                 }
                             }
                             entry.setDate(date);
@@ -184,7 +184,7 @@ public class RazorHistoryParser implements HistoryParser {
         try {
             contents.close();
         } catch (IOException exp) {
-            // ignore
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing reader", exp);
         }
         return history;
     }

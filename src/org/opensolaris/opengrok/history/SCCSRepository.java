@@ -59,6 +59,7 @@ public class SCCSRepository extends Repository {
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting revision", ex);
             return null;
         }
     }
@@ -188,7 +189,7 @@ public class SCCSRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
                 }
             }
             if (process != null) {

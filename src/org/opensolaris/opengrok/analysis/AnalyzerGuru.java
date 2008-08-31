@@ -234,19 +234,15 @@ public class AnalyzerGuru {
         }
 
         if (fa != null) {
-            try {
-                Genre g = fa.getGenre();
-                if (g == Genre.PLAIN) {
-                    doc.add(new Field("t", "p", Field.Store.YES, Field.Index.UN_TOKENIZED));
-                } else if (g == Genre.XREFABLE) {
-                    doc.add(new Field("t", "x", Field.Store.YES, Field.Index.UN_TOKENIZED));
-                } else if (g == Genre.HTML) {
-                    doc.add(new Field("t", "h", Field.Store.YES, Field.Index.UN_TOKENIZED));
-                }
-                fa.analyze(doc, in);
-            } catch (Exception e) {
-                // Ignoring any errors while analysing
+            Genre g = fa.getGenre();
+            if (g == Genre.PLAIN) {
+                doc.add(new Field("t", "p", Field.Store.YES, Field.Index.UN_TOKENIZED));
+            } else if (g == Genre.XREFABLE) {
+                doc.add(new Field("t", "x", Field.Store.YES, Field.Index.UN_TOKENIZED));
+            } else if (g == Genre.HTML) {
+                doc.add(new Field("t", "h", Field.Store.YES, Field.Index.UN_TOKENIZED));
             }
+            fa.analyze(doc, in);
         }
         doc.removeField("fullpath");
 

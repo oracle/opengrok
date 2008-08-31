@@ -31,9 +31,11 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.search.Hits;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.search.context.Context;
@@ -113,7 +115,7 @@ public final class Results {
                             sourceContext.getContext(null, out, urlPrefix, morePrefix, rpath, tags, true, null);
                         }
                     } catch (IOException e) {
-                        
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary", e);
                     }
                     //out.write("Genre = " + genre);
                 }

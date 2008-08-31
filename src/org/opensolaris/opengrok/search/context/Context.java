@@ -186,6 +186,7 @@ public class Context {
                     }
                 }
             } catch (IOException e) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading data", e);
                 return anything;
             }
             if (charsRead == 0) {
@@ -230,12 +231,20 @@ public class Context {
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
         } finally {
-            try {
-                in.close();
-                if (out != null) {
-                    out.flush();
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
                 }
-            } catch (Exception e) {	}
+            }
+            if (out != null) {
+                try {
+                    out.flush();
+                } catch (IOException e) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while flushing stream", e);                    
+                }
+            }
         }
         return anything;
     }

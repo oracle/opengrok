@@ -133,7 +133,7 @@ class GitHistoryParser implements HistoryParser {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
                 }
             }
 

@@ -223,6 +223,7 @@ public class EftarFile {
         try {
             r.close();
         } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
         }
     }
 

@@ -82,6 +82,7 @@ public class DirectoryHistoryReader extends HistoryReader {
                 query = qparser.parse(path);
                 hits = searcher.search(query, sort);
             } catch (org.apache.lucene.queryParser.ParseException e) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while parsing search query", e);
             }
             if (hits != null) {
                 for (int i = 0; i < 40 && i < hits.length(); i++) {
@@ -108,6 +109,7 @@ public class DirectoryHistoryReader extends HistoryReader {
                             File f = new File(src_root + rparent, rbase);
                             hr = HistoryGuru.getInstance().getHistoryReader(f);
                         } catch (IOException e) {
+                            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting history reader", e);
                         }
                         if (hr == null) {
                             put(cdate, "-", "", rpath);
@@ -124,6 +126,7 @@ public class DirectoryHistoryReader extends HistoryReader {
                                 }
                                 hr.close();
                             } catch (IOException e) {
+                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading history", e);
                                 put(cdate, "-", "", rpath);
                             }
                         }
@@ -135,12 +138,14 @@ public class DirectoryHistoryReader extends HistoryReader {
                 try {
                     searcher.close();
                 } catch (Exception ex) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing searcher", ex);
                 }
             }
             if (ireader != null) {
                 try {
                     ireader.close();
                 } catch (Exception ex) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing reader", ex);
                 }
             }
         }
