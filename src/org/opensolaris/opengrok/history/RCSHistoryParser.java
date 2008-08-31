@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -107,14 +108,10 @@ class RCSHistoryParser implements HistoryParser {
             if (CVSdir.isDirectory() && CVSdir.canRead()) {
                 File root = new File(CVSdir, "Root");
                 if (root.canRead()) {
-                    BufferedReader rootReader = new BufferedReader(new FileReader(root));
-                    String cvsroot = rootReader.readLine();
+                    String cvsroot = readFirstLine(root);
                     if (cvsroot != null && cvsroot.charAt(0) == '/') {
                         File repository = new File(CVSdir, "Repository");
-                        BufferedReader repoReader = new BufferedReader(new FileReader(repository));
-                        String repo = repoReader.readLine();
-                        repoReader.close();
-                        rootReader.close();
+                        String repo = readFirstLine(repository);
                         String dir = cvsroot + File.separatorChar + repo;
                         String filename = name + ",v";
                         File rcsFile = new File(dir, filename);
@@ -126,7 +123,6 @@ class RCSHistoryParser implements HistoryParser {
                         }
                         return rcsFile;
                     }
-                    rootReader.close();
                 }
             }
         } catch (Exception e) {
@@ -134,5 +130,21 @@ class RCSHistoryParser implements HistoryParser {
                     "Failed to retrieve CVS file of parent: " + parent + ", name: " + name, e);
         }
         return null;
+    }
+
+    /**
+     * Read the first line of a file.
+     * @param file the file from which to read
+     * @return the first line of the file, or {@code null} if the file is empty
+     * @throws IOException if an I/O error occurs while reading the file
+     */
+    private static String readFirstLine(File file) throws IOException {
+        Reader in = new FileReader(file);
+        try {
+            in = new BufferedReader(in);
+            return ((BufferedReader) in).readLine();
+        } finally {
+            in.close();
+        }
     }
 }

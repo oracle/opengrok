@@ -24,7 +24,6 @@
 package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -71,14 +70,14 @@ public class ELFAnalyzer extends FileAnalyzer {
                 }
             } else {
                 String fullpath = doc.get("fullpath");
+                final FileInputStream fin = new FileInputStream(fullpath);
                 try {
-                    FileInputStream fin = new FileInputStream(fullpath);
                     parseELF(fin);
                     if (len > 0) {
                         doc.add(new Field("full", " ", Field.Store.YES, Field.Index.TOKENIZED));
                     }
-                } catch (FileNotFoundException fnfe) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not open file " + fullpath, fnfe);
+                } finally {
+                    fin.close();
                 }
             }
         } catch (IOException ioe) {

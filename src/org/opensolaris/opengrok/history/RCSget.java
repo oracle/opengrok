@@ -44,10 +44,6 @@ public class RCSget extends InputStream {
     /**
      * Pass null in version to get current revision
      */
-    public RCSget(String file)  throws IOException, FileNotFoundException {
-        this(file, new FileInputStream(file), null);
-    }
-    
     public RCSget(String file, String version) throws IOException, FileNotFoundException {
         this(file, new FileInputStream(file), version);
     }

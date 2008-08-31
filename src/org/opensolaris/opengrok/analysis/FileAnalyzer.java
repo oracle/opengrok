@@ -27,9 +27,9 @@ package org.opensolaris.opengrok.analysis;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
@@ -128,13 +128,16 @@ public class FileAnalyzer extends Analyzer {
             project = null;
         }
 
-        Writer out = null;
-        if (env.isCompressXref()) {
-            out = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(new File(xrefDir, path + ".gz")))));
-        } else {
-            out = new BufferedWriter(new FileWriter(new File(xrefDir, path)));
+        final boolean compressed = env.isCompressXref();
+        final File file = new File(xrefDir, path + (compressed ? ".gz" : ""));
+        OutputStream out = new FileOutputStream(file);
+        try {
+            if (compressed) {
+                out = new GZIPOutputStream(out);
+            }
+            writeXref(new BufferedWriter(new OutputStreamWriter(out)));
+        } finally {
+            out.close();
         }
-	writeXref(out);
-	out.close();
     }
 }

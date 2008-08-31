@@ -312,18 +312,29 @@ public final class Configuration {
      * @throws IOException if an error occurs
      */
     public void write(File file) throws IOException {
-        XMLEncoder e = new XMLEncoder(
-                new BufferedOutputStream(new FileOutputStream(file)));
-        e.writeObject(this);
-        e.close();
+        final FileOutputStream out = new FileOutputStream(file);
+        try {
+            XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out));
+            e.writeObject(this);
+            e.close();
+        } finally {
+            out.close();
+        }
     }
 
     public static Configuration read(File file) throws IOException {
-        XMLDecoder d = new XMLDecoder(
-                new BufferedInputStream(new FileInputStream(file)));
-        Object ret = d.readObject();
-        d.close();
-        
+
+        final Object ret;
+
+        final FileInputStream in = new FileInputStream(file);
+        try {
+            XMLDecoder d = new XMLDecoder(new BufferedInputStream(in));
+            ret = d.readObject();
+            d.close();
+        } finally {
+            in.close();
+        }
+
         if (!(ret instanceof Configuration)) {
             throw new IOException("Not a valid config file");
         }        

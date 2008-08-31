@@ -88,11 +88,16 @@ class FileHistoryCache implements HistoryCache {
      * Read history from a file.
      */
     private static History readCache(File file) throws IOException {
-        XMLDecoder d = new XMLDecoder(
-                new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
-        Object obj = d.readObject();
-        d.close();
-        return (History) obj;
+        final FileInputStream in = new FileInputStream(file);
+        try {
+            XMLDecoder d = new XMLDecoder(
+                    new BufferedInputStream(new GZIPInputStream(in)));
+            Object obj = d.readObject();
+            d.close();
+            return (History) obj;
+        } finally {
+            in.close();
+        }
     }
     
     public void store(History history, File file) throws IOException {
@@ -113,11 +118,16 @@ class FileHistoryCache implements HistoryCache {
         // I'm done so I don't have to protect the readers for partially updated
         // files...
         File output = File.createTempFile("oghist", null, dir);
-        XMLEncoder e = new XMLEncoder(
-                new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(output))));
-        e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
-        e.writeObject(history);
-        e.close();
+        final FileOutputStream out = new FileOutputStream(output);
+        try {
+            XMLEncoder e = new XMLEncoder(
+                    new BufferedOutputStream(new GZIPOutputStream(out)));
+            e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
+            e.writeObject(history);
+            e.close();
+        } finally {
+            out.close();
+        }
         synchronized (lock) {
             if (!cache.delete() && cache.exists()) {
                 if (!output.delete()) {
