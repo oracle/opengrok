@@ -435,10 +435,10 @@ public class IndexDatabase {
                     xrefFile.getAbsolutePath());
         }
 
-        // Ignore return value. The directory is most likely not empty if
-        // delete returns false, but to check would just increase the disk
-        // IO even more..
-        parent.delete();
+        // Remove the parent directory if it's empty
+        if (parent.delete()) {
+            log.fine("Removed empty xref dir:" + parent.getAbsolutePath());
+        }
 
         setDirty();
     }
@@ -475,7 +475,9 @@ public class IndexDatabase {
                 // because the file already exists. But to check for the
                 // file first and only add it if it doesn't exists would
                 // only increase the file IO...
-                xrefFile.getParentFile().mkdirs();
+                if (!xrefFile.getParentFile().mkdirs()) {
+                    assert xrefFile.getParentFile().exists();
+                }
                 fa.writeXref(xrefDir, path);
             }
             setDirty();
