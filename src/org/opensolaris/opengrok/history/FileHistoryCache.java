@@ -157,16 +157,11 @@ class FileHistoryCache implements HistoryCache {
             history = parser.parse(file, repository);
             time = System.currentTimeMillis() - time;
         } catch (InstantiationException ex) {
-            IOException ioe = new IOException(
-                    "Could not create history parser " + ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw RCSRepository.wrapInIOException(
+                    "Could not create history parser", ex);
         } catch (IllegalAccessException ex) {
-            IOException ioe = new IOException(
-                    "No access permissions to create history parser " +
-                    ex.getMessage());
-            ioe.initCause(ex);
-            throw ioe;
+            throw RCSRepository.wrapInIOException(
+                    "No access permissions to create history parser", ex);
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
             // An example is a non-SCCS file somewhere in an SCCS-controlled

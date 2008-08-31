@@ -45,12 +45,10 @@ public final class Hash2TokenStream extends TokenStream {
 		    terms = term.split("[^a-zA-Z_0-9]+");
 		    i = terms.length;
 		    if (i > 0) {
-			//repeat = h.get(term).size();
-			//System.out.println("Returning " + term + h.get(term));
 			return new Token(terms[--i], 0, 0);
 		    } else {
-			//System.err.println(" ERRROR term " + term);
-			//return null;
+                        // no tokens found in this key, try next
+                        continue;
 		    }
 		} else {
 		    return null;

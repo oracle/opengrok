@@ -435,10 +435,10 @@ public class IndexDatabase {
                     xrefFile.getAbsolutePath());
         }
 
-        if (!parent.delete()) {
-            // Ignore. The directory is most likely not empty, but to check
-            // would just increase the disk IO even more..
-        }
+        // Ignore return value. The directory is most likely not empty if
+        // delete returns false, but to check would just increase the disk
+        // IO even more..
+        parent.delete();
 
         setDirty();
     }
@@ -471,12 +471,11 @@ public class IndexDatabase {
             Genre g = fa.getFactory().getGenre();
             if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
                 File xrefFile = new File(xrefDir, path);
-                if (!xrefFile.getParentFile().mkdirs()) {
-                    // The failure was most likely because the file already
-                    // existed. But to check for the file first and only
-                    // add it if it doesn't exists would only increase the
-                    // file IO...
-                }
+                // If mkdirs() returns false, the failure is most likely
+                // because the file already exists. But to check for the
+                // file first and only add it if it doesn't exists would
+                // only increase the file IO...
+                xrefFile.getParentFile().mkdirs();
                 fa.writeXref(xrefDir, path);
             }
             setDirty();
