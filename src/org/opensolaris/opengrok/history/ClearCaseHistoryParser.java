@@ -75,7 +75,7 @@ class ClearCaseHistoryParser implements HistoryParser {
                         try {
                             entry.setDate(FORMAT.parse(s));
                         } catch (ParseException pe) {
-                            OpenGrokLogger.getLogger().log(Level.INFO, "Could not parse date: " + s, pe);
+                            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
                         }
                     }
                 }

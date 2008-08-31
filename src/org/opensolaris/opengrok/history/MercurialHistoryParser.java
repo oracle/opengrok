@@ -87,7 +87,7 @@ class MercurialHistoryParser implements HistoryParser {
                     try {
                         date = df.parse(s.substring("date:".length()).trim());
                     } catch (ParseException pe) {
-                        OpenGrokLogger.getLogger().log(Level.INFO, "Could not parse date: " + s, pe);
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
                     }
                     entry.setDate(date);
                     description = false;

@@ -127,7 +127,7 @@ public class RazorHistoryParser implements HistoryParser {
                                 try {
                                     date = DATE_TIME_FORMAT.parse(dateTime);
                                 } catch (ParseException pe) {
-                                  OpenGrokLogger.getLogger().log(Level.INFO, "Could not parse date: " + dateTime, pe);  
+                                  OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + dateTime, pe);  
                                 }
                             }
                             entry.setDate(date);

@@ -90,7 +90,7 @@ class GitHistoryParser implements HistoryParser {
                         try {
                             entry.setDate(df.parse(dateString));
                         } catch (ParseException pe) {
-                            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to parse author date: " + s, pe);
+                            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse author date: " + s, pe);
                         }
                     } else if (s.trim().equals("")) {
                         // We are done reading the heading, start to read the message

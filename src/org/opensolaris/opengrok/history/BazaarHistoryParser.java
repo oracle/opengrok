@@ -108,7 +108,7 @@ class BazaarHistoryParser implements HistoryParser {
                                 Date date = df.parse(s.substring("timestamp:".length()).trim());
                                 entry.setDate(date);
                             } catch (ParseException e) {
-                                OpenGrokLogger.getLogger().log(Level.INFO, 
+                                OpenGrokLogger.getLogger().log(Level.WARNING, 
                                         "Failed to parse history timestamp for " + file, e);
                             }
                             ++state;
