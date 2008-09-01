@@ -110,6 +110,7 @@ public class HitTest {
         o1.setFilename("bar");
         assertFalse(o2.equals(o1));
         assertFalse(o1.equals(o2));
+        assertFalse(o1.equals(new Object()));        
     }
 
     @Test
