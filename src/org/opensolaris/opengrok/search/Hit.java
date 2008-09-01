@@ -80,14 +80,17 @@ public class Hit implements Comparable<Hit> {
      * @param line The line containing the match
      * @param lineno The line number in the file the match was found
      * @param binary If this is a binary file or not
+     * @param alt Is this the "alternate" file
      */
     public Hit(String filename, String line, String lineno, boolean binary, boolean alt) {
-        File file = new File(filename);
-        this.path = filename;
-        this.filename = file.getName();
-        this.directory = file.getParent();
-        if (directory == null) {
-            directory = "";
+        if (filename != null) {
+            File file = new File(filename);
+            this.path = filename;
+            this.filename = file.getName();
+            this.directory = file.getParent();
+            if (directory == null) {
+                directory = "";
+            }
         }
         this.line = line;
         this.lineno = lineno;
@@ -222,6 +225,7 @@ public class Hit implements Comparable<Hit> {
     
     /**
      * Should this be alternate file?
+     * @return true if this is the "alternate" file
      */
     public boolean getAlt() {
         return alt;
@@ -230,6 +234,8 @@ public class Hit implements Comparable<Hit> {
     /**
      * Check if two objects are equal. Only consider the {@code filename} field
      * to match the return value of the {@link #compareTo(Hit)} method.
+     * @param o the object to compare with
+     * @return true if the filenames are equal
      */
     @Override
     public boolean equals(Object o) {
