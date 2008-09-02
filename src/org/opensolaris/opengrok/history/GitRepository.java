@@ -29,8 +29,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Git repository.
@@ -38,30 +41,35 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  */
 public class GitRepository extends Repository {
     private static ScmChecker gitBinary = new ScmChecker(new String[] {
-        System.getProperty("org.opensolaris.opengrok.history.git", "git"),
-        "--help" });
+        getCommand(), "--help" });
     
     Process getHistoryLogProcess(File file) throws IOException {
         String abs = file.getAbsolutePath();
         String filename = "";
         String directoryName = getDirectoryName();
-        String command = System.getProperty("org.opensolaris.opengrok.history.git", "git");
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
         
-        String[] argv = new String[] {command, "log", "--name-only", "--pretty=fuller", filename};
+        String[] argv = new String[] {getCommand(), "log", "--name-only", "--pretty=fuller", filename};
 
         File directory = new File(getDirectoryName());
         return Runtime.getRuntime().exec(argv, null, directory);        
     }    
     
+    /**
+     * Get the name of the Git command that should be used
+     * @return the name of the hg command in use
+     */
+    private static String getCommand() {
+        return System.getProperty("org.opensolaris.opengrok.history.git", "git");
+    }
+
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
         String directoryName = getDirectoryName();
         File directory = new File(directoryName);
-        String command = System.getProperty("org.opensolaris.opengrok.history.git", "git");
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         byte[] buffer = new byte[8192];
@@ -69,7 +77,7 @@ public class GitRepository extends Repository {
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         try {
-            String argv[] = {command, "show", rev + ":" + filename};
+            String argv[] = {getCommand(), "show", rev + ":" + filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
             
             InputStream in = process.getInputStream();
@@ -126,8 +134,33 @@ public class GitRepository extends Repository {
         return true;
     }
     
-    public void update() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void update() throws IOException {
+        File directory = new File(getDirectoryName());
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("config");
+        cmd.add("--list");
+
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
+
+        if (executor.getOutputString().indexOf("remote.origin.url=") != -1) {
+            cmd.clear();
+            cmd.add(getCommand());
+            cmd.add("fetch");
+            if (executor.exec() != 0) {
+                throw new IOException(executor.getErrorString());
+            }
+
+            cmd.clear();
+            cmd.add(getCommand());
+            cmd.add("checkout");
+            if (executor.exec() != 0) {
+                throw new IOException(executor.getErrorString());
+            }
+        }
     }
 
     public boolean fileHasHistory(File file) {

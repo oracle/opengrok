@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,6 +38,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.Executor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -316,30 +318,14 @@ public class SubversionRepository extends Repository {
     }
 
     public void update() throws IOException {
-        Process process = null;
+        File directory = new File(getDirectoryName());
 
-        try {
-            File directory = new File(getDirectoryName());
-            process = Runtime.getRuntime().exec(new String[]{getCommand(), "update"}, null, directory);
-            boolean interrupted;
-            do {
-                interrupted = false;
-                try {
-                    if (process.waitFor() != 0) {
-                        return;
-                    }
-                } catch (InterruptedException exp) {
-                    interrupted = true;
-                }
-            } while (interrupted);
-        } finally {
-
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
-            }
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("update");
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
         }
     }
 
