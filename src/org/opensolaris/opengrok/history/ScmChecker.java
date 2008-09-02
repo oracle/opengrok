@@ -23,7 +23,7 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.IOException;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  *
@@ -34,33 +34,7 @@ class ScmChecker {
     boolean available;
 
     ScmChecker(final String[] argv) {
-        Process process = null;
-        try {
-            process = Runtime.getRuntime().exec(argv);
-            boolean done = false;
-            do {
-                try {
-                    process.waitFor();
-                    done = true;
-                } catch (InterruptedException exp) {
-                    // Ignore
-                    }
-            } while (!done);
-            if (process.exitValue() == 0) {
-                available = true;
-            }
-        } catch (IOException exp) {
-            // Ignore the exception.. most likely the process doesn't exists
-        } finally {
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
-        }
+        Executor exec = new Executor(argv);
+        available = exec.exec(false) == 0;
     }
 }

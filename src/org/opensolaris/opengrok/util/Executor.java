@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -42,6 +43,17 @@ public class Executor {
     private byte[] stdout;
     private byte[] stderr;
 
+    /**
+     * Create a new instance of the Executor
+     * @param cmd An array containing the command to execute
+     */
+    public Executor(String[] cmd) {
+        cmdList = new ArrayList<String>();
+        for (String s : cmd) {
+            cmdList.add(s);
+        }
+    }
+
     public Executor(List<String> cmdList) {
         this(cmdList, null);
     }
@@ -51,7 +63,23 @@ public class Executor {
         this.workingDirectory = workingDirectory;
     }
 
+    /**
+     * Execute the command and collect the output. All exceptions will be
+     * logged.
+     *
+     * @return The exit code of the process
+     */
     public int exec() {
+        return exec(true);
+    }
+        
+    /**
+     * Execute the command and collect the output
+     * 
+     * @param reportExceptions Should exceptions be added to the log or not
+     * @return The exit code of the process
+     */
+    public int exec(boolean reportExceptions) {
         int ret = -1;
 
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
@@ -73,11 +101,15 @@ public class Executor {
             stdout = spoolOut.getBytes();
             stderr = spoolErr.getBytes();
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            if (reportExceptions) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "Failed to read from process: " + cmdList.get(0), e);
+            }
         } catch (InterruptedException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            if (reportExceptions) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "Waiting for process interrupted: "  + cmdList.get(0), e);
+            }
         } finally {
             try {
                 if (process != null) {
