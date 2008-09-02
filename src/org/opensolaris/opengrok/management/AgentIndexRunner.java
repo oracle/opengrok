@@ -60,7 +60,6 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     private boolean enabled;
     private transient Thread indexThread = null;
     private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
-    private final Management jagmgt;
     private RuntimeEnvironment env = null;
     private long lastIndexStart = 0;
     private long lastIndexFinish = 0;
@@ -78,7 +77,6 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
      */
     private AgentIndexRunner(boolean enabledParam) {
         enabled = enabledParam;
-        jagmgt = Management.getInstance();
     }
 
     /**
@@ -181,10 +179,10 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     public void handleNotification(Notification n, Object hb) {
         if (n.getType().equals("timer.notification")) {
             log.finer("Received timer notification");
-            if (!enabled) {
-                log.info("Indexing is disabled, doing nothing");
-            } else {
+            if (enabled) {
                 index(false);
+            } else {
+                log.info("Indexing is disabled, doing nothing");
             }
         } else {
             log.warning("Received unknown notification type: " + n.getType());
