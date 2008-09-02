@@ -66,7 +66,7 @@ public class ExecutorTest {
         cmdList.add("echo");
         cmdList.add("testing org.opensolaris.opengrok.util.Executor");
         Executor instance = new Executor(cmdList);
-        instance.exec();
+        assertEquals(0, instance.exec());
         assertTrue(instance.getOutputString().startsWith("testing org.opensolaris.opengrok.util.Executor"));
         String err = instance.getErrorString();
         assertEquals(0, err.length());
@@ -78,7 +78,7 @@ public class ExecutorTest {
         cmdList.add("echo");
         cmdList.add("testing org.opensolaris.opengrok.util.Executor");
         Executor instance = new Executor(cmdList);
-        instance.exec();
+        assertEquals(0, instance.exec());
         BufferedReader in = new BufferedReader(instance.getOutputReader());
         assertEquals("testing org.opensolaris.opengrok.util.Executor", in.readLine());
         in.close();
@@ -93,7 +93,7 @@ public class ExecutorTest {
         cmdList.add("echo");
         cmdList.add("testing org.opensolaris.opengrok.util.Executor");
         Executor instance = new Executor(cmdList, new File("."));
-        instance.exec();
+        assertEquals(0, instance.exec());
         assertNotNull(instance.getOutputStream());
         assertNotNull(instance.getErrorStream());
         BufferedReader in = new BufferedReader(instance.getOutputReader());

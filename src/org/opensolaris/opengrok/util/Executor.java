@@ -51,7 +51,9 @@ public class Executor {
         this.workingDirectory = workingDirectory;
     }
 
-    public void exec() {
+    public int exec() {
+        int ret = -1;
+
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
@@ -64,7 +66,8 @@ public class Executor {
             process = processBuilder.start();
             spoolOut.startListen(process.getInputStream());
             spoolErr.startListen(process.getErrorStream());
-            process.waitFor();
+            ret = process.waitFor();
+            process = null;
             spoolOut.join();
             spoolErr.join();
             stdout = spoolOut.getBytes();
@@ -78,12 +81,14 @@ public class Executor {
         } finally {
             try {
                 if (process != null) {
-                    process.exitValue();
+                    ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
                 process.destroy();
             }
         }
+
+        return ret;
     }
 
     public String getOutputString() {
