@@ -27,7 +27,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -139,10 +138,9 @@ class RCSHistoryParser implements HistoryParser {
      * @throws IOException if an I/O error occurs while reading the file
      */
     private static String readFirstLine(File file) throws IOException {
-        Reader in = new FileReader(file);
+        final BufferedReader in = new BufferedReader(new FileReader(file));
         try {
-            in = new BufferedReader(in);
-            return ((BufferedReader) in).readLine();
+            return in.readLine();
         } finally {
             in.close();
         }

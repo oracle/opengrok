@@ -201,17 +201,23 @@ public class EftarFile {
 
     public void readInput(String tagsPath) throws IOException {
         BufferedReader r = new BufferedReader(new FileReader(tagsPath));
+        try {
+            readInput(r);
+        } finally {
+            r.close();
+        }
+    }
+
+    private void readInput(BufferedReader r) throws IOException {
         if (root == null) {
             root = new Node(1, null);
         }
         String line;
-        int size = 0;
         while ((line = r.readLine()) != null) {
             int tab = line.indexOf('\t');
             if (tab > 0) {
                 String path = line.substring(0, tab);
                 String desc = line.substring(tab + 1);
-                size += desc.length() + 1 + 15;
                 StringTokenizer toks = new StringTokenizer(path, "\\/");
                 Node n = root;
                 while (toks.hasMoreTokens()) {
@@ -219,11 +225,6 @@ public class EftarFile {
                 }
                 n.tag = desc;
             }
-        }
-        try {
-            r.close();
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
         }
     }
 
