@@ -32,10 +32,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Mercurial repository.
@@ -203,37 +205,26 @@ public class MercurialRepository extends Repository {
     public boolean isCacheable() {
         return true;
     }
-
-    private int waitFor(Process process) {
-        
-        do {
-            try {
-               return process.waitFor(); 
-            } catch (InterruptedException exp) {
-
-            }
-        } while (true);
-    }
     
     public void update() throws IOException {
-        Process process = null;
-        try {
-            File directory = new File(getDirectoryName());
-            process = Runtime.getRuntime().exec(new String[] {getCommand(), "pull"}, null, directory);
-            if (waitFor(process) != 0) {
-                return ;                
-            }
-            process = Runtime.getRuntime().exec(new String[] {getCommand(), "update"}, null, directory);
-            if (waitFor(process) != 0) {
-                return ;                
-            }        
-        } finally {
-            
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
+        File directory = new File(getDirectoryName());
+
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("showconfig");
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
+
+        if (executor.getOutputString().indexOf("paths.default=") != -1) {
+            cmd.clear();
+            cmd.add(getCommand());
+            cmd.add("pull");
+            cmd.add("-u");
+            executor = new Executor(cmd, directory);
+            if (executor.exec() != 0) {
+                throw new IOException(executor.getErrorString());
             }
         }
     }
