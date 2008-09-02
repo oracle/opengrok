@@ -29,8 +29,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Bazaar repository.
@@ -131,8 +134,26 @@ public class BazaarRepository extends Repository {
         return true;
     }
     
-    public void update() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void update() throws IOException {
+        File directory = new File(getDirectoryName());
+
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("info");
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
+
+        if (executor.getOutputString().indexOf("parent branch:") != -1) {
+            cmd.clear();
+            cmd.add(getCommand());
+            cmd.add("up");
+            executor = new Executor(cmd, directory);
+            if (executor.exec() != 0) {
+                throw new IOException(executor.getErrorString());
+            }
+        }
     }
 
     public boolean fileHasHistory(File file) {
