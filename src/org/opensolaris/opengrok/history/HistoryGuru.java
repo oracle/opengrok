@@ -285,7 +285,7 @@ public final class HistoryGuru {
             String type = repository.getClass().getSimpleName();
 
             if (!repository.isWorking()) {
-                OpenGrokLogger.getLogger().warning("Skipping " + type + " repository in " + path + ": Missing SCM dependencies?");
+                OpenGrokLogger.getLogger().warning("Skipping update of " + type + " repository in " + path + ": Missing SCM dependencies?");
             } else {
                 if (verbose) {
                     OpenGrokLogger.getLogger().info("Update " + type + " repository in " + path);
@@ -293,6 +293,8 @@ public final class HistoryGuru {
 
                 try {
                     repository.update();
+                } catch (UnsupportedOperationException e) {
+                    OpenGrokLogger.getLogger().warning("Skipping update of " + type + " repository in " + path + ": Not implemented");
                 } catch (Exception e) {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating " + path + " (" + type + ")", e);
                 }
