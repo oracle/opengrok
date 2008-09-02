@@ -430,7 +430,12 @@ public class IndexDatabase {
         }
         writer.deleteDocuments(uidIter.term());
 
-        File xrefFile = new File(xrefDir, path);
+        File xrefFile;
+        if (RuntimeEnvironment.getInstance().isCompressXref()) {
+            xrefFile = new File(xrefDir, path + ".gz");
+        } else {
+            xrefFile = new File(xrefDir, path);
+        }
         File parent = xrefFile.getParentFile();
 
         if (!xrefFile.delete()) {
