@@ -41,6 +41,7 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IndexChangedListener;
 import org.opensolaris.opengrok.index.Indexer;
 
@@ -115,7 +116,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
             lastIndexStart = System.currentTimeMillis();
             lastException = null;
             doNotify(NOTIFICATIONINFOLONGTYPE, "StartIndexing", Long.valueOf(lastIndexStart));
-            String configfile = jagmgt.getInstance().getConfigurationFile();
+            String configfile = Management.getInstance().getConfigurationFile();
             if (configfile == null) {
                 doNotify(NOTIFICATIONEXCEPTIONTYPE, "Missing Configuration file", "");
             }
@@ -126,9 +127,11 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 env.readConfiguration(cfgFile);
 
                 Indexer index = Indexer.getInstance();
-                int noThreads = jagmgt.getInstance().getNumberOfThreads().intValue();
-                boolean update = jagmgt.getInstance().getUpdateIndexDatabase().booleanValue();
-                String[] sublist = jagmgt.getInstance().getSubFiles();
+                int noThreads = Management.getInstance().getNumberOfThreads().intValue();
+                boolean update = Management.getInstance().getUpdateIndexDatabase().booleanValue();
+                String[] sublist = Management.getInstance().getSubFiles();
+                log.info("Update source repositories");
+                HistoryGuru.getInstance().updateRepositories();
                 List<String> subFiles = Arrays.asList(sublist);
                 log.info("Starting index, update " + update + " noThreads " + noThreads + " subfiles " + subFiles.size());
                 index.doIndexerExecution(update, noThreads, subFiles, this);
@@ -137,7 +140,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 sendNotifications();
                 doNotify(NOTIFICATIONINFOLONGTYPE, "FinishedIndexing", Long.valueOf(lastIndexFinish));
                 lastIndexUsedTime = lastIndexFinish - lastIndexStart;
-                String publishhost = jagmgt.getInstance().getPublishServerURL();
+                String publishhost = Management.getInstance().getPublishServerURL();
                 if (publishhost == null) {
                     log.warning("No publishhost given, not sending updates");
                 } else {
@@ -178,16 +181,14 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     public void handleNotification(Notification n, Object hb) {
         if (n.getType().equals("timer.notification")) {
             log.finer("Received timer notification");
+            if (!enabled) {
+                log.info("Indexing is disabled, doing nothing");
+            } else {
+                index(false);
+            }
         } else {
-            log.warning("Received unknown notification type: " +
-                    n.getType());
-            return;
+            log.warning("Received unknown notification type: " + n.getType());
         }
-        if (!enabled) {
-            log.finer("Indexing is disabled, doing nothing");
-            return;
-        }
-        index(false); // just start the purger and return (do not delay timer)
     }
 
     /**
@@ -341,8 +342,6 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     private void doNotify(String type, String msg, Object userdata) {
         try {
             log.info("start notifying " + notifListeners.size() + " listeners");
-            //String str = "JET Finished";
-            //String obj = JAGConstants.jetFinishedNType;
             long ts = System.currentTimeMillis();
             sequenceNo++;
             Notification notif = new Notification(type, this, sequenceNo, ts, msg);
