@@ -99,11 +99,20 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testProjects() {
+    public void testProjects() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         assertFalse(instance.hasProjects());
         assertNotNull(instance.getProjects());
+        assertEquals(0, instance.getProjects().size());
         assertNull(instance.getDefaultProject());
+
+        File file = new File("/opengrok_automatic_test/foo/bar");
+        instance.setSourceRoot("/opengrok_automatic_test/foo");
+        Project p = new Project();
+        p.setPath("/bar");
+        assertEquals("/bar", p.getId());
+        instance.getProjects().add(p);
+        assertEquals(p, Project.getProject(file));
         instance.setProjects(null);
         assertNull(instance.getProjects());
     }
