@@ -20,7 +20,8 @@
   <rule ref="rulesets/logging-java.xml"/>
   <rule ref="rulesets/migrating.xml"/>
   <rule ref="rulesets/optimizations.xml">
-      <!-- Enable when we have fever reported warnings -->
+      <exclude name="AvoidInstantiatingObjectsInLoops"/>
+      <!-- Enable the following when we have fever reported warnings -->
       <exclude name="LocalVariableCouldBeFinal"/>
       <exclude name="MethodArgumentCouldBeFinal"/>
   </rule>
