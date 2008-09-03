@@ -66,29 +66,6 @@ import org.opensolaris.opengrok.configuration.Project;
       }
   }
 
-  public static void main(String argv[]) {
-    if (argv.length <= 1) {
-      System.out.println("Usage : java Xref <inputfile> <outfile>");
-    }
-    else {
-      Date start = new Date();
-      XMLXref scanner = null;
-      try {
-          scanner = new XMLXref( new BufferedReader(new java.io.FileReader(argv[0])));
-	  BufferedWriter out = new BufferedWriter(new java.io.FileWriter(argv[1]));
-	  out.write("<html><head><style>.I{color:#000099;} .K{color:#000000; font-weight:bold;} .N{color:brown;} .c{color:grey;} .s{color:green;} .l{color: #666699; text-decoration:none; font-weight:normal;background-color:#eee; margin-right:.2em;padding-left:.2em;padding-right:.5em;}  .hl{color:#666;font-weight:bold; text-decoration:none; background-color:#eee; margin-right:.2em;padding-left:.2em;padding-right:.5em;}</style></head><body><pre>");
-	  scanner.write(out);
-	  out.write("</pre></body></html>");
-	  out.close();
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-      }
-      long span =  ((new Date()).getTime() - start.getTime());
-      System.err.println("took: "+ span + " msec");
-     }
-  }
-
 %}
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]

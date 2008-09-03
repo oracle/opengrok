@@ -76,31 +76,6 @@ import org.opensolaris.opengrok.configuration.Project;
       }
   }
 
-  public static void main(String argv[]) {
-    if (argv.length <= 1) {
-      System.out.println("Usage : java Xref <inputfile> <outfile> <ctags binary> ");
-    }
-    else {
-      Date start = new Date();
-      CXref scanner = null;
-      try {
-	  //Ctags ctags = new Ctags(argv[2]);
-          scanner = new CXref( new BufferedReader(new java.io.FileReader(argv[0])));
-	  //scanner.setDefs(ctags.doCtags(argv[0] + "\n"));
-	  BufferedWriter out = new BufferedWriter(new java.io.FileWriter(argv[1]));
-	  out.write("<html><head><style>a{text-decoration:none;color:#444499;} .I{color:#000099;} .K{color:#000000; font-weight:bold;} .N{color:brown;} .c{color:grey;} .s{color:green;} .hl{color: black; font-weight:bold; text-decoration:none; background-color:#eee; margin-right:.2em;padding-left:.2em;padding-right:.5em;} .l{color: #666699; text-decoration:none; font-weight:normal;background-color:#eee; margin-right:.2em;padding-left:.2em;padding-right:.5em;} .d{color:#909; font-weight:bold; font-style:italic;} .f{color:#909;} .mf{color:#909;}</style></head><body><pre>");
-	  scanner.write(out);
-	  out.write("</pre></body></html>");
-	  out.close();
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-      }
-      long span =  ((new Date()).getTime() - start.getTime());
-      System.err.println("took: "+ span + " msec");
-     }
-  }
-
 %}
 
 WhiteSpace     = [ \t\f\r]+

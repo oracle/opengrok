@@ -70,28 +70,6 @@ import org.opensolaris.opengrok.configuration.Project;
       }
   }
 
-  public static void main(String argv[]) {
-    if (argv.length <= 1) {
-      System.out.println("Usage : java TroffXref <inputfile> <outfile>");
-    } else {
-      Date start = new Date();
-      TroffXref scanner = null;
-      try {
-          scanner = new TroffXref( new BufferedReader(new java.io.FileReader(argv[0])));
-	  BufferedWriter out = new BufferedWriter(new java.io.FileWriter(argv[1]));
-	  out.write("<html><head><style>a{text-decoration:none;color:#444499;} div{padding:0.5em} .I{color:#000099;} .K{color:#000000; font-weight:bold;} .c{color:grey;} .s{color:green;} .d{color:#909; font-weight:bold; font-style:italic;} .f{color:#909;} .mf{color:#909;}</style></head><body>");
-	  scanner.write(out);
-	  out.write("</body></html>");
-	  out.close();
-      }
-      catch (Exception e) {
-        e.printStackTrace();
-      }
-      long span =  ((new Date()).getTime() - start.getTime());
-      System.err.println("took: "+ span + " msec");
-     }
-  }
-
 %}
 
 WhiteSpace     = [ \t\f\r]

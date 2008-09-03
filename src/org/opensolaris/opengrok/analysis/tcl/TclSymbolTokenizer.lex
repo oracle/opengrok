@@ -52,30 +52,6 @@ import org.apache.lucene.analysis.*;
         zzStartRead = 0;
   }
 
-  public static void main(String argv[]) {
-    if (argv.length == 0) {
-      System.out.println("Usage : java TclSymbolTokenizer <inputfiles>");
-    }
-    else {
-      Date start = new Date();
-      for (String arg: argv) {
-        TclSymbolTokenizer scanner = null;
-        try {
-          scanner = new TclSymbolTokenizer(new BufferedReader(new FileReader(arg)));
-          Token t;
-          while ((t = scanner.next()) != null) {
-                System.out.println(t.termText() + " ["+t.startOffset()+"-"+ t.endOffset()+"]");
-          }
-        }
-        catch (Exception e) {
-          e.printStackTrace();
-        }
-        long span =  ((new Date()).getTime() - start.getTime());
-        System.err.println("took: "+ span + " msec");
-      }
-    }
-  }
-
 %}
 Identifier = [\:\=a-zA-Z0-9_]+
 

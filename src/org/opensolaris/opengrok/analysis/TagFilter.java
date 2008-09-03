@@ -118,12 +118,4 @@ public class TagFilter extends FilterReader {
                 (1L << 0x0020)) >> ch) & 1L) != 0);
     }
 
-@SuppressWarnings("PMD.SystemPrintln")
-public static void main(String[] args) throws Throwable {
-        BufferedReader r = new BufferedReader(new TagFilter(new FileReader(args[0])));
-        String l;
-        while ((l = r.readLine())!= null) {
-            System.out.println(l);
-        }
-    }
 }
