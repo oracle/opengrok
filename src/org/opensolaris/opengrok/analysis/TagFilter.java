@@ -23,8 +23,6 @@
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FilterReader;
 import java.io.Reader;
 import java.util.HashMap;
