@@ -32,40 +32,28 @@ import org.opensolaris.opengrok.util.Getopt;
 /**
  * Search and list the matching files
  */
-@SuppressWarnings({"PMD.AvoidPrintStackTrace","PMD.SystemPrintln"})
+@SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 final class Search {
 
-    /**
-     * usage Search index "query" prunepath
-     */
-    public static void main(String[] argv) {
-        String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n"
-                + "\t -R <configuration.xml> Read configuration from the specified file\n"
-                + "\t -d Symbol Definitions\n"
-                + "\t -r Symbol References\n"
-                + "\t -p Path\n"
-                + "\t -h History\n"
-                + "\t -f Full text";
+    private static final String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" + "\t -R <configuration.xml> Read configuration from the specified file\n" + "\t -d Symbol Definitions\n" + "\t -r Symbol References\n" + "\t -p Path\n" + "\t -h History\n" + "\t -f Full text";
+    private final static SearchEngine engine = new SearchEngine();
 
-        SearchEngine engine = new SearchEngine();
-        boolean config = false;
-
+    protected static boolean parseCmdLine(String[] argv) {
         Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:");
         try {
             getopt.parse();
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println(usage);
-            System.exit(1);
+            return false;
         }
-        
+
         int cmd;
         while ((cmd = getopt.getOpt()) != -1) {
             switch (cmd) {
                 case 'R':
                     try {
                         RuntimeEnvironment.getInstance().readConfiguration(new File(getopt.getOptarg()));
-                        config = true;
                     } catch (Exception e) {
                         System.err.println("Failed to read config file: ");
                         e.printStackTrace();
@@ -84,41 +72,65 @@ final class Search {
                 case 'h':
                     engine.setHistory(getopt.getOptarg());
                     break;
-                case 'f' :
+                case 'f':
                     engine.setFreetext(getopt.getOptarg());
                     break;
-                    
+
                 default:
                     System.err.println("Unknown option: " + (char) cmd);
                     System.err.println(usage);
-                    System.exit(1);
+                    return false;
             }
         }
 
-        if (!config) {
+        if (RuntimeEnvironment.getInstance().getDataRootPath() == null) {
             System.err.println("You must specify a configuration file");
             System.err.println(usage);
-            System.exit(1);
+            return false;
         }
-        
+
+        return true;
+    }
+
+    protected static boolean search(List<Hit> results) {
         if (!engine.isValidQuery()) {
             System.err.println("You did not specify a valid query");
             System.err.println(usage);
-            System.exit(1);
+            return false;
         }
-        
+
+        results.clear();
         int nhits = engine.search();
-        if (nhits == 0) {
-            System.err.println("Your search \"" + engine.getQuery() + "\" did not match any files.");
-        } else {
+        if (nhits > 0) {
+            engine.more(0, nhits, results);
+        }
+
+        return true;
+    }
+
+    /**
+     * usage Search index "query" prunepath
+     */
+    public static void main(String[] argv) {
+        boolean success = false;
+
+        if (parseCmdLine(argv)) {
             List<Hit> hits = new ArrayList<Hit>();
-            engine.more(0, nhits, hits);
-            String root = RuntimeEnvironment.getInstance().getSourceRootPath();
-            for (Hit hit : hits) {
-                File file = new File(root, hit.getFilename());
-                System.out.println(file.getAbsolutePath() + ": [" + hit.getLine() + "]");
+            if (search(hits)) {
+                success = true;
+                if (hits.size() == 0) {
+                    System.err.println("Your search \"" + engine.getQuery() + "\" did not match any files.");
+                } else {
+                    String root = RuntimeEnvironment.getInstance().getSourceRootPath();
+                    for (Hit hit : hits) {
+                        File file = new File(root, hit.getFilename());
+                        System.out.println(file.getAbsolutePath() + ": [" + hit.getLine() + "]");
+                    }
+                }
             }
         }
+
+        System.exit(success ? 0 : 1);
     }
 
     private Search() {
