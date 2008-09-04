@@ -15,14 +15,10 @@
  */
 package org.opensolaris.opengrok.search;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +28,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
@@ -342,53 +337,5 @@ public class Summarizer {
     }
     private void getPrefix(PrefixQuery query) {
         highlight.add(query.getPrefix().text());
-    }
-    
-    /**
-     * Tests Summary-generation.  User inputs the name of a
-     * text file and a query string
-     */
-    @SuppressWarnings("PMD.SystemPrintln")
-    public static void main(String argv[]) throws IOException, ParseException {
-        // Test arglist
-        if (argv.length < 2) {
-            System.out.println("Usage: java org.apache.nutch.searcher.Summarizer <textfile> <queryStr>");
-            return;
-        }
-        Analyzer a = new org.apache.lucene.analysis.standard.StandardAnalyzer();
-        org.apache.lucene.queryParser.QueryParser qparser = new org.apache.lucene.queryParser.QueryParser("full", a);
-        Query q = qparser.parse(argv[1]);
-        Summarizer s = new Summarizer(q, a);
-        
-        //
-        // Parse the args
-        //
-        File textFile = new File(argv[0]);
-        StringBuffer queryBuf = new StringBuffer();
-        for (int i = 1; i < argv.length; i++) {
-            queryBuf.append(argv[i]);
-            queryBuf.append(' ');
-        }
-        
-        //
-        // Load the text file into a single string.
-        //
-        StringBuffer body = new StringBuffer();
-        BufferedReader in = new BufferedReader(new FileReader(textFile));
-        try {
-            System.out.println("About to read " + textFile + " from " + in);
-            String str = in.readLine();
-            while (str != null) {
-                body.append(str);
-                str = in.readLine();
-            }
-        } finally {
-            in.close();
-        }
-        
-        // Convert the query string into a proper Query
-        Date d1 = new Date();
-        System.out.println("Summary: '" + s.getSummary(body.toString()) + "'");
-        System.out.println((new Date()).getTime() - d1.getTime() + " msecs ");
     }
 }

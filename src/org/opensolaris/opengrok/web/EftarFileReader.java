@@ -201,16 +201,4 @@ public class EftarFileReader {
             f.close();
         }
     }
-
-    @SuppressWarnings("PMD.SystemPrintln")
-    public static void main(String[] args) throws Throwable {
-        EftarFileReader fr = new EftarFileReader(args[0]);
-        for (int i = 1; i < args.length; i++) {
-            String arg = args[i];
-            System.out.println(arg + "\t" + fr.get(arg));
-        }
-        FNode fn = fr.getNode(args[1]);
-        System.err.println("Node = " + fn);
-        System.err.println("Child tag = " + fr.getChildTag(fn, args[2]));
-    }
 }

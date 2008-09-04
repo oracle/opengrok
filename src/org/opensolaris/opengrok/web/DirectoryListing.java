@@ -23,9 +23,7 @@
  */
 package org.opensolaris.opengrok.web;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.Format;
@@ -35,8 +33,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
@@ -133,18 +129,5 @@ public class DirectoryListing {
         }
         out.write("</table>");
         return readMes;
-    }
-
-    public static void main(String[] args) {
-        try {
-            DirectoryListing dl = new DirectoryListing();
-            File tolist = new File(args[0]);
-            File outFile = new File(args[1]);
-            BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
-            dl.listTo(tolist, out);
-            out.close();
-        } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Usage DirListing <dir> <output.html>", e);
-        }
     }
 }

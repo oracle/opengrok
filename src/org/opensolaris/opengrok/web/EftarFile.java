@@ -35,9 +35,6 @@ import java.io.RandomAccessFile;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import org.opensolaris.opengrok.OpenGrokLogger;
-
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File System
@@ -246,20 +243,5 @@ public class EftarFile {
             readInput(args[i]);
         }
         write(args[args.length - 1]);
-    }
-
-    @SuppressWarnings("PMD.SystemPrintln")
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Usage inputFile [inputFile ...] outputFile");
-            System.exit(1);
-        }
-
-        try {
-            EftarFile ef = new EftarFile();
-            ef.create(args);
-        } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "EftarFile error", e);
-        }
     }
 }

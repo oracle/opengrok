@@ -28,23 +28,16 @@
  */
 package org.opensolaris.opengrok.search.context;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
@@ -247,20 +240,5 @@ public class Context {
             }
         }
         return anything;
-    }
-    
-    @SuppressWarnings("PMD.SystemPrintln")
-    public static void main(String[] args) {
-        try{
-            QueryParser parser = new QueryParser("full", new CompatibleAnalyser());
-            Context ctx = new Context(parser.parse(args[0]));
-            Date start = new Date();
-            Writer out = new BufferedWriter(new OutputStreamWriter(System.out));
-            ctx.getContext(new BufferedReader(new FileReader(args[1])), out, null, null, args[1], null, false, null);
-            long span =  ((new Date()).getTime() - start.getTime());
-            System.err.println("took: "+ span + " msec");
-        } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Exception getting context", e);
-        }
     }
 }

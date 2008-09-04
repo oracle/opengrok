@@ -23,22 +23,17 @@
  */
 package org.opensolaris.opengrok.search.context;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
 import org.opensolaris.opengrok.search.Hit;
@@ -124,25 +119,5 @@ public class HistoryContext {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get history context for " + path, e);
         }
         return matchedLines > 0;
-    }
-    
-    @SuppressWarnings({"PMD.AvoidPrintStackTrace","PMD.SystemPrintln"})
-    public static void main(String[] args) {
-        try {
-            QueryParser parser = new QueryParser("hist", new CompatibleAnalyser());
-            Query qry = parser.parse(args[0]);            
-            System.out.println("Query = " + qry.toString());
-            HistoryContext ctx = new HistoryContext(qry);
-            Date start = new Date();
-            Writer out = new BufferedWriter(new OutputStreamWriter(System.out));
-            File sfile = new File(args[1]);
-            ctx.getContext(sfile.getParent(), sfile.getName(), sfile.getPath(), out);
-            long span =  ((new Date()).getTime() - start.getTime());
-            System.err.println("took: "+ span + " msec");
-            out.flush();
-        } catch (Exception e) {
-            System.err.println("Error: " + e + "\n Usage HistoryContext 'query' s.file");
-            e.printStackTrace();
-        }
     }
 }
