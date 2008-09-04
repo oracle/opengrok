@@ -137,7 +137,35 @@ public class SearchTest {
         assertTrue(instance.parseCmdLine(new String[] {"-p", "Makefile"}));
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
-    }
+}
+
+    @Test
+    public void testSearchNotFound() {
+        if (skip) {
+            return;
+        }
+        Search instance = new Search();
+        
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "path_that_can't_be_found"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());        
+
+        assertTrue(instance.parseCmdLine(new String[] {"-d", "definition_that_can't_be_found"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());        
+
+        assertTrue(instance.parseCmdLine(new String[] {"-r", "reference_that_can't_be_found"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());        
+
+        assertTrue(instance.parseCmdLine(new String[] {"-h", "history_that_can't_be_found"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());        
+
+        assertTrue(instance.parseCmdLine(new String[] {"-f", "fulltext_that_can't_be_found"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());        
+     }
 
     @Test
     public void testDumpResults() {

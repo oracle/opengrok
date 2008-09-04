@@ -62,6 +62,12 @@ public class HistoryEntryTest {
     @Test
     public void dump() {
         instance.dump();
+        instance.setActive(false);
+        instance.addFile("testFile1.txt");
+        instance.addFile("testFile2.txt");
+        instance.addChangeRequest("CR1");
+        instance.addChangeRequest("CR2");
+        instance.dump();
     }
 
     /**
