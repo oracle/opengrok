@@ -44,8 +44,9 @@ final class Search {
             "\t -f Full text";
 
     private final SearchEngine engine = new SearchEngine();
-    protected final List<Hit> results = new ArrayList<Hit>();
+    final List<Hit> results = new ArrayList<Hit>();
 
+    @SuppressWarnings({"PMD.SwitchStmtsShouldHaveDefault"})
     protected boolean parseCmdLine(String[] argv) {
         Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:");
         try {

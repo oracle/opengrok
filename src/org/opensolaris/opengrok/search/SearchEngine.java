@@ -113,14 +113,17 @@ public class SearchEngine {
     }
 
     public boolean isValidQuery() {
-        boolean ret = false;
+        boolean ret;
         String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
         if (qry.length() > 0) {
             try {
                 query = qparser.parse(qry);
                 ret = true;
-            } catch (Exception e) {                
+            } catch (Exception e) {
+                ret = false;
             }
+        } else {
+            ret = false;
         }
         
         return ret;
