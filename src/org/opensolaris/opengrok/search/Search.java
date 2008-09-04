@@ -35,10 +35,18 @@ import org.opensolaris.opengrok.util.Getopt;
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 final class Search {
 
-    private static final String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" + "\t -R <configuration.xml> Read configuration from the specified file\n" + "\t -d Symbol Definitions\n" + "\t -r Symbol References\n" + "\t -p Path\n" + "\t -h History\n" + "\t -f Full text";
-    private final static SearchEngine engine = new SearchEngine();
+    private final String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" +
+            "\t -R <configuration.xml> Read configuration from the specified file\n" +
+            "\t -d Symbol Definitions\n" +
+            "\t -r Symbol References\n" +
+            "\t -p Path\n" +
+            "\t -h History\n" +
+            "\t -f Full text";
 
-    protected static boolean parseCmdLine(String[] argv) {
+    private final SearchEngine engine = new SearchEngine();
+    protected final List<Hit> results = new ArrayList<Hit>();
+
+    protected boolean parseCmdLine(String[] argv) {
         Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:");
         try {
             getopt.parse();
@@ -92,7 +100,7 @@ final class Search {
         return true;
     }
 
-    protected static boolean search(List<Hit> results) {
+    protected boolean search() {
         if (!engine.isValidQuery()) {
             System.err.println("You did not specify a valid query");
             System.err.println(usage);
@@ -108,31 +116,33 @@ final class Search {
         return true;
     }
 
-    /**
-     * usage Search index "query" prunepath
-     */
-    public static void main(String[] argv) {
-        boolean success = false;
-
-        if (parseCmdLine(argv)) {
-            List<Hit> hits = new ArrayList<Hit>();
-            if (search(hits)) {
-                success = true;
-                if (hits.size() == 0) {
-                    System.err.println("Your search \"" + engine.getQuery() + "\" did not match any files.");
-                } else {
-                    String root = RuntimeEnvironment.getInstance().getSourceRootPath();
-                    for (Hit hit : hits) {
-                        File file = new File(root, hit.getFilename());
-                        System.out.println(file.getAbsolutePath() + ": [" + hit.getLine() + "]");
-                    }
-                }
+    protected void dumpResults() {
+        if (results.isEmpty()) {
+            System.err.println("Your search \"" + engine.getQuery() + "\" did not match any files.");
+        } else {
+            String root = RuntimeEnvironment.getInstance().getSourceRootPath();
+            for (Hit hit : results) {
+                File file = new File(root, hit.getFilename());
+                System.out.println(file.getAbsolutePath() + ": [" + hit.getLine() + "]");
             }
         }
-
-        System.exit(success ? 0 : 1);
     }
 
-    private Search() {
+    /**
+     * usage Search index "query" prunepath
+     * @param argv command line arguments
+     */
+    public static void main(String[] argv) {
+        Search searcher = new Search();
+        boolean success = false;
+
+        if (searcher.parseCmdLine(argv) && searcher.search()) {
+            success = true;
+            searcher.dumpResults();
+        }
+
+        if (!success) {
+            System.exit(1);
+        }
     }
 }
