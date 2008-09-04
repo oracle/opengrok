@@ -144,12 +144,4 @@ public class HistoryReader extends Reader {
         }
         return new StringReader(str.toString());
     }
-
-    public File getRepositoryPath() {
-        return current.getRepositoryPath();
-    }
-
-    public File getSourceRootPath() {
-        return current.getSourceRootPath();
-    }
 }

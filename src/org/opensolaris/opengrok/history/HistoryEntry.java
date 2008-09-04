@@ -47,12 +47,6 @@ public class HistoryEntry {
     private boolean active;
     private List<String> files;
     private List<String> changeRequests;
- 
-    /* This holds the subversion repository's view of where the file is in a particular revision */
-    private File repositoryPath;
-
-    /* This holds the source root's view of where the file is in a particular revision */
-    private File sourceRootPath;
     
     /** Creates a new instance of HistoryEntry */
     public HistoryEntry() {
@@ -180,44 +174,6 @@ public class HistoryEntry {
         this.changeRequests = changeRequests;
     }
 
-    /** 
-     * Returns the subversion repository's view of where the file is
-     * in a particular revision.
-     *
-     * @return the path
-     */
-    public File getRepositoryPath() {
-        return repositoryPath;
-    }
-
-    /** 
-     * Sets the subversion repository's view of where the file is
-     * in a particular revision.
-     *
-     * @param path the path
-     */
-    public void setRepositoryPath(File path) {
-        repositoryPath = path;
-    }
-
-    /** 
-     * Returns the source root's view of where the file is in a particular revision.
-     *
-     * @return the path
-     */
-    public File getSourceRootPath() {
-        return sourceRootPath;
-    }
-
-    /** 
-     * Sets the source root's view of where the file is in a particular revision.
-     *
-     * @param path the path
-     */
-    public void setSourceRootPath(File path) {
-        sourceRootPath = path;
-    }
-    
     /**
      * Remove "unneeded" info such as multiline history and files list
      */
