@@ -1,5 +1,10 @@
-testprog: main.o
-	$(LINK.c) -o testsprog main.o
+DIR:sh=uname -p
 
-main.o: main.c header.h
-	$(COMPILE.c) main.c
+$(DIR)/testprog: $(DIR)/main.o
+	$(LINK.c) -o $(DIR)/testsprog $(DIR)/main.o
+
+$(DIR):
+	mkdir $(DIR)
+
+$(DIR)/main.o: $(DIR) main.c header.h
+	$(COMPILE.c) -o $(DIR)/main.o main.c
