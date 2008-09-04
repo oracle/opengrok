@@ -193,4 +193,20 @@ public class CommandLineOptions {
     public Iterator<Option> getOptionsIterator() {
         return options.iterator();
     }
+    
+   /**
+    * Print out a manual page on standard out. Used for building manual page.
+    * 
+    * @param argv argument vector. not used.
+    */
+   @SuppressWarnings("PMD.SystemPrintln")
+   public static void main(String[] argv) {
+       CommandLineOptions co = new CommandLineOptions();
+       try {
+           System.out.println(co.getManPage());
+       } catch (IOException exp) {
+           exp.printStackTrace(System.err);
+           System.exit(1);
+       }
+   }
 }
