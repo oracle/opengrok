@@ -23,20 +23,17 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import org.opensolaris.opengrok.util.Executor;
 
 
 public final class SCCSget {
            
     public static InputStream getRevision(String command, File file, String revision) throws IOException {
         InputStream ret = null;
-
         ArrayList<String> argv = new ArrayList<String>();
         argv.add(command);
         argv.add("get");
@@ -46,32 +43,10 @@ public final class SCCSget {
             argv.add(revision);
         }
         argv.add(file.getCanonicalPath());
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        Process process = null;
-        try {
-            process = pb.start();
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[32 * 1024];
-            InputStream in = process.getInputStream();
-            int len;
-
-            while ((len = in.read(buffer)) != -1) {
-                if (len > 0) {
-                    out.write(buffer, 0, len);
-                }
-            }
-
-            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
-        } finally {
-            // is this really the way to do it? seems a bit brutal...
-            try {
-                if (process != null) {
-                    process.exitValue();
-                }
-            } catch (IllegalThreadStateException e) {
-                process.destroy();
-            }
+        Executor executor = new Executor(argv);
+        if (executor.exec() == 0) {
+            ret = executor.getOutputStream();
         }
 
         return ret;
