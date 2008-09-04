@@ -132,12 +132,7 @@ public final class HistoryGuru {
      */
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
         HistoryReader ret = null;
-        Class<? extends HistoryParser> parser = DirectoryHistoryParser.class;
         Repository repos = getRepository(file);
-        if (repos != null) {
-            parser = repos.getDirectoryHistoryParser();
-        }
-
         History history = historyCache.get(file, repos);
         if (history != null) {
             ret = new HistoryReader(history);
