@@ -115,6 +115,10 @@ public class HistoryGuruTest {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (f.isFile() && instance.hasHistory(f)) {
+                // Due to bug #3226 we cannot test RCS repos
+                if (f.getAbsolutePath().toLowerCase().indexOf("rcs") != -1) {
+                    continue;
+                }
                 HistoryReader reader = instance.getHistoryReader(f);
                 while (reader.next()) {
                     InputStream in = instance.getRevision(f.getParent(), f.getName(), reader.getRevision());
