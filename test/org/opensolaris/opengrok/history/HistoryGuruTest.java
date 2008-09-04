@@ -114,16 +114,14 @@ public class HistoryGuruTest {
     public void getRevision() throws IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
-            if (instance.hasHistory(f)) {
-                // @todo investigate why this test fails on my hudson server
-                /*
-                InputStream in = instance.getRevision(f.getParent(), f.getName(), null);
-                assertNotNull(in);
-                try {
+            if (f.isFile() && instance.hasHistory(f)) {
+                HistoryReader reader = instance.getHistoryReader(f);
+                while (reader.next()) {
+                    InputStream in = instance.getRevision(f.getParent(), f.getName(), reader.getRevision());
+                    assertNotNull("Failed to get revision " + reader.getRevision() + " of " + f.getAbsolutePath(), in);
                     in.close();
-                } catch (IOException e) {
                 }
- */
+                reader.close();
             }
         }
     }
