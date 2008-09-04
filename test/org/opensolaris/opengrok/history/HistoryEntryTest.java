@@ -5,7 +5,6 @@
 
 package org.opensolaris.opengrok.history;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
