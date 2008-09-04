@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.util.Getopt;
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 final class Search {
 
-    private final String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" +
+    private final static String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" +
             "\t -R <configuration.xml> Read configuration from the specified file\n" +
             "\t -d Symbol Definitions\n" +
             "\t -r Symbol References\n" +
@@ -65,7 +65,7 @@ final class Search {
                     } catch (Exception e) {
                         System.err.println("Failed to read config file: ");
                         e.printStackTrace();
-                        System.exit(1);
+                        return false;
                     }
                     break;
                 case 'd':
@@ -83,24 +83,19 @@ final class Search {
                 case 'f':
                     engine.setFreetext(getopt.getOptarg());
                     break;
-
-                default:
-                    System.err.println("Unknown option: " + (char) cmd);
-                    System.err.println(usage);
-                    return false;
             }
-        }
-
-        if (RuntimeEnvironment.getInstance().getDataRootPath() == null) {
-            System.err.println("You must specify a configuration file");
-            System.err.println(usage);
-            return false;
         }
 
         return true;
     }
 
     protected boolean search() {
+        if (RuntimeEnvironment.getInstance().getDataRootPath() == null) {
+            System.err.println("You must specify a configuration file");
+            System.err.println(usage);
+            return false;
+        }
+
         if (!engine.isValidQuery()) {
             System.err.println("You did not specify a valid query");
             System.err.println(usage);

@@ -46,6 +46,8 @@ public class SearchTest {
 
     static TestRepository repository;
     static boolean skip = false;
+    static PrintStream err = System.err;
+    static File configFile;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -67,10 +69,18 @@ public class SearchTest {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
             skip = true;
         }
+
+        configFile = File.createTempFile("configuration", ".xml");
+        env.writeConfiguration(configFile);
+
+        RuntimeEnvironment.getInstance().readConfiguration(new File(configFile.getAbsolutePath()));
+        PrintStream stream = new PrintStream(new ByteArrayOutputStream());
+        System.setErr(stream);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        System.setErr(err);
         repository.destroy();
     }
 
@@ -89,15 +99,13 @@ public class SearchTest {
         }
         Search instance = new Search();
 
-        PrintStream err = System.err;
-        PrintStream stream = new PrintStream(new ByteArrayOutputStream());
-        System.setErr(stream);
         assertTrue(instance.parseCmdLine(new String[] {}));
         assertTrue(instance.parseCmdLine(new String[] {"-f", "foo"}));
         assertTrue(instance.parseCmdLine(new String[] {"-r", "foo"}));
         assertTrue(instance.parseCmdLine(new String[] {"-d", "foo"}));
         assertTrue(instance.parseCmdLine(new String[] {"-h", "foo"}));
         assertTrue(instance.parseCmdLine(new String[] {"-p", "foo"}));
+        assertTrue(instance.parseCmdLine(new String[] {"-R", configFile.getAbsolutePath()}));
 
         assertFalse(instance.parseCmdLine(new String[] {"-f"}));
         assertFalse(instance.parseCmdLine(new String[] {"-r"}));
@@ -105,6 +113,7 @@ public class SearchTest {
         assertFalse(instance.parseCmdLine(new String[] {"-h"}));
         assertFalse(instance.parseCmdLine(new String[] {"-p"}));
         assertFalse(instance.parseCmdLine(new String[] {"-R"}));
+        assertFalse(instance.parseCmdLine(new String[] {"-R", "nonexisting-config-file"}));
 
         assertTrue(instance.parseCmdLine(new String[] {
             "-f", "foo",
@@ -112,8 +121,7 @@ public class SearchTest {
             "-d", "foo",
             "-d", "foo",
             "-h", "foo",
-            "-p", "foo"}));
-        System.setErr(err);
+            "-p", "foo", "-R", configFile.getAbsolutePath()}));
     }
 
     /**
@@ -125,6 +133,7 @@ public class SearchTest {
             return;
         }
         Search instance = new Search();
+        assertFalse(instance.search());
         assertTrue(instance.parseCmdLine(new String[] {"-p", "Makefile"}));
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
@@ -136,6 +145,11 @@ public class SearchTest {
             return;
         }
         Search instance = new Search();
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "Non-existing-makefile-Makefile"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+        instance.dumpResults();
+
         assertTrue(instance.parseCmdLine(new String[] {"-p", "Makefile"}));
         assertTrue(instance.search());
 
