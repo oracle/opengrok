@@ -242,28 +242,6 @@ public class HistoryEntryTest {
     }
 
     /**
-     * Test of getRepositoryPath method, of class HistoryEntry.
-     */
-    @Test
-    public void getSetRepositoryPath() {
-        File repPath = new File("/something");
-        instance.setRepositoryPath(repPath);
-        File result = instance.getRepositoryPath();
-        assertEquals(repPath, result);
-    }
-
-    /**
-     * Test of getSourceRootPath method, of class HistoryEntry.
-     */
-    @Test
-    public void getSetSourceRootPath() {
-        File path = new File("/something");
-        instance.setSourceRootPath(path);
-        File result = instance.getSourceRootPath();
-        assertEquals(path, result);
-    }
-
-    /**
      * Test of strip method, of class HistoryEntry.
      */
     @Test
