@@ -1,0 +1,63 @@
+head     1.1;
+branch   1.1.1;
+access   ;
+symbols  start:1.1.1.1 example:1.1.1;
+locks    ; strict;
+comment  @# @;
+
+
+1.1
+date     2008.09.04.16.09.41;  author austvik;  state Exp;
+branches 1.1.1.1;
+next     ;
+commitid        n6zbSZm81PKXitht;
+
+1.1.1.1
+date     2008.09.04.16.09.41;  author austvik;  state Exp;
+branches ;
+next     ;
+commitid        n6zbSZm81PKXitht;
+
+
+desc
+@@
+
+
+
+1.1
+log
+@Initial revision
+@
+text
+@class Main {
+
+    private String[] argv;
+
+    public Main(String[] argv) {
+        this.argv = argv;
+    }
+
+    private void dump() {
+        System.out.println("Started with the following arguments:");
+        for (String s : argv) {
+            System.out.print('[');
+            System.out.print(s);
+            System.out.print("] ");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] argv) {
+        Main main = new Main(argv);
+        main.dump();
+    }
+}
+@
+
+
+1.1.1.1
+log
+@Add files
+@
+text
+@@

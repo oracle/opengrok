@@ -1,0 +1,19 @@
+# The "notify" file controls where notifications from watches set by
+# "cvs watch add" or "cvs edit" are sent.  The first entry on a line is
+# a regular expression which is tested against the directory that the
+# change is being made to, relative to the $CVSROOT.  If it matches,
+# then the remainder of the line is a filter program that should contain
+# one occurrence of %s for the user to notify, and information on its
+# standard input.
+#
+# "ALL" or "DEFAULT" can be used in place of the regular expression.
+#
+# format strings are replaceed as follows:
+#    %c = canonical name of the command being executed
+#    %R = the name of the referrer, if any, otherwise the value NONE
+#    %p = path relative to repository
+#    %r = repository (path portion of $CVSROOT)
+#    %s = user to notify
+#
+# For example:
+#ALL (echo Committed to %r/%p; cat) |mail %s -s "CVS notification"

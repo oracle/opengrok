@@ -1,0 +1,69 @@
+head	1.2;
+access;
+symbols
+	start:1.1.1.1 example:1.1.1;
+locks; strict;
+comment	@ * @;
+
+
+1.2
+date	2008.09.04.16.11.24;	author austvik;	state Exp;
+branches;
+next	1.1;
+commitid	FOf9JFWhF08yjtht;
+
+1.1
+date	2008.09.04.16.09.41;	author austvik;	state Exp;
+branches
+	1.1.1.1;
+next	;
+commitid	n6zbSZm81PKXitht;
+
+1.1.1.1
+date	2008.09.04.16.09.41;	author austvik;	state Exp;
+branches;
+next	;
+commitid	n6zbSZm81PKXitht;
+
+
+desc
+@@
+
+
+1.2
+log
+@Added a comment
+@
+text
+@#include "header.h"
+
+/* Added comment  */
+
+int main(int argc, char **argv) {
+
+   printf("Program %s executed with the following arguments:\n", argv[0]);
+   for (int i = 1; i < argc; ++i) {
+      printf("[%s] ", argv[i]);
+   }
+   printf("\n");
+
+   return EXIT_SUCCESS;
+}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 2
+@
+
+
+1.1.1.1
+log
+@Add files
+@
+text
+@@

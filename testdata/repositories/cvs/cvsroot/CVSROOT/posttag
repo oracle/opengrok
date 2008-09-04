@@ -1,0 +1,37 @@
+# The "posttag" file is called after the "tag" command finishes
+# processing a directory.
+#
+# If any format strings are present in the filter, they will be replaced
+# as follows:
+#    %b = branch mode = "?" (delete ops - unknown) | "T" (branch)
+#                     | "N" (not branch)
+#    %o = operation = "add" | "mov" | "del"
+#    %c = canonical name of the command being executed
+#    %R = the name of the referrer, if any, otherwise the value NONE
+#    %p = path relative to repository
+#    %r = repository (path portion of $CVSROOT)
+#    %t = tagname
+#    %{sVv} = attribute list = file name, old version tag will be deleted
+#             from, new version tag will be added to (or deleted from, but
+#             this feature is deprecated.  When either old or new revision is
+#             unknown, doesn't exist, or isn't applicable, the string "NONE"
+#             will be placed on the command line.
+#
+# Note that %{sVv} is a list operator and not all elements are necessary.
+# Thus %{sV} is a legal format string, but will only be replaced with file
+# name and old revision. it also generates multiple arguments for each file
+# being operated upon.  i.e. if two files, file1 & file2, are having a tag
+# moved from version 1.1 to version 1.1.2.9, %{sVv} will generate the
+# following six arguments in this order:
+# file1, 1.1, 1.1.2.9, file2, 1.1, 1.1.2.9.
+#
+# The first entry on a line is a regular expression which is tested
+# against the directory that the change is being committed to, relative
+# to the $CVSROOT.  For the first match that is found, then the remainder
+# of the line is the name of the filter to run.
+#
+# If the repository name does not match any of the regular expressions in this
+# file, the "DEFAULT" line is used, if it is specified.
+#
+# If the name "ALL" appears as a regular expression it is always used
+# in addition to the first matching regex or "DEFAULT".

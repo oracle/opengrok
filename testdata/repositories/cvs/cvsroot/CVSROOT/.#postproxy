@@ -1,0 +1,22 @@
+# The "postproxy" file is called from a secondary server as soon as
+# the secondary server closes its connection to the primary server.
+# This script might, for example, be used to shut down a dial up
+# or VPN connection to the primary server's network.
+#
+# If any format strings are present in the filter, they will be replaced
+# as follows:
+#    %c = canonical name of the command being executed
+#    %R = the name of the referrer, if any, otherwise the value NONE
+#    %p = path relative to repository (currently always ".")
+#    %r = repository (path portion of $CVSROOT)
+#
+# The first entry on a line is a regular expression which is tested
+# against the directory that the change is being committed to, relative
+# to the $CVSROOT.  For the first match that is found, then the remainder
+# of the line is the name of the filter to run.
+#
+# If the repository name does not match any of the regular expressions in this
+# file, the "DEFAULT" line is used, if it is specified.
+#
+# If the name "ALL" appears as a regular expression it is always used
+# in addition to the first matching regex or "DEFAULT".

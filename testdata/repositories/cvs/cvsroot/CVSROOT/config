@@ -1,0 +1,97 @@
+# Set `SystemAuth' to `no' if pserver shouldn't check system users/passwords.
+#SystemAuth=no
+
+# Set `LocalKeyword' to specify a local alias for a standard keyword.
+#LocalKeyword=MYCVS=CVSHeader
+
+# Set `KeywordExpand' to `i' followed by a list of keywords to expand or
+# `e' followed by a list of keywords to not expand.
+#KeywordExpand=iMYCVS,Name,Date
+#KeywordExpand=eCVSHeader
+
+# Set `TopLevelAdmin' to `yes' to create a CVS directory at the top
+# level of the new working directory when using the `cvs checkout'
+# command.
+#TopLevelAdmin=no
+
+# Put CVS lock files in this directory rather than directly in the repository.
+#LockDir=/var/lock/cvs
+
+# Set `LogHistory' to `all' or `TOEFWUPCGMAR' to log all transactions to the
+# history file, or a subset as needed (ie `TMAR' logs all write operations)
+#LogHistory=TOEFWUPCGMAR
+
+# Set `RereadLogAfterVerify' to `always' (the default) to allow the verifymsg
+# script to change the log message.  Set it to `stat' to force CVS to verify
+# that the file has changed before reading it (this can take up to an extra
+# second per directory being committed, so it is not recommended for large
+# repositories.  Set it to `never' (the previous CVS behavior) to prevent
+# verifymsg scripts from changing the log message.
+#RereadLogAfterVerify=always
+
+# Set `UserAdminOptions' to the list of `cvs admin' commands (options)
+# that users not in the `cvsadmin' group are allowed to run.  This
+# defaults to `k', or only allowing the changing of the default
+# keyword expansion mode for files for users not in the `cvsadmin' group.
+# This value is ignored if the `cvsadmin' group does not exist.
+#
+# The following string would enable all `cvs admin' commands for all
+# users:
+#UserAdminOptions=aAbceIklLmnNostuU
+
+# Set `UseNewInfoFmtStrings' to `no' if you must support a legacy system by
+# enabling the deprecated old style info file command line format strings.
+# Be warned that these strings could be disabled in any new version of CVS.
+UseNewInfoFmtStrings=yes
+
+# Set `ImportNewFilesToVendorBranchOnly' to `yes' if you wish to force
+# every `cvs import' command to behave as if the `-X' flag was
+# specified.
+#ImportNewFilesToVendorBranchOnly=no
+
+# Set `PrimaryServer' to the CVSROOT to the primary, or write, server when
+# establishing one or more read-only mirrors which serve as proxies for
+# the write server in write mode or redirect the client to the primary for
+# write requests.
+#
+# For example:
+#
+#   PrimaryServer=:fork:localhost/cvsroot
+
+# Set `MaxProxyBufferSize' to the the maximum allowable secondary
+# buffer memory cache size before the buffer begins being stored to disk, in
+# bytes.  Must be a positive integer but may end in `k', `M', `G', or `T' (for
+# kiilo, mega, giga, & tera, respectively).  If an otherwise valid number you
+# specify is greater than the SIZE_MAX defined by your system's C compiler,
+# then it will be resolved to SIZE_MAX without a warning.  Defaults to 8M (8
+# megabytes).
+#
+# High values for MaxProxyBufferSize may speed up a secondary server
+# with old hardware and a lot of available memory but can actually slow a
+# modern system down slightly.
+#
+# For example:
+#
+#   MaxProxyBufferSize=1G
+
+# Set `MaxCommentLeaderLength' to the maximum length permitted for the
+# automagically determined comment leader used when expanding the Log
+# keyword, in bytes.  CVS's behavior when the automagically determined
+# comment leader exceeds this length is dependant on the value of
+# `UseArchiveCommentLeader' set in this file.  `unlimited' is a valid
+# setting for this value.  Defaults to 20 bytes.
+#
+# For example:
+#
+#   MaxCommentLeaderLength=20
+
+# Set `UseArchiveCommentLeader' to `yes' to cause CVS to fall back on
+# the comment leader set in the RCS archive file, if any, when the
+# automagically determined comment leader exceeds `MaxCommentLeaderLength'
+# bytes.  If `UseArchiveCommentLeader' is not set and a comment leader
+# greater than `MaxCommentLeaderLength' is calculated, the Log keyword
+# being examined will not be expanded.  Defaults to `no'.
+#
+# For example:
+#
+#   UseArchiveCommentLeader=no
