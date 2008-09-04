@@ -88,12 +88,14 @@ public final class HistoryGuru {
      * <code>HistoryParser</code> does not support annotation
      */
     public Annotation annotate(File file, String rev) throws IOException {
+        Annotation ret = null;
+
         Repository repos = getRepository(file);
         if (repos != null) {
-            return repos.annotate(file, rev);
+            ret = repos.annotate(file, rev);
         }
 
-        return null;
+        return ret;
     }
 
     /**
@@ -129,26 +131,19 @@ public final class HistoryGuru {
      * @return A HistorReader that may be used to read out history data for a named file
      */
     private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
-        Class<? extends HistoryParser> parser = null;
+        HistoryReader ret = null;
+        Class<? extends HistoryParser> parser = DirectoryHistoryParser.class;
         Repository repos = getRepository(file);
         if (repos != null) {
             parser = repos.getDirectoryHistoryParser();
         }
 
-        if (parser == null) {
-            // I did not find a match for the specified system. Use the default directory reader
-            parser = DirectoryHistoryParser.class;
-            repos = null;
+        History history = historyCache.get(file, repos);
+        if (history != null) {
+            ret = new HistoryReader(history);
         }
 
-        if (parser != null) {
-            History history = historyCache.get(file, repos);
-            if (history != null) {
-                return new HistoryReader(history);
-            }
-        }
-
-        return null;
+        return ret;
     }
 
     /**
@@ -160,11 +155,13 @@ public final class HistoryGuru {
      * @return An InputStream containing the named revision of the file.
      */
     public InputStream getRevision(String parent, String basename, String rev) throws IOException {
+        InputStream ret = null;
+
         Repository rep = getRepository(new File(parent));
         if (rep != null) {
-            return rep.getHistoryGet(parent, basename, rev);
+            ret = rep.getHistoryGet(parent, basename, rev);
         }
-        return null;
+        return ret;
     }
     
     /**
@@ -202,12 +199,7 @@ public final class HistoryGuru {
 
     @SuppressWarnings("PMD.ConfusingTernary")
     private void addRepositories(File[] files, Map<String, Repository> repos,
-            IgnoredNames ignoredNames, boolean recursiveSearch) {
-
-        if (files == null) {
-            return;
-        }
-        
+            IgnoredNames ignoredNames, boolean recursiveSearch) {        
         for (File file : files) {
             Repository repository = null;
             try {
@@ -303,129 +295,81 @@ public final class HistoryGuru {
     }
     
     private void createCache(Repository repository) {
-        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
-        long start = System.currentTimeMillis();
-        
-        if (verbose) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Create historycache for " + path + " (" + type + ")");
-        }
 
-        try {
-            repository.createCache(historyCache);
-        } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating cache for " + path + " (" + type + ")", e);
+        if (!repository.isWorking()) {
+            OpenGrokLogger.getLogger().warning("Skipping creation of historycache of " + type + " repository in " + path + ": Missing SCM dependencies?");
+        } else {
+            boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
+            long start = System.currentTimeMillis();
+
+            if (verbose) {
+                OpenGrokLogger.getLogger().log(Level.INFO, "Create historycache for " + path + " (" + type + ")");
+            }
+
+            try {
+                repository.createCache(historyCache);
+            } catch (Exception e) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating cache for " + path + " (" + type + ")", e);
+            }
+
+            if (verbose) {
+                long stop = System.currentTimeMillis();
+                OpenGrokLogger.getLogger().log(Level.INFO, "Creating historycache for " + path + " took (" + (stop - start) + "ms)");
+            }
         }
-        long stop = System.currentTimeMillis();
-        if (verbose) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Creating historycache for " + path + " took (" + (stop - start) + "ms)");
-        }   
     }
-    
+
+    private void createCache(ArrayList<Repository> repositories) {
+        for (Repository repos : repositories) {
+            createCache(repos);
+        }
+    }
+
     /**
      * Create the history cache for all of the repositories
      */
     public void createCache() {
-        boolean threading = System.getProperty("org.opensolaris.opengrok.history.threads", null) != null;
-        ArrayList<Thread> threads = new ArrayList<Thread>();
-        
+        ArrayList<Repository> repos = new ArrayList<Repository>();
         for (Map.Entry<String, Repository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
-            if (threading) {
-                final Repository repos = entry.getValue();
-                Thread t = new Thread(new Runnable() {
-                    public void run() {
-                        createCache(repos);
-                    }                    
-                });
-                t.start();
-                threads.add(t);
-            } else {
-                createCache(entry.getValue());
-            }
+            repos.add(entry.getValue());
         }
-        // Wait for all threads to finish
-        while (!threads.isEmpty()) {
-            for (Thread t : threads) {
-                if (!t.isAlive()) {
-                    try {
-                        t.join();
-                        threads.remove(t);
-                        break;
-                    } catch (InterruptedException ex) {
-                    }
-                } 
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.INFO, "Woken up during sleep for threads to finish", e);
-            }
-        }
+        createCache(repos);
     }
 
     public void createCache(List<String> repositories) {
-        boolean threading = System.getProperty("org.opensolaris.opengrok.history.threads", null) != null;
-        ArrayList<Thread> threads = new ArrayList<Thread>();
+        ArrayList<Repository> repos = new ArrayList<Repository>();
         File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (String file : repositories) {
-            final Repository repos = getRepository(new File(root, file));
-            if (repos != null) {
-                if (threading) {
-                    Thread t = new Thread(new Runnable() {
-                        public void run() {
-                            createCache(repos);
-                        }
-                    });
-                    t.start();
-                    threads.add(t);
-                } else {
-                    createCache(repos);
-                }
+            File f = new File(root, file);
+            Repository r = getRepository(f);
+            if (r != null) {
+                repos.add(r);
+            } else {
+                OpenGrokLogger.getLogger().warning("Could not locate a repository for " + f.getAbsolutePath());
             }
         }
-        
-        // Wait for all threads to finish
-        while (!threads.isEmpty()) {
-            for (Thread t : threads) {
-                if (!t.isAlive()) {
-                    try {
-                        t.join();
-                        threads.remove(t);
-                        break;
-                    } catch (InterruptedException ex) {
-                    }
-                } 
-            }    
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.INFO, "Woken up during sleep for threads to finish", e);
-            }
-        }
+        createCache(repos);
     }
 
     
     private Repository getRepository(File path) {
         Map<String, Repository> repos = RuntimeEnvironment.getInstance().getRepositories();
 
-        File canonicalPath = path;
+        File file = path;
         try {
-            canonicalPath = path.getCanonicalFile();
+            file = path.getCanonicalFile();
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + path, e);
             return null;
         }
-        while (canonicalPath != null) {
-            try {
-                Repository r = repos.get(canonicalPath.getCanonicalPath());
-                if (r != null) {
-                    return r;
-                }
-            } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + canonicalPath, e);
+        while (file != null) {
+            Repository r = repos.get(file.getAbsolutePath());
+            if (r != null) {
+                return r;
             }
-            canonicalPath = canonicalPath.getParentFile();
+            file = file.getParentFile();
         }
 
         return null;

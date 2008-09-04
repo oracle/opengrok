@@ -87,6 +87,14 @@ public class HistoryGuruTest {
     public void testCreateCache() {
         HistoryGuru instance = HistoryGuru.getInstance();
         instance.createCache();
+        List<String> repos = new ArrayList<String>();
+        repos.add("git");
+        repos.add("bazaar");
+        repos.add("mercurial");
+        repos.add("teamware");
+        repos.add("rcs");
+        repos.add("nonexistent");
+        instance.createCache(repos);
     }
 
     @Test
