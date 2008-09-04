@@ -161,7 +161,27 @@ public class SearchTest {
         assertTrue(instance.parseCmdLine(new String[] {"-p", "main AND (file OR field)"}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
-    }
+
+        assertTrue(instance.parseCmdLine(new String[] {"-f", "opengrok && something || else"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-f", "op*ng?ok"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-f", "\"op*n g?ok\""}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-f", "title:[a TO b]"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-f", "title:{a TO c}"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+}
 
     @Test
     public void testSearchNotFound() {
