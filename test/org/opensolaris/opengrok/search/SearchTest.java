@@ -137,7 +137,31 @@ public class SearchTest {
         assertTrue(instance.parseCmdLine(new String[] {"-p", "Makefile"}));
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
-}
+
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "main~"}));
+        assertTrue(instance.search());
+        assertEquals(6, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "\"main troff\"~5"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "Main OR main"}));
+        assertTrue(instance.search());
+        assertEquals(6, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "\"main file\""}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "+main -file"}));
+        assertTrue(instance.search());
+        assertEquals(6, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[] {"-p", "main AND (file OR field)"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+    }
 
     @Test
     public void testSearchNotFound() {
