@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.analysis.sql;
 
 import java.io.*;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.web.Util;
@@ -44,6 +45,7 @@ import org.opensolaris.opengrok.configuration.Project;
     private final String urlPrefix =
             RuntimeEnvironment.getInstance().getUrlPrefix();
     private int commentLevel;
+    private Definitions defs;
 
     public void reInit(char[] buf, int len) {
         yyreset((Reader) null);
@@ -59,6 +61,10 @@ import org.opensolaris.opengrok.configuration.Project;
         Util.readableLine(1, out, annotation);
         yyline = 2;
         while (yylex() != YYEOF);
+    }
+
+    void setDefs(Definitions defs) {
+        this.defs = defs;
     }
 
   private void appendProject() throws IOException {
@@ -90,8 +96,20 @@ Whitespace = [ \t\f\r]+
         String id = yytext();
         if (Consts.isReservedKeyword(id)) {
             out.append("<b>").append(id).append("</b>");
+        } else if (defs != null && defs.hasSymbol(id)) {
+            if (defs.hasDefinitionAt(id, yyline - 1)) {
+                out.append("<a class=\"d\" name=\"").append(id).append("\"/>")
+                   .append("<a href=\"").append(urlPrefix).append("refs=")
+                   .append(id);
+                appendProject();
+                out.append("\" class=\"d\">").append(id).append("</a>");
+            } else if (defs.occurrences(id) == 1) {
+                out.append("<a class=\"f\" href=\"#").append(id).append("\">")
+                   .append(id).append("</a>");
+            } else {
+                out.append("<span class=\"mf\">").append(id).append("</span>");
+            }
         } else {
-            // TODO check tags
             out.append("<a href=\"").append(urlPrefix).append("defs=")
                .append(id);
             appendProject();
