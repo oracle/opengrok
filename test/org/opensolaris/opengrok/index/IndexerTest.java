@@ -23,7 +23,11 @@
  */
 package org.opensolaris.opengrok.index;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
@@ -31,9 +35,13 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.*;
 
@@ -139,6 +147,27 @@ public class IndexerTest {
             assertEquals(1, listener.files.size());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
+        }
+    }
+    
+    @Test
+    public void testXref() throws IOException {
+        List<File> files = new ArrayList<File>();
+        FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
+        for (File f : files) {
+            FileAnalyzerFactory factory = AnalyzerGuru.find(f.getAbsolutePath());
+            if (factory == null) {
+                continue;
+            }
+            InputStream in = new FileInputStream(f);
+            StringWriter out = new StringWriter();
+            try {
+                AnalyzerGuru.writeXref(factory, in, out, null, null);
+            } catch (UnsupportedOperationException exp) {
+                // ignore
+            }
+            in.close();
+            out.close();
         }
     }
 }
