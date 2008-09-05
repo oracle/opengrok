@@ -43,11 +43,12 @@ final class Search {
             "\t -h History\n" +
             "\t -f Full text";
 
-    private final SearchEngine engine = new SearchEngine();
+    private SearchEngine engine;
     final List<Hit> results = new ArrayList<Hit>();
 
     @SuppressWarnings({"PMD.SwitchStmtsShouldHaveDefault"})
     protected boolean parseCmdLine(String[] argv) {
+        engine = new SearchEngine();
         Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:");
         try {
             getopt.parse();
@@ -97,7 +98,7 @@ final class Search {
             return false;
         }
 
-        if (!engine.isValidQuery()) {
+        if (engine == null || !engine.isValidQuery()) {
             System.err.println("You did not specify a valid query");
             System.err.println(usage);
             return false;

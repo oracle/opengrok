@@ -99,29 +99,30 @@ public class SearchTest {
         }
         Search instance = new Search();
 
-        assertTrue(instance.parseCmdLine(new String[] {}));
-        assertTrue(instance.parseCmdLine(new String[] {"-f", "foo"}));
-        assertTrue(instance.parseCmdLine(new String[] {"-r", "foo"}));
-        assertTrue(instance.parseCmdLine(new String[] {"-d", "foo"}));
-        assertTrue(instance.parseCmdLine(new String[] {"-h", "foo"}));
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "foo"}));
-        assertTrue(instance.parseCmdLine(new String[] {"-R", configFile.getAbsolutePath()}));
+        assertTrue(instance.parseCmdLine(new String[]{}));
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "foo"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-r", "foo"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-d", "foo"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-h", "foo"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "foo"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-R", configFile.getAbsolutePath()}));
 
-        assertFalse(instance.parseCmdLine(new String[] {"-f"}));
-        assertFalse(instance.parseCmdLine(new String[] {"-r"}));
-        assertFalse(instance.parseCmdLine(new String[] {"-d"}));
-        assertFalse(instance.parseCmdLine(new String[] {"-h"}));
-        assertFalse(instance.parseCmdLine(new String[] {"-p"}));
-        assertFalse(instance.parseCmdLine(new String[] {"-R"}));
-        assertFalse(instance.parseCmdLine(new String[] {"-R", "nonexisting-config-file"}));
+        assertFalse(instance.parseCmdLine(new String[]{"-f"}));
+        assertFalse(instance.parseCmdLine(new String[]{"-r"}));
+        assertFalse(instance.parseCmdLine(new String[]{"-d"}));
+        assertFalse(instance.parseCmdLine(new String[]{"-h"}));
+        assertFalse(instance.parseCmdLine(new String[]{"-p"}));
+        assertFalse(instance.parseCmdLine(new String[]{"-R"}));
+        assertFalse(instance.parseCmdLine(new String[]{"-R", "nonexisting-config-file"}));
 
-        assertTrue(instance.parseCmdLine(new String[] {
-            "-f", "foo",
-            "-r", "foo",
-            "-d", "foo",
-            "-d", "foo",
-            "-h", "foo",
-            "-p", "foo", "-R", configFile.getAbsolutePath()}));
+        assertTrue(instance.parseCmdLine(new String[]{
+                    "-f", "foo",
+                    "-r", "foo",
+                    "-d", "foo",
+                    "-d", "foo",
+                    "-h", "foo",
+                    "-p", "foo", "-R", configFile.getAbsolutePath()
+                }));
     }
 
     /**
@@ -134,54 +135,63 @@ public class SearchTest {
         }
         Search instance = new Search();
         assertFalse(instance.search());
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "Makefile"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "Makefile"}));
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "main~"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "main~"}));
         assertTrue(instance.search());
         assertEquals(6, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "\"main troff\"~5"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main troff\"~5"}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "Main OR main"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "Main OR main"}));
         assertTrue(instance.search());
         assertEquals(6, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "\"main file\""}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main file\""}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "+main -file"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "+main -file"}));
         assertTrue(instance.search());
         assertEquals(6, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "main AND (file OR field)"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "main AND (file OR field)"}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-f", "opengrok && something || else"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "opengrok && something || else"}));
+        assertTrue(instance.search());
+        assertEquals(4, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "op*ng?ok"}));
+        assertTrue(instance.search());
+        assertEquals(3, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "\"op*n g?ok\""}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-f", "op*ng?ok"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "title:[a TO b]"}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-f", "\"op*n g?ok\""}));
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "title:{a TO c}"}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-f", "title:[a TO b]"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "\"contains some strange\""}));
         assertTrue(instance.search());
-        assertEquals(0, instance.results.size());
+        assertEquals(1, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-f", "title:{a TO c}"}));
+        RuntimeEnvironment.getInstance().setAllowLeadingWildcard(true);
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "?akefile"}));
         assertTrue(instance.search());
-        assertEquals(0, instance.results.size());
-}
+        assertEquals(1, instance.results.size());
+    }
 
     @Test
     public void testSearchNotFound() {
@@ -189,27 +199,27 @@ public class SearchTest {
             return;
         }
         Search instance = new Search();
-        
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "path_that_can't_be_found"}));
-        assertTrue(instance.search());
-        assertEquals(0, instance.results.size());        
 
-        assertTrue(instance.parseCmdLine(new String[] {"-d", "definition_that_can't_be_found"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "path_that_can't_be_found"}));
         assertTrue(instance.search());
-        assertEquals(0, instance.results.size());        
+        assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-r", "reference_that_can't_be_found"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-d", "definition_that_can't_be_found"}));
         assertTrue(instance.search());
-        assertEquals(0, instance.results.size());        
+        assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-h", "history_that_can't_be_found"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-r", "reference_that_can't_be_found"}));
         assertTrue(instance.search());
-        assertEquals(0, instance.results.size());        
+        assertEquals(0, instance.results.size());
 
-        assertTrue(instance.parseCmdLine(new String[] {"-f", "fulltext_that_can't_be_found"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-h", "history_that_can't_be_found"}));
         assertTrue(instance.search());
-        assertEquals(0, instance.results.size());        
-     }
+        assertEquals(0, instance.results.size());
+
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "fulltext_that_can't_be_found"}));
+        assertTrue(instance.search());
+        assertEquals(0, instance.results.size());
+    }
 
     @Test
     public void testDumpResults() {
@@ -217,12 +227,12 @@ public class SearchTest {
             return;
         }
         Search instance = new Search();
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "Non-existing-makefile-Makefile"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "Non-existing-makefile-Makefile"}));
         assertTrue(instance.search());
         assertEquals(0, instance.results.size());
         instance.dumpResults();
 
-        assertTrue(instance.parseCmdLine(new String[] {"-p", "Makefile"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-p", "Makefile"}));
         assertTrue(instance.search());
 
         PrintStream out = System.out;
@@ -245,7 +255,7 @@ public class SearchTest {
         PrintStream out = System.out;
         ByteArrayOutputStream array = new ByteArrayOutputStream();
         System.setOut(new PrintStream(array));
-        Search.main(new String[] {"-p", "Makefile"});
+        Search.main(new String[]{"-p", "Makefile"});
         System.out.flush();
         assertTrue(array.toString().indexOf("Makefile: [...]") != -1);
         System.setOut(out);
