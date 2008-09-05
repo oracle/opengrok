@@ -59,7 +59,9 @@ public class RCSRepository extends Repository {
     @Override
     InputStream getHistoryGet(String parent, String basename, String rev) {
         try {
-            return new RCSget(new File(parent, basename).getPath(), rev);
+            File file = new File(parent, basename);
+            File rcsFile = getRCSFile(file);
+            return new RCSget(rcsFile.getPath(), rev);
         } catch (IOException ioe) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, 
                     "Failed to retrieve revision " + rev + " of " + basename, ioe);
