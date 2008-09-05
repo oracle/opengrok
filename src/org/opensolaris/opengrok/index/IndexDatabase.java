@@ -459,42 +459,39 @@ public class IndexDatabase {
      */
     private void addFile(File file, String path) throws IOException {
         InputStream in;
+        FileInputStream fis = null;
         try {
-            in = new BufferedInputStream(new FileInputStream(file));
-        } catch (IOException ex) {
-            log.warning("Warning: " + ex.getMessage());
-            return;
-        }
-        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
+            fis = new FileInputStream(file);
+            in = new BufferedInputStream(fis);
+            FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
 
-        for (IndexChangedListener listener : listeners) {
-            listener.fileAdded(path, fa.getClass().getSimpleName());
-        }
-
-        Document d = analyzerGuru.getDocument(file, in, path, fa);
-        if (d == null) {
-            log.warning("Warning: did not add " + path);
-        } else {
-            writer.addDocument(d, fa);
-            Genre g = fa.getFactory().getGenre();
-            if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-                File xrefFile = new File(xrefDir, path);
-                // If mkdirs() returns false, the failure is most likely
-                // because the file already exists. But to check for the
-                // file first and only add it if it doesn't exists would
-                // only increase the file IO...
-                if (!xrefFile.getParentFile().mkdirs()) {
-                    assert xrefFile.getParentFile().exists();
-                }
-                fa.writeXref(xrefDir, path);
+            for (IndexChangedListener listener : listeners) {
+                listener.fileAdded(path, fa.getClass().getSimpleName());
             }
-            setDirty();
-        }
 
-        try { 
-            in.close();
-        } catch (IOException e) {
-            log.log(Level.WARNING, "An error occured while closing stream", e);
+            Document d = analyzerGuru.getDocument(file, in, path, fa);
+            if (d == null) {
+                log.warning("Warning: did not add " + path);
+            } else {
+                writer.addDocument(d, fa);
+                Genre g = fa.getFactory().getGenre();
+                if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
+                    File xrefFile = new File(xrefDir, path);
+                    // If mkdirs() returns false, the failure is most likely
+                    // because the file already exists. But to check for the
+                    // file first and only add it if it doesn't exists would
+                    // only increase the file IO...
+                    if (!xrefFile.getParentFile().mkdirs()) {
+                        assert xrefFile.getParentFile().exists();
+                    }
+                    fa.writeXref(xrefDir, path);
+                }
+                setDirty();
+            }
+        } finally {
+            if (fis != null) {
+                fis.close();
+            }
         }
     }
 
