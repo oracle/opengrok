@@ -54,13 +54,17 @@ public class ELFAnalyzer extends FileAnalyzer {
     PlainFullTokenizer plainfull;
     StringReader dummy = new StringReader("");
     
-    /** Creates a new instance of ELFAnalyzer */
+    /**
+     * Creates a new instance of ELFAnalyzer
+     * @param factory The factory that creates ELFAnalyzers
+     */
     protected ELFAnalyzer(FileAnalyzerFactory factory) {
 	super(factory);
 	content = new char[16*1024];
 	plainfull = new PlainFullTokenizer(dummy);
     }
     
+    @Override
     public void analyze(Document doc, InputStream in) {
         try {
             if (in instanceof FileInputStream) {
@@ -165,6 +169,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	return sb.toString();
     }
     
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
 	if("full".equals(fieldName)) {
 	    plainfull.reInit(content,len);
@@ -177,6 +182,7 @@ public class ELFAnalyzer extends FileAnalyzer {
      * Write a cross referenced HTML file.
      * @param out Writer to write
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
 	out.write("</pre>");
 	out.write(content, 0, len);
@@ -235,6 +241,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	    e_shstrndx = fmap.getShort();
 	}
 	
+        @Override
 	public String toString() {
 	    return(EMs[e_machine] + " " +
 		ECs[ei_class] + " " +
@@ -278,6 +285,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 	    sh_entsize = fmap.getInt();
 	}
 	
+        @Override
 	public String toString() {
 	    return(
 		"\nsh_name : " + sh_name +
@@ -292,50 +300,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 		"\nsh_entsize: " + sh_entsize );
 	}
     }
-    static class ELFSymbol {
-	public int st_name;
-	public int st_value;
-	public int st_size;
-	public int st_info;
-	public int st_other;
-	public int st_shndx;
-	
-	public ELFSymbol(MappedByteBuffer fmap) {
-	    st_name = fmap.getInt();
-	    st_value = fmap.getInt();
-	    st_size = fmap.getInt();
-	    st_info = fmap.get();
-	    st_other = fmap.get();
-	    st_shndx = fmap.getShort();
-	}
-	
-	public String toString() {
-	    int type = st_info & 0xf;
-	    String stype = " NULL ";
-	    switch(type) {
-		case 1 : stype = " OBJECT "; break;
-		case 2 : stype = " FUNCTION "; break;
-		case 4 : stype = " FILE "; break;
-                default:
-                    stype = "NULL"; break;
-	    }
-	    return(" st_name : " + st_name + "(" + st_size + ") = " + st_value + stype);
-	}
-    }
-    static class ELFDynamic {
-	public long d_tag;
-	public long d_val;
-	
-	public ELFDynamic(MappedByteBuffer fmap) {
-	    d_tag = fmap.getInt();
-	    d_val = fmap.getInt();
-	}
-	
-	public String toString() {
-	    return("d_tag : " + d_tag + " = " + d_val);
-	}
-    }
-    
+
     String[] ECs = {
 	"None", "32", "64"
     };
