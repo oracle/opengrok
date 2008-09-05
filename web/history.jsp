@@ -86,8 +86,7 @@ while (hr.next()) {
     %><td>&nbsp;<%=rev%>&nbsp;</td><%
     } else {
         if(hr.isActive()) {
-	  String rp = ((hr.getSourceRootPath() == null) ? path : hr.getSourceRootPath().toString());
-	  rp = Util.URIEncodePath(rp);
+            String rp = Util.URIEncodePath(path);
 %><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center"><input type="radio" name="r1" value="<%=rp%>@<%=rev%>"/>
 <input type="radio" name="r2" value="<%=rp%>@<%=rev%>"/></td><%
         } else {
