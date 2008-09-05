@@ -123,7 +123,7 @@ public class PerforceRepositoryTest {
         for (File f : files) {
             if (instance.fileHasHistory(f)) {
                 History history = parser.parse(f, instance);
-                assertNotNull(history);
+                assertNotNull("Failed to get history for: " + f.getAbsolutePath(), history);
                 HistoryReader reader = new HistoryReader(history);
 
                 while (reader.next()) {
@@ -132,7 +132,7 @@ public class PerforceRepositoryTest {
                     in.close();
 
                     if (instance.fileHasAnnotation(f)) {
-                        assertNotNull(instance.annotate(f, reader.getRevision()));
+                        assertNotNull("Failed to annotate: " + f.getAbsolutePath(), instance.annotate(f, reader.getRevision()));
                     }
                 }
                 reader.close();
