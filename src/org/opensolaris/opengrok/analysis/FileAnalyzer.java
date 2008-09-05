@@ -135,7 +135,9 @@ public class FileAnalyzer extends Analyzer {
             if (compressed) {
                 out = new GZIPOutputStream(out);
             }
-            writeXref(new BufferedWriter(new OutputStreamWriter(out)));
+            Writer w = new BufferedWriter(new OutputStreamWriter(out));
+            writeXref(w);
+            w.close();
         } finally {
             out.close();
         }
