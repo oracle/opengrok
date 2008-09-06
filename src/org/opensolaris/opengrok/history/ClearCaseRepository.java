@@ -87,8 +87,6 @@ public class ClearCaseRepository extends Repository {
     }
 
     public InputStream getHistoryGet(String parent, String basename, String rev) {
-        InputStream ret = null;
-
         String directoryName = getDirectoryName();
         File directory = new File(directoryName);
 
@@ -113,7 +111,7 @@ public class ClearCaseRepository extends Repository {
                 return null;
             }
 
-            ret = new BufferedInputStream(new FileInputStream(tmp) {
+            return new BufferedInputStream(new FileInputStream(tmp) {
 
                 public void close() throws IOException {
                     super.close();
@@ -125,8 +123,10 @@ public class ClearCaseRepository extends Repository {
                     }
                 }
             });
-        } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
+        } catch (IOException exp) {
+            OpenGrokLogger.getLogger().log(
+                    Level.SEVERE, "Failed to get history", exp);
+            return null;
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -138,8 +138,6 @@ public class ClearCaseRepository extends Repository {
                 }
             }
         }
-
-        return ret;
     }
 
     /**
