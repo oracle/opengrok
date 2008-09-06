@@ -49,7 +49,6 @@ public class RazorHistoryParser implements HistoryParser {
             Pattern.compile("^##(TITLE|NOTES|AUDIT|ISSUE):\\s+(.*)\\s*$");
     private final static boolean DUMP_HISTORY_ENTRY_ADDITIONS = false;
 
-    @SuppressWarnings("PMD.ConfusingTernary")
     public History parse(File file, Repository repository) throws IOException {
 
         RazorRepository repo = (RazorRepository) repository;
@@ -67,7 +66,16 @@ public class RazorHistoryParser implements HistoryParser {
             return null;
         }
 
-        BufferedReader contents = new BufferedReader(new FileReader(mappedFile.getAbsolutePath()));
+        FileReader contents = new FileReader(mappedFile.getAbsoluteFile());
+        try {
+            return parseContents(new BufferedReader(contents));
+        } finally {
+            contents.close();
+        }
+    }
+
+    @SuppressWarnings("PMD.ConfusingTernary")
+    private History parseContents(BufferedReader contents) throws IOException {
         String line;
 
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
@@ -181,11 +189,6 @@ public class RazorHistoryParser implements HistoryParser {
 
         History history = new History();
         history.setHistoryEntries(entries);
-        try {
-            contents.close();
-        } catch (IOException exp) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing reader", exp);
-        }
         return history;
     }
 
