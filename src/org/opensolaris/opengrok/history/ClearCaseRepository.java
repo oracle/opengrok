@@ -113,7 +113,7 @@ public class ClearCaseRepository extends Repository {
                 return null;
             }
 
-            ret = new BufferedInputStream(new FileInputStream(tmp) {
+            ret = new BufferedInputStream(new FileInputStream(tmp)) {
 
                 public void close() throws IOException {
                     super.close();
@@ -124,7 +124,7 @@ public class ClearCaseRepository extends Repository {
                         tmp.deleteOnExit();
                     }
                 }
-            });
+            };
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
