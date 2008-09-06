@@ -110,10 +110,7 @@ public class HistoryGuruTest {
             if (instance.hasHistory(f)) {
                 Reader r = instance.getHistoryReader(f);
                 assertNotNull(r);
-                try {
-                    r.close();
-                } catch (IOException e) {
-                }
+                r.close();
             }
         }
     }
