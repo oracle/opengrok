@@ -81,6 +81,7 @@ public class RuntimeEnvironmentTest {
         String path = f.getCanonicalPath();
         assertTrue(f.delete());
         instance.setDataRoot(path);
+        assertTrue(f.delete());
         assertEquals(path, instance.getDataRootPath());
         assertEquals(path, instance.getDataRootFile().getCanonicalPath());
     }
