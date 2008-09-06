@@ -116,25 +116,18 @@ public class IndexDatabase {
      */
     static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+        
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
-                final IndexDatabase db = new IndexDatabase(project);
-                if (listener != null) {
-                    db.addIndexChangedListener(listener);
-                }
-                executor.submit(new Runnable() {
-
-                    public void run() {
-                        try {
-                            db.update();
-                        } catch (Exception e) {
-                            log.log(Level.WARNING,"Problem updating lucene index database: ",e);
-                        }
-                    }
-                });
+                dbs.add(new IndexDatabase(project));
             }
         } else {
-            final IndexDatabase db = new IndexDatabase();
+            dbs.add(new IndexDatabase());
+        }
+        
+        for (IndexDatabase d : dbs) {
+            final IndexDatabase db = d;
             if (listener != null) {
                 db.addIndexChangedListener(listener);
             }
@@ -290,21 +283,18 @@ public class IndexDatabase {
      * @throws IOException if an error occurs
      */
     static void optimizeAll(ExecutorService executor) throws IOException {
+        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();        
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
-                final IndexDatabase db = new IndexDatabase(project);
-                if (db.isDirty()) {
-                    executor.submit(new Runnable() {
-
-                        public void run() {
-                            db.optimize();
-                        }
-                    });
-                }
+                dbs.add(new IndexDatabase(project));
             }
         } else {
-            final IndexDatabase db = new IndexDatabase();
+            dbs.add(new IndexDatabase());
+        }
+
+        for (IndexDatabase d : dbs) {
+            final IndexDatabase db = d;
             if (db.isDirty()) {
                 executor.submit(new Runnable() {
 
