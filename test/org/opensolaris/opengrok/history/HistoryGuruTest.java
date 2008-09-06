@@ -108,8 +108,16 @@ public class HistoryGuruTest {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (instance.hasHistory(f)) {
-                Reader r = instance.getHistoryReader(f);
-                assertNotNull(r);
+                HistoryReader r = instance.getHistoryReader(f);
+                while (r.next()) {
+                    r.getAuthor(); // sometimes null, why?
+                    assertNotNull("Comment", r.getComment());
+                    assertNotNull("Date", r.getDate());
+                    assertNotNull("Files", r.getFiles());
+                    assertNotNull("Line", r.getLine());
+                    assertNotNull("Revision", r.getRevision());
+                    assertTrue("Active", r.isActive());
+                }
                 r.close();
             }
         }
