@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -226,49 +227,19 @@ public final class RuntimeEnvironment {
      */
     public boolean validateExuberantCtags() {
         String ctags = getCtags();
-                
-        //Check if exub ctags is available
-        Process ctagsProcess = null;
-        try {
-            ctagsProcess = Runtime.getRuntime().exec(new String[] {ctags, "--version" });
-        } catch (Exception e) {
-        }
-        if (ctagsProcess == null) {
-            log.severe("Error: executing " + ctags + "! " +
-                    "\nPlease use option -c to specify path to a good Exuberant Ctags program");
-            return false;
-        }
-        try {
-            BufferedReader cin = new BufferedReader(new InputStreamReader(ctagsProcess.getInputStream()));
-            try {
-                String ctagOut;
-                if (!((ctagOut = cin.readLine()) != null && ctagOut.startsWith("Exuberant Ctags"))) {
-                    log.severe("Error: No Exuberant Ctags found in PATH!\n" +
-                            "(tried running " + ctags + ")\n" +
-                            "Please use option -c to specify path to a good Exuberant Ctags program");
-                    return false;
-                }
-            } finally {
-                cin.close();
-            }
-        } catch (Exception e) {
-            log.severe("Error: executing " + ctags + "! " +e.getLocalizedMessage() +
-                    "\nPlease use option -c to specify path to a good Exuberant Ctags program");
-            return false;
-        }
+    
+       
+        Executor executor = new Executor(new String[] {ctags, "--version"});
         
-        // reap the child process..
-        try {
-            int ret;
-            if ((ret = ctagsProcess.exitValue()) != 0) {
-                log.severe("Error: ctags returned " + ret);
-                return false;
-            }            
-        } catch (IllegalThreadStateException exp) {
-            // the process is still running??? just kill it..
-            ctagsProcess.destroy();
-            return true;
-        }        
+        executor.exec(false);
+        String output = executor.getOutputString();
+        if (output == null || output.indexOf("Exuberant Ctags") == -1) {
+            log.severe("Error: No Exuberant Ctags found in PATH!\n" +
+                    "(tried running " + ctags + ")\n" +
+                    "Please use option -c to specify path to a good Exuberant Ctags program");
+            return false;
+        }
+
         return true;
     }
         
