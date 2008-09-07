@@ -226,21 +226,19 @@ public final class RuntimeEnvironment {
      * @return true if success, false otherwise
      */
     public boolean validateExuberantCtags() {
-        String ctags = getCtags();
-    
-       
-        Executor executor = new Executor(new String[] {ctags, "--version"});
+        boolean ret = true;
+        Executor executor = new Executor(new String[] {getCtags(), "--version"});
         
         executor.exec(false);
         String output = executor.getOutputString();
         if (output == null || output.indexOf("Exuberant Ctags") == -1) {
             log.severe("Error: No Exuberant Ctags found in PATH!\n" +
-                    "(tried running " + ctags + ")\n" +
+                    "(tried running " + getCtags() + ")\n" +
                     "Please use option -c to specify path to a good Exuberant Ctags program");
-            return false;
+            ret =  false;
         }
 
-        return true;
+        return ret;
     }
         
     /**
