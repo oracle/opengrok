@@ -16,7 +16,6 @@
  *
  * CDDL HEADER END
  */
-
 package org.opensolaris.opengrok.util;
 
 import java.io.ByteArrayInputStream;
@@ -72,7 +71,7 @@ public class Executor {
     public int exec() {
         return exec(true);
     }
-        
+
     /**
      * Execute the command and collect the output
      * 
@@ -80,6 +79,20 @@ public class Executor {
      * @return The exit code of the process
      */
     public int exec(boolean reportExceptions) {
+        SpoolHandler spoolOut = new SpoolHandler();
+        int ret = exec(reportExceptions, spoolOut);
+        stdout = spoolOut.getBytes();
+        return ret;
+    }
+
+    /**
+     * Execute the command and collect the output
+     * 
+     * @param reportExceptions Should exceptions be added to the log or not
+     * @param handler The handler to handle data from standard output
+     * @return The exit code of the process
+     */
+    public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
 
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
@@ -87,28 +100,42 @@ public class Executor {
             processBuilder.directory(workingDirectory);
         }
 
-        Spooler spoolOut = new Spooler();
-        Spooler spoolErr = new Spooler();
         Process process = null;
         try {
             process = processBuilder.start();
-            spoolOut.startListen(process.getInputStream());
-            spoolErr.startListen(process.getErrorStream());
+
+            final InputStream errorStream = process.getErrorStream();
+            final SpoolHandler err = new SpoolHandler();
+            Thread thread = new Thread(new Runnable() {
+
+                public void run() {
+                    try {
+                        err.processStream(errorStream);
+                    } catch (IOException ex) {
+                        if (reportExceptions) {
+                            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                                    "Error during process pipe listening", ex);
+                        }
+                    }
+                }
+            });
+            thread.start();
+
+            handler.processStream(process.getInputStream());
+
             ret = process.waitFor();
             process = null;
-            spoolOut.join();
-            spoolErr.join();
-            stdout = spoolOut.getBytes();
-            stderr = spoolErr.getBytes();
+            thread.join();
+            stderr = err.getBytes();
         } catch (IOException e) {
             if (reportExceptions) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Failed to read from process: " + cmdList.get(0), e);
+                        "Failed to read from process: " + cmdList.get(0), e);
             }
         } catch (InterruptedException e) {
             if (reportExceptions) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Waiting for process interrupted: "  + cmdList.get(0), e);
+                        "Waiting for process interrupted: " + cmdList.get(0), e);
             }
         } finally {
             try {
@@ -147,34 +174,39 @@ public class Executor {
         return new ByteArrayInputStream(stderr);
     }
 
-    private static class Spooler extends Thread {
+    /**
+     * You should use the StreamHandler interface if you would like to process
+     * the output from a process while it is running
+     */
+    public static interface StreamHandler {
 
-        private InputStream input;
+        /**
+         * Process the data in the stream. The processStream function is
+         * called _once_ during the lifetime of the process, and you should
+         * process all of the input you want before returning from the function.
+         * 
+         * @param in The InputStream containing the data
+         * @throws java.io.IOException
+         */
+        public void processStream(InputStream in) throws IOException;
+    }
+
+    private static class SpoolHandler implements StreamHandler {
+
         private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 
         public byte[] getBytes() {
             return bytes.toByteArray();
         }
 
-        void startListen(InputStream is) {
-            input = is;
-            this.start();
-        }
+        public void processStream(InputStream in) throws IOException {
+            byte[] buffer = new byte[8092];
+            int len;
 
-        @Override
-        public void run() {
-            try {
-                byte[] buffer = new byte[8092];
-                int len;
-
-                while ((len = input.read(buffer)) != -1) {
-                    if (len > 0) {
-                        bytes.write(buffer, 0, len);
-                    }
+            while ((len = in.read(buffer)) != -1) {
+                if (len > 0) {
+                    bytes.write(buffer, 0, len);
                 }
-            } catch (IOException ioe) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                        "Error during process pipe listening", ioe);
             }
         }
     }
