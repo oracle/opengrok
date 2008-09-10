@@ -41,9 +41,11 @@ import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Mercurial repository.
- * 
+ *
  */
 public class MercurialRepository extends Repository {
+    private static final String template = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}user: {author}\\ndate: {date|isodate}\\ndescription:\\n{desc|strip}\\n";
+
     private static ScmChecker hgBinary = new ScmChecker(new String[] {
         System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg"),
         "--help" });
@@ -55,8 +57,15 @@ public class MercurialRepository extends Repository {
     private String getCommand() {
         return System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
     }
-        
-    Process getHistoryLogProcess(File file) throws IOException {
+
+    /**
+     * Get an executor to be used for retrieving the history log for the
+     * named file.
+     * 
+     * @param file The file to retrieve history for
+     * @return An Executor ready to be started
+     */
+    Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
         String directoryName = getDirectoryName();
@@ -64,15 +73,19 @@ public class MercurialRepository extends Repository {
             filename = abs.substring(directoryName.length() + 1);
         }
         
-        String argv[];
-        if (file.isDirectory()) {
-            argv = new String[] {getCommand(), "log", "--template", "changeset:   {rev}:{node|short}\\n{branches}{tags}{parents}user:        {author}\\ndate:        {date|isodate}\\nfiles:        {files}{file_copies}\\ndescription:\\n{desc|strip}\\n\\n\\n", filename};
-        } else {
-            argv = new String[] {getCommand(), "log", "--template", "changeset:   {rev}:{node|short}\\n{branches}{tags}{parents}user:        {author}\\ndate:        {date|isodate}\\ndescription:\\n{desc|strip}\\n\\n", filename};
-        }
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("log");
+        cmd.add("--template");
+        StringBuilder sb = new StringBuilder(template);
 
-        File directory = new File(getDirectoryName());
-        return Runtime.getRuntime().exec(argv, null, directory);        
+        if (file.isDirectory()) {
+            sb.append("files: {files}{file_copies}\\n");
+        }
+        cmd.add(sb.toString());
+        cmd.add(filename);
+        
+        return new Executor(cmd, new File(getDirectoryName()));
     }    
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {

@@ -36,105 +36,90 @@ import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Parse a stream of mercurial log comments.
  */
-class MercurialHistoryParser implements HistoryParser {
-    
-    public History parse(File file, Repository repos)
-            throws IOException {
-        MercurialRepository mrepos = (MercurialRepository)repos;
-        History history = new History();
-        
-        Process process = null;
-        BufferedReader in = null;
-        try {
-            process = mrepos.getHistoryLogProcess(file);
-            if (process == null) {
-                return null;
-            }
-            
-            SimpleDateFormat df =
-                    new SimpleDateFormat("yyyy-MM-dd hh:mm ZZZZ", Locale.US);
-            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-            
-            InputStream is = process.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            String mydir = mrepos.getDirectoryName() + File.separator;
-            int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-            String s;
-            boolean description = false;
-            HistoryEntry entry = null;
-            while ((s = in.readLine()) != null) {
-                if (s.startsWith("changeset:")) {
-                    if (entry != null) {
-                        entries.add(entry);
-                    }
-                    entry = new HistoryEntry();
-                    entry.setActive(true);
-                    String rev = s.substring("changeset:".length()).trim();
-                    if (rev.indexOf(':') != -1) {
-                        rev = rev.substring(0, rev.indexOf(':'));
-                    }
-                    entry.setRevision(rev);
-                    description = false;
-                } else if (s.startsWith("user:") && entry != null) {
-                    entry.setAuthor(s.substring("user:".length()).trim());
-                    description = false;
-                } else if (s.startsWith("date:") && entry != null) {
-                    Date date = new Date();
-                    try {
-                        date = df.parse(s.substring("date:".length()).trim());
-                    } catch (ParseException pe) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
-                    }
-                    entry.setDate(date);
-                    description = false;
-                } else if (s.startsWith("files:") && entry != null) {
-                    description = false;
-                    String[] strings = s.split(" ");
-                    for (int ii = 1; ii < strings.length; ++ii) {
-                        if (strings[ii].length() > 0) {
-                            File f = new File(mydir, strings[ii]);
-                            String name = f.getCanonicalPath().substring(rootLength);
-                            entry.addFile(name);
-                        }
-                    }
-                } else if (s.startsWith("summary:") && entry != null) {
-                    entry.setMessage(s.substring("summary:".length()).trim());
-                    description = false;
-                } else if (s.startsWith("description:") && entry != null) {
-                    description = true;
-                } else if (description && entry != null) {
-                    entry.appendMessage(s);
-                }
-            }
-            
-            if (entry != null) {
-                entries.add(entry);
-            }
-            
-            history.setHistoryEntries(entries);            
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", exp);
-                }
-            }
+class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
 
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
+    private History history;
+    private final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm ZZZZ", Locale.US);
+    String mydir;
+    int rootLength;
+
+    public History parse(File file, Repository repos) throws IOException {
+        MercurialRepository mrepos = (MercurialRepository) repos;
+        mydir = mrepos.getDirectoryName() + File.separator;
+        rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+
+        Executor executor = mrepos.getHistoryLogExecutor(file);
+        int status = executor.exec(true, this);
+
+        if (status != 0) {
+            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get history for: \"" +
+                    file.getAbsolutePath() + "\" Exit code: " + status);
         }
 
         return history;
+    }
+
+    /**
+     * Process the output from the hg log command and insert the HistoryEntries
+     * into the history field.
+     *
+     * @param input The output from the process
+     * @throws java.io.IOException If an error occurs while reading the stream
+     */
+    public void processStream(InputStream input) throws IOException {
+        BufferedReader in = new BufferedReader(new InputStreamReader(input));
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        String s;
+        boolean description = false;
+        HistoryEntry entry = null;
+        while ((s = in.readLine()) != null) {
+            if (s.startsWith("changeset:")) {
+                if (entry != null) {
+                    entries.add(entry);
+                }
+                entry = new HistoryEntry();
+                entry.setActive(true);
+                entry.setRevision(s.substring("changeset:".length()).trim());
+                description = false;
+            } else if (s.startsWith("user:") && entry != null) {
+                entry.setAuthor(s.substring("user:".length()).trim());
+                description = false;
+            } else if (s.startsWith("date:") && entry != null) {
+                Date date = new Date();
+                try {
+                    date = df.parse(s.substring("date:".length()).trim());
+                } catch (ParseException pe) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
+                }
+                entry.setDate(date);
+                description = false;
+            } else if (s.startsWith("files:") && entry != null) {
+                description = false;
+                String[] strings = s.split(" ");
+                for (int ii = 1; ii < strings.length; ++ii) {
+                    if (strings[ii].length() > 0) {
+                        File f = new File(mydir, strings[ii]);
+                        String name = f.getCanonicalPath().substring(rootLength);
+                        entry.addFile(name);
+                    }
+                }
+            } else if (s.startsWith("description:") && entry != null) {
+                description = true;
+            } else if (description && entry != null) {
+                entry.appendMessage(s);
+            }
+        }
+
+        if (entry != null) {
+            entries.add(entry);
+        }
+
+        history = new History();
+        history.setHistoryEntries(entries);
     }
 }
