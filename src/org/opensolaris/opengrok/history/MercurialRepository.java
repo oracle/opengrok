@@ -97,8 +97,13 @@ public class MercurialRepository extends Repository {
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         InputStream in = null;
+        String revision = rev;
+
+        if (rev.indexOf(':') != -1) {
+            revision = rev.substring(0, rev.indexOf(':'));
+        }
         try {
-            String argv[] = {getCommand(), "cat", "-r", rev, filename};
+            String argv[] = {getCommand(), "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -165,7 +170,11 @@ public class MercurialRepository extends Repository {
         argv.add("-f");
         if (revision != null) {
             argv.add("-r");
-            argv.add(revision);
+            if (revision.indexOf(':') != -1) {
+                argv.add(revision.substring(0, revision.indexOf(':')));
+            } else {
+                argv.add(revision);
+            }
         }
         argv.add(file.getName());
         ProcessBuilder pb = new ProcessBuilder(argv);
