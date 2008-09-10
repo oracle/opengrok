@@ -208,6 +208,14 @@ To generate reports, run ant again:
 Look at coverage/coverage.txt, coverage/coverage.xml and 
 coverage/coverage.html to see how complete your tests are.
 
+Note: For full coverage report your system has to provide proper junit test 
+environment, that would mean:
+- you have to use ant 1.7 and above
+- at least junit-4.?.jar has to be in ants classpath (e.g. in ./lib)
+- your PATH must contain exuberant ctags binary
+- your PATH variable must contain binaries of appropriate SCM SW, so commands
+hg, sccs, cvs, git, bzr, svn (svnadmin too) must be available for full report
+
 ---------------------------------------------------
 Using Checkstyle
 ---------------------------------------------------
