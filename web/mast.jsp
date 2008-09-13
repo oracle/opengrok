@@ -18,15 +18,17 @@ CDDL HEADER END
 
 Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
---%><%@ page import = "javax.servlet.*,
-java.lang.*,
-javax.servlet.http.*,
-java.util.*,
-java.io.*,
-org.opensolaris.opengrok.index.*,
-org.opensolaris.opengrok.configuration.*
-"
-%><%@ page session="false" %><%@ page errorPage="error.jsp"%><%
+--%>
+<%@ page import = "javax.servlet.*,
+             java.lang.*,
+             javax.servlet.http.*,
+             java.util.*,
+             java.io.*,
+             org.opensolaris.opengrok.index.*,
+             org.opensolaris.opengrok.configuration.*
+             "
+             %>
+<%@ page session="false" %><%@ page errorPage="error.jsp"%><%
 String context = request.getContextPath();
 String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
@@ -127,80 +129,82 @@ if(resourcePath.length() < rawSource.length()
                 dtag = "";
             }
     String pageTitle="Cross Reference: " + path;
-    
+
 %><%@ include file="httpheader.jspf" %>
 <body><div id="page">
 <form action="<%=context%>/search">
     <div id="header"><%@ include file="pageheader.jspf" %>
         <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><br/><%=dtag%></div>
     </div>
-<div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>    
-<div id="bar"><a href="<%=context%>" id="home">Home</a> | 
-<%
-
-if (noHistory || servlet.startsWith("/hi")) {
-	%> <span class="c" id="history">History</span><%
-} else {
-	%><a id="history" href="<%=context%>/history<%=path%>">History</a><%
-}
-if (noAnnotation) {
-%> | <span class="c" id="annotate">Annotate</span><%
-} else {
-   String rev = request.getParameter("r");
-    if (rev == null) {
-        rev = "";
-    } else if (rev.length() > 0) {
-        rev = "&r=" + rev;
-    }
-
-    if (Boolean.parseBoolean(request.getParameter("a"))) {
-     %> | <span id="toggle-annotate-by-javascript" style="display: none">
-<a href="#" onClick="javascript:toggle_annotations(); return false;">Annotate</a>
-</span>
-<span id="toggle-annotate">
-<a href="<%=context%>/xref<%=path%><% 
-if (rev.length() > 0) { 
-    %>?<%=rev%><% 
-} %>">Annotate</a></span>
-<script type="text/javascript">
-<!--
-var toggle_js = document.getElementById('toggle-annotate-by-javascript'); 
-var toggle_ss = document.getElementById('toggle-annotate');
-
-toggle_js.style.display = 'inline';
-toggle_ss.style.display = 'none';
-// -->
-</script> <%
-    } else {
-        %> | <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
-    }        
-}
-        if (!isDir) {
-           String rev = request.getParameter("r");
-           if (rev == null || rev.equals("")) {
-%> | <a id="download" href="<%=context%>/raw<%=path%>">Download</a><%
-           } else {
-%> | <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a><%
-           }
+    <div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>    
+    <div id="bar"><a href="<%=context%>" id="home">Home</a> | 
+        <%
+        
+        if (noHistory || servlet.startsWith("/hi")) {
+        %> <span class="c" id="history">History</span><%
+        } else {
+        %><a id="history" href="<%=context%>/history<%=path%>">History</a><%
         }
+        if (noAnnotation) {
+        %> | <span class="c" id="annotate">Annotate</span><%
+        } else {
+           String rev = request.getParameter("r");
+            if (rev == null) {
+                rev = "";
+            } else if (rev.length() > 0) {
+                rev = "&r=" + rev;
+            }
+        
+            if (Boolean.parseBoolean(request.getParameter("a"))) {
+        %> | <span id="toggle-annotate-by-javascript" style="display: none">
+            <a href="#" onClick="javascript:toggle_annotations(); return false;">Annotate</a>
+        </span>
+        <span id="toggle-annotate">
+            <a href="<%=context%>/xref<%=path%><% 
+               if (rev.length() > 0) { 
+               %>?<%=rev%><% 
+           } %>">Annotate</a></span>
+        <script type="text/javascript">
+            <!--
+            var toggle_js = document.getElementById('toggle-annotate-by-javascript'); 
+            var toggle_ss = document.getElementById('toggle-annotate');
 
-        Project proj = Project.getProject(resourceFile);
-        if  (proj != null || !environment.hasProjects()) {
-%> | <input id="search" name="q" class="q"/>
-<input type="submit" value="Search" class="submit"/>
-<%
+            toggle_js.style.display = 'inline';
+            toggle_ss.style.display = 'none';
+            // -->
+        </script> <%
+        } else {
+        %> | <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
+        }        
+    }
+            if (!isDir) {
+               String rev = request.getParameter("r");
+               if (rev == null || rev.equals("")) {
+        %> | <a id="download" href="<%=context%>/raw<%=path%>">Download</a><%
+        } else {
+        %> | <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a><%
+        }
+     }
+
+     Project proj = Project.getProject(resourceFile);
+     if  (proj != null || !environment.hasProjects()) {
+        %> | <input id="search" name="q" class="q"/>
+        <input type="submit" value="Search" class="submit"/>
+        <%
         if (proj != null) {
-      %><input type="hidden" name="project" value="<%=proj.getId()%>"/><%
+        %><input type="hidden" name="project" value="<%=proj.getId()%>"/><%
         }
         if(isDir) {
                 if(path.length() > 0) {
-	%><input type="checkbox" name="path" value="<%=path%>"/> only in <b><%=path%></b><%
-                }
+        %><input type="checkbox" name="path" value="<%=path%>"/> only in <b><%=path%></b><%
+          }
         } else {
-	%><input type="checkbox" name="path" value="<%=parent%>"/> only in <b><%=parentBasename%></b><%
+          %><input type="checkbox" name="path" value="<%=parent%>"/> only in <b><%=parentBasename%></b><%
         }
-%></div></form><%
         }
+        %>
+</div></form>
+<%        
 } // date check
     } // not a directory redirect
 }
