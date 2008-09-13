@@ -153,6 +153,7 @@ public final class Util {
                 hyperl.append(anchorLinkStart);
                 hyperl.append(urlPrefix);
                 hyperl.append(l.substring(0, e));
+                hyperl.append("/");
                 hyperl.append(closeQuotedTag);
                 hyperl.append(l.substring(s, e));
                 hyperl.append(anchorEnd);
@@ -196,8 +197,8 @@ public final class Util {
         out.write(closeQuotedTag);
         out.write((num > 999 ? "   " : (num > 99 ? "    " : (num > 9 ? "     " : "      "))));
         out.write(snum);
-        out.write(anchorEnd);
         out.write(" ");
+        out.write(anchorEnd);
         if (annotation != null) {
             String r = annotation.getRevision(num);
             boolean enabled = annotation.isEnabled(num);
