@@ -271,9 +271,7 @@ public final class HistoryGuru {
             String path = entry.getKey();
             String type = repository.getClass().getSimpleName();
 
-            if (!repository.isWorking()) {
-                OpenGrokLogger.getLogger().warning("Skipping update of " + type + " repository in " + path + ": Missing SCM dependencies?");
-            } else {
+            if (repository.isWorking()) {
                 if (verbose) {
                     OpenGrokLogger.getLogger().info("Update " + type + " repository in " + path);
                 }
@@ -285,6 +283,8 @@ public final class HistoryGuru {
                 } catch (Exception e) {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating " + path + " (" + type + ")", e);
                 }
+            } else {
+                OpenGrokLogger.getLogger().warning("Skipping update of " + type + " repository in " + path + ": Missing SCM dependencies?");
             }
         }
     }
@@ -293,9 +293,7 @@ public final class HistoryGuru {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
 
-        if (!repository.isWorking()) {
-            OpenGrokLogger.getLogger().warning("Skipping creation of historycache of " + type + " repository in " + path + ": Missing SCM dependencies?");
-        } else {
+        if (repository.isWorking()) {
             boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
             long start = System.currentTimeMillis();
 
@@ -313,6 +311,8 @@ public final class HistoryGuru {
                 long stop = System.currentTimeMillis();
                 OpenGrokLogger.getLogger().log(Level.INFO, "Creating historycache for " + path + " took (" + (stop - start) + "ms)");
             }
+        } else {
+            OpenGrokLogger.getLogger().warning("Skipping creation of historycache of " + type + " repository in " + path + ": Missing SCM dependencies?");
         }
     }
 
@@ -339,10 +339,10 @@ public final class HistoryGuru {
         for (String file : repositories) {
             File f = new File(root, file);
             Repository r = getRepository(f);
-            if (r != null) {
-                repos.add(r);
-            } else {
+            if (r == null) {
                 OpenGrokLogger.getLogger().warning("Could not locate a repository for " + f.getAbsolutePath());
+            } else {
+                repos.add(r);
             }
         }
         createCache(repos);
