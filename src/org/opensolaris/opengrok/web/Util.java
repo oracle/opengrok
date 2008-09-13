@@ -133,6 +133,11 @@ public final class Util {
         return breadcrumbPath(urlPrefix, l, '/');
     }
 
+    private static final String anchorLinkStart = "<a href=\"";
+    private static final String anchorClassStart = "<a class=\"";
+    private static final String anchorEnd = "</a>";
+    private static final String closeQuotedTag = "\">";
+    
     public static String breadcrumbPath(String urlPrefix, String l, char sep) {
         if (l == null || l.length() <= 1) {
             return l;
@@ -145,21 +150,23 @@ public final class Util {
          e = 0;
         while ((e = l.indexOf(sep, s)) >= 0) {
             if (e - s > 0) {
-                hyperl.append("<a href=\"" + urlPrefix);
+                hyperl.append(anchorLinkStart);
+                hyperl.append(urlPrefix);
                 hyperl.append(l.substring(0, e));
-                hyperl.append("/\">");
+                hyperl.append(closeQuotedTag);
                 hyperl.append(l.substring(s, e));
-                hyperl.append("</a>");
+                hyperl.append(anchorEnd);
                 hyperl.append(sep);
             }
             s = e + 1;
         }
         if (s < l.length()) {
-            hyperl.append("<a href=\"" + urlPrefix);
+            hyperl.append(anchorLinkStart);
+            hyperl.append(urlPrefix);
             hyperl.append(l);
-            hyperl.append("\">");
+            hyperl.append(closeQuotedTag);
             hyperl.append(l.substring(s, l.length()));
-            hyperl.append("</a>");
+            hyperl.append(anchorEnd);
         }
         return hyperl.toString();
     }
@@ -182,14 +189,15 @@ public final class Util {
         if (num > 1) {
             out.write("\n");
         }
-        out.write("<a class=\"");
+        out.write(anchorClassStart);
         out.write((num % 10 == 0 ? "hl" : "l"));
         out.write("\" name=\"");
         out.write(snum);
-        out.write("\">");
+        out.write(closeQuotedTag);
         out.write((num > 999 ? "   " : (num > 99 ? "    " : (num > 9 ? "     " : "      "))));
         out.write(snum);
-        out.write(" </a>");
+        out.write(anchorEnd);
+        out.write(" ");
         if (annotation != null) {
             String r = annotation.getRevision(num);
             boolean enabled = annotation.isEnabled(num);
@@ -200,17 +208,17 @@ public final class Util {
             }
 
             if (enabled) {
-                out.write("<a href=\"");
+                out.write(anchorLinkStart);
                 out.write(URIEncode(annotation.getFilename()));
                 out.write("?a=true&r=");
                 out.write(URIEncode(r));
-                out.write("\">");
+                out.write(closeQuotedTag);
             }
 
             htmlize(r, out);
 
             if (enabled) {
-                out.write("</a>");
+                out.write(anchorEnd);
             }
 
             out.write(" </span>");
@@ -222,12 +230,12 @@ public final class Util {
             }
             String link = RuntimeEnvironment.getInstance().getUserPage();
             if (link != null && link.length() > 0) {
-                out.write("<a href=\"");
+                out.write(anchorLinkStart);
                 out.write(link);
                 out.write(URIEncode(a));
-                out.write("\">");
+                out.write(closeQuotedTag);
                 htmlize(a, out);
-                out.write("</a>");
+                out.write(anchorEnd);
             } else {
                 htmlize(a, out);
             }

@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.Info;
@@ -535,10 +536,12 @@ public final class Indexer {
         executor.shutdown();
         while (!executor.isTerminated()) {
             try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
+                // Wait forever
+                executor.awaitTermination(999, TimeUnit.DAYS);
+            } catch (InterruptedException exp) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
-        }
+       }
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {

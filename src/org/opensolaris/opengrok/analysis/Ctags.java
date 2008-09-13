@@ -74,13 +74,14 @@ public class Ctags {
     }
 
     public Definitions doCtags(String file) throws IOException {
-        boolean ctagsRunning = true;
+        boolean ctagsRunning;
         try {
             ctags.exitValue();
             ctagsRunning = false;
-        // ctags is dead! we must restart!!!
+            // ctags is dead! we must restart!!!
         } catch (IllegalThreadStateException exp) {
-        // ctags is still running :)
+            ctagsRunning = true;
+            // ctags is still running :)
         }
 
         if (!ctagsRunning) {
