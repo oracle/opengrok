@@ -318,28 +318,32 @@ public final class Util {
 
         if (defs != null && defs.length() > 0) {
             sb.append(" defs:(");            
-            sb.append(defs.replace(":", "\\:"));
+            sb.append(escapeQueryString(defs));
             sb.append(")");
         }
         
         if (refs != null && refs.length() > 0) {
             sb.append(" refs:(");
-            sb.append(refs.replace(":", "\\:"));
+            sb.append(escapeQueryString(refs));
             sb.append(")");
         }
 
         if (path != null && path.length() > 0) {
             sb.append(" path:(");
-            sb.append(path.replace(":", "\\:"));
+            sb.append(escapeQueryString(path));
             sb.append(")");
         }
 
         if (hist != null && hist.length() > 0) {
             sb.append(" hist:(");
-            sb.append(hist.replace(":", "\\:"));
+            sb.append(escapeQueryString(hist));
             sb.append(")");
         }
         
         return sb.toString();
+    }
+
+    private static String escapeQueryString(String input) {
+        return input.replace(":", "\\:");
     }
 }
