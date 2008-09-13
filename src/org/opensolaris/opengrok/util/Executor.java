@@ -16,6 +16,7 @@
  *
  * CDDL HEADER END
  */
+
 package org.opensolaris.opengrok.util;
 
 import java.io.ByteArrayInputStream;
@@ -43,7 +44,7 @@ public class Executor {
     private byte[] stderr;
 
     /**
-     * Create a new instance of the Executor
+     * Create a new instance of the Executor.
      * @param cmd An array containing the command to execute
      */
     public Executor(String[] cmd) {
@@ -53,10 +54,20 @@ public class Executor {
         }
     }
 
+    /**
+     * Create a new instance of the Executor.
+     * @param cmdList A list containing the command to execute
+     */
     public Executor(List<String> cmdList) {
         this(cmdList, null);
     }
 
+    /**
+     * Create a new instance of the Executor
+     * @param cmdList A list containing the command to execute
+     * @param workingDirectory The directory the process should have as the
+     *                         working directory
+     */
     public Executor(List<String> cmdList, File workingDirectory) {
         this.cmdList = cmdList;
         this.workingDirectory = workingDirectory;
@@ -150,26 +161,56 @@ public class Executor {
         return ret;
     }
 
+    /**
+     * Get the output from the process as a string.
+     * 
+     * @return The output from the process
+     */
     public String getOutputString() {
         return new String(stdout);
     }
 
+    /**
+     * Get a reader to read the output from the process
+     * 
+     * @return A reader reading the process output
+     */
     public Reader getOutputReader() {
         return new InputStreamReader(getOutputStream());
     }
 
+    /**
+     * Get an input stream read the output from the process
+     * 
+     * @return A reader reading the process output
+     */
     public InputStream getOutputStream() {
         return new ByteArrayInputStream(stdout);
     }
 
+    /**
+     * Get the output from the process written to the error stream as a string.
+     * 
+     * @return The error output from the process
+     */
     public String getErrorString() {
         return new String(stderr);
     }
 
+    /**
+     * Get a reader to read the output the process wrote to the error stream.
+     * 
+     * @return A reader reading the process error stream
+     */
     public Reader getErrorReader() {
         return new InputStreamReader(getErrorStream());
     }
 
+    /**
+     * Get an inputstreamto read the output the process wrote to the error stream.
+     * 
+     * @return An inputstream for reading the process error stream
+     */
     public InputStream getErrorStream() {
         return new ByteArrayInputStream(stderr);
     }
