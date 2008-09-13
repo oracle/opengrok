@@ -104,22 +104,30 @@ public class AgentConnection implements NotificationListener {
         agenturl = property;
     }
 
-    public void handleNotification(Notification notification, java.lang.Object handback) {
+    public void handleNotification(Notification notification, java.lang.Object handback) {        
+        StringBuilder sb = new StringBuilder();
+        sb.append("Notification type: '");
+        sb.append(notification.getType());
+        sb.append("', seq nr: '");
+        sb.append(notification.getSequenceNumber());
+        sb.append("', message: '");
+        sb.append(notification.getMessage());
+        sb.append("', user data: '");
+        sb.append(notification.getUserData());
+        sb.append("'");
+
+        String notif = "Notification: '" + notification + "'";
+        String source = "Notification: source: '" + notification.getSource() + "'";
+ 
+        
         if (notification.getType().equals("ogaaction")) {
             if (handback instanceof String) {
-                logger.fine("Notification type: '" + notification.getType() +
-                        "', seq nr: '" + notification.getSequenceNumber() +
-                        "', message: '" + notification.getMessage() +
-                        "', user data: '" + notification.getUserData() + "'");
-                logger.finest("Notification: '" + notification + "'");
-                logger.finest("Notification: source: '" + notification.getSource() + "'");
+                logger.fine(sb.toString());
+                logger.finest(notif);
+                logger.finest(source);
             } else if (handback instanceof ObjectName) {
                 ObjectName pingBean = (ObjectName) handback;
-                logger.fine("Received notification from '" + pingBean + "'" +
-                        " type: '" + notification.getType() +
-                        "', seq nr: '" + notification.getSequenceNumber() +
-                        "', message: '" + notification.getMessage() +
-                        "', user data: '" + notification.getUserData() + "'");
+                logger.fine("Received notification from '" + pingBean + "' " +sb.toString());
                 if (filesInfo.length() < FILESINFOMAX) {
                     //filesInfo.append(notification.getMessage());
                     filesInfo.append(notification.getUserData().toString());
@@ -131,35 +139,21 @@ public class AgentConnection implements NotificationListener {
             }
         } else if (notification.getType().equals("ogainfostring")) {
             if (handback instanceof String) {
-                logger.finest("Notification type: '" + notification.getType() +
-                        "', seq nr: '" + notification.getSequenceNumber() +
-                        "', message: '" + notification.getMessage() +
-                        "', user data: '" + notification.getUserData() + "'");
-                logger.finest("Notification: '" + notification + "'");
-                logger.finest("Notification: source: '" + notification.getSource() + "'");
+                logger.finest(sb.toString());
+                logger.finest(notif);
+                logger.finest(source);
             } else if (handback instanceof ObjectName) {
                 ObjectName pingBean = (ObjectName) handback;
-                logger.finest("Received notification from '" + pingBean + "'" +
-                        " type: '" + notification.getType() +
-                        "', seq nr: '" + notification.getSequenceNumber() +
-                        "', message: '" + notification.getMessage() +
-                        "', user data: '" + notification.getUserData() + "'");
+                logger.finest("Received notification from '" + pingBean + "' " + sb.toString());
             }
         } else if (notification.getType().equals("ogainfolong")) {
             if (handback instanceof String) {
-                logger.finest("Notification type: '" + notification.getType() +
-                        "', seq nr: '" + notification.getSequenceNumber() +
-                        "', message: '" + notification.getMessage() +
-                        "', user data: '" + notification.getUserData() + "'");
-                logger.finest("Notification: '" + notification + "'");
-                logger.finest("Notification: source: '" + notification.getSource() + "'");
+                logger.finest(sb.toString());
+                logger.finest(notif);
+                logger.finest(source);
             } else if (handback instanceof ObjectName) {
                 ObjectName pingBean = (ObjectName) handback;
-                logger.info("Received notification from '" + pingBean + "'" +
-                        " type: '" + notification.getType() +
-                        "', seq nr: '" + notification.getSequenceNumber() +
-                        "', message: '" + notification.getMessage() +
-                        "', user data: '" + notification.getUserData() + "'");
+                logger.info("Received notification from '" + pingBean + "' " + sb.toString());
                 if ("StartIndexing".equals(notification.getMessage())) {
                     starttime = ((Long) notification.getUserData()).longValue();
                 } else if ("FinishedIndexing".equals(notification.getMessage())) {
@@ -169,9 +163,9 @@ public class AgentConnection implements NotificationListener {
                 }
             }
         } else {
-            logger.info("Notification: type: '" + notification.getType() + "', seq nr: '" + notification.getSequenceNumber() + "', message: '" + notification.getMessage() + "', user data: '" + notification.getUserData() + "'");
-            logger.finest("Notification: '" + notification + "'");
-            logger.finest("Notification: source: '" + notification.getSource() + "'");
+            logger.info(sb.toString());
+            logger.finest(notif);
+            logger.finest(source);
         }
     }
 
