@@ -146,42 +146,44 @@ public class IndexDatabase {
     }
 
     @SuppressWarnings("PMD.CollapsibleIfStatements")
-    private synchronized void initialize() throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        File indexDir = new File(env.getDataRootFile(), "index");
-        File spellDir = new File(env.getDataRootFile(), "spellIndex");
-        if (project != null) {
-            indexDir = new File(indexDir, project.getPath());
-            spellDir = new File(spellDir, project.getPath());
-        }
-
-        if (!indexDir.exists() && !indexDir.mkdirs()) {
-            // to avoid race conditions, just recheck..
-            if (!indexDir.exists()) {
-                throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
+    private void initialize() throws IOException {
+        synchronized (this) {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            File indexDir = new File(env.getDataRootFile(), "index");
+            File spellDir = new File(env.getDataRootFile(), "spellIndex");
+            if (project != null) {
+                indexDir = new File(indexDir, project.getPath());
+                spellDir = new File(spellDir, project.getPath());
             }
-        }
-        
-        if (!spellDir.exists() && !spellDir.mkdirs()) {
-            if (!spellDir.exists()) {
-                throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
-            }
-        }
 
-        if (!env.isUsingLuceneLocking()) {
-            FSDirectory.setDisableLocks(true);
+            if (!indexDir.exists() && !indexDir.mkdirs()) {
+                // to avoid race conditions, just recheck..
+                if (!indexDir.exists()) {
+                    throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
+                }
+            }
+
+            if (!spellDir.exists() && !spellDir.mkdirs()) {
+                if (!spellDir.exists()) {
+                    throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
+                }
+            }
+
+            if (!env.isUsingLuceneLocking()) {
+                FSDirectory.setDisableLocks(true);
+            }
+            indexDirectory = FSDirectory.getDirectory(indexDir);
+            spellDirectory = FSDirectory.getDirectory(spellDir);
+            ignoredNames = env.getIgnoredNames();
+            analyzerGuru = new AnalyzerGuru();
+            if (env.isGenerateHtml()) {
+                xrefDir = new File(env.getDataRootFile(), "xref");
+            }
+            listeners = new ArrayList<IndexChangedListener>();
+            dirtyFile = new File(indexDir, "dirty");
+            dirty = dirtyFile.exists();
+            directories = new ArrayList<String>();
         }
-        indexDirectory = FSDirectory.getDirectory(indexDir);
-        spellDirectory = FSDirectory.getDirectory(spellDir);
-        ignoredNames = env.getIgnoredNames();
-        analyzerGuru = new AnalyzerGuru();
-        if (env.isGenerateHtml()) {
-            xrefDir = new File(env.getDataRootFile(), "xref");
-        }
-        listeners = new ArrayList<IndexChangedListener>();
-        dirtyFile = new File(indexDir, "dirty");
-        dirty = dirtyFile.exists();
-        directories = new ArrayList<String>();
     }
 
     /**
@@ -681,7 +683,7 @@ public class IndexDatabase {
                 try {
                     iter.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing index reader", e);
+                    log.log(Level.WARNING, "An error occured while closing index iterator", e);
                 }
             }
 
@@ -748,7 +750,7 @@ public class IndexDatabase {
                 try {
                     iter.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing index reader", e);
+                    log.log(Level.WARNING, "An error occured while closing index iterator", e);
                 }
             }
 
