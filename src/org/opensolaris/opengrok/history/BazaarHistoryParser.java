@@ -115,12 +115,12 @@ class BazaarHistoryParser implements HistoryParser {
                         }
                         break;
                     case 3:
-                        if (ident == nident && s.startsWith("message:")) {
-                        // Just swallow
-                        } else if (ident == nident && (s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:"))) {
-                            ++state;
-                        } else {
-                            entry.appendMessage(s);
+                        if (!(ident == nident && s.startsWith("message:"))) {
+                            if (ident == nident && (s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:"))) {
+                                ++state;
+                            } else {
+                                entry.appendMessage(s);
+                            }
                         }
                         break;
                     case 4:

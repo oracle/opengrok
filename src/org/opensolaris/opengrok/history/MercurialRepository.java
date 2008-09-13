@@ -170,10 +170,10 @@ public class MercurialRepository extends Repository {
         argv.add("-f");
         if (revision != null) {
             argv.add("-r");
-            if (revision.indexOf(':') != -1) {
-                argv.add(revision.substring(0, revision.indexOf(':')));
-            } else {
+            if (revision.indexOf(':') == -1) {
                 argv.add(revision);
+            } else {
+                argv.add(revision.substring(0, revision.indexOf(':')));
             }
         }
         argv.add(file.getName());

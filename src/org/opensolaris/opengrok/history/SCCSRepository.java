@@ -107,7 +107,8 @@ public class SCCSRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // ignore
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Failed to close stream", e);
                 }
             }
 
