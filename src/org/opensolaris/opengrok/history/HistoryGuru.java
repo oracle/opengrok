@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -47,6 +48,8 @@ public final class HistoryGuru {
 
     /** The history cache to use */
     private final HistoryCache historyCache;
+    
+    private static final Logger log = OpenGrokLogger.getLogger();
 
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
@@ -200,16 +203,16 @@ public final class HistoryGuru {
             try {
                 repository = RepositoryFactory.getRepository(file);
             } catch (InstantiationException ie) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not create repoitory for '" + file + "', could not instantiate the repository.", ie);
+                log.log(Level.WARNING, "Could not create repoitory for '" + file + "', could not instantiate the repository.", ie);
             } catch (IllegalAccessException iae) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not create repoitory for '" + file + "', missing access rights.", iae);
+                log.log(Level.WARNING, "Could not create repoitory for '" + file + "', missing access rights.", iae);
             }
             if (repository != null) {
                 try {
                     String path = file.getCanonicalPath();
                     repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        OpenGrokLogger.getLogger().log(Level.INFO, "Adding <" + repository.getClass().getName() +  "> repository: <" + path + ">");
+                        log.log(Level.INFO, "Adding <" + repository.getClass().getName() +  "> repository: <" + path + ">");
                     }
                     addRepository(repository, path, repos);
 
@@ -217,7 +220,7 @@ public final class HistoryGuru {
                     if (recursiveSearch && repository.supportsSubRepositories()) {
                         File subFiles[] = file.listFiles();
                         if (subFiles == null) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                            log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                         } else {
                             // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
                             addRepositories(subFiles, repos, ignoredNames, false); 
@@ -225,15 +228,15 @@ public final class HistoryGuru {
                     }
                     
                 } catch (IOException exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Repository will be ignored...", exp);
+                    log.log(Level.WARNING, "Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
+                    log.log(Level.WARNING, "Repository will be ignored...", exp);
                 }
             } else {
                 // Not a repository, search it's sub-dirs
                 if (file.isDirectory() && !ignoredNames.ignore(file)) {
                     File subFiles[] = file.listFiles();
                     if (subFiles == null) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                        log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                     } else {
                         addRepositories(subFiles, repos, ignoredNames);
                     }
@@ -264,7 +267,7 @@ public final class HistoryGuru {
      */
     public void updateRepositories() {
         boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
-        
+
         for (Map.Entry<String, Repository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
             Repository repository = entry.getValue();
             
@@ -273,18 +276,18 @@ public final class HistoryGuru {
 
             if (repository.isWorking()) {
                 if (verbose) {
-                    OpenGrokLogger.getLogger().info("Update " + type + " repository in " + path);
+                    log.info(String.format("Update %s repository in %s", type, path));
                 }
 
                 try {
                     repository.update();
                 } catch (UnsupportedOperationException e) {
-                    OpenGrokLogger.getLogger().warning("Skipping update of " + type + " repository in " + path + ": Not implemented");
+                    log.warning(String.format("Skipping update of %s repository in %s: Not implemented", type, path));
                 } catch (Exception e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating " + path + " (" + type + ")", e);
+                    log.log(Level.WARNING, "An error occured while updating " + path + " (" + type + ")", e);
                 }
             } else {
-                OpenGrokLogger.getLogger().warning("Skipping update of " + type + " repository in " + path + ": Missing SCM dependencies?");
+                log.warning(String.format("Skipping update of %s repository in %s: Missing SCM dependencies?", type, path));
             }
         }
     }
@@ -298,21 +301,21 @@ public final class HistoryGuru {
             long start = System.currentTimeMillis();
 
             if (verbose) {
-                OpenGrokLogger.getLogger().log(Level.INFO, "Create historycache for " + path + " (" + type + ")");
+                log.log(Level.INFO, "Create historycache for " + path + " (" + type + ")");
             }
 
             try {
                 repository.createCache(historyCache);
             } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating cache for " + path + " (" + type + ")", e);
+                log.log(Level.WARNING, "An error occured while creating cache for " + path + " (" + type + ")", e);
             }
 
             if (verbose) {
                 long stop = System.currentTimeMillis();
-                OpenGrokLogger.getLogger().log(Level.INFO, "Creating historycache for " + path + " took (" + (stop - start) + "ms)");
+                log.log(Level.INFO, "Creating historycache for " + path + " took (" + (stop - start) + "ms)");
             }
         } else {
-            OpenGrokLogger.getLogger().warning("Skipping creation of historycache of " + type + " repository in " + path + ": Missing SCM dependencies?");
+            log.warning(String.format("Skipping creation of historycache of %s repository in %s: Missing SCM dependencies?", type, path));
         }
     }
 
@@ -340,7 +343,7 @@ public final class HistoryGuru {
             File f = new File(root, file);
             Repository r = getRepository(f);
             if (r == null) {
-                OpenGrokLogger.getLogger().warning("Could not locate a repository for " + f.getAbsolutePath());
+                log.warning("Could not locate a repository for " + f.getAbsolutePath());
             } else {
                 repos.add(r);
             }
@@ -356,7 +359,7 @@ public final class HistoryGuru {
         try {
             file = path.getCanonicalFile();
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path for " + path, e);
+            log.log(Level.WARNING, "Failed to get canonical path for " + path, e);
             return null;
         }
         while (file != null) {
