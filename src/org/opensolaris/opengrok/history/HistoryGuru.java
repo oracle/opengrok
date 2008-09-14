@@ -316,7 +316,7 @@ public final class HistoryGuru {
         }
     }
 
-    private void createCache(ArrayList<Repository> repositories) {
+    private void createCacheReal(List<Repository> repositories) {
         for (Repository repos : repositories) {
             createCache(repos);
         }
@@ -330,7 +330,7 @@ public final class HistoryGuru {
         for (Map.Entry<String, Repository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
             repos.add(entry.getValue());
         }
-        createCache(repos);
+        createCacheReal(repos);
     }
 
     public void createCache(List<String> repositories) {
@@ -345,7 +345,7 @@ public final class HistoryGuru {
                 repos.add(r);
             }
         }
-        createCache(repos);
+        createCacheReal(repos);
     }
 
     

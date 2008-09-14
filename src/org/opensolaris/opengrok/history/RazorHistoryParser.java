@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * A History Parser for Razor
@@ -89,13 +90,11 @@ public class RazorHistoryParser implements HistoryParser {
 
             parseDebug("Processing '" + line + "'");
 
-            if (line.trim().length()==0) {
+            if (StringUtils.isOnlyWhitespace(line)) {
 
                 if (entry != null && entry.getDate() != null) {
                     entries.add(entry);
-                    if (DUMP_HISTORY_ENTRY_ADDITIONS) {
-                        entry.dump();
-                    }
+                    dumpEntry(entry);
                 }
                 entry = new HistoryEntry();
                 ignoreEntry = false;
@@ -111,9 +110,7 @@ public class RazorHistoryParser implements HistoryParser {
                         seenActionType = true;
                         if (entry != null && entry.getDate() != null) {
                             entries.add(entry);
-                            if (DUMP_HISTORY_ENTRY_ADDITIONS) {
-                                entry.dump();
-                            }
+                            dumpEntry(entry);
                         }
                         entry = new HistoryEntry();
 
@@ -182,14 +179,18 @@ public class RazorHistoryParser implements HistoryParser {
 
         if (entry != null && entry.getDate() != null) {
             entries.add(entry);
-            if (DUMP_HISTORY_ENTRY_ADDITIONS) {
-                entry.dump();
-            }
+            dumpEntry(entry);
         }
 
         History history = new History();
         history.setHistoryEntries(entries);
         return history;
+    }
+    
+    private void dumpEntry(HistoryEntry entry) {
+        if (DUMP_HISTORY_ENTRY_ADDITIONS) {
+            entry.dump();
+        }        
     }
 
     private void parseDebug(String message) {

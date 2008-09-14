@@ -122,6 +122,7 @@ public class EftarFileReader {
             try {
                 tagString = getTag();
             } catch (IOException e) {
+                tagString = null;
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }

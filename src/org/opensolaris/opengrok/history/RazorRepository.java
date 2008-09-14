@@ -325,26 +325,7 @@ public class RazorRepository extends Repository {
                     new HashMap<String, List<HistoryEntry>>();
 
             for (HistoryEntry e : history.getHistoryEntries()) {
-                for (String s : e.getFiles()) {
-                    List<HistoryEntry> list = map.get(s);
-                    if (list == null) {
-                        if (fileHistoryParser != null) {
-                            File file = getSourceNameForOpenGrokName(s);
-                            History fileHistory = fileHistoryParser.parse(file, this);
-                            if (fileHistory != null) {
-                                list = fileHistory.getHistoryEntries();
-                            }
-                        }
-                        if (list == null) {
-                            list = new ArrayList<HistoryEntry>();
-                        }
-                        map.put(s, list);
-                    }
-
-                    if (e.getDate() != null) {
-                        list.add(e);
-                    }
-                }
+                createCacheForEntry(e, map, fileHistoryParser);
             }
 
             File root = RuntimeEnvironment.getInstance().getSourceRootFile();
@@ -360,6 +341,35 @@ public class RazorRepository extends Repository {
                 }
             }
         }
+    }
+
+    private void createCacheForEntry(HistoryEntry e, Map<String, List<HistoryEntry>> map, HistoryParser fileHistoryParser) throws IOException {
+        for (String fileName : e.getFiles()) {
+            List<HistoryEntry> list = map.get(fileName);
+            if (list == null) {
+                list = getHistoryEntries(fileHistoryParser, fileName);
+                if (list == null) {
+                    list = new ArrayList<HistoryEntry>();
+                }
+                map.put(fileName, list);
+            }
+
+            if (e.getDate() != null) {
+                list.add(e);
+            }
+        }
+    }
+
+    private List<HistoryEntry> getHistoryEntries(HistoryParser fileHistoryParser, String fileName) throws IOException {
+        List<HistoryEntry> list = null;
+        if (fileHistoryParser != null) {
+            File file = getSourceNameForOpenGrokName(fileName);
+            History fileHistory = fileHistoryParser.parse(file, this);
+            if (fileHistory != null) {
+                list = fileHistory.getHistoryEntries();
+            }
+        }
+        return list;
     }
 
     private File pathTranslation(File file, String intermediateElements, String filePrefix, String fileSuffix) throws IOException {

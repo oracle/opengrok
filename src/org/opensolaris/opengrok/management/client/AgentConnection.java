@@ -126,16 +126,7 @@ public class AgentConnection implements NotificationListener {
                 logger.finest(notif);
                 logger.finest(source);
             } else if (handback instanceof ObjectName) {
-                ObjectName pingBean = (ObjectName) handback;
-                logger.fine("Received notification from '" + pingBean + "' " +sb.toString());
-                if (filesInfo.length() < FILESINFOMAX) {
-                    //filesInfo.append(notification.getMessage());
-                    filesInfo.append(notification.getUserData().toString());
-                    if (actionListener != null) {
-                        actionListener.actionPerformed(new ActionEvent(this,
-                                ActionEvent.ACTION_PERFORMED, "OpenGrok fileevent"));
-                    }
-                }
+                handleObjectName(sb, notification, handback);
             }
         } else if (notification.getType().equals("ogainfostring")) {
             if (handback instanceof String) {
@@ -166,6 +157,18 @@ public class AgentConnection implements NotificationListener {
             logger.info(sb.toString());
             logger.finest(notif);
             logger.finest(source);
+        }
+    }
+
+    private void handleObjectName(StringBuilder sb, Notification notification, Object handback) {
+        ObjectName pingBean = (ObjectName) handback;
+        logger.fine("Received notification from '" + pingBean + "' " + sb.toString());
+        if (filesInfo.length() < FILESINFOMAX) {
+            //filesInfo.append(notification.getMessage());
+            filesInfo.append(notification.getUserData().toString());
+            if (actionListener != null) {
+                actionListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "OpenGrok fileevent"));
+            }
         }
     }
 

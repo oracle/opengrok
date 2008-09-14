@@ -98,12 +98,10 @@ public class DirectoryHistoryReader extends HistoryReader {
                         OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get date for " + path, ex);
                         cdate = new Date();
                     }
-                    String comment = "none", cauthor = "nobody";
                     int ls = rpath.lastIndexOf('/');
                     if (ls != -1) {
                         String rparent = (ls != -1) ? rpath.substring(0, ls) : "";
                         String rbase = rpath.substring(ls + 1);
-                        comment = rparent;
                         HistoryReader hr = null;
                         try {
                             File f = new File(src_root + rparent, rbase);
@@ -114,21 +112,7 @@ public class DirectoryHistoryReader extends HistoryReader {
                         if (hr == null) {
                             put(cdate, "-", "", rpath);
                         } else {
-                            try {
-                                while (hr.next()) {
-                                    if (hr.isActive()) {
-                                        comment = hr.getComment();
-                                        cauthor = hr.getAuthor();
-                                        cdate = hr.getDate();
-                                        put(cdate, cauthor, comment, rpath);
-                                        break;
-                                    }
-                                }
-                                hr.close();
-                            } catch (IOException e) {
-                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading history", e);
-                                put(cdate, "-", "", rpath);
-                            }
+                            readFromHistoryReader(hr, rpath, cdate);
                         }
                     }
                 }
@@ -239,5 +223,23 @@ public class DirectoryHistoryReader extends HistoryReader {
     @Override
     public boolean isActive() {
         return true;
+    }
+
+    private void readFromHistoryReader(HistoryReader hr, String rpath, Date defaultCdate) {
+        try {
+            while (hr.next()) {
+                if (hr.isActive()) {
+                    String comment = hr.getComment();
+                    String cauthor = hr.getAuthor();
+                    Date cdate = hr.getDate();
+                    put(cdate, cauthor, comment, rpath);
+                    break;
+                }
+            }
+            hr.close();
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading history", e);
+            put(defaultCdate, "-", "", rpath);
+        }
     }
 }

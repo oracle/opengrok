@@ -44,6 +44,30 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  */
 class RCSHistoryParser implements HistoryParser {
 
+    private static File readCVSRoot(File root, File CVSdir, String name) throws IOException {
+        String cvsroot = readFirstLine(root);
+
+        if (cvsroot == null) {
+            return null;
+        }
+        if (cvsroot.charAt(0) != '/') {
+            return null;
+        }
+
+        File repository = new File(CVSdir, "Repository");
+        String repo = readFirstLine(repository);
+        String dir = cvsroot + File.separatorChar + repo;
+        String filename = name + ",v";
+        File rcsFile = new File(dir, filename);
+        if (!rcsFile.exists()) {
+            File atticFile = new File(dir + File.separatorChar + "Attic", filename);
+            if (atticFile.exists()) {
+                rcsFile = atticFile;
+            }
+        }
+        return rcsFile;
+    }
+
     public History parse(File file, Repository repos)
             throws IOException {
         try {
@@ -107,21 +131,7 @@ class RCSHistoryParser implements HistoryParser {
             if (CVSdir.isDirectory() && CVSdir.canRead()) {
                 File root = new File(CVSdir, "Root");
                 if (root.canRead()) {
-                    String cvsroot = readFirstLine(root);
-                    if (cvsroot != null && cvsroot.charAt(0) == '/') {
-                        File repository = new File(CVSdir, "Repository");
-                        String repo = readFirstLine(repository);
-                        String dir = cvsroot + File.separatorChar + repo;
-                        String filename = name + ",v";
-                        File rcsFile = new File(dir, filename);
-                        if (!rcsFile.exists()) {
-                            File atticFile = new File(dir + File.separatorChar + "Attic", filename);
-                            if (atticFile.exists()) {
-                                rcsFile = atticFile;
-                            }
-                        }
-                        return rcsFile;
-                    }
+                    return readCVSRoot(root, CVSdir, name);
                 }
             }
         } catch (Exception e) {
