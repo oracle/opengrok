@@ -537,7 +537,8 @@ public final class Indexer {
         while (!executor.isTerminated()) {
             try {
                 // Wait forever
-                executor.awaitTermination(999, TimeUnit.DAYS);
+                // @newjdk : 999,TimeUnit.DAYS
+                executor.awaitTermination(999*60*60*24, TimeUnit.SECONDS);
             } catch (InterruptedException exp) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
