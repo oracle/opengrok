@@ -116,7 +116,7 @@ public class Definitions implements Serializable {
         /** The full line on which the definition occurs. */
         public final String text;
 
-        private Tag(int line, String symbol, String type, String text) {
+        protected Tag(int line, String symbol, String type, String text) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
