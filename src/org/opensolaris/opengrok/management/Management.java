@@ -70,6 +70,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      * @param ogaProperties The properties to use
      * @return A management instance to use
      */
+    @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")
     public static synchronized Management getInstance(Properties ogaProperties) {
         if (managementInstance == null) {
             managementInstance = new Management(ogaProperties);

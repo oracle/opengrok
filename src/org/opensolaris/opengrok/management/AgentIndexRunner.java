@@ -84,6 +84,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
      * @param enabledParam if true, the initial instance of the purgatory will
      * have purging enabled.
      */
+    @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")
     public static synchronized AgentIndexRunner getInstance(boolean enabledParam) {
         if (indexerInstance == null) {
             indexerInstance = new AgentIndexRunner(enabledParam);
