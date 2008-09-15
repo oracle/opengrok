@@ -449,7 +449,7 @@ public class IndexDatabase {
      * @param path The path to the file (from source root)
      * @throws java.io.IOException if an error occurs
      */
-    private void addFile(File file, String path) throws IOException {
+    private void addFile(File file, String path) {
         InputStream in;
         FileInputStream fis = null;
         try {
@@ -457,9 +457,6 @@ public class IndexDatabase {
             in = new BufferedInputStream(fis);
             FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
 
-            for (IndexChangedListener listener : listeners) {
-                listener.fileAdded(path, fa.getClass().getSimpleName());
-            }
 
             Document d = analyzerGuru.getDocument(file, in, path, fa);
             if (d == null) {
@@ -479,10 +476,19 @@ public class IndexDatabase {
                     fa.writeXref(xrefDir, path);
                 }
                 setDirty();
+                for (IndexChangedListener listener : listeners) {
+                    listener.fileAdded(path, fa.getClass().getSimpleName());
+                }
             }
+        } catch (Exception e) {
+            log.log(Level.WARNING, "Failed to add file: " + file.getAbsolutePath(), e);
         } finally {
             if (fis != null) {
-                fis.close();
+                try {
+                    fis.close();
+                } catch (IOException exp) {
+                    log.log(Level.WARNING, "Failed to close file " + file.getAbsolutePath(), exp);
+                }
             }
         }
     }

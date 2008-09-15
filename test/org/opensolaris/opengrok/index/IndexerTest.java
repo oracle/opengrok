@@ -172,4 +172,24 @@ public class IndexerTest {
             out.close();
         }
     }
+    @Test
+    public void testBug3430() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+
+        if (env.validateExuberantCtags()) {
+            Project project = new Project();
+            project.setPath("/bug3430");
+            IndexDatabase idb = new IndexDatabase(project);
+            assertNotNull(idb);
+            MyIndexChangeListener listener = new MyIndexChangeListener();
+            idb.addIndexChangedListener(listener);
+            idb.update();
+            assertEquals(1, listener.files.size());
+        } else {
+            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+        }
+    }
 }
