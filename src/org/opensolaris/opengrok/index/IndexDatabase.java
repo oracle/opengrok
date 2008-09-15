@@ -449,14 +449,11 @@ public class IndexDatabase {
      * @param path The path to the file (from source root)
      * @throws java.io.IOException if an error occurs
      */
-    private void addFile(File file, String path) {
-        InputStream in;
-        FileInputStream fis = null;
+    private void addFile(File file, String path) throws IOException {
+        final InputStream in =
+                new BufferedInputStream(new FileInputStream(file));
         try {
-            fis = new FileInputStream(file);
-            in = new BufferedInputStream(fis);
             FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
-
 
             Document d = analyzerGuru.getDocument(file, in, path, fa);
             if (d == null) {
@@ -480,16 +477,8 @@ public class IndexDatabase {
                     listener.fileAdded(path, fa.getClass().getSimpleName());
                 }
             }
-        } catch (Exception e) {
-            log.log(Level.WARNING, "Failed to add file: " + file.getAbsolutePath(), e);
         } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException exp) {
-                    log.log(Level.WARNING, "Failed to close file " + file.getAbsolutePath(), exp);
-                }
-            }
+            in.close();
         }
     }
 
@@ -571,9 +560,7 @@ public class IndexDatabase {
                 if (file.isDirectory()) {
                     indexDown(file, path);
                 } else {
-                    if (uidIter == null) {
-                        addFile(file, path);
-                    } else {
+                    if (uidIter != null) {
                         String uid = Util.uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND));	 // construct uid for doc
                         while (uidIter.term() != null && uidIter.term().field().equals("u") &&
                                 uidIter.term().text().compareTo(uid) < 0) {
@@ -584,9 +571,15 @@ public class IndexDatabase {
                         if (uidIter.term() != null && uidIter.term().field().equals("u") &&
                                 uidIter.term().text().compareTo(uid) == 0) {
                             uidIter.next();		   // keep matching docs
-                        } else {
-                            addFile(file, path);
+                            continue;
                         }
+                    }
+                    try {
+                        addFile(file, path);
+                    } catch (Exception e) {
+                        log.log(Level.WARNING,
+                                "Failed to add file " + file.getAbsolutePath(),
+                                e);
                     }
                 }
             }
