@@ -94,6 +94,195 @@ public class OpenGrokTrayApp {
 
     }
 
+    private ActionListener getAgentActionListener() {
+
+        ActionListener actionListener = new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                log.info("Got Event " + e.getActionCommand());
+                trayIcon.displayMessage("OpenGrok Indexer", "Files have been deleted/added", TrayIcon.MessageType.INFO);
+                trayIcon.setImage(indexWarningImage);
+            }
+        };
+
+        return actionListener;
+    }
+
+    private ActionListener getExitListener() {
+        ActionListener exitListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                log.info("Exiting...");
+                if (agent != null && agent.isConnected()) {
+                    agent.unregister();
+                }
+                System.exit(0);
+            }
+        };
+
+        return exitListener;
+    }
+
+    private MouseListener getMouseListener() {
+        MouseListener mouseListener = new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                log.finest("Tray Icon - Mouse clicked!");
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                log.finest("Tray Icon - Mouse entered!");
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                log.finest("Tray Icon - Mouse exited!");
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                log.finest("Tray Icon - Mouse pressed!");
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                log.finest("Tray Icon - Mouse released!");
+            }
+        };
+
+        return mouseListener;
+    }
+
+    private WindowListener getNotificationWindowListener() {
+
+        final WindowListener notificationWindowListener = new WindowListener() {
+
+            public void windowOpened(WindowEvent arg0) {
+                log.finest("Received window opened");
+            }
+
+            public void windowClosing(WindowEvent arg0) {
+                log.finest("Received window closing");
+            }
+
+            public void windowClosed(WindowEvent arg0) {
+                log.info("Received window closing");
+                if (agent != null && agent.isConnected()) {
+                    currentIcon = opengrokImage;
+                } else {
+                    currentIcon = noConnectionImage;
+                }
+                trayIcon.setImage(currentIcon);
+            }
+
+            public void windowIconified(WindowEvent arg0) {
+                log.finest("Received window iconified");
+            }
+
+            public void windowDeiconified(WindowEvent arg0) {
+                log.finest("Received window deiconified");
+            }
+
+            public void windowActivated(WindowEvent arg0) {
+                log.finest("Received window activated");
+            }
+
+            public void windowDeactivated(WindowEvent arg0) {
+                log.finest("Received window deactivated");
+            }
+        };
+
+        return notificationWindowListener;
+    }
+
+    private ActionListener getSettingsListener(final WindowListener settingsWindowListener) {
+
+        ActionListener settingsListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                log.finer("Settings...");
+                SettingsFrame sf = new SettingsFrame(settings);
+                sf.addWindowListener(settingsWindowListener);
+                sf.setVisible(true);
+                log.finer("Done settings");
+            }
+        };
+
+        return settingsListener;
+    }
+
+    private WindowListener getSettingsWindowListener() {
+        final WindowListener settingsWindowListener = new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent arg0) {
+                log.finest("Received window opened");
+            }
+
+            @Override
+            public void windowClosing(WindowEvent arg0) {
+                log.finest("Received window closing " + arg0);
+            }
+
+            @Override
+            public void windowClosed(WindowEvent arg0) {
+                log.info("Received window closing");
+                if (!agentConnected) {
+                    tryAgentConnect();
+                }
+                if (agentConnected) {
+                    currentIcon = opengrokImage;
+                } else {
+                    currentIcon = noConnectionImage;
+                }
+                trayIcon.setImage(currentIcon);
+            }
+
+            @Override
+            public void windowIconified(WindowEvent arg0) {
+                log.finest("Received window iconified");
+            }
+
+            public void windowDeiconified(WindowEvent arg0) {
+                log.finest("Received window deiconified");
+            }
+
+            public void windowActivated(WindowEvent arg0) {
+                log.finest("Received window activated");
+            }
+
+            public void windowDeactivated(WindowEvent arg0) {
+                log.finest("Received window deactivated");
+            }
+        };
+
+        return settingsWindowListener;
+    }
+
+    private ActionListener getShowNotificationListener(final WindowListener notificationWindowListener) {
+        ActionListener showNotificationsListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                log.info("Notifications...");
+                String notifs = "";
+                long starttime = 0;
+                long endtime = 0;
+                if (agentConnected && agent != null) {
+                    notifs = agent.getFilesInfo();
+                    agent.clearFilesInfo();
+                    starttime = agent.getStartTime();
+                    endtime = agent.getEndTime();
+                }
+                NotificationsFrame sf = new NotificationsFrame(notifs, starttime, endtime);
+                sf.addWindowListener(notificationWindowListener);
+                sf.setVisible(true);
+                log.finest("Done Notifications");
+            }
+        };
+
+        return showNotificationsListener;
+    }
+
     private void loadImages() {
         java.net.URL imageUrl;
         imageUrl = OpenGrokTrayApp.class.getResource(OPENGROKICONURL);
@@ -127,163 +316,15 @@ public class OpenGrokTrayApp {
         if (SystemTray.isSupported()) {
 
             SystemTray tray = SystemTray.getSystemTray();
-            MouseListener mouseListener = new MouseListener() {
-
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    log.finest("Tray Icon - Mouse clicked!");
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    log.finest("Tray Icon - Mouse entered!");
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    log.finest("Tray Icon - Mouse exited!");
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    log.finest("Tray Icon - Mouse pressed!");
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    log.finest("Tray Icon - Mouse released!");
-                }
-            };
+            MouseListener mouseListener = getMouseListener();
 
             log.info("Creating listeners");
 
-            ActionListener exitListener = new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    log.info("Exiting...");
-                    if (agent != null && agent.isConnected()) {
-                        agent.unregister();
-                    }
-                    System.exit(0);
-                }
-            };
-
-
-            final WindowListener settingsWindowListener = new WindowListener() {
-
-                @Override
-                public void windowOpened(WindowEvent arg0) {
-                    log.finest("Received window opened");
-                }
-
-                @Override
-                public void windowClosing(WindowEvent arg0) {
-                    log.finest("Received window closing " + arg0);
-                }
-
-                @Override
-                public void windowClosed(WindowEvent arg0) {
-                    log.info("Received window closing");
-                    if (!agentConnected) {
-                        tryAgentConnect();
-                    }
-                    if (agentConnected) {
-                        currentIcon = opengrokImage;
-                    } else {
-                        currentIcon = noConnectionImage;
-                    }
-                    trayIcon.setImage(currentIcon);
-                }
-
-                @Override
-                public void windowIconified(WindowEvent arg0) {
-                    log.finest("Received window iconified");
-                }
-
-                public void windowDeiconified(WindowEvent arg0) {
-                    log.finest("Received window deiconified");
-                }
-
-                public void windowActivated(WindowEvent arg0) {
-                    log.finest("Received window activated");
-                }
-
-                public void windowDeactivated(WindowEvent arg0) {
-                    log.finest("Received window deactivated");
-                }
-            };
-
-            final WindowListener notificationWindowListener = new WindowListener() {
-
-                public void windowOpened(WindowEvent arg0) {
-                    log.finest("Received window opened");
-                }
-
-                public void windowClosing(WindowEvent arg0) {
-                    log.finest("Received window closing");
-                }
-
-                public void windowClosed(WindowEvent arg0) {
-                    log.info("Received window closing");
-                    if (agent != null && agent.isConnected()) {
-                        currentIcon = opengrokImage;
-                    } else {
-                        currentIcon = noConnectionImage;
-                    }
-                    trayIcon.setImage(currentIcon);
-                }
-
-                public void windowIconified(WindowEvent arg0) {
-                    log.finest("Received window iconified");
-                }
-
-                public void windowDeiconified(WindowEvent arg0) {
-                    log.finest("Received window deiconified");
-                }
-
-                public void windowActivated(WindowEvent arg0) {
-                    log.finest("Received window activated");
-                }
-
-                public void windowDeactivated(WindowEvent arg0) {
-                    log.finest("Received window deactivated");
-                }
-            };
-
-            ActionListener settingsListener = new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    log.finer("Settings...");
-                    SettingsFrame sf = new SettingsFrame(settings);
-                    sf.addWindowListener(settingsWindowListener);
-                    sf.setVisible(true);
-                    log.finer("Done settings");
-
-                }
-            };
-
-            ActionListener showNotificationsListener = new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    log.info("Notifications...");
-                    String notifs = "";
-                    long starttime = 0;
-                    long endtime = 0;
-                    if (agentConnected && agent != null) {
-                        notifs = agent.getFilesInfo();
-                        agent.clearFilesInfo();
-                        starttime = agent.getStartTime();
-                        endtime = agent.getEndTime();
-                    }
-                    NotificationsFrame sf = new NotificationsFrame(notifs, starttime, endtime);
-                    sf.addWindowListener(notificationWindowListener);
-                    sf.setVisible(true);
-
-                    log.finest("Done Notifications");
-
-                }
-            };
+            final ActionListener exitListener = getExitListener();
+            final WindowListener settingsWindowListener = getSettingsWindowListener();
+            final WindowListener notificationWindowListener = getNotificationWindowListener();
+            final ActionListener settingsListener = getSettingsListener(settingsWindowListener);
+            final ActionListener showNotificationsListener = getShowNotificationListener(notificationWindowListener);
 
             log.info("Creating popup and tray icon ");
 
@@ -300,20 +341,9 @@ public class OpenGrokTrayApp {
             popup.addSeparator();
             popup.add(exitItem);
 
-
-
             trayIcon = new TrayIcon(opengrokImage, "OpenGrok Agent Client", popup);
 
-            ActionListener actionListener = new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    log.info("Got Event " + e.getActionCommand());
-                    trayIcon.displayMessage("OpenGrok Indexer",
-                            "Files have been deleted/added",
-                            TrayIcon.MessageType.INFO);
-                    trayIcon.setImage(indexWarningImage);
-                }
-            };
+            final ActionListener actionListener = getAgentActionListener();
 
             if (agent == null || !agent.isConnected()) {
                 trayIcon.setImage(noConnectionImage);
