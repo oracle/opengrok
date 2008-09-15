@@ -161,36 +161,68 @@ public class Context {
             lim = false;
         }
         
-        try {
-            if (lim) {
-                try {
-                    charsRead = in.read(buffer);
-                    if (charsRead == MAXFILEREAD) {
-                        // we probably only read parts of the file, so set the
-                        // truncated flag to enable the [all...] link that
-                        // requests all matches
-                        truncated = true;
-                        // truncate to last line read (don't look more than 100
-                        // characters back)
-                        for (int i = charsRead - 1; i > charsRead - 100; i--) {
-                            if (buffer[i] == '\n') {
-                                charsRead = i;
-                                break;
-                            }
+        if (lim) {
+            try{
+                charsRead = in.read(buffer);
+                if (charsRead == MAXFILEREAD) {
+                    // we probably only read parts of the file, so set the
+                    // truncated flag to enable the [all...] link that
+                    // requests all matches
+                    truncated = true;
+                    // truncate to last line read (don't look more than 100
+                    // characters back)
+                    for (int i = charsRead - 1; i > charsRead-100; i--) {
+                        if (buffer[i] == '\n') {
+                            charsRead = i;
+                            break;
                         }
                     }
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading data", e);
-                    return anything;
                 }
-                if (charsRead == 0) {
-                    return anything;
-                }
-
-                tokens.reInit(buffer, charsRead, out, urlPrefix + path + "#", matchingTags);
-            } else {
-                tokens.reInit(in, out, urlPrefix + path + "#", matchingTags);
+            } catch (IOException e) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading data", e);
+                return anything;
             }
+            if (charsRead == 0) {
+                return anything;
+            }
+            
+            tokens.reInit(buffer, charsRead, out, urlPrefix + path + "#", matchingTags);
+        } else {
+            tokens.reInit(in, out, urlPrefix + path + "#", matchingTags);
+        }
+        
+        if (hits != null) {
+            tokens.setAlt(alt);
+            tokens.setHitList(hits);
+            tokens.setFilename(path);
+        }
+        
+        try {
+            String token;
+            int matchState = LineMatcher.NOT_MATCHED;
+            int matchedLines = 0;
+            while ((token = tokens.next()) != null && (!lim || matchedLines < 10)) {
+                for (int i = 0; i< m.length; i++) {
+                    matchState = m[i].match(token);
+                    if (matchState == LineMatcher.MATCHED) {
+                        tokens.printContext();
+                        matchedLines++;
+                        //out.write("<br> <i>Matched " + token + " maxlines = " + matchedLines + "</i><br>");
+                        break;
+                    } else if ( matchState == LineMatcher.WAIT) {
+                        tokens.holdOn();
+                    } else {
+                        tokens.neverMind();
+                    }
+                }
+            }
+            anything = matchedLines > 0;
+            tokens.dumpRest();
+            if (lim && (truncated || matchedLines == 10) && out != null) {
+                out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?t=" +  queryAsURI + "\">all</a>...]");
+            }
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
         } finally {
             if (in != null) {
                 try {
@@ -199,54 +231,14 @@ public class Context {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
                 }
             }
-        }
-        
-        if (hits != null) {
-            tokens.setAlt(alt);
-            tokens.setHitList(hits);
-            tokens.setFilename(path);
-        }
-        return iterateTokens(out, truncated, morePrefix + path, lim);
-    }
-
-    private boolean iterateTokens(Writer out, boolean truncated, String path, boolean lim) {
-        boolean found = false;
-
-        try {
-            String token;
-            int matchState = LineMatcher.NOT_MATCHED;
-            int matchedLines = 0;
-            while ((token = tokens.next()) != null && (!lim || matchedLines < 10)) {
-                for (int i = 0; i < m.length; i++) {
-                    matchState = m[i].match(token);
-                    if (matchState == LineMatcher.MATCHED) {
-                        tokens.printContext();
-                        matchedLines++;
-                        //out.write("<br> <i>Matched " + token + " maxlines = " + matchedLines + "</i><br>");
-                        break;
-                    } else if (matchState == LineMatcher.WAIT) {
-                        tokens.holdOn();
-                    } else {
-                        tokens.neverMind();
-                    }
-                }
-            }
-            found = (matchedLines > 0);
-            tokens.dumpRest();
-            if (lim && (truncated || matchedLines == 10) && out != null) {
-                out.write("&nbsp; &nbsp; [<a href=\"" + path + "?t=" + queryAsURI + "\">all</a>...]");
-            }
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
-        } finally {
             if (out != null) {
                 try {
                     out.flush();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while flushing stream", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while flushing stream", e);                    
                 }
             }
         }
-        return found;
+        return anything;
     }
 }
