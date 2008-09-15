@@ -336,7 +336,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    protected boolean isWorking() {
+    public boolean isWorking() {
         return svnBinary.available;
     }
 }

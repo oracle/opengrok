@@ -163,7 +163,7 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    protected boolean isWorking() {
+    public boolean isWorking() {
         return p4Binary.available;
     }
 }

@@ -171,7 +171,7 @@ public class BazaarRepository extends Repository {
     }
     
     @Override
-    protected boolean isWorking() {
+    public boolean isWorking() {
         return bzrBinary.available;
     }
 }

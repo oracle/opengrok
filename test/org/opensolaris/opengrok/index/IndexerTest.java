@@ -36,11 +36,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.*;
@@ -129,7 +129,9 @@ public class IndexerTest {
         env.setDataRoot(repository.getDataRoot());
         HistoryGuru.getInstance().addRepositories(repository.getSourceRoot());
 
-        if (env.validateExuberantCtags()) {
+        Repository r = env.getRepositories().get(repository.getSourceRoot());
+        
+        if (r != null && r.isWorking() && env.validateExuberantCtags()) {
             Project project = new Project();
             project.setPath("/rfe2575");
             IndexDatabase idb = new IndexDatabase(project);
@@ -146,7 +148,7 @@ public class IndexerTest {
             idb.update();
             assertEquals(1, listener.files.size());
         } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+            System.out.println("Skipping test. Could not find a ctags or an sccs I could use in path.");
         }
     }
     

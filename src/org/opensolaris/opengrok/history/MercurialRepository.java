@@ -273,7 +273,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    protected boolean isWorking() {
+    public boolean isWorking() {
         return hgBinary.available;
     }
 }

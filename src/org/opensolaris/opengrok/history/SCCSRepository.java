@@ -231,7 +231,7 @@ public class SCCSRepository extends Repository {
     }
 
     @Override
-    protected boolean isWorking() {
+    public boolean isWorking() {
         return sccsBinary.available;
     }
 }
