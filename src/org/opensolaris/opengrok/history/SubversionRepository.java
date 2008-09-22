@@ -48,7 +48,7 @@ import org.xml.sax.ext.DefaultHandler2;
 /**
  * Access to a Subversion repository.
  *
- * @todo The current implementation does <b>not</b> support nestet
+ * <b>TODO</b> The current implementation does <b>not</b> support nested
  * repositories as described in http://svnbook.red-bean.com/en/1.0/ch07s03.html
  *
  * @author Trond Norbye

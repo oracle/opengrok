@@ -39,7 +39,7 @@ public class SettingsFrame extends javax.swing.JFrame {
 
     /** 
      * Creates new form SettingsFrame 
-     * @param SettingsPersistence settings to start and save with
+     * @param sp settings to start and save with
      */
     public SettingsFrame(SettingsPersistence sp) {
         properties = sp;
