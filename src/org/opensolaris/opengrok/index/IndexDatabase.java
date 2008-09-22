@@ -430,7 +430,7 @@ public class IndexDatabase {
         }
         File parent = xrefFile.getParentFile();
 
-        if (!xrefFile.delete()) {
+        if (!xrefFile.delete() && xrefFile.exists()) {
             log.info("Failed to remove obsolete xref-file: " +
                     xrefFile.getAbsolutePath());
         }
