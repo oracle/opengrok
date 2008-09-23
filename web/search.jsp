@@ -233,8 +233,7 @@ if( hits == null || errorMsg != null) {
                     SpellChecker checker = new SpellChecker(spellDirectory);
 
                     Date sstart = new Date();
-
-                    %><p><font color="#cc0000">Did you mean</font>:<%
+                    boolean printHeader = true;
                         String[] toks;
                         if(q != null) {
                             toks = q.split("[\t ]+");
@@ -243,7 +242,11 @@ if( hits == null || errorMsg != null) {
                                     if(toks[j].length() > 3) {
                                         String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
                                         for(int i = 0;i < ret.length; i++) {
-					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp; <%
+                                            if (printHeader) {
+                                                %><p><font color="#cc0000">Did you mean</font>:<%
+                                                printHeader = false;
+                                            }
+                                            %> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp; <%
                                         }
                                     }
                                 }
@@ -256,6 +259,10 @@ if( hits == null || errorMsg != null) {
                                     if(toks[j].length() > 3) {
                                         String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
                                         for(int i = 0;i < ret.length; i++) {
+                                            if (printHeader) {
+                                                %><p><font color="#cc0000">Did you mean</font>:<%
+                                                printHeader = false;
+                                            }
 					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
                                 }
                                 }
@@ -269,14 +276,20 @@ if( hits == null || errorMsg != null) {
                                     if(toks[j].length() > 3) {
                                         String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
                                         for(int i = 0;i < ret.length; i++) {
+                                            if (printHeader) {
+                                                %><p><font color="#cc0000">Did you mean</font>:<%
+                                                printHeader = false;
+                                            }
 					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
                                         }
                                     }
                                 }
                             }
                         }
+                        if (printHeader) {
+                            %></p><%                          
+                        }
                         spellDirectory.close();
-                        %></p><%
                 }
 		%><p> Your search  <b><%=query.toString()%></b> did not match any files.
                     <br />
