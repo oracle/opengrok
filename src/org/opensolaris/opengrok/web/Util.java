@@ -129,6 +129,10 @@ public final class Util {
         }
     }
 
+    /**
+     * Same as {@code breadcrumbPath(urlPrefix, l, '/')}.
+     * @see #breadcrumbPath(String, String, char)
+     */
     public static String breadcrumbPath(String urlPrefix, String l) {
         return breadcrumbPath(urlPrefix, l, '/');
     }
@@ -137,39 +141,105 @@ public final class Util {
     private static final String anchorClassStart = "<a class=\"";
     private static final String anchorEnd = "</a>";
     private static final String closeQuotedTag = "\">";
-    
+
+    /**
+     * Same as {@code breadcrumbPath(urlPrefix, l, sep, "")}.
+     * @see #breadcrumbPath(String, String, char, String)
+     */
     public static String breadcrumbPath(String urlPrefix, String l, char sep) {
+        return breadcrumbPath(urlPrefix, l, sep, "");
+    }
+
+    /**
+     * Create a breadcrumb path to allow navigation to each element of a path.
+     *
+     * @param urlPrefix what comes before the path in the URL
+     * @param l the full path from which the breadcrumb path is built
+     * @param sep the character that separates the path elements in {@code l}
+     * @param urlPostfix what comes after the path in the URL
+     * @return HTML markup for the breadcrumb path
+     */
+    public static String breadcrumbPath(
+            String urlPrefix, String l, char sep, String urlPostfix) {
         if (l == null || l.length() <= 1) {
             return l;
         }
         StringBuilder hyperl = new StringBuilder(20);
-        if (l.charAt(0) == sep) {
-            hyperl.append(sep);
-        }
-        int s = 0,
-         e = 0;
-        while ((e = l.indexOf(sep, s)) >= 0) {
-            if (e - s > 0) {
-                hyperl.append(anchorLinkStart);
-                hyperl.append(urlPrefix);
-                hyperl.append(l.substring(0, e));
-                hyperl.append("/");
-                hyperl.append(closeQuotedTag);
-                hyperl.append(l.substring(s, e));
-                hyperl.append(anchorEnd);
-                hyperl.append(sep);
-            }
-            s = e + 1;
-        }
-        if (s < l.length()) {
-            hyperl.append(anchorLinkStart);
-            hyperl.append(urlPrefix);
-            hyperl.append(l);
-            hyperl.append(closeQuotedTag);
-            hyperl.append(l.substring(s, l.length()));
-            hyperl.append(anchorEnd);
+        String[] path = l.split(escapeForRegex(sep), -1);
+        for (int i = 0; i < path.length; i++) {
+            leaveBreadcrumb(urlPrefix, sep, urlPostfix, hyperl, path, i);
         }
         return hyperl.toString();
+    }
+
+    /**
+     * Leave a breadcrumb to allow navigation to one of the parent directories.
+     * Write a hyperlink to the specified {@code StringBuilder}.
+     *
+     * @param urlPrefix what comes before the path in the URL
+     * @param sep the character that separates path elements
+     * @param urlPostfix what comes after the path in the URL
+     * @param hyperl a string builder to which the hyperlink is written
+     * @param path all the elements of the full path
+     * @param index which path element to create a link to
+     */
+    private static void leaveBreadcrumb(
+            String urlPrefix, char sep, String urlPostfix, StringBuilder hyperl,
+            String[] path, int index) {
+        // Only generate the link if the path element is non-empty. Empty
+        // path elements could occur if the path contains two consecutive
+        // separator characters, or if the path begins or ends with a path
+        // separator.
+        if (path[index].length() > 0) {
+            hyperl.append(anchorLinkStart).append(urlPrefix);
+            appendPath(path, index, hyperl);
+            hyperl.append(urlPostfix).append(closeQuotedTag).
+                    append(path[index]).append(anchorEnd);
+        }
+        // Add a separator between each path element, but not after the last
+        // one. If the original path ended with a separator, the last element
+        // of the path array is an empty string, which means that the final
+        // separator will be printed.
+        if (index < path.length - 1) {
+            hyperl.append(sep);
+        }
+    }
+
+    /**
+     * Append parts of a file path to a {@code StringBuilder}. Separate each
+     * element in the path with "/". The path elements from index 0 up to
+     * index {@code lastIndex} (inclusive) are used.
+     *
+     * @param path array of path elements
+     * @param lastIndex the index of the last path element to use
+     * @param out the {@code StringBuilder} to which the path is appended
+     */
+    private static void appendPath(
+            String[] path, int lastIndex, StringBuilder out) {
+        for (int i = 0; i <= lastIndex; i++) {
+            out.append(path[i]);
+            if (i < lastIndex) {
+                out.append("/");
+            }
+        }
+    }
+
+    /**
+     * Generate a regex that matches the specified character. Escape it in
+     * case it is a character that has a special meaning in a regex.
+     *
+     * @param c the character that the regex should match
+     * @return a six-character string on the form <tt>&#92;u</tt><i>hhhh</i>
+     */
+    private static String escapeForRegex(char c) {
+        StringBuilder sb = new StringBuilder(6);
+        sb.append("\\u");
+        String hex = Integer.toHexString((int) c);
+        for (int i = 0; i < 4 - hex.length(); i++) {
+            sb.append('0');
+        }
+        sb.append(hex);
+        return sb.toString();
     }
 
     public static String redableSize(long num) {

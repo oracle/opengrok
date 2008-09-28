@@ -57,8 +57,11 @@ public class UtilTest {
         assertEquals("<a href=\"/root/xx\">xx</a>",
                 Util.breadcrumbPath("/root/", "xx"));
 
-        assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b\">b</a>",
+        assertEquals("<a href=\"/r/a\">a</a>/<a href=\"/r/a/b\">b</a>",
                 Util.breadcrumbPath("/r/", "a/b"));
+
+        assertEquals("<a href=\"/r/a\">a</a>/<a href=\"/r/a/b\">b</a>/",
+                Util.breadcrumbPath("/r/", "a/b/"));
     }
 
     @Test
