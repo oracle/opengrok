@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -143,11 +144,11 @@ public final class Util {
     private static final String closeQuotedTag = "\">";
 
     /**
-     * Same as {@code breadcrumbPath(urlPrefix, l, sep, "")}.
-     * @see #breadcrumbPath(String, String, char, String)
+     * Same as {@code breadcrumbPath(urlPrefix, l, sep, "", false)}.
+     * @see #breadcrumbPath(String, String, char, String, boolean)
      */
     public static String breadcrumbPath(String urlPrefix, String l, char sep) {
-        return breadcrumbPath(urlPrefix, l, sep, "");
+        return breadcrumbPath(urlPrefix, l, sep, "", false);
     }
 
     /**
@@ -157,17 +158,21 @@ public final class Util {
      * @param l the full path from which the breadcrumb path is built
      * @param sep the character that separates the path elements in {@code l}
      * @param urlPostfix what comes after the path in the URL
+     * @param compact if {@code true}, remove {@code ..} and empty path
+     * elements from the path in the links
      * @return HTML markup for the breadcrumb path
      */
     public static String breadcrumbPath(
-            String urlPrefix, String l, char sep, String urlPostfix) {
+            String urlPrefix, String l, char sep, String urlPostfix,
+            boolean compact) {
         if (l == null || l.length() <= 1) {
             return l;
         }
         StringBuilder hyperl = new StringBuilder(20);
         String[] path = l.split(escapeForRegex(sep), -1);
         for (int i = 0; i < path.length; i++) {
-            leaveBreadcrumb(urlPrefix, sep, urlPostfix, hyperl, path, i);
+            leaveBreadcrumb(
+                    urlPrefix, sep, urlPostfix, compact, hyperl, path, i);
         }
         return hyperl.toString();
     }
@@ -179,20 +184,22 @@ public final class Util {
      * @param urlPrefix what comes before the path in the URL
      * @param sep the character that separates path elements
      * @param urlPostfix what comes after the path in the URL
+     * @param compact if {@code true}, remove {@code ..} and empty path
+     * elements from the path in the link
      * @param hyperl a string builder to which the hyperlink is written
      * @param path all the elements of the full path
      * @param index which path element to create a link to
      */
     private static void leaveBreadcrumb(
-            String urlPrefix, char sep, String urlPostfix, StringBuilder hyperl,
-            String[] path, int index) {
+            String urlPrefix, char sep, String urlPostfix, boolean compact,
+            StringBuilder hyperl, String[] path, int index) {
         // Only generate the link if the path element is non-empty. Empty
         // path elements could occur if the path contains two consecutive
         // separator characters, or if the path begins or ends with a path
         // separator.
         if (path[index].length() > 0) {
             hyperl.append(anchorLinkStart).append(urlPrefix);
-            appendPath(path, index, hyperl);
+            appendPath(path, index, hyperl, compact);
             hyperl.append(urlPostfix).append(closeQuotedTag).
                     append(path[index]).append(anchorEnd);
         }
@@ -213,12 +220,36 @@ public final class Util {
      * @param path array of path elements
      * @param lastIndex the index of the last path element to use
      * @param out the {@code StringBuilder} to which the path is appended
+     * @param compact if {@code true}, remove {@code ..} and empty path
+     * elements from the path in the link
      */
     private static void appendPath(
-            String[] path, int lastIndex, StringBuilder out) {
+            String[] path, int lastIndex, StringBuilder out, boolean compact) {
+        final ArrayList<String> elements = new ArrayList<String>(lastIndex + 1);
+
+        // Copy the relevant part of the path. If compact is false, just
+        // copy the lastIndex first elements. If compact is true, remove empty
+        // path elements, and follow .. up to the parent directory. Occurrences
+        // of .. at the beginning of the path will be removed.
         for (int i = 0; i <= lastIndex; i++) {
-            out.append(path[i]);
-            if (i < lastIndex) {
+            if (compact) {
+                if ("..".equals(path[i])) {
+                    if (!elements.isEmpty()) {
+                        elements.remove(elements.size() - 1);
+                    }
+                } else if (!"".equals(path[i])) {
+                    elements.add(path[i]);
+                }
+            } else {
+                elements.add(path[i]);
+            }
+        }
+
+        // Print the path with / between each element. No separator before
+        // the first element or after the last element.
+        for (int i = 0; i < elements.size(); i++) {
+            out.append(elements.get(i));
+            if (i < elements.size() - 1) {
                 out.append("/");
             }
         }

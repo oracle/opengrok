@@ -62,6 +62,26 @@ public class UtilTest {
 
         assertEquals("<a href=\"/r/a\">a</a>/<a href=\"/r/a/b\">b</a>/",
                 Util.breadcrumbPath("/r/", "a/b/"));
+
+        assertEquals("<a href=\"/r/java\">java</a>." +
+                "<a href=\"/r/java/lang\">lang</a>." +
+                "<a href=\"/r/java/lang/String\">String</a>",
+                Util.breadcrumbPath("/r/", "java.lang.String", '.'));
+
+        assertEquals("<a href=\"/root/xx&project=y\">xx</a>",
+                Util.breadcrumbPath("/root/", "xx", '/', "&project=y", false));
+
+        assertEquals("<a href=\"/root/xx&project=y\">xx</a>",
+                Util.breadcrumbPath("/root/", "xx", '/', "&project=y", true));
+
+        assertEquals("<a href=\"/r/\">..</a>/" +
+                "<a href=\"/r/a\">a</a>/" +
+                "<a href=\"/r/a/b\">b</a>/" +
+                "<a href=\"/r/a\">..</a>/" +
+                "<a href=\"/r/a/c\">c</a>/" +
+                "/" +
+                "<a href=\"/r/a/c/d\">d</a>",
+                Util.breadcrumbPath("/r/", "../a/b/../c//d", '/', "", true));
     }
 
     @Test
