@@ -58,21 +58,8 @@ import org.opensolaris.opengrok.configuration.Project;
 	annotation = null;
   }
 
-  private void appendProject() throws IOException {
-      if (project != null) {
-          out.write("&project=");
-          out.write(project.getPath());
-      }
-  }
-
-  private static String massagePath(String path) {
-    if (isPossiblyJavaClass(path)) {
-      // Bug 2225: If the path is referencing a Java class, replace '.' with
-      // '/' to make the search find the Java source file.
-      return path.replace('.', '/');
-    } else {
-      return path;
-    }
+  private String getProjectPostfix() {
+      return project == null ? "" : ("&project=" + project.getPath());
   }
 
   private static boolean isPossiblyJavaClass(String s) {
@@ -141,10 +128,14 @@ NameChar = {FileChar}|"."
 
 <YYINITIAL, COMMENT, CDATA, STRING, SSTRING, TAG> {
 {File}|{Path}
-	{String s=yytext();
-	out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
-	out.write(massagePath(s));appendProject();out.write("\">");
-	out.write(s);out.write("</a>");} 
+  {
+    final String path = yytext();
+    final char separator = isPossiblyJavaClass(path) ? '.' : '/';
+    final String hyperlink =
+            Util.breadcrumbPath(urlPrefix + "path=", path, separator,
+                                getProjectPostfix(), true);
+    out.append(hyperlink);
+  }
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
 	{String s=yytext();
