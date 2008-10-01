@@ -48,7 +48,7 @@ String pageTitle = "Error!";
 <div id="bar"><a id="home" href="<%=context%>">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
 <h3 class="error">There was an error!</h3>
 <p><%=configError%>
-</p><%if (!(exception instanceof NullPointerException)) {%><pre><%
+</p><pre><%
    StringWriter wrt = new StringWriter();
    PrintWriter prt = new PrintWriter(wrt);
    exception.printStackTrace(prt);
@@ -60,7 +60,4 @@ String pageTitle = "Error!";
 <p>
 <%=exception.getMessage()%>
 </p>
-<%
-}
-%>
 <%@include file="foot.jspf"%>
