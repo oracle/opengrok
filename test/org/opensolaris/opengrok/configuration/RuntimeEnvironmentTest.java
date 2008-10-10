@@ -119,7 +119,7 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testRegister() throws InterruptedException {
+    public void testRegister() throws InterruptedException, IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String path = "/tmp/dataroot";
         instance.setDataRoot(path);
@@ -134,7 +134,7 @@ public class RuntimeEnvironmentTest {
         });
         t.start();
         t.join();
-        assertEquals(path, instance.getDataRootPath());
+        assertEquals(new File(path).getCanonicalFile().getAbsolutePath(), instance.getDataRootPath());
     }
 
     @Test
