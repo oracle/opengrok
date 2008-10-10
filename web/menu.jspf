@@ -36,7 +36,7 @@ org.opensolaris.opengrok.web.Util"%>
                     <tr>
                         <td align="right" valign="top"> Project </td>
                         <td>
-                            <select class="q" name="project" size="<%=Math.min(5, env.getProjects().size())%>" style="width: 300px"/>
+                            <select class="q" name="project" size="<%=Math.min(5, env.getProjects().size())%>" style="width: 300px">
                                 <%
                                 for (Project p : env.getProjects()) {
                                 %><option value="<%=Util.formQuoteEscape(p.getPath())%>"<%
