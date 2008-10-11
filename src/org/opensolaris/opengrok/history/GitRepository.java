@@ -51,8 +51,12 @@ public class GitRepository extends Repository {
             filename = abs.substring(directoryName.length() + 1);
         }
         
-        String[] argv = new String[] {getCommand(), "log", "--name-only", "--pretty=fuller", filename};
-
+       String[] argv;
+       if (filename.length() > 0) {
+           argv = new String[] {getCommand(), "log", "--name-only", "--pretty=fuller", filename};
+       } else {
+           argv = new String[] {getCommand(), "log", "--name-only", "--pretty=fuller"};
+       }
         File directory = new File(getDirectoryName());
         return Runtime.getRuntime().exec(argv, null, directory);        
     }    

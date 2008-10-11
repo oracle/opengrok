@@ -177,10 +177,6 @@ public class HistoryEntry {
      * Remove "unneeded" info such as multiline history and files list
      */
     public void strip() {
-        int idx = message.indexOf("\n");
-        if (idx != -1) {
-            message.setLength(idx);
-        }
         files.clear();
     }
 }

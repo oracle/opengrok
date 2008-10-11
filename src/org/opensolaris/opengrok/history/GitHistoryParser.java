@@ -45,12 +45,94 @@ class GitHistoryParser implements HistoryParser {
         HEADER, MESSAGE, FILES
     };      
             
+    /**
+     * Parse a git history entry.
+     * 
+     * @param in The reader to read the data to parse from
+     * @param directory The directory the files is inside
+     * @param rootLength The length of the path that is the standard (non relative) part
+     * @return History entry
+     * @throws java.io.IOException if it fails to read
+     */
+    public History parse(BufferedReader in, String directory, int rootLength)
+            throws IOException {
+
+        SimpleDateFormat df =
+                new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.US);
+        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+
+        History history = new History();
+        HistoryEntry entry = null;
+        ParseState state = ParseState.HEADER;
+        String s = in.readLine();
+        while (s != null) {
+            if (state == ParseState.HEADER) {
+
+                if (s.startsWith("commit")) {
+                    if (entry != null) {
+                        entries.add(entry);
+                    }
+                    entry = new HistoryEntry();
+                    entry.setActive(true);
+                    String commit = s.substring("commit".length()).trim();
+                    entry.setRevision(commit);
+                } else if (s.startsWith("Author:") && entry != null) {
+                    entry.setAuthor(s.substring("Author:".length()).trim());
+                } else if (s.startsWith("AuthorDate:") && entry != null) {
+                    String dateString =
+                            s.substring("AuthorDate:".length()).trim();
+                    try {
+                        entry.setDate(df.parse(dateString));
+                    } catch (ParseException pe) {
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse author date: " + s, pe);
+                    }
+                } else if (s.trim().isEmpty()) {
+                    // We are done reading the heading, start to read the message
+                    state = ParseState.MESSAGE;
+                    
+                    // The current line is empty - the message starts on the next line (to be parsed below).
+                    s = in.readLine();
+                }
+
+            }
+            if (state == ParseState.MESSAGE) {
+                if (s.isEmpty() || Character.isWhitespace(s.charAt(0))) {
+                    if (entry != null) {
+                        entry.appendMessage(s);
+                    }
+                } else {
+                    // This is the list of files after the message - add them
+                    state = ParseState.FILES;
+                }
+            }
+            if (state == ParseState.FILES) {
+                if (s.trim().equals("") || s.startsWith("commit")) {
+                    state = ParseState.HEADER;
+                    continue; // Parse this line again - do not read a new line
+                } else {
+                    if (entry != null) {
+                        File f = new File(directory, s);
+                        String name = f.getCanonicalPath().substring(rootLength);
+                        entry.addFile(name);
+                    }
+                }
+            }
+            s = in.readLine();
+        }
+
+        if (entry != null) {
+            entries.add(entry);
+        }
+
+        history.setHistoryEntries(entries);
+        return history;
+    }
             
     public History parse(File file, Repository repos)
             throws IOException {
 
         GitRepository mrepos = (GitRepository) repos;
-        History history = new History();
+        History history = null;
         
         Process process = null;
         BufferedReader in = null;
@@ -60,74 +142,12 @@ class GitHistoryParser implements HistoryParser {
                 return null;
             }
 
-            SimpleDateFormat df =
-                    new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.US);
-            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-
             InputStream is = process.getInputStream();
             in = new BufferedReader(new InputStreamReader(is));
             String mydir = mrepos.getDirectoryName() + File.separator;
             int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-            String s;
-            HistoryEntry entry = null;
-            ParseState state = ParseState.HEADER;
-            while ((s = in.readLine()) != null) {
-                if (state == ParseState.HEADER) {
 
-                    if (s.startsWith("commit")) {
-                        if (entry != null) {
-                            entries.add(entry);
-                        }
-                        entry = new HistoryEntry();
-                        entry.setActive(true);
-                        String commit = s.substring("commit".length()).trim();
-                        entry.setRevision(commit);
-                    } else if (s.startsWith("Author:") && entry != null) {
-                        entry.setAuthor(s.substring("Author:".length()).trim());
-                    } else if (s.startsWith("AuthorDate:") && entry != null) {
-                        String dateString =
-                                s.substring("AuthorDate:".length()).trim();
-                        try {
-                            entry.setDate(df.parse(dateString));
-                        } catch (ParseException pe) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse author date: " + s, pe);
-                        }
-                    } else if (s.trim().equals("")) {
-                        // We are done reading the heading, start to read the message
-                        state = ParseState.MESSAGE;
-                    }
-
-                }
-                if (state == ParseState.MESSAGE) {
-                    if (s.trim().startsWith("git-svn-id:")) {
-                        // file listing
-                        state = ParseState.FILES;
-                        
-                        // next line is empty, discard it
-                        s = in.readLine();
-                        continue;
-                    } else if (entry != null) {
-                        entry.appendMessage(s);
-                    }
-                }
-                if (state == ParseState.FILES) {
-                    if (s.trim().equals("")) {
-                        state = ParseState.HEADER;
-                    } else {
-                        if (entry != null) {
-                            File f = new File(mydir, s);
-                            String name = f.getCanonicalPath().substring(rootLength);
-                            entry.addFile(name);
-                        }
-                    }
-                }
-            }
-
-            if (entry != null) {
-                entries.add(entry);
-            }
-
-            history.setHistoryEntries(entries);
+            history = parse(in, mydir, rootLength);
         } finally {
             if (in != null) {
                 try {
