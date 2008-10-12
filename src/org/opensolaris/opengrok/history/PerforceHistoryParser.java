@@ -98,7 +98,7 @@ public class PerforceHistoryParser implements HistoryParser {
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repository Pointer to the PerforceReporitory
+     * @param repos Pointer to the {@code PerforceRepository}
      * @return object representing the file's history
      * @throws HistoryException if a problem occurs while executing p4 command
      */
