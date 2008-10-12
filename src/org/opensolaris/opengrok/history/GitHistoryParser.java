@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * Parse a stream of Git log comments.
@@ -96,7 +97,7 @@ class GitHistoryParser implements HistoryParser {
 
             }
             if (state == ParseState.MESSAGE) {
-                if (s.isEmpty() || Character.isWhitespace(s.charAt(0))) {
+                if ((s.length() == 0) || Character.isWhitespace(s.charAt(0))) {
                     if (entry != null) {
                         entry.appendMessage(s);
                     }
@@ -106,7 +107,7 @@ class GitHistoryParser implements HistoryParser {
                 }
             }
             if (state == ParseState.FILES) {
-                if (s.trim().equals("") || s.startsWith("commit")) {
+                if (StringUtils.isOnlyWhitespace(s) || s.startsWith("commit")) {
                     state = ParseState.HEADER;
                     continue; // Parse this line again - do not read a new line
                 } else {
