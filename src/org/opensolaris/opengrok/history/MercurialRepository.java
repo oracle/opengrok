@@ -269,7 +269,7 @@ public class MercurialRepository extends Repository {
     boolean supportsSubRepositories() {
         // The forest-extension in Mercurial adds repositories inside the
         // repositories.
-        return true;
+        return !Boolean.getBoolean("org.opensolaris.opengrok.history.mercurial.disableForest");
     }
 
     @Override
