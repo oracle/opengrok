@@ -21,30 +21,41 @@
  * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+
 package org.opensolaris.opengrok.history;
 
-import java.io.File;
-
-interface HistoryCache {
+/**
+ * Exception thrown when retrieval or manipulation of history information
+ * fails.
+ */
+public class HistoryException extends Exception {
 
     /**
-     * Retrieve the history for the given file, either from the cache or by
-     * parsing the history information in the repository.
+     * Construct a {@code HistoryException} with the specified message.
      *
-     * @param file The file to retrieve history for
-     * @param parserClass The class that implements the parser to use
-     * @param repository The external repository to read the history from (can
-     * be <code>null</code>)
-     * @throws HistoryException if the history cannot be fetched
+     * @param msg the message string
      */
-    History get(File file, Repository repository) throws HistoryException;
+    public HistoryException(String msg) {
+        super(msg);
+    }
 
     /**
-     * Store the history for the given file.
-     * 
-     * @param history The history to store
-     * @param file The file to store information for
-     * @throws HistoryException if the history cannot be stored
+     * Construct a {@code HistoryException} with the specified cause.
+     *
+     * @param cause the cause of the exception
      */
-    void store(History history, File file) throws HistoryException;
+    public HistoryException(Throwable cause) {
+        super(cause);
+    }
+
+    /**
+     * Construct a {@code HistoryException} with the specified message
+     * and cause.
+     *
+     * @param msg the message string
+     * @param cause the cause of the exception
+     */
+    public HistoryException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

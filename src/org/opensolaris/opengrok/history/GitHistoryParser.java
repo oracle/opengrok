@@ -128,9 +128,16 @@ class GitHistoryParser implements HistoryParser {
         history.setHistoryEntries(entries);
         return history;
     }
-            
-    public History parse(File file, Repository repos)
-            throws IOException {
+
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseFile(file, repos);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseFile(File file, Repository repos) throws IOException {
 
         GitRepository mrepos = (GitRepository) repos;
         History history = null;

@@ -104,7 +104,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void historyReader() throws IOException {
+    public void historyReader() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (instance.hasHistory(f)) {
@@ -124,7 +124,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void getRevision() throws IOException {
+    public void getRevision() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (f.isFile() && instance.hasHistory(f)) {

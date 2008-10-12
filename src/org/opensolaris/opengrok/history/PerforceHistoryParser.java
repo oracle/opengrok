@@ -93,15 +93,24 @@ public class PerforceHistoryParser implements HistoryParser {
     }
     
     private final static Pattern change_pattern = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
+
     /**
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
      * @param repository Pointer to the PerforceReporitory
      * @return object representing the file's history
-     * @throws IOException if a problem occurs while executing p4 command
+     * @throws HistoryException if a problem occurs while executing p4 command
      */
-    public History parse(File file, Repository repository) throws IOException {
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseFile(file);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseFile(File file) throws IOException {
         if (!PerforceRepository.isInP4Depot(file)) {
             return null;
         }

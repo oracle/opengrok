@@ -68,8 +68,15 @@ class RCSHistoryParser implements HistoryParser {
         return rcsFile;
     }
 
-    public History parse(File file, Repository repos)
-            throws IOException {
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseFile(file);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseFile(File file) throws IOException {
         try {
             Archive archive = new Archive(getRCSFile(file).getPath());
             Version ver = archive.getRevisionVersion();

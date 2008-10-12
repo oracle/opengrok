@@ -37,7 +37,15 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 class ClearCaseHistoryParser implements HistoryParser {
     private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.US);
 
-    public History parse(File file, Repository repos)
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseFile(file, repos);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseFile(File file, Repository repos)
             throws IOException {
         ClearCaseRepository mrepos = (ClearCaseRepository) repos;
         History history = new History();

@@ -115,8 +115,15 @@ class SubversionHistoryParser implements HistoryParser {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-    public History parse(File file, Repository repos)
-            throws IOException {
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseFile(file, repos);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseFile(File file, Repository repos) throws IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = null;
         try {

@@ -48,7 +48,15 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
     String mydir;
     int rootLength;
 
-    public History parse(File file, Repository repos) throws IOException {
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseFile(file, repos);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseFile(File file, Repository repos) throws IOException {
         MercurialRepository mrepos = (MercurialRepository) repos;
         mydir = mrepos.getDirectoryName() + File.separator;
         rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();

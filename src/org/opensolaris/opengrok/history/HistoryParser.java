@@ -25,7 +25,6 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Interface for parsers which read a history log and return an object
@@ -40,6 +39,5 @@ interface HistoryParser {
      * (could be null if no external repository is used)
      * @return the history of the file
      */
-    History parse(File file, Repository repository)
-        throws IOException;
+    History parse(File file, Repository repository) throws HistoryException;
 }

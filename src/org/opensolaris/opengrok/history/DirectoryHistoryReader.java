@@ -106,7 +106,7 @@ public class DirectoryHistoryReader extends HistoryReader {
                         try {
                             File f = new File(src_root + rparent, rbase);
                             hr = HistoryGuru.getInstance().getHistoryReader(f);
-                        } catch (IOException e) {
+                        } catch (HistoryException e) {
                             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting history reader", e);
                         }
                         if (hr == null) {

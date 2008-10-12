@@ -105,10 +105,10 @@ public final class HistoryGuru {
      * Get the appropriate history reader for the file specified by parent and basename.
      *
      * @param file The file to get the history reader for
-     * @throws java.io.IOException If an error occurs while trying to access the filesystem
+     * @throws HistoryException If an error occurs while getting the history
      * @return A HistorReader that may be used to read out history data for a named file
      */
-    public HistoryReader getHistoryReader(File file) throws IOException {
+    public HistoryReader getHistoryReader(File file) throws HistoryException {
         if (file.isDirectory()) {
             return getDirectoryHistoryReader(file);
         }
@@ -130,10 +130,11 @@ public final class HistoryGuru {
      * Get the appropriate history reader for a specific directory.
      *
      * @param file The directpru to get the history reader for
-     * @throws java.io.IOException If an error occurs while trying to access the filesystem
+     * @throws HistoryException If an error occurs while getting the history
      * @return A HistorReader that may be used to read out history data for a named file
      */
-    private HistoryReader getDirectoryHistoryReader(File file) throws IOException {
+    private HistoryReader getDirectoryHistoryReader(File file)
+            throws HistoryException {
         HistoryReader ret = null;
         Repository repos = getRepository(file);
         History history = historyCache.get(file, repos);

@@ -57,7 +57,7 @@ class FileHistoryCache implements HistoryCache {
      * @param file the file to find the cache for
      * @return file that might contain cached history for <code>file</code>
      */
-    private static File getCachedFile(File file) {
+    private static File getCachedFile(File file) throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         
         StringBuilder sb = new StringBuilder();
@@ -70,15 +70,16 @@ class FileHistoryCache implements HistoryCache {
             return null;
         }
 
+        String add;
         try {
-            String add = file.getCanonicalPath().substring(sourceRoot.length());
-            if (add.length() == 0) {
-                add = File.separator;
-            }
-            sb.append(add);
-        } catch (IOException ex) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Could not get path for: " + file, ex);
+            add = file.getCanonicalPath().substring(sourceRoot.length());
+        } catch (IOException ioe) {
+            throw new HistoryException("Failed to get path for: " + file, ioe);
         }
+        if (add.length() == 0) {
+            add = File.separator;
+        }
+        sb.append(add);
         sb.append(".gz");
         
         return new File(sb.toString());
@@ -100,13 +101,14 @@ class FileHistoryCache implements HistoryCache {
         }
     }
     
-    public void store(History history, File file) throws IOException {
+    public void store(History history, File file) throws HistoryException {
         
         File cache = getCachedFile(file);
 
         File dir = cache.getParentFile();
         if (!dir.isDirectory() && !dir.mkdirs()) {
-            throw new IOException("Unable to create cache directory '" + dir + "'.");
+            throw new HistoryException(
+                    "Unable to create cache directory '" + dir + "'.");
         }
 
         // We have a problem that multiple threads may access the cache layer
@@ -117,35 +119,41 @@ class FileHistoryCache implements HistoryCache {
         // Generate the file with a temporary name and move it into place when
         // I'm done so I don't have to protect the readers for partially updated
         // files...
-        File output = File.createTempFile("oghist", null, dir);
-        final FileOutputStream out = new FileOutputStream(output);
+        final File output;
         try {
-            XMLEncoder e = new XMLEncoder(
-                    new BufferedOutputStream(new GZIPOutputStream(out)));
-            e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
-            e.writeObject(history);
-            e.close();
-        } finally {
-            out.close();
+            output = File.createTempFile("oghist", null, dir);
+            final FileOutputStream out = new FileOutputStream(output);
+            try {
+                XMLEncoder e = new XMLEncoder(
+                        new BufferedOutputStream(new GZIPOutputStream(out)));
+                e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
+                e.writeObject(history);
+                e.close();
+            } finally {
+                out.close();
+            }
+        } catch (IOException ioe) {
+            throw new HistoryException("Failed to write history", ioe);
         }
         synchronized (lock) {
             if (!cache.delete() && cache.exists()) {
                 if (!output.delete()) {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary history cache file");
                 }
-                throw new IOException(
+                throw new HistoryException(
                         "Cachefile exists, and I could not delete it.");
             }
             if (!output.renameTo(cache)) {
                 if (!output.delete()) {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary history cache file");
                 }
-                throw new IOException("Failed to rename cache tmpfile.");
+                throw new HistoryException("Failed to rename cache tmpfile.");
             }
         }
     }
 
-    public History get(File file, Repository repository) throws IOException {
+    public History get(File file, Repository repository)
+            throws HistoryException {
         Class<? extends HistoryParser> parserClass;
         parserClass = repository.getHistoryParser();
         File cache = getCachedFile(file);
@@ -167,10 +175,9 @@ class FileHistoryCache implements HistoryCache {
             history = parser.parse(file, repository);
             time = System.currentTimeMillis() - time;
         } catch (InstantiationException ex) {
-            throw RCSRepository.wrapInIOException(
-                    "Could not create history parser", ex);
+            throw new HistoryException("Could not create history parser", ex);
         } catch (IllegalAccessException ex) {
-            throw RCSRepository.wrapInIOException(
+            throw new HistoryException(
                     "No access permissions to create history parser", ex);
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
@@ -189,15 +196,10 @@ class FileHistoryCache implements HistoryCache {
             if (env.useHistoryCache() && (cache != null) &&
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
-                    // retrieving the history takes too long, cache it!
-                try {
-                    store(history, file);
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
-                            "Error when writing cache file '" + cache + "':", e);
-                }
+                // retrieving the history takes too long, cache it!
+                store(history, file);
             }
-        }        
+        }
         return history;
     }
 }

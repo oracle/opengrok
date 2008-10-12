@@ -60,6 +60,7 @@ import org.opensolaris.opengrok.analysis.sql.SQLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.tcl.TclAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
 import org.opensolaris.opengrok.web.Util;
@@ -221,7 +222,7 @@ public class AnalyzerGuru {
                 doc.add(new Field("hist", hr));
                 // date = hr.getLastCommentDate() //RFE
             }
-        } catch (IOException e) {
+        } catch (HistoryException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occurred while reading history: ", e);
         }
         doc.add(new Field("date", date, Field.Store.YES, Field.Index.UN_TOKENIZED));

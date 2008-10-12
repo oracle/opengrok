@@ -38,6 +38,7 @@ import org.apache.lucene.search.Hits;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
 import org.opensolaris.opengrok.web.EftarFileReader;
@@ -55,7 +56,9 @@ public final class Results {
             String morePrefix,
             String srcRoot,
             String dataRoot,
-            EftarFileReader desc) throws IOException, ClassNotFoundException {
+            EftarFileReader desc)
+            throws HistoryException, IOException, ClassNotFoundException
+    {
         char[] content = new char[1024*8];
         LinkedHashMap<String, ArrayList<Document>> dirHash = new LinkedHashMap<String, ArrayList<Document>>();
         for (int i = start; i < end; i++) {

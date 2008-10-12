@@ -50,6 +50,7 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
@@ -62,6 +63,9 @@ import org.opensolaris.opengrok.web.Util;
  * @author Trond Norbye
  */
 public class SearchEngine {
+    /** Message text used when logging exceptions thrown when searching. */
+    private static final String SEARCH_EXCEPTION_MSG = "Exception searching";
+
     /**
      * Holds value of property definition.
      */
@@ -175,7 +179,8 @@ public class SearchEngine {
                     searchSingleDatabase(root);
                 }
             } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Exception searching", e);
+                OpenGrokLogger.getLogger().log(
+                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
         }
         if (!hits.isEmpty()) {
@@ -264,9 +269,14 @@ public class SearchEngine {
                     ret.add(new Hit(filename, "...", "", false, alt));
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Exception searching", e);
+                OpenGrokLogger.getLogger().log(
+                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             } catch (ClassNotFoundException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Exception searching", e);
+                OpenGrokLogger.getLogger().log(
+                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
+            } catch (HistoryException e) {
+                OpenGrokLogger.getLogger().log(
+                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
         }
         

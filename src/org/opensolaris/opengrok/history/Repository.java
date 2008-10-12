@@ -111,9 +111,35 @@ public abstract class Repository {
      * If {@code getDirectoryHistoryParser()} returns {@code null}, this
      * method is a no-op.
      *
-     * @throws Exception on error
+     * @throws HistoryException on error
      */
-    void createCache(HistoryCache cache) throws IOException, InstantiationException, IllegalAccessException {
+    void createCache(HistoryCache cache) throws HistoryException {
+        try {
+            createCacheHelper(cache);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        } catch (InstantiationException ie) {
+            throw new HistoryException(ie);
+        } catch (IllegalAccessException iae) {
+            throw new HistoryException(iae);
+        }
+    }
+
+    /**
+     * Helper method which performs the work for
+     * {@link #createCache(HistoryCache)} without converting checked
+     * exceptions to {@code HistoryException}
+     *
+     * @throws HistoryException if accessing the history cache fails
+     * @throws IOException if an I/O error occurs
+     * @throws InstantiationException if the parser class cannot be instatiated
+     * @throws IllegalAccessException if the method does not have access to
+     * the constructor of the parser class
+     */
+    private void createCacheHelper(HistoryCache cache)
+            throws HistoryException, IOException,
+            InstantiationException, IllegalAccessException
+    {
         if (!isWorking()) {
             return;
         }

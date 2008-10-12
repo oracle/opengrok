@@ -50,7 +50,16 @@ public class RazorHistoryParser implements HistoryParser {
             Pattern.compile("^##(TITLE|NOTES|AUDIT|ISSUE):\\s+(.*)\\s*$");
     private final static boolean DUMP_HISTORY_ENTRY_ADDITIONS = false;
 
-    public History parse(File file, Repository repository) throws IOException {
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseFile(file, repos);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseFile(File file, Repository repository)
+            throws IOException {
 
         RazorRepository repo = (RazorRepository) repository;
 

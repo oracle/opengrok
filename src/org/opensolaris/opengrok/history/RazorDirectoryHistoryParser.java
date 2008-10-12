@@ -34,7 +34,16 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 public class RazorDirectoryHistoryParser extends DirectoryHistoryParser {
 
     @Override
-    public History parse(File directory, Repository repository) throws IOException {
+    public History parse(File file, Repository repos) throws HistoryException {
+        try {
+            return parseDirectory(file, repos);
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+    }
+
+    private History parseDirectory(File directory, Repository repository)
+            throws IOException {
 
         RazorRepository repo = (RazorRepository) repository;
 

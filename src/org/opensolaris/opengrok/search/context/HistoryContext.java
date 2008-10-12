@@ -24,8 +24,6 @@
 package org.opensolaris.opengrok.search.context;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.HashSet;
@@ -34,6 +32,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
 import org.opensolaris.opengrok.search.Hit;
@@ -60,7 +59,10 @@ public class HistoryContext {
     public boolean isEmpty() {
         return m == null;
     }
-    public boolean getContext(String filename, String path, List<Hit> hits) throws FileNotFoundException, IOException {
+
+    public boolean getContext(String filename, String path, List<Hit> hits)
+            throws HistoryException
+    {
         if (m == null) {
             return false;
         }
@@ -70,7 +72,10 @@ public class HistoryContext {
         
     }
     
-    public boolean getContext(String parent, String basename, String path, Writer out) throws FileNotFoundException, IOException {
+    public boolean getContext(
+            String parent, String basename, String path, Writer out)
+            throws HistoryException
+    {
         if (m == null) {
             return false;
         }
