@@ -42,6 +42,7 @@ f none opt/OSOLopengrok/lib/lucene-spellchecker-2.2.0.jar=lib/lucene-spellchecke
 f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.diff.jar=lib/org.apache.commons.jrcs.diff.jar
 f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.rcs.jar=lib/org.apache.commons.jrcs.rcs.jar
 f none opt/OSOLopengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar
+f none opt/OSOLopengrok/lib/jmxremote_optional.jar=lib/jmxremote_optional.jar
 f none opt/OSOLopengrok/opengrok.jar=dist/opengrok.jar 0555 bin bin
 f none opt/OSOLopengrok/source.war=dist/source.war
 f none opt/OSOLopengrok/man/sman1/opengrok.1=dist/opengrok.1
