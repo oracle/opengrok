@@ -87,7 +87,7 @@ class GitHistoryParser implements HistoryParser {
                     } catch (ParseException pe) {
                         OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse author date: " + s, pe);
                     }
-                } else if (s.trim().isEmpty()) {
+                } else if (StringUtils.isOnlyWhitespace(s)) {
                     // We are done reading the heading, start to read the message
                     state = ParseState.MESSAGE;
                     
