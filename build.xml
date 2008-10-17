@@ -302,6 +302,7 @@ Use is subject to license terms.
           <include name="opengrok.jar"/>
           <include name="source.war"/>
           <include name="lib/*"/>
+          <exclude name="lib/servlet-api.jar"/>
         </tarfileset>
       </tar>
     </target>
