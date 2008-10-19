@@ -90,7 +90,7 @@ class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
 
             s = s.trim();
             if ("------------------------------------------------------------".equals(s)) {
-                if (entry != null && state == 4) {
+                if (entry != null && state > 2) {
                     entries.add(entry);
                 }
                 entry = new HistoryEntry();
@@ -153,7 +153,7 @@ class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
                 }
         }
 
-        if (entry != null && state == 4) {
+        if (entry != null && state > 2) {
             entries.add(entry);
         }
 
