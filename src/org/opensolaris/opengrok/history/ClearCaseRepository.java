@@ -80,6 +80,7 @@ public class ClearCaseRepository extends Repository {
         }
         
         List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
         cmd.add("lshistory");
         if (file.isDirectory()) {
             cmd.add("-dir");
