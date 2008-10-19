@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a ClearCase repository.
@@ -62,29 +64,32 @@ public class ClearCaseRepository extends Repository {
         this.verbose = verbose;
     }
 
-    Process getHistoryLogProcess(File file) throws IOException {
+   /**
+     * Get an executor to be used for retrieving the history log for the
+     * named file.
+     * 
+     * @param file The file to retrieve history for
+     * @return An Executor ready to be started
+     */
+    Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
         String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
-
-        ArrayList<String> argv = new ArrayList<String>();
-        argv.add(getCommand());
-        argv.add("lshistory");
+        
+        List<String> cmd = new ArrayList<String>();
+        cmd.add("lshistory");
         if (file.isDirectory()) {
-            argv.add("-dir");
+            cmd.add("-dir");
         }
-        argv.add("-fmt");
-        argv.add("%e\n%Nd\n%Fu (%u)\n%Vn\n%Nc\n.\n");
-        argv.add(filename);
+        cmd.add("-fmt");
+        cmd.add("%e\n%Nd\n%Fu (%u)\n%Vn\n%Nc\n.\n");
+        cmd.add(filename);
 
-        ProcessBuilder pb = new ProcessBuilder(argv);
-        File directory = new File(getDirectoryName());
-        pb.directory(directory);
-        return pb.start();
-    }
+        return new Executor(cmd, new File(getDirectoryName()));
+    }    
 
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
