@@ -157,6 +157,7 @@ class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
             entries.add(entry);
         }
 
+        history = new History();
         history.setHistoryEntries(entries);
     }
     
