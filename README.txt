@@ -286,6 +286,29 @@ PMD under the lib directory):
 
   ant pmd -Dpmd.home=lib/pmd-4.2.3
 
+---------------------------------------------------
+Using JDepend
+---------------------------------------------------
+To see dependencies in the source code, you can use JDepend from
+http://clarkware.com/software/JDepend.html.
+
+How to install:
+
+  cd ~/.ant/lib
+  unzip ~/Desktop/jdepend-2.9.zip
+  ln -s jdepend-2.9/ jdepend
+  cd jdepend/lib
+  ln -s jdepend-2.9.jar jdepend.jar
+
+How to analyze:
+
+  ant jdepend
+
+Output is stored in the jdepend directory:
+
+  $ ls jdepend/
+  report.txt  report.xml
+
 AUTHORS 
 -------
 Chandan B.N, Sun Microsystems. https://blogs.sun.com/chandan

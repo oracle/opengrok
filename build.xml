@@ -495,5 +495,27 @@ Use is subject to license terms.
     </target>
     
     <target name="code-coverage" depends="clean, emma-instrument, test, emma-report" description="Make test code coverage reports based on the OpenGrok unit tests"/>
-    
+
+    <target name="jdepend" depends="compile" description="Run JDepend dependency checking">
+        <mkdir dir="jdepend"/>
+        <java classname="jdepend.xmlui.JDepend" failonerror="true" fork="true">
+            <arg value="-file"/>
+            <arg value="jdepend/report.xml"/>
+            <arg value="${build.classes.dir}"/>
+            <classpath>
+                <pathelement location="${user.home}/.ant/lib/jdepend/lib/jdepend.jar"/>
+                <pathelement path="${java.class.path}"/>
+            </classpath>            
+        </java>
+        <java classname="jdepend.textui.JDepend" failonerror="true" fork="true">
+            <arg value="-file"/>
+            <arg value="jdepend/report.txt"/>
+            <arg value="${build.classes.dir}"/>
+            <classpath>
+                <pathelement location="${user.home}/.ant/lib/jdepend/lib/jdepend.jar"/>
+                <pathelement path="${java.class.path}"/>
+            </classpath>            
+        </java>
+    </target>
+
 </project>
