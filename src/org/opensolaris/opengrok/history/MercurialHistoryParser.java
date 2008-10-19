@@ -43,6 +43,9 @@ import org.opensolaris.opengrok.util.Executor;
  */
 class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
 
+    /** Prefix which identifies lines with the description of a commit. */
+    private static final String DESC_PREFIX = "description: ";
+
     private History history;
     private final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm ZZZZ", Locale.US);
     String mydir;
@@ -83,20 +86,15 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         String s;
-        boolean description = false;
         HistoryEntry entry = null;
         while ((s = in.readLine()) != null) {
             if (s.startsWith("changeset:")) {
-                if (entry != null) {
-                    entries.add(entry);
-                }
                 entry = new HistoryEntry();
+                entries.add(entry);
                 entry.setActive(true);
                 entry.setRevision(s.substring("changeset:".length()).trim());
-                description = false;
             } else if (s.startsWith("user:") && entry != null) {
                 entry.setAuthor(s.substring("user:".length()).trim());
-                description = false;
             } else if (s.startsWith("date:") && entry != null) {
                 Date date = new Date();
                 try {
@@ -105,9 +103,7 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
                 }
                 entry.setDate(date);
-                description = false;
             } else if (s.startsWith("files:") && entry != null) {
-                description = false;
                 String[] strings = s.split(" ");
                 for (int ii = 1; ii < strings.length; ++ii) {
                     if (strings[ii].length() > 0) {
@@ -116,18 +112,45 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
                         entry.addFile(name);
                     }
                 }
-            } else if (s.startsWith("description:") && entry != null) {
-                description = true;
-            } else if (description && entry != null) {
-                entry.appendMessage(s);
+            } else if (s.startsWith(DESC_PREFIX) && entry != null) {
+                entry.setMessage(decodeDescription(s));
             }
-        }
-
-        if (entry != null) {
-            entries.add(entry);
         }
 
         history = new History();
         history.setHistoryEntries(entries);
+    }
+
+    /**
+     * Decode a line with a description of a commit. The line is a sequence of
+     * XML character entities that need to be converted to single characters.
+     * This is to prevent problems if the log message contains one of the
+     * prefixes that {@link #processStream(InputStream)} is looking for (bug
+     * #405).
+     *
+     * This method is way too tolerant, and won't complain if the line has
+     * a different format than expected. It will return weird results, though.
+     *
+     * @param line the XML encoded line
+     * @return the decoded description
+     */
+    private String decodeDescription(String line) {
+        StringBuilder out = new StringBuilder();
+        int value = 0;
+
+        // fetch the char values from the &#ddd; sequences
+        for (int i = DESC_PREFIX.length(); i < line.length(); i++) {
+            char ch = line.charAt(i);
+            if (Character.isDigit(ch)) {
+                value = value * 10 + Character.getNumericValue(ch);
+            } else if (ch == ';') {
+                out.append((char) value);
+                value = 0;
+            }
+        }
+
+        assert value == 0 : "description did not end with a semi-colon";
+
+        return out.toString();
     }
 }

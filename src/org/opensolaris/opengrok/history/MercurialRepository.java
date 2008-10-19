@@ -44,7 +44,12 @@ import org.opensolaris.opengrok.util.Executor;
  *
  */
 public class MercurialRepository extends Repository {
-    private static final String template = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}user: {author}\\ndate: {date|isodate}\\ndescription:\\n{desc|strip}\\n";
+
+    /** Template for formatting hg log output for files. */
+    private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}user: {author}\\ndate: {date|isodate}\\ndescription: {desc|strip|obfuscate}\\n";
+
+    /** Template for formatting hg log output for directories. */
+    private static final String DIR_TEMPLATE = TEMPLATE + "files: {files}{file_copies}\\n";
 
     private static ScmChecker hgBinary = new ScmChecker(new String[] {
         System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg"),
@@ -77,12 +82,7 @@ public class MercurialRepository extends Repository {
         cmd.add(getCommand());
         cmd.add("log");
         cmd.add("--template");
-        StringBuilder sb = new StringBuilder(template);
-
-        if (file.isDirectory()) {
-            sb.append("files: {files}{file_copies}\\n");
-        }
-        cmd.add(sb.toString());
+        cmd.add(file.isDirectory() ? DIR_TEMPLATE : TEMPLATE);
         cmd.add(filename);
         
         return new Executor(cmd, new File(getDirectoryName()));
