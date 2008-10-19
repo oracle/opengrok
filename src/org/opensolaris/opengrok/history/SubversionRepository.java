@@ -126,25 +126,29 @@ public class SubversionRepository extends Repository {
         }
     }
 
-    /**
-     * Get a handle to a svn log process for the given file.
-     *
-     * @param file THe file to get subversion log from
-     * @return A handle to the process, or null
-     * @throws java.io.IOException if an error occurs
+   /**
+     * Get an executor to be used for retrieving the history log for the
+     * named file.
+     * 
+     * @param file The file to retrieve history for
+     * @return An Executor ready to be started
      */
-    protected Process getHistoryLogProcess(final File file) throws IOException {
+    Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
-        String filename;
+        String filename = "";
         String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
-        } else {
-            filename = "";
         }
-        String argv[] = new String[]{getCommand(), "log", "--xml", "-v", filename};
-        File directory = new File(getDirectoryName());
-        return Runtime.getRuntime().exec(argv, null, directory);
+        
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("log");
+        cmd.add("--xml");
+        cmd.add("-v");
+        cmd.add(filename);
+
+        return new Executor(cmd, new File(getDirectoryName()));
     }
 
     public InputStream getHistoryGet(String parent, String basename, String rev) {

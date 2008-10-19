@@ -24,8 +24,10 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.Executor;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
@@ -46,7 +49,11 @@ import org.xml.sax.ext.DefaultHandler2;
  *
  * @author Trond Norbye
  */
-class SubversionHistoryParser implements HistoryParser {
+class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
+
+    private History history;
+    private SAXParser saxParser = null;
+    private Handler handler;
 
     private static class Handler extends DefaultHandler2 {
 
@@ -58,10 +65,10 @@ class SubversionHistoryParser implements HistoryParser {
         HistoryEntry entry;
         StringBuilder sb;
 
-        Handler(final SubversionRepository repos) {
-            this.home = repos.getDirectoryName();
-            this.prefix = repos.reposPath;
-            this.length = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+        Handler(String home, String prefix, int length) {
+            this.home = home;
+            this.prefix = prefix;
+            this.length = length;
             sb = new StringBuilder();
         }
 
@@ -109,23 +116,11 @@ class SubversionHistoryParser implements HistoryParser {
     }
 
     /**
-     * Parse the history for the specified file.
-     *
-     * @param file the file to parse history for
-     * @param repos Pointer to the SubversionReporitory
-     * @return object representing the file's history
+     * Initialize the SAX parser instance.
      */
-    public History parse(File file, Repository repos) throws HistoryException {
-        try {
-            return parseFile(file, repos);
-        } catch (IOException ioe) {
-            throw new HistoryException(ioe);
-        }
-    }
-
-    private History parseFile(File file, Repository repos) throws IOException {
+    private void initSaxParser() {
         SAXParserFactory factory = SAXParserFactory.newInstance();
-        SAXParser saxParser = null;
+        saxParser = null;
         try {
             saxParser = factory.newSAXParser();
         } catch (ParserConfigurationException ex) {
@@ -133,49 +128,64 @@ class SubversionHistoryParser implements HistoryParser {
         } catch (SAXException ex) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to create SAX parser", ex);
         }
+    }
+
+    /**
+     * Parse the history for the specified file.
+     *
+     * @param file the file to parse history for
+     * @param repos Pointer to the SubversionReporitory
+     * @return object representing the file's history
+     */
+    @Override
+    public History parse(File file, Repository repos) throws HistoryException {
+        initSaxParser();
+        handler = new Handler(repos.getDirectoryName(), 
+                ((SubversionRepository) repos).reposPath, 
+                RuntimeEnvironment.getInstance().getSourceRootPath().length());
         if (saxParser == null) {
             return null;
         }
 
-        assert (repos instanceof SubversionRepository);
-        SubversionRepository srepos = (SubversionRepository) repos;
-        History history = null;
+        Executor executor = ((SubversionRepository) repos).getHistoryLogExecutor(file);
+        int status = executor.exec(true, this);
 
-        Process process = null;
-        BufferedInputStream in = null;
-        try {
-            process = srepos.getHistoryLogProcess(file);
-            if (process == null) {
-                return null;
-            }
-            in = new BufferedInputStream(process.getInputStream());
-            Handler handler = new Handler(srepos);
-            try {
-                saxParser.parse(in, handler);
-                history = new History();
-                history.setHistoryEntries(handler.entries);
-            } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "An error occurred while parsing the xml output", e);
-            }
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", exp);
-                }
-            }
-
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
+        if (status != 0) {
+            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get history for: \"" +
+                    file.getAbsolutePath() + "\" Exit code: " + status);
         }
 
+        return history;
+    }
+            
+   /**
+     * Process the output from the log command and insert the HistoryEntries
+     * into the history field.
+     *
+     * @param input The output from the process
+     * @throws java.io.IOException If an error occurs while reading the stream
+     */
+    public void processStream(InputStream input) throws IOException {
+        try {
+            initSaxParser();
+            history = new History();
+            saxParser.parse(new BufferedInputStream(input), handler);
+            history.setHistoryEntries(handler.entries);
+        } catch (Exception e) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "An error occurred while parsing the xml output", e);
+        }
+    }
+
+    /**
+     * Parse the given string.
+     * 
+     * @param buffer The string to be parsed
+     * @return The parsed history
+     * @throws IOException if we fail to parse the buffer
+     */
+    public History parse(String buffer) throws IOException {
+        handler = new Handler("/", "", 0);
+        processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;
     }
 }

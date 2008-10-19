@@ -24,6 +24,7 @@
 
 package org.opensolaris.opengrok.history;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,11 +32,13 @@ import java.util.List;
  */
 public class History {
     /** Entries in the log. The first entry is the most recent one. */
-    private List<HistoryEntry> entries;
+    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
     /**
      * Set the list of log entries for the file. The first entry is the most
      * recent one.
+     * 
+     * @param entries The entries to add to the list
      */
     public void setHistoryEntries(List<HistoryEntry> entries) {
         this.entries = entries;
@@ -43,6 +46,8 @@ public class History {
 
     /**
      * Get the list of log entries, most recent first.
+     * 
+     * @return The list of entries in this history
      */
     public List<HistoryEntry> getHistoryEntries() {
         return entries;
