@@ -53,25 +53,32 @@ public class BazaarRepository extends Repository {
         return System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr");
     }
     
-    Process getHistoryLogProcess(File file) throws IOException {
+   /**
+     * Get an executor to be used for retrieving the history log for the
+     * named file.
+     * 
+     * @param file The file to retrieve history for
+     * @return An Executor ready to be started
+     */
+    Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
-        String command = getCommand();
         String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
+        
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("log");
 
-        String argv[];
         if (file.isDirectory()) {
-            argv = new String[] {command, "log", "-v", filename};
-        } else {
-            argv = new String[] {command, "log", filename};
-        }
+           cmd.add("-v");
+       }
+       cmd.add(filename);
 
-        File directory = new File(getDirectoryName());
-        return Runtime.getRuntime().exec(argv, null, directory);
-    }
+       return new Executor(cmd, new File(getDirectoryName()));
+    }    
     
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
