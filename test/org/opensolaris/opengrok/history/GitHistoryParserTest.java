@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -66,10 +67,7 @@ public class GitHistoryParserTest {
      */
     @Test
     public void parseEmpty() throws Exception {
-        BufferedReader in = new BufferedReader(new StringReader(""));
-        String directory = "";
-        int rootLength = 0;
-        History result = instance.parse(in, directory, rootLength);
+        History result = instance.parse("");
         assertNotNull(result);
         assertTrue("Should not contain any history entries", 0 == result.getHistoryEntries().size());
     }
@@ -125,9 +123,7 @@ public class GitHistoryParserTest {
                 "    git-svn-id: http://host.example.com/svn/product/trunk/server@324-fdws-2342-fsdaf-gds-234\n";
 
         BufferedReader in = new BufferedReader(new StringReader(output));
-        String directory = "";
-        int rootLength = 0;
-        History result = instance.parse(in, directory, rootLength);
+        History result = instance.parse(output);
         assertNotNull(result);
         assertTrue("Should contain three history entries", 3 == result.getHistoryEntries().size());
         HistoryEntry e0 = result.getHistoryEntries().get(0);
@@ -190,9 +186,7 @@ public class GitHistoryParserTest {
                 "\n" +
                 filename + "\n";
         BufferedReader in = new BufferedReader(new StringReader(output));
-        String directory = "";
-        int rootLength = 0;
-        History result = instance.parse(in, directory, rootLength);
+        History result = instance.parse(output);
         assertNotNull(result);
         assertTrue("Should contain two history entries", 2 == result.getHistoryEntries().size());
         HistoryEntry e0 = result.getHistoryEntries().get(0);
@@ -277,10 +271,7 @@ public class GitHistoryParserTest {
                 "\n" +
                 filename1 + "\n" +
                 filename2 + "\n";
-        BufferedReader in = new BufferedReader(new StringReader(output));
-        String directory = "";
-        int rootLength = 0;
-        History result = instance.parse(in, directory, rootLength);
+        History result = instance.parse(output);
         assertNotNull(result);
         assertTrue("Should contain two history entries", 2 == result.getHistoryEntries().size());
         HistoryEntry e0 = result.getHistoryEntries().get(0);

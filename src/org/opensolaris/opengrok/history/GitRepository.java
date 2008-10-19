@@ -43,7 +43,14 @@ public class GitRepository extends Repository {
     private static ScmChecker gitBinary = new ScmChecker(new String[] {
         getCommand(), "--help" });
     
-    Process getHistoryLogProcess(File file) throws IOException {
+   /**
+     * Get an executor to be used for retrieving the history log for the
+     * named file.
+     * 
+     * @param file The file to retrieve history for
+     * @return An Executor ready to be started
+     */
+    Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
         String directoryName = getDirectoryName();
@@ -51,14 +58,16 @@ public class GitRepository extends Repository {
             filename = abs.substring(directoryName.length() + 1);
         }
         
-       String[] argv;
-       if (filename.length() > 0) {
-           argv = new String[] {getCommand(), "log", "--name-only", "--pretty=fuller", filename};
-       } else {
-           argv = new String[] {getCommand(), "log", "--name-only", "--pretty=fuller"};
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("log");
+        cmd.add("--name-only");
+        cmd.add("--pretty=fuller");
+
+        if (filename.length() > 0) {
+           cmd.add(filename);
        }
-        File directory = new File(getDirectoryName());
-        return Runtime.getRuntime().exec(argv, null, directory);        
+        return new Executor(cmd, new File(getDirectoryName()));
     }    
     
     /**

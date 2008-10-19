@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,34 +36,37 @@ import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * Parse a stream of Git log comments.
  */
-class GitHistoryParser implements HistoryParser {
+class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
 
     private enum ParseState {
         HEADER, MESSAGE, FILES
     };      
-            
-    /**
-     * Parse a git history entry.
-     * 
-     * @param in The reader to read the data to parse from
-     * @param directory The directory the files is inside
-     * @param rootLength The length of the path that is the standard (non relative) part
-     * @return History entry
-     * @throws java.io.IOException if it fails to read
-     */
-    public History parse(BufferedReader in, String directory, int rootLength)
-            throws IOException {
 
+    private String myDir;
+    private int rootLength;
+    private History history;
+    
+   /**
+     * Process the output from the log command and insert the HistoryEntries
+     * into the history field.
+     *
+     * @param input The output from the process
+     * @throws java.io.IOException If an error occurs while reading the stream
+     */
+    public void processStream(InputStream input) throws IOException {
         SimpleDateFormat df =
                 new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.US);
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
-        History history = new History();
+        BufferedReader in = new BufferedReader(new InputStreamReader(input));
+        
+        history = new History();
         HistoryEntry entry = null;
         ParseState state = ParseState.HEADER;
         String s = in.readLine();
@@ -112,7 +116,7 @@ class GitHistoryParser implements HistoryParser {
                     continue; // Parse this line again - do not read a new line
                 } else {
                     if (entry != null) {
-                        File f = new File(directory, s);
+                        File f = new File(myDir, s);
                         String name = f.getCanonicalPath().substring(rootLength);
                         entry.addFile(name);
                     }
@@ -126,55 +130,41 @@ class GitHistoryParser implements HistoryParser {
         }
 
         history.setHistoryEntries(entries);
+    }
+
+    /**
+     * Parse the history for the specified file.
+     *
+     * @param file the file to parse history for
+     * @param repos Pointer to the SubversionReporitory
+     * @return object representing the file's history
+     */
+    public History parse(File file, Repository repos) throws HistoryException {
+        myDir = repos.getDirectoryName()+ File.separator;
+        rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+
+        Executor executor = ((GitRepository) repos).getHistoryLogExecutor(file);
+        int status = executor.exec(true, this);
+
+        if (status != 0) {
+            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get history for: \"" +
+                    file.getAbsolutePath() + "\" Exit code: " + status);
+        }
+
         return history;
     }
-
-    public History parse(File file, Repository repos) throws HistoryException {
-        try {
-            return parseFile(file, repos);
-        } catch (IOException ioe) {
-            throw new HistoryException(ioe);
-        }
-    }
-
-    private History parseFile(File file, Repository repos) throws IOException {
-
-        GitRepository mrepos = (GitRepository) repos;
-        History history = null;
-        
-        Process process = null;
-        BufferedReader in = null;
-        try {
-            process = mrepos.getHistoryLogProcess(file);
-            if (process == null) {
-                return null;
-            }
-
-            InputStream is = process.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            String mydir = mrepos.getDirectoryName() + File.separator;
-            int rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-
-            history = parse(in, mydir, rootLength);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
-                }
-            }
-
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
-        }
-
+    
+    /**
+     * Parse the given string.
+     * 
+     * @param buffer The string to be parsed
+     * @return The parsed history
+     * @throws IOException if we fail to parse the buffer
+     */
+    public History parse(String buffer) throws IOException {
+        myDir = File.separator;
+        rootLength = 0;
+        processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;
     }
 }
