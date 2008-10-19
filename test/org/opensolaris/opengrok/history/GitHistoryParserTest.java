@@ -24,7 +24,6 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import org.junit.After;
 import org.junit.AfterClass;
