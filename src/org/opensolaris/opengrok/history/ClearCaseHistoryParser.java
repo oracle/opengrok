@@ -111,6 +111,7 @@ class ClearCaseHistoryParser implements HistoryParser, Executor.StreamHandler {
             entry.setActive(true);
             entries.add(entry);
         }
+        history = new History();
         history.setHistoryEntries(entries);
     }
 
