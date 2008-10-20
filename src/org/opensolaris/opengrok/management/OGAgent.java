@@ -133,6 +133,11 @@ public class OGAgent {
         //instantiate and register OGAManagement
         ObjectName manager = new ObjectName("OGA:name=Management");
         server.registerMBean(Management.getInstance(props), manager);
+        
+        //instantiate and register OGA:JMXConfiguration
+        ObjectName config = new ObjectName("OGA:name=JMXConfiguration");
+        JMXConfiguration jc = new JMXConfiguration();
+        server.registerMBean(jc, config);
 
         //instantiate and register Timer service and resource purger
         createIndexTimer(props);

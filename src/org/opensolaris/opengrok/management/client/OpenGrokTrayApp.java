@@ -123,6 +123,26 @@ public class OpenGrokTrayApp {
 
         return exitListener;
     }
+    
+    private ActionListener getConfigurationListener() {
+        ActionListener configListener = new ActionListener() {
+            
+            public void actionPerformed(ActionEvent e) {
+                log.finer("Config...");
+                ConfigurationsFrame sf;
+                try {
+                    sf = new ConfigurationsFrame(agent);
+                    sf.setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(OpenGrokTrayApp.class.getName()).log(Level.SEVERE, null, ex);
+
+                }
+                
+                log.finer("Done config");
+            }
+        };
+        return configListener;
+    }
 
     private MouseListener getMouseListener() {
         MouseListener mouseListener = new MouseListener() {
@@ -325,18 +345,22 @@ public class OpenGrokTrayApp {
             final WindowListener notificationWindowListener = getNotificationWindowListener();
             final ActionListener settingsListener = getSettingsListener(settingsWindowListener);
             final ActionListener showNotificationsListener = getShowNotificationListener(notificationWindowListener);
+            final ActionListener configListener = this.getConfigurationListener();
 
             log.info("Creating popup and tray icon ");
 
             PopupMenu popup = new PopupMenu();
             MenuItem exitItem = new MenuItem("Exit");
             exitItem.addActionListener(exitListener);
-            MenuItem settingsItem = new MenuItem("Settings");
+            MenuItem settingsItem = new MenuItem("Connection Settings");
             settingsItem.addActionListener(settingsListener);
+            MenuItem configsItem = new MenuItem("Configurations");
+            configsItem.addActionListener(configListener);
             MenuItem notifyItem = new MenuItem("Show notifications");
             notifyItem.addActionListener(showNotificationsListener);
 
             popup.add(settingsItem);
+            popup.add(configsItem);
             popup.add(notifyItem);
             popup.addSeparator();
             popup.add(exitItem);

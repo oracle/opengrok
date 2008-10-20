@@ -581,6 +581,10 @@ public final class RuntimeEnvironment {
         this.configuration = configuration;
         register();
     }
+
+    public Configuration getConfiguration() {
+       return this.threadConfig.get();
+    }
     
     private ServerSocket configServerSocket;
     

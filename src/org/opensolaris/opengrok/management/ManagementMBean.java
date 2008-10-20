@@ -23,7 +23,9 @@
  */
 package org.opensolaris.opengrok.management;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.logging.Level;
 
 /**
  * @author Jan S Berg
@@ -33,58 +35,66 @@ public interface ManagementMBean {
     /**
      * Stops the agent, so it is not restarted.
      */
-    void stop();
+    public void stop();
 
     /**
      * Get the xml based configuration file
      * @return String with the file path and name for xml configuration
      */
-    String getConfigurationFile();
+    public String getConfigurationFile();
 
     /**
      * Get the URL to the Publish Server we want to
      * publish the indexed data
      * @return String URL to the server (hostname:port)
      */
-    String getPublishServerURL();
+    public String getPublishServerURL();
+
+    /**
+     * Set the URL to where to publish opengrok indexed data
+     * @param url String to server for publishing the opengrok.war file
+     */
+    public void setPublishServerURL(String url);
 
     /**
      * Set update index database property
+     * @param val Boolean true to also run update index database
      */
-    void setUpdateIndexDatabase(Boolean val);
+    public void setUpdateIndexDatabase(Boolean val);
 
     /**
      * Get the udate database property
+     * @return Boolean returns true if update index database is switched on
      */
-    Boolean getUpdateIndexDatabase();
+    public Boolean getUpdateIndexDatabase();
 
     /**
      * Set number of Threads to use for indexing
      */
-    void setNumberOfThreads(Integer val);
+    public void setNumberOfThreads(Integer val);
 
     /**
      * Get number of Threads to use for indexing
      */
-    Integer getNumberOfThreads();
+    public Integer getNumberOfThreads();
 
     /**
      * Set subfiles
      * @param sublist
      */
-    void setSubFiles(String[] sublist);
+    public void setSubFiles(String[] sublist);
 
     /**
      * Get subfiles
      * @return get StringArray of subfiles to run through
      */
-    String[] getSubFiles();
+    public String[] getSubFiles();
 
     /**
      * Get a selected property from JAG configuration.
      * @return String with property value
      */
-    String getProperty(String key);
+    public String getProperty(String key);
 
     /**
      * Set a selected property in the JAG configuration.
@@ -93,42 +103,79 @@ public interface ManagementMBean {
      * @param key the String key for the property to be set.
      * $param value the String value for the property to be set.
      */
-    void setProperty(String key, String value);
+    public void setProperty(String key, String value);
 
     /**
      * Get the selected System property
      * @return String with property value
      */
-    String getSystemProperty(String key);
+    public String getSystemProperty(String key);
 
     /**
      * Set a selected System property
      * @param key the String key for the property to be set.
      * $param value the String value for the property to be set.
      */
-    void setSystemProperty(String key, String value);
+    public void setSystemProperty(String key, String value);
 
     /**
      * Get the selected Environment property
      * @return String with Environment property value
      */
-    String getSystemEnvProperty(String key);
+    public String getSystemEnvProperty(String key);
 
     /**
      * Get the time (in milliseconds since 1970) when the agent was started
      * @return long time when the agent was started, in milliseconds.
      */
-    long getStartTime();
+    public long getStartTime();
 
     /**
      * Get a Date object with the time the agent was started.
      * @return Date with the starting date
      */
-    Date getStartDate();
+    public Date getStartDate();
 
     /**
      * Get the version tag for the agent
      * @return String the version tag for this agent
      */
-    String getVersion();
+    public String getVersion();
+
+    /**
+     * Set the loglevel for the console
+     * @param level the level for console logging
+     */
+    public void setConsoleLogLevel(Level level);
+
+    /**
+     * Get the current loglevel for the console
+     * @return Level current console loglevel
+     */
+    public Level getConsoleLogLevel();
+
+    /**
+     * set the file log level
+     * @param level the level for file logging
+     */
+    public void setFileLogLevel(Level level);
+
+    /**
+     * get the loglevel on the agent logfile
+     * @return Level for file logging
+     */
+    public Level getFileLogLevel();
+
+    /**
+     * Set the path for the file logging
+     * @param path String path to where to log
+     * @throws IOException if path does not exist or could be created on server
+     */
+    public void setFileLogPath(String path) throws IOException;
+
+    /**
+     * Get the file logpath
+     * @return String file log path
+     */
+    public String getFileLogPath();
 }

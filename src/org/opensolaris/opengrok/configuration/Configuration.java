@@ -27,14 +27,20 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
@@ -313,20 +319,48 @@ public final class Configuration {
      */
     public void write(File file) throws IOException {
         final FileOutputStream out = new FileOutputStream(file);
+        this.encodeObject(out);
+    }
+        
+    public String getXMLRepresentationAsString() {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        this.encodeObject(bos);
+        return bos.toString();
+    }
+    
+    private void encodeObject(OutputStream out) {
         try {
             XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out));
             e.writeObject(this);
             e.close();
         } finally {
-            out.close();
+            try {
+                out.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
     public static Configuration read(File file) throws IOException {
-
+        final Configuration ret;
+        final FileInputStream in = new FileInputStream(file);
+        ret = decodeObject(in);
+        return ret;
+    }
+    
+    
+    
+    public static Configuration makeXMLStringAsConfiguration(String xmlconfig) throws IOException {
+        final Configuration ret;
+        final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
+        ret = decodeObject(in);
+        return ret;
+    }
+    
+    private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
 
-        final FileInputStream in = new FileInputStream(file);
         try {
             XMLDecoder d = new XMLDecoder(new BufferedInputStream(in));
             ret = d.readObject();
@@ -340,4 +374,5 @@ public final class Configuration {
         }        
         return (Configuration)ret;
     }
+
 }

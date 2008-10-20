@@ -140,7 +140,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 doNotify(NOTIFICATIONINFOLONGTYPE, "FinishedIndexing", Long.valueOf(lastIndexFinish));
                 lastIndexUsedTime = lastIndexFinish - lastIndexStart;
                 String publishhost = Management.getInstance().getPublishServerURL();
-                if (publishhost == null) {
+                if ((publishhost == null) || (publishhost.equals(""))) {
                     log.warning("No publishhost given, not sending updates");
                 } else {
                     index.sendToConfigHost(env, publishhost);
