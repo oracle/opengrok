@@ -137,7 +137,6 @@ class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-    @Override
     public History parse(File file, Repository repos) throws HistoryException {
         initSaxParser();
         handler = new Handler(repos.getDirectoryName(), 
