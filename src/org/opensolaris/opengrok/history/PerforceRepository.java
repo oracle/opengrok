@@ -46,7 +46,7 @@ public class PerforceRepository extends Repository {
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation a = new Annotation(file.getName());
 
-        List<HistoryEntry> revisions = PerforceHistoryParser.getRevisions(file, rev);
+        List<HistoryEntry> revisions = PerforceHistoryParser.getRevisions(file, rev).getHistoryEntries();
         HashMap<String, String> revAuthor = new HashMap<String, String>();
         for (HistoryEntry entry : revisions) {
             // a.addDesc(entry.getRevision(), entry.getMessage());

@@ -22,6 +22,7 @@ package org.opensolaris.opengrok.history;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -37,10 +38,46 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class PerforceHistoryParser implements HistoryParser {
-    
-    private final static Pattern revision_regexp = Pattern.compile("#(\\d+) change \\d+ \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)");
 
-    public static List<HistoryEntry> getRevisions(File file, String rev) throws IOException {
+    /**
+     * Parse the history for the specified file.
+     *
+     * @param file the file to parse history for
+     * @param repos Pointer to the {@code PerforceRepository}
+     * @return object representing the file's history
+     * @throws HistoryException if a problem occurs while executing p4 command
+     */
+    public History parse(File file, Repository repos) throws HistoryException {
+        History history;
+
+        if (!PerforceRepository.isInP4Depot(file)) {
+            return null;
+        }
+
+        try {
+            if (file.isDirectory()) {
+                history = parseDirectory(file);
+            } else {
+                history = getRevisions(file, null);
+            }
+        } catch (IOException ioe) {
+            throw new HistoryException(ioe);
+        }
+        return history;
+    }
+
+    private History parseDirectory(File file) throws IOException {
+        ArrayList<String> cmd = new ArrayList<String>();
+        cmd.add("p4");
+        cmd.add("changes");
+        cmd.add("...");
+
+        Executor executor = new Executor(cmd, file.getCanonicalFile());
+        executor.exec();
+        return parseChanges(executor.getOutputReader());
+    }
+    
+    public static History getRevisions(File file, String rev) throws IOException {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("p4");
         cmd.add("filelog");
@@ -49,12 +86,63 @@ public class PerforceHistoryParser implements HistoryParser {
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
         
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        BufferedReader reader = new BufferedReader(executor.getOutputReader());
+        return parseFileLog(executor.getOutputReader());
+    }
+
+    private final static Pattern REVISION_PATTERN = Pattern.compile("#(\\d+) change \\d+ \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)");
+    private final static Pattern CHANGE_PATTERN = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
+    
+    /**
+     * Parses the history in the given string. The given reader will be closed.
+     * 
+     * @param fileHistory String with history to parse
+     * @return History object with all the history entries
+     * @throws java.io.IOException if it fails to read from the supplied reader
+     */
+    protected static History parseChanges(Reader fileHistory) throws IOException {
+        /* OUTPUT:
+        Directory changelog:
+        Change 177601 on 2008/02/12 by user@host 'description'
+         */
+        History history = new History();
+        List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        BufferedReader reader = new BufferedReader(fileHistory);
+        String line;
+        while ((line = reader.readLine()) != null) {
+            Matcher matcher = CHANGE_PATTERN.matcher(line);
+            if (matcher.find()) {
+                HistoryEntry entry = new HistoryEntry();
+                entry.setRevision(matcher.group(1));
+                int year = Integer.parseInt(matcher.group(2));
+                int month = Integer.parseInt(matcher.group(3));
+                int day = Integer.parseInt(matcher.group(4));
+                Calendar calendar = new GregorianCalendar(year, month, day);
+                entry.setDate(calendar.getTime());
+                entry.setAuthor(matcher.group(5));
+                entry.setMessage(matcher.group(6).trim());
+                entry.setActive(true);
+                entries.add(entry);
+            }
+        }
+        reader.close();
+        history.setHistoryEntries(entries);
+        return history;
+    }
+
+    /**
+     * Parse file log. Te supplied reader will be closed.
+     * 
+     * @param fileLog reader to the information to parse
+     * @return A history object containing history entries
+     * @throws java.io.IOException If it fails to read from the supplied reader.
+     */
+    protected static History parseFileLog(Reader fileLog) throws IOException {
+        BufferedReader reader = new BufferedReader(fileLog);
+        List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         String line;
         HistoryEntry entry = null;
         while ((line = reader.readLine()) != null) {
-            Matcher matcher = revision_regexp.matcher(line);
+            Matcher matcher = REVISION_PATTERN.matcher(line);
             if (matcher.find()) {
                 /* An entry finishes when a new entry starts ... */
                 if (entry != null) {
@@ -67,7 +155,7 @@ public class PerforceHistoryParser implements HistoryParser {
                 int year = Integer.parseInt(matcher.group(2));
                 int month = Integer.parseInt(matcher.group(3));
                 int day = Integer.parseInt(matcher.group(4));
-                Calendar calendar = new GregorianCalendar(year, month, day); 
+                Calendar calendar = new GregorianCalendar(year, month, day);
                 entry.setDate(calendar.getTime());
                 entry.setAuthor(matcher.group(5));
                 entry.setActive(true);
@@ -88,67 +176,9 @@ public class PerforceHistoryParser implements HistoryParser {
         if (entry != null) {
             entries.add(entry);
         }
-        
-        return entries;
-    }
-    
-    private final static Pattern change_pattern = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
 
-    /**
-     * Parse the history for the specified file.
-     *
-     * @param file the file to parse history for
-     * @param repos Pointer to the {@code PerforceRepository}
-     * @return object representing the file's history
-     * @throws HistoryException if a problem occurs while executing p4 command
-     */
-    public History parse(File file, Repository repos) throws HistoryException {
-        try {
-            return parseFile(file);
-        } catch (IOException ioe) {
-            throw new HistoryException(ioe);
-        }
-    }
-
-    private History parseFile(File file) throws IOException {
-        if (!PerforceRepository.isInP4Depot(file)) {
-            return null;
-        }
-        
-        List<HistoryEntry> entries = null;
-        if (file.isDirectory()) {
-            ArrayList<String> cmd = new ArrayList<String>();
-            cmd.add("p4");
-            cmd.add("changes");
-            cmd.add("...");
-            
-            Executor executor = new Executor(cmd, file.getCanonicalFile());
-            executor.exec();
-            /* OUTPUT:
-                Directory changelog:
-                Change 177601 on 2008/02/12 by user@host 'description'
-             */
-            Matcher matcher = change_pattern.matcher(executor.getOutputString());
-            entries = new ArrayList<HistoryEntry>();
-            while (matcher.find()) {
-                HistoryEntry entry = new HistoryEntry();
-                entry.setRevision(matcher.group(1));
-                int year = Integer.parseInt(matcher.group(2));
-                int month = Integer.parseInt(matcher.group(3));
-                int day = Integer.parseInt(matcher.group(4));
-                Calendar calendar = new GregorianCalendar(year, month, day); 
-                entry.setDate(calendar.getTime());
-                entry.setAuthor(matcher.group(5));
-                entry.setMessage(matcher.group(6).trim());
-                entry.setActive(true);
-                entries.add(entry);
-            } 
-        } else {
-            entries = getRevisions(file, null);
-        }
-        
         History history = new History();
         history.setHistoryEntries(entries);
         return history;
-    }    
+    }
 }
