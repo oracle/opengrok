@@ -25,11 +25,25 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a local CVS repository.
  */
 public class CVSRepository extends RCSRepository {
+    
+   /**
+     * Get the name of the Cvs command that should be used
+     * 
+     * @return the name of the cvs command in use
+     */
+    private static String getCommand() {
+        return System.getProperty("org.opensolaris.opengrok.history.cvs", "cvs");
+    }
+    
     @Override
     File getRCSFile(File file) {
         File cvsFile =
@@ -45,5 +59,18 @@ public class CVSRepository extends RCSRepository {
     public boolean isRepositoryFor(File file) {
         File cvsDir = new File(file, "CVS");
         return cvsDir.isDirectory();
+    }
+    
+    @Override
+    public void update() throws IOException {
+        File directory = new File(getDirectoryName());
+
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("update");
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
     }
 }

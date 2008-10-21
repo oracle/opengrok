@@ -125,7 +125,7 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    void update() {
+    void update() throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
