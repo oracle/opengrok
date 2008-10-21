@@ -73,8 +73,6 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         } catch (MalformedObjectNameException ex) {
             logger.log(Level.SEVERE, "MalformedObjectName", ex);
             throw new IOException("Malformedname " + ex);
-        } catch (NullPointerException ex) {
-            logger.log(Level.SEVERE, "NullPointer", ex);
         }
         initComponents();
         createLogLevelCombos();
