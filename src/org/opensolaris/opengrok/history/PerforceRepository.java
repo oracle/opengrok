@@ -40,8 +40,17 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class PerforceRepository extends Repository {
-    private static ScmChecker p4Binary = new ScmChecker(new String[] {System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4"), "help"});
+    private static ScmChecker p4Binary = new ScmChecker(new String[] {getCommand(), "help"});
     private final static Pattern annotation_pattern = Pattern.compile("^(\\d+): .*");
+
+       /**
+     * Get the name of the Perforce command that should be used
+     * 
+     * @return the name of the p4 command in use
+     */
+    private static String getCommand() {
+        return System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4");
+    }
 
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation a = new Annotation(file.getName());
@@ -54,7 +63,7 @@ public class PerforceRepository extends Repository {
         }
 
         ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add("p4");
+        cmd.add(getCommand());
         cmd.add("annotate");
         cmd.add("-q");
         cmd.add(file.getPath() + ((rev == null) ? "" : "#" + rev));
@@ -94,7 +103,7 @@ public class PerforceRepository extends Repository {
     @Override
     InputStream getHistoryGet( String parent,  String basename,  String rev) {
         ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add("p4");
+        cmd.add(getCommand());
         cmd.add("print");
         cmd.add("-q");
         cmd.add(basename + ((rev == null) ? "" : "#" + rev));
@@ -104,8 +113,16 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    void update() {
-    /* @TODO */
+    public void update() throws IOException {
+        File directory = new File(getDirectoryName());
+
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("sync");
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
     }
 
     @Override
@@ -137,7 +154,7 @@ public class PerforceRepository extends Repository {
     public static boolean isInP4Depot(File file) {
         if (p4Binary.available) {
             ArrayList<String> cmd = new ArrayList<String>();
-            cmd.add("p4");
+            cmd.add(getCommand());
             if (file.isDirectory()) {
                 cmd.add("dirs");
             } else {
