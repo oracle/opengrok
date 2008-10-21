@@ -65,7 +65,7 @@ public class PerforceRepositoryTest {
     }
 
     @Test
-    public void testUpdate() {
+    public void testUpdate() throws Exception {
         if (skip) {
             return;
         }
@@ -94,17 +94,6 @@ public class PerforceRepositoryTest {
         PerforceRepository instance = new PerforceRepository();
         instance.setDirectoryName(root.getAbsolutePath());
         assertEquals(PerforceHistoryParser.class, instance.getDirectoryHistoryParser());
-    }
-
-    @Test
-    public void testIsCacheable() {
-        if (skip) {
-            return;
-        }
-
-        PerforceRepository instance = new PerforceRepository();
-        instance.setDirectoryName(root.getAbsolutePath());
-        assertTrue(instance.isCacheable());
     }
 
     @Test

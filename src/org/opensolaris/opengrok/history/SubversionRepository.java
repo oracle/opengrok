@@ -310,10 +310,6 @@ public class SubversionRepository extends Repository {
         return true;
     }
 
-    public boolean isCacheable() {
-        return true;
-    }
-
     public boolean fileHasHistory(File file) {
         // @TODO: Research how to cheaply test if a file in a given
         // SVN repo has history.  If there is a cheap test, then this

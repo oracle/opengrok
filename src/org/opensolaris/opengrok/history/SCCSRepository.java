@@ -207,10 +207,6 @@ public class SCCSRepository extends Repository {
         return true;
     }
 
-    public boolean isCacheable() {
-        return false;
-    }
-
     public void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

@@ -142,10 +142,6 @@ public class GitRepository extends Repository {
     public boolean fileHasAnnotation(File file) {
         return false;
     }
-
-    public boolean isCacheable() {
-        return true;
-    }
     
     public void update() throws IOException {
         File directory = new File(getDirectoryName());

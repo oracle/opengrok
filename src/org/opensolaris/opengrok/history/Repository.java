@@ -79,13 +79,6 @@ public abstract class Repository {
     abstract Annotation annotate(File file, String revision) throws IOException;
 
     /**
-     * Check whether the parsed history should be cached.
-     *
-     * @return <code>true</code> if the history should be cached
-     */
-    abstract boolean isCacheable();
-    
-    /**
      * Get the name of the root directory for this repository.
      * @return the name of the root directory
      */

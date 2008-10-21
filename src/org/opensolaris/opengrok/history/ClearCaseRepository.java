@@ -238,10 +238,6 @@ public Annotation annotate(File file, String revision) throws IOException {
         return true;
     }
 
-    public boolean isCacheable() {
-        return true;
-    }
-
     private int waitFor(Process process) {
 
         do {

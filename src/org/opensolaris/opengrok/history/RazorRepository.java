@@ -288,11 +288,6 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    boolean isCacheable() {
-        return true;
-    }
-
-    @Override
     void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

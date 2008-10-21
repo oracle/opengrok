@@ -120,11 +120,6 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    boolean isCacheable() {
-        return false;
-    }
-
-    @Override
     void update() throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }

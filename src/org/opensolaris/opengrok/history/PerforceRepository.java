@@ -136,11 +136,6 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    boolean isCacheable() {
-        return true;
-    }
-
-    @Override
     public boolean fileHasAnnotation(File file) {
         return true;
     }

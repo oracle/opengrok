@@ -224,10 +224,6 @@ public class MercurialRepository extends Repository {
         return true;
     }
 
-    public boolean isCacheable() {
-        return true;
-    }
-    
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
 
