@@ -109,19 +109,15 @@ public final class OpenGrokLogger {
             Handler h = handlers[i];
             if (h instanceof FileHandler) {
                 FileHandler fh = (FileHandler) h;
-                try {
-                    FileHandler nfh = new FileHandler(logfile.toString(),
-                            LOGFILESIZELIMIT, // size (unlimited)
-                            LOGFILESCOUNT); // # rotations
+                FileHandler nfh = new FileHandler(logfile.toString(),
+                        LOGFILESIZELIMIT, // size (unlimited)
+                        LOGFILESCOUNT); // # rotations
 
-                    nfh.setLevel(fh.getLevel());
-                    nfh.setFormatter(new FileLogFormatter());
+                nfh.setLevel(fh.getLevel());
+                nfh.setFormatter(new FileLogFormatter());
 
-                    log.addHandler(nfh);
-                    log.removeHandler(fh);
-                //fh.
-                } catch (IOException io) {
-                }
+                log.addHandler(nfh);
+                log.removeHandler(fh);
             }
         }
     }
