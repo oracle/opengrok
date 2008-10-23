@@ -203,14 +203,9 @@ public class GitRepository extends Repository {
         if (executor.getOutputString().indexOf("remote.origin.url=") != -1) {
             cmd.clear();
             cmd.add(getCommand());
-            cmd.add("fetch");
-            if (executor.exec() != 0) {
-                throw new IOException(executor.getErrorString());
-            }
-
-            cmd.clear();
-            cmd.add(getCommand());
-            cmd.add("checkout");
+            cmd.add("pull");
+            cmd.add("-n");
+            cmd.add("-q");
             if (executor.exec() != 0) {
                 throw new IOException(executor.getErrorString());
             }
