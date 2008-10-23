@@ -36,11 +36,11 @@ import static org.junit.Assert.*;
  *
  * @author austvik
  */
-public class GitRepositoryTest {
+public class BazaarRepositoryTest {
 
-    GitRepository instance;
+    BazaarRepository instance;
 
-    public GitRepositoryTest() {
+    public BazaarRepositoryTest() {
     }
 
     @BeforeClass
@@ -53,7 +53,7 @@ public class GitRepositoryTest {
 
     @Before
     public void setUp() {
-        instance = new GitRepository();
+        instance = new BazaarRepository();
     }
 
     @After
@@ -66,7 +66,7 @@ public class GitRepositoryTest {
      */
     @Test
     public void getHistoryParser() {
-        Class<? extends HistoryParser> expResult = GitHistoryParser.class;
+        Class<? extends HistoryParser> expResult = BazaarHistoryParser.class;
         Class<? extends HistoryParser> result = instance.getHistoryParser();
         assertEquals(expResult, result);
     }
@@ -76,7 +76,7 @@ public class GitRepositoryTest {
      */
     @Test
     public void getDirectoryHistoryParser() {
-        Class<? extends HistoryParser> expResult = GitHistoryParser.class;
+        Class<? extends HistoryParser> expResult = BazaarHistoryParser.class;
         Class<? extends HistoryParser> result = instance.getDirectoryHistoryParser();
         assertEquals(expResult, result);
     }
@@ -86,15 +86,16 @@ public class GitRepositoryTest {
      */
     @Test
     public void parseAnnotation() throws Exception {
-        String revId1 = "cd283405560689372626a69d5331c467bce71656";
-        String revId2 = "30ae764b12039348766291100308556675ca11ab";
-        String revId3 = "2394823984cde2390345435a9237bd7c25932342";
-        String author1 = "Author Name";
-        String author2 = "Author With Long Name";
-        String author3 = "Author Named Jr.";
-        String output = revId1 + " file1.ext   (" + author1 + "     2005-06-06 16:38:26 -0400 272) \n" +
-                revId2 + " file2.h (" + author2 + "     2007-09-10 23:02:45 -0400 273)   if (some code)\n" +
-                revId3 + " file2.c  (" + author3 + "      2006-09-20 21:47:42 -0700 274)           call_function(i);\n";
+        String revId1 = "1234.876.5";
+        String revId2 = "1.234";
+        String revId3 = "2";
+        String author1 = "username@example.com";
+        String author2 = "username2@example.com";
+        String author3 = "username3@example.com";
+        String output = revId1 + "  " + author1 + " 20050912 | some source code here\n" +
+                revId2 + "  " + author2 + " 20050912 | and here.\n" +
+                revId3 + "           " + author3 + "          20030731 | \n";
+       
         Reader input = new StringReader(output);
         String fileName = "something.ext";
         Annotation result = instance.parseAnnotation(input, fileName);

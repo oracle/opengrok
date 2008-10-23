@@ -24,14 +24,18 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
@@ -129,12 +133,62 @@ public class BazaarRepository extends Repository {
         return BazaarHistoryParser.class;
     }
 
-    public Annotation annotate(File file, String revision) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /** Pattern used to extract author/revision from bzr blame. */
+    private final static Pattern BLAME_PATTERN =
+        Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
+
+    /**
+     * Annotate the specified file/revision.
+     *
+     * @param file file to annotate
+     * @param revision revision to annotate
+     * @return file annotation
+     */
+    public Annotation annotate(File file, String revision) throws IOException {
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("blame");
+        cmd.add("--all");
+        cmd.add("--long");
+        if (revision != null) {
+            cmd.add("-r");
+            cmd.add(revision);
+        }
+        cmd.add(file.getName());
+
+        Executor exec = new Executor(cmd, file.getParentFile());
+        int status = exec.exec();
+        
+        if (status != 0) {
+            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get annotations for: \"" +
+                    file.getAbsolutePath() + "\" Exit code: " + status);
+        }
+
+        return parseAnnotation(exec.getOutputReader(), file.getName());
+    }
+
+    protected Annotation parseAnnotation(Reader input, String fileName) throws IOException {
+        BufferedReader in = new BufferedReader(input);
+        Annotation ret = new Annotation(fileName);
+        String line = "";
+        int lineno = 0;
+        Matcher matcher = BLAME_PATTERN.matcher(line);
+        while ((line = in.readLine()) != null) {
+            ++lineno;
+            matcher.reset(line);
+            if (matcher.find()) {
+                String rev = matcher.group(1);
+                String author = matcher.group(2).trim();
+                ret.addLine(rev, author, true);
+            } else {
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + lineno + ": [" + line + "]");
+            }
+        }
+        return ret;
     }
 
     public boolean fileHasAnnotation(File file) {
-        return false;
+        return true;
     }
 
     public void update() throws IOException {
