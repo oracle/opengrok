@@ -352,6 +352,34 @@ public final class HistoryGuru {
         createCacheReal(repos);
     }
 
+    /**
+     * Ensure that any file beneath a given path has a history cache
+     *
+     * @param file the root path to test
+     * @throws java.io.IOException if an error occurs while accessing the
+     *                             filesystem.
+     */
+    public void ensureHistoryCacheExists(File file) throws IOException {
+        Map<String, Repository> repos = RuntimeEnvironment.getInstance().getRepositories();
+        String path = file.getCanonicalPath();
+        List<Repository> rep = new ArrayList<Repository>();
+
+        for (Map.Entry<String, Repository> ent : repos.entrySet()) {
+            if (ent.getValue().getDirectoryName().startsWith(path)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(RuntimeEnvironment.getInstance().getDataRootPath());
+                sb.append(File.separatorChar);
+                sb.append("historycache");
+                sb.append(path.substring(RuntimeEnvironment.getInstance().getSourceRootPath().length()));
+                File foo = new File(sb.toString());
+                if (!foo.exists() || foo.lastModified() < file.lastModified()) {
+                   rep.add(ent.getValue());
+                }
+            }
+        }
+
+        createCacheReal(rep);
+    }
     
     private Repository getRepository(File path) {
         Map<String, Repository> repos = RuntimeEnvironment.getInstance().getRepositories();

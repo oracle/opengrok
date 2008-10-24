@@ -234,7 +234,7 @@ public class IndexDatabase {
                     directories.add(project.getPath());
                 }
             }
-            
+
             for (String dir : directories) {
                 File sourceRoot;
                 if ("".equals(dir)) {
@@ -243,6 +243,8 @@ public class IndexDatabase {
                     sourceRoot = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
                 }
                 
+                HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
+
                 String startuid = Util.uid(dir, "");
                 IndexReader reader = IndexReader.open(indexDirectory);		 // open existing index
                 try {
