@@ -143,14 +143,14 @@ class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
                 ((SubversionRepository) repos).reposPath, 
                 RuntimeEnvironment.getInstance().getSourceRootPath().length());
         if (saxParser == null) {
-            return null;
+            throw new HistoryException("Failed to create SAX parser");
         }
 
         Executor executor = ((SubversionRepository) repos).getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get history for: \"" +
+            throw new HistoryException("Failed to get history for: \"" +
                     file.getAbsolutePath() + "\" Exit code: " + status);
         }
 

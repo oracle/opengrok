@@ -147,7 +147,7 @@ class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
         int status = executor.exec(true, this);
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get history for: \"" +
+            throw new HistoryException("Failed to get history for: \"" +
                     file.getAbsolutePath() + "\" Exit code: " + status);
         }
 

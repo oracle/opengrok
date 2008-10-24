@@ -52,14 +52,10 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
     int rootLength;
 
     public History parse(File file, Repository repos) throws HistoryException {
-        try {
-            return parseFile(file, repos);
-        } catch (IOException ioe) {
-            throw new HistoryException(ioe);
-        }
+        return parseFile(file, repos);
     }
 
-    private History parseFile(File file, Repository repos) throws IOException {
+    private History parseFile(File file, Repository repos) throws HistoryException {
         MercurialRepository mrepos = (MercurialRepository) repos;
         mydir = mrepos.getDirectoryName() + File.separator;
         rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
@@ -68,7 +64,7 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
         int status = executor.exec(true, this);
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get history for: \"" +
+            throw new HistoryException("Failed to get history for: \"" +
                     file.getAbsolutePath() + "\" Exit code: " + status);
         }
 
