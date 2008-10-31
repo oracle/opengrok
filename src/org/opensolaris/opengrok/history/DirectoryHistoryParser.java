@@ -69,8 +69,4 @@ public class DirectoryHistoryParser implements HistoryParser {
                                Repository repository) {
         return null;
     }
-
-    public boolean isCacheable() {
-        return false;
-    }
 }
