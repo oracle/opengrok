@@ -73,6 +73,13 @@ public class AgentConnection implements NotificationListener {
     }
 
     public MBeanServerConnection getMBeanServerConnection() {
+        if (!isConnected()) {
+            try {
+                reconnect(1);
+            } catch (IOException ex) {
+                Logger.getLogger(AgentConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         return server;
     }
 
