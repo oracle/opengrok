@@ -60,8 +60,6 @@ public class AgentConnectionTest {
         String url = InetAddress.getLocalHost().getHostName() + ":" + 9292;
         AgentConnection ac = new AgentConnection(url);
         assertFalse("Shouldn't be connected", ac.isConnected());
-        assertNull("Server should be null initially",
-                   ac.getMBeanServerConnection());
         assertEquals(url, ac.getAgentURL());
 
         ac.connect();
