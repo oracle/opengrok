@@ -81,8 +81,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
 
     /**
      * Static factory method to get an instance of AgentIndexRunner.
-     * @param enabledParam if true, the initial instance of the purgatory will
-     * have purging enabled.
+     * @param enabledParam if true, the initial instance should be running or not
      */
     @SuppressWarnings("PMD.AvoidSynchronizedAtMethodLevel")
     public static synchronized AgentIndexRunner getInstance(boolean enabledParam) {
