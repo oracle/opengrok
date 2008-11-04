@@ -198,6 +198,7 @@ public class OGAgent {
         server.addNotificationListener(timer, indexRunner, filter, null);
     }
 
+    @SuppressWarnings("PMD.SystemPrintln")
     private void createLogger(Properties props) {
         String OGAlogpath = props.getProperty("org.opensolaris.opengrok.management.logging.path");
 
@@ -213,7 +214,11 @@ public class OGAgent {
         } catch (Exception excl) {
             consoleloglevel = Level.INFO;
         }
-
-        OpenGrokLogger.setupLogger(OGAlogpath, loglevel, consoleloglevel);
+        try {
+            OpenGrokLogger.setupLogger(OGAlogpath, loglevel, consoleloglevel);
+        } catch (IOException ex) {
+            System.err.println("OGAgent failed set up logging: " + ex);
+            System.err.println("OGAgent will continue, you might try to change log settings from the client");
+        }
     }
 }

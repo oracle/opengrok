@@ -122,13 +122,16 @@ public final class OpenGrokLogger {
         }
     }
     
-    public static String setupLogger(String logpath, Level filelevel, Level consolelevel) {
+    public static String setupLogger(String logpath, Level filelevel, Level consolelevel) throws IOException {
         System.out.println("Logging to " + logpath);
         if (logpath != null) {
             File jlp = new File(logpath);
             if (!jlp.exists() && !jlp.mkdirs()) {
                 throw new RuntimeException("could not make logpath: " +
                         jlp.getAbsolutePath());
+            }
+            if (!jlp.canWrite() && !Level.OFF.equals(filelevel)) {
+                throw new IOException("logpath not writeable " + jlp.getAbsolutePath());
             }
        }
 
@@ -160,6 +163,7 @@ public final class OpenGrokLogger {
 
         } catch (Exception ex1) {
             System.err.println("Exception logging " + ex1);
+            throw new IOException("Exception setting up logging " + ex1);
         }
         log.setLevel(filelevel);
         return logpath;
