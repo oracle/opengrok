@@ -46,6 +46,7 @@ import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
@@ -77,7 +78,8 @@ public class IndexDatabase {
     private boolean running;
     private List<String> directories;
     private static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
-    
+    private Ctags ctags;
+
     /**
      * Create a new instance of the Index Database. Use this constructor if
      * you don't use any projects
@@ -223,6 +225,16 @@ public class IndexDatabase {
             running = true;
             interrupted = false;
         }
+
+        try {
+            ctags = new Ctags();
+        } catch (IOException e) {
+            log.log(Level.WARNING, "An error occured while creating ctags", e);
+        }
+        if (ctags == null) {
+            log.severe("Unable to run ctags! searching definitions will not work!");
+        }
+
         try {
             writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer());
             writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
@@ -268,6 +280,15 @@ public class IndexDatabase {
                     log.log(Level.WARNING, "An error occured while closing writer", e);                    
                 }
             }
+
+            if (ctags != null) {
+                try {
+                    ctags.close();
+                } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while closing ctags process", e);
+                }
+            }
+
             synchronized (lock) {
                 running = false;
             }
@@ -456,6 +477,7 @@ public class IndexDatabase {
                 new BufferedInputStream(new FileInputStream(file));
         try {
             FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
+            fa.setCtags(ctags);
 
             Document d = analyzerGuru.getDocument(file, in, path, fa);
             if (d == null) {

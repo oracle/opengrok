@@ -34,7 +34,6 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -49,15 +48,15 @@ import org.opensolaris.opengrok.history.Annotation;
  * @author Chandan
  */
 public class PlainAnalyzer extends FileAnalyzer {
+
     protected char[] content;
     protected int len;
     private final PlainFullTokenizer plainfull;
     private final PlainSymbolTokenizer plainref;
     private final PlainXref xref;
     private static final Reader dummy = new StringReader(" ");
-    private Ctags ctags;
     protected Definitions defs;
-    
+
     /** Creates a new instance of PlainAnalyzer */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
@@ -66,44 +65,36 @@ public class PlainAnalyzer extends FileAnalyzer {
         plainfull = new PlainFullTokenizer(dummy);
         plainref = new PlainSymbolTokenizer(dummy);
         xref = new PlainXref((Reader) null);
-        try {
-            ctags = new Ctags();
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating ctags", e);
-        }
-        if (ctags == null) {
-            OpenGrokLogger.getLogger().severe("WARNING: unable to run ctags! searching definitions will not work!");
-        }
     }
 
     @Override
     public void analyze(Document doc, InputStream in) {
         try {
             InputStreamReader inReader = new InputStreamReader(in);
- 	    len = 0;
-	    do{
-		int rbytes = inReader.read(content, len, content.length - len);
-		if(rbytes > 0 ) {
-		    if(rbytes == (content.length - len)) {
-			char[] content2 = new char[content.length * 2];
-			System.arraycopy(content,0, content2, 0, content.length);
-			content = content2;
-		    }
-		    len += rbytes;
-		} else {
-		    break;
-		}
-	    } while(true);
+            len = 0;
+            do {
+                int rbytes = inReader.read(content, len, content.length - len);
+                if (rbytes > 0) {
+                    if (rbytes == (content.length - len)) {
+                        char[] content2 = new char[content.length * 2];
+                        System.arraycopy(content, 0, content2, 0, content.length);
+                        content = content2;
+                    }
+                    len += rbytes;
+                } else {
+                    break;
+                }
+            } while (true);
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
             return;
         }
         doc.add(new Field("full", dummy));
         try {
-	    String fullpath;
-	    if((fullpath = doc.get("fullpath")) != null && ctags != null) {
-                defs = ctags.doCtags(fullpath+"\n");
-                if(defs != null && defs.numberOfSymbols() > 0) {
+            String fullpath;
+            if ((fullpath = doc.get("fullpath")) != null && ctags != null) {
+                defs = ctags.doCtags(fullpath + "\n");
+                if (defs != null && defs.numberOfSymbols() > 0) {
                     doc.add(new Field("defs", dummy));
                     doc.add(new Field("refs", dummy)); //@FIXME adding a refs field only if it has defs?
                     byte[] tags = defs.serialize();
@@ -113,21 +104,21 @@ public class PlainAnalyzer extends FileAnalyzer {
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
         }
-    }    
-    
+    }
+
     public TokenStream tokenStream(String fieldName, Reader reader) {
-        if("full".equals(fieldName)) {
+        if ("full".equals(fieldName)) {
             plainfull.reInit(content, len);
             return plainfull;
         } else if ("refs".equals(fieldName)) {
             plainref.reInit(content, len);
             return plainref;
-        } else if("defs".equals(fieldName)) {
+        } else if ("defs".equals(fieldName)) {
             return new Hash2TokenStream(defs.getSymbols());
         }
         return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference

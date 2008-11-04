@@ -21,7 +21,6 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedWriter;
@@ -57,21 +56,26 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  *
  * @author Chandan
  */
-
 public class FileAnalyzer extends Analyzer {
+
     protected Project project;
-    
     private final FileAnalyzerFactory factory;
 
     /**
      * What kind of file is this?
      */
     public static enum Genre {
-	PLAIN,   // xrefed - line numbered context
-	XREFABLE,   // xrefed - summarizer context
-	IMAGE,   // not xrefed - no context - used by diff/list
-	DATA,   // not xrefed - no context
-	HTML    // not xrefed - summarizer context from original file
+
+        PLAIN, // xrefed - line numbered context
+        XREFABLE, // xrefed - summarizer context
+        IMAGE, // not xrefed - no context - used by diff/list
+        DATA, // not xrefed - no context
+        HTML    // not xrefed - summarizer context from original file
+    }
+    protected Ctags ctags;
+
+    public void setCtags(Ctags ctags) {
+        this.ctags = ctags;
     }
 
     /**
@@ -85,40 +89,40 @@ public class FileAnalyzer extends Analyzer {
     public Genre getGenre() {
         return factory.getGenre();
     }
-
     private final HistoryAnalyzer hista;
+
     /** Creates a new instance of FileAnalyzer */
     public FileAnalyzer(FileAnalyzerFactory factory) {
         this.factory = factory;
-	hista = new HistoryAnalyzer();
+        hista = new HistoryAnalyzer();
     }
-    
+
     public void analyze(Document doc, InputStream in) {
         // not used
     }
-    
+
     public TokenStream tokenStream(String fieldName, Reader reader) {
-	if ("path".equals(fieldName) || "project".equals(fieldName)) {
-	    return new PathTokenizer(reader);
-	} else if("hist".equals(fieldName)) {
-	    return hista.tokenStream(fieldName, reader);
+        if ("path".equals(fieldName) || "project".equals(fieldName)) {
+            return new PathTokenizer(reader);
+        } else if ("hist".equals(fieldName)) {
+            return hista.tokenStream(fieldName, reader);
         }
-        
+
         if (RuntimeEnvironment.getInstance().isVerbose()) {
             OpenGrokLogger.getLogger().info("Have no analyzer for: " + fieldName);
         }
-	return null;
+        return null;
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out to writer HTML cross-reference
      * @throws java.io.IOException if an error occurs
      */
     public void writeXref(Writer out) throws IOException {
-	out.write("Error General File X-Ref writer!");
+        out.write("Error General File X-Ref writer!");
     }
-    
+
     public void writeXref(File xrefDir, String path) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
