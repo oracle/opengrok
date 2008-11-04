@@ -44,6 +44,12 @@ public interface ManagementMBean {
     public String getConfigurationFile();
 
     /**
+     * Set a new name for the xml based configurationfile
+     * @param filename String name with full path of configurationfile
+     */
+     public void setConfigurationFile(String filename);
+
+    /**
      * Get the URL to the Publish Server we want to
      * publish the indexed data
      * @return String URL to the server (hostname:port)

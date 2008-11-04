@@ -24,6 +24,7 @@
 
 package org.opensolaris.opengrok.management;
 
+import java.io.File;
 import java.io.IOException;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -38,8 +39,22 @@ public class JMXConfiguration implements JMXConfigurationMBean {
         return RuntimeEnvironment.getInstance().getConfiguration().getXMLRepresentationAsString();
     }
 
+    @SuppressWarnings("PMD.CollapsibleIfStatements")
     public void setConfiguration(String config) throws IOException {
         Configuration configuration = Configuration.makeXMLStringAsConfiguration(config);
         RuntimeEnvironment.getInstance().setConfiguration(configuration);
+        //write it to file as well
+        String configfile = Management.getInstance().getConfigurationFile();
+        try  {
+            File file = new File(configfile);
+            if (!file.exists()) {
+                if (file.createNewFile()) {
+                    throw new IOException("could not create configuration file " + configfile);
+                }
+            }
+            RuntimeEnvironment.getInstance().writeConfiguration(file);
+        } catch (IOException ioe) {
+            throw new IOException("Could not create configuration file " + configfile,ioe);
+        }
     }
 }

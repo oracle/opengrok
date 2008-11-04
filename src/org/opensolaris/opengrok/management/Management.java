@@ -247,4 +247,8 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     public void setConsoleLogLevel(Level level) {
         OpenGrokLogger.setConsoleLogLevel(level);
     }
+
+    public void setConfigurationFile(String filename) {
+       configurationFile = filename;
+    }
 }
