@@ -310,11 +310,11 @@ public Annotation annotate(File file, String revision) throws IOException {
     }
 
     @Override
-    boolean isRepositoryFor( File file) {
+    boolean isRepositoryFor(File file) {
         // if the parent contains a file named "view.dat" or
         // the parent is named "vobs"
         File f = new File(file, "view.dat");
-        if (f.exists() && f.isDirectory()) {
+        if (f.exists()) {
             return true;
         } else {
             return file.isDirectory() && file.getName().equalsIgnoreCase("vobs");
