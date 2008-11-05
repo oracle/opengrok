@@ -109,6 +109,9 @@ public class Executor {
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
+            if (processBuilder.environment().containsKey("PWD")) {
+                processBuilder.environment().put("PWD", workingDirectory.getAbsolutePath());
+            }
         }
 
         Process process = null;
