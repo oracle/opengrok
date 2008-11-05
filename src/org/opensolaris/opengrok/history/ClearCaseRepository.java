@@ -155,7 +155,13 @@ public class ClearCaseRepository extends Repository {
      */
     private static void drainStream(InputStream in) throws IOException {
         while (true) {
-            long skipped = in.skip(32768L);
+            long skipped = 0;
+            try  {
+                skipped = in.skip(32768L);
+            } catch (IOException ioe) {
+                // ignored - stream isn't seekable, but skipped variable still has correct value.
+                OpenGrokLogger.getLogger().log(Level.FINEST, "Stream not seekable", ioe);
+            }
             if (skipped == 0 && in.read() == -1) {
                 // No bytes skipped, checked that we've reached EOF with read()
                 break;
