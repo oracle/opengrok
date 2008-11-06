@@ -312,7 +312,11 @@ public final class RuntimeEnvironment {
     public void setQuickContextScan(boolean quickContextScan) {
         threadConfig.get().setQuickContextScan(quickContextScan);
     }
-    
+
+    public List<RepositoryInfo> getRepositories() {
+        return threadConfig.get().getRepositories();
+    }
+
     /**
      * Set the map of external SCM repositories
      * @param repositories the repositories to use

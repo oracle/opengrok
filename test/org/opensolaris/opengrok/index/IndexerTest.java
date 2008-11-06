@@ -41,6 +41,8 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.Repository;
+import org.opensolaris.opengrok.history.RepositoryFactory;
+import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.*;
@@ -122,14 +124,21 @@ public class IndexerTest {
     }
 
     @Test
-    public void testRFE2575() throws IOException {
+    public void testRFE2575() throws IOException, InstantiationException, IllegalAccessException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
         HistoryGuru.getInstance().addRepositories(repository.getSourceRoot());
 
-        Repository r = env.getRepositories().get(repository.getSourceRoot());
+        List<RepositoryInfo> repos = env.getRepositories();
+        Repository r = null;
+        for (RepositoryInfo ri : repos) {
+            if (ri.getDirectoryName().equals(repository.getSourceRoot())) {
+                r = RepositoryFactory.getRepository(ri);
+                break;
+            }
+        }
         
         if (r != null && r.isWorking() && env.validateExuberantCtags()) {
             Project project = new Project();
