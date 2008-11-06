@@ -40,6 +40,11 @@ public class ClearCaseRepository extends Repository {
 
     private boolean verbose;
 
+    public ClearCaseRepository() {
+        type = "ClearCase";
+        working = true;
+    }
+
     /**
      * Get the name of the ClearCase command that should be used
      * @return the name of the cleartool command in use
@@ -74,7 +79,6 @@ public class ClearCaseRepository extends Repository {
     Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
-        String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
@@ -95,7 +99,6 @@ public class ClearCaseRepository extends Repository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        String directoryName = getDirectoryName();
         File directory = new File(directoryName);
 
         String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);

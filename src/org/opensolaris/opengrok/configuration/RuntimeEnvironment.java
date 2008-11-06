@@ -34,11 +34,11 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.history.Repository;
+import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.util.Executor;
 
@@ -312,20 +312,12 @@ public final class RuntimeEnvironment {
     public void setQuickContextScan(boolean quickContextScan) {
         threadConfig.get().setQuickContextScan(quickContextScan);
     }
-
-    /**
-     * Get the map of external SCM repositories available
-     * @return A map containing all available SCMs
-     */
-    public Map<String, Repository> getRepositories() {
-        return threadConfig.get().getRepositories();
-    }
     
     /**
      * Set the map of external SCM repositories
      * @param repositories the repositories to use
      */
-    public void setRepositories(Map<String, Repository> repositories) {
+    public void setRepositories(List<RepositoryInfo> repositories) {
         threadConfig.get().setRepositories(repositories);
     }
     
@@ -542,8 +534,7 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void readConfiguration(File file) throws IOException {
-        configuration = Configuration.read(file);
-        register();
+        setConfiguration(Configuration.read(file));
     }
     
     /**
@@ -579,6 +570,7 @@ public final class RuntimeEnvironment {
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+        HistoryGuru.getInstance().invalidateRepositories(configuration.getRepositories());
         register();
     }
 
@@ -625,7 +617,7 @@ public final class RuntimeEnvironment {
                             d.close();
                             
                             if (obj instanceof Configuration) {
-                                configuration = (Configuration)obj;
+                                setConfiguration((Configuration)obj);
                                 log.info("Configuration updated: " + configuration.getSourceRoot());
                             }
                         } catch (IOException e) {

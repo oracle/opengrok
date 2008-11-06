@@ -34,6 +34,10 @@ import org.opensolaris.opengrok.util.Executor;
  * Access to a local CVS repository.
  */
 public class CVSRepository extends RCSRepository {
+
+    public CVSRepository() {
+        type = "CVS";
+    }
     
    /**
      * Get the name of the Cvs command that should be used

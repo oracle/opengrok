@@ -64,6 +64,10 @@ public class SubversionRepository extends Repository {
         return System.getProperty("org.opensolaris.opengrok.history.Subversion", "svn");
     }
 
+    public SubversionRepository() {
+        type = "Subversion";
+    }
+
     private String getValue(Node node) {
         StringBuffer sb = new StringBuffer();
         Node n = node.getFirstChild();

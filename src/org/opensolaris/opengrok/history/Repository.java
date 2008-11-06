@@ -37,8 +37,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  *
  * @author Trond Norbye
  */
-public abstract class Repository {
-    private String directoryName;
+public abstract class Repository extends RepositoryInfo {
 
     /**
      * Get a parser capable of getting history log elements from this repository.
@@ -77,22 +76,6 @@ public abstract class Repository {
      * @throws java.io.IOException if an error occurs
      */
     abstract Annotation annotate(File file, String revision) throws IOException;
-
-    /**
-     * Get the name of the root directory for this repository.
-     * @return the name of the root directory
-     */
-    public String getDirectoryName() {
-        return directoryName;
-    }
-
-    /**
-     * Specify the name of the root directory for this repository.
-     * @param directoryName the new name of the root directory
-     */
-    public void setDirectoryName(String directoryName) {
-        this.directoryName = directoryName;
-    }
 
     /**
      * Create a history log cache for all of the files in this repository.
@@ -200,16 +183,5 @@ public abstract class Repository {
     @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
     boolean supportsSubRepositories() {
         return false;
-    }
-    
-    /**
-     * Returns true if this repository is usable in this context (for SCM
-     * systems that use external binaries, the binary must be availabe etc)
-     * 
-     * @return true if the HistoryGuru may use the repository
-     */
-    @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
-    public boolean isWorking() {
-        return true;
     }
 }

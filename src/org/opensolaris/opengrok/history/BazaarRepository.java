@@ -47,7 +47,11 @@ public class BazaarRepository extends Repository {
     private static ScmChecker bzrBinary = new ScmChecker(new String[] {
         System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr"),
         "--help" });
-    
+
+    public BazaarRepository() {
+        type = "Bazaar";
+    }
+
    /**
      * Get the name of the Bazaar command that should be used.
      * 
@@ -67,7 +71,6 @@ public class BazaarRepository extends Repository {
     Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
-        String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
@@ -87,7 +90,6 @@ public class BazaarRepository extends Repository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        String directoryName = getDirectoryName();
         File directory = new File(directoryName);
 
         String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);

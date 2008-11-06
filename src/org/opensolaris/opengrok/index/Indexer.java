@@ -387,7 +387,6 @@ public final class Indexer {
             if (env.isVerbose()) {
                 System.out.println("Scanning for repositories...");
             }
-            env.getRepositories().clear();
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
             long time = (System.currentTimeMillis() - start) / 1000;

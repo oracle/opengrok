@@ -25,23 +25,24 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="439" max="32767" attributes="0"/>
-              <Component id="updateBtn" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="closeBtn" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="jTabPane" alignment="1" pref="539" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="updateBtn" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="closeBtn" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="jTabPane" pref="531" max="32767" attributes="0"/>
-              <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="32767" attributes="0"/>
-              <Component id="jTabPane" min="-2" pref="358" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jTabPane" pref="358" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="closeBtn" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -78,7 +79,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel6" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="publishHostField" pref="431" max="32767" attributes="0"/>
+                              <Component id="publishHostField" pref="436" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
@@ -93,13 +94,13 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="logFilePathField" pref="429" max="32767" attributes="0"/>
+                              <Component id="logFilePathField" pref="435" max="32767" attributes="0"/>
                           </Group>
                           <Component id="jLabel19" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel20" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="configFileField" pref="382" max="32767" attributes="0"/>
+                              <Component id="configFileField" pref="380" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -137,7 +138,7 @@
                           <Component id="jLabel20" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="configFileField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="80" max="32767" attributes="0"/>
+                      <EmptySpace pref="110" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -279,7 +280,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="jLabel17" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="historyReaderTimelimitField" pref="160" max="32767" attributes="0"/>
+                                      <Component id="historyReaderTimelimitField" pref="142" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="optimizedDatabaseCB" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="indexVersionedFilesOnlyCB" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -288,7 +289,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel16" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cTagsField" pref="410" max="32767" attributes="0"/>
+                              <Component id="cTagsField" pref="413" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -339,7 +340,7 @@
                           <Component id="jLabel16" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="cTagsField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="25" max="32767" attributes="0"/>
+                      <EmptySpace pref="79" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -457,7 +458,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane1" pref="499" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="507" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -465,7 +466,7 @@
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jScrollPane1" pref="303" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="309" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -509,7 +510,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane2" pref="499" max="32767" attributes="0"/>
+                      <Component id="jScrollPane2" pref="507" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -518,7 +519,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane2" pref="291" max="32767" attributes="0"/>
+                      <Component id="jScrollPane2" pref="297" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -582,18 +583,18 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="userPageField" alignment="0" pref="399" max="32767" attributes="1"/>
-                                  <Component id="urlPrefixField" alignment="1" pref="399" max="32767" attributes="0"/>
-                                  <Component id="bugPageField" alignment="1" pref="399" max="32767" attributes="1"/>
-                                  <Component id="bugPatternField" alignment="1" pref="399" max="32767" attributes="1"/>
-                                  <Component id="reviewPageField" alignment="1" pref="399" max="32767" attributes="1"/>
-                                  <Component id="reviewPatternField" alignment="0" pref="399" max="32767" attributes="1"/>
+                                  <Component id="userPageField" alignment="0" pref="401" max="32767" attributes="1"/>
+                                  <Component id="urlPrefixField" alignment="1" pref="401" max="32767" attributes="0"/>
+                                  <Component id="bugPageField" alignment="1" pref="401" max="32767" attributes="1"/>
+                                  <Component id="bugPatternField" alignment="1" pref="401" max="32767" attributes="1"/>
+                                  <Component id="reviewPageField" alignment="1" pref="401" max="32767" attributes="1"/>
+                                  <Component id="reviewPatternField" alignment="0" pref="401" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="webAppLAFField" pref="400" max="32767" attributes="1"/>
+                              <Component id="webAppLAFField" pref="406" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -640,7 +641,7 @@
                           <Component id="jLabel14" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="webAppLAFField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="17" max="32767" attributes="0"/>
+                      <EmptySpace pref="71" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -740,7 +741,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="499" max="32767" attributes="0"/>
+                      <Component id="jScrollPane3" pref="507" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -749,7 +750,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="291" max="32767" attributes="0"/>
+                      <Component id="jScrollPane3" pref="297" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>

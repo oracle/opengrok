@@ -24,11 +24,10 @@
 
 package org.opensolaris.opengrok.management.client;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.Attribute;
@@ -43,7 +42,7 @@ import javax.swing.table.DefaultTableModel;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Repository;
+import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
@@ -70,7 +69,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
     private Configuration config = null;
     private String configurationFile = null;
     private final static String[] projectTableHeaders = new String[]{"Id","Description","Path","Default"};
-    private final static String[] repositoryTableHeaders = new String[]{"Name","Directory","SCM Working"};
+    private final static String[] repositoryTableHeaders = new String[]{"Directory","Type","SCM Working"};
     private final static String[] ignoredNamesHeaders = new String[]{"IgnorePatterns"};
 
     /** Creates new form ConfigurationsFrame
@@ -89,7 +88,10 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         initComponents();
         createLogLevelCombos();
         getConfigsFromAgent();
-        
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension mySize = getPreferredSize();
+        setLocation(screenSize.width / 2 - (mySize.width / 2), screenSize.height / 2 - (mySize.height / 2));
     }
 
     private void showError(Exception exc) {
@@ -193,14 +195,13 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         }
         this.ignoredNamesTable.setModel(ignoredModel);
 
-        Map<String,Repository> reposmap = config.getRepositories();
-        Set<Entry<String,Repository>> reposentryset = reposmap.entrySet();
-        DefaultTableModel reposModel = new DefaultTableModel(repositoryTableHeaders,reposmap.size());
+        List<RepositoryInfo> repos = config.getRepositories();
+        DefaultTableModel reposModel = new DefaultTableModel(repositoryTableHeaders,repos.size());
         row = 0;
-        for (Entry<String,Repository> entry : reposentryset) {
-            reposModel.setValueAt(entry.getKey(), row, 0);
-            reposModel.setValueAt(entry.getValue().getDirectoryName(), row, 1);
-            reposModel.setValueAt(Boolean.valueOf(entry.getValue().isWorking()), row, 2);
+        for (RepositoryInfo info : repos) {
+            reposModel.setValueAt(info.getDirectoryName(), row, 0);
+            reposModel.setValueAt(info.getType(), row, 1);
+            reposModel.setValueAt(Boolean.valueOf(info.isWorking()), row, 2);
             row++;
         }
         this.repositoryTable.setModel(reposModel);
@@ -327,7 +328,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(publishHostField, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
+                        .addComponent(publishHostField, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
                     .addComponent(jLabel1)
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
@@ -340,12 +341,12 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addGap(18, 18, 18)
-                        .addComponent(logFilePathField, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE))
+                        .addComponent(logFilePathField, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
                     .addComponent(jLabel19)
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel20)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configFileField, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)))
+                        .addComponent(configFileField, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         genSettingsPanelLayout.setVerticalGroup(
@@ -375,7 +376,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 .addGroup(genSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel20)
                     .addComponent(configFileField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(80, Short.MAX_VALUE))
+                .addContainerGap(110, Short.MAX_VALUE))
         );
 
         jTabPane.addTab("General", genSettingsPanel);
@@ -460,13 +461,13 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                             .addGroup(indexerPanelLayout.createSequentialGroup()
                                 .addComponent(jLabel17)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(historyReaderTimelimitField, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
+                                .addComponent(historyReaderTimelimitField, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE))
                             .addComponent(optimizedDatabaseCB)
                             .addComponent(indexVersionedFilesOnlyCB)))
                     .addGroup(indexerPanelLayout.createSequentialGroup()
                         .addComponent(jLabel16)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cTagsField, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)))
+                        .addComponent(cTagsField, javax.swing.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         indexerPanelLayout.setVerticalGroup(
@@ -505,7 +506,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel16)
                     .addComponent(cTagsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
 
         jTabPane.addTab("Indexer", indexerPanel);
@@ -529,13 +530,13 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             projectsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(projectsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
                 .addContainerGap())
         );
         projectsPanelLayout.setVerticalGroup(
             projectsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(projectsPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -560,14 +561,14 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
                 .addContainerGap())
         );
         repositoryPanelLayout.setVerticalGroup(
             repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -629,16 +630,16 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                             .addComponent(jLabel13))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(historyListingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(userPageField, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
-                            .addComponent(urlPrefixField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
-                            .addComponent(bugPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
-                            .addComponent(bugPatternField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
-                            .addComponent(reviewPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)
-                            .addComponent(reviewPatternField, javax.swing.GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE)))
+                            .addComponent(userPageField, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                            .addComponent(urlPrefixField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                            .addComponent(bugPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                            .addComponent(bugPatternField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                            .addComponent(reviewPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                            .addComponent(reviewPatternField, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)))
                     .addGroup(historyListingPanelLayout.createSequentialGroup()
                         .addComponent(jLabel14)
                         .addGap(18, 18, 18)
-                        .addComponent(webAppLAFField, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)))
+                        .addComponent(webAppLAFField, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         historyListingPanelLayout.setVerticalGroup(
@@ -674,7 +675,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 .addGroup(historyListingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
                     .addComponent(webAppLAFField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(71, Short.MAX_VALUE))
         );
 
         jTabPane.addTab("Web App", historyListingPanel);
@@ -698,14 +699,14 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -732,20 +733,20 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(439, Short.MAX_VALUE)
-                .addComponent(updateBtn)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(closeBtn)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jTabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(updateBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(closeBtn)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jTabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-                .addGap(24, 24, 24))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jTabPane, javax.swing.GroupLayout.PREFERRED_SIZE, 358, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(jTabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(closeBtn)

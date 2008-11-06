@@ -46,7 +46,11 @@ import org.opensolaris.opengrok.util.Executor;
 public class GitRepository extends Repository {
     private static ScmChecker gitBinary = new ScmChecker(new String[] {
         getCommand(), "--help" });
-    
+
+    public GitRepository() {
+        type = "git";
+    }
+
    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
@@ -57,7 +61,6 @@ public class GitRepository extends Repository {
     Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
-        String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
@@ -85,7 +88,6 @@ public class GitRepository extends Repository {
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        String directoryName = getDirectoryName();
         File directory = new File(directoryName);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();

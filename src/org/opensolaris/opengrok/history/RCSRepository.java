@@ -41,6 +41,11 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  */
 public class RCSRepository extends Repository {
 
+    public RCSRepository() {
+        working = true;
+        type = "RCS";
+    }
+
     @Override
     Class<? extends HistoryParser> getHistoryParser() {
         return RCSHistoryParser.class;

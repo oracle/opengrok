@@ -43,7 +43,11 @@ public class PerforceRepository extends Repository {
     private static ScmChecker p4Binary = new ScmChecker(new String[] {getCommand(), "help"});
     private final static Pattern annotation_pattern = Pattern.compile("^(\\d+): .*");
 
-       /**
+    public PerforceRepository() {
+        type = "Perforce";
+    }
+
+    /**
      * Get the name of the Perforce command that should be used
      * 
      * @return the name of the p4 command in use

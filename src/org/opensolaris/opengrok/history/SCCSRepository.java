@@ -47,7 +47,11 @@ public class SCCSRepository extends Repository {
         "help", "help" });
 
     private Map<String, String> authors_cache;
-    
+
+    public SCCSRepository() {
+        type = "SCCS";
+    }
+
     private String getCommand() {
        return System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
     }

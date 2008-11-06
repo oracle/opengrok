@@ -144,6 +144,11 @@ public class RazorRepository extends Repository {
     // The base directory of that Razor Group (.razor symlink destination)
     private String razorGroupBaseDirectoryPath;
 
+    public RazorRepository() {
+        type = "Razor";
+        working = true;
+    }
+
     @Override
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);

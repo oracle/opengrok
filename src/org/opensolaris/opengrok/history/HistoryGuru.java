@@ -50,6 +50,7 @@ public final class HistoryGuru {
     private final HistoryCache historyCache;
     
     private static final Logger log = OpenGrokLogger.getLogger();
+    private Map<String, Repository> repositories = new HashMap<String, Repository>();
 
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
@@ -191,13 +192,13 @@ public final class HistoryGuru {
         return false;
     }
 
-    private void addRepositories(File[] files, Map<String, Repository> repos,
+    private void addRepositories(File[] files, List<RepositoryInfo> repos,
             IgnoredNames ignoredNames) {
         addRepositories(files, repos, ignoredNames, true);
     }
 
     @SuppressWarnings("PMD.ConfusingTernary")
-    private void addRepositories(File[] files, Map<String, Repository> repos,
+    private void addRepositories(File[] files, List<RepositoryInfo> repos,
             IgnoredNames ignoredNames, boolean recursiveSearch) {        
         for (File file : files) {
             Repository repository = null;
@@ -215,7 +216,8 @@ public final class HistoryGuru {
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
                         log.log(Level.INFO, "Adding <" + repository.getClass().getName() +  "> repository: <" + path + ">");
                     }
-                    addRepository(repository, path, repos);
+                    
+                    repos.add(new RepositoryInfo(repository));
 
                     // @TODO: Search only for one type of repository - the one found here
                     if (recursiveSearch && repository.supportsSubRepositories()) {
@@ -246,10 +248,6 @@ public final class HistoryGuru {
         }        
     }
     
-    private void addRepository(Repository rep, String path, Map<String, Repository> repos) {
-        repos.put(path, rep);
-    }
-
     /**
      * Search through the all of the directories and add all of the source
      * repositories found.
@@ -257,10 +255,11 @@ public final class HistoryGuru {
      * @param dir the root directory to start the search in.
      */
     public void addRepositories(String dir) {
-        Map<String, Repository> repos = new HashMap<String, Repository>();
-        addRepositories(new File[] {new File(dir)}, repos, 
+        List<RepositoryInfo> repos = new ArrayList<RepositoryInfo>();
+        addRepositories(new File[] {new File(dir)}, repos,
                 RuntimeEnvironment.getInstance().getIgnoredNames());
         RuntimeEnvironment.getInstance().setRepositories(repos);
+        invalidateRepositories(repos);
     }
 
     /**
@@ -269,7 +268,7 @@ public final class HistoryGuru {
     public void updateRepositories() {
         boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
 
-        for (Map.Entry<String, Repository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
+        for (Map.Entry<String, Repository> entry : repositories.entrySet()) {
             Repository repository = entry.getValue();
             
             String path = entry.getKey();
@@ -331,7 +330,7 @@ public final class HistoryGuru {
      */
     public void createCache() {
         ArrayList<Repository> repos = new ArrayList<Repository>();
-        for (Map.Entry<String, Repository> entry : RuntimeEnvironment.getInstance().getRepositories().entrySet()) {
+        for (Map.Entry<String, Repository> entry : repositories.entrySet()) {
             repos.add(entry.getValue());
         }
         createCacheReal(repos);
@@ -360,9 +359,9 @@ public final class HistoryGuru {
      *                             filesystem.
      */
     public void ensureHistoryCacheExists(File file) throws IOException {
-        Map<String, Repository> repos = RuntimeEnvironment.getInstance().getRepositories();
+        Map<String, Repository> repos = repositories;
         String path = file.getCanonicalPath();
-        List<Repository> rep = new ArrayList<Repository>();
+        List<Repository> rep = new ArrayList<Repository>(repos.size());
 
         for (Map.Entry<String, Repository> ent : repos.entrySet()) {
             if (ent.getValue().getDirectoryName().startsWith(path)) {
@@ -382,7 +381,7 @@ public final class HistoryGuru {
     }
     
     private Repository getRepository(File path) {
-        Map<String, Repository> repos = RuntimeEnvironment.getInstance().getRepositories();
+        Map<String, Repository> repos = repositories;
 
         File file = path;
         try {
@@ -400,5 +399,31 @@ public final class HistoryGuru {
         }
 
         return null;
-    }    
+    }
+
+    /**
+     * Invalidate the current list of known repositories!
+     * 
+     * @param repos The new repositories
+     */
+    public void invalidateRepositories(List<RepositoryInfo> repos) {
+        Map<String, Repository> nrep = new HashMap<String, Repository>(repos.size());
+
+        for (RepositoryInfo i : repos) {
+            try {
+                Repository r = RepositoryFactory.getRepository(i);
+                if (r != null) {
+                    nrep.put(r.getDirectoryName(), r);
+                } else {
+                    log.warning("Failed to instanciate internal repository data for " + i.getType() + " in " + i.getDirectoryName());
+                }
+            } catch (InstantiationException ex) {
+                log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', could not instantiate the repository.", ex);
+            } catch (IllegalAccessException iae) {
+                log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', missing access rights.", iae);
+            }
+        }
+
+        repositories = nrep;
+    }
 }
