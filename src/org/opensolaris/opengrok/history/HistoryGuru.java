@@ -292,6 +292,44 @@ public final class HistoryGuru {
         }
     }
     
+    /**
+     * Update the source the contents in the source repositories.
+     * @param paths A list of files/directories to update
+     */
+    public void updateRepositories(List<String> paths) {
+        boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
+
+        ArrayList<Repository> repos = new ArrayList<Repository>();
+        File root = RuntimeEnvironment.getInstance().getSourceRootFile();
+        for (String path : paths) {
+            File f = new File(root, path);
+            Repository r = getRepository(f);
+            if (!repos.contains(r)) {
+                repos.add(r);
+            }
+        }
+
+        for (Repository repository : repos) {
+            String type = repository.getClass().getSimpleName();
+
+            if (repository.isWorking()) {
+                if (verbose) {
+                    log.info(String.format("Update %s repository in %s", type, repository.getDirectoryName()));
+                }
+
+                try {
+                    repository.update();
+                } catch (UnsupportedOperationException e) {
+                    log.warning(String.format("Skipping update of %s repository in %s: Not implemented", type, repository.getDirectoryName()));
+                } catch (Exception e) {
+                    log.log(Level.WARNING, "An error occured while updating " + repository.getDirectoryName() + " (" + type + ")", e);
+                }
+            } else {
+                log.warning(String.format("Skipping update of %s repository in %s: Missing SCM dependencies?", type, repository.getDirectoryName()));
+            }
+        }
+    }
+
     private void createCache(Repository repository) {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();

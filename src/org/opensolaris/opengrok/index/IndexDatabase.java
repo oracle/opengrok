@@ -147,6 +147,66 @@ public class IndexDatabase {
         }
     }
 
+    /**
+     * Update the index database for a number of sub-directories
+     * @param executor An executor to run the job
+     * @param listener where to signal the changes to the database
+     * @param paths
+     * @throws IOException if an error occurs
+     */
+    public static void update(ExecutorService executor, IndexChangedListener listener, List<String> paths) throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+
+        for (String path : paths) {
+            Project project = Project.getProject(path);
+            if (project == null && env.hasProjects()) {
+                log.warning("Could not find a project for \"" + path + "\"");
+            } else {
+                IndexDatabase db;
+
+                try {
+                    if (project == null) {
+                        db = new IndexDatabase();
+                    } else {
+                        db = new IndexDatabase(project);
+                    }
+
+                    int idx = dbs.indexOf(db);
+                    if (idx != -1) {
+                        db = dbs.get(idx);
+                    }
+
+                    if (db.addDirectory(path)) {
+                        if (idx == -1) {
+                            dbs.add(db);
+                        }
+                    } else {
+                        log.warning("Directory does not exist \"" + path + "\"");
+                    }
+                } catch (IOException e) {
+                    log.log(Level.WARNING, "An error occured while updating index", e);
+
+                }
+            }
+
+            for (final IndexDatabase db : dbs) {
+                // @todo what is the argument?
+                db.addIndexChangedListener(listener);
+                executor.submit(new Runnable() {
+
+                    public void run() {
+                        try {
+                            db.update();
+                        } catch (Exception e) {
+                            log.log(Level.WARNING, "An error occured while updating index", e);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
     @SuppressWarnings("PMD.CollapsibleIfStatements")
     private void initialize() throws IOException {
         synchronized (this) {
