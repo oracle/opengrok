@@ -45,6 +45,7 @@ import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.TarAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.c.CAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.data.IgnorantAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.data.ImageAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.document.TroffAnalyzerFactory;
@@ -120,6 +121,7 @@ public class AnalyzerGuru {
             ZipAnalyzerFactory.DEFAULT_INSTANCE,
             new TarAnalyzerFactory(),
             new CAnalyzerFactory(),
+            new CxxAnalyzerFactory(),
             new ShAnalyzerFactory(),
             PlainAnalyzerFactory.DEFAULT_INSTANCE,
             new GZIPAnalyzerFactory(),

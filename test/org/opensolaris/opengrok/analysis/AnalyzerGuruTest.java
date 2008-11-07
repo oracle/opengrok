@@ -11,6 +11,7 @@ import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
 import org.opensolaris.opengrok.analysis.c.CAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzer;
@@ -102,7 +103,17 @@ public class AnalyzerGuruTest {
     public void rfe2969() {
         FileAnalyzerFactory faf = AnalyzerGuru.find("foo.hxx");
         assertNotNull(faf);
-        assertSame(CAnalyzerFactory.class, faf.getClass());
+        assertSame(CxxAnalyzerFactory.class, faf.getClass());
+    }
+
+    @Test
+    public void rfe3401() {
+        FileAnalyzerFactory f1 = AnalyzerGuru.find("main.c");
+        assertNotNull(f1);
+        FileAnalyzerFactory f2 = AnalyzerGuru.find("main.cc");
+        assertNotNull(f2);
+        assertNotSame(f1.getClass(), f2.getClass());
+
     }
 
     /**

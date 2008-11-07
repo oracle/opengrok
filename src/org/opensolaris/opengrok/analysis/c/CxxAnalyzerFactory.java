@@ -18,10 +18,9 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
 package org.opensolaris.opengrok.analysis.c;
 
 import java.io.IOException;
@@ -33,34 +32,29 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class CAnalyzerFactory extends FileAnalyzerFactory {
+public class CxxAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
-        "C",
-        "H",
-        "I",
-        "L",
-        "Y",
-        "LEX",
-        "YACC",
-        "D",
-        "S",
-        "XS",                   // Mainly found in perl directories
-        "X",                    // rpcgen input files
-        "PHP",
+        "CPP",
+        "HPP",
+        "CC",
+        "C++",
+        "HH",
+        "CXX",
+        "HXX",
     };
 
-    public CAnalyzerFactory() {
+    public CxxAnalyzerFactory() {
         super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new CAnalyzer(this);
+        return new CxxAnalyzer(this);
     }
 
     @Override
     public void writeXref(InputStream in, Writer out, Annotation annotation, Project project)
         throws IOException {
-        CAnalyzer.writeXref(in, out, annotation, project);
+        CxxAnalyzer.writeXref(in, out, annotation, project);
     }
 }
