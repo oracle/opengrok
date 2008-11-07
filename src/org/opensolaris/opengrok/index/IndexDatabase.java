@@ -191,7 +191,6 @@ public class IndexDatabase {
             }
 
             for (final IndexDatabase db : dbs) {
-                // @todo what is the argument?
                 db.addIndexChangedListener(listener);
                 executor.submit(new Runnable() {
 
