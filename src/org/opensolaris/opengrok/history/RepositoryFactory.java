@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * This is a factory class for the different repositories.

@@ -450,10 +450,10 @@ public final class HistoryGuru {
         for (RepositoryInfo i : repos) {
             try {
                 Repository r = RepositoryFactory.getRepository(i);
-                if (r != null) {
-                    nrep.put(r.getDirectoryName(), r);
-                } else {
+                if (r == null) {
                     log.warning("Failed to instanciate internal repository data for " + i.getType() + " in " + i.getDirectoryName());
+                } else {
+                    nrep.put(r.getDirectoryName(), r);
                 }
             } catch (InstantiationException ex) {
                 log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', could not instantiate the repository.", ex);

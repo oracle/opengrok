@@ -50,14 +50,16 @@ public class JMXConfiguration implements JMXConfigurationMBean {
         try  {
             File file = new File(configfile);
             if (!file.exists()) {
-                if (file.createNewFile()) {
-                    throw new IOException("could not create configuration file " + configfile);
+                if (!file.createNewFile()) {
+                    throw new IOException("Could not create configuration file: '" + configfile + "'");
                 }
             }
             RuntimeEnvironment.getInstance().writeConfiguration(file);
-        } catch (IOException ioe) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,"Could not create configfile " + configfile,ioe);
-            throw new IOException("Could not create configuration file " + configfile);
+        } catch (IOException orig) {
+            IOException ioex = new IOException("Could not create configuration file " + configfile);
+            ioex.initCause(orig);
+            OpenGrokLogger.getLogger().log(Level.SEVERE,"Could not create configfile " + configfile, ioex);
+            throw ioex;
         }
     }
 }

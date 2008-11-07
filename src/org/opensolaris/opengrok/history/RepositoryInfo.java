@@ -38,8 +38,11 @@ public class RepositoryInfo implements Serializable {
     protected boolean working;
     protected String type;
 
+    /**
+     * Empty constructor to support serialization.
+     */
     public RepositoryInfo() {
-        
+        super();
     }
 
     public RepositoryInfo(RepositoryInfo orig) {
