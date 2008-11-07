@@ -149,6 +149,8 @@ Use is subject to license terms.
         <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex" destdir="${gensrcdir}"/>
+        <jflex file="src/org/opensolaris/opengrok/analysis/c/CxxXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${gensrcdir}"/>
         <jflex file="src/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${gensrcdir}"/>
