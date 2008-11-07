@@ -13,7 +13,9 @@
         <module name="UnusedImports"/>
         <module name="ImportOrder"/>
         <module name="FileLength"/>
-        <module name="MethodLength"/>
+        <module name="MethodLength">
+            <property name="max" value="200"/>
+        </module>
         <module name="AnonInnerLength">
             <property name="max" value="60"/>
         </module>
@@ -22,5 +24,11 @@
         <module name="GenericWhitespace"/>
         <module name="MethodParamPad"/>
         <module name="NoWhitespaceAfter"/>
+        <module name="FileContentsHolder"/>
     </module>
+<module name="SuppressionCommentFilter">
+    <property name="offCommentFormat" value="&lt;editor-fold defaultstate=&quot;collapsed&quot; desc=&quot;Generated Code&quot;&gt;"/>
+    <property name="onCommentFormat" value="&lt;/editor-fold&gt;"/>
 </module>
+</module>
+
