@@ -33,6 +33,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -530,6 +531,10 @@ public final class RuntimeEnvironment {
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
+    }
+
+    public Date getDateForLastIndexRun() {
+        return threadConfig.get().getDateForLastIndexRun();
     }
 
     /**

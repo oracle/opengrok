@@ -299,6 +299,13 @@ public class IndexDatabase {
                 optimize();
             }
             createSpellingSuggestions();
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            File timestamp = new File(env.getDataRootFile(), "timestamp");
+            if (timestamp.exists()) {
+                timestamp.setLastModified(System.currentTimeMillis());
+            } else {
+                timestamp.createNewFile();
+            }
         }
     }
 
