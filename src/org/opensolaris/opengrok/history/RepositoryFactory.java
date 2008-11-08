@@ -85,7 +85,7 @@ public final class RepositoryFactory {
     /**
      * Returns a repository for the given file, or null if no repository was found.
      *
-     * @param file File that might contain a repository
+     * @param info Information about the repository
      * @return Correct repository for the given file
      */
     public static Repository getRepository(RepositoryInfo info) throws InstantiationException, IllegalAccessException {
