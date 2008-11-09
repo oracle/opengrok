@@ -47,4 +47,11 @@ interface HistoryCache {
      * @throws HistoryException if the history cannot be stored
      */
     void store(History history, File file) throws HistoryException;
+
+    /**
+     * Check if the cache is up to date for the specified file.
+     * @param file the file to check
+     * @return {@code true} if the cache is up to date, {@code false} otherwise
+     */
+    boolean isUpToDate(File file) throws HistoryException;
 }

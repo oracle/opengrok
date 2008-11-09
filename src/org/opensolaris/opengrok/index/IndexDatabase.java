@@ -51,6 +51,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.web.Util;
 
@@ -275,8 +276,9 @@ public class IndexDatabase {
     /**
      * Update the content of this index database
      * @throws IOException if an error occurs
+     * @throws HistoryException if an error occurs when accessing the history
      */
-    public void update() throws IOException {
+    public void update() throws IOException, HistoryException {
         synchronized (lock) {
             if (running) {
                 throw new IOException("Indexer already running!");
@@ -396,7 +398,7 @@ public class IndexDatabase {
                     public void run() {
                         try {
                             db.update();
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             log.log(Level.FINE,"Problem updating lucene index database: ",e);
                         }
                     }

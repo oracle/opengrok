@@ -155,8 +155,7 @@ class FileHistoryCache implements HistoryCache {
     public History get(File file, Repository repository)
             throws HistoryException {
         File cache = getCachedFile(file);
-        boolean hasCache = (cache != null) && cache.exists();
-        if (hasCache && file.lastModified() < cache.lastModified()) {
+        if (isUpToDate(file, cache)) {
             try {
                 return readCache(cache);
             } catch (Exception e) {
@@ -201,5 +200,26 @@ class FileHistoryCache implements HistoryCache {
             }
         }
         return history;
+    }
+
+    /**
+     * Check if the cache is up to date for the specified file.
+     * @param file the file to check
+     * @param cachedFile the file which contains the cached history for
+     * the file
+     * @return {@code true} if the cache is up to date, {@code false} otherwise
+     */
+    private boolean isUpToDate(File file, File cachedFile) {
+        return cachedFile != null && cachedFile.exists() &&
+                file.lastModified() <= cachedFile.lastModified();
+    }
+
+    /**
+     * Check if the cache is up to date for the specified file.
+     * @param file the file to check
+     * @return {@code true} if the cache is up to date, {@code false} otherwise
+     */
+    public boolean isUpToDate(File file) throws HistoryException {
+        return isUpToDate(file, getCachedFile(file));
     }
 }

@@ -124,7 +124,7 @@ public class IndexerTest {
     }
 
     @Test
-    public void testRFE2575() throws IOException, InstantiationException, IllegalAccessException {
+    public void testRFE2575() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
@@ -182,7 +182,7 @@ public class IndexerTest {
         }
     }
     @Test
-    public void testBug3430() throws IOException {
+    public void testBug3430() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());

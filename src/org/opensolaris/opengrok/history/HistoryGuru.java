@@ -393,25 +393,23 @@ public final class HistoryGuru {
      * Ensure that any file beneath a given path has a history cache
      *
      * @param file the root path to test
+     * @throws HistoryException if an error occurs while accessing the
+     * history cache
      * @throws java.io.IOException if an error occurs while accessing the
      *                             filesystem.
      */
-    public void ensureHistoryCacheExists(File file) throws IOException {
+    public void ensureHistoryCacheExists(File file)
+            throws HistoryException, IOException {
         Map<String, Repository> repos = repositories;
         String path = file.getCanonicalPath();
         List<Repository> rep = new ArrayList<Repository>(repos.size());
 
         for (Map.Entry<String, Repository> ent : repos.entrySet()) {
-            if (ent.getValue().getDirectoryName().startsWith(path)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(RuntimeEnvironment.getInstance().getDataRootPath());
-                sb.append(File.separatorChar);
-                sb.append("historycache");
-                sb.append(path.substring(RuntimeEnvironment.getInstance().getSourceRootPath().length()));
-                File foo = new File(sb.toString());
-                if (!foo.exists() || foo.lastModified() < file.lastModified()) {
-                   rep.add(ent.getValue());
-                }
+            // XXX Does this really work as intended? This will only match
+            // when path is the root of the repository.
+            if (ent.getValue().getDirectoryName().startsWith(path) &&
+                    !historyCache.isUpToDate(file)) {
+                rep.add(ent.getValue());
             }
         }
 
