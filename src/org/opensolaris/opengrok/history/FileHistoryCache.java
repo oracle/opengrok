@@ -154,8 +154,6 @@ class FileHistoryCache implements HistoryCache {
 
     public History get(File file, Repository repository)
             throws HistoryException {
-        Class<? extends HistoryParser> parserClass;
-        parserClass = repository.getHistoryParser();
         File cache = getCachedFile(file);
         boolean hasCache = (cache != null) && cache.exists();
         if (hasCache && file.lastModified() < cache.lastModified()) {
@@ -167,7 +165,9 @@ class FileHistoryCache implements HistoryCache {
             }
         }
         
-        History history = null;
+        final Class<? extends HistoryParser>
+                parserClass = repository.getHistoryParser();
+        final History history;
         long time;
         try {
             HistoryParser parser = parserClass.newInstance();
