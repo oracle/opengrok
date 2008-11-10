@@ -21,29 +21,44 @@
 # Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 #
-# ident	"%Z%%M% %I%     %E% SMI"
-#
 
 i pkginfo
-i request
 
-!default 0444 bin bin
+# Create directory structure
+d none etc 0755 root sys
+d none etc/opengrok 0755 noaccess noaccess
+d none lib 0755 root bin
+d none lib/svc 755 root bin
+d none lib/svc/method 755 root bin
+d none usr 0755 root sys
+d none usr/opengrok 0755 bin bin
+d none usr/opengrok/bin 0755 bin bin
+d none usr/opengrok/lib 0755 bin bin
+d none usr/opengrok/man 0755 bin bin
+d none usr/opengrok/man/sman1 0755 bin bin
+d none var 0755 root sys
+d none var/opengrok 0755 noaccess noaccess
+d none var/opengrok/data 0755 noaccess noaccess
+d none var/opengrok/etc 0755 noaccess noaccess
+d none var/opengrok/log 0755  noaccess noaccess
+d none var/opengrok/source 0755 noaccess noaccess
+d none var/svc 755 root sys
+d none var/svc/manifest 755 root sys
+d none var/svc/manifest/application 755 root sys
+d none var/svc/manifest/application 755 root sys
 
-d none opt ? ? ?
-d none opt/OSOLopengrok 0755 bin bin
-d none opt/OSOLopengrok/lib 0755 bin bin
-d none opt/OSOLopengrok/man 0755 bin bin
-d none opt/OSOLopengrok/man/sman1 0755 bin bin
-f none opt/OSOLopengrok/lib/ant.jar=dist/lib/ant.jar
-f none opt/OSOLopengrok/lib/bcel-5.1.jar=lib/bcel-5.1.jar
-f none opt/OSOLopengrok/lib/jakarta-oro-2.0.8.jar=lib/jakarta-oro-2.0.8.jar
-f none opt/OSOLopengrok/lib/lucene-core-2.2.0.jar=lib/lucene-core-2.2.0.jar
-f none opt/OSOLopengrok/lib/lucene-spellchecker-2.2.0.jar=lib/lucene-spellchecker-2.2.0.jar
-f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.diff.jar=lib/org.apache.commons.jrcs.diff.jar
-f none opt/OSOLopengrok/lib/org.apache.commons.jrcs.rcs.jar=lib/org.apache.commons.jrcs.rcs.jar
-f none opt/OSOLopengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar
-f none opt/OSOLopengrok/lib/jmxremote_optional.jar=lib/jmxremote_optional.jar
-f none opt/OSOLopengrok/opengrok.jar=dist/opengrok.jar 0555 bin bin
-f none opt/OSOLopengrok/source.war=dist/source.war
-f none opt/OSOLopengrok/man/sman1/opengrok.1=dist/opengrok.1
-s local usr/local/bin/opengrok=../../../opt/OSOLopengrok/opengrok.jar
+f manifest var/svc/manifest/application/opengrok.xml=platform/solaris/smf/opengrok.xml 444 root sys
+f none lib/svc/method/opengrok=platform/solaris/smf/opengrok 555 root bin
+f none usr/opengrok/bin/opengrok.jar=dist/opengrok.jar 0555 bin bin
+f none usr/opengrok/lib/ant.jar=dist/lib/ant.jar 0444 bin bin
+f none usr/opengrok/lib/bcel-5.1.jar=lib/bcel-5.1.jar 0444 bin bin
+f none usr/opengrok/lib/jakarta-oro-2.0.8.jar=lib/jakarta-oro-2.0.8.jar 0444 bin bin
+f none usr/opengrok/lib/jmxremote_optional.jar=lib/jmxremote_optional.jar 0444 bin bin
+f none usr/opengrok/lib/lucene-core-2.2.0.jar=lib/lucene-core-2.2.0.jar 0444 bin bin
+f none usr/opengrok/lib/lucene-spellchecker-2.2.0.jar=lib/lucene-spellchecker-2.2.0.jar 0444 bin bin
+f none usr/opengrok/lib/org.apache.commons.jrcs.diff.jar=lib/org.apache.commons.jrcs.diff.jar 0444 bin bin
+f none usr/opengrok/lib/org.apache.commons.jrcs.rcs.jar=lib/org.apache.commons.jrcs.rcs.jar 0444 bin bin
+f none usr/opengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar 0444 bin bin
+f none usr/opengrok/man/sman1/opengrok.1=dist/opengrok.1 0444 bin bin
+f none etc/opengrok/opengrok.properties=platform/solaris/default/opengrok.properties 0644 root sys
+s none usr/opengrok/bin/lib=../lib

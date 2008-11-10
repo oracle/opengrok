@@ -1,0 +1,2 @@
+solaris.smf.value.opengrok:::Change OpenGrok value properties::
+solaris.smf.manage.opengrok:::Manage OpenGrok service states:: 

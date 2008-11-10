@@ -1,8 +1,0 @@
-if [ -d ${BASEDIR}/usr/local/bin ]
-then
-   CLASSES="$CLASSES local"
-fi
-
-cat >$1 <<!!!
-CLASSES=$CLASSES
-!!!
