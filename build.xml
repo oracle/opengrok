@@ -275,7 +275,7 @@ Use is subject to license terms.
 
     <target name="package" depends="jar">
       <exec os="SunOS" executable="/usr/bin/pkgmk">
-        <arg line="-o -d build -r . -v ${version} -f pkgdef/prototype"/>
+        <arg line="-o -d build -r . -v ${version} -f platform/solaris/pkgdef/prototype"/>
       </exec>
       <exec os="SunOS" executable="/usr/bin/pkgtrans">
 	<arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
