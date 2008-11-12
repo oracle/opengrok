@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -132,7 +131,12 @@ public class OGAgent {
         if (success) {
             if (props.getProperty("org.opensolaris.opengrok.management.logging.path") == null) {
                 props.setProperty("org.opensolaris.opengrok.management.logging.path",
-                        uri.getPath());
+                        uri.getPath() + "/log");
+            }
+
+            if (props.getProperty("org.opensolaris.opengrok.configuration.file") == null) {
+                props.setProperty("org.opensolaris.opengrok.configuration.file",
+                        uri.getPath() + "/etc/configuration.xml");
             }
 
             if (props.getProperty("org.opensolaris.opengrok.management.connection.host") == null) {
