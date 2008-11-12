@@ -29,6 +29,7 @@ java_binary=`svcprop -p opengrok/java opengrok`
 java_options=`svcprop -p opengrok/java_options opengrok`
 runtime_path=`svcprop -p opengrok/runtime_path opengrok`
 config=`svcprop -p opengrok/configuration opengrok`
+home=`svcprop -p opengrok/home opengrok`
 
 if ! [ -n "${java_binary}" -a -x "${java_binary}" ]
 then
@@ -40,6 +41,12 @@ if ! [ -n "${config}" -a -f "${config}" ]
 then
    echo "FATAL: missing configuration file. Please specify opengrok/config"
    exit $SMF_EXIT_ERR_CONFIG
+fi
+
+if [ -n "${home}" ]
+then
+   HOME="${home}"
+   export HOME
 fi
 
 case "$1" in

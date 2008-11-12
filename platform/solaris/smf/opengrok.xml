@@ -46,6 +46,7 @@ Use is subject to license terms.
             <propval name="java_options" type="astring" value="-server"/>
             <propval name="runtime_path" type="astring" value="/usr/bin:/usr/opengrok/bin"/>
             <propval name="configuration" type="astring" value="/etc/opengrok/opengrok.properties"/>
+            <propval name="home" type="astring" value="/var/opengrok" />
             <propval name="value_authorization" type="astring"
                    value="solaris.smf.value.opengrok" />
             <propval name="action_authorization" type="astring"
