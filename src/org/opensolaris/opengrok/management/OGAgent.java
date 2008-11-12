@@ -23,10 +23,14 @@
  */
 package org.opensolaris.opengrok.management;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,73 +57,132 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * @author Jan S Berg
  */
 public class OGAgent {
+    Properties props;
 
-    private int connectorport = 9292;
     private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
-    private static String cfgfile = null;
     private MBeanServer server = null;
-    private static OGAgent oga = null;
+
+
+    @SuppressWarnings("PMD.SystemPrintln")
+    private static boolean loadProperties(File file, InputStream in, Properties props) {
+        boolean ret = false;
+        try {
+            if (file != null) {
+                in = new FileInputStream(file);
+            }
+            props.load(in);
+            ret = true;
+        } catch (IOException e) {
+            System.err.println("Failed to read configuration");
+            e.printStackTrace();
+            ret = false;
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                System.err.println("Failed to close stream");
+                e.printStackTrace();
+                ret = false;
+            }
+        }
+        return ret;
+    }
 
     @SuppressWarnings("PMD.SystemPrintln")
     public static void main(final String args[]) {
 
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-config")) {
-                if (++i < args.length) {
-                    cfgfile = args[i];
+        Properties props = new Properties();
+        // Load default values
+        boolean success = loadProperties(null, OGAgent.class.getResourceAsStream("oga.properties"), props);
+
+        File file = new File("/etc/opengrok/opengrok.properties");
+        if (file.exists()) {
+            success = loadProperties(file, null, props);
+        }
+
+        // System properties should override default properties
+        props.putAll(System.getProperties());
+
+        // @todo Add support for longopts!!
+        for (int i = 0; success && i < args.length; i++) {
+            if (args[i].startsWith("--agent=")) {
+                props.setProperty("agent", args[i].substring("--agent=".length()));
+            } else if (args[i].startsWith("--config=")) {
+                file = new File(args[i].substring("--config=".length()));
+                if (file.exists()) {
+                    success = loadProperties(file, null, props);
                 } else {
-                    System.err.println("-config, argument missing: config file");
-                    System.exit(1);
+                    success = false;
+                    System.err.println("Cannot load file \"" + file.getAbsolutePath() + "\": No such file");
                 }
             }
         }
 
-        oga = new OGAgent();
-        try {
-            oga.runOGA();
-        } catch (MalformedURLException e) {
-            log.log(Level.SEVERE, "Could not create connector server: " + e, e);
-            System.exit(1);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Could not start connector server: " + e, e);
-            System.exit(2);
-        } catch (Exception ex) {
-            Logger.getLogger(OGAgent.class.getName()).log(Level.SEVERE, null, ex);
+        URI uri = null;
+        if (success) {
+            try {
+                uri = new URI(props.getProperty("agent"));
+            } catch (URISyntaxException ex) {
+                success = false;
+                System.err.println("Failed to decode agent url");
+                ex.printStackTrace();
+            }
+        }
+
+        if (success) {
+            if (props.getProperty("org.opensolaris.opengrok.management.logging.path") == null) {
+                props.setProperty("org.opensolaris.opengrok.management.logging.path",
+                        uri.getPath());
+            }
+
+            if (props.getProperty("org.opensolaris.opengrok.management.connection.host") == null) {
+                props.setProperty("org.opensolaris.opengrok.management.connection.host",
+                        uri.getHost());
+            }
+
+            if (props.getProperty("org.opensolaris.opengrok.management.connection.port") == null) {
+                props.setProperty("org.opensolaris.opengrok.management.connection.port",
+                        Integer.toString(uri.getPort()));
+            }
+
+            success = createLogger(props);
+        }
+
+        if (success) {
+
+            OGAgent oga = new OGAgent(props);
+            try {
+                oga.runOGA();
+            } catch (MalformedURLException e) {
+                log.log(Level.SEVERE, "Could not create connector server: " + e, e);
+                System.exit(1);
+            } catch (IOException e) {
+                log.log(Level.SEVERE, "Could not start connector server: " + e, e);
+                System.exit(2);
+            } catch (Exception ex) {
+                Logger.getLogger(OGAgent.class.getName()).log(Level.SEVERE, null, ex);
+                System.exit(1);
+            }
+        } else {
             System.exit(1);
         }
+    }
+
+    private OGAgent(Properties props) {
+        this.props = props;
     }
 
     public final void runOGA() throws MalformedURLException, IOException, JMException {
         String machinename = java.net.InetAddress.getLocalHost().getHostName();
         String javaver = System.getProperty("java.version");
 
-        Properties props = new Properties();
-
-        // Load default values
-        InputStream in = OGAgent.class.getResourceAsStream("oga.properties");
-        if (in != null) {
-            props.load(in);
-            in.close();
-        }
-
-        // Load properties from config file, if one is specified
-        if (cfgfile != null) {
-            FileInputStream is = new FileInputStream(cfgfile);
-            props.load(is);
-            is.close();
-        }
-
-        // System properties should override default properties
-        props.putAll(System.getProperties());
-
-        createLogger(props);
 
         log.info("Starting " + Info.getFullVersion() +
                 " JMX Agent, with java version " + javaver);
         //create mbeanserver
 
         String connprotocol = props.getProperty("org.opensolaris.opengrok.management.connection.protocol", "jmxmp");
-        connectorport = Integer.parseInt(props.getProperty("org.opensolaris.opengrok.management.connection." + connprotocol + ".port", Integer.toString(connectorport)));
+        int connectorport = Integer.parseInt(props.getProperty("org.opensolaris.opengrok.management.connection.port"));
         log.fine("Using protocol " + connprotocol + ", port: " + connectorport);
 
         ArrayList mbservs = MBeanServerFactory.findMBeanServer(null);
@@ -133,7 +196,7 @@ public class OGAgent {
         //instantiate and register OGAManagement
         ObjectName manager = new ObjectName("OGA:name=Management");
         server.registerMBean(Management.getInstance(props), manager);
-        
+
         //instantiate and register OGA:JMXConfiguration
         ObjectName config = new ObjectName("OGA:name=JMXConfiguration");
         JMXConfiguration jc = new JMXConfiguration();
@@ -190,8 +253,7 @@ public class OGAgent {
                     String.class.getName(),
                     Object.class.getName(),
                     Date.class.getName(),
-                    "long",
-                });
+                    "long",});
 
         // Add indexer as listener to index notifications
         NotificationFilter filter = new TimerFilter(id);
@@ -199,7 +261,8 @@ public class OGAgent {
     }
 
     @SuppressWarnings("PMD.SystemPrintln")
-    private void createLogger(Properties props) {
+    private static boolean createLogger(Properties props) {
+        boolean ret = true;
         String OGAlogpath = props.getProperty("org.opensolaris.opengrok.management.logging.path");
 
         Level loglevel = null;
@@ -218,7 +281,9 @@ public class OGAgent {
             OpenGrokLogger.setupLogger(OGAlogpath, loglevel, consoleloglevel);
         } catch (IOException ex) {
             System.err.println("OGAgent failed set up logging: " + ex);
-            System.err.println("OGAgent will continue, you might try to change log settings from the client");
+            ret = false;
         }
+
+        return ret;
     }
 }

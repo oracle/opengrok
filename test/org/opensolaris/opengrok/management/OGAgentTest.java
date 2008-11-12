@@ -100,8 +100,8 @@ public class OGAgentTest {
         System.setOut(printer);
         System.setErr(printer);
 
-        OGAgent oga = new OGAgent();
-        oga.runOGA();
+        OGAgent.main(new String[0]); // ) oga = new OGAgent();
+        //oga.runOGA();
         assertTrue(baos.toString().contains("Logging to " + logDirName));
         baos.reset();
         String loggedMessage = "Should go to console!";

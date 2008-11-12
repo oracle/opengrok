@@ -46,10 +46,17 @@ case "$1" in
    'start')
       PATH=${runtime_path};
       export PATH
-      ${java_binary} ${java_options} \
-         -cp /usr/opengrok/bin/opengrok.jar \
-         org.opensolaris.opengrok.management.OGAgent \
-         -config ${config} &
+      if test "x${config}" = "x"
+      then
+         ${java_binary} ${java_options} \
+            -cp /usr/opengrok/bin/opengrok.jar \
+            org.opensolaris.opengrok.management.OGAgent &
+      else
+         ${java_binary} ${java_options} \
+            -cp /usr/opengrok/bin/opengrok.jar \
+            org.opensolaris.opengrok.management.OGAgent \
+            --config ${config} &
+      fi
    ;;
 
    'stop')

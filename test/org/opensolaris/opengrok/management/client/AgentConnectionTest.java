@@ -55,8 +55,9 @@ public class AgentConnectionTest {
         File logDir = FileUtilities.createTemporaryDirectory("logdir");
         System.setProperty("org.opensolaris.opengrok.management.logging.path",
                            logDir.getAbsolutePath());
-        OGAgent oga = new OGAgent();
-        oga.runOGA();
+//        OGAgent oga = new OGAgent();
+//        oga.runOGA();
+        OGAgent.main(new String[0]);
         String url = InetAddress.getLocalHost().getHostName() + ":" + 9292;
         AgentConnection ac = new AgentConnection(url);
         assertFalse("Shouldn't be connected", ac.isConnected());
