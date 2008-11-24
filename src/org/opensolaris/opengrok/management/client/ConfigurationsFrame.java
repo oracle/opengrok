@@ -328,7 +328,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(publishHostField, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
+                        .addComponent(publishHostField, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE))
                     .addComponent(jLabel1)
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel2)
@@ -341,12 +341,12 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addGap(18, 18, 18)
-                        .addComponent(logFilePathField, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
+                        .addComponent(logFilePathField, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE))
                     .addComponent(jLabel19)
                     .addGroup(genSettingsPanelLayout.createSequentialGroup()
                         .addComponent(jLabel20)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configFileField, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)))
+                        .addComponent(configFileField, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         genSettingsPanelLayout.setVerticalGroup(
@@ -376,7 +376,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 .addGroup(genSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel20)
                     .addComponent(configFileField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(110, Short.MAX_VALUE))
+                .addContainerGap(75, Short.MAX_VALUE))
         );
 
         jTabPane.addTab("General", genSettingsPanel);
@@ -390,11 +390,6 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         sourceRootField.setText("jTextField1"); // NOI18N
 
         luceneLockingCB.setText("Use Lucene Locking"); // NOI18N
-        luceneLockingCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                luceneLockingCBActionPerformed(evt);
-            }
-        });
 
         optimizedDatabaseCB.setText("Optimized Database"); // NOI18N
 
@@ -407,11 +402,6 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         cTagsField.setText("jTextField1"); // NOI18N
 
         historyCacheCB.setText("Use History Cache"); // NOI18N
-        historyCacheCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                historyCacheCBActionPerformed(evt);
-            }
-        });
 
         jLabel17.setText("History Reader Time Limit"); // NOI18N
 
@@ -420,11 +410,6 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         generateHtmlCB.setText("Generate HTML"); // NOI18N
 
         compressXRefsCB.setText("Compress XRefs"); // NOI18N
-        compressXRefsCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compressXRefsCBActionPerformed(evt);
-            }
-        });
 
         jLabel18.setText("Index Word Limit"); // NOI18N
 
@@ -443,8 +428,8 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                             .addComponent(jLabel8))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(sourceRootField, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                            .addComponent(dataRootField, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)))
+                            .addComponent(sourceRootField, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                            .addComponent(dataRootField, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)))
                     .addGroup(indexerPanelLayout.createSequentialGroup()
                         .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, indexerPanelLayout.createSequentialGroup()
@@ -461,13 +446,13 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                             .addGroup(indexerPanelLayout.createSequentialGroup()
                                 .addComponent(jLabel17)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(historyReaderTimelimitField, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE))
+                                .addComponent(historyReaderTimelimitField, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE))
                             .addComponent(optimizedDatabaseCB)
                             .addComponent(indexVersionedFilesOnlyCB)))
                     .addGroup(indexerPanelLayout.createSequentialGroup()
                         .addComponent(jLabel16)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cTagsField, javax.swing.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)))
+                        .addComponent(cTagsField, javax.swing.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         indexerPanelLayout.setVerticalGroup(
@@ -506,7 +491,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel16)
                     .addComponent(cTagsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(79, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
 
         jTabPane.addTab("Indexer", indexerPanel);
@@ -530,13 +515,13 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             projectsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(projectsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                 .addContainerGap())
         );
         projectsPanelLayout.setVerticalGroup(
             projectsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(projectsPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -561,14 +546,14 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                 .addContainerGap())
         );
         repositoryPanelLayout.setVerticalGroup(
             repositoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(repositoryPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -585,11 +570,6 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         jLabel11.setText("Review Page"); // NOI18N
 
         reviewPageField.setText("jTextField3"); // NOI18N
-        reviewPageField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reviewPageFieldActionPerformed(evt);
-            }
-        });
 
         jLabel12.setText("Review Pattern"); // NOI18N
 
@@ -630,16 +610,16 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                             .addComponent(jLabel13))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(historyListingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(userPageField, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                            .addComponent(urlPrefixField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                            .addComponent(bugPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                            .addComponent(bugPatternField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                            .addComponent(reviewPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                            .addComponent(reviewPatternField, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)))
+                            .addComponent(userPageField, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                            .addComponent(urlPrefixField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                            .addComponent(bugPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                            .addComponent(bugPatternField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                            .addComponent(reviewPageField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                            .addComponent(reviewPatternField, javax.swing.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)))
                     .addGroup(historyListingPanelLayout.createSequentialGroup()
                         .addComponent(jLabel14)
                         .addGap(18, 18, 18)
-                        .addComponent(webAppLAFField, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)))
+                        .addComponent(webAppLAFField, javax.swing.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         historyListingPanelLayout.setVerticalGroup(
@@ -675,7 +655,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 .addGroup(historyListingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
                     .addComponent(webAppLAFField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(71, Short.MAX_VALUE))
+                .addContainerGap(23, Short.MAX_VALUE))
         );
 
         jTabPane.addTab("Web App", historyListingPanel);
@@ -699,14 +679,14 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -759,14 +739,11 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
 
     @SuppressWarnings("unused")
     private void closeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeBtnActionPerformed
-        // TODO add your handling code here:
         this.dispose();
 }//GEN-LAST:event_closeBtnActionPerformed
 
     @SuppressWarnings("unused")
     private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
-        // TODO add your handling code here:
-        
         try {
             logger.info("updating to agent management mbean attributes");
             if (!filePath.equals(this.logFilePathField.getText())) {
@@ -829,29 +806,9 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
     // Also suppress AvoidDuplicateLiterals since PMD doesn't like that we
     // use the same literal in multiple SuppressWarning annotations, and it
     // doesn't understand what we mean if we use a constant instead.
-    @SuppressWarnings({"PMD.UnusedFormalParameter", "PMD.AvoidDuplicateLiterals"})
-    private void luceneLockingCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_luceneLockingCBActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_luceneLockingCBActionPerformed
-
 // Avoid UnusedFormalParameter until the method has been implemented
-@SuppressWarnings("PMD.UnusedFormalParameter")
-private void reviewPageFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reviewPageFieldActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_reviewPageFieldActionPerformed
-
 // Avoid UnusedFormalParameter until the method has been implemented
-@SuppressWarnings("PMD.UnusedFormalParameter")
-private void historyCacheCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historyCacheCBActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_historyCacheCBActionPerformed
-
 // Avoid UnusedFormalParameter until the method has been implemented
-@SuppressWarnings("PMD.UnusedFormalParameter")
-private void compressXRefsCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compressXRefsCBActionPerformed
-// TODO add your handling code here:
-}//GEN-LAST:event_compressXRefsCBActionPerformed
-
 
 
     /**
