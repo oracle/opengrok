@@ -21,15 +21,16 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
-/*
- * ident	"@(#)PlainFullTokenizer.lex 1.2     06/02/22 SMI"
- */
-
 package org.opensolaris.opengrok.analysis.plain;
-import java.util.*;
-import java.io.*;
-import org.apache.lucene.analysis.*;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeMap;
+import org.apache.lucene.analysis.Token;
+import org.apache.lucene.analysis.Tokenizer;
 %%
 
 %public
@@ -45,24 +46,6 @@ import org.apache.lucene.analysis.*;
   public void close() throws IOException {
   	yyclose();
   }
-
-
-    /*
-     * This would be faster than yytext().tolowercase()
-     */
-    public String loweryytext() {
-        char[] lcs = new char[zzMarkedPos-zzStartRead];
-        int k = 0;
-        for(int i = zzStartRead; i < zzMarkedPos; i++) {
-            char s = zzBuffer[i];
-            if(s >= 'A' && s <= 'Z') {
-                lcs[k++] =(char)(s + 32);
-            } else {
-                lcs[k++]= s;
-            }
-        }
-        return new String(lcs);
-    }
 
   public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
@@ -80,6 +63,6 @@ Number = [0-9]+|[0-9]+\.[0-9]+| "0[xX]" [0-9a-fA-F]+
 Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
-{Identifier}|{Number}|{Printable}	{return new Token(loweryytext(), zzStartRead, zzMarkedPos);}
+{Identifier}|{Number}|{Printable}	{return new Token(yytext().toLowerCase(Locale.US), zzStartRead, zzMarkedPos);}
 <<EOF>>   { return null;} 
 .|\n	{}

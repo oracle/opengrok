@@ -22,21 +22,19 @@
  * Use is subject to license terms.
  */
 
-/*
- * ident     "@(#)PlainLineTokenizer.lex 1.2     06/02/22 SMI"
- */
-
 /**
  * for plain text tokenizers
  */
-
 package org.opensolaris.opengrok.search.context;
 
-import org.opensolaris.opengrok.web.*;
-import java.util.*;
-import java.io.*;
-import org.apache.lucene.analysis.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeMap;
 import org.opensolaris.opengrok.search.Hit;
+import org.opensolaris.opengrok.web.Util;
 %%
 
 %public
@@ -74,23 +72,6 @@ import org.opensolaris.opengrok.search.Hit;
   	yyline = 1;
   	this.out = out;
   }
-
-    /*
-     * This would be faster than yytext().tolowercase()
-     */
-    public String loweryytext() {
-        char[] lcs = new char[zzMarkedPos-zzStartRead];
-        int k = 0;
-        for(int i = zzStartRead; i < zzMarkedPos; i++) {
-            char s = zzBuffer[i];
-            if(s >= 'A' && s <= 'Z') {
-                lcs[k++] =(char)(s + 32);
-            } else {
-                lcs[k++]= s;
-            }
-        }
-        return new String(lcs);
-    }
 
   /**
    * Set the name of the file we are working on (needed if we would like to
@@ -380,7 +361,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 
 %%
-{Identifier}|{Number}|{Printable}	{return loweryytext();}
+{Identifier}|{Number}|{Printable}	{return yytext().toLowerCase(Locale.US);}
 <<EOF>>   { return null;}
 
 \n	{
