@@ -400,23 +400,12 @@ public final class HistoryGuru {
      */
     public void ensureHistoryCacheExists(File file)
             throws HistoryException, IOException {
-        Map<String, Repository> repos = repositories;
-        String path = file.getCanonicalPath();
-        List<Repository> rep = new ArrayList<Repository>(repos.size());
-
-        for (Map.Entry<String, Repository> ent : repos.entrySet()) {
-            // XXX Does this really work as intended? This will only match
-            // when path is the root of the repository.
-            if (ent.getValue().getDirectoryName().startsWith(path) &&
-                    !historyCache.isUpToDate(file)) {
-                rep.add(ent.getValue());
-            }
+        if (!historyCache.isUpToDate(file)) {
+            createCache(getRepository(file));
         }
-
-        createCacheReal(rep);
     }
-    
-    private Repository getRepository(File path) {
+
+    protected Repository getRepository(File path) {
         Map<String, Repository> repos = repositories;
 
         File file = path;

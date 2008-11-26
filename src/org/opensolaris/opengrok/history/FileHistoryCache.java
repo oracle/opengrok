@@ -220,6 +220,17 @@ class FileHistoryCache implements HistoryCache {
      * @return {@code true} if the cache is up to date, {@code false} otherwise
      */
     public boolean isUpToDate(File file) throws HistoryException {
-        return isUpToDate(file, getCachedFile(file));
+        if (file.isDirectory()) {
+            Repository repos = HistoryGuru.getInstance().getRepository(file);
+            if (repos == null) {
+                return true;
+            }
+            File dir = RuntimeEnvironment.getInstance().getDataRootFile();
+            dir = new File(dir, "historycache");
+            dir = new File(dir, repos.getDirectoryName().substring(RuntimeEnvironment.getInstance().getSourceRootPath().length()));
+            return dir.exists();
+        } else {
+            return isUpToDate(file, getCachedFile(file));
+        }
     }
 }
