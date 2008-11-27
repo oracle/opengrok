@@ -630,7 +630,9 @@ public final class RuntimeEnvironment {
                                 log.info("Configuration updated: " + configuration.getSourceRoot());
                             }
                         } catch (IOException e) {
-                            log.log(Level.WARNING, "Error reading config file: ",e);
+                            log.log(Level.SEVERE, "Error reading config file: ",e);
+                        } catch (RuntimeException e) {
+                            log.log(Level.SEVERE, "Error parsing config file: ", e);
                         } finally {
                             if (s != null) {
                                 try {
