@@ -335,6 +335,25 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
+    public void testXMLencdec() {
+        Configuration c = new Configuration();
+        String m = c.getXMLRepresentationAsString();
+        Configuration o = null;
+        try {
+             o = Configuration.makeXMLStringAsConfiguration(m);
+        } catch (Throwable t) {
+            fail(t.getMessage());
+        }
+        assertNotNull(o);
+        m = m.replaceAll("a", "m");
+        try {
+             o = Configuration.makeXMLStringAsConfiguration(m);
+             fail("makeXmlStringsAsConfiguration should throw exception");
+        } catch (Throwable t) {
+        }
+    }
+
+    @Test
     public void testBug3095() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         File file = new File("foobar");
