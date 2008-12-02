@@ -55,7 +55,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * Monitor and JMX and HTTP Connectors.
  * @author Jan S Berg
  */
-public class OGAgent {
+final public class OGAgent {
     Properties props;
 
     private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
@@ -65,11 +65,12 @@ public class OGAgent {
     @SuppressWarnings("PMD.SystemPrintln")
     private static boolean loadProperties(File file, InputStream in, Properties props) {
         boolean ret = false;
+        InputStream stream = in;
         try {
             if (file != null) {
-                in = new FileInputStream(file);
+                stream = new FileInputStream(file);
             }
-            props.load(in);
+            props.load(stream);
             ret = true;
         } catch (IOException e) {
             System.err.println("Failed to read configuration");
@@ -77,7 +78,7 @@ public class OGAgent {
             ret = false;
         } finally {
             try {
-                in.close();
+                stream.close();
             } catch (IOException e) {
                 System.err.println("Failed to close stream");
                 e.printStackTrace();
