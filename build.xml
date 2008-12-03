@@ -429,7 +429,7 @@ Use is subject to license terms.
             <instr instrpath="build/classes"
                        metadatafile="${coverage.dir}/coverage.em"
                        mode="overwrite"
-                       filter="+org.opensolaris.*"/>
+                       filter="+org.opensolaris.*,-org.opensolaris.opengrok.management.client.*"/>
         </emma>
     </target>
     
