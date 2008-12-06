@@ -287,10 +287,10 @@ public class IndexDatabase {
             interrupted = false;
         }
 
-        try {
+        String ctgs = RuntimeEnvironment.getInstance().getCtags();
+        if (ctgs != null) {
             ctags = new Ctags();
-        } catch (IOException e) {
-            log.log(Level.WARNING, "An error occured while creating ctags", e);
+            ctags.setBinary(ctgs);
         }
         if (ctags == null) {
             log.severe("Unable to run ctags! searching definitions will not work!");

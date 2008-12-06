@@ -27,9 +27,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Provides Ctags by having a running instance of ctags
@@ -42,68 +43,78 @@ public class Ctags {
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final Logger log = Logger.getLogger(Ctags.class.getName());
+    private String binary;
+    private ProcessBuilder processBuilder;
 
-
-    public Ctags() throws IOException {
-        initialize();
+    public void setBinary(String binary) {
+        this.binary = binary;
     }
 
     public void close() throws IOException {
-        ctagsIn.close();
-        ctags.destroy();
+        if (ctagsIn != null) {
+            ctagsIn.close();
+        }
+        if (ctags != null) {
+            ctags.destroy();
+        }
     }
 
     private void initialize() throws IOException {
-        ctags = Runtime.getRuntime().exec(new String[]{
-            RuntimeEnvironment.getInstance().getCtags(),
-            "--c-kinds=+l",
-            "--java-kinds=+l",
-            "--sql-kinds=+l",
-            "--Fortran-kinds=+L",
-            "--C++-kinds=+l",
-            "--file-scope=yes",
-            "-u",
-            "--filter=yes",
-            "--filter-terminator=__ctags_done_with_file__" + '\n',
-            "--fields=-anf+iKnS",
-            "--excmd=pattern",
-            "--regex-Asm=/^[ \\t]*(ENTRY|ENTRY2|ALTENTRY)[ \\t]*\\(([a-zA-Z0-9_]+)/\\2/f,function/"  // for assmebly definitions
-        });
+        if (processBuilder == null) {
+            List<String> command = new ArrayList<String>();
+            command.add(binary);
+            command.add("--c-kinds=+l");
+            command.add("--java-kinds=+l");
+            command.add("--sql-kinds=+l");
+            command.add("--Fortran-kinds=+L");
+            command.add("--C++-kinds=+l");
+            command.add("--file-scope=yes");
+            command.add("-u");
+            command.add("--filter=yes");
+            command.add("--filter-terminator=__ctags_done_with_file__\n");
+            command.add("--fields=-anf+iKnS");
+            command.add("--excmd=pattern");
+            command.add("--regex-Asm=/^[ \\t]*(ENTRY|ENTRY2|ALTENTRY)[ \\t]*\\(([a-zA-Z0-9_]+)/\\2/f,function/");  // for assmebly definitions
+            processBuilder = new ProcessBuilder(command);
+        }
+
+        ctags = processBuilder.start();
         ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
     }
 
     public Definitions doCtags(String file) throws IOException {
-        boolean ctagsRunning;
-        try {
-            ctags.exitValue();
-            ctagsRunning = false;
-            // ctags is dead! we must restart!!!
-        } catch (IllegalThreadStateException exp) {
-            ctagsRunning = true;
-            // ctags is still running :)
+        boolean ctagsRunning = false;
+        if (ctags != null) {
+            try {
+                ctags.exitValue();
+                ctagsRunning = false;
+                // ctags is dead! we must restart!!!
+            } catch (IllegalThreadStateException exp) {
+                ctagsRunning = true;
+                // ctags is still running :)
+            }
         }
 
         if (!ctagsRunning) {
             initialize();
         }
 
+        Definitions ret = null;
         if (file.length() > 0 && !"\n".equals(file)) {
             //log.fine("doing >" + file + "<");
             ctagsIn.write(file);
             ctagsIn.flush();
-            Definitions defs = new Definitions();
-            readTags(defs);
-            return defs;
-        //log.fine("DONE >" + file + "<");
+            readTags(ret);
         }
-        return null;
+
+        return ret;
     }
 
     private void readTags(Definitions defs) {
         try {
             do {
-                String tagLine = ctagsOut.readLine();                
+                String tagLine = ctagsOut.readLine();
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
                     log.warning("Unexpected end of file!");
@@ -111,17 +122,17 @@ public class Ctags {
                         int val = ctags.exitValue();
                         log.warning("ctags exited with code: " + val);
                     } catch (Exception e) {
-                        log.log(Level.WARNING, "Ctags problem: ", e); 
+                        log.log(Level.WARNING, "Ctags problem: ", e);
                     }
                     log.fine("Ctag read");
-                    return ;
+                    return;
                 }
-                
+
                 if ("__ctags_done_with_file__".equals(tagLine)) {
                     return;
                 }
                 int p = tagLine.indexOf('\t');
-                if (p <= 0) {                    
+                if (p <= 0) {
                     //log.fine("SKIPPING LINE - NO TAB");
                     continue;
                 }
@@ -178,14 +189,14 @@ public class Ctags {
                             String argDef = arg.substring(space + 1);
                             //log.fine("Param Def = "+ argDef);
                             defs.addTag(Integer.valueOf(lnum), argDef,
-                                        "argument", def + signature);
+                                    "argument", def + signature);
                         }
                     }
                 }
             //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
             } while (true);
         } catch (Exception e) {
-            log.log(Level.FINE,"CTags parsing problem: ",e) ;
+            log.log(Level.FINE, "CTags parsing problem: ", e);
         }
         log.severe("CTag reader cycle was interrupted!");
     }
