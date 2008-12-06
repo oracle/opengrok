@@ -192,27 +192,5 @@ public class SearchEngineTest {
 
         instance.setFile("main AND (file OR field)");
         assertEquals(0, instance.search());
-
-        instance.setFreetext("opengrok && something || else");
-        assertEquals(4, instance.search());
-
-        instance.setFreetext("op*ng?ok");
-        assertEquals(3, instance.search());
-
-        instance.setFreetext("\"op*n g?ok\"");
-        assertEquals(0, instance.search());
-
-        instance.setFreetext("title:[a TO b]");
-        assertEquals(0, instance.search());
-
-        instance.setFreetext("title:{a TO c}");
-        assertEquals(0, instance.search());
-
-        instance.setFreetext("\"contains some strange\"");
-        assertEquals(1, instance.search());
-
-        RuntimeEnvironment.getInstance().setAllowLeadingWildcard(true);
-        instance.setFile("?akefile");
-        assertEquals(1, instance.search());
     }
 }
