@@ -82,6 +82,7 @@ public class SearchTest {
     public static void tearDownClass() throws Exception {
         System.setErr(err);
         repository.destroy();
+        configFile.delete();
     }
 
     @Before
