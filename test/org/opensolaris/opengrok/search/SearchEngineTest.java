@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.index.IndexerTest;
 import org.opensolaris.opengrok.util.TestRepository;
@@ -51,7 +52,7 @@ public class SearchEngineTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
+        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
@@ -160,37 +161,57 @@ public class SearchEngineTest {
             return;
         }
 
-        SearchEngine instance = new SearchEngine();
-        instance.setFile("Makefile");
-        assertEquals(1, instance.search());
         List<Hit> hits = new ArrayList<Hit>();
+        SearchEngine instance = new SearchEngine();
+        instance.setHistory("\"Add lint make target and fix lint warnings\"");
+        int noHits =  instance.search();
+        if (noHits > 0) {
+            instance.more(0, noHits, hits);
+            assertEquals(noHits, hits.size());
+        }
 
+        instance = new SearchEngine();
+        instance.setSymbol("printf");
+        instance.setFile("main.c");
+        noHits = instance.search();
+        assertEquals(7, noHits);
         hits.clear();
-        instance.more(0, 1, hits);
-        assertEquals(1, hits.size());
+        instance.more(0, noHits, hits);
+        for (Hit hit : hits) {
+            assertEquals("main.c", hit.getFilename());
+            assertEquals(1, 1);
+        }
 
-        instance.setFile("main~");
-        assertEquals(6, instance.search());
+        instance.setFile("main.c OR Makefile");
+        noHits = instance.search();
+        assertEquals(7, noHits);
 
+        instance = new SearchEngine();
+        instance.setFreetext("arguments");
+        instance.setFile("main.c");
+        noHits = instance.search();
         hits.clear();
-        instance.more(0, 3, hits);
-        assertEquals(3, hits.size());
-        instance.more(3, 6, hits);
-        assertEquals(6, hits.size());
+        instance.more(0, noHits, hits);
+        for (Hit hit : hits) {
+            assertEquals("main.c", hit.getFilename());
+            if (hit.getLine().indexOf("arguments") == -1) {
+               fail("got an incorrect match: " + hit.getLine());
+            }
+        }
+        assertEquals(7, noHits);
 
-        instance.setFile("\"main troff\"~5");
-        assertEquals(0, instance.search());
-
-        instance.setFile("Main OR main");
-        assertEquals(6, instance.search());
-
-        instance.setFile("main file");
-        assertEquals(0, instance.search());
-
-        instance.setFile("+main -file");
-        assertEquals(6, instance.search());
-
-        instance.setFile("main AND (file OR field)");
-        assertEquals(0, instance.search());
+        instance = new SearchEngine();
+        instance.setDefinition("main");
+        instance.setFile("main.c");
+        noHits = instance.search();
+        hits.clear();
+        instance.more(0, noHits, hits);
+        for (Hit hit : hits) {
+            assertEquals("main.c", hit.getFilename());
+            if (hit.getLine().indexOf("main") == -1) {
+               fail("got an incorrect match: " + hit.getLine());
+            }
+        }
+        assertEquals(7, noHits);
     }
 }
