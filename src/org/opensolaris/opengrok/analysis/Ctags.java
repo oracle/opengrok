@@ -105,6 +105,7 @@ public class Ctags {
             //log.fine("doing >" + file + "<");
             ctagsIn.write(file);
             ctagsIn.flush();
+            ret = new Definitions();
             readTags(ret);
         }
 
@@ -196,7 +197,7 @@ public class Ctags {
             //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
             } while (true);
         } catch (Exception e) {
-            log.log(Level.FINE, "CTags parsing problem: ", e);
+            log.log(Level.WARNING, "CTags parsing problem: ", e);
         }
         log.severe("CTag reader cycle was interrupted!");
     }
