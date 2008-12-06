@@ -170,7 +170,12 @@ public class Executor {
      * @return The output from the process
      */
     public String getOutputString() {
-        return new String(stdout);
+        String ret = null;
+        if (stdout != null) {
+            ret = new String(stdout);
+        }
+
+        return ret;
     }
 
     /**
@@ -197,7 +202,12 @@ public class Executor {
      * @return The error output from the process
      */
     public String getErrorString() {
-        return new String(stderr);
+        String ret = null;
+        if (stderr != null) {
+            ret = new String(stderr);
+        }
+
+        return ret;
     }
 
     /**
