@@ -27,11 +27,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.history.RepositoryInfo;
 import static org.junit.Assert.*;
 
 /**
@@ -201,6 +204,9 @@ public class RuntimeEnvironmentTest {
         assertNotNull(instance.getRepositories());
         instance.setRepositories(null);
         assertNull(instance.getRepositories());
+        List<RepositoryInfo> reps = new ArrayList<RepositoryInfo>();
+        instance.setRepositories(reps);
+        assertSame(reps, instance.getRepositories());
     }
 
     @Test

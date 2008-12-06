@@ -432,23 +432,26 @@ public final class HistoryGuru {
      * @param repos The new repositories
      */
     public void invalidateRepositories(List<RepositoryInfo> repos) {
-        Map<String, Repository> nrep = new HashMap<String, Repository>(repos.size());
+        if (repos == null || repos.isEmpty()) {
+            repositories.clear();
+        } else {
+            Map<String, Repository> nrep = new HashMap<String, Repository>(repos.size());
 
-        for (RepositoryInfo i : repos) {
-            try {
-                Repository r = RepositoryFactory.getRepository(i);
-                if (r == null) {
-                    log.warning("Failed to instanciate internal repository data for " + i.getType() + " in " + i.getDirectoryName());
-                } else {
-                    nrep.put(r.getDirectoryName(), r);
+            for (RepositoryInfo i : repos) {
+                try {
+                    Repository r = RepositoryFactory.getRepository(i);
+                    if (r == null) {
+                        log.warning("Failed to instanciate internal repository data for " + i.getType() + " in " + i.getDirectoryName());
+                    } else {
+                        nrep.put(r.getDirectoryName(), r);
+                    }
+                } catch (InstantiationException ex) {
+                    log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', could not instantiate the repository.", ex);
+                } catch (IllegalAccessException iae) {
+                    log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', missing access rights.", iae);
                 }
-            } catch (InstantiationException ex) {
-                log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', could not instantiate the repository.", ex);
-            } catch (IllegalAccessException iae) {
-                log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', missing access rights.", iae);
             }
+            repositories = nrep;
         }
-
-        repositories = nrep;
     }
 }
