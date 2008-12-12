@@ -72,7 +72,11 @@ class FileHistoryCache implements HistoryCache {
 
         String add;
         try {
-            add = file.getCanonicalPath().substring(sourceRoot.length());
+            try {
+                add = file.getCanonicalPath().substring(sourceRoot.length());
+            } catch (StringIndexOutOfBoundsException exp) {
+                throw new HistoryException("Failed to get path for: <" + file + "> [" + file.getCanonicalPath() + "] [" + sourceRoot + "]", exp);
+            }
         } catch (IOException ioe) {
             throw new HistoryException("Failed to get path for: " + file, ioe);
         }
