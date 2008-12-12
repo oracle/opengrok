@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -358,8 +361,24 @@ public final class HistoryGuru {
     }
 
     private void createCacheReal(List<Repository> repositories) {
-        for (Repository repos : repositories) {
-            createCache(repos);
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+
+        for (final Repository repos : repositories) {
+            executor.submit(new Runnable() {
+                public void run() {
+                    createCache(repos);
+                }
+            });
+        }
+        executor.shutdown();
+        while (!executor.isTerminated()) {
+            try {
+                // Wait forever
+                // @newjdk : 999,TimeUnit.DAYS
+                executor.awaitTermination(999 * 60 * 60 * 24, TimeUnit.SECONDS);
+            } catch (InterruptedException exp) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
+            }
         }
     }
 
