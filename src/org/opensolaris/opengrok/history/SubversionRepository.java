@@ -24,8 +24,6 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +36,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -69,6 +68,9 @@ public class SubversionRepository extends Repository {
     }
 
     private String getValue(Node node) {
+        if (node == null) {
+            return null;
+        }
         StringBuffer sb = new StringBuffer();
         Node n = node.getFirstChild();
         while (n != null) {
@@ -86,51 +88,47 @@ public class SubversionRepository extends Repository {
         super.setDirectoryName(directoryName);
 
         if (isWorking()) {
-            String argv[] = new String[]{getCommand(), "info", "--xml"};
+            List<String> cmd = new ArrayList<String>();
+            cmd.add(getCommand());
+            cmd.add("info");
+            cmd.add("--xml");
             File directory = new File(getDirectoryName());
 
-            Process process = null;
-            InputStream in = null;
-            try {
-                process = Runtime.getRuntime().exec(argv, null, directory);
-                in = process.getInputStream();
+            Executor executor = new Executor(cmd, directory);
+            if (executor.exec() == 0) {
+                try {
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder builder = factory.newDocumentBuilder();
+                    Document document = builder.parse(executor.getOutputStream());
 
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder builder = factory.newDocumentBuilder();
-                Document document = builder.parse(in);
-
-                String url = getValue(document.getElementsByTagName("url").item(0));
-                String root = getValue(document.getElementsByTagName("root").item(0));
-
-                reposPath = url.substring(root.length());
-            } catch (SAXException saxe) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Parser error parsing svn output", saxe);                
-            } catch (ParserConfigurationException pce) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Parser configuration error parsing svn output", pce);
-            } catch (IOException ioe) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "IOException reading from svn process", ioe);
-            } finally {
-
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                    String url = getValue(document.getElementsByTagName("url").item(0));
+                    if (url != null) {
+                        if (!url.startsWith("file")) {
+                            setRemote(true);
+                        }                        
+                    } else {
+                        OpenGrokLogger.getLogger().warning("svn info did not contain an URL for ["+ directoryName + "]. Assuming remote repository.");
+                        setRemote(true);
                     }
+                    String root = getValue(document.getElementsByTagName("root").item(0));
+                    if (url != null && root != null) {
+                        reposPath = url.substring(root.length());
+                    } 
+                } catch (SAXException saxe) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Parser error parsing svn output", saxe);
+                } catch (ParserConfigurationException pce) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Parser configuration error parsing svn output", pce);
+                } catch (IOException ioe) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "IOException reading from svn process", ioe);
                 }
-                if (process != null) {
-                    try {
-                        process.exitValue();
-                    } catch (IllegalThreadStateException exp) {
-                        // the process is still running??? just kill it..
-                        process.destroy();
-                    }
-                }
+            } else {
+                OpenGrokLogger.getLogger().warning("Failed to execute svn info for ["+ directoryName + "]. Repository disabled.");
+                setWorking(false);
             }
         }
     }
 
-   /**
+    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
      * 
@@ -140,11 +138,10 @@ public class SubversionRepository extends Repository {
     Executor getHistoryLogExecutor(final File file) {
         String abs = file.getAbsolutePath();
         String filename = "";
-        String directoryName = getDirectoryName();
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
-        
+
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("log");
@@ -152,53 +149,26 @@ public class SubversionRepository extends Repository {
         cmd.add("-v");
         cmd.add(filename);
 
-        return new Executor(cmd, new File(getDirectoryName()));
+        return new Executor(cmd, new File(directoryName));
     }
 
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
-        String directoryName = getDirectoryName();
         File directory = new File(directoryName);
 
         String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
-        Process process = null;
-        InputStream in = null;
-        try {
-            String argv[] = {getCommand(), "cat", "-r", rev, filename};
-            process = Runtime.getRuntime().exec(argv, null, directory);
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[32 * 1024];
-            in = process.getInputStream();
-            int len;
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("cat");
+        cmd.add("-r");
+        cmd.add(rev);
+        cmd.add(filename);
 
-            while ((len = in.read(buffer)) != -1) {
-                if (len > 0) {
-                    out.write(buffer, 0, len);
-                }
-            }
-
-            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
-        } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString());
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
-                }
-            }
-            // Clean up zombie-processes...
-            if (process != null) {
-                try {
-                    process.exitValue();
-                } catch (IllegalThreadStateException exp) {
-                    // the process is still running??? just kill it..
-                    process.destroy();
-                }
-            }
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() == 0) {
+            ret = executor.getOutputStream();
         }
 
         return ret;
@@ -334,7 +304,7 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor( File file) {
+    boolean isRepositoryFor(File file) {
         File f = new File(file, ".svn");
         return f.exists() && f.isDirectory();
     }

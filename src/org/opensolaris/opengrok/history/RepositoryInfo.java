@@ -37,6 +37,7 @@ public class RepositoryInfo implements Serializable {
     protected String directoryName;
     protected boolean working;
     protected String type;
+    protected boolean remote;
 
     /**
      * Empty constructor to support serialization.
@@ -49,6 +50,7 @@ public class RepositoryInfo implements Serializable {
         this.directoryName = orig.directoryName;
         this.type = orig.type;
         this.working = orig.isWorking();
+        this.remote = orig.isRemote();
     }
 
     /**
@@ -84,6 +86,24 @@ public class RepositoryInfo implements Serializable {
      */
     public void setWorking(boolean working) {
         this.working = working;
+    }
+
+    /**
+     * Is the history and version information for this repository stored on
+     * a remote server?
+     * 
+     * @return true if the history is stored on a remote server.
+     */
+    public boolean isRemote() {
+        return remote;
+    }
+
+    /**
+     * Set the property remote
+     * @param remote
+     */
+    public void setRemote(boolean remote) {
+        this.remote = remote;
     }
 
     /**

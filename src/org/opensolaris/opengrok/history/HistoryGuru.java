@@ -121,9 +121,14 @@ public final class HistoryGuru {
 
         if (parser != null) {
             Repository repos = getRepository(file.getParentFile());
-            History history = historyCache.get(file, repos);
-            if (history != null) {
-                return new HistoryReader(history);
+            if (repos != null && repos.isWorking()) {
+                if (!RuntimeEnvironment.getInstance().isRemoteScmSupported() && repos.isRemote()) {
+                    return null;
+                }
+                History history = historyCache.get(file, repos);
+                if (history != null) {
+                    return new HistoryReader(history);
+                }
             }
         }
 
@@ -174,7 +179,16 @@ public final class HistoryGuru {
      */
     public boolean hasHistory(File file) {
         Repository repos = getRepository(file);
-        return repos != null && repos.isWorking() && repos.fileHasHistory(file);
+
+        boolean ret = false;
+
+        if (repos != null) {
+            ret = repos.isWorking() && repos.fileHasHistory(file);
+            if (!RuntimeEnvironment.getInstance().isRemoteScmSupported() && repos.isRemote()) {
+                ret = false;
+            }
+        }
+        return ret;
     }
 
     /**
