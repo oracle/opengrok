@@ -96,19 +96,10 @@ Use is subject to license terms.
     <property name="pmd.home" value="${user.home}/.ant/lib/pmd"/>
 
 
-    <condition property="jvm.new">
-       <and>
-	<not>
-          <equals arg1="${ant.java.version}" arg2="1.5"/>
-	</not>
-	<not>
-          <equals arg1="${ant.java.version}" arg2="1.4"/>
-	</not>  
-       </and>
-    </condition>
+    <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
 
-    <target name="-exclude-client" unless="jvm.new">	    
-	<echo>Detected JDK lower than 1.6 , excluding building of systray client ... </echo>
+    <target name="-exclude-client" unless="compileSystrayClient">	    
+	<echo>JDK doesn't have java.awt.TrayIcon, excluding building of systray client ... </echo>
 	<property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
     </target>
     
