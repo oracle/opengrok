@@ -46,7 +46,7 @@ if (valid) {
 		Query tquery = qparser.parse(grepTerms);
 		if (tquery != null) {
 			Context sourceContext = new Context(tquery);
-                        %><p><span class="pagetitle">Lines Matching <b><%=tquery%></b></span></p><div id="more" style="linespacing:1.5em;"><pre><%
+                        %><p><span class="pagetitle">Lines Matching <b><%=tquery%></b></span></p><div id="more" style="line-height:1.5em;"><pre><%
                         sourceContext.getContext(new FileReader(resourceFile), out, context+"/xref", null,  path ,null, false, null);
 			%></pre></div><%
 		}

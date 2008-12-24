@@ -327,7 +327,7 @@ if(format.equals("s")) {
         }
 	%></td><td><%
         for(int j = cn2; j  <= cl2; j++) {
-		%><i><%=readableLine(++ln2)%></i><a name="<%=ln2%>" /></a><%=file2[j]%><br/><%
+		%><i><%=readableLine(++ln2)%></i><a name="<%=ln2%>"></a><%=file2[j]%><br/><%
         }
 	%></td></tr><%
         
