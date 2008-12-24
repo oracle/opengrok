@@ -95,6 +95,11 @@ Use is subject to license terms.
     <property name="checkstyle.home" value="${user.home}/.ant/lib/checkstyle"/>
     <property name="pmd.home" value="${user.home}/.ant/lib/pmd"/>
 
+    <property name="test.repositories" value="testdata/repositories"/>
+    <property name="test.sources" value="testdata/sources"/>
+    <property name="test.cvs" value="${test.repositories}/cvs"/>
+    <property name="test.hg" value="${test.repositories}/mercurial"/>
+    <property name="test.svn" value="${test.repositories}/svn"/>
 
     <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
 
@@ -431,46 +436,52 @@ Use is subject to license terms.
 
     <target name="-post-compile-test">
         <antcall target="-create-svn-repository"/>
+        <!-- Change root in CVS test repository -->
+        <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
+        <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
+        <!-- Strange indentation in line two levels below to get newline correctly -->
+        <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${user.dir}/${test.cvs.root}/
+</concat>
         <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
-        <copy todir="testdata/repositories/mercurial/.hg">
-            <fileset dir="testdata/repositories/mercurial/hg"/>
+        <copy todir="${test.hg}/.hg">
+            <fileset dir="${test.hg}/hg"/>
         </copy>
-        <copy file="testdata/repositories/mercurial/hgignore" tofile="testdata/repositories/mercurial/.hgignore"/>
+        <copy file="${test.hg}/hgignore" tofile="${test.hg}/.hgignore"/>
         
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
-              basedir="testdata/sources"
+              basedir="${test.sources}"
               update="false"
               defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
-                basedir="testdata/repositories" 
+                basedir="${test.repositories}"
                 excludes="mercurial/hg/**, mercurial/hgignore"
                 update="false"
                 defaultexcludes="no"/>
                 
-          <delete dir="testdata/repositories/mercurial/.hg"/>
-          <delete file="testdata/repositories/mercurial/.hgignore"/>
-          <delete dir="testdata/repositories/svn"/>
+          <delete dir="${test.hg}/.hg"/>
+          <delete file="${test.hg}/.hgignore"/>
+          <delete dir="${test.svn}"/>
     </target>
 
     <target name="-create-svn-repository">
-      <delete dir="testdata/repositories/svn"/>
+      <delete dir="${test.svn}"/>
       <delete dir="${build.test.reposroots}/svn"/>
       <mkdir dir="${build.test.reposroots}"/>
-      <exec command="svnadmin" failifexecutionfails="false">
+      <exec executable="svnadmin" failifexecutionfails="false">
         <arg value="create"/>
         <arg value="${build.test.reposroots}/svn"/>
       </exec>
-      <exec command="svn" failifexecutionfails="false">
+      <exec executable="svn" failifexecutionfails="false">
         <arg value="import"/>
-        <arg value="testdata/sources"/>
+        <arg value="${test.sources}"/>
         <arg value="file://${build.test.reposroots}/svn"/>
         <arg value="-m"/>
         <arg value="Initial import"/>
       </exec>
-      <exec command="svn" failifexecutionfails="false">
+      <exec executable="svn" failifexecutionfails="false">
         <arg value="checkout"/>
         <arg value="file://${build.test.reposroots}/svn"/>
-        <arg value="testdata/repositories/svn"/>
+        <arg value="${test.svn}"/>
       </exec>
     </target>
     
