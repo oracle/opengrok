@@ -36,7 +36,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -102,13 +101,13 @@ public class SubversionRepository extends Repository {
                     Document document = builder.parse(executor.getOutputStream());
 
                     String url = getValue(document.getElementsByTagName("url").item(0));
-                    if (url != null) {
-                        if (!url.startsWith("file")) {
-                            setRemote(true);
-                        }                        
-                    } else {
+                    if (url == null) {
                         OpenGrokLogger.getLogger().warning("svn info did not contain an URL for ["+ directoryName + "]. Assuming remote repository.");
                         setRemote(true);
+                    } else {
+                        if (!url.startsWith("file")) {
+                            setRemote(true);
+                        }
                     }
                     String root = getValue(document.getElementsByTagName("root").item(0));
                     if (url != null && root != null) {

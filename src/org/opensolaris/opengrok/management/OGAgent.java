@@ -74,14 +74,14 @@ final public class OGAgent {
             ret = true;
         } catch (IOException e) {
             System.err.println("Failed to read configuration");
-            e.printStackTrace();
+            e.printStackTrace(System.err);
             ret = false;
         } finally {
             try {
                 stream.close();
             } catch (IOException e) {
                 System.err.println("Failed to close stream");
-                e.printStackTrace();
+                e.printStackTrace(System.err);
                 ret = false;
             }
         }
@@ -125,7 +125,7 @@ final public class OGAgent {
             } catch (URISyntaxException ex) {
                 success = false;
                 System.err.println("Failed to decode agent url");
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
 
@@ -177,7 +177,7 @@ final public class OGAgent {
         this.props = props;
     }
 
-    public final void runOGA() throws MalformedURLException, IOException, JMException {
+    public void runOGA() throws MalformedURLException, IOException, JMException {
         String machinename = java.net.InetAddress.getLocalHost().getHostName();
         String javaver = System.getProperty("java.version");
 
