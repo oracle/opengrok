@@ -41,7 +41,7 @@ public class JMXConfiguration implements JMXConfigurationMBean {
         return RuntimeEnvironment.getInstance().getConfiguration().getXMLRepresentationAsString();
     }
 
-    @SuppressWarnings("PMD.CollapsibleIfStatements")
+    @SuppressWarnings({"PMD.CollapsibleIfStatements", "PMD.PreserveStackTrace"})
     public void setConfiguration(String config) throws IOException {
         Configuration configuration = Configuration.makeXMLStringAsConfiguration(config);
         RuntimeEnvironment.getInstance().setConfiguration(configuration);
