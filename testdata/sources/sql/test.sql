@@ -17,5 +17,17 @@
 # CDDL HEADER END
 #
 SELECT * FROM foo;
+
+-- This is an SQL comment with a email address: username@example.com
 DELETE FROM foo WHERE id=5;
-DROP TABLE foo;
+
+-- This en an SQL comment with strange characters: <, > and &
+DROP TABLE "foo";
+
+CREATE TABLE "foo""";
+
+/* Other supported comment */
+SELECT 123.45 + 543E-2 FROM DUAL;
+
+-- Text values:
+INSERT INTO foo(column) VALUES ('this'), ('and this'), ('and '' too');

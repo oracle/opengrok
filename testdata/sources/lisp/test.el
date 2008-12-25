@@ -17,5 +17,10 @@
 ; CDDL HEADER END
 ;
 (defun foo-bar () ( setq variable 5 ))
+(defun foo-bar () ( setq str_variable "string value" ))
 (foo-bar)
-
+; Multi line comment, with embedded strange characters: < > &,
+; email address: testuser@example.com and even an URL:
+; http://www.example.com/index.html and a file name and a path:
+; <example.cpp> and </usr/local/example.h>.
+; Ending with an email address: username@example.com
