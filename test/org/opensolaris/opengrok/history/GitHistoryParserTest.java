@@ -121,7 +121,6 @@ public class GitHistoryParserTest {
                 "    \n" +
                 "    git-svn-id: http://host.example.com/svn/product/trunk/server@324-fdws-2342-fsdaf-gds-234\n";
 
-        BufferedReader in = new BufferedReader(new StringReader(output));
         History result = instance.parse(output);
         assertNotNull(result);
         assertTrue("Should contain three history entries", 3 == result.getHistoryEntries().size());
@@ -184,7 +183,7 @@ public class GitHistoryParserTest {
                 "    Signed-off-by: Somebody <username@example.com>\n" +
                 "\n" +
                 filename + "\n";
-        BufferedReader in = new BufferedReader(new StringReader(output));
+
         History result = instance.parse(output);
         assertNotNull(result);
         assertTrue("Should contain two history entries", 2 == result.getHistoryEntries().size());

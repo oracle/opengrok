@@ -24,16 +24,26 @@
 
 package org.opensolaris.opengrok.history;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a local CVS repository.
  */
 public class CVSRepository extends RCSRepository {
+
+    private static ScmChecker cvsBinary = new ScmChecker(new String[]{
+                getCommand(), "--help"
+            });
 
     public CVSRepository() {
         type = "CVS";
@@ -47,7 +57,12 @@ public class CVSRepository extends RCSRepository {
     private static String getCommand() {
         return System.getProperty("org.opensolaris.opengrok.history.cvs", "cvs");
     }
-    
+
+    @Override
+    public boolean isWorking() {
+        return cvsBinary.available;
+    }
+
     @Override
     File getRCSFile(File file) {
         File cvsFile =
@@ -76,5 +91,107 @@ public class CVSRepository extends RCSRepository {
         if (executor.exec() != 0) {
             throw new IOException(executor.getErrorString());
         }
+    }
+
+    /**
+     * Get an executor to be used for retrieving the history log for the
+     * named file.
+     *
+     * @param file The file to retrieve history for
+     * @return An Executor ready to be started
+     */
+    Executor getHistoryLogExecutor(final File file) {
+        String abs = file.getAbsolutePath();
+        String filename = "";
+        if (abs.length() > directoryName.length()) {
+            filename = abs.substring(directoryName.length() + 1);
+        }
+
+        List<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("log");
+        cmd.add("-N");
+
+        if (filename.length() > 0) {
+           cmd.add(filename);
+        }
+        return new Executor(cmd, new File(getDirectoryName()));
+    }
+
+    @Override
+    public Class<? extends HistoryParser> getHistoryParser() {
+        return CVSHistoryParser.class;
+    }
+
+    @Override
+    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
+        return CVSHistoryParser.class;
+    }
+
+    @Override
+    public boolean fileHasAnnotation(File file) {
+        return true;
+    }
+
+    @Override
+    public boolean fileHasHistory(File file) {
+        // @TODO: Research how to cheaply test if a file in a given
+        // CVS repo has history.  If there is a cheap test, then this
+        // code can be refined, boosting performance.
+        return true;
+    }
+
+    @Override
+    Annotation annotate(File file, String revision) throws IOException {
+        ArrayList<String> cmd = new ArrayList<String>();
+        cmd.add(getCommand());
+        cmd.add("annotate");
+        if (revision != null) {
+            cmd.add("-r");
+            cmd.add(revision);
+        }
+        cmd.add(file.getName());
+
+        Executor exec = new Executor(cmd, file.getParentFile());
+        int status = exec.exec();
+
+        if (status != 0) {
+            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get annotations for: \"" +
+                    file.getAbsolutePath() + "\" Exit code: " + status);
+        }
+
+        return parseAnnotation(exec.getOutputReader(), file.getName());
+    }
+
+    /** Pattern used to extract author/revision from cvs annotate. */
+    private final static Pattern ANNOTATE_PATTERN =
+        Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
+
+    protected Annotation parseAnnotation(Reader input, String fileName) throws IOException {
+        BufferedReader in = new BufferedReader(input);
+        Annotation ret = new Annotation(fileName);
+        String line = "";
+        int lineno = 0;
+        boolean hasStarted = false;
+        Matcher matcher = ANNOTATE_PATTERN.matcher(line);
+        while ((line = in.readLine()) != null) {
+            // Skip header
+            if (!hasStarted && (line.length() == 0 || !Character.isDigit(line.charAt(0)))) {
+                continue;
+            }
+            hasStarted = true;
+
+            // Start parsing
+            ++lineno;
+            matcher.reset(line);
+            if (matcher.find()) {
+                String rev = matcher.group(1);
+                String author = matcher.group(2).trim();
+                ret.addLine(rev, author, true);
+            } else {
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + lineno + ": [" + line + "]");
+            }
+        }
+        return ret;
     }
 }
