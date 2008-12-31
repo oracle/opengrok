@@ -46,13 +46,14 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  * @author Chandan
  */
 public final class HistoryGuru {
+    private static final Logger log = OpenGrokLogger.getLogger();
+
     /** The one and only instance of the HistoryGuru */
     private static HistoryGuru instance = new HistoryGuru();
 
     /** The history cache to use */
     private final HistoryCache historyCache;
     
-    private static final Logger log = OpenGrokLogger.getLogger();
     private Map<String, Repository> repositories = new HashMap<String, Repository>();
 
     /**
@@ -60,7 +61,17 @@ public final class HistoryGuru {
      * source control system.
      */
     private HistoryGuru() {
-        historyCache = new FileHistoryCache();
+        if (Boolean.getBoolean("opengrok.jdbcCache")) {
+            historyCache = new JDBCHistoryCache();
+        } else {
+            historyCache = new FileHistoryCache();
+        }
+        try {
+            historyCache.initialize();
+        } catch (HistoryException he) {
+            log.log(Level.WARNING,
+                    "Failed to initialize the history cache", he);
+        }
     }
     
     /**
@@ -433,7 +444,8 @@ public final class HistoryGuru {
      */
     public void ensureHistoryCacheExists(File file)
             throws HistoryException, IOException {
-        if (!historyCache.isUpToDate(file)) {
+        Repository repository = getRepository(file);
+        if (repository != null && !historyCache.isUpToDate(file, repository)) {
             createCache(getRepository(file));
         }
     }

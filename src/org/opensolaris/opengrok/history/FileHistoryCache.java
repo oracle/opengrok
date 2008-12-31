@@ -50,7 +50,11 @@ class FileHistoryCache implements HistoryCache {
             return new Expression(oldInstance, f.getClass(), "new", new Object[] {f.toString()});
         }
     }
-            
+
+    public void initialize() {
+        // nothing to do
+    }
+
     /**
      * Get a <code>File</code> object describing the cache file.
      *
@@ -105,7 +109,8 @@ class FileHistoryCache implements HistoryCache {
         }
     }
     
-    public void store(History history, File file) throws HistoryException {
+    public void store(History history, File file, Repository repository)
+            throws HistoryException {
         
         File cache = getCachedFile(file);
 
@@ -200,7 +205,7 @@ class FileHistoryCache implements HistoryCache {
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!
-                store(history, file);
+                store(history, file, repository);
             }
         }
         return history;
@@ -223,7 +228,8 @@ class FileHistoryCache implements HistoryCache {
      * @param file the file to check
      * @return {@code true} if the cache is up to date, {@code false} otherwise
      */
-    public boolean isUpToDate(File file) throws HistoryException {
+    public boolean isUpToDate(File file, Repository repository)
+            throws HistoryException {
         if (file.isDirectory()) {
             Repository repos = HistoryGuru.getInstance().getRepository(file);
             if (repos == null) {

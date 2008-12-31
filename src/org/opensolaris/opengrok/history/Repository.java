@@ -154,7 +154,7 @@ public abstract class Repository extends RepositoryInfo {
                 hist.setHistoryEntries(e.getValue());
                 File file = new File(root, e.getKey());
                 if (!file.isDirectory()) {
-                    cache.store(hist, file);
+                    cache.store(hist, file, this);
                 }
             }
         }

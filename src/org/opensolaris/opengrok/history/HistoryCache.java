@@ -28,6 +28,14 @@ import java.io.File;
 interface HistoryCache {
 
     /**
+     * Create and initialize an empty history cache if one doesn't exist
+     * already.
+     *
+     * @throws HistoryException if initalization fails
+     */
+    void initialize() throws HistoryException;
+
+    /**
      * Retrieve the history for the given file, either from the cache or by
      * parsing the history information in the repository.
      *
@@ -44,14 +52,18 @@ interface HistoryCache {
      * 
      * @param history The history to store
      * @param file The file to store information for
+     * @param repository The repository the file belongs to
      * @throws HistoryException if the history cannot be stored
      */
-    void store(History history, File file) throws HistoryException;
+    void store(History history, File file, Repository repository)
+            throws HistoryException;
 
     /**
      * Check if the cache is up to date for the specified file.
      * @param file the file to check
+     * @param repository the repository in which the file is stored
      * @return {@code true} if the cache is up to date, {@code false} otherwise
      */
-    boolean isUpToDate(File file) throws HistoryException;
+    boolean isUpToDate(File file, Repository repository)
+            throws HistoryException;
 }
