@@ -46,7 +46,7 @@ import org.opensolaris.opengrok.util.Executor;
 public class MercurialRepository extends Repository {
 
     /** Template for formatting hg log output for files. */
-    private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}user: {author}\\ndate: {date|isodate}\\ndescription: {desc|strip|obfuscate}\\n";
+    private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}\\nuser: {author}\\ndate: {date|isodate}\\ndescription: {desc|strip|obfuscate}\\n";
 
     /** Template for formatting hg log output for directories. */
     private static final String DIR_TEMPLATE = TEMPLATE + "files: {files}{file_copies}\\n";
