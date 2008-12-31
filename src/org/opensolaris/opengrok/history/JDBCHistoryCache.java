@@ -44,6 +44,9 @@ class JDBCHistoryCache implements HistoryCache {
 
     private ConnectionManager connectionManager;
 
+    // Many of the tables contain columns with identical names and types,
+    // so there will be duplicate strings. Suppress warning from PMD.
+    @SuppressWarnings("PMD.AvoidDuplicateLiterals")
     private static void initDB(Connection c) throws SQLException {
         // TODO Store a database version which is incremented on each
         // format change. When a version change is detected, drop the database
