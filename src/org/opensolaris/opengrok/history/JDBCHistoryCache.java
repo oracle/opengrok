@@ -153,13 +153,16 @@ class JDBCHistoryCache implements HistoryCache {
                         "SELECT F.ID FROM FILES F, REPOSITORIES R " +
                         "WHERE F.REPOSITORY = R.ID AND R.PATH = ? AND " +
                         "F.PATH LIKE ? || '/%'");
-                ps.setString(1, toUnixPath(repository.getDirectoryName()));
-                ps.setString(2, getRelativePath(file, repository));
-                ResultSet rs = ps.executeQuery();
                 try {
-                    return rs.next();
+                    ps.setString(1, toUnixPath(repository.getDirectoryName()));
+                    ps.setString(2, getRelativePath(file, repository));
+                    ResultSet rs = ps.executeQuery();
+                    try {
+                        return rs.next();
+                    } finally {
+                        rs.close();
+                    }
                 } finally {
-                    rs.close();
                     ps.close();
                 }
             } finally {
@@ -218,21 +221,24 @@ class JDBCHistoryCache implements HistoryCache {
                         "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
                         "FC.FILE = F.ID AND A.ID = CS.AUTHOR " +
                         "ORDER BY FC.ID");
-                ps.setString(1, reposPath);
-                ps.setString(2, filePath);
-                ResultSet rs = ps.executeQuery();
                 try {
-                    while (rs.next()) {
-                        String revision = rs.getString(1);
-                        String author = rs.getString(2);
-                        Timestamp time = rs.getTimestamp(3);
-                        String message = rs.getString(4);
-                        HistoryEntry entry = new HistoryEntry(
-                                revision, time, author, message, true);
-                        entries.add(entry);
+                    ps.setString(1, reposPath);
+                    ps.setString(2, filePath);
+                    ResultSet rs = ps.executeQuery();
+                    try {
+                        while (rs.next()) {
+                            String revision = rs.getString(1);
+                            String author = rs.getString(2);
+                            Timestamp time = rs.getTimestamp(3);
+                            String message = rs.getString(4);
+                            HistoryEntry entry = new HistoryEntry(
+                                    revision, time, author, message, true);
+                            entries.add(entry);
+                        }
+                    } finally {
+                        rs.close();
                     }
                 } finally {
-                    rs.close();
                     ps.close();
                 }
             } finally {
@@ -258,18 +264,20 @@ class JDBCHistoryCache implements HistoryCache {
             try {
                 conn.setAutoCommit(false);
 
+                Integer reposId = null;
                 PreparedStatement reposIdPS = conn.prepareStatement(
                         "SELECT ID FROM REPOSITORIES WHERE PATH = ?");
-                reposIdPS.setString(1, reposPath);
-
-                ResultSet reposIdRS = reposIdPS.executeQuery();
-                Integer reposId = null;
                 try {
-                    if (reposIdRS.next()) {
-                        reposId = reposIdRS.getInt(1);
+                    reposIdPS.setString(1, reposPath);
+                    ResultSet reposIdRS = reposIdPS.executeQuery();
+                    try {
+                        if (reposIdRS.next()) {
+                            reposId = reposIdRS.getInt(1);
+                        }
+                    } finally {
+                        reposIdRS.close();
                     }
                 } finally {
-                    reposIdRS.close();
                     reposIdPS.close();
                 }
 
@@ -383,43 +391,45 @@ class JDBCHistoryCache implements HistoryCache {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         PreparedStatement check = conn.prepareStatement(
                 "SELECT ID FROM AUTHORS WHERE REPOSITORY = ? AND NAME = ?");
-        check.setInt(1, reposId);
         PreparedStatement insert = null;
+        try {
+            check.setInt(1, reposId);
 
-        for (HistoryEntry entry : history.getHistoryEntries()) {
-            String author = entry.getAuthor();
-            Integer id = null;
+            for (HistoryEntry entry : history.getHistoryEntries()) {
+                String author = entry.getAuthor();
+                Integer id = null;
 
-            check.setString(2, author);
-            ResultSet rs = check.executeQuery();
-            try {
-                if (rs.next()) {
-                    id = rs.getInt(1);
+                check.setString(2, author);
+                ResultSet rs = check.executeQuery();
+                try {
+                    if (rs.next()) {
+                        id = rs.getInt(1);
+                    }
+                } finally {
+                    rs.close();
                 }
-            } finally {
-                rs.close();
-            }
 
-            if (id == null) {
-                if (insert == null) {
-                    insert = conn.prepareStatement(
-                            "INSERT INTO AUTHORS (REPOSITORY, NAME) " +
-                            "VALUES (?,?)",
-                            Statement.RETURN_GENERATED_KEYS);
+                if (id == null) {
+                    if (insert == null) {
+                        insert = conn.prepareStatement(
+                                "INSERT INTO AUTHORS (REPOSITORY, NAME) " +
+                                "VALUES (?,?)",
+                                Statement.RETURN_GENERATED_KEYS);
+                    }
+                    insert.setInt(1, reposId);
+                    insert.setString(2, author);
+                    insert.executeUpdate();
+                    id = getGeneratedIntKey(insert);
                 }
-                insert.setInt(1, reposId);
-                insert.setString(2, author);
-                insert.executeUpdate();
-                id = getGeneratedIntKey(insert);
+
+                assert id != null;
+                map.put(author, id);
             }
-
-            assert id != null;
-            map.put(author, id);
-        }
-
-        check.close();
-        if (insert != null) {
-            insert.close();
+        } finally {
+            check.close();
+            if (insert != null) {
+                insert.close();
+            }
         }
 
         return map;
