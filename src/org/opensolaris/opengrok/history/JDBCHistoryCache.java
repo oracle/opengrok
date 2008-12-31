@@ -40,6 +40,8 @@ import org.opensolaris.opengrok.jdbc.ConnectionManager;
 
 class JDBCHistoryCache implements HistoryCache {
 
+    private static final String SCHEMA = "APP";
+
     private ConnectionManager connectionManager;
 
     private static void initDB(Connection c) throws SQLException {
@@ -53,18 +55,13 @@ class JDBCHistoryCache implements HistoryCache {
         Statement s = c.createStatement();
         DatabaseMetaData dmd = c.getMetaData();
 
-        ResultSet schemaRS = s.executeQuery("VALUES CURRENT SCHEMA");
-        schemaRS.next();
-        String schema = schemaRS.getString(1);
-        schemaRS.close();
-
-        if (!tableExists(dmd, schema, "REPOSITORIES")) {
+        if (!tableExists(dmd, SCHEMA, "REPOSITORIES")) {
             s.executeUpdate("CREATE TABLE REPOSITORIES (" +
                     "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
                     "PATH VARCHAR(32672) UNIQUE NOT NULL)");
         }
 
-        if (!tableExists(dmd, schema, "FILES")) {
+        if (!tableExists(dmd, SCHEMA, "FILES")) {
             s.executeUpdate("CREATE TABLE FILES (" +
                     "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
                     "PATH VARCHAR(32672) NOT NULL, " +
@@ -74,7 +71,7 @@ class JDBCHistoryCache implements HistoryCache {
                     "UNIQUE (REPOSITORY, PATH))");
         }
 
-        if (!tableExists(dmd, schema, "AUTHORS")) {
+        if (!tableExists(dmd, SCHEMA, "AUTHORS")) {
             s.executeUpdate("CREATE TABLE AUTHORS (" +
                     "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
                     "REPOSITORY INT NOT NULL REFERENCES REPOSITORIES " +
@@ -83,7 +80,7 @@ class JDBCHistoryCache implements HistoryCache {
                     "UNIQUE (REPOSITORY, NAME))");
         }
 
-        if (!tableExists(dmd, schema, "CHANGESETS")) {
+        if (!tableExists(dmd, SCHEMA, "CHANGESETS")) {
             s.executeUpdate("CREATE TABLE CHANGESETS (" +
                     "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
                     "REPOSITORY INT NOT NULL REFERENCES REPOSITORIES " +
@@ -96,7 +93,7 @@ class JDBCHistoryCache implements HistoryCache {
                     "UNIQUE (REPOSITORY, REVISION))");
         }
 
-        if (!tableExists(dmd, schema, "FILECHANGES")) {
+        if (!tableExists(dmd, SCHEMA, "FILECHANGES")) {
             s.executeUpdate("CREATE TABLE FILECHANGES (" +
                     "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
                     "FILE INT NOT NULL REFERENCES FILES " +
@@ -134,6 +131,9 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
+    // We do check the return value from ResultSet.next(), but PMD doesn't
+    // understand it, so suppress the warning.
+    @SuppressWarnings("PMD.CheckResultSet")
     public boolean isUpToDate(File file, Repository repository)
             throws HistoryException {
         // TODO Find out how this method is used. Seems like it's only called
@@ -285,8 +285,9 @@ class JDBCHistoryCache implements HistoryCache {
 
                 final int fileId;
                 final long lastMod;
-                final boolean isCached = fileInfoRS.next();
-                if (isCached) {
+                final boolean isCached;
+                if (fileInfoRS.next()) {
+                    isCached = true;
                     fileId = fileInfoRS.getInt(1);
                     lastMod = fileInfoRS.getTimestamp(2).getTime();
                     fileInfoRS.updateTimestamp(2,
@@ -295,6 +296,7 @@ class JDBCHistoryCache implements HistoryCache {
                     // should only get one result
                     assert !fileInfoRS.next();
                 } else {
+                    isCached = false;
                     lastMod = file.lastModified();
                     PreparedStatement insert = conn.prepareStatement(
                             "INSERT INTO FILES(PATH, REPOSITORY, " +
