@@ -61,7 +61,8 @@ public final class HistoryGuru {
      * source control system.
      */
     private HistoryGuru() {
-        if (Boolean.getBoolean("opengrok.jdbcCache")) {
+        if (Boolean.getBoolean("org.opensolaris.opengrok.useJdbcCache")) {
+            // for testing only
             historyCache = new JDBCHistoryCache();
         } else {
             historyCache = new FileHistoryCache();
