@@ -1,5 +1,5 @@
 .TH FOOBAR 1
-
+.TL FooBar Manual Page
 .SH NAME
 
 foobar \- general purpose utility
@@ -23,6 +23,66 @@ Talks to you while doing whatever you would like it to do
 .TP
 \fB-n, --dry-run\fP
 Only pretends to do whatever you would like it to do
+
+.\"(this is a troff comment) - try out some of the macros below.\"
+.IP "0." 4
+This is some text
+.IP "1." 4
+This is \fBsome\fR \fIother\fR text
+
+.NH 1
+Numbered \fCheading\fR 1
+.NH 2
+Numbered heading 2
+/usr/local/some/file.man is > or < than \- some other \\ file \& filename.c
+.UH Heading
+\fBText\fR
+.UH Heading 2
+Text \fP2\fR
+
+.PP
+New paragraph
+.LP
+Paragraph 2
+.P
+Paragraph 3
+.TP
+Paragraph 4
+.IP
+Paragraph 5
+.HP
+Paragraph 6
+.PD
+Paragraph 7
+.SP
+Paragraph 8
+.br
+Paragraph 9
+.mk
+Paragraph 10
+.RS
+Paragraph 11
+.RE
+Paragraph 12
+.EQ C
+Some equation here
+.nf
+Some code\(Tm\R
+.fi
+.\"Add a table:\"
+.TS
+tab(^G) box;
+cw(2.95i) |cw(2.95i)
+lw(2.95i) |lw(2.95i)
+.
+Heading 1^GHeading 2
+_
+Key^GValue
+_
+Key^GValue
+_
+Key^GSomething in \fBbold\fR.
+.TE
 
 .SH "SEE ALSO"
 ls(1), rm(1), format(1M)

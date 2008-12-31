@@ -28,11 +28,12 @@ class Main {
     }
 
     /**
-     * Just an example javadoc comment.
+     * Just an 'example' javadoc comment.
      *
-     * See <filename.java>, or http://www.example.com/file.html
-     * 
-     * @param argv The parameter list
+     * See <filename.java>, &\/<> http://www.example.com/file.html
+     * or </path/to/Filename.java>
+     *
+     * @param argv The parameter \\ list
      * @throws java.lang.Exception
      */
     @Deprecated
@@ -40,7 +41,7 @@ class Main {
         Main main = new Main(argv);
         main.dump();
         if (false) {
-            throw new Exception("Some string");
+            throw new Exception("Some \\ 'string'");
         }
         int result = 123 + 456;
         System.exit(result);

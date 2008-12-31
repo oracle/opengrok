@@ -10,7 +10,8 @@
   Text inside tag.
   <tag1 short="true"/>
   <tag2 attr="val" attr2="val2">This &lt;tag&gt; is cool &amp; pretty.</tag2>
-  Some text in the end again.
+  Some text in the end again here..
+  <a href="mailto:username@example.com">mail username</a>
   Some strange characters: Æ Ø Å æ ø å 
      <![CDATA[
       <html>
