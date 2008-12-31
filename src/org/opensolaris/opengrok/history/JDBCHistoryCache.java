@@ -47,15 +47,13 @@ class JDBCHistoryCache implements HistoryCache {
     // Many of the tables contain columns with identical names and types,
     // so there will be duplicate strings. Suppress warning from PMD.
     @SuppressWarnings("PMD.AvoidDuplicateLiterals")
-    private static void initDB(Connection c) throws SQLException {
+    private static void initDB(Connection c, Statement s) throws SQLException {
         // TODO Store a database version which is incremented on each
         // format change. When a version change is detected, drop the database
         // (or possibly in the future: add some upgrade code that makes the
         // necessary changes between versions). For now, just check if the
         // tables exist, and create them if necessary.
 
-        c.setAutoCommit(false);
-        Statement s = c.createStatement();
         DatabaseMetaData dmd = c.getMetaData();
 
         if (!tableExists(dmd, SCHEMA, "REPOSITORIES")) {
@@ -105,9 +103,6 @@ class JDBCHistoryCache implements HistoryCache {
                     "ON DELETE CASCADE, " +
                     "UNIQUE (FILE, CHANGESET))");
         }
-
-        s.close();
-        c.commit();
     }
 
     private static boolean tableExists(
@@ -115,9 +110,11 @@ class JDBCHistoryCache implements HistoryCache {
             throws SQLException {
         ResultSet rs = dmd.getTables(
                 null, schema, table, new String[] {"TABLE"});
-        boolean exists = rs.next();
-        rs.close();
-        return exists;
+        try {
+            return rs.next();
+        } finally {
+            rs.close();
+        }
     }
 
     public void initialize() throws HistoryException {
@@ -125,7 +122,14 @@ class JDBCHistoryCache implements HistoryCache {
             connectionManager = new ConnectionManager();
             final Connection conn = connectionManager.getConnection();
             try {
-                initDB(conn);
+                conn.setAutoCommit(false);
+                final Statement stmt = conn.createStatement();
+                try {
+                    initDB(conn, stmt);
+                } finally {
+                    stmt.close();
+                }
+                conn.commit();
             } finally {
                 connectionManager.releaseConnection(conn);
             }
@@ -152,10 +156,12 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(1, toUnixPath(repository.getDirectoryName()));
                 ps.setString(2, getRelativePath(file, repository));
                 ResultSet rs = ps.executeQuery();
-                boolean found = rs.next();
-                rs.close();
-                ps.close();
-                return found;
+                try {
+                    return rs.next();
+                } finally {
+                    rs.close();
+                    ps.close();
+                }
             } finally {
                 connectionManager.releaseConnection(conn);
             }
@@ -215,17 +221,20 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(1, reposPath);
                 ps.setString(2, filePath);
                 ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    String revision = rs.getString(1);
-                    String author = rs.getString(2);
-                    Timestamp time = rs.getTimestamp(3);
-                    String message = rs.getString(4);
-                    HistoryEntry entry = new HistoryEntry(
-                            revision, time, author, message, true);
-                    entries.add(entry);
+                try {
+                    while (rs.next()) {
+                        String revision = rs.getString(1);
+                        String author = rs.getString(2);
+                        Timestamp time = rs.getTimestamp(3);
+                        String message = rs.getString(4);
+                        HistoryEntry entry = new HistoryEntry(
+                                revision, time, author, message, true);
+                        entries.add(entry);
+                    }
+                } finally {
+                    rs.close();
+                    ps.close();
                 }
-                rs.close();
-                ps.close();
             } finally {
                 connectionManager.releaseConnection(conn);
             }
@@ -252,14 +261,17 @@ class JDBCHistoryCache implements HistoryCache {
                 PreparedStatement reposIdPS = conn.prepareStatement(
                         "SELECT ID FROM REPOSITORIES WHERE PATH = ?");
                 reposIdPS.setString(1, reposPath);
-                ResultSet reposIdRS = reposIdPS.executeQuery();
 
+                ResultSet reposIdRS = reposIdPS.executeQuery();
                 Integer reposId = null;
-                if (reposIdRS.next()) {
-                    reposId = reposIdRS.getInt(1);
+                try {
+                    if (reposIdRS.next()) {
+                        reposId = reposIdRS.getInt(1);
+                    }
+                } finally {
+                    reposIdRS.close();
+                    reposIdPS.close();
                 }
-                reposIdRS.close();
-                reposIdPS.close();
 
                 if (reposId == null) {
                     PreparedStatement insert = conn.prepareStatement(
@@ -282,41 +294,40 @@ class JDBCHistoryCache implements HistoryCache {
                 fileInfoPS.setInt(1, reposId);
                 fileInfoPS.setString(2, filePath);
                 ResultSet fileInfoRS = fileInfoPS.executeQuery();
+                Integer fileId = null;
+                try {
+                    if (fileInfoRS.next()) {
+                        fileId = fileInfoRS.getInt(1);
+                        long lastMod = fileInfoRS.getTimestamp(2).getTime();
+                        if (file.lastModified() == lastMod) {
+                            // already cached and up to date,
+                            // nothing more to do
+                            return;
+                        } else {
+                            fileInfoRS.updateTimestamp(2,
+                                    new Timestamp(file.lastModified()));
+                            fileInfoRS.updateRow();
+                        }
+                    }
+                } finally {
+                    fileInfoRS.close();
+                    fileInfoPS.close();
+                }
 
-                final int fileId;
-                final long lastMod;
-                final boolean isCached;
-                if (fileInfoRS.next()) {
-                    isCached = true;
-                    fileId = fileInfoRS.getInt(1);
-                    lastMod = fileInfoRS.getTimestamp(2).getTime();
-                    fileInfoRS.updateTimestamp(2,
-                            new Timestamp(file.lastModified()));
-                    fileInfoRS.updateRow();
-                    // should only get one result
-                    assert !fileInfoRS.next();
-                } else {
-                    isCached = false;
-                    lastMod = file.lastModified();
+                if (fileId == null) {
                     PreparedStatement insert = conn.prepareStatement(
                             "INSERT INTO FILES(PATH, REPOSITORY, " +
                             "LAST_MODIFICATION) VALUES (?,?,?)",
                             Statement.RETURN_GENERATED_KEYS);
                     insert.setString(1, filePath);
                     insert.setInt(2, reposId);
-                    insert.setTimestamp(3, new Timestamp(lastMod));
+                    insert.setTimestamp(3, new Timestamp(file.lastModified()));
                     insert.executeUpdate();
                     fileId = getGeneratedIntKey(insert);
                     insert.close();
                 }
-                fileInfoRS.close();
-                fileInfoPS.close();
 
-                if (isCached && lastMod == file.lastModified()) {
-                    // We have already cached the file with this timestamp,
-                    // so there's nothing to do.
-                    return;
-                }
+                assert fileId != null;
 
                 Map<String, Integer> authors =
                         getAuthors(conn, history, reposId);
@@ -381,10 +392,13 @@ class JDBCHistoryCache implements HistoryCache {
 
             check.setString(2, author);
             ResultSet rs = check.executeQuery();
-            if (rs.next()) {
-                id = rs.getInt(1);
+            try {
+                if (rs.next()) {
+                    id = rs.getInt(1);
+                }
+            } finally {
+                rs.close();
             }
-            rs.close();
 
             if (id == null) {
                 if (insert == null) {
@@ -433,10 +447,13 @@ class JDBCHistoryCache implements HistoryCache {
         findChangeset.setString(2, entry.getRevision());
         ResultSet changeset = findChangeset.executeQuery();
         Integer changesetId = null;
-        if (changeset.next()) {
-            changesetId = changeset.getInt(1);
+        try {
+            if (changeset.next()) {
+                changesetId = changeset.getInt(1);
+            }
+        } finally {
+            changeset.close();
         }
-        changeset.close();
 
         if (changesetId == null) {
             addChangeset.setInt(1, reposId);
