@@ -309,7 +309,10 @@ class JDBCHistoryCache implements HistoryCache {
 
                 fileInfoPS.setInt(1, reposId);
                 fileInfoPS.setString(2, filePath);
-                ResultSet fileInfoRS = fileInfoPS.executeQuery();
+
+                // PMD says we're not checking the return value from next(),
+                // but we are, so suppress the warning.
+                ResultSet fileInfoRS = fileInfoPS.executeQuery(); // NOPMD
                 Integer fileId = null;
                 try {
                     if (fileInfoRS.next()) {
