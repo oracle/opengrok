@@ -120,7 +120,9 @@ class JDBCHistoryCache implements HistoryCache {
     public void initialize() throws HistoryException {
         try {
             connectionManager = new ConnectionManager();
-            final Connection conn = connectionManager.getConnection();
+            // We always close the connection, but PMD doesn't understand it,
+            // so suppress the warning.
+            final Connection conn = connectionManager.getConnection(); // NOPMD
             try {
                 conn.setAutoCommit(false);
                 final Statement stmt = conn.createStatement();
@@ -147,7 +149,9 @@ class JDBCHistoryCache implements HistoryCache {
         // for the top-level directory for each project.
         assert file.isDirectory();
         try {
-            final Connection conn = connectionManager.getConnection();
+            // We always close the connection, but PMD doesn't understand it,
+            // so suppress the warning.
+            final Connection conn = connectionManager.getConnection(); // NOPMD
             try {
                 PreparedStatement ps = conn.prepareStatement(
                         "SELECT F.ID FROM FILES F, REPOSITORIES R " +
@@ -211,7 +215,9 @@ class JDBCHistoryCache implements HistoryCache {
         final String reposPath = toUnixPath(repository.getDirectoryName());
         final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         try {
-            final Connection conn = connectionManager.getConnection();
+            // We always close the connection, but PMD doesn't understand it,
+            // so suppress the warning.
+            final Connection conn = connectionManager.getConnection(); // NOPMD
             try {
                 PreparedStatement ps = conn.prepareStatement(
                         "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE " +
@@ -260,7 +266,9 @@ class JDBCHistoryCache implements HistoryCache {
         try {
             final String filePath = getRelativePath(file, repository);
             final String reposPath = toUnixPath(repository.getDirectoryName());
-            final Connection conn = connectionManager.getConnection();
+            // We always close the connection, but PMD doesn't understand it,
+            // so suppress the warning.
+            final Connection conn = connectionManager.getConnection(); // NOPMD
             try {
                 conn.setAutoCommit(false);
 
