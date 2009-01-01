@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include </parth/to/header.h>
+#include </path/to/header.h>
 #include <header.h>
 
 class MyClass {
