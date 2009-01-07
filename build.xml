@@ -471,16 +471,23 @@ Use is subject to license terms.
         <arg value="create"/>
         <arg value="${build.test.reposroots}/svn"/>
       </exec>
+      
+      <!-- need absolute path for svn url -->
+      <pathconvert property="test.svn.url">
+        <map from="" to="file://"/>
+        <path location="${build.test.reposroots}/svn"/>
+      </pathconvert>
+
       <exec executable="svn" failifexecutionfails="false">
         <arg value="import"/>
         <arg value="${test.sources}"/>
-        <arg value="file://${build.test.reposroots}/svn"/>
+        <arg value="${test.svn.url}"/>
         <arg value="-m"/>
         <arg value="Initial import"/>
       </exec>
       <exec executable="svn" failifexecutionfails="false">
         <arg value="checkout"/>
-        <arg value="file://${build.test.reposroots}/svn"/>
+        <arg value="${test.svn.url}"/>
         <arg value="${test.svn}"/>
       </exec>
     </target>
