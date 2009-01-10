@@ -28,15 +28,28 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
+/**
+ * Class that manages the pool of database connections.
+ */
 public class ConnectionManager {
 
     private static final String EMBEDDED_DRIVER =
             "org.apache.derby.jdbc.EmbeddedDriver";
 
+    /** The JDBC URL to use when creating new connections. */
     private final String url;
 
+    /** A list of connections not currently in use. */
+    private final ConcurrentLinkedQueue<ConnectionResource> connections =
+            new ConcurrentLinkedQueue<ConnectionResource>();
+
+    /**
+     * Create a new {@code ConnectionManager} instance.
+     * @throws ClassNotFoundException if the JDBC driver class cannot be found
+     */
     public ConnectionManager() throws ClassNotFoundException {
         Class.forName(EMBEDDED_DRIVER);
 
@@ -47,12 +60,42 @@ public class ConnectionManager {
         url = "jdbc:derby:" + databasePath + ";create=true";
     }
 
-    public Connection getConnection() throws SQLException {
+    /**
+     * Open a new connection to the database.
+     *
+     * @return a {@code Connection} object
+     * @throws SQLException if a database error occurs
+     */
+    Connection openConnection() throws SQLException {
         return DriverManager.getConnection(url);
     }
 
-    public void releaseConnection(Connection conn) throws SQLException {
-        conn.rollback();
-        conn.close();
+    /**
+     * Get a {@code ConnectionResource} object from the pool, or create a
+     * new one if the pool is empty. Callers should make sure that the object
+     * is returned to the pool by calling
+     * {@link #releaseConnection(ConnectionResource)} after they are finished
+     * with it.
+     *
+     * @return a {@code ConnectionResource} object
+     * @throws SQLException if a database error occurs
+     */
+    public ConnectionResource getConnectionResource() throws SQLException {
+        ConnectionResource cr = connections.poll();
+        if (cr == null) {
+            cr = new ConnectionResource(this);
+        }
+        return cr;
+    }
+
+    /**
+     * Return a {@code ConnectionResource} back to the pool.
+     *
+     * @param cr
+     * @throws SQLException
+     */
+    public void releaseConnection(ConnectionResource cr) throws SQLException {
+        cr.rollback();
+        connections.offer(cr);
     }
 }
