@@ -78,5 +78,9 @@ PKGSEND add link path=/usr/opengrok/bin/lib/ant.jar target=/usr/share/lib/ant/an
 PKGSEND add link path=/usr/opengrok/bin/lib/jmxremote_optional.jar target=/usr/share/lib/jdmk/jmxremote_optional.jar
 PKGSEND add depend fmri=pkg:/SUNWjdmk-base type=require
 PKGSEND add depend fmri=pkg:/SUNWant type=require
+PKGSEND add depend fmri=pkg:/SUNWj6rt type=require
+PKGSEND add depend fmri=pkg:/SUNWtcat type=require
+PKGSEND add file dist/source.war mode=0444 owner=root group=bin path=/var/apache/tomcat/webapps/source.war
+
 PKGSEND add set name=description value="OpenGrok - Wicked fast source browser"
 PKGSEND close
