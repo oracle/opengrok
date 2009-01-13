@@ -86,9 +86,10 @@ public class ConnectionResource {
     public PreparedStatement getStatement(StatementCreator creator)
             throws SQLException {
         PreparedStatement ps = statements.get(creator);
-        if (ps == null || ps.isClosed()) {
-            // TODO: Log if isClosed() since callers should normally not
-            // close the statements themselves.
+        if (ps == null) {
+            // Should also check isClosed() here, but it's only available in
+            // JDK 6, so we can't. Anyway, callers shouldn't close the
+            // statements they get from this method.
             ps = creator.create(conn);
             statements.put(creator, ps);
         }
