@@ -25,15 +25,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Adds access to to a Razor Repository
@@ -295,113 +290,6 @@ public class RazorRepository extends Repository {
     @Override
     void update() {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    void createCache(HistoryCache cache) throws HistoryException {
-        try {
-            createCacheHelper(cache);
-        } catch (IOException ioe) {
-            throw new HistoryException(ioe);
-        } catch (InstantiationException ie) {
-            throw new HistoryException(ie);
-        } catch (IllegalAccessException iae) {
-            throw new HistoryException(iae);
-        }
-    }
-
-    /**
-     * Helper method which performs the work for
-     * {@link #createCache(HistoryCache)} without converting checked
-     * exceptions to {@code HistoryException}
-     *
-     * @throws HistoryException if accessing the history cache fails
-     * @throws IOException if an I/O error occurs
-     * @throws InstantiationException if the parser class cannot be instatiated
-     * @throws IllegalAccessException if the method does not have access to
-     * the constructor of the parser class
-     */
-    private void createCacheHelper(HistoryCache cache)
-            throws HistoryException, IOException,
-            InstantiationException, IllegalAccessException
-    {
-
-        Class<? extends HistoryParser> dhpClass = getDirectoryHistoryParser();
-        Class<? extends HistoryParser> fhpClass = getHistoryParser();
-
-        // If we don't have a directory parser, we can't create the cache
-        // this way. Just give up and return.
-        if (dhpClass == null) {
-            return;
-        }
-
-        HistoryParser directoryHistoryParser = dhpClass.newInstance();
-        HistoryParser fileHistoryParser = null;
-
-        if (fhpClass != null) {
-            fileHistoryParser = fhpClass.newInstance();
-        }
-
-        File directory = new File(getDirectoryName());
-
-        History history = directoryHistoryParser.parse(directory, this);
-
-        if (history != null && history.getHistoryEntries() != null) {
-            HashMap<String, List<HistoryEntry>> map =
-                    new HashMap<String, List<HistoryEntry>>();
-
-            for (HistoryEntry e : history.getHistoryEntries()) {
-                createCacheForEntry(e, map, fileHistoryParser);
-            }
-
-            File root = RuntimeEnvironment.getInstance().getSourceRootFile();
-            for (Map.Entry<String, List<HistoryEntry>> e : map.entrySet()) {
-                for (HistoryEntry ent : e.getValue()) {
-                    ent.strip();
-                }
-                History hist = new History();
-                hist.setHistoryEntries(e.getValue());
-                File file = new File(root, e.getKey());
-                if (!file.isDirectory()) {
-                    cache.store(hist, file, this);
-                }
-            }
-        }
-    }
-
-    private void createCacheForEntry(
-            HistoryEntry e, Map<String, List<HistoryEntry>> map,
-            HistoryParser fileHistoryParser) throws HistoryException
-    {
-        for (String fileName : e.getFiles()) {
-            List<HistoryEntry> list = map.get(fileName);
-            if (list == null) {
-                list = getHistoryEntries(fileHistoryParser, fileName);
-                if (list == null) {
-                    list = new ArrayList<HistoryEntry>();
-                }
-                map.put(fileName, list);
-            }
-
-            if (e.getDate() != null) {
-                list.add(e);
-            }
-        }
-    }
-
-    private List<HistoryEntry> getHistoryEntries(
-            HistoryParser fileHistoryParser, String fileName)
-            throws HistoryException
-    {
-        List<HistoryEntry> list = null;
-        if (fileHistoryParser != null) {
-            File file = getSourceNameForOpenGrokName(fileName);
-            History fileHistory = fileHistoryParser.parse(file, this);
-            if (fileHistory != null) {
-                list = fileHistory.getHistoryEntries();
-            }
-        }
-        return list;
     }
 
     private File pathTranslation(File file, String intermediateElements, String filePrefix, String fileSuffix) throws IOException {
