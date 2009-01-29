@@ -74,17 +74,7 @@ public final class WebappListener implements ServletContextListener {
 
         String config = context.getInitParameter("CONFIGURATION");
         if (config == null) {
-            String value;
-
-            if ((value = getFileName(context, "SRC_ROOT", true)) == null) {
-                return;
-            }
-            env.setSourceRoot(value);
-
-            if ((value = getFileName(context, "DATA_ROOT", true)) == null) {
-                return;
-            }
-            env.setDataRoot(value);
+            OpenGrokLogger.getLogger().severe("CONFIGURATION section missing in web.xml");
         } else {
             try {
                 env.readConfiguration(new File(config));

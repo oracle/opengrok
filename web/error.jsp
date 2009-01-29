@@ -31,10 +31,10 @@ environment.register();
 String rawSource = environment.getSourceRootPath();
 String configError = "";
 if ("".equals(rawSource)) {
-    configError = "SRC_ROOT parameter has not been configured in web.xml! Please configure your webapp.";
+    configError = "CONFIGURATION parameter has not been configured in web.xml! Please configure your webapp.";
 } else {
     if (environment.getSourceRootFile() == null || !environment.getSourceRootFile().isDirectory()) {
-        configError = "SRC_ROOT parameter in web.xml does not point to a valid directory! Please configure your webapp.";
+        configError = "The source root specified in your configuration does not point to a valid directory! Please configure your webapp.";
     }
 }
 String pageTitle = "Error!";
