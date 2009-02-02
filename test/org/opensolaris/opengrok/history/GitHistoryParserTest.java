@@ -23,8 +23,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
