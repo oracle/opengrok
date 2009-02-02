@@ -45,7 +45,7 @@ public class RazorHistoryParser implements HistoryParser {
     private final static SimpleDateFormat DATE_TIME_FORMAT =
             new SimpleDateFormat("yyyy/MM/dd,hh:mm:ss", Locale.US);
     private final static Pattern ACTION_TYPE_PATTERN =
-            Pattern.compile("^(INTRODUCE|CHECK-OUT|CHECK-IN|UN-CHECK-OUT|RENAME|EDIT_PROPS|ALTERED|CHECK-POINT|REVERT|INTRODUCE_AND_EDIT|BRANCH|BUMP|MERGE-CHECK-IN|PROMOTE)\\s+(.*)\\s+([\\.0-9]+)?\\s+(.*)\\s+(.*)\\s*$");
+            Pattern.compile("^(INTRODUCE|CHECK-OUT|CHECK-IN|UN-CHECK-OUT|RENAME|EDIT_PROPS|ALTERED|CHECK-POINT|REVERT|INTRODUCE_AND_EDIT|BRANCH|BUMP|MERGE-CHECK-IN|PROMOTE)\\s+(\\S*)\\s+([\\.0-9]+)?\\s+(\\S*)\\s+(\\S*)\\s*$");
     private final static Pattern ADDITIONAL_INFO_PATTERN =
             Pattern.compile("^##(TITLE|NOTES|AUDIT|ISSUE):\\s+(.*)\\s*$");
     private final static boolean DUMP_HISTORY_ENTRY_ADDITIONS = false;
@@ -85,7 +85,7 @@ public class RazorHistoryParser implements HistoryParser {
     }
 
     @SuppressWarnings("PMD.ConfusingTernary")
-    private History parseContents(BufferedReader contents) throws IOException {
+    protected History parseContents(BufferedReader contents) throws IOException {
         String line;
 
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
