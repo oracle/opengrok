@@ -1,4 +1,3 @@
-
 Setting up the sample Razor repository
 ======================================
 
@@ -18,7 +17,9 @@ We therefore have two quite separate directory trees required for a
 simulation of a Razor repository, the centralised repository and the
 user level checkout of the current state of the repository. As such,
 two archives have been provided representing these two directory
-trees.
+trees. (Note: In the OpenGrok source tree, these archives have been
+extracted to the subdirectories Repository and UserSandbox, located in
+the same directory as this README file.)
 
 The repository archive contains the Razor Universe 'OpenGrokSample' and
 the Razor Group 'Simple', which itself contains several sub-directories
@@ -46,13 +47,12 @@ sub-directory of $SRC_ROOT.
   Repository Setup
 
 	cd ${REPO_ROOT}
-	tar fxv ${ARCHIVES}/SampleRazorRepository.tar.gz
+	cp -rp ${ARCHIVES}/Repository .
 
   OpenGrok Source Setup
 
 	cd ${SRC_ROOT}
-	tar fxv ${ARCHIVES}/SampleRazorUserSandbox.tar.gz
-	mv UserSandbox Razor-Simple
+	cp -rp ${ARCHIVES}/UserSandbox Razor-Simple
 
   Link each top-level directory checkout to its group directory in the
 central repository (as discussed in RazorRepository.java)
@@ -74,7 +74,6 @@ in the OpenGrok web interface.
 
 
 Assumptions:
-  - The 'tar' command was assumed to be a recent GNU tar implementation
   - The 'OpenGrok' command from the OpenGrok distribution has been
     configured for the local OpenGrok installation
 
