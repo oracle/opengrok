@@ -1,0 +1,125 @@
+# ------------------------------------------------------
+#
+# File:	Options
+#
+# Options file template: "@(#) 1.5 03/06/12 08:18:15 Options"
+#
+# ------------------------------------------------------
+#
+# Options provide a mechanism for different types of control
+# on operations within the Razor tools.  The format of the
+# entries are:
+#
+#	<option> <TAB> <setting>
+#
+# where:
+# 	<option> is any of the options listed below
+#
+#	<setting> is any one of the listed settings
+#		  for a given option
+#
+# All settings are included for each option.  The uncommented
+# setting is the default value.
+#
+#
+# The file 'Options' may exist at the universe level
+# ($RAZOR_UNIVERSE_DIR/Tables) and/or the group level.  The
+# options at the group level have the highest priority. 
+#
+#
+##############################################################################
+
+
+##############################################################################
+#
+# FileCheckIn - file control (versions)
+#   Options for handling unchanged files upon file control
+#   checkin.  Only one setting is valid.  The default
+#   setting is AllowNoChange.
+#
+#   setting:
+#	AllowNoChange 	- file will be checked in regardless of
+#			  whether it has actually been changed
+#
+#	WarnIfNoChange 	- if a file has not been changed, the
+#			  user will be given an opportunity
+#			  to decide whether or not to complete 
+#			  the checkin
+#
+#	MustChange	- a file must have been changed in order 
+#			  to be checked in
+#
+#FileCheckIn	AllowNoChange
+#FileCheckIn	WarnIfNoChange
+FileCheckIn	MustChange
+#
+#
+##############################################################################
+#
+# IssueText1 - issues
+# IssueText2 - issues
+#   Options for controlling the modes of accessing the two
+#   text areas on issue form.  Only one setting is valid 
+#   per text area.  The default setting is Writeable.
+#
+#   setting:
+#	Writeable	- users may enter data anywhere in
+#			  the specified text area
+#
+#	Readonly	- users may only view the specified
+#			  text area
+#
+#	AppendOnly	- users may only append data in the 
+#			  specified text area
+#
+#IssueText1	Writeable
+IssueText1	AppendOnly
+#IssueText1	Readonly
+#
+#IssueText2	Writeable
+IssueText2	AppendOnly
+#IssueText2	Readonly
+#
+#
+##############################################################################
+#
+# makeBackupOnRemoveAttach - issues
+#  Option specifying the behaviour when a given issue's file attachment(s) is
+#  removed.  By default, a backup copy of the file attachment will be preserved.
+#  The backup copy will be named as follows: 
+#  $RAZOR_UNIVERSE_DIR/DOMAIN_01/<issue group>/Attachments/<issue name>/rz.<timestamp>.<attachment name>
+#
+#  setting:
+#    TRUE - Each time a file attachment is removed by the user a backup copy
+#           of the file attachment will be created by the Razor server.
+#
+#    FALSE - When a file attachment is removed by the user a backup copy
+#            of the file attachment will NOT be created by the Razor server.
+#
+makeBackupOnRemoveAttach	TRUE
+#makeBackupOnRemoveAttach	FALSE
+#
+##############################################################################
+#
+# copyFileAttachForIssuesBeforeScripts - issues
+#  Option specifying the behaviour when the 'Before' scripts associated with
+#  the issue_create.apply and issue_modify.apply buttons are executed.  By 
+#  default, only a proposed change log listing the file attachments being
+#  added and/or removed will be made available for use bythe before scripts. 
+#  The default behaviour may be changed so that temporary copies of all proposed
+#  file attachments being added to the issue are made available for use by
+#  the before scripts.
+#
+#  setting:
+#    TRUE - Temporary copies of all file attachments being added will be made
+#           available for use by the before scripts.
+#
+#    FALSE - Only a proposed change log listing the file attachments being
+#            added and/or removed will be made available for use by the before
+#            scripts.
+#
+copyFileAttachForIssuesBeforeScripts	FALSE
+#copyFileAttachForIssuesBeforeScripts	TRUE
+#
+##############################################################################
+#

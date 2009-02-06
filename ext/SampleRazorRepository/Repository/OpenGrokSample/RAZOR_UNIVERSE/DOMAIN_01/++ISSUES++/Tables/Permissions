@@ -1,0 +1,162 @@
+#
+# This file defines who can move files from one state to another
+# within the Issues program as well as who if anyone will be notifed
+# when such an event occurs.  An '*' in the WHO column means that anyone
+# can perform that operation.  The user 'nobody' means nobody can move
+# it from the FROM state to the TO state.  To allow all users from a
+# specific Unix group to perform a state transition, precede the group 
+# name with a plus (+) symbol in the WHO column.  If the Roles file
+# has been defined, roles defined there can also be referenced by
+# preceding the role name with a % character.  For email, any group
+# names contained in the role definition will be ignored.
+#
+# The FROM and TO defined are all possible combinations STATE pairs.  The
+# pattern below should be pretty straight forward to replicate if you are
+# using different states than those defined by default.  The states
+# defined are directly related to the STATES attribute in the
+# Attributes file for the Issues group.
+#
+#
+# NOTE:  The entries in each column are TAB separated.  Groupings of
+# user names are comma separated.
+#
+#
+# Below is the line in the Attributes file which defined which
+# states we have:
+#
+# STATES	Submitted, No-Action, Active, Completed, Closed
+#
+# FROM		--TO--		-WHO-		-EMAIL-
+
+Submitted	Submitted	*
+Submitted	Approved	%MANAGERS
+Submitted	Open		nobody
+Submitted	Completed	nobody
+Submitted	Built		nobody
+Submitted	Verified	nobody
+Submitted	Accepted	nobody
+Submitted	Released	nobody
+Submitted	Closed		nobody
+Submitted	Rejected	%MANAGERS
+Submitted	Failed		nobody
+
+Approved	Submitted	nobody
+Approved	Approved	%MANAGERS
+Approved	Open		*
+Approved	Completed	nobody
+Approved	Built		nobody
+Approved	Verified	nobody
+Approved	Accepted	nobody
+Approved	Released	nobody
+Approved	Closed		nobody
+Approved	Rejected	%MANAGERS
+Approved	Failed		nobody
+
+Open		Submitted	nobody
+Open		Approved	%MANAGERS
+Open		Open		*
+Open		Completed	*
+Open		Built		nobody
+Open		Verified	nobody
+Open		Accepted	nobody
+Open		Released	nobody
+Open		Closed		nobody
+Open		Rejected	nobody
+Open		Failed		nobody
+
+Completed	Submitted	nobody
+Completed	Approved	nobody
+Completed	Open		%CM
+Completed	Completed	%CM
+Completed	Built		%CM
+Completed	Verified	nobody
+Completed	Accepted	nobody
+Completed	Released	nobody
+Completed	Closed		%CM,%MANAGERS
+Completed	Rejected	nobody
+Completed	Failed		nobody
+
+Built		Submitted	nobody
+Built		Approved	nobody
+Built		Open		%SYS_TEST_MGR
+Built		Completed	nobody
+Built		Built		%SYS_TEST_MGR,%CM
+Built		Verified	%SYS_TEST_MGR
+Built		Accepted	nobody
+Built		Released	nobody
+Built		Closed		%CM,%MANAGERS
+Built		Rejected	nobody
+Built		Failed		%SYS_TEST_MGR
+
+Verified	Submitted	nobody
+Verified	Approved	nobody
+Verified	Open		%PRODUCTION_MGR
+Verified	Completed	nobody
+Verified	Built		nobody
+Verified	Verified	%PRODUCTION_MGR
+Verified	Accepted	%PRODUCTION_MGR
+Verified	Released	nobody
+Verified	Closed		%CM,%MANAGERS
+Verified	Rejected	nobody
+Verified	Failed		%PRODUCTION_MGR
+
+Accepted	Submitted	nobody
+Accepted	Approved	nobody
+Accepted	Open		nobody
+Accepted	Completed	nobody
+Accepted	Built		nobody
+Accepted	Verified	nobody
+Accepted	Accepted	nobody
+Accepted	Released	%DEPLOYMENT_MGR
+Accepted	Closed		%DEPLOYMENT_MGR,%CM,%MANAGERS
+Accepted	Rejected	nobody
+Accepted	Failed		%DEPLOYMENT_MGR
+
+Released	Submitted	nobody
+Released	Approved	nobody
+Released	Open		nobody
+Released	Completed	nobody
+Released	Built		nobody
+Released	Verified	nobody
+Released	Accepted	nobody
+Released	Released	%DEPLOYMENT_MGR
+Released	Closed		%DEPLOYMENT_MGR,%CM,%MANAGERS
+Released	Rejected	nobody
+Released	Failed		%DEPLOYMENT_MGR
+
+Closed		Submitted	nobody
+Closed		Approved	nobody
+Closed		Open		nobody
+Closed		Completed	nobody
+Closed		Built		nobody
+Closed		Verified	nobody
+Closed		Accepted	nobody
+Closed		Released	nobody
+Closed		Closed		%CM
+Closed		Rejected	nobody
+Closed		Failed		nobody
+
+Rejected	Submitted	nobody
+Rejected	Approved	nobody
+Rejected	Open		nobody
+Rejected	Completed	nobody
+Rejected	Built		nobody
+Rejected	Verified	nobody
+Rejected	Accepted	nobody
+Rejected	Released	nobody
+Rejected	Closed		nobody
+Rejected	Rejected	%CM
+Rejected	Failed		nobody
+				
+Failed		Submitted	nobody
+Failed		Approved	nobody
+Failed		Open		nobody
+Failed		Completed	nobody
+Failed		Built		nobody
+Failed		Verified	nobody
+Failed		Accepted	nobody
+Failed		Released	nobody
+Failed		Closed		nobody
+Failed		Rejected	nobody
+Failed		Failed		%CM
+				

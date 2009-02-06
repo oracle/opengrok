@@ -1,0 +1,42 @@
+#
+# 
+# This file will configure scripts to be run before and after the
+# execution of a command in the Versions tool.  The format of this
+# file is a tab separated list of button name, script to execute
+# before performing the operation, and script to execute after
+# performing the operation.  A 'n/a' in a field indicates no script
+# should be executed.
+# 
+# The button names are defined as panel.button.  For example, if you
+# want to attach a script to the 'Apply' button on the 'Introduce' 
+# popup panel, the button definition would be 'introduce.apply'. 
+# 
+# Either or both fields may be designated as 'n/a'. 
+#
+# Also note that the indicated scripts MUST reside on each user's 
+# search path.
+#
+#
+# NOTE:  The exit.apply entry only honors the BEFORE
+#        script and ignores the AFTER script.
+#
+#
+#Button			Before	After
+#
+branch.apply		/pkgs/share/razor/scripts/MustHaveIssuesAtState	n/a
+checkin.apply		/pkgs/share/razor/scripts/MustHaveIssuesAtState	n/a
+checkout.apply		/pkgs/share/razor/scripts/MustHaveIssuesAtState	n/a
+double_click		n/a									n/a
+file_props.apply	n/a									n/a
+introduce.apply		/pkgs/share/razor/scripts/MustHaveIssuesAtState	n/a
+merge_checkin.apply	n/a									n/a
+new_folder		n/a									n/a
+promote.apply		n/a									n/a
+readonly.apply		n/a									n/a
+remove			n/a									n/a
+remove_folder		n/a									n/a
+rename			n/a									n/a
+terminate		n/a									n/a
+uncheckout		n/a									n/a
+utilities.revert	n/a									n/a
+exit.apply		n/a									n/a

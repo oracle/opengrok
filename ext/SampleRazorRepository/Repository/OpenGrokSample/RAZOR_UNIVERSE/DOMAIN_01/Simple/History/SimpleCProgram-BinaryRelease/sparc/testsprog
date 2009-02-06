@@ -1,0 +1,24 @@
+INTRODUCE	pbray	1.1	Active	2009/01/22,09:47:28
+##TITLE:  Introduced file
+##ISSUE:	I...-..3     ++ISSUES++
+
+CHECK-OUT	pbray	1.1	Active	2009/01/22,09:51:39
+##TITLE:  Built with gmake CC=gcc CFLAGS='-std=c99 -Wall -O2'
+##NOTES: CHECKED OUT TO: /fileserver/sandbox/pbray/OpenGrokSampleRepository
+##AUDIT: pbray 2009/01/22,09:51:39 1.1 Active CHECKED OUT TO: /fileserver/sandbox/pbray/OpenGrokSampleRepository/SimpleCProgram-BinaryRelease/sparc/testsprog 
+#The initial release was built with debugging support.
+#This is not appropriate for the production environment.
+##ISSUE:	I...-..5     ++ISSUES++
+
+EDIT_PROPS	pbray	1.1	Active	2009/01/22,09:51:47
+##TITLE:  Edit file properties
+
+CHECK-IN	pbray	1.2	Active	2009/01/22,09:51:57
+##TITLE:  Built with gmake CC=gcc CFLAGS='-std=c99 -Wall -O2'
+##NOTES: CHECKED IN FROM: /fileserver/sandbox/pbray/OpenGrokSampleRepository
+##AUDIT: pbray 2009/01/22,09:51:57 1.2 Active CHECKED IN FROM: /fileserver/sandbox/pbray/OpenGrokSampleRepository/SimpleCProgram-BinaryRelease/sparc/testsprog 
+#The initial release was built with debugging support.
+#This is not appropriate for the production environment.
+#
+##ISSUE:	I...-..5     ++ISSUES++
+

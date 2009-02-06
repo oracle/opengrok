@@ -1,0 +1,22 @@
+#
+# Local ++ISSUES++ Roles - Override Universe Wide Definitions
+#
+# See Also
+#   ../../Tables/Roles for the Universe Wide Definitions
+#   Razor User Manual - pp 207-208
+#
+# $Id: Roles,v 1.1 2005-06-06 02:54:48+00 software Exp $
+#
+
+RAZOR_ADMIN	razoradm
+
+MANAGERS        pbray
+
+CM              pbray
+
+SYS_TEST_MGR    pbray
+
+PRODUCTION_MGR  pbray
+
+DEPLOYMENT_MGR  pbray
+

@@ -1,0 +1,7 @@
+#
+# This file contains a list of users who are allowed to perform
+# promotions in the Versions tool.  The format is one user name
+# per line.  An asterisk indicates that anybody can perform a 
+# promotion.
+
+*

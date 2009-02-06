@@ -1,0 +1,151 @@
+head	1.5;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.5
+date	2009.01.22.09.44.49;	author pbray;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2009.01.22.09.44.45;	author pbray;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2009.01.22.09.40.00;	author pbray;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2009.01.22.09.39.57;	author pbray;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2009.01.22.09.39.53;	author pbray;	state Exp;
+branches;
+next	;
+
+
+desc
+@Introduced
+@
+
+
+1.5
+log
+@Nada
+@
+text
+@LATEST_VERSION	TBD
+LAST_MODIFIED	1232617489	2009/01/22,09:44:49
+TIME_CHECKED_IN	1232617485	2009/01/22,09:44:45
+CHECKSUM	0
+FILE_ID		000000000
+IS_A_BRANCH	0
+IS_TERMINATED	0
+CHECKED_OUT	0
+BINARY		0
+NUM_BRANCHES	0
+NUM_STATES	9
+NUM_FILEATTACH	0
+EXPAND_KEYWORDS	0
+STATE		Submitted		2009/01/22,09:39:53 pbray
+STATE		Approved		2009/01/22,09:39:57 pbray
+STATE		Open		2009/01/22,09:40:00 pbray
+STATE		Completed		2009/01/22,09:44:44 pbray
+STATE		Built		(skipped)
+STATE		Verified		(skipped)
+STATE		Accepted		(skipped)
+STATE		Released		(skipped)
+STATE		Closed		2009/01/22,09:44:49 pbray
+ATTRIBUTE	Title		SimpleCProgram does not compi0le with gcc
+ATTRIBUTE	Type		BugReport
+ATTRIBUTE	Priority		Urgent
+ATTRIBUTE	Spacecraft		
+ATTRIBUTE	Responsibility		pbray
+ATTRIBUTE	CrossReferences		
+ATTRIBUTE	ReleaseInfo		
+#=#=#=#=#=#=#=#=#=# --- PROBLEM! --- #=#=#=#=#=#=#=#=#=#
+>> gmake CC=gcc CFLAGS=-g 
+gcc -g   -c main.c
+main.c: In function 'main':
+main.c:6: error: 'for' loop initial declaration used outside C99 mode
+gmake: *** [main.o] Error 1
+#=#=#=#=#=#=#=#=#=# --- SOLUTION --- #=#=#=#=#=#=#=#=#=#
+No change required, use -std=c99 arguments to gcc
+
+>> gmake CC=gcc CFLAGS='-std=c99 -Wall -g' 
+gcc -std=c99 -Wall -g   -c main.c
+gcc -std=c99 -Wall -g    -o testsprog main.o
+@
+
+
+1.4
+log
+@Nada
+@
+text
+@d2 2
+a3 2
+LAST_MODIFIED	1232617484	2009/01/22,09:44:44
+TIME_CHECKED_IN	1232617200	2009/01/22,09:40:00
+d11 1
+a11 1
+NUM_STATES	4
+d18 5
+@
+
+
+1.3
+log
+@Nada
+@
+text
+@d2 2
+a3 2
+LAST_MODIFIED	1232617200	2009/01/22,09:40:00
+TIME_CHECKED_IN	1232617197	2009/01/22,09:39:57
+d11 1
+a11 1
+NUM_STATES	3
+d17 1
+d32 5
+@
+
+
+1.2
+log
+@Nada
+@
+text
+@d2 2
+a3 2
+LAST_MODIFIED	1232617197	2009/01/22,09:39:57
+TIME_CHECKED_IN	1232617194	2009/01/22,09:39:54
+d11 1
+a11 1
+NUM_STATES	2
+d16 1
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d1 3
+a3 3
+LATEST_VERSION	1.1
+LAST_MODIFIED	1232617156	2009/01/22,09:39:16
+TIME_CHECKED_IN	-1	1969/12/31,23:59:59
+d11 1
+a11 1
+NUM_STATES	1
+d15 1
+@

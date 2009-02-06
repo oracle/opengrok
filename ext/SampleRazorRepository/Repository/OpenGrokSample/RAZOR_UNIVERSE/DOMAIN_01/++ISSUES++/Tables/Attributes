@@ -1,0 +1,103 @@
+# 
+# Standard Razor data file rules apply.  Empty lines and those beginning
+# with a hash ('#') are ignored.  
+# 
+# All other lines must contain at least three (3) TAB SEPARATED fields.
+# If there are fewer than 3 fields, the program errors out.  Some attribute
+# types allow/require a 4th TAB SEPARATED field.  The first field denotes
+# the type of attribute as follows:
+# 
+#    CHECK_BOX
+#    LABEL       (issues only)
+#    ONE_OF_MANY
+#    ONE_OF_MANY_LIST
+#    ONE_OF_MANY_STACK
+#    STATE
+#    TEXT_FIELD
+#    TEXT_PANE   (issues only)
+#    TIME_STAMP  (issues only)
+#    X_OF_MANY
+#    X_OF_MANY_LIST
+# 
+# The second field is the label to be associated with the item.  Since
+# this is a tab delimited file, it is possible for the label to contain
+# embedded spaces, however, we STRONGLY discourage this.  The Razor programs
+# will append a colon (':') to the text when displaying it on the screen.
+# 
+# The third field is required, however, the syntax differs for each of the
+# possible attribute types.  Please refer to the manual, Chapter 8,  
+# "The Attributes file" for details.
+# 
+# For ONE_OF_MANY, ONE_OF_MANY_LIST, ONE_OF_MANY_STACK, X_OF_MANY and
+# X_OF_MANY_LIST, an optional 4th field defines the number of rows to
+# display the attributes.
+# 
+# The TEXT_PANE attribute is used to label the two scrolling text areas
+# at the bottom of the issue form.  The attribute name MUST be of the
+# format 'TEXTn' where 'n' is 1 for the first text area, 2 for the second.
+# The third field in the TEXT_PANE definition is the string used to
+# label the text area.
+#
+# For TIME_STAMP, the third field is the time format and may be in a
+# form as specified in the man pages for strftime.  An example of a time
+# format is the string %m/%d/%Y.  This format will display the date in
+# the format MM/DD/CCYY.  Please note that conversion characters 
+# (i.e. "%m") must be separated by white space or a non-alphanumeric
+# character (i.e. "/").
+# 
+# The fourth field of the TIME_STAMP attribute is a comma-separated list
+# of flags of the following format:
+# 
+#	I=<nn>		-Defines an increment in days to be added to the
+#			 current date.
+#	P=[Y|N]		-Defines if this field should automatically be
+#			 loaded when a new Issue is created.  The default
+#			 is N.
+#	R=[Y|N]		-Defines if entry of the field is required.  The
+#			 default is N.
+#	U=[Y|N]		-Defines if the field should automatically be
+#			 updated when an Issue is transitioned to the
+#			 modify state.  The default is N.
+#	W=[Y|N]		-Defines if the field is writable.  The default
+#			 is Y.
+# 
+# NOTE:  For the issues program, the first field MUST be a TEXT_FIELD.
+# This text field is shown on the main display as the title for the
+# issue.
+# 
+# CHANGING ATTRIBUTES:  After you have created some issues, you may
+# find that you would like to change or add attributes.  To ADD an
+# attribute or add a value (including a state) to an existing attribute, 
+# take the database server down ("razor down") and edit this file.  
+# To RENAME or REMOVE an existing attribute and/or an attribute value
+# (including a state), take the database server down and use one of
+# the following scripts that may be found in $RAZOR_HOME/scripts:
+#
+#	rz_rename_attr, rz_rename_attr_val 
+#	rz_remove_attr, rz_remove_attr_val
+#
+# These scripts will update the Attributes file and the existing
+# database.  Refer to the manual for details.
+#
+#
+
+TEXT_FIELD		Title		120
+
+ONE_OF_MANY_STACK	Type		BugReport, EnhancementRequest, ProcessRequest, Other
+
+ONE_OF_MANY_STACK	Priority	Informational, Low, Medium, High, Urgent
+
+X_OF_MANY		Spacecraft	file:SpacecraftList	1
+
+STATE			State		Submitted, Approved, Open, Completed, Built, Verified, Accepted, Released, Closed, Rejected, Failed
+
+ONE_OF_MANY_STACK	Responsibility	file:SpecialUserList, file:LocalUserList	40
+
+TEXT_FIELD		CrossReferences	120
+
+TEXT_FIELD		ReleaseInfo	120
+
+TEXT_PANE		TEXT1		Description
+
+TEXT_PANE		TEXT2		Actions Taken
+

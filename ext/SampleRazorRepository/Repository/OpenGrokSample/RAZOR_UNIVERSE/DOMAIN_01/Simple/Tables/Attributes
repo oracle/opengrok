@@ -1,0 +1,54 @@
+#
+# This file offers descriptions of the types of attributes that relate
+# to files within this 'group'.
+#
+# Standard RAZOR data file rules apply.  Empty lines and those beginning
+# with a hash ('#') are ignored.  These may be sprinkled liberally
+# throughout the file.
+# 
+# All other lines must contain at least three (3) TAB SEPARATED fields.
+# If there are fewer than 3 fields, the program errors out.  Some attribute
+# types allow/require a 4th TAB SEPARATED field.  The first field denotes
+# the type of attribute item, and it must be one of the following...
+#
+#    CHECK_BOX
+#    TEXT_FIELD
+#    ONE_OF_MANY
+#    ONE_OF_MANY_STACK
+#    X_OF_MANY
+#    STATE
+#    ONE_OF_MANY_LIST
+#    X_OF_MANY_LIST
+#
+# The second field is the label you want associated with the item.  Since
+# this is a tab delimited file, it is possible for the label to contain
+# embedded spaces, but we strongly discourage this.  The RAZOR programs 
+# will append a colon (':') to the text when displaying it on screen.
+#
+# The third field is required, but the syntax differs for each of the
+# possible attribute types.  Please refer to the documentation for
+# details.
+#
+# For ONE_OF_MANY, ONE_OF_MANY_STACK, X_OF_MANY, ONE_OF_MANY_LIST and
+# X_OF_MANY_LIST an optional 4th field defines the number of rows to
+# display the Attributes.
+#
+# CHANGING ATTRIBUTES:  After you have placed files under version
+# control, you may find that you would like to change or add attributes.  
+# To ADD an attribute or add a value (including a state) to an existing  
+# attribute, take the database server down ("razor down") and edit this   
+# file.  To RENAME or REMOVE an existing attribute and/or an attribute 
+# value (including a state), take the database server down and use one 
+# of the following scripts that may be found in $RAZOR_HOME/scripts:
+#
+#	rz_rename_attr, rz_rename_attr_val 
+#	rz_remove_attr, rz_remove_attr_val
+#
+# These scripts will update the Attributes file and the existing
+# database.  Refer to the manual for details.
+#
+#
+ONE_OF_MANY_STACK	FileType		-Unassigned-, Documentation, Proc, Page, Pixmap, Screen, Code, Script, Support, Config, Data, BinaryData, Archive, VendorSupplied
+STATE			Blessing		Active, Stable, Tested, Released
+TEXT_FIELD		LastReviewedVersion	16
+

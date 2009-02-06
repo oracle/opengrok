@@ -1,0 +1,80 @@
+
+Setting up the sample Razor repository
+======================================
+
+Razor is a centralised Source Code Management and Issue Tracking
+System, whose basics are described in more detail in
+RazorRepository.java (which can be found in
+opengrok/src/org/opensolaris/opengrok/history directory).
+
+A normal OpenGrok user would extract a read-only checkout of the files
+and directories from Razor they wished OpenGrok to process using
+'threads' or 'versions' into $SRC_ROOT or a subdirectory of $SRC_ROOT.
+They would then be required to create a symlink to from the base
+directory of the checkout to the relevant group directory inside the
+Razor repository file structure as documented in RazorRepository.java.
+
+We therefore have two quite separate directory trees required for a
+simulation of a Razor repository, the centralised repository and the
+user level checkout of the current state of the repository. As such,
+two archives have been provided representing these two directory
+trees.
+
+The repository archive contains the Razor Universe 'OpenGrokSample' and
+the Razor Group 'Simple', which itself contains several sub-directories
+of user controlled files. These files should be extracted to location
+outside of SRC_ROOT so they are not processed by OpenGrok directly.
+
+The user sandbox archive contains the a read-only checkout of all the
+head revision of the files is in the Razor group 'Simple'. These files
+should be extracted under $SRC_ROOT or a sub-directory of it.
+
+The following example should correctly construct a sample file set that
+when processed by OpenGrok will result in the relevant version and
+history information being extracted extracted from the Razor repository
+file structure. It assumes that the variables REPO_ROOT, SRC_ROOT and
+ARCHIVES are set correctly for your environment and that we wish all
+the files in the Razor group 'Simple' to be extracted in a
+sub-directory of $SRC_ROOT.
+
+  Examples Variable Values
+
+	REPO_ROOT=/data
+	SRC_ROOT=/data/opengrok/src
+	ARCHIVES=/src/opengrok/RazorArchives
+
+  Repository Setup
+
+	cd ${REPO_ROOT}
+	tar fxv ${ARCHIVES}/SampleRazorRepository.tar.gz
+
+  OpenGrok Source Setup
+
+	cd ${SRC_ROOT}
+	tar fxv ${ARCHIVES}/SampleRazorUserSandbox.tar.gz
+	mv UserSandbox Razor-Simple
+
+  Link each top-level directory checkout to its group directory in the
+central repository (as discussed in RazorRepository.java)
+
+	cd Razor-Simple
+	cd SimpleCProgram
+	ln -s ${REPO_ROOT}/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple .razor
+	cd ..
+	cd SimpleCProgram-BinaryRelease
+	ln -s ${REPO_ROOT}/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple .razor
+	cd ${SRC_ROOT}
+
+  Ask OpenGrok to process the new addition
+
+	OpenGrok update
+
+  Verify the files have history and annotation information and can be differenced
+in the OpenGrok web interface.
+
+
+Assumptions:
+  - The 'tar' command was assumed to be a recent GNU tar implementation
+  - The 'OpenGrok' command from the OpenGrok distribution has been
+    configured for the local OpenGrok installation
+

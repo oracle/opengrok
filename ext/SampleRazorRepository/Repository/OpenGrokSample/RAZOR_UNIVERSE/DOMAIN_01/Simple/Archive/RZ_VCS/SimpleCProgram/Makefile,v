@@ -1,0 +1,49 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@# @;
+
+
+1.2
+date	2009.01.22.09.36.44;	author pbray;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2009.01.22.09.32.39;	author pbray;	state Exp;
+branches;
+next	;
+
+
+desc
+@Introduced
+@
+
+
+1.2
+log
+@Added a lint target
+@
+text
+@testprog: main.o
+	$(LINK.c) -o testsprog main.o
+
+main.o: main.c header.h
+	$(COMPILE.c) main.c
+
+clean:
+	$(RM) main.o testprog
+
+lint: main.c header.h
+	$(LINT) main.c
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d9 3
+@

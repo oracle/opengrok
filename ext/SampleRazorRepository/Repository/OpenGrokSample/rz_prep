@@ -1,0 +1,29 @@
+#
+# This script is intended to be 'source'd by users of the
+# Razor tool suite.
+
+#
+# Define the Razor environment:
+#
+
+setenv RAZOR_UNIVERSE_DIR	/repository/razor/razor_db/OpenGrokSample/RAZOR_UNIVERSE
+
+setenv RAZOR_LICENSE_DIR	/repository/razor/Razor_lm
+setenv RAZOR_HOME		/pkgs/Razor
+
+#
+# Remove old paths from path variable
+#
+
+if (${?RAZOR_PATHS}) then
+    set path = (`echo $path | /usr/ucb/sed "s? $RAZOR_PATHS??"`)
+endif
+
+
+#
+# Set up the path to the Razor tools.
+#
+
+setenv RAZOR_PATHS "$RAZOR_HOME/bin $RAZOR_UNIVERSE_DIR/Scripts $RAZOR_HOME/scripts"
+set path = ($path $RAZOR_PATHS)
+

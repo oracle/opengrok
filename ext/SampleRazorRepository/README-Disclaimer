@@ -1,0 +1,26 @@
+
+DISCLAIMER
+==========
+
+This submission is supplied without any WARRANTY (EXPRESSED or IMPLIED)
+and is intended in good faith to provide the OpenGrok community with a
+way to test the functionality of the Razor Repository support, which I
+have previously contributed to the OpenGrok project.
+
+THIS REPOSITORY IS IN NO WAY INTENDED FOR ANY RAZOR USER OR
+ADMINISTRATOR TO IMPORT OR IN ANY WAY ADD INTO ANY RAZOR SYSTEM. IT IS
+PROVIDED FOR THE SOLE PURPOSE OF TESTING RAZOR SUPPORT IN OPENGROK.
+
+As stated in the current implementation of Razor Repository support in
+OpenGrok, the Razor product is not required to allow the implementation
+to function correctly, only read-only access to the file structure of
+the repository.
+
+As documented in README-ArchiveCreation, the sample repository has
+been cleansed on vendor binaries and other files to reduce the size of
+the contribution and so as to not provided any files the vendor
+(Visible Systems Corporation) would reasonably consider their property.
+
+The files used to populate the sample Razor repository were extracted
+from the sample Mercurial repository (opengrok/testdata/repositories/mercurial)
+in the OpenGrok Repository.

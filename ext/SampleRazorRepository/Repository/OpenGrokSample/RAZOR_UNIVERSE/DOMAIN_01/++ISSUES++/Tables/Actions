@@ -1,0 +1,27 @@
+#
+# 
+# This file will configure scripts to be run before and
+# after the execution of a command in the Issues tool.  
+# The format of this file is a tab separated list of button name, 
+# script to execute before performing the operation, and script 
+# to execute after performing the operation.  A 'n/a' in a field 
+# indicates no script should be executed.
+# 
+# The button names are defined as panel.button.  For example, if  
+# you want to attach a script to the 'Apply' button on the 'Create' 
+# popup panel, the button definition would be 'create.apply'. 
+# 
+# Either or both fields may be designated as 'n/a'. 
+#
+# Also note that the indicated scripts MUST reside on each users 
+# search path.
+#
+# NOTE:  The preload entry only honors the BEFORE script and
+#        ignores the AFTER script.
+#
+#Button			Before	After
+#
+create.apply		n/a	n/a
+modify.apply		n/a	n/a
+remove			n/a	n/a
+preload			n/a	n/a

@@ -1,0 +1,41 @@
+#
+# This file contains a list of the bitmaps (glyphs) to use for a specific
+# ONE_OF_MANY, ONE_OF_MANY_STACK or STATE attribute on the main 
+# scrolling list.  There may be any number of bitmaps shown on each
+# line in the main scrolling list which will vary depending on the value
+# of a defined attribute.
+#
+# The format of the file is a tab separated list of attribute label,
+# attribute value and fullpath to bitmap in the form:
+#
+#	<Attr label>  <TAB>  <Attr value>  <TAB>  <fullpath to bitmap>
+#
+# If no bitmap is defined for a particular value, none will be shown 
+# and its place will be left blank.
+#
+# The ordering of the bitmaps on each line of the main display will be 
+# based on the ordering of the
+# <Attr label> values.  The first time a new <Attr label> is found in the
+# list, a place holder for all possible values is allocated.  Thus
+# defining the display order.  Therefore, the first <Attr label> defined
+# will have its bitmaps appear in column 1.  The second new <Attr label>
+# defined will have all of its bitmaps appear in column 2 and so on.
+#
+# NOTE:  The '#' symbol is a comment delimiter.  
+#
+#
+
+FileType	-Unassigned-	/pkgs/share/razor/glyphs/FileType/Unassigned.xbm
+FileType	Documentation	/pkgs/share/razor/glyphs/FileType/Documentation.xbm
+FileType	Proc		/pkgs/share/razor/glyphs/FileType/Proc.xbm
+FileType	Page		/pkgs/share/razor/glyphs/FileType/Page.xbm
+FileType	Pixmap		/pkgs/share/razor/glyphs/FileType/Pixmap.xbm
+FileType	Screen		/pkgs/share/razor/glyphs/FileType/Screen.xbm
+FileType	Code		/pkgs/share/razor/glyphs/FileType/Code.xbm
+FileType	Script		/pkgs/share/razor/glyphs/FileType/Script.xbm
+FileType	Support		/pkgs/share/razor/glyphs/FileType/Support.xbm
+FileType	Config		/pkgs/share/razor/glyphs/FileType/Config.xbm
+FileType	Data		/pkgs/share/razor/glyphs/FileType/Data.xbm
+FileType	BinaryData	/pkgs/share/razor/glyphs/FileType/BinaryData.xbm
+FileType	Archive		/pkgs/share/razor/glyphs/FileType/Archive.xbm
+FileType	VendorSupplied	/pkgs/share/razor/glyphs/FileType/VendorSupplied.xbm

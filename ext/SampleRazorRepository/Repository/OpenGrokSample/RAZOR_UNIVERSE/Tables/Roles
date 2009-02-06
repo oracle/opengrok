@@ -1,0 +1,54 @@
+#
+# File:  Roles
+#
+#
+# The purpose of this file is to define roles that may be referenced
+# in the Access_list and the Permissions file.  A special role,
+# RAZOR_ADMIN, has certain "super user" type privileges.
+#
+# Refer to Chapter 8 of the manual for a description of controls
+# supported via the file 'Access_list'.  Refer to Chapter 8, the
+# section entitled "Configuring the issues program", the subsection
+# entitled "Issue STATEs (permissions)" for details regarding the
+# use of the file 'Permissions'.  
+#
+# The format of this file is role name (no spaces allowed in names)
+# followed by one or more identifiers separated by spaces or commas.
+# The identifiers may be any collection of user id, group id and
+# other role id.  When referencing a group id, the group name must
+# be preceded by a '+' character.  A role must be preceded by a '%'.
+# When referencing other roles, the role must have been previously
+# defined in the file.
+#
+# If the file $RAZOR_UNIVERSE_DIR/Tables/Roles exists, the defined
+# roles will apply for all groups in the database.  If the file
+# $RAZOR_UNIVERSE/DOMAIN_01/<group>/Tables/Roles exists, it will 
+# take precedence over the $RAZOR_UNIVERSE_DIR/Tables/Roles file.
+#
+# EXAMPLES:
+#
+# "Razor Administrator/special user" role:
+# The identifiers associated with RAZOR_ADMIN will be allowed to
+# check-in or uncheck-out files that have been checked out by any
+# other user.
+#RAZOR_ADMIN	nobody	
+#
+# Define a role CM whose users are mark, joel, deb and anyone in the
+# cmteam Unix group:
+#CM	mike, joe, ann, +cmteam
+# 
+# Define a role SW whose members are filmer and pedone as well
+# as all members of the CM role:
+#SW	sam, jack, %CM
+#
+# Define a role that has a large number of members:
+#LEAD	jones, smith, brown, martin
+#LEAD	phil, fred, steve, jane
+#LEAD	donna, mary
+#
+# These lists will be concatenated as follows:
+#LEAD = jones, smith, brown, martin, phil, fred, steve, jane, donna, mary
+#
+
+RAZOR_ADMIN	razoradm
+CM		pbray

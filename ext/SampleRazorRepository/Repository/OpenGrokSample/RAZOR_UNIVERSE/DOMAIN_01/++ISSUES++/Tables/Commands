@@ -1,0 +1,14 @@
+#
+# This file defines which commands will be attached to the issues
+# 'Commands' pulldown menu.  Each line contains the label which
+# will appear in the menu and the associated command to execute.
+# 
+#    <label>  <tab>  <command name>
+# 
+# The label may have embedded spaces since it is separated from the command
+# name by a tab.  
+#
+# The special <label> SEPARATOR may be used to add a visual separator
+# between commands.
+#
+

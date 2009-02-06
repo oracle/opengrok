@@ -1,0 +1,30 @@
+#
+# This file defines which report generation scripts will be attached to
+# the issues 'Reports' pulldown menu.  The format of this file is a
+# tab-separated list of the label which will appear in the menu, the
+# associated shell script to execute and an options field.  The third
+# field is optional.
+#
+# 
+#    <label>  <tab>  <script_name>  [<tab> <options>]
+# 
+# The label may include imbedded spaces since it is separated from the 
+# script_name by a tab.  
+#
+# The field "options" is a comma-separated list which may be any
+# combination of the following strings: name, print.  The "name"
+# option modifies the method of invocation of the script (refer to 
+# the Razor manual, Chapter 9, "Writing report scripts for issues").
+# The "print" option directs the resulting report to be automatically
+# printed as defined via the user's print command (refer to the
+# Razor manual, Chapter 3, "Printing issues").
+#
+# The special tag SEPARATOR may be used to add a separator between
+# report entries.
+#
+
+Summarize those selected		rz_issue_summarize		name
+Short summary of those selected		rz_issue_summarize_short	name
+Titles for those selected		rz_issue_display_titles		name
+Status of those selected		rz_issue_status.rpt		name
+Priority vs. Impact Matrix		rz_issue_tally			name

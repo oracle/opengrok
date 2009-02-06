@@ -1,0 +1,67 @@
+
+HOW THE ARCHIVES WERE CREATED
+=============================
+
+Create an area to build the final sample repository for OpenGrok Distribution
+
+	mkdir -p Extracted/Repository
+
+Extract a copy of the actual Razor repository. The archive was made by 
+using GNU tar from the razor_db directory of the whole OpenGrokSample
+Universe, with a few local symlinks to customised configuration dereferenced
+and stored as files in the archive
+
+	cd Extracted/Repository
+	gtar fxv ../../ActualRazorRepository-OpenGrokSample.tar.gz
+
+Remove Bulky Non-Essential (for OpenGrok) Files and Executables.
+Also remove any vendor supplied files in the repository which they
+may be able to claim copyright or moral ownership of.
+
+	rm -rf OpenGrokSample/RAZOR_UNIVERSE/templates
+	rm -rf OpenGrokSample/RAZOR_UNIVERSE/bin 
+	rm -rf OpenGrokSample/RAZOR_UNIVERSE/Scripts
+	rm -rf OpenGrokSample/RAZOR_UNIVERSE/Report_definitions 
+
+	rm OpenGrokSample/RAZOR_UNIVERSE/Xdefaults
+	rm OpenGrokSample/RAZOR_UNIVERSE/Wdefaults
+	rm OpenGrokSample/RAZOR_UNIVERSE/rz_startup
+	rm OpenGrokSample/RAZOR_UNIVERSE/rz_new_database.info
+	rm OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple##Threads/Tables/Thread_script_after_remote_template.sh
+	rm OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple##Threads/Tables/Thread_script_after_template.sh
+	rm OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple##Threads/Tables/Thread_script_remote_template.sh
+	rm OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple##Threads/Tables/Thread_script_template.sh
+	rm OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/++PROJECT++/Tables/Project_script_after_template.sh
+	rm OpenGrokSample/rz_prep.sh
+
+Edit files to remove site specific usernames and data to protect privacy.
+I have left my username and a few generic pieces of data to ensure the
+validity of the repository.
+
+	vi OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/++ISSUES++/Tables/LocalUserList
+	vi OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/++ISSUES++/Tables/Roles
+	vi OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/++ISSUES++/Tables/SpacecraftList
+	vi OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/++ISSUES++/Tables/SpecialUserList
+	vi OpenGrokSample/RAZOR_UNIVERSE/Tables/Roles 
+
+Create the repository archive
+
+	cd ..
+	gtar fcv ../SampleRazorRepository.tar Repository
+	gzip -9v ../SampleRazorRepository.tar
+
+Create the User Sandbox
+
+	mkdir UserSandbox
+
+Use Razor's versions GUI, to extract all sample files into the directory UserSandbox.
+
+	cd UserSandbox
+	versions &
+
+Create the user sandbox archive
+
+	cd ..
+	gtar fcv ../SampleRazorUserSandbox.tar UserSandbox
+	gzip -9v ../SampleRazorUserSandbox.tar
+

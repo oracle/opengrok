@@ -1,0 +1,58 @@
+head	1.2;
+access;
+symbols;
+locks; strict;
+comment	@ * @;
+
+
+1.2
+date	2009.01.22.09.36.41;	author pbray;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2009.01.22.09.32.38;	author pbray;	state Exp;
+branches;
+next	;
+
+
+desc
+@Introduced
+@
+
+
+1.2
+log
+@Corrected Lint Errors
+@
+text
+@#include "header.h"
+
+int main(int argc, char **argv) {
+
+   (void)printf("Program %s executed with the following arguments:\n", argv[0]);
+   for (int i = 1; i < argc; ++i) {
+      (void)printf("[%s] ", argv[i]);
+   }
+   (void)printf("\n");
+
+   return EXIT_SUCCESS;
+}
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d5 1
+a5 1
+   printf("Program %s executed with the following arguments:\n", argv[0]);
+d7 1
+a7 1
+      printf("[%s] ", argv[i]);
+d9 1
+a9 1
+   printf("\n");
+@

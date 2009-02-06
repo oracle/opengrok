@@ -1,0 +1,51 @@
+#
+# This file defines which field should be made insensitive (grayed out)
+# when the attribute/value/who value matches.
+#
+# The fields are TAB separated and are defined as:
+#	ATTRIBUTE	VALUE	WHO	INSENSITIVE
+#
+# The WHO field can be any combination of users, Unix groups and roles.
+# Unix group entries must be preceded by a '+' and role names by a '%'.
+# To match users who are not a member of an entry, precede the entry
+# with the "not" symbol '!'.
+#
+
+#ATTRIBUTE	VALUE		WHO		INSENSITIVE
+
+State		Approved	!%CM		Title
+State		Open		!%CM		Title
+State		Completed	!%CM		Title
+State		Built		!%CM		Title
+State		Verified	!%CM		Title
+State		Accepted	!%CM		Title
+State		Released	!%CM		Title
+State		Closed		!%CM		Title
+State		Rejected	!%CM		Title
+State		Failed		!%CM		Title
+
+State		Approved	!%CM		Type
+State		Open		!%CM		Type
+State		Completed	!%CM		Type
+State		Built		!%CM		Type
+State		Verified	!%CM		Type
+State		Accepted	!%CM		Type
+State		Released	!%CM		Type
+State		Closed		!%CM		Type
+State		Rejected	!%CM		Type
+State		Failed		!%CM		Type
+
+State		Approved	!%CM		Priority
+State		Open		!%CM		Priority
+State		Completed	!%CM		Priority
+State		Built		!%CM		Priority
+State		Verified	!%CM		Priority
+State		Accepted	!%CM		Priority
+State		Released	!%CM		Priority
+State		Closed		!%CM		Priority
+State		Rejected	!%CM		Priority
+State		Failed		!%CM		Priority
+
+State		Closed		!%CM		ReleaseInfo
+State		Rejected	!%CM		ReleaseInfo
+State		Failed		!%CM		ReleaseInfo

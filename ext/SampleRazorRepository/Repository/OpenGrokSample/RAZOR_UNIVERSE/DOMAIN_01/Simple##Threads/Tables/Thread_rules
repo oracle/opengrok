@@ -1,0 +1,38 @@
+#
+#
+# This file contains a definition of directories to populate when
+# using the 'Generate script' or 'Extract thread' buttons in the Threads
+# tool.  
+#
+# The format mimics a simple case statement.  The case key is based
+# on a ONE_OF_MANY attribute label as defined in the Attributes (formerly 
+# File_attr_desc) file.  The 'case' statement is then used to define 
+# some or all of the possible values of the attribute.  The final 
+# entry on the 'case' line is the name of a directory to populate if a 
+# file has a match for the specified attribute value.  This
+# directory will be appended to the top level directory path defined
+# when running the tool.  
+#
+# Please note that not all values for the attribute must be represented,
+# however, a 'default' case must be present.
+#
+# Please refer to the Razor Users Manual for additional details. 
+#
+#
+
+#
+# Sample of setting paths based on Filetype.  By default these
+# are commented out.
+#
+#Filetype:
+#	case C:		src/#Filetype#
+#	case Header:	include
+#
+
+
+#
+# Put all files into the base directory specified by the user
+#
+
+default:		.
+

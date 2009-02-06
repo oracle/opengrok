@@ -1,0 +1,231 @@
+#
+# File:  Access_list
+#
+#
+# The Access_list controls who may perform operations within the Razor
+# tools.  Refer to Chapter 8 of the manual, "Controls", for details
+# regarding access controls. The format of the entries are:
+#
+#	<operation> <TAB> <who>
+#
+# where:
+#	<operation> is any one of the operations listed below
+#
+#	<who> is any combination of user name, group name and role
+#		user name is any valid user account
+#		group name is any valid user group
+#		role is any role defined in the file 'Roles'
+#
+# Operations may appear on multiple lines.
+#
+# In the definition of <who>, group name must be preceded by the
+# plus ("+") symbol and role must be preceded by the percent ("%")
+# symbol.  The symbol "!" may be used to negate an entry.
+#
+# The symbol "#" may be used to comment a line.
+#
+# For example, if you want only members of the CM role, those in the
+# razor group and joe, sally and bill to be able to introduce files,
+# the entry might look like this:  
+# 
+# INTRODUCE		%CM, +razor, joe
+# INTRODUCE		sally, bill
+#
+# In this example, two separate entries were created.  This access
+# control may have been created as one single line, five separate
+# lines or any combination of lines.
+#
+# To prevent anyone from performing a particular operation, you
+# may use a <who> setting of "nobody".  For example, to prevent
+# anyone from bumping the major version number when checking
+# a file in via the GUI or command line:
+#
+# FILE_BUMP		nobody
+#
+# To allow everyone the ability to perform a particular operation,
+# you may use a <who> setting of "*".  For example, to allow
+# anyone to view an issue:
+#
+# ISSUE_VIEW		*
+#
+#
+# To allow everyone the ability to modify a thread except the user
+# diane:
+#
+# THREAD_MODIFY		!diane
+#
+#
+#
+# The file 'Access_list' may appear in any group specific tables
+# directory ($RAZOR_UNIVERSE_DIR/DOMAIN_01/<group>/Tables) as well
+# as a database tables directory ($RAZOR_UNIVERSE_DIR/Tables).
+# Entries in the file 'Access_list' at the group level will
+# override the same entry at the universe level.  This allows
+# you to define a master list in $RAZOR_UNIVERSE_DIR/Tables and 
+# override a subset of these entries in a group specific Tables 
+# directory.
+#
+##############################################################################
+
+
+
+
+##############################################################################
+#
+# Users who can bring the database server down
+#
+
+RAZOR_DOWN		%RAZOR_ADMIN
+
+
+
+##############################################################################
+#
+# Users who can create/view their own reports.
+#
+
+USER_REPORTS		*
+
+
+##############################################################################
+#
+# File control operations...
+#
+
+BRANCH			*
+CHECKIN			*
+CHECKOUT		*
+FILE_PROPS		*
+INTRODUCE       	*
+MERGE			*
+MERGE_CHECKIN		*
+NEW_FOLDER		*
+PROMOTE			*
+READONLY		*
+REMOVE			*
+REMOVE_FOLDER		*
+RENAME			*
+REVERT			*
+TERMINATE		*
+UNCHECKOUT		*
+USER_SCRIPTS		nobody
+
+
+#
+# Bumping the major version number at checkin via command line
+#
+
+FILE_BUMP		*
+
+#
+# The commands pulldown in versions
+#
+
+FILE_COMMANDS		*
+
+#
+# Browsing a file
+#
+
+FILE_VIEW		*
+
+#
+# Reports operations...
+#
+
+FILE_REPORTS_MODIFY	*
+FILE_REPORTS_VIEW	*
+
+
+##############################################################################
+#
+# Threads operations...
+#
+
+THREAD_BUMP		*
+THREAD_CREATE		*
+THREAD_DUP		*
+THREAD_EXTRACT		*
+THREAD_MODIFY		*
+THREAD_VIEW		*
+
+#
+# The commands pulldown
+#
+
+THREAD_COMMANDS		*
+
+#
+# Reports operations...
+#
+
+THREAD_REPORTS_MODIFY	*
+THREAD_REPORTS_VIEW	*
+
+
+##############################################################################
+#
+# Project operations...
+#
+
+PROJECT_BUMP		*
+PROJECT_CREATE		*
+PROJECT_EXTRACT		*
+PROJECT_MODIFY		*
+PROJECT_VIEW		*
+
+#
+# The commands pulldown
+#
+
+PROJECT_COMMANDS	*
+
+#
+# Reports operations...
+#
+
+PROJECT_REPORTS_MODIFY	*
+PROJECT_REPORTS_VIEW	*
+
+##############################################################################
+#
+# Issues operations...
+#
+# NOTE:  E-mail entry of issues is done as Razor user 'daemon'. Verify that
+# $RAZOR_UNIVERSE_DIR/Tables/Access_list or
+# $RAZOR_UNIVERSE_DIR/DOMAIN_01/<group>/Tables/Access_list includes 
+# user 'daemon'in the 'ISSUE_CREATE' entry.
+
+ISSUE_CREATE		*
+ISSUE_MODIFY		*
+ISSUE_VIEW		*
+
+ISSUE_ADD_FILE_ATTACH		*
+ISSUE_REMOVE_FILE_ATTACH	%CM
+ISSUE_VIEW_FILE_ATTACH		*
+ISSUE_EXPORT_FILE_ATTACH	*
+ISSUE_VIEW_FILE_ATTACH_HISTORY	*
+
+#
+# The commands pulldown
+#
+
+ISSUE_COMMANDS		*
+
+#
+# The database pulldown
+#
+
+ISSUE_DATABASE		*
+
+#
+# Reports operations...
+#
+
+ISSUE_REPORTS_MODIFY	*
+ISSUE_REPORTS_VIEW	*
+
+##############################################################################
+
+
+METRIC_CENTER		*

@@ -1,0 +1,47 @@
+#
+#	-- THIS FILE IS FOR THE MOTIF VERSION OF RAZOR ONLY --
+#
+#
+# This file contains a list of the bitmaps (glyphs) to use for a specific
+# ONE_OF_MANY, ONE_OF_MANY_STACK or STATE attribute on the main 
+# scrolling list.  There may be any number of bitmaps shown on each
+# line in the main scrolling list which will vary depending on the value
+# of a defined attribute.
+#
+# The format of the file is a tab separated list of attribute label,
+# attribute value and fullpath to bitmap in the form:
+#
+#	<Attr label>  <TAB>  <Attr value>  <TAB>  <fullpath to bitmap>
+#
+# If no bitmap is defined for a particular value, none will be shown 
+# and its place will be left blank.
+#
+# The ordering of the bitmaps on each line of the main display will be 
+# based on the ordering of the
+# <Attr label> values.  The first time a new <Attr label> is found in the
+# list, a place holder for all possible values is allocated.  Thus
+# defining the display order.  Therefore, the first <Attr label> defined
+# will have its bitmaps appear in column 1.  The second new <Attr label>
+# defined will have all of its bitmaps appear in column 2 and so on.
+#
+# NOTE:  The '#' symbol is a comment delimiter.  
+#
+#
+
+State		Submitted	/pkgs/share/razor/glyphs/State/Submitted.xbm
+State		Approved	/pkgs/share/razor/glyphs/State/Approved.xbm
+State		Open		/pkgs/share/razor/glyphs/State/Open.xbm
+State		Completed	/pkgs/share/razor/glyphs/State/Completed.xbm
+State		Built		/pkgs/share/razor/glyphs/State/Built.xbm
+State		Verified	/pkgs/share/razor/glyphs/State/Verified.xbm
+State		Released	/pkgs/share/razor/glyphs/State/Released.xbm
+State		Accepted	/pkgs/share/razor/glyphs/State/Accepted.xbm
+State		Closed		/pkgs/share/razor/glyphs/State/Closed.xbm
+State		Rejected	/pkgs/share/razor/glyphs/State/Rejected.xbm
+State		Failed		/pkgs/share/razor/glyphs/State/Failed.xbm
+
+Priority	Informational	/pkgs/share/razor/glyphs/Priority/Informational.xbm
+Priority	Low		/pkgs/share/razor/glyphs/Priority/Low.xbm
+Priority	Medium		/pkgs/share/razor/glyphs/Priority/Medium.xbm
+Priority	High		/pkgs/share/razor/glyphs/Priority/High.xbm
+Priority	Urgent		/pkgs/share/razor/glyphs/Priority/Urgent.xbm
