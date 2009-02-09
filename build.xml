@@ -100,6 +100,7 @@ Use is subject to license terms.
     <property name="test.cvs" value="${test.repositories}/cvs"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
+    <property name="test.razor" value="${test.repositories}/razor"/>
 
     <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
 
@@ -436,6 +437,7 @@ Use is subject to license terms.
 
     <target name="-post-compile-test">
         <antcall target="-create-svn-repository"/>
+        <antcall target="-create-razor-repository"/>
         <!-- Change root in CVS test repository -->
         <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
         <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
@@ -492,6 +494,31 @@ Use is subject to license terms.
       </exec>
     </target>
     
+    <target name="-create-razor-repository">
+      <delete dir="${test.razor}"/>
+      <copy todir="${test.razor}/Razor-Simple">
+        <fileset dir="ext/SampleRazorRepository/UserSandbox"/>
+      </copy>
+      <copy todir="${test.razor}/Razor-Simple/SimpleCProgram/.razor">
+        <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
+      </copy>
+
+      <!--
+          The support for binaries in Razor repositories is not fully
+          functional, so the next copy target is commented out for now.
+        -->
+
+      <!--copy todir="${test.razor}/Razor-Simple/SimpleCProgram-BinaryRelease/.razor">
+        <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
+      </copy-->
+
+    </target>
+
+    <!-- clean up after tests -->
+    <target name="-post-test-run">
+      <delete dir="${test.razor}"/>
+    </target>
+
     <target name="emma-report" description="Analyze" depends="-check_emma">
         <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
         <emma enabled="true" >

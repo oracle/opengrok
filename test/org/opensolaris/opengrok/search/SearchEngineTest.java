@@ -174,7 +174,7 @@ public class SearchEngineTest {
         instance.setSymbol("printf");
         instance.setFile("main.c");
         noHits = instance.search();
-        assertEquals(7, noHits);
+        assertEquals(8, noHits);
         hits.clear();
         instance.more(0, noHits, hits);
         for (Hit hit : hits) {
@@ -184,7 +184,7 @@ public class SearchEngineTest {
 
         instance.setFile("main.c OR Makefile");
         noHits = instance.search();
-        assertEquals(7, noHits);
+        assertEquals(8, noHits);
 
         instance = new SearchEngine();
         instance.setFreetext("arguments");
@@ -198,7 +198,7 @@ public class SearchEngineTest {
                fail("got an incorrect match: " + hit.getLine());
             }
         }
-        assertEquals(7, noHits);
+        assertEquals(8, noHits);
 
         instance = new SearchEngine();
         instance.setDefinition("main");
@@ -212,6 +212,6 @@ public class SearchEngineTest {
                fail("got an incorrect match: " + hit.getLine());
             }
         }
-        assertEquals(7, noHits);
+        assertEquals(8, noHits);
     }
 }
