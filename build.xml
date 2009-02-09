@@ -459,10 +459,6 @@ Use is subject to license terms.
                 excludes="mercurial/hg/**, mercurial/hgignore"
                 update="false"
                 defaultexcludes="no"/>
-                
-          <delete dir="${test.hg}/.hg"/>
-          <delete file="${test.hg}/.hgignore"/>
-          <delete dir="${test.svn}"/>
     </target>
 
     <target name="-create-svn-repository">
@@ -516,6 +512,9 @@ Use is subject to license terms.
 
     <!-- clean up after tests -->
     <target name="-post-test-run">
+      <delete dir="${test.hg}/.hg"/>
+      <delete file="${test.hg}/.hgignore"/>
+      <delete dir="${test.svn}"/>
       <delete dir="${test.razor}"/>
     </target>
 
