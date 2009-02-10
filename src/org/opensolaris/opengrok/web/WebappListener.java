@@ -42,32 +42,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public final class WebappListener implements ServletContextListener {
 
-    private String getFileName(final ServletContext context, final String variable, final boolean directory) {
-        String value = context.getInitParameter(variable);
-        if (value == null) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "OpenGrok: configuration error. " + variable + " not specified in web.xml");
-            return null;
-        }
-        File file = new File(value);
-        if (!file.exists()) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "OpenGrok: " + variable + " configuration error. " + value + " does not exist.");
-            return null;
-        }
-
-        if (directory && !file.isDirectory()) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "OpenGrok: " + variable + " configuration error. " + value + " is not a directory.");
-            return null;
-        }
-
-        String can = null;
-        try {
-            can = file.getCanonicalPath();
-        } catch (IOException ex) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get canonical path: ", ex);
-        }
-        return can;
-    }
-
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
