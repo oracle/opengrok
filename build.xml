@@ -516,6 +516,7 @@ Use is subject to license terms.
       <delete file="${test.hg}/.hgignore"/>
       <delete dir="${test.svn}"/>
       <delete dir="${test.razor}"/>
+      <delete file="${test.cvs.repo}/CVS/Root"/>
     </target>
 
     <target name="emma-report" description="Analyze" depends="-check_emma">
