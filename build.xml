@@ -98,6 +98,8 @@ Use is subject to license terms.
     <property name="test.repositories" value="testdata/repositories"/>
     <property name="test.sources" value="testdata/sources"/>
     <property name="test.cvs" value="${test.repositories}/cvs"/>
+    <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
+    <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
@@ -203,6 +205,7 @@ Use is subject to license terms.
         <delete dir="${gensrcdir}"/>
         <delete file="${manifest.file}"/>
         <delete dir="${coverage.dir}"/>
+        <antcall target="-delete-generated-repository-files"/>
     </target>
 
     <!--
@@ -439,8 +442,6 @@ Use is subject to license terms.
         <antcall target="-create-svn-repository"/>
         <antcall target="-create-razor-repository"/>
         <!-- Change root in CVS test repository -->
-        <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
-        <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
         <!-- Strange indentation in line two levels below to get newline correctly -->
         <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${user.dir}/${test.cvs.root}/
 </concat>
@@ -459,6 +460,8 @@ Use is subject to license terms.
                 excludes="mercurial/hg/**, mercurial/hgignore"
                 update="false"
                 defaultexcludes="no"/>
+
+        <antcall target="-delete-generated-repository-files"/>
     </target>
 
     <target name="-create-svn-repository">
@@ -510,8 +513,8 @@ Use is subject to license terms.
 
     </target>
 
-    <!-- clean up after tests -->
-    <target name="-post-test-run">
+    <!-- clean up generated test repositories -->
+    <target name="-delete-generated-repository-files">
       <delete dir="${test.hg}/.hg"/>
       <delete file="${test.hg}/.hgignore"/>
       <delete dir="${test.svn}"/>
