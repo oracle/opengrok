@@ -59,7 +59,7 @@ Use is subject to license terms.
                     <method_credential user="noaccess" group="noaccess" />
                 </method_context>
             </exec_method>
-            <exec_method type="method" name="stop" exec="/lib/svc/method/opengrok start" timeout_seconds="60" >
+            <exec_method type="method" name="stop" exec="/lib/svc/method/opengrok stop  %{restarter/contract}" timeout_seconds="60" >
                 <method_context>
                     <method_credential user="noaccess" group="noaccess" />
                 </method_context>
