@@ -70,7 +70,6 @@ class JDBCHistoryCache implements HistoryCache {
                     "PATH VARCHAR(32672) NOT NULL, " +
                     "REPOSITORY INT NOT NULL REFERENCES REPOSITORIES " +
                     "ON DELETE CASCADE, " +
-                    "LAST_MODIFICATION TIMESTAMP NOT NULL, " +
                     "UNIQUE (REPOSITORY, PATH))");
         }
 
@@ -257,129 +256,13 @@ class JDBCHistoryCache implements HistoryCache {
     private static InsertQuery INSERT_REPOSITORY = new InsertQuery(
             "INSERT INTO REPOSITORIES(PATH) VALUES ?");
 
-    private static PreparedQuery GET_MODIFIED_TIME = new PreparedQuery(
-            "SELECT ID, LAST_MODIFICATION FROM FILES " +
-            "WHERE REPOSITORY = ? AND PATH = ?",
-            ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-
-    private static InsertQuery INSERT_FILE = new InsertQuery(
-            "INSERT INTO FILES(PATH, REPOSITORY, " +
-            "LAST_MODIFICATION) VALUES (?,?,?)");
-
-    private static PreparedQuery DELETE_FILECHANGE = new PreparedQuery(
-            "DELETE FROM FILECHANGES WHERE FILE = ?");
-
-    //
-    private static PreparedQuery GET_CHANGESET_ID = new PreparedQuery(
-            "SELECT ID FROM CHANGESETS WHERE REPOSITORY = ? AND REVISION = ?");
-
-    private static InsertQuery ADD_CHANGESET = new InsertQuery(
-            "INSERT INTO CHANGESETS" +
-            "(REPOSITORY, REVISION, AUTHOR, TIME, MESSAGE) " +
-            "VALUES (?,?,?,?,?)");
-
-    private static PreparedQuery ADD_FILECHANGE = new PreparedQuery(
-            "INSERT INTO FILECHANGES(FILE, CHANGESET) VALUES (?,?)");
-
     public void store(History history, Repository repository)
             throws HistoryException {
-        // TODO
-        throw new UnsupportedOperationException();
-    }
-
-    // TODO Remove next method as we should use store(History,Repository) now.
-
-    // Assume that this file is never called concurrently from different
-    // threads on files in the same repository.
-    public void store(History history, File file, Repository repository)
-            throws HistoryException {
         try {
-            final String filePath = getRelativePath(file, repository);
-            final String reposPath = toUnixPath(repository.getDirectoryName());
             final ConnectionResource conn =
                     connectionManager.getConnectionResource();
             try {
-                Integer reposId = null;
-                PreparedStatement reposIdPS = conn.getStatement(GET_REPOSITORY);
-                reposIdPS.setString(1, reposPath);
-                ResultSet reposIdRS = reposIdPS.executeQuery();
-                try {
-                    if (reposIdRS.next()) {
-                        reposId = reposIdRS.getInt(1);
-                    }
-                } finally {
-                    reposIdRS.close();
-                }
-
-                if (reposId == null) {
-                    PreparedStatement insert =
-                            conn.getStatement(INSERT_REPOSITORY);
-                    insert.setString(1, reposPath);
-                    insert.executeUpdate();
-                    reposId = getGeneratedIntKey(insert);
-                }
-
-                assert reposId != null;
-
-                Integer fileId = null;
-                PreparedStatement fileInfoPS =
-                        conn.getStatement(GET_MODIFIED_TIME);
-
-                fileInfoPS.setInt(1, reposId);
-                fileInfoPS.setString(2, filePath);
-
-                // PMD says we're not checking the return value from next(),
-                // but we are, so suppress the warning.
-                ResultSet fileInfoRS = fileInfoPS.executeQuery(); // NOPMD
-                try {
-                    if (fileInfoRS.next()) {
-                        fileId = fileInfoRS.getInt(1);
-                        long lastMod = fileInfoRS.getTimestamp(2).getTime();
-                        if (file.lastModified() == lastMod) {
-                            // already cached and up to date,
-                            // nothing more to do
-                            return;
-                        } else {
-                            fileInfoRS.updateTimestamp(2,
-                                    new Timestamp(file.lastModified()));
-                            fileInfoRS.updateRow();
-                        }
-                    }
-                } finally {
-                    fileInfoRS.close();
-                }
-
-                if (fileId == null) {
-                    PreparedStatement insert = conn.getStatement(INSERT_FILE);
-                    insert.setString(1, filePath);
-                    insert.setInt(2, reposId);
-                    insert.setTimestamp(3, new Timestamp(file.lastModified()));
-                    insert.executeUpdate();
-                    fileId = getGeneratedIntKey(insert);
-                }
-
-                assert fileId != null;
-
-                Map<String, Integer> authors =
-                        getAuthors(conn, history, reposId);
-
-                PreparedStatement removeChanges =
-                        conn.getStatement(DELETE_FILECHANGE);
-                removeChanges.setInt(1, fileId);
-                removeChanges.executeUpdate();
-
-                PreparedStatement findChangeset =
-                        conn.getStatement(GET_CHANGESET_ID);
-                PreparedStatement addChangeset =
-                        conn.getStatement(ADD_CHANGESET);
-                PreparedStatement addFileChange =
-                        conn.getStatement(ADD_FILECHANGE);
-                for (HistoryEntry entry : history.getHistoryEntries()) {
-                    storeEntry(
-                            fileId, reposId, entry, authors,
-                            findChangeset, addChangeset, addFileChange);
-                }
-                conn.commit();
+                storeHistory(conn, history, repository);
             } finally {
                 connectionManager.releaseConnection(conn);
             }
@@ -388,14 +271,89 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private final static PreparedQuery GET_AUTHOR_ID = new PreparedQuery(
-            "SELECT ID FROM AUTHORS WHERE REPOSITORY = ? AND NAME = ?");
+    private static InsertQuery ADD_CHANGESET = new InsertQuery(
+            "INSERT INTO CHANGESETS" +
+            "(REPOSITORY, REVISION, AUTHOR, TIME, MESSAGE) " +
+            "VALUES (?,?,?,?,?)");
+
+    private static PreparedQuery ADD_FILECHANGE = new PreparedQuery(
+            "INSERT INTO FILECHANGES(CHANGESET, FILE) VALUES (?,?)");
+
+    private void storeHistory(ConnectionResource conn, History history,
+            Repository repository) throws SQLException {
+
+        int reposId = getRepositoryId(conn, repository);
+        conn.commit();
+
+        Map<String, Integer> authors = getAuthors(conn, history, reposId);
+        conn.commit();
+
+        Map<String, Integer> files = getFiles(conn, history, reposId);
+        conn.commit();
+
+        PreparedStatement addChangeset = conn.getStatement(ADD_CHANGESET);
+        addChangeset.setInt(1, reposId);
+        PreparedStatement addFilechange = conn.getStatement(ADD_FILECHANGE);
+        for (HistoryEntry entry : history.getHistoryEntries()) {
+            addChangeset.setString(2, entry.getRevision());
+            addChangeset.setInt(3, authors.get(entry.getAuthor()));
+            addChangeset.setTimestamp(4,
+                    new Timestamp(entry.getDate().getTime()));
+            addChangeset.setString(5, entry.getMessage());
+            addChangeset.executeUpdate();
+
+            int changesetId = getGeneratedIntKey(addChangeset);
+            addFilechange.setInt(1, changesetId);
+            for (String file : entry.getFiles()) {
+                int fileId = files.get(toUnixPath(file));
+                addFilechange.setInt(2, fileId);
+                addFilechange.executeUpdate();
+            }
+
+            conn.commit();
+        }
+    }
+
+    /**
+     * Get the id of a repository in the database. If the repository is not
+     * stored in the database, add it and return its id.
+     *
+     * @param conn the connection to the database
+     * @param repository the repository whose id to get
+     * @return the id of the repository
+     */
+    private int getRepositoryId(ConnectionResource conn, Repository repository)
+            throws SQLException {
+        String reposPath = toUnixPath(repository.getDirectoryName());
+        PreparedStatement reposIdPS = conn.getStatement(GET_REPOSITORY);
+        reposIdPS.setString(1, reposPath);
+        ResultSet reposIdRS = reposIdPS.executeQuery();
+        try {
+            if (reposIdRS.next()) {
+                return reposIdRS.getInt(1);
+            }
+        } finally {
+            reposIdRS.close();
+        }
+
+        // Repository is not in the database. Add it.
+        PreparedStatement insert =
+                conn.getStatement(INSERT_REPOSITORY);
+        insert.setString(1, reposPath);
+        insert.executeUpdate();
+        return getGeneratedIntKey(insert);
+    }
+
+    private final static PreparedQuery GET_AUTHORS = new PreparedQuery(
+            "SELECT NAME, ID FROM AUTHORS WHERE REPOSITORY = ?");
 
     private final static InsertQuery ADD_AUTHOR = new InsertQuery(
             "INSERT INTO AUTHORS (REPOSITORY, NAME) VALUES (?,?)");
 
     /**
-     * Get a map from author names to their ids in the database.
+     * Get a map from author names to their ids in the database. The authors
+     * that are not in the database are added to it.
+     *
      * @param conn the connection to the database
      * @param history the history to get the author names from
      * @param reposId the id of the repository
@@ -405,83 +363,76 @@ class JDBCHistoryCache implements HistoryCache {
             ConnectionResource conn, History history, int reposId)
             throws SQLException {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
-        PreparedStatement check = conn.getStatement(GET_AUTHOR_ID);
-        check.setInt(1, reposId);
+        PreparedStatement ps = conn.getStatement(GET_AUTHORS);
+        ps.setInt(1, reposId);
+        ResultSet rs = ps.executeQuery();
+        try {
+            while (rs.next()) {
+                map.put(rs.getString(1), rs.getInt(2));
+            }
+        } finally {
+            rs.close();
+        }
 
+        PreparedStatement insert = conn.getStatement(ADD_AUTHOR);
+        insert.setInt(1, reposId);
         for (HistoryEntry entry : history.getHistoryEntries()) {
             String author = entry.getAuthor();
-            Integer id = null;
-
-            check.setString(2, author);
-            ResultSet rs = check.executeQuery();
-            try {
-                if (rs.next()) {
-                    id = rs.getInt(1);
-                }
-            } finally {
-                rs.close();
-            }
-
-            if (id == null) {
-                PreparedStatement insert = conn.getStatement(ADD_AUTHOR);
-                insert.setInt(1, reposId);
+            if (!map.containsKey(author)) {
                 insert.setString(2, author);
                 insert.executeUpdate();
-                id = getGeneratedIntKey(insert);
+                int id = getGeneratedIntKey(insert);
+                map.put(author, id);
             }
-
-            assert id != null;
-            map.put(author, id);
         }
 
         return map;
     }
 
+    private static PreparedQuery GET_FILES = new PreparedQuery(
+            "SELECT PATH, ID FROM FILES WHERE REPOSITORY = ?");
+
+    private static InsertQuery INSERT_FILE = new InsertQuery(
+            "INSERT INTO FILES(REPOSITORY, PATH) VALUES (?,?)");
+
     /**
-     * Store a {@code HistoryEntry} in the database.
+     * Get a map from file names to their ids in the database. The files
+     * that are not in the database are added to it.
      *
-     * @param fileId the id of the file to store history for
+     * @param conn the connection to the database
+     * @param history the history to get the file names from
      * @param reposId the id of the repository
-     * @param entry the {@code HistoryEntry} to store
-     * @param authors map from author names to author ids
-     * @param findChangeset prepared statement to find the changeset
-     * @param addChangeset prepared statement to add a changeset if it is not
-     * already in the database
-     * @param addFileChange prepared statement to associate a changeset with
-     * a file
+     * @return a map from file names to file ids
      */
-    private void storeEntry(int fileId, int reposId, HistoryEntry entry,
-            Map<String, Integer> authors, PreparedStatement findChangeset,
-            PreparedStatement addChangeset, PreparedStatement addFileChange)
-        throws SQLException
-    {
-        findChangeset.setInt(1, reposId);
-        findChangeset.setString(2, entry.getRevision());
-        ResultSet changeset = findChangeset.executeQuery();
-        Integer changesetId = null;
+    private Map<String, Integer> getFiles(
+            ConnectionResource conn, History history, int reposId)
+            throws SQLException {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        PreparedStatement ps = conn.getStatement(GET_FILES);
+        ps.setInt(1, reposId);
+        ResultSet rs = ps.executeQuery();
         try {
-            if (changeset.next()) {
-                changesetId = changeset.getInt(1);
+            while (rs.next()) {
+                map.put(rs.getString(1), rs.getInt(2));
             }
         } finally {
-            changeset.close();
+            rs.close();
         }
 
-        if (changesetId == null) {
-            addChangeset.setInt(1, reposId);
-            addChangeset.setString(2, entry.getRevision());
-            addChangeset.setInt(3, authors.get(entry.getAuthor()));
-            addChangeset.setTimestamp(4, new Timestamp(entry.getDate().getTime()));
-            addChangeset.setString(5, entry.getMessage());
-            addChangeset.executeUpdate();
-            changesetId = getGeneratedIntKey(addChangeset);
+        PreparedStatement insert = conn.getStatement(INSERT_FILE);
+        insert.setInt(1, reposId);
+        for (HistoryEntry entry : history.getHistoryEntries()) {
+            for (String file : entry.getFiles()) {
+                String path = toUnixPath(file);
+                if (!map.containsKey(path)) {
+                    insert.setString(2, path);
+                    insert.executeUpdate();
+                    map.put(path, getGeneratedIntKey(insert));
+                }
+            }
         }
 
-        assert changesetId != null;
-
-        addFileChange.setInt(1, fileId);
-        addFileChange.setInt(2, changesetId);
-        addFileChange.executeUpdate();
+        return map;
     }
 
     /**
