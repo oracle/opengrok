@@ -113,8 +113,7 @@ class FileHistoryCache implements HistoryCache {
         }
     }
     
-    private void storeFile(History history, File file, Repository repository)
-            throws HistoryException {
+    private void storeFile(History history, File file) throws HistoryException {
         
         File cache = getCachedFile(file);
 
@@ -195,7 +194,7 @@ class FileHistoryCache implements HistoryCache {
             hist.setHistoryEntries(e.getValue());
             File file = new File(root, e.getKey());
             if (!file.isDirectory()) {
-                storeFile(hist, file, repository);
+                storeFile(hist, file);
             }
         }
     }
@@ -244,7 +243,7 @@ class FileHistoryCache implements HistoryCache {
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!
-                storeFile(history, file, repository);
+                storeFile(history, file);
             }
         }
         return history;
