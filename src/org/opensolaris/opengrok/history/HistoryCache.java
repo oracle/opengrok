@@ -48,14 +48,13 @@ interface HistoryCache {
     History get(File file, Repository repository) throws HistoryException;
 
     /**
-     * Store the history for the given file.
+     * Store the history for a repository.
      * 
      * @param history The history to store
-     * @param file The file to store information for
-     * @param repository The repository the file belongs to
+     * @param repository The repository whose history to store
      * @throws HistoryException if the history cannot be stored
      */
-    void store(History history, File file, Repository repository)
+    void store(History history, Repository repository)
             throws HistoryException;
 
     /**

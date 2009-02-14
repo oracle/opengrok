@@ -35,6 +35,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -109,7 +113,7 @@ class FileHistoryCache implements HistoryCache {
         }
     }
     
-    public void store(History history, File file, Repository repository)
+    private void storeFile(History history, File file, Repository repository)
             throws HistoryException {
         
         File cache = getCachedFile(file);
@@ -161,6 +165,41 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
+    public void store(History history, Repository repository)
+            throws HistoryException {
+
+        if (history.getHistoryEntries() == null) {
+            return;
+        }
+
+        HashMap<String, List<HistoryEntry>> map =
+                new HashMap<String, List<HistoryEntry>>();
+
+        for (HistoryEntry e : history.getHistoryEntries()) {
+            for (String s : e.getFiles()) {
+                List<HistoryEntry> list = map.get(s);
+                if (list == null) {
+                    list = new ArrayList<HistoryEntry>();
+                    map.put(s, list);
+                }
+                list.add(e);
+            }
+        }
+
+        File root = RuntimeEnvironment.getInstance().getSourceRootFile();
+        for (Map.Entry<String, List<HistoryEntry>> e : map.entrySet()) {
+            for (HistoryEntry ent : e.getValue()) {
+                ent.strip();
+            }
+            History hist = new History();
+            hist.setHistoryEntries(e.getValue());
+            File file = new File(root, e.getKey());
+            if (!file.isDirectory()) {
+                storeFile(hist, file, repository);
+            }
+        }
+    }
+
     public History get(File file, Repository repository)
             throws HistoryException {
         File cache = getCachedFile(file);
@@ -205,7 +244,7 @@ class FileHistoryCache implements HistoryCache {
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!
-                store(history, file, repository);
+                storeFile(history, file, repository);
             }
         }
         return history;

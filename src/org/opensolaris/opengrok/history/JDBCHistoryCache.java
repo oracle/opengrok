@@ -281,6 +281,14 @@ class JDBCHistoryCache implements HistoryCache {
     private static PreparedQuery ADD_FILECHANGE = new PreparedQuery(
             "INSERT INTO FILECHANGES(FILE, CHANGESET) VALUES (?,?)");
 
+    public void store(History history, Repository repository)
+            throws HistoryException {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
+
+    // TODO Remove next method as we should use store(History,Repository) now.
+
     // Assume that this file is never called concurrently from different
     // threads on files in the same repository.
     public void store(History history, File file, Repository repository)

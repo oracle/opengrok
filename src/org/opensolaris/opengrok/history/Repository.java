@@ -26,11 +26,6 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * An interface for an external repository. 
@@ -130,33 +125,8 @@ public abstract class Repository extends RepositoryInfo {
         HistoryParser p = pClass.newInstance();
         File directory = new File(getDirectoryName());
         History history = p.parse(directory, this);
-        if (history != null && history.getHistoryEntries() != null) {
-            HashMap<String, List<HistoryEntry>> map =
-                    new HashMap<String, List<HistoryEntry>>();
-
-            for (HistoryEntry e : history.getHistoryEntries()) {
-                for (String s : e.getFiles()) {
-                    List<HistoryEntry> list = map.get(s);
-                    if (list == null) {
-                        list = new ArrayList<HistoryEntry>();
-                        map.put(s, list);
-                    }
-                    list.add(e);
-                }
-            }
-
-            File root = RuntimeEnvironment.getInstance().getSourceRootFile();
-            for (Map.Entry<String, List<HistoryEntry>> e : map.entrySet()) {
-                for (HistoryEntry ent : e.getValue()) {
-                    ent.strip();
-                }
-                History hist = new History();
-                hist.setHistoryEntries(e.getValue());
-                File file = new File(root, e.getKey());
-                if (!file.isDirectory()) {
-                    cache.store(hist, file, this);
-                }
-            }
+        if (history != null) {
+            cache.store(history, this);
         }
     }
     
