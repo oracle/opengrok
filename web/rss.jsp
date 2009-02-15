@@ -95,9 +95,9 @@ if (resourcePath.length() < rawSource.length()
 <?xml-stylesheet type="text/xsl" href="<%=context%>/rss.xsl.xml"?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
 <channel>
-    <title>Changes in <%=basename%></title>
-    <link><%=request.getRequestURL()%></link>
-    <description><%=dtag%></description>
+    <title>Changes in <%=Util.htmlize(basename)%></title>
+    <link><%=Util.htmlize(request.getRequestURL())%></link>
+    <description><%=Util.htmlize(dtag)%></description>
     <language>en</language>
     <copyright>Copyright 2005</copyright>
     <generator>Java</generator>
@@ -133,16 +133,16 @@ if (resourcePath.length() < rawSource.length()
         List<String> files = hr.getFiles();
         if(files != null) {
             for (String ifile : files) {
-    %><%=ifile%>
+    %><%=Util.htmlize(ifile)%>
 <%
             }
         }
     } else {
-    %><%=path%> - <%=hr.getRevision()%><%
+    %><%=Util.htmlize(path)%> - <%=Util.htmlize(hr.getRevision())%><%
     }
     %></description>
-    <pubDate><%=hr.getDate()%></pubDate>
-    <dc:creator><%=hr.getAuthor()%></dc:creator>
+    <pubDate><%=Util.htmlize(hr.getDate().toString())%></pubDate>
+    <dc:creator><%=Util.htmlize(hr.getAuthor())%></dc:creator>
 </item>
 <%
             }
