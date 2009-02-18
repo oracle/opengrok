@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.jdbc;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -103,5 +104,30 @@ public class ConnectionResource {
      */
     public Statement createStatement() throws SQLException {
         return conn.createStatement();
+    }
+
+    /**
+     * Prepare a statement. This method should only be used to prepare
+     * statements that are used infrequently. If a statement is likely to
+     * be used frequently, a {@code StatementCreator} object should be
+     * created for it, and the method {@link #getStatement(StatementCreator)}
+     * should be used instead.
+     *
+     * @param sql the SQL text to compile
+     * @return a prepared statement
+     * @throws SQLException if a database error occurs
+     */
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        return conn.prepareStatement(sql);
+    }
+
+    /**
+     * Get a meta-data object for the underlying connection.
+     *
+     * @return a {@code DatabaseMetaData} object
+     * @throws SQLException if a database error occurs
+     */
+    public DatabaseMetaData getMetaData() throws SQLException {
+        return conn.getMetaData();
     }
 }

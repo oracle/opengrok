@@ -44,6 +44,11 @@ class JDBCHistoryCache implements HistoryCache {
 
     private static final String SCHEMA = "APP";
 
+    /** The names of all the tables created by this class. */
+    private static final String[] TABLES = {
+        "REPOSITORIES", "FILES", "AUTHORS", "CHANGESETS", "FILECHANGES"
+    };
+
     private ConnectionManager connectionManager;
 
     // Many of the tables contain columns with identical names and types,
@@ -263,6 +268,13 @@ class JDBCHistoryCache implements HistoryCache {
                     connectionManager.getConnectionResource();
             try {
                 storeHistory(conn, history, repository);
+                // The tables may have grown significantly and made the
+                // index cardinality statistics outdated. Call this method
+                // as a workaround to keep the statistics up to date.
+                // Without this, we have observed very bad performance when
+                // calling get(), because the outdated statistics can make
+                // the optimizer choose a sub-optimal join strategy.
+                updateIndexCardinalityStatistics(conn);
             } finally {
                 connectionManager.releaseConnection(conn);
             }
@@ -311,6 +323,48 @@ class JDBCHistoryCache implements HistoryCache {
             }
 
             conn.commit();
+        }
+    }
+
+    /**
+     * <p>
+     * Make sure Derby's index cardinality statistics are up to date.
+     * Otherwise, the optimizer may choose a bad execution strategy for
+     * some queries. This method should be called if the size of the tables
+     * has changed significantly.
+     * </p>
+     *
+     * <p>
+     * This is a workaround for the problems described in
+     * <a href="https://issues.apache.org/jira/browse/DERBY-269">DERBY-269</a> and
+     * <a href="https://issues.apache.org/jira/browse/DERBY-3788">DERBY-3788</a>.
+     * When automatic update of index cardinality statistics has been
+     * implemented in Derby, the workaround may be removed.
+     * </p>
+     *
+     * <p>
+     * Note that this method uses a system procedure introduced in Derby 10.5.
+     * If the Derby version used is less than 10.5, this method is a no-op.
+     * </p>
+     */
+    private void updateIndexCardinalityStatistics(ConnectionResource conn)
+            throws SQLException {
+        DatabaseMetaData dmd = conn.getMetaData();
+        int major = dmd.getDatabaseMajorVersion();
+        int minor = dmd.getDatabaseMinorVersion();
+        if (major > 10 || (major == 10 && minor >= 5)) {
+            PreparedStatement ps = conn.prepareStatement(
+                    "CALL SYSCS_UTIL.SYSCS_UPDATE_STATISTICS(?, ?, NULL)");
+            try {
+                ps.setString(1, SCHEMA);
+                for (String table : TABLES) {
+                    ps.setString(2, table);
+                    ps.execute();
+                }
+                conn.commit();
+            } finally {
+                ps.close();
+            }
         }
     }
 
