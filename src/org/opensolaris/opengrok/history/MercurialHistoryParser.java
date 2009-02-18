@@ -28,11 +28,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -47,7 +46,7 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
     private static final String DESC_PREFIX = "description: ";
 
     private History history;
-    private final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm ZZZZ", Locale.US);
+    private MercurialRepository repository;
     String mydir;
     int rootLength;
 
@@ -56,11 +55,11 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
     }
 
     private History parseFile(File file, Repository repos) throws HistoryException {
-        MercurialRepository mrepos = (MercurialRepository) repos;
-        mydir = mrepos.getDirectoryName() + File.separator;
+        repository = (MercurialRepository) repos;
+        mydir = repository.getDirectoryName() + File.separator;
         rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
 
-        Executor executor = mrepos.getHistoryLogExecutor(file);
+        Executor executor = repository.getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
 
         if (status != 0) {
@@ -79,6 +78,7 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @throws java.io.IOException If an error occurs while reading the stream
      */
     public void processStream(InputStream input) throws IOException {
+        DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         String s;

@@ -49,6 +49,7 @@ public class GitRepository extends Repository {
 
     public GitRepository() {
         type = "git";
+        datePattern = "EEE MMM dd hh:mm:ss yyyy ZZZZ";
     }
 
    /**

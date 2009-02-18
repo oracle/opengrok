@@ -50,6 +50,7 @@ public class BazaarRepository extends Repository {
 
     public BazaarRepository() {
         type = "Bazaar";
+        datePattern = "EEE yyyy-MM-dd hh:mm:ss ZZZZ";
     }
 
    /**

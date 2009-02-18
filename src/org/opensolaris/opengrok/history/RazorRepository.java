@@ -142,6 +142,7 @@ public class RazorRepository extends Repository {
     public RazorRepository() {
         type = "Razor";
         working = true;
+        datePattern = "yyyy/MM/dd,hh:mm:ss";
     }
 
     @Override

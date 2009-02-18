@@ -29,10 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -51,6 +50,7 @@ class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
     private String myDir;
     private int rootLength;
     private History history;
+    private GitRepository repository;
     
    /**
      * Process the output from the log command and insert the HistoryEntries
@@ -60,8 +60,7 @@ class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @throws java.io.IOException If an error occurs while reading the stream
      */
     public void processStream(InputStream input) throws IOException {
-        SimpleDateFormat df =
-                new SimpleDateFormat("EEE MMM dd hh:mm:ss yyyy ZZZZ", Locale.US);
+        DateFormat df = repository.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -142,8 +141,8 @@ class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
     public History parse(File file, Repository repos) throws HistoryException {
         myDir = repos.getDirectoryName()+ File.separator;
         rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-
-        Executor executor = ((GitRepository) repos).getHistoryLogExecutor(file);
+        repository = (GitRepository) repos;
+        Executor executor = repository.getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
 
         if (status != 0) {

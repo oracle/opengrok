@@ -25,11 +25,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
@@ -38,12 +37,13 @@ import org.opensolaris.opengrok.util.Executor;
  * Parse a stream of ClearCase log comments.
  */
 class ClearCaseHistoryParser implements HistoryParser, Executor.StreamHandler {
-    private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.US);
 
     private History history;
+    private ClearCaseRepository repository;
 
     public History parse(File file, Repository repos) throws HistoryException {
-        Executor executor = ((ClearCaseRepository) repos).getHistoryLogExecutor(file);
+        repository = (ClearCaseRepository)repos;
+        Executor executor = repository.getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
 
         if (status != 0) {
@@ -62,6 +62,7 @@ class ClearCaseHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @throws java.io.IOException If an error occurs while reading the stream
      */
     public void processStream(InputStream input) throws IOException {
+        DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         String s;
@@ -80,12 +81,10 @@ class ClearCaseHistoryParser implements HistoryParser, Executor.StreamHandler {
 
             entry = new HistoryEntry();
             if ((s = in.readLine()) != null) {
-                synchronized (FORMAT) {
-                    try {
-                        entry.setDate(FORMAT.parse(s));
-                    } catch (ParseException pe) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
-                    }
+                try {
+                    entry.setDate(df.parse(s));
+                } catch (ParseException pe) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
                 }
             }
             if ((s = in.readLine()) != null) {

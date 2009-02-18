@@ -65,6 +65,7 @@ public class MercurialRepository extends Repository {
 
     public MercurialRepository() {
         type = "Mercurial";
+        datePattern = "yyyy-MM-dd hh:mm ZZZZ";
     }
 
     /**

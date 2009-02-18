@@ -29,11 +29,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -47,12 +46,14 @@ class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
     private String myDir;
     private int rootLength;
     private History history;
-    
+    private BazaarRepository repository;
+
     public History parse(File file, Repository repos) throws HistoryException {
         myDir = repos.getDirectoryName()+ File.separator;
         rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
+        repository = (BazaarRepository) repos;
 
-        Executor executor = ((BazaarRepository) repos).getHistoryLogExecutor(file);
+        Executor executor = repository.getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
 
         if (status != 0) {
@@ -71,8 +72,7 @@ class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @throws java.io.IOException If an error occurs while reading the stream
      */
     public void processStream(InputStream input) throws IOException {
-        SimpleDateFormat df =
-                new SimpleDateFormat("EEE yyyy-MM-dd hh:mm:ss ZZZZ", Locale.US);
+        DateFormat df = repository.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));

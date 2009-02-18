@@ -47,6 +47,7 @@ public class CVSRepository extends RCSRepository {
 
     public CVSRepository() {
         type = "CVS";
+        datePattern = "yyyy-mm-dd hh:mm:ss ZZZZ";
     }
     
    /**

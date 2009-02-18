@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -61,14 +62,15 @@ class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
         final String home;
         final int length;
         final List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+        final DateFormat format;
         HistoryEntry entry;
         StringBuilder sb;
 
-        Handler(String home, String prefix, int length) {
+        Handler(String home, String prefix, int length, DateFormat df) {
             this.home = home;
             this.prefix = prefix;
             this.length = length;
+            format = df;
             sb = new StringBuilder();
         }
 
@@ -141,7 +143,9 @@ class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
         initSaxParser();
         handler = new Handler(repos.getDirectoryName(), 
                 ((SubversionRepository) repos).reposPath, 
-                RuntimeEnvironment.getInstance().getSourceRootPath().length());
+                RuntimeEnvironment.getInstance().getSourceRootPath().length(),
+                repos.getDateFormat());
+        
         if (saxParser == null) {
             throw new HistoryException("Failed to create SAX parser");
         }
@@ -183,7 +187,7 @@ class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     public History parse(String buffer) throws IOException {
-        handler = new Handler("/", "", 0);
+        handler = new Handler("/", "", 0, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US));
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;
     }

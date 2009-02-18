@@ -43,6 +43,7 @@ public class ClearCaseRepository extends Repository {
     public ClearCaseRepository() {
         type = "ClearCase";
         working = true;
+        datePattern = "yyyyMMdd.HHmmss";
     }
 
     /**

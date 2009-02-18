@@ -50,6 +50,7 @@ public class SCCSRepository extends Repository {
 
     public SCCSRepository() {
         type = "SCCS";
+        datePattern = "yy/MM/dd";
     }
 
     private String getCommand() {

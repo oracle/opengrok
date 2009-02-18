@@ -38,6 +38,7 @@ public class RepositoryInfo implements Serializable {
     protected boolean working;
     protected String type;
     protected boolean remote;
+    protected String datePattern;
 
     /**
      * Empty constructor to support serialization.
@@ -51,6 +52,7 @@ public class RepositoryInfo implements Serializable {
         this.type = orig.type;
         this.working = orig.isWorking();
         this.remote = orig.isRemote();
+        this.datePattern = orig.datePattern;
     }
 
     /**
@@ -122,5 +124,12 @@ public class RepositoryInfo implements Serializable {
         this.type = type;
     }
 
+    public void setDatePattern(String datePattern) {
+        this.datePattern = datePattern;
+    }
 
+    public String getDatePattern() {
+        return datePattern;
+    }
 }
+

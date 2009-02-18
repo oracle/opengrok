@@ -64,6 +64,7 @@ public class SubversionRepository extends Repository {
 
     public SubversionRepository() {
         type = "Subversion";
+        datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     }
 
     private String getValue(Node node) {

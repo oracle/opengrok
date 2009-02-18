@@ -24,11 +24,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,8 +41,8 @@ import org.opensolaris.opengrok.util.StringUtils;
  */
 public class RazorHistoryParser implements HistoryParser {
 
-    private final static SimpleDateFormat DATE_TIME_FORMAT =
-            new SimpleDateFormat("yyyy/MM/dd,hh:mm:ss", Locale.US);
+    private RazorRepository repository;
+
     private final static Pattern ACTION_TYPE_PATTERN =
             Pattern.compile("^(INTRODUCE|CHECK-OUT|CHECK-IN|UN-CHECK-OUT|RENAME|EDIT_PROPS|ALTERED|CHECK-POINT|REVERT|INTRODUCE_AND_EDIT|BRANCH|BUMP|MERGE-CHECK-IN|PROMOTE)\\s+(\\S*)\\s+([\\.0-9]+)?\\s+(\\S*)\\s+(\\S*)\\s*$");
     private final static Pattern ADDITIONAL_INFO_PATTERN =
@@ -58,12 +57,11 @@ public class RazorHistoryParser implements HistoryParser {
         }
     }
 
-    private History parseFile(File file, Repository repository)
+    private History parseFile(File file, Repository repos)
             throws IOException {
 
-        RazorRepository repo = (RazorRepository) repository;
-
-        File mappedFile = repo.getRazorHistoryFileFor(file);
+        repository = (RazorRepository) repos;
+        File mappedFile = repository.getRazorHistoryFileFor(file);
         parseDebug("Mapping " + file.getPath() + " to '" + mappedFile.getPath() + "'");
 
         if (!mappedFile.exists()) {
@@ -86,6 +84,7 @@ public class RazorHistoryParser implements HistoryParser {
 
     @SuppressWarnings("PMD.ConfusingTernary")
     protected History parseContents(BufferedReader contents) throws IOException {
+        DateFormat df = repository.getDateFormat();
         String line;
 
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
@@ -137,12 +136,10 @@ public class RazorHistoryParser implements HistoryParser {
                             entry.setRevision(revision);
                             entry.setActive("Active".equals(state));
                             Date date = null;
-                            synchronized (DATE_TIME_FORMAT) {
-                                try {
-                                    date = DATE_TIME_FORMAT.parse(dateTime);
-                                } catch (ParseException pe) {
-                                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + dateTime, pe);  
-                                }
+                            try {
+                                date = df.parse(dateTime);
+                            } catch (ParseException pe) {
+                                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + dateTime, pe);
                             }
                             entry.setDate(date);
                             ignoreEntry = false;

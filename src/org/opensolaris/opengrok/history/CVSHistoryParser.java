@@ -29,10 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
@@ -47,6 +46,7 @@ class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
     };      
 
     private History history;
+    private CVSRepository repository;
 
    /**
      * Process the output from the log command and insert the HistoryEntries
@@ -56,8 +56,7 @@ class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @throws java.io.IOException If an error occurs while reading the stream
      */
     public void processStream(InputStream input) throws IOException {
-        SimpleDateFormat df =
-                new SimpleDateFormat("yyyy-mm-dd hh:mm:ss ZZZZ", Locale.US);
+        DateFormat df = repository.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
@@ -125,7 +124,8 @@ class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @return object representing the file's history
      */
     public History parse(File file, Repository repos) throws HistoryException {
-        Executor executor = ((CVSRepository) repos).getHistoryLogExecutor(file);
+        repository = (CVSRepository) repos;
+        Executor executor = repository.getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
 
         if (status != 0) {

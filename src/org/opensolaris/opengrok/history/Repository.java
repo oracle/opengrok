@@ -26,6 +26,9 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 /**
  * An interface for an external repository. 
@@ -153,5 +156,9 @@ public abstract class Repository extends RepositoryInfo {
     @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
     boolean supportsSubRepositories() {
         return false;
+    }
+
+    public DateFormat getDateFormat() {
+        return new SimpleDateFormat(datePattern, Locale.US);
     }
 }
