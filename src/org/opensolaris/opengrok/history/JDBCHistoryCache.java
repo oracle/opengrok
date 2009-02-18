@@ -214,6 +214,7 @@ class JDBCHistoryCache implements HistoryCache {
             "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE " +
             "FROM CHANGESETS CS, FILECHANGES FC, REPOSITORIES R, " +
             "FILES F, AUTHORS A WHERE R.PATH = ? AND F.PATH = ? AND " +
+            "F.REPOSITORY = R.ID AND A.REPOSITORY = R.ID AND " +
             "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
             "FC.FILE = F.ID AND A.ID = CS.AUTHOR ORDER BY FC.ID");
 
