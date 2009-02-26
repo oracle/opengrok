@@ -45,6 +45,7 @@ public class Ctags {
     private static final Logger log = Logger.getLogger(Ctags.class.getName());
     private String binary;
     private ProcessBuilder processBuilder;
+    private Thread errThread;
 
     public void setBinary(String binary) {
         this.binary = binary;
@@ -81,6 +82,35 @@ public class Ctags {
         ctags = processBuilder.start();
         ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
+
+        final BufferedReader error = new BufferedReader(new InputStreamReader(ctags.getErrorStream()));
+
+        errThread = new Thread(new Runnable() {
+
+            public void run() {
+                StringBuilder sb = new StringBuilder();
+                try {
+                    String s;
+                    while ((s = error.readLine()) != null) {
+                        sb.append(s);
+                        sb.append('\n');
+                    }
+                } catch (IOException exp) {
+                     log.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);                
+                } finally {
+                    try {
+                        error.close();
+                    } catch (IOException exp) {
+                        log.log(Level.WARNING, "Got an exception closing error stream: ", exp);
+                    }
+                }
+                if (sb.length() > 0) {
+                     log.warning("Error from ctags: " + sb.toString());
+                }
+            }
+        });
+        errThread.setDaemon(true);
+        errThread.start();
     }
 
     public Definitions doCtags(String file) throws IOException {
