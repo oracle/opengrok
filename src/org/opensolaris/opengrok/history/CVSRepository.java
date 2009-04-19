@@ -24,9 +24,13 @@
 
 package org.opensolaris.opengrok.history;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,6 +131,57 @@ public class CVSRepository extends RCSRepository {
     @Override
     public Class<? extends HistoryParser> getDirectoryHistoryParser() {
         return null;
+    }
+
+    @Override
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
+        InputStream ret = null;
+
+        Process process = null;
+        InputStream in = null;
+        String revision = rev;
+
+        if (rev.indexOf(':') != -1) {
+            revision = rev.substring(0, rev.indexOf(':'));
+        }
+        try {
+            String argv[] = {getCommand(), "up", "-p", "-r", revision, basename};
+            process = Runtime.getRuntime().exec(argv, null, new File(parent));
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[32 * 1024];
+            in = process.getInputStream();
+            int len;
+
+            while ((len = in.read(buffer)) != -1) {
+                if (len > 0) {
+                    out.write(buffer, 0, len);
+                }
+            }
+
+            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
+        } catch (Exception exp) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString());
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                }
+            }
+            // Clean up zombie-processes...
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException exp) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
+            }
+        }
+
+        return ret;
     }
 
     @Override
