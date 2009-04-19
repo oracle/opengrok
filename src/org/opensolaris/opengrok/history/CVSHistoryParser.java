@@ -85,6 +85,7 @@ class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
 
                     if ("date".equals(key)) {
                         try {
+                            val = val.replace('/', '-');
                             entry.setDate(df.parse(val));
                         } catch (ParseException pe) {
                             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse date: '" + val + "'", pe);

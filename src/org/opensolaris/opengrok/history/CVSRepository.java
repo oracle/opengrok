@@ -42,12 +42,12 @@ import org.opensolaris.opengrok.util.Executor;
 public class CVSRepository extends RCSRepository {
 
     private static ScmChecker cvsBinary = new ScmChecker(new String[]{
-                getCommand(), "--help"
+                getCommand(), "--version"
             });
 
     public CVSRepository() {
         type = "CVS";
-        datePattern = "yyyy-mm-dd hh:mm:ss ZZZZ";
+        datePattern = "yyyy-mm-dd hh:mm:ss";
     }
     
    /**
@@ -126,7 +126,7 @@ public class CVSRepository extends RCSRepository {
 
     @Override
     public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return CVSHistoryParser.class;
+        return null;
     }
 
     @Override
