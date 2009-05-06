@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.util.Executor;
 class ClearCaseHistoryParser implements HistoryParser, Executor.StreamHandler {
 
     private History history;
-    private ClearCaseRepository repository=ClearCaseRepository();
+    private ClearCaseRepository repository=new ClearCaseRepository();
 
     public History parse(File file, Repository repos) throws HistoryException {
         repository = (ClearCaseRepository)repos;
