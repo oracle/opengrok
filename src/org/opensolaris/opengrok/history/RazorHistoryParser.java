@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.util.StringUtils;
  */
 public class RazorHistoryParser implements HistoryParser {
 
-    private RazorRepository repository;
+    private RazorRepository repository=RazorRepository();
 
     private final static Pattern ACTION_TYPE_PATTERN =
             Pattern.compile("^(INTRODUCE|CHECK-OUT|CHECK-IN|UN-CHECK-OUT|RENAME|EDIT_PROPS|ALTERED|CHECK-POINT|REVERT|INTRODUCE_AND_EDIT|BRANCH|BUMP|MERGE-CHECK-IN|PROMOTE)\\s+(\\S*)\\s+([\\.0-9]+)?\\s+(\\S*)\\s+(\\S*)\\s*$");

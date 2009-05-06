@@ -46,7 +46,7 @@ class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
     };      
 
     private History history;
-    private CVSRepository repository;
+    private CVSRepository repository=new CVSRepository();
 
    /**
      * Process the output from the log command and insert the HistoryEntries

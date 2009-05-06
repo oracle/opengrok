@@ -50,7 +50,7 @@ class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
     private String myDir;
     private int rootLength;
     private History history;
-    private GitRepository repository;
+    private GitRepository repository=GitRepository();
     
    /**
      * Process the output from the log command and insert the HistoryEntries

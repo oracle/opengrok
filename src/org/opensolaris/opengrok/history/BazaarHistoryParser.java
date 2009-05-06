@@ -46,7 +46,7 @@ class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
     private String myDir;
     private int rootLength;
     private History history;
-    private BazaarRepository repository;
+    private BazaarRepository repository=BazaarRepository();
 
     public History parse(File file, Repository repos) throws HistoryException {
         myDir = repos.getDirectoryName()+ File.separator;
