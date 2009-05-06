@@ -95,10 +95,8 @@ public class CVSRepositoryTest {
      */
     @Test
     public void getDirectoryHistoryParser() {
-        Class<? extends HistoryParser> expResult = CVSHistoryParser.class;
-        //Class<? extends HistoryParser> result = instance.getDirectoryHistoryParser();
-		Class result = null;
-        assertEquals(expResult, result);
+        Class<? extends HistoryParser> result = instance.getDirectoryHistoryParser();
+	assertNull(result);
     }
 
     /**
