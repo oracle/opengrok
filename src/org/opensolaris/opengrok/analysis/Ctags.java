@@ -45,7 +45,6 @@ public class Ctags {
     private static final Logger log = Logger.getLogger(Ctags.class.getName());
     private String binary;
     private ProcessBuilder processBuilder;
-    private Thread errThread;
 
     public void setBinary(String binary) {
         this.binary = binary;
@@ -85,7 +84,7 @@ public class Ctags {
 
         final BufferedReader error = new BufferedReader(new InputStreamReader(ctags.getErrorStream()));
 
-        errThread = new Thread(new Runnable() {
+        Thread errThread = new Thread(new Runnable() {
 
             public void run() {
                 StringBuilder sb = new StringBuilder();
