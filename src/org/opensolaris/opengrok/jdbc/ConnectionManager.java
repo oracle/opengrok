@@ -24,20 +24,15 @@
 
 package org.opensolaris.opengrok.jdbc;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Class that manages the pool of database connections.
  */
 public class ConnectionManager {
-
-    private static final String EMBEDDED_DRIVER =
-            "org.apache.derby.jdbc.EmbeddedDriver";
 
     /** The JDBC URL to use when creating new connections. */
     private final String url;
@@ -49,15 +44,14 @@ public class ConnectionManager {
     /**
      * Create a new {@code ConnectionManager} instance.
      * @throws ClassNotFoundException if the JDBC driver class cannot be found
+     *
+     * @param driverClass the name of the JDBC driver class
+     * @param url the JDBC connection URL to the database
      */
-    public ConnectionManager() throws ClassNotFoundException {
-        Class.forName(EMBEDDED_DRIVER);
-
-        String databasePath =
-                RuntimeEnvironment.getInstance().getDataRootPath() +
-                File.separator + "cachedb";
-
-        url = "jdbc:derby:" + databasePath + ";create=true";
+    public ConnectionManager(String driverClass, String url)
+            throws ClassNotFoundException {
+        Class.forName(driverClass);
+        this.url = url;
     }
 
     /**

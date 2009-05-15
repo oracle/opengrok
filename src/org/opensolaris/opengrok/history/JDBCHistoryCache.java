@@ -35,12 +35,16 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.jdbc.ConnectionManager;
 import org.opensolaris.opengrok.jdbc.ConnectionResource;
 import org.opensolaris.opengrok.jdbc.InsertQuery;
 import org.opensolaris.opengrok.jdbc.PreparedQuery;
 
 class JDBCHistoryCache implements HistoryCache {
+
+    private static final String DERBY_EMBEDDED_DRIVER =
+            "org.apache.derby.jdbc.EmbeddedDriver";
 
     private static final String SCHEMA = "APP";
 
@@ -50,6 +54,30 @@ class JDBCHistoryCache implements HistoryCache {
     };
 
     private ConnectionManager connectionManager;
+
+    private final String jdbcDriverClass;
+    private final String jdbcConnectionURL;
+
+    /**
+     * Create a new cache instance with the default JDBC driver and URL.
+     */
+    JDBCHistoryCache() {
+        this(DERBY_EMBEDDED_DRIVER,
+                "jdbc:derby:" +
+                RuntimeEnvironment.getInstance().getDataRootPath() +
+                File.separator + "cachedb;create=true");
+    }
+
+    /**
+     * Create a new cache instance with the specified JDBC driver and URL.
+     *
+     * @param jdbcDriverClass JDBC driver class to access the database backend
+     * @param url the JDBC url to the database
+     */
+    JDBCHistoryCache(String jdbcDriverClass, String url) {
+        this.jdbcDriverClass = jdbcDriverClass;
+        this.jdbcConnectionURL = url;
+    }
 
     // Many of the tables contain columns with identical names and types,
     // so there will be duplicate strings. Suppress warning from PMD.
@@ -125,7 +153,8 @@ class JDBCHistoryCache implements HistoryCache {
 
     public void initialize() throws HistoryException {
         try {
-            connectionManager = new ConnectionManager();
+            connectionManager =
+                    new ConnectionManager(jdbcDriverClass, jdbcConnectionURL);
             final ConnectionResource conn =
                     connectionManager.getConnectionResource();
             try {
