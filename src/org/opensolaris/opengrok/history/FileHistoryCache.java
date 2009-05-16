@@ -281,4 +281,8 @@ class FileHistoryCache implements HistoryCache {
             return isUpToDate(file, getCachedFile(file));
         }
     }
+
+    public String getLatestCachedRevision(Repository repository) {
+        return null;
+    }
 }

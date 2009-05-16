@@ -145,4 +145,27 @@ public class JDBCHistoryCacheTest extends TestCase {
         // TODO: assertEquals(3, e2.getFiles().size());
     }
 
+    /**
+     * Test that {@code getLatestCachedRevision()} returns the correct
+     * revision.
+     */
+    public void testGetLatestCachedRevision() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository repos = RepositoryFactory.getRepository(reposRoot);
+        HistoryParser parser = repos.getDirectoryHistoryParser().newInstance();
+        History history = parser.parse(reposRoot, repos);
+        cache.store(history, repos);
+
+        List<HistoryEntry> entries = history.getHistoryEntries();
+        HistoryEntry oldestEntry = entries.get(entries.size() - 1);
+        HistoryEntry mostRecentEntry = entries.get(0);
+
+        assertTrue("Unexpected order of history entries",
+                oldestEntry.getDate().before(mostRecentEntry.getDate()));
+
+        String latestRevision = mostRecentEntry.getRevision();
+        assertNotNull("Unknown latest revision", latestRevision);
+        assertEquals("Incorrect latest revision",
+                latestRevision, cache.getLatestCachedRevision(repos));
+    }
 }

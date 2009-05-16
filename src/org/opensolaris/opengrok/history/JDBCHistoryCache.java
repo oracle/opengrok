@@ -34,6 +34,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.jdbc.ConnectionManager;
@@ -126,6 +128,11 @@ class JDBCHistoryCache implements HistoryCache {
                     "TIME TIMESTAMP NOT NULL, " +
                     "MESSAGE VARCHAR(32672) NOT NULL, " +
                     "UNIQUE (REPOSITORY, REVISION))");
+            // Create a descending index on the identity column to allow
+            // faster retrieval of history in reverse chronological order in
+            // get() and maximum value in getLatestCachedRevision().
+            s.executeUpdate("CREATE UNIQUE INDEX IDX_CHANGESETS_ID_DESC " +
+                    "ON CHANGESETS(ID DESC)");
         }
 
         if (!tableExists(dmd, SCHEMA, "FILECHANGES")) {
@@ -239,13 +246,18 @@ class JDBCHistoryCache implements HistoryCache {
         return filePath.substring(reposPath.length());
     }
 
+    /**
+     * Statement that gets the history for the specified file and repository.
+     * The result is ordered in reverse chronological order to match the
+     * required ordering for {@link HistoryCache#get(File, Repository)}.
+     */
     private static final PreparedQuery GET_HISTORY = new PreparedQuery(
             "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE " +
             "FROM CHANGESETS CS, FILECHANGES FC, REPOSITORIES R, " +
             "FILES F, AUTHORS A WHERE R.PATH = ? AND F.PATH = ? AND " +
             "F.REPOSITORY = R.ID AND A.REPOSITORY = R.ID AND " +
             "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
-            "FC.FILE = F.ID AND A.ID = CS.AUTHOR ORDER BY FC.ID");
+            "FC.FILE = F.ID AND A.ID = CS.AUTHOR ORDER BY CS.ID DESC");
 
     public History get(File file, Repository repository)
             throws HistoryException {
@@ -336,7 +348,18 @@ class JDBCHistoryCache implements HistoryCache {
         PreparedStatement addChangeset = conn.getStatement(ADD_CHANGESET);
         addChangeset.setInt(1, reposId);
         PreparedStatement addFilechange = conn.getStatement(ADD_FILECHANGE);
-        for (HistoryEntry entry : history.getHistoryEntries()) {
+
+        // getHistoryEntries() returns the entries in reverse chronological
+        // order, but we want to insert them in chronological order so that
+        // their auto-generated identity column can be used as a chronological
+        // ordering column. Otherwise, incremental updates will make the
+        // identity column unusable for chronological ordering. So therefore
+        // we walk the list backwards.
+        List<HistoryEntry> entries = history.getHistoryEntries();
+        for (ListIterator<HistoryEntry> it =
+                entries.listIterator(entries.size());
+                it.hasPrevious();) {
+            HistoryEntry entry = it.previous();
             addChangeset.setString(2, entry.getRevision());
             addChangeset.setInt(3, authors.get(entry.getAuthor()));
             addChangeset.setTimestamp(4,
@@ -537,6 +560,33 @@ class JDBCHistoryCache implements HistoryCache {
             }
         } finally {
             keys.close();
+        }
+    }
+
+    private static PreparedQuery GET_LATEST_REVISION = new PreparedQuery(
+            "SELECT REVISION FROM CHANGESETS WHERE ID = " +
+            "(SELECT MAX(CS.ID) FROM CHANGESETS CS, REPOSITORIES R " +
+            "WHERE CS.REPOSITORY = R.ID AND R.PATH = ?)");
+
+    public String getLatestCachedRevision(Repository repository)
+            throws HistoryException {
+        try {
+            final ConnectionResource conn =
+                    connectionManager.getConnectionResource();
+            try {
+                PreparedStatement ps = conn.getStatement(GET_LATEST_REVISION);
+                ps.setString(1, toUnixPath(repository.getDirectoryName()));
+                ResultSet rs = ps.executeQuery(); // NOPMD (we do check next)
+                try {
+                    return rs.next() ? rs.getString(1) : null;
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                connectionManager.releaseConnection(conn);
+            }
+        } catch (SQLException sqle) {
+            throw new HistoryException(sqle);
         }
     }
 }

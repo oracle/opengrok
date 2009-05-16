@@ -65,4 +65,15 @@ interface HistoryCache {
      */
     boolean isUpToDate(File file, Repository repository)
             throws HistoryException;
+
+    /**
+     * Get the revision identifier for the latest cached revision in a
+     * repository.
+     *
+     * @param repository the repository whose latest revision to return
+     * @return a string representing the latest revision in the cache, or
+     * {@code null} if it is unknown
+     */
+    String getLatestCachedRevision(Repository repository)
+            throws HistoryException;
 }
