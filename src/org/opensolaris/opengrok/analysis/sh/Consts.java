@@ -112,6 +112,7 @@ public class Consts{
         shkwd.add( "autoload" );
         shkwd.add( "builtin" );
         shkwd.add( "command" );
+        shkwd.add( "compound" );
         shkwd.add( "redirect" );
         shkwd.add( "my" );
         shkwd.add( "next" );
