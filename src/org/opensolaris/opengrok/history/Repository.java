@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -54,6 +56,47 @@ public abstract class Repository extends RepositoryInfo {
      * @throws HistoryException on error accessing the history
      */
     abstract History getHistory(File file) throws HistoryException;
+
+    /**
+     * <p>
+     * Get the history after a specified revision.
+     * </p>
+     *
+     * <p>
+     * The default implementation first fetches the full history and then
+     * throws away the oldest revisions. This is not efficient, so subclasses
+     * should override it in order to get good performance. Once every subclass
+     * has implemented a more efficient method, the default implementation
+     * should be removed and made abstract.
+     * </p>
+     *
+     * @param file the file to get the history for
+     * @param sinceRevision the revision right before the first one to return,
+     * or {@code null} to return the full history
+     * @return partial history for file
+     * @throws HistoryException on error accessing the history
+     */
+    History getHistory(File file, String sinceRevision)
+            throws HistoryException {
+        History history = getHistory(file);
+
+        if (sinceRevision == null) {
+            return history;
+        }
+
+        List<HistoryEntry> partial = new ArrayList<HistoryEntry>();
+        for (HistoryEntry entry : history.getHistoryEntries()) {
+            if (sinceRevision.equals(entry.getRevision())) {
+                // Found revision right before the first one to return. Skip
+                // this one and the rest (older revisions).
+                break;
+            }
+            partial.add(entry);
+        }
+
+        history.setHistoryEntries(partial);
+        return history;
+    }
 
     /**
      * Get an input stream that I may use to read a speciffic version of a
@@ -89,9 +132,15 @@ public abstract class Repository extends RepositoryInfo {
      * repository. If {@code hasHistoryForDirectories()} returns {@code false},
      * this method is a no-op.
      *
+     * @param cache the cache instance in which to store the history log
+     * @param sinceRevision if non-null, incrementally update the cache with
+     * all revisions after the specified revision; otherwise, create the full
+     * history starting with the initial revision
+     *
      * @throws HistoryException on error
      */
-    final void createCache(HistoryCache cache) throws HistoryException {
+    final void createCache(HistoryCache cache, String sinceRevision)
+            throws HistoryException {
         if (!isWorking()) {
             return;
         }
@@ -103,7 +152,8 @@ public abstract class Repository extends RepositoryInfo {
         }
 
         File directory = new File(getDirectoryName());
-        History history = getHistory(directory);
+        History history = getHistory(directory, sinceRevision);
+
         if (history != null) {
             cache.store(history, this);
         }

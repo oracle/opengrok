@@ -340,7 +340,7 @@ public final class HistoryGuru {
         }
     }
 
-    private void createCache(Repository repository) {
+    private void createCache(Repository repository, String sinceRevision) {
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
 
@@ -353,7 +353,7 @@ public final class HistoryGuru {
             }
 
             try {
-                repository.createCache(historyCache);
+                repository.createCache(historyCache, sinceRevision);
             } catch (Exception e) {
                 log.log(Level.WARNING, "An error occured while creating cache for " + path + " (" + type + ")", e);
             }
@@ -371,9 +371,19 @@ public final class HistoryGuru {
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
         for (final Repository repos : repositories) {
+            final String latestRev;
+            try {
+                latestRev = historyCache.getLatestCachedRevision(repos);
+            } catch (HistoryException he) {
+                log.log(Level.WARNING,
+                        String.format(
+                        "Failed to retrieve latest cached revision for %s",
+                        repos.getDirectoryName()), he);
+                continue;
+            }
             executor.submit(new Runnable() {
                 public void run() {
-                    createCache(repos);
+                    createCache(repos, latestRev);
                 }
             });
         }
@@ -416,7 +426,10 @@ public final class HistoryGuru {
     }
 
     /**
-     * Ensure that any file beneath a given path has a history cache
+     * Ensure that we have a directory in the cache. If it's not there, fetch
+     * its history and populate the cache. If it's already there, and the
+     * cache is able to tell how recent it is, attempt to update it to the
+     * most recent revision.
      *
      * @param file the root path to test
      * @throws HistoryException if an error occurs while accessing the
@@ -424,10 +437,26 @@ public final class HistoryGuru {
      */
     public void ensureHistoryCacheExists(File file) throws HistoryException {
         Repository repository = getRepository(file);
-        if (repository != null &&
-                !historyCache.hasCacheForDirectory(file, repository)) {
-            createCache(getRepository(file));
+
+        if (repository == null) {
+            // no repository -> no history :(
+            return;
         }
+
+        String sinceRevision = null;
+
+        if (historyCache.hasCacheForDirectory(file, repository)) {
+            sinceRevision = historyCache.getLatestCachedRevision(repository);
+            if (sinceRevision == null) {
+                // Cache already exists, but we don't know how recent it is,
+                // so don't do anything.
+                return;
+            }
+        }
+
+        // Create cache from the beginning if it doesn't exist, or update it
+        // incrementally otherwise.
+        createCache(getRepository(file), sinceRevision);
     }
 
     protected Repository getRepository(File path) {
