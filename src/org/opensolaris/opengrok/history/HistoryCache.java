@@ -58,12 +58,13 @@ interface HistoryCache {
             throws HistoryException;
 
     /**
-     * Check if the cache is up to date for the specified file.
-     * @param file the file to check
-     * @param repository the repository in which the file is stored
-     * @return {@code true} if the cache is up to date, {@code false} otherwise
+     * Check if the specified directory is present in the cache.
+     * @param directory the directory to check
+     * @param repository the repository in which the directory is stored
+     * @return {@code true} if the directory is in the cache, {@code false}
+     * otherwise
      */
-    boolean isUpToDate(File file, Repository repository)
+    boolean hasCacheForDirectory(File directory, Repository repository)
             throws HistoryException;
 
     /**

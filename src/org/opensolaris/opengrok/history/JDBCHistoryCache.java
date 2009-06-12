@@ -180,7 +180,7 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static final PreparedQuery IS_UP_TO_DATE = new PreparedQuery(
+    private static final PreparedQuery IS_DIR_IN_CACHE = new PreparedQuery(
             "SELECT F.ID FROM FILES F, REPOSITORIES R " +
             "WHERE F.REPOSITORY = R.ID AND R.PATH = ? AND " +
             "F.PATH LIKE ? || '/%'");
@@ -188,16 +188,14 @@ class JDBCHistoryCache implements HistoryCache {
     // We do check the return value from ResultSet.next(), but PMD doesn't
     // understand it, so suppress the warning.
     @SuppressWarnings("PMD.CheckResultSet")
-    public boolean isUpToDate(File file, Repository repository)
+    public boolean hasCacheForDirectory(File file, Repository repository)
             throws HistoryException {
-        // TODO Find out how this method is used. Seems like it's only called
-        // for the top-level directory for each project.
         assert file.isDirectory();
         try {
             final ConnectionResource conn =
                     connectionManager.getConnectionResource();
             try {
-                PreparedStatement ps = conn.getStatement(IS_UP_TO_DATE);
+                PreparedStatement ps = conn.getStatement(IS_DIR_IN_CACHE);
                 ps.setString(1, toUnixPath(repository.getDirectoryName()));
                 ps.setString(2, getRelativePath(file, repository));
                 ResultSet rs = ps.executeQuery();

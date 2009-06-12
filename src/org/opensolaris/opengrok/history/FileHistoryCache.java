@@ -262,24 +262,21 @@ class FileHistoryCache implements HistoryCache {
     }
 
     /**
-     * Check if the cache is up to date for the specified file.
-     * @param file the file to check
-     * @return {@code true} if the cache is up to date, {@code false} otherwise
+     * Check if the directory is in the cache.
+     * @param directory the directory to check
+     * @return {@code true} if the directory is in the cache
      */
-    public boolean isUpToDate(File file, Repository repository)
+    public boolean hasCacheForDirectory(File directory, Repository repository)
             throws HistoryException {
-        if (file.isDirectory()) {
-            Repository repos = HistoryGuru.getInstance().getRepository(file);
-            if (repos == null) {
-                return true;
-            }
-            File dir = RuntimeEnvironment.getInstance().getDataRootFile();
-            dir = new File(dir, "historycache");
-            dir = new File(dir, repos.getDirectoryName().substring(RuntimeEnvironment.getInstance().getSourceRootPath().length()));
-            return dir.exists();
-        } else {
-            return isUpToDate(file, getCachedFile(file));
+        assert directory.isDirectory();
+        Repository repos = HistoryGuru.getInstance().getRepository(directory);
+        if (repos == null) {
+            return true;
         }
+        File dir = RuntimeEnvironment.getInstance().getDataRootFile();
+        dir = new File(dir, "historycache");
+        dir = new File(dir, repos.getDirectoryName().substring(RuntimeEnvironment.getInstance().getSourceRootPath().length()));
+        return dir.exists();
     }
 
     public String getLatestCachedRevision(Repository repository) {

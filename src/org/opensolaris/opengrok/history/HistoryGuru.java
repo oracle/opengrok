@@ -440,13 +440,11 @@ public final class HistoryGuru {
      * @param file the root path to test
      * @throws HistoryException if an error occurs while accessing the
      * history cache
-     * @throws java.io.IOException if an error occurs while accessing the
-     *                             filesystem.
      */
-    public void ensureHistoryCacheExists(File file)
-            throws HistoryException, IOException {
+    public void ensureHistoryCacheExists(File file) throws HistoryException {
         Repository repository = getRepository(file);
-        if (repository != null && !historyCache.isUpToDate(file, repository)) {
+        if (repository != null &&
+                !historyCache.hasCacheForDirectory(file, repository)) {
             createCache(getRepository(file));
         }
     }
