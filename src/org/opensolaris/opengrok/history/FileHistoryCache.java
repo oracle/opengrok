@@ -210,21 +210,13 @@ class FileHistoryCache implements HistoryCache {
                         "Error when reading cache file '" + cache, e);
             }
         }
-        
-        final Class<? extends HistoryParser>
-                parserClass = repository.getHistoryParser();
+
         final History history;
         long time;
         try {
-            HistoryParser parser = parserClass.newInstance();
             time = System.currentTimeMillis();
-            history = parser.parse(file, repository);
+            history = repository.getHistory(file);
             time = System.currentTimeMillis() - time;
-        } catch (InstantiationException ex) {
-            throw new HistoryException("Could not create history parser", ex);
-        } catch (IllegalAccessException ex) {
-            throw new HistoryException(
-                    "No access permissions to create history parser", ex);
         } catch (UnsupportedOperationException e) {
             // In this case, we've found a file for which the SCM has no history
             // An example is a non-SCCS file somewhere in an SCCS-controlled

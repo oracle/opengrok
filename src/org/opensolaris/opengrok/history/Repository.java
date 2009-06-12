@@ -93,57 +93,25 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Create a history log cache for all of the files in this repository.
-     * Some SCM's have a more optimal way to query the log information, so
-     * the concrete repository could implement a smarter way to generate the
-     * cache instead of creating it for each file being accessed. The default
-     * implementation uses the history parser returned by
-     * {@code getDirectoryHistoryParser()} to parse the repository's history.
-     * If {@code getDirectoryHistoryParser()} returns {@code null}, this
-     * method is a no-op.
+     * {@code getHistory()} is used to fetch the history for the entire
+     * repository. If {@code hasHistoryForDirectories()} returns {@code false},
+     * this method is a no-op.
      *
      * @throws HistoryException on error
      */
-    void createCache(HistoryCache cache) throws HistoryException {
-        try {
-            createCacheHelper(cache);
-        } catch (IOException ioe) {
-            throw new HistoryException(ioe);
-        } catch (InstantiationException ie) {
-            throw new HistoryException(ie);
-        } catch (IllegalAccessException iae) {
-            throw new HistoryException(iae);
-        }
-    }
-
-    /**
-     * Helper method which performs the work for
-     * {@link #createCache(HistoryCache)} without converting checked
-     * exceptions to {@code HistoryException}
-     *
-     * @throws HistoryException if accessing the history cache fails
-     * @throws IOException if an I/O error occurs
-     * @throws InstantiationException if the parser class cannot be instatiated
-     * @throws IllegalAccessException if the method does not have access to
-     * the constructor of the parser class
-     */
-    private void createCacheHelper(HistoryCache cache)
-            throws HistoryException, IOException,
-            InstantiationException, IllegalAccessException
-    {
+    final void createCache(HistoryCache cache) throws HistoryException {
         if (!isWorking()) {
             return;
         }
-        Class<? extends HistoryParser> pClass = getDirectoryHistoryParser();
 
         // If we don't have a directory parser, we can't create the cache
         // this way. Just give up and return.
-        if (pClass == null) {
+        if (!hasHistoryForDirectories()) {
             return;
         }
 
-        HistoryParser p = pClass.newInstance();
         File directory = new File(getDirectoryName());
-        History history = p.parse(directory, this);
+        History history = getHistory(directory);
         if (history != null) {
             cache.store(history, this);
         }
