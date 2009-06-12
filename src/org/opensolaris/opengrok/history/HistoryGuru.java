@@ -82,21 +82,6 @@ public final class HistoryGuru {
     public static HistoryGuru getInstance()  {
         return instance;
     }
-    
-    /**
-     * Get the <code>HistoryParser</code> to use for the specified file.
-     */
-    private Class<? extends HistoryParser> getHistoryParser(File file) {
-        Repository repos = getRepository(file.getParentFile());
-        if (repos != null && repos.fileHasHistory(file)) {
-            Class<? extends HistoryParser> parser;
-            parser = repos.getHistoryParser();
-            if (parser != null) {
-                return parser;
-            }
-        }
-        return null;
-    }
 
     /**
      * Annotate the specified revision of a file.
@@ -129,18 +114,14 @@ public final class HistoryGuru {
             return getDirectoryHistoryReader(file);
         }
 
-        Class<? extends HistoryParser> parser = getHistoryParser(file);
+        Repository repos = getRepository(file.getParentFile());
 
-        if (parser != null) {
-            Repository repos = getRepository(file.getParentFile());
-            if (repos != null && repos.isWorking()) {
-                if (!RuntimeEnvironment.getInstance().isRemoteScmSupported() && repos.isRemote()) {
-                    return null;
-                }
-                History history = historyCache.get(file, repos);
-                if (history != null) {
-                    return new HistoryReader(history);
-                }
+        if (repos != null && repos.isWorking() && repos.fileHasHistory(file) &&
+                (!repos.isRemote() ||
+                RuntimeEnvironment.getInstance().isRemoteScmSupported())) {
+            History history = historyCache.get(file, repos);
+            if (history != null) {
+                return new HistoryReader(history);
             }
         }
 
