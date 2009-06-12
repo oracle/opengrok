@@ -324,4 +324,14 @@ public class RazorRepository extends Repository {
         File f = new File(file, ".razor");
         return f.exists() && f.isDirectory();
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return false;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new RazorHistoryParser().parse(file, this);
+    }
 }

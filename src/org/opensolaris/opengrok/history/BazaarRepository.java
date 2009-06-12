@@ -234,4 +234,14 @@ public class BazaarRepository extends Repository {
     public boolean isWorking() {
         return bzrBinary.available;
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return true;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new BazaarHistoryParser().parse(file, this);
+    }
 }

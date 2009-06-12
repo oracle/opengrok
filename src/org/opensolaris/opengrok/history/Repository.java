@@ -46,7 +46,23 @@ public abstract class Repository extends RepositoryInfo {
     abstract Class<? extends HistoryParser> getDirectoryHistoryParser();
     
     abstract boolean fileHasHistory(File file);
-    
+
+    /**
+     * Check if the repository supports {@code getHistory()} requests for
+     * whole directories at once.
+     *
+     * @return {@code true} if the repository can get history for directories
+     */
+    abstract boolean hasHistoryForDirectories();
+
+    /**
+     * Get the history log for the specified file or directory.
+     * @param file the file to get the history for
+     * @return history log for file
+     * @throws HistoryException on error accessing the history
+     */
+    abstract History getHistory(File file) throws HistoryException;
+
     /**
      * Get an input stream that I may use to read a speciffic version of a
      * named file.

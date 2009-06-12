@@ -182,4 +182,14 @@ public class PerforceRepository extends Repository {
     public boolean isWorking() {
         return p4Binary.available;
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return true;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new PerforceHistoryParser().parse(file, this);
+    }
 }

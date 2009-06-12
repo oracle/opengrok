@@ -330,4 +330,14 @@ public Annotation annotate(File file, String revision) throws IOException {
             return file.isDirectory() && file.getName().equalsIgnoreCase("vobs");
         }
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return true;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new ClearCaseHistoryParser().parse(file, this);
+    }
 }

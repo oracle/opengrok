@@ -182,6 +182,16 @@ public class SubversionRepository extends Repository {
         return SubversionHistoryParser.class;
     }
 
+    @Override
+    boolean hasHistoryForDirectories() {
+        return true;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new SubversionHistoryParser().parse(file, this);
+    }
+
     private static class AnnotateHandler extends DefaultHandler2 {
 
         String rev;

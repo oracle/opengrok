@@ -149,4 +149,14 @@ public class RCSRepository extends Repository {
         File rcsFile = new File(dir, baseName + ",v");
         return rcsFile.exists() ? rcsFile : null;
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return false;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new RCSHistoryParser().parse(file, this);
+    }
 }

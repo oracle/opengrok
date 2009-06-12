@@ -275,4 +275,14 @@ public class MercurialRepository extends Repository {
     public boolean isWorking() {
         return hgBinary.available;
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return true;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new MercurialHistoryParser().parse(file, this);
+    }
 }

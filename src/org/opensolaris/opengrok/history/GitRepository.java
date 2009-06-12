@@ -233,5 +233,15 @@ public class GitRepository extends Repository {
     public boolean isWorking() {
         return gitBinary.available;
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return true;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new GitHistoryParser().parse(file, this);
+    }
 }
 

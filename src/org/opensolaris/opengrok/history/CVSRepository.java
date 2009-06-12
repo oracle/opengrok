@@ -198,6 +198,11 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
+    History getHistory(File file) throws HistoryException {
+        return new CVSHistoryParser().parse(file, this);
+    }
+
+    @Override
     Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());

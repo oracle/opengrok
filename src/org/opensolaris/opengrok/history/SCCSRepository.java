@@ -235,5 +235,15 @@ public class SCCSRepository extends Repository {
     public boolean isWorking() {
         return sccsBinary.available;
     }
+
+    @Override
+    boolean hasHistoryForDirectories() {
+        return false;
+    }
+
+    @Override
+    History getHistory(File file) throws HistoryException {
+        return new SCCSHistoryParser().parse(file, this);
+    }
 }
 
