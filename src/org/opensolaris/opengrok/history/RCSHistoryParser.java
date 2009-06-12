@@ -42,7 +42,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 /**
  * Virtualise RCS file as a reader, getting a specified version
  */
-class RCSHistoryParser implements HistoryParser {
+class RCSHistoryParser {
 
     private static File readCVSRoot(File root, File CVSdir, String name) throws IOException {
         String cvsroot = readFirstLine(root);
@@ -68,7 +68,7 @@ class RCSHistoryParser implements HistoryParser {
         return rcsFile;
     }
 
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         try {
             return parseFile(file);
         } catch (IOException ioe) {

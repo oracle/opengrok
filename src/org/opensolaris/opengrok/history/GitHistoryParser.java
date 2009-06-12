@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.util.StringUtils;
 /**
  * Parse a stream of Git log comments.
  */
-class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
+class GitHistoryParser implements Executor.StreamHandler {
 
     private enum ParseState {
         HEADER, MESSAGE, FILES
@@ -138,7 +138,7 @@ class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         myDir = repos.getDirectoryName()+ File.separator;
         rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
         repository = (GitRepository) repos;
@@ -160,7 +160,7 @@ class GitHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer
      */
-    public History parse(String buffer) throws IOException {
+    History parse(String buffer) throws IOException {
         myDir = File.separator;
         rootLength = 0;
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));

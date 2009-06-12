@@ -36,12 +36,12 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * Parse a stream of ClearCase log comments.
  */
-class ClearCaseHistoryParser implements HistoryParser, Executor.StreamHandler {
+class ClearCaseHistoryParser implements Executor.StreamHandler {
 
     private History history;
     private ClearCaseRepository repository=new ClearCaseRepository();
 
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         repository = (ClearCaseRepository)repos;
         Executor executor = repository.getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
@@ -121,7 +121,7 @@ class ClearCaseHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer
      */
-    public History parse(String buffer) throws IOException {
+    History parse(String buffer) throws IOException {
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;
     }

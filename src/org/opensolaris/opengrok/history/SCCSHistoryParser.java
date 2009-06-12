@@ -43,7 +43,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * Wrote it since invoking sccs prs for each file was
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
-class SCCSHistoryParser implements HistoryParser {
+class SCCSHistoryParser {
     boolean pass;
     boolean passRecord;
     boolean active;
@@ -57,7 +57,7 @@ class SCCSHistoryParser implements HistoryParser {
     DateFormat sccsDateFormat;
     Reader in;
 
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         sccsDateFormat = repos.getDateFormat();
         try {
             return parseFile(file);

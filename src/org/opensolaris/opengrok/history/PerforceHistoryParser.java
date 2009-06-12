@@ -37,7 +37,7 @@ import org.opensolaris.opengrok.util.Executor;
  *
  * @author Emilio Monti - emilmont@gmail.com
  */
-public class PerforceHistoryParser implements HistoryParser {
+public class PerforceHistoryParser {
 
     /**
      * Parse the history for the specified file.
@@ -47,7 +47,7 @@ public class PerforceHistoryParser implements HistoryParser {
      * @return object representing the file's history
      * @throws HistoryException if a problem occurs while executing p4 command
      */
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         History history;
 
         if (!PerforceRepository.isInP4Depot(file)) {

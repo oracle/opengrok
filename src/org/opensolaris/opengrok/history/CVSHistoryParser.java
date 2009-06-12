@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * Parse a stream of CVS log comments.
  */
-class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
+class CVSHistoryParser implements Executor.StreamHandler {
 
     private enum ParseState {
         REVISION, METADATA, COMMENT
@@ -124,7 +124,7 @@ class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         repository = (CVSRepository) repos;
         Executor executor = repository.getHistoryLogExecutor(file);
         int status = executor.exec(true, this);
@@ -144,7 +144,7 @@ class CVSHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer
      */
-    public History parse(String buffer) throws IOException {
+    History parse(String buffer) throws IOException {
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;
     }

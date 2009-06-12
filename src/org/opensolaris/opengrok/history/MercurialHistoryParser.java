@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * Parse a stream of mercurial log comments.
  */
-class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
+class MercurialHistoryParser implements Executor.StreamHandler {
 
     /** Prefix which identifies lines with the description of a commit. */
     private static final String DESC_PREFIX = "description: ";
@@ -50,7 +50,7 @@ class MercurialHistoryParser implements HistoryParser, Executor.StreamHandler {
     String mydir;
     int rootLength;
 
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         return parseFile(file, repos);
     }
 

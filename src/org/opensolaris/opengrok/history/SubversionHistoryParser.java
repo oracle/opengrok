@@ -50,7 +50,7 @@ import org.xml.sax.ext.DefaultHandler2;
  *
  * @author Trond Norbye
  */
-class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
+class SubversionHistoryParser implements Executor.StreamHandler {
 
     private History history;
     private SAXParser saxParser = null;
@@ -139,7 +139,7 @@ class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         initSaxParser();
         handler = new Handler(repos.getDirectoryName(), 
                 ((SubversionRepository) repos).reposPath, 
@@ -186,7 +186,7 @@ class SubversionHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer
      */
-    public History parse(String buffer) throws IOException {
+    History parse(String buffer) throws IOException {
         handler = new Handler("/", "", 0, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US));
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;

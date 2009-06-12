@@ -41,14 +41,14 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * Parse a stream of Bazaar log comments.
  */
-class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
+class BazaarHistoryParser implements Executor.StreamHandler {
 
     private String myDir;
     private int rootLength;
     private History history;
     private BazaarRepository repository=new BazaarRepository();
 
-    public History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, Repository repos) throws HistoryException {
         myDir = repos.getDirectoryName()+ File.separator;
         rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
         repository = (BazaarRepository) repos;
@@ -168,7 +168,7 @@ class BazaarHistoryParser implements HistoryParser, Executor.StreamHandler {
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer
      */
-    public History parse(String buffer) throws IOException {
+    History parse(String buffer) throws IOException {
         myDir = File.separator;
         rootLength = 0;
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
