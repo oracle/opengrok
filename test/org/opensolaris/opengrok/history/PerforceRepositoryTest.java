@@ -75,28 +75,6 @@ public class PerforceRepositoryTest {
     }
 
     @Test
-    public void testGetHistoryParser() {
-        if (skip) {
-            return;
-        }
-
-        PerforceRepository instance = new PerforceRepository();
-        instance.setDirectoryName(root.getAbsolutePath());
-        assertEquals(PerforceHistoryParser.class, instance.getHistoryParser());
-    }
-
-    @Test
-    public void testGetDirectoryHistoryParser() {
-        if (skip) {
-            return;
-        }
-
-        PerforceRepository instance = new PerforceRepository();
-        instance.setDirectoryName(root.getAbsolutePath());
-        assertEquals(PerforceHistoryParser.class, instance.getDirectoryHistoryParser());
-    }
-
-    @Test
     public void testHistoryAndAnnotations() throws Exception {
         if (skip) {
             return;
@@ -105,13 +83,9 @@ public class PerforceRepositoryTest {
         PerforceRepository instance = new PerforceRepository();
         instance.setDirectoryName(root.getAbsolutePath());
 
-        Class<? extends HistoryParser> parserClass = instance.getHistoryParser();
-        assertEquals(PerforceHistoryParser.class, parserClass);
-        HistoryParser parser = parserClass.newInstance();
-
         for (File f : files) {
             if (instance.fileHasHistory(f)) {
-                History history = parser.parse(f, instance);
+                History history = instance.getHistory(f);
                 assertNotNull("Failed to get history for: " + f.getAbsolutePath(), history);
                 HistoryReader reader = new HistoryReader(history);
 

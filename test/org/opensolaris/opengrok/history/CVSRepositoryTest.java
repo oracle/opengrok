@@ -80,25 +80,6 @@ public class CVSRepositoryTest {
         assertTrue(result);
     }
 
-        /**
-     * Test of getHistoryParser method, of class CVSRepository.
-     */
-    @Test
-    public void getHistoryParser() {
-        Class<? extends HistoryParser> expResult = CVSHistoryParser.class;
-        Class<? extends HistoryParser> result = instance.getHistoryParser();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getDirectoryHistoryParser method, of class CVSRepository.
-     */
-    @Test
-    public void getDirectoryHistoryParser() {
-        Class<? extends HistoryParser> result = instance.getDirectoryHistoryParser();
-	assertNull(result);
-    }
-
     /**
      * Test of parseAnnotation method, of class CVSRepository.
      */

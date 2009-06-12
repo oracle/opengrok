@@ -114,9 +114,7 @@ public class JDBCHistoryCacheTest extends TestCase {
 
         Repository repos = RepositoryFactory.getRepository(reposRoot);
 
-        HistoryParser parser = repos.getDirectoryHistoryParser().newInstance();
-
-        History historyToStore = parser.parse(reposRoot, repos);
+        History historyToStore = repos.getHistory(reposRoot);
 
         cache.store(historyToStore, repos);
 
@@ -151,8 +149,7 @@ public class JDBCHistoryCacheTest extends TestCase {
     public void testGetLatestCachedRevision() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         Repository repos = RepositoryFactory.getRepository(reposRoot);
-        HistoryParser parser = repos.getDirectoryHistoryParser().newInstance();
-        History history = parser.parse(reposRoot, repos);
+        History history = repos.getHistory(reposRoot);
         cache.store(history, repos);
 
         List<HistoryEntry> entries = history.getHistoryEntries();

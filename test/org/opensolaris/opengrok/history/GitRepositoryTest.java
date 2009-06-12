@@ -62,26 +62,6 @@ public class GitRepositoryTest {
     }
 
     /**
-     * Test of getHistoryParser method, of class GitRepository.
-     */
-    @Test
-    public void getHistoryParser() {
-        Class<? extends HistoryParser> expResult = GitHistoryParser.class;
-        Class<? extends HistoryParser> result = instance.getHistoryParser();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getDirectoryHistoryParser method, of class GitRepository.
-     */
-    @Test
-    public void getDirectoryHistoryParser() {
-        Class<? extends HistoryParser> expResult = GitHistoryParser.class;
-        Class<? extends HistoryParser> result = instance.getDirectoryHistoryParser();
-        assertEquals(expResult, result);
-    }
-
-    /**
      * Test of parseAnnotation method, of class GitRepository.
      */
     @Test
