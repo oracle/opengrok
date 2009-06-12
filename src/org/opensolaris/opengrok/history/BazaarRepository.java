@@ -127,14 +127,6 @@ public class BazaarRepository extends Repository {
         
         return ret;
     }
-    
-    public Class<? extends HistoryParser> getHistoryParser() {
-        return BazaarHistoryParser.class;
-    }
-
-    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return BazaarHistoryParser.class;
-    }
 
     /** Pattern used to extract author/revision from bzr blame. */
     private final static Pattern BLAME_PATTERN =

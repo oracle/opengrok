@@ -124,16 +124,6 @@ public class CVSRepository extends RCSRepository {
     }
 
     @Override
-    public Class<? extends HistoryParser> getHistoryParser() {
-        return CVSHistoryParser.class;
-    }
-
-    @Override
-    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return null;
-    }
-
-    @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 

@@ -100,11 +100,6 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return PerforceHistoryParser.class;
-    }
-
-    @Override
     InputStream getHistoryGet( String parent,  String basename,  String rev) {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
@@ -127,11 +122,6 @@ public class PerforceRepository extends Repository {
         if (executor.exec() != 0) {
             throw new IOException(executor.getErrorString());
         }
-    }
-
-    @Override
-    Class<? extends HistoryParser> getHistoryParser() {
-        return PerforceHistoryParser.class;
     }
 
     @Override

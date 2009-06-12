@@ -174,14 +174,6 @@ public class SubversionRepository extends Repository {
         return ret;
     }
 
-    public Class<? extends HistoryParser> getHistoryParser() {
-        return SubversionHistoryParser.class;
-    }
-
-    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return SubversionHistoryParser.class;
-    }
-
     @Override
     boolean hasHistoryForDirectories() {
         return true;

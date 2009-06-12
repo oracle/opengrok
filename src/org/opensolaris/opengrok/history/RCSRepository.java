@@ -47,16 +47,6 @@ public class RCSRepository extends Repository {
     }
 
     @Override
-    Class<? extends HistoryParser> getHistoryParser() {
-        return RCSHistoryParser.class;
-    }
-
-    @Override
-    Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return null;
-    }
-
-    @Override
     boolean fileHasHistory(File file) {
         return getRCSFile(file) != null;
     }

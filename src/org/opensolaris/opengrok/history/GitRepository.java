@@ -126,14 +126,6 @@ public class GitRepository extends Repository {
         
         return ret;
     }
-    
-    public Class<? extends HistoryParser> getHistoryParser() {
-        return GitHistoryParser.class;
-    }
-
-    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return GitHistoryParser.class;
-    }
 
     /** Pattern used to extract author/revision from git blame. */
     private final static Pattern BLAME_PATTERN =

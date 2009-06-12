@@ -174,14 +174,6 @@ public class ClearCaseRepository extends Repository {
         in.close();
     }
 
-    public Class<? extends HistoryParser> getHistoryParser() {
-        return ClearCaseHistoryParser.class;
-    }
-
-    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return ClearCaseHistoryParser.class;
-    }
-
     /**
      * Annotate the specified file/revision.
      *

@@ -144,14 +144,6 @@ public class MercurialRepository extends Repository {
         
         return ret;
     }
-    
-    public Class<? extends HistoryParser> getHistoryParser() {
-        return MercurialHistoryParser.class;
-    }
-
-    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return MercurialHistoryParser.class;
-    }
 
     /** Pattern used to extract author/revision from hg annotate. */
     private final static Pattern ANNOTATION_PATTERN =

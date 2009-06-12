@@ -194,16 +194,6 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    Class<? extends HistoryParser> getHistoryParser() {
-        return RazorHistoryParser.class;
-    }
-
-    @Override
-    Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        return null;
-    }
-
-    @Override
     boolean fileHasHistory( File file) {
 
         // @TODO : Rename & Delete Support

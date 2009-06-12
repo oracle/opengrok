@@ -126,16 +126,6 @@ public class SCCSRepository extends Repository {
             }
         }
     }
-    
-    public Class<? extends HistoryParser> getHistoryParser() {
-        return SCCSHistoryParser.class;
-    }
-
-    
-    public Class<? extends HistoryParser> getDirectoryHistoryParser() {
-        // No directory history with Teamware
-        return null;
-    }
 
     /** Pattern used to extract revision from sccs get */
     private final static Pattern ANNOTATION_PATTERN =

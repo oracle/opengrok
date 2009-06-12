@@ -37,14 +37,6 @@ import java.util.Locale;
  */
 public abstract class Repository extends RepositoryInfo {
 
-    /**
-     * Get a parser capable of getting history log elements from this repository.
-     * @return a specialized parser for this kind of repository
-     */
-    abstract Class<? extends HistoryParser> getHistoryParser();
-    
-    abstract Class<? extends HistoryParser> getDirectoryHistoryParser();
-    
     abstract boolean fileHasHistory(File file);
 
     /**
