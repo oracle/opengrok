@@ -242,8 +242,31 @@ class JDBCHistoryCache implements HistoryCache {
             throws HistoryException {
         String filePath = toUnixPath(file);
         String reposPath = toUnixPath(repository.getDirectoryName());
-        assert filePath.startsWith(reposPath);
-        return filePath.substring(reposPath.length());
+        return getRelativePath(filePath, reposPath);
+    }
+
+    /**
+     * Get the path of a file relative to the source root.
+     * @param file the file to get the path for
+     * @return relative path for {@code file} with unix file separators
+     */
+    private static String getSourceRootRelativePath(File file)
+            throws HistoryException {
+        String filePath = toUnixPath(file);
+        String rootPath = RuntimeEnvironment.getInstance().getSourceRootPath();
+        return getRelativePath(filePath, rootPath);
+    }
+
+    /**
+     * Get the path of a file relative to the specified root directory.
+     * @param filePath the canonical path of the file to get the relative
+     * path for
+     * @param rootPath the canonical path of the root directory
+     * @return relative path with unix file separators
+     */
+    private static String getRelativePath(String filePath, String rootPath) {
+        assert filePath.startsWith(rootPath);
+        return filePath.substring(rootPath.length());
     }
 
     /**
@@ -261,7 +284,7 @@ class JDBCHistoryCache implements HistoryCache {
 
     public History get(File file, Repository repository)
             throws HistoryException {
-        final String filePath = getRelativePath(file, repository);
+        final String filePath = getSourceRootRelativePath(file);
         final String reposPath = toUnixPath(repository.getDirectoryName());
         final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         try {

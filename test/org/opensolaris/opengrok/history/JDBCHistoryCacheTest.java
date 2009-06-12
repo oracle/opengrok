@@ -120,9 +120,8 @@ public class JDBCHistoryCacheTest extends TestCase {
 
         cache.store(historyToStore, repos);
 
-        // TODO: Why reposRoot + mercurial? That's not where the file is.
-        File makefile = new File(new File(reposRoot, "mercurial"), "Makefile");
-        // fails: assertTrue(makefile.exists());
+        File makefile = new File(reposRoot, "Makefile");
+        assertTrue(makefile.exists());
 
         History retrievedHistory = cache.get(makefile, repos);
 
