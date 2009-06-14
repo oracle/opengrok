@@ -349,15 +349,10 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
-    public void testXMLencdec() {
+    public void testXMLencdec() throws IOException {
         Configuration c = new Configuration();
         String m = c.getXMLRepresentationAsString();
-        Configuration o = null;
-        try {
-             o = Configuration.makeXMLStringAsConfiguration(m);
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
+        Configuration o = Configuration.makeXMLStringAsConfiguration(m);
         assertNotNull(o);
         m = m.replaceAll("a", "m");
         try {
