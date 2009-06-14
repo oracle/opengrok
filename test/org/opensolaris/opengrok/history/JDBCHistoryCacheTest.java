@@ -134,12 +134,12 @@ public class JDBCHistoryCacheTest extends TestCase {
         HistoryEntry e1 = entryIt.next();
         assertEquals(TROND, e1.getAuthor());
         assertEquals("2:585a1b3f2efb", e1.getRevision());
-        // TODO: assertEquals(2, e1.getFiles().size());
+        assertEquals(2, e1.getFiles().size());
 
         HistoryEntry e2 = entryIt.next();
         assertEquals(TROND, e2.getAuthor());
         assertEquals("1:f24a5fd7a85d", e2.getRevision());
-        // TODO: assertEquals(3, e2.getFiles().size());
+        assertEquals(3, e2.getFiles().size());
     }
 
     /**

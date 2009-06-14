@@ -273,12 +273,15 @@ class JDBCHistoryCache implements HistoryCache {
      * required ordering for {@link HistoryCache#get(File, Repository)}.
      */
     private static final PreparedQuery GET_HISTORY = new PreparedQuery(
-            "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE " +
+            "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE, F2.PATH " +
             "FROM CHANGESETS CS, FILECHANGES FC, REPOSITORIES R, " +
-            "FILES F, AUTHORS A WHERE R.PATH = ? AND F.PATH = ? AND " +
+            "FILES F, AUTHORS A, FILECHANGES FC2, FILES F2 " +
+            "WHERE R.PATH = ? AND F.PATH = ? AND " +
             "F.REPOSITORY = R.ID AND A.REPOSITORY = R.ID AND " +
             "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
-            "FC.FILE = F.ID AND A.ID = CS.AUTHOR ORDER BY CS.ID DESC");
+            "FC.FILE = F.ID AND A.ID = CS.AUTHOR AND " +
+            "CS.ID = FC2.CHANGESET AND FC2.FILE = F2.ID " +
+            "ORDER BY CS.ID DESC");
 
     public History get(File file, Repository repository)
             throws HistoryException {
@@ -294,14 +297,21 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(2, filePath);
                 ResultSet rs = ps.executeQuery();
                 try {
+                    String currentRev = null;
+                    HistoryEntry entry = null;
                     while (rs.next()) {
                         String revision = rs.getString(1);
-                        String author = rs.getString(2);
-                        Timestamp time = rs.getTimestamp(3);
-                        String message = rs.getString(4);
-                        HistoryEntry entry = new HistoryEntry(
-                                revision, time, author, message, true);
-                        entries.add(entry);
+                        if (!revision.equals(currentRev)) {
+                            currentRev = revision;
+                            String author = rs.getString(2);
+                            Timestamp time = rs.getTimestamp(3);
+                            String message = rs.getString(4);
+                            entry = new HistoryEntry(
+                                    revision, time, author, message, true);
+                            entries.add(entry);
+                        }
+                        String fileName = rs.getString(5);
+                        entry.addFile(fileName);
                     }
                 } finally {
                     rs.close();
