@@ -231,7 +231,7 @@ class FileHistoryCache implements HistoryCache {
             // history log until a the current directory is updated and 
             // invalidates the cache entry.           
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            if (env.useHistoryCache() && (cache != null) &&
+            if ((cache != null) &&
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!

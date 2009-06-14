@@ -61,18 +61,24 @@ public final class HistoryGuru {
      * source control system.
      */
     private HistoryGuru() {
-        if (Boolean.getBoolean("org.opensolaris.opengrok.useJdbcCache")) {
-            // for testing only
-            historyCache = new JDBCHistoryCache();
-        } else {
-            historyCache = new FileHistoryCache();
+        HistoryCache cache = null;
+        if (RuntimeEnvironment.getInstance().useHistoryCache()) {
+            if (Boolean.getBoolean("org.opensolaris.opengrok.useJdbcCache")) {
+                // for testing only
+                cache = new JDBCHistoryCache();
+            } else {
+                cache = new FileHistoryCache();
+            }
+            try {
+                cache.initialize();
+            } catch (HistoryException he) {
+                log.log(Level.WARNING,
+                        "Failed to initialize the history cache", he);
+                // Failed to initialize, run without a history cache
+                cache = null;
+            }
         }
-        try {
-            historyCache.initialize();
-        } catch (HistoryException he) {
-            log.log(Level.WARNING,
-                    "Failed to initialize the history cache", he);
-        }
+        historyCache = cache;
     }
     
     /**
@@ -81,6 +87,15 @@ public final class HistoryGuru {
      */
     public static HistoryGuru getInstance()  {
         return instance;
+    }
+
+    /**
+     * Return whether or not a cache should be used for the history log.
+     * @return {@code true} if the history cache has been enabled and
+     * initialized, {@code false} otherwise
+     */
+    private boolean useCache() {
+        return historyCache != null;
     }
 
     /**
@@ -110,41 +125,20 @@ public final class HistoryGuru {
      * @return A HistorReader that may be used to read out history data for a named file
      */
     public HistoryReader getHistoryReader(File file) throws HistoryException {
-        if (file.isDirectory()) {
-            return getDirectoryHistoryReader(file);
-        }
-
-        Repository repos = getRepository(file.getParentFile());
+        final File dir = file.isDirectory() ? file : file.getParentFile();
+        final Repository repos = getRepository(dir);
 
         if (repos != null && repos.isWorking() && repos.fileHasHistory(file) &&
                 (!repos.isRemote() ||
                 RuntimeEnvironment.getInstance().isRemoteScmSupported())) {
-            History history = historyCache.get(file, repos);
+            History history = useCache() ?
+                historyCache.get(file, repos) : repos.getHistory(file);
             if (history != null) {
                 return new HistoryReader(history);
             }
         }
 
         return null;
-    }
-    
-    /**
-     * Get the appropriate history reader for a specific directory.
-     *
-     * @param file The directpru to get the history reader for
-     * @throws HistoryException If an error occurs while getting the history
-     * @return A HistorReader that may be used to read out history data for a named file
-     */
-    private HistoryReader getDirectoryHistoryReader(File file)
-            throws HistoryException {
-        HistoryReader ret = null;
-        Repository repos = getRepository(file);
-        History history = historyCache.get(file, repos);
-        if (history != null) {
-            ret = new HistoryReader(history);
-        }
-
-        return ret;
     }
 
     /**
@@ -341,6 +335,10 @@ public final class HistoryGuru {
     }
 
     private void createCache(Repository repository, String sinceRevision) {
+        if (!useCache()) {
+            return;
+        }
+
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
 
@@ -403,6 +401,10 @@ public final class HistoryGuru {
      * Create the history cache for all of the repositories
      */
     public void createCache() {
+        if (!useCache()) {
+            return;
+        }
+
         ArrayList<Repository> repos = new ArrayList<Repository>();
         for (Map.Entry<String, Repository> entry : repositories.entrySet()) {
             repos.add(entry.getValue());
@@ -411,6 +413,10 @@ public final class HistoryGuru {
     }
 
     public void createCache(List<String> repositories) {
+        if (!useCache()) {
+            return;
+        }
+
         ArrayList<Repository> repos = new ArrayList<Repository>();
         File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (String file : repositories) {
@@ -436,6 +442,10 @@ public final class HistoryGuru {
      * history cache
      */
     public void ensureHistoryCacheExists(File file) throws HistoryException {
+        if (!useCache()) {
+            return;
+        }
+
         Repository repository = getRepository(file);
 
         if (repository == null) {
