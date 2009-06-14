@@ -276,7 +276,7 @@ class JDBCHistoryCache implements HistoryCache {
             "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE, F2.PATH " +
             "FROM CHANGESETS CS, FILECHANGES FC, REPOSITORIES R, " +
             "FILES F, AUTHORS A, FILECHANGES FC2, FILES F2 " +
-            "WHERE R.PATH = ? AND F.PATH = ? AND " +
+            "WHERE R.PATH = ? AND F.PATH LIKE ? ESCAPE '#' AND " +
             "F.REPOSITORY = R.ID AND A.REPOSITORY = R.ID AND " +
             "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
             "FC.FILE = F.ID AND A.ID = CS.AUTHOR AND " +
@@ -294,7 +294,8 @@ class JDBCHistoryCache implements HistoryCache {
             try {
                 PreparedStatement ps = conn.getStatement(GET_HISTORY);
                 ps.setString(1, reposPath);
-                ps.setString(2, filePath);
+                ps.setString(2, createPathPattern(
+                        filePath, file.isDirectory(), '#'));
                 ResultSet rs = ps.executeQuery();
                 try {
                     String currentRev = null;
@@ -326,6 +327,32 @@ class JDBCHistoryCache implements HistoryCache {
         History history = new History();
         history.setHistoryEntries(entries);
         return history;
+    }
+
+    /**
+     * Create a pattern that can be used to match against a file name or a
+     * directory name with LIKE.
+     *
+     * @param path the path name to create the pattern from
+     * @param isDir {@code true} if path is a directory and should match all
+     * files living in that directory (or in one of the subdirectories)
+     * @param escape the escape character used in the LIKE query
+     * @return a pattern for use in LIKE queries
+     */
+    private static String createPathPattern(
+            String path, boolean isDir, char escape) {
+        StringBuilder escaped = new StringBuilder(path.length() + 2);
+        for (int i = 0; i < path.length(); i++) {
+            char c = path.charAt(i);
+            if (c == '%' || c == '_' || c == escape) {
+                escaped.append(escape);
+            }
+            escaped.append(c);
+        }
+        if (isDir) {
+            escaped.append("/%");
+        }
+        return escaped.toString();
     }
 
     private static PreparedQuery GET_REPOSITORY = new PreparedQuery(

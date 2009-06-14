@@ -27,6 +27,7 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.Test;
@@ -118,6 +119,8 @@ public class JDBCHistoryCacheTest extends TestCase {
 
         cache.store(historyToStore, repos);
 
+        // test get history for single file
+
         File makefile = new File(reposRoot, "Makefile");
         assertTrue(makefile.exists());
 
@@ -140,6 +143,28 @@ public class JDBCHistoryCacheTest extends TestCase {
         assertEquals(TROND, e2.getAuthor());
         assertEquals("1:f24a5fd7a85d", e2.getRevision());
         assertEquals(3, e2.getFiles().size());
+
+        assertFalse(entryIt.hasNext());
+
+        // test get history for directory
+
+        History dirHistory = cache.get(reposRoot, repos);
+        assertEquals(
+                historyToStore.getHistoryEntries().size(),
+                dirHistory.getHistoryEntries().size());
+        for (Iterator<HistoryEntry>
+                stored = historyToStore.getHistoryEntries().iterator(),
+                fetched = dirHistory.getHistoryEntries().iterator();
+                stored.hasNext(); ) {
+            HistoryEntry expected = stored.next();
+            HistoryEntry actual = fetched.next();
+            assertEquals(expected.getAuthor(), actual.getAuthor());
+            assertEquals(expected.getRevision(), actual.getRevision());
+            assertEquals(expected.getMessage(), actual.getMessage());
+            assertEquals(
+                    new HashSet<String>(expected.getFiles()),
+                    new HashSet<String>(actual.getFiles()));
+        }
     }
 
     /**
