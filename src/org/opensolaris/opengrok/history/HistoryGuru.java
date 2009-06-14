@@ -62,9 +62,9 @@ public final class HistoryGuru {
      */
     private HistoryGuru() {
         HistoryCache cache = null;
-        if (RuntimeEnvironment.getInstance().useHistoryCache()) {
-            if (Boolean.getBoolean("org.opensolaris.opengrok.useJdbcCache")) {
-                // for testing only
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.useHistoryCache()) {
+            if (env.storeHistoryCacheInDB()) {
                 cache = new JDBCHistoryCache();
             } else {
                 cache = new FileHistoryCache();

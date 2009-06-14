@@ -272,6 +272,24 @@ public final class RuntimeEnvironment {
     public void setUseHistoryCache(boolean useHistoryCache) {
         threadConfig.get().setHistoryCache(useHistoryCache);
     }
+
+    /**
+     * Should the history cache be stored in a database instead of in XML
+     * files?
+     *
+     * @return {@code true} if the cache should be stored in a database
+     */
+    public boolean storeHistoryCacheInDB() {
+        return threadConfig.get().isHistoryCacheInDB();
+    }
+
+    /**
+     * Set whether the history cache should be stored in a database.
+     * @param store {@code true} if the cache should be stored in a database
+     */
+    public void setStoreHistoryCacheInDB(boolean store) {
+        threadConfig.get().setHistoryCacheInDB(store);
+    }
     
     /**
      * Should we generate HTML or not during the indexing phase
