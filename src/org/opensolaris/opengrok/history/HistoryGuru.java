@@ -366,7 +366,7 @@ public final class HistoryGuru {
     }
 
     private void createCacheReal(List<Repository> repositories) {
-        ExecutorService executor = Executors.newFixedThreadPool(4);
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
         for (final Repository repos : repositories) {
             final String latestRev;
