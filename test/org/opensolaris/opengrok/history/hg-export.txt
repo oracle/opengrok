@@ -1,0 +1,17 @@
+# HG changeset patch
+# User xyz
+# Date 1245446973 -7200
+# Node ID 78649c3ec6cb1a8c8aec9530db47df59dfd63b92
+# Parent  585a1b3f2efb9e9f21039a0a084103af032a9614
+Return failure when executed with no arguments
+
+diff -r 585a1b3f2efb -r 78649c3ec6cb main.c
+--- a/main.c	Tue Aug 12 22:13:09 2008 +0200
++++ b/main.c	Fri Jun 19 23:29:33 2009 +0200
+@@ -8,5 +8,5 @@
+    }
+    (void)printf("\n");
+ 
+-   return EXIT_SUCCESS;
++   return argc > 1 ? EXIT_SUCCESS : EXIT_FAILURE;
+ }

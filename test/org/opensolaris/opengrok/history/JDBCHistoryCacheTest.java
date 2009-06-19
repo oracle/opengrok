@@ -27,12 +27,16 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.TestRepository;
 
 /**
@@ -108,6 +112,58 @@ public class JDBCHistoryCacheTest extends TestCase {
     }
 
     /**
+     * Import a new changeset into a Mercurial repository.
+     *
+     * @param reposRoot the root of the repository
+     * @param changesetFile file that contains the changeset to import
+     */
+    private void importHgChangeset(File reposRoot, String changesetFile) {
+        String[] cmdargs = {
+            MercurialRepository.getCommand(), "import", changesetFile
+        };
+        Executor exec = new Executor(Arrays.asList(cmdargs), reposRoot);
+        int exitCode = exec.exec();
+        if (exitCode != 0) {
+            fail("hg import failed." +
+                    "\nexit code: " + exitCode +
+                    "\nstdout:\n" + exec.getOutputString() +
+                    "\nstderr:\n" + exec.getErrorString());
+        }
+    }
+
+    /**
+     * Assert that two HistoryEntry objects are equal.
+     * @param expected the expected entry
+     * @param actual the actual entry
+     * @throws AssertFailure if the two entries don't match
+     */
+    private void assertSameEntries(
+            List<HistoryEntry> expected, List<HistoryEntry> actual) {
+        assertEquals("Unexpected size", expected.size(), actual.size());
+        Iterator<HistoryEntry> actualIt = actual.iterator();
+        for (HistoryEntry expectedEntry : expected) {
+            assertSameEntry(expectedEntry, actualIt.next());
+        }
+        assertFalse("More entries than expected", actualIt.hasNext());
+    }
+
+    /**
+     * Assert that two lists of HistoryEntry objects are equal.
+     * @param expected the expected list of entries
+     * @param actual the actual list of entries
+     * @throws AssertFailure if the two lists don't match
+     */
+    private void assertSameEntry(HistoryEntry expected, HistoryEntry actual) {
+        assertEquals(expected.getAuthor(), actual.getAuthor());
+        assertEquals(expected.getRevision(), actual.getRevision());
+        assertEquals(expected.getDate(), actual.getDate());
+        assertEquals(expected.getMessage(), actual.getMessage());
+        assertEquals(
+                new HashSet<String>(expected.getFiles()),
+                new HashSet<String>(actual.getFiles()));
+    }
+
+    /**
      * Basic tests for the {@code store()} and {@code get()} methods.
      */
     public void testStoreAndGet() throws Exception {
@@ -149,22 +205,29 @@ public class JDBCHistoryCacheTest extends TestCase {
         // test get history for directory
 
         History dirHistory = cache.get(reposRoot, repos);
-        assertEquals(
-                historyToStore.getHistoryEntries().size(),
-                dirHistory.getHistoryEntries().size());
-        for (Iterator<HistoryEntry>
-                stored = historyToStore.getHistoryEntries().iterator(),
-                fetched = dirHistory.getHistoryEntries().iterator();
-                stored.hasNext(); ) {
-            HistoryEntry expected = stored.next();
-            HistoryEntry actual = fetched.next();
-            assertEquals(expected.getAuthor(), actual.getAuthor());
-            assertEquals(expected.getRevision(), actual.getRevision());
-            assertEquals(expected.getMessage(), actual.getMessage());
-            assertEquals(
-                    new HashSet<String>(expected.getFiles()),
-                    new HashSet<String>(actual.getFiles()));
-        }
+        assertSameEntries(
+                historyToStore.getHistoryEntries(),
+                dirHistory.getHistoryEntries());
+
+        // test incremental update
+
+        importHgChangeset(
+                reposRoot, getClass().getResource("hg-export.txt").getPath());
+
+        repos.createCache(cache, cache.getLatestCachedRevision(repos));
+
+        History updatedHistory = cache.get(reposRoot, repos);
+
+        HistoryEntry newEntry = new HistoryEntry(
+                "3:78649c3ec6cb",
+                new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
+                "xyz", "Return failure when executed with no arguments", true);
+        newEntry.addFile("/mercurial/main.c");
+
+        LinkedList<HistoryEntry> updatedEntries = new LinkedList<HistoryEntry>(
+                updatedHistory.getHistoryEntries());
+        assertSameEntry(newEntry, updatedEntries.removeFirst());
+        assertSameEntries(historyToStore.getHistoryEntries(), updatedEntries);
     }
 
     /**
@@ -188,5 +251,12 @@ public class JDBCHistoryCacheTest extends TestCase {
         assertNotNull("Unknown latest revision", latestRevision);
         assertEquals("Incorrect latest revision",
                 latestRevision, cache.getLatestCachedRevision(repos));
+
+        // test incremental update
+
+        importHgChangeset(
+                reposRoot, getClass().getResource("hg-export.txt").getPath());
+        repos.createCache(cache, latestRevision);
+        assertEquals("3:78649c3ec6cb", cache.getLatestCachedRevision(repos));
     }
 }

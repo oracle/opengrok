@@ -59,7 +59,7 @@ public class MercurialRepository extends Repository {
      * Get the name of the Mercurial command that should be used
      * @return the name of the hg command in use
      */
-    private String getCommand() {
+    static String getCommand() {
         return System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
     }
 
