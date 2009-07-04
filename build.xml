@@ -236,7 +236,8 @@ Use is subject to license terms.
     <!-- Update the manifest file with a classpath attribute -->
     <target name="-update-manifest-classpath">
       <manifest file="${manifest.file}" mode="update">
-        <attribute name="Class-Path" value="${opengrok.lib.files}"/>
+        <attribute name="Class-Path"
+                   value="${opengrok.lib.files} lib/derby.jar"/>
       </manifest>
     </target>
 

@@ -18,4 +18,5 @@ checkstyle/checkstyle_errors.txt
 checkstyle/checkstyle_errors.xml
 pmd/pmd_report.html
 pmd/pmd_report.xml
+lib/derby.jar
 derby.log
