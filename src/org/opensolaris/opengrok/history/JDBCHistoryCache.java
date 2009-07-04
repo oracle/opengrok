@@ -268,20 +268,42 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
+     * Build a statement that can be used to fetch the history for a given
+     * file or directory.
+     *
+     * @param isDir whether the statement should return history for a
+     * directory (if {@code true}) or for a file (if {@code false})
+     * @return an SQL statement that fetches the history for a file/directory
+     */
+    private static String buildGetHistoryQuery(boolean isDir) {
+        return "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE, F2.PATH " +
+                "FROM CHANGESETS CS, FILECHANGES FC, REPOSITORIES R, " +
+                "FILES F, AUTHORS A, FILECHANGES FC2, FILES F2 " +
+                "WHERE R.PATH = ? AND " +
+                (isDir ? "F.PATH LIKE ? ESCAPE '#'" : "F.PATH = ?") +
+                " AND F.REPOSITORY = R.ID AND A.REPOSITORY = R.ID AND " +
+                "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
+                "FC.FILE = F.ID AND A.ID = CS.AUTHOR AND " +
+                "CS.ID = FC2.CHANGESET AND FC2.FILE = F2.ID " +
+                "ORDER BY CS.ID DESC";
+    }
+
+    /**
      * Statement that gets the history for the specified file and repository.
      * The result is ordered in reverse chronological order to match the
      * required ordering for {@link HistoryCache#get(File, Repository)}.
      */
-    private static final PreparedQuery GET_HISTORY = new PreparedQuery(
-            "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE, F2.PATH " +
-            "FROM CHANGESETS CS, FILECHANGES FC, REPOSITORIES R, " +
-            "FILES F, AUTHORS A, FILECHANGES FC2, FILES F2 " +
-            "WHERE R.PATH = ? AND F.PATH LIKE ? ESCAPE '#' AND " +
-            "F.REPOSITORY = R.ID AND A.REPOSITORY = R.ID AND " +
-            "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
-            "FC.FILE = F.ID AND A.ID = CS.AUTHOR AND " +
-            "CS.ID = FC2.CHANGESET AND FC2.FILE = F2.ID " +
-            "ORDER BY CS.ID DESC");
+    private static final PreparedQuery GET_FILE_HISTORY =
+            new PreparedQuery(buildGetHistoryQuery(false));
+
+    /**
+     * Statement that gets the history for all files matching a pattern in the
+     * given repository. The result is ordered in reverse chronological order
+     * to match the required ordering for
+     * {@link HistoryCache#get(File, Repository)}.
+     */
+    private static final PreparedQuery GET_DIR_HISTORY =
+            new PreparedQuery(buildGetHistoryQuery(true));
 
     public History get(File file, Repository repository)
             throws HistoryException {
@@ -292,10 +314,18 @@ class JDBCHistoryCache implements HistoryCache {
             final ConnectionResource conn =
                     connectionManager.getConnectionResource();
             try {
-                PreparedStatement ps = conn.getStatement(GET_HISTORY);
+                final PreparedStatement ps;
+                if (file.isDirectory()) {
+                    // Fetch history for all files under this directory. Match
+                    // file names against a pattern with a LIKE clause.
+                    ps = conn.getStatement(GET_DIR_HISTORY);
+                    ps.setString(2, createDirPattern(filePath, '#'));
+                } else {
+                    // Fetch history for a single file only.
+                    ps = conn.getStatement(GET_FILE_HISTORY);
+                    ps.setString(2, filePath);
+                }
                 ps.setString(1, reposPath);
-                ps.setString(2, createPathPattern(
-                        filePath, file.isDirectory(), '#'));
                 ResultSet rs = ps.executeQuery();
                 try {
                     String currentRev = null;
@@ -330,17 +360,14 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
-     * Create a pattern that can be used to match against a file name or a
+     * Create a pattern that can be used to match file names against a
      * directory name with LIKE.
      *
-     * @param path the path name to create the pattern from
-     * @param isDir {@code true} if path is a directory and should match all
-     * files living in that directory (or in one of the subdirectories)
+     * @param path the path name of the directory
      * @param escape the escape character used in the LIKE query
      * @return a pattern for use in LIKE queries
      */
-    private static String createPathPattern(
-            String path, boolean isDir, char escape) {
+    private static String createDirPattern(String path, char escape) {
         StringBuilder escaped = new StringBuilder(path.length() + 2);
         for (int i = 0; i < path.length(); i++) {
             char c = path.charAt(i);
@@ -349,9 +376,7 @@ class JDBCHistoryCache implements HistoryCache {
             }
             escaped.append(c);
         }
-        if (isDir) {
-            escaped.append("/%");
-        }
+        escaped.append("/%");
         return escaped.toString();
     }
 
