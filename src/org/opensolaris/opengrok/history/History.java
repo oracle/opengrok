@@ -32,7 +32,15 @@ import java.util.List;
  */
 public class History {
     /** Entries in the log. The first entry is the most recent one. */
-    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+    private List<HistoryEntry> entries;
+
+    public History() {
+        this(new ArrayList<HistoryEntry>());
+    }
+
+    History(List<HistoryEntry> entries) {
+        this.entries = entries;
+    }
 
     /**
      * Set the list of log entries for the file. The first entry is the most

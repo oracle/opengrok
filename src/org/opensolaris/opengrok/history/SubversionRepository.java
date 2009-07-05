@@ -133,9 +133,11 @@ public class SubversionRepository extends Repository {
      * named file.
      * 
      * @param file The file to retrieve history for
+     * @param sinceRevision the revision number immediately preceding the first
+     * revision we want, or {@code null} to fetch the entire history
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file) {
+    Executor getHistoryLogExecutor(final File file, String sinceRevision) {
         String abs = file.getAbsolutePath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -147,6 +149,14 @@ public class SubversionRepository extends Repository {
         cmd.add("log");
         cmd.add("--xml");
         cmd.add("-v");
+        if (sinceRevision != null) {
+            cmd.add("-r");
+            // We would like to use sinceRevision+1 here, but if no new
+            // revisions have been added after sinceRevision, it would fail
+            // because there is no such revision as sinceRevision+1. Instead,
+            // fetch the unneeded revision and remove it later.
+            cmd.add("BASE:" + sinceRevision);
+        }
         cmd.add(filename);
 
         return new Executor(cmd, new File(directoryName));
@@ -181,7 +191,13 @@ public class SubversionRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-        return new SubversionHistoryParser().parse(file, this);
+        return getHistory(file, null);
+    }
+
+    @Override
+    History getHistory(File file, String sinceRevision)
+            throws HistoryException {
+        return new SubversionHistoryParser().parse(file, this, sinceRevision);
     }
 
     private static class AnnotateHandler extends DefaultHandler2 {

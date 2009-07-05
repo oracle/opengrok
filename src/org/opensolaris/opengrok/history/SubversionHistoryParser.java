@@ -52,7 +52,6 @@ import org.xml.sax.ext.DefaultHandler2;
  */
 class SubversionHistoryParser implements Executor.StreamHandler {
 
-    private History history;
     private SAXParser saxParser = null;
     private Handler handler;
 
@@ -137,9 +136,12 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      *
      * @param file the file to parse history for
      * @param repos Pointer to the SubversionReporitory
+     * @param sinceRevision the revision number immediately preceding the first
+     * revision we want, or {@code null} to fetch the entire history
      * @return object representing the file's history
      */
-    History parse(File file, Repository repos) throws HistoryException {
+    History parse(File file, SubversionRepository repos, String sinceRevision)
+            throws HistoryException {
         initSaxParser();
         handler = new Handler(repos.getDirectoryName(), 
                 ((SubversionRepository) repos).reposPath, 
@@ -150,7 +152,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
             throw new HistoryException("Failed to create SAX parser");
         }
 
-        Executor executor = ((SubversionRepository) repos).getHistoryLogExecutor(file);
+        Executor executor = repos.getHistoryLogExecutor(file, sinceRevision);
         int status = executor.exec(true, this);
 
         if (status != 0) {
@@ -158,9 +160,18 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     file.getAbsolutePath() + "\" Exit code: " + status);
         }
 
-        return history;
+        List<HistoryEntry> entries = handler.entries;
+
+        // If we only fetch parts of the history, we're not interested in
+        // sinceRevision. Remove it.
+        if (sinceRevision != null) {
+            HistoryEntry removed = entries.remove(entries.size() - 1);
+            assert sinceRevision.equals(removed.getRevision());
+        }
+
+        return new History(entries);
     }
-            
+
    /**
      * Process the output from the log command and insert the HistoryEntries
      * into the history field.
@@ -171,9 +182,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         try {
             initSaxParser();
-            history = new History();
             saxParser.parse(new BufferedInputStream(input), handler);
-            history.setHistoryEntries(handler.entries);
         } catch (Exception e) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "An error occurred while parsing the xml output", e);
         }
@@ -189,6 +198,6 @@ class SubversionHistoryParser implements Executor.StreamHandler {
     History parse(String buffer) throws IOException {
         handler = new Handler("/", "", 0, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US));
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
-        return history;
+        return new History(handler.entries);
     }
 }
