@@ -31,6 +31,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * An interface for an external repository. 
@@ -78,6 +81,19 @@ public abstract class Repository extends RepositoryInfo {
      */
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
+
+        // If we want an incremental history update and get here, warn that
+        // it may be slow.
+        if (sinceRevision != null) {
+            Logger logger = OpenGrokLogger.getLogger();
+            Level level = Level.INFO;
+            logger.log(level,
+                    "Incremental history retrieval is not implemented for {0}.",
+                    getClass().getSimpleName());
+            logger.log(level,
+                    "Falling back to slower full history retrieval.");
+        }
+
         History history = getHistory(file);
 
         if (sinceRevision == null) {
