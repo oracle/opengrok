@@ -259,4 +259,15 @@ public class JDBCHistoryCacheTest extends TestCase {
         repos.createCache(cache, latestRevision);
         assertEquals("3:78649c3ec6cb", cache.getLatestCachedRevision(repos));
     }
+
+    /**
+     * Test that {@code hasCacheForDirectory()} works.
+     */
+    public void testHasCacheForDirectory() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository repos = RepositoryFactory.getRepository(reposRoot);
+        assertFalse(cache.hasCacheForDirectory(reposRoot, repos));
+        cache.store(repos.getHistory(reposRoot), repos);
+        assertTrue(cache.hasCacheForDirectory(reposRoot, repos));
+    }
 }
