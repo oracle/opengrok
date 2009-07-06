@@ -264,10 +264,30 @@ public class JDBCHistoryCacheTest extends TestCase {
      * Test that {@code hasCacheForDirectory()} works.
      */
     public void testHasCacheForDirectory() throws Exception {
-        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
-        Repository repos = RepositoryFactory.getRepository(reposRoot);
-        assertFalse(cache.hasCacheForDirectory(reposRoot, repos));
-        cache.store(repos.getHistory(reposRoot), repos);
-        assertTrue(cache.hasCacheForDirectory(reposRoot, repos));
+        // Use a Mercurial repository and a Subversion repository in this test.
+        File hgRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository hgRepos = RepositoryFactory.getRepository(hgRoot);
+        File svnRoot = new File(repositories.getSourceRoot(), "svn");
+        Repository svnRepos = RepositoryFactory.getRepository(svnRoot);
+
+        // None of the repositories should have any history.
+        assertFalse(cache.hasCacheForDirectory(hgRoot, hgRepos));
+        assertFalse(cache.hasCacheForDirectory(svnRoot, svnRepos));
+
+        // Store empty history, so still expect false.
+        cache.store(new History(), hgRepos);
+        cache.store(new History(), svnRepos);
+        assertFalse(cache.hasCacheForDirectory(hgRoot, hgRepos));
+        assertFalse(cache.hasCacheForDirectory(svnRoot, svnRepos));
+
+        // Store history for Mercurial repository.
+        cache.store(hgRepos.getHistory(hgRoot), hgRepos);
+        assertTrue(cache.hasCacheForDirectory(hgRoot, hgRepos));
+        assertFalse(cache.hasCacheForDirectory(svnRoot, svnRepos));
+
+        // Store history for Subversion repository.
+        cache.store(hgRepos.getHistory(svnRoot), svnRepos);
+        assertTrue(cache.hasCacheForDirectory(hgRoot, hgRepos));
+        assertTrue(cache.hasCacheForDirectory(svnRoot, svnRepos));
     }
 }

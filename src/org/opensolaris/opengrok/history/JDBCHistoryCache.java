@@ -182,7 +182,7 @@ class JDBCHistoryCache implements HistoryCache {
 
     private static final PreparedQuery IS_DIR_IN_CACHE = new PreparedQuery(
             "SELECT 1 FROM REPOSITORIES R WHERE R.PATH = ? AND EXISTS " +
-            "(SELECT 1 FROM FILES F WHERE F.ID = R.ID AND " +
+            "(SELECT 1 FROM FILES F WHERE F.REPOSITORY = R.ID AND " +
             "F.PATH LIKE ? ESCAPE '#')");
 
     // We do check the return value from ResultSet.next(), but PMD doesn't
