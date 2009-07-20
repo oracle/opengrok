@@ -1,7 +1,12 @@
 #!/bin/sh
 #
-# OpenGrok Wrapper (Interactive GUI, Initial Generation and Cron Job Updating)
+# OpenGrok Wrapper (initial setup and cron job updating)
+# targeted against OpenSolaris + Debian , tomcat6 and glassfish
 #
+
+error() { echo " ERROR: $@" ; }
+warning() { echo "WARNING: $@" ; }
+# `date +%Y-%m-%d-%H-%M`
 
 #
 # Usage
@@ -10,7 +15,10 @@
 Usage()
 {
     echo 1>&2
-    echo "Usage: ${0} <update|updateQuietly|updateConfiguration|usage>" 1>&2
+    echo "Usage: ${0} <deploy|update|updateQuietly|updateConfiguration|usage>" 1>&2
+    echo "Optional env variables: "1>&2
+    echo "OPENGROK_CONFIGURATION - location of own config, see sample.env.conf" 1>&2
+	echo "e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ./${0} ... " 1>&2
     echo 1>&2
     exit 1
 }
@@ -18,9 +26,13 @@ Usage()
 #
 # Configuration
 #
+
+OS=`/bin/uname`
+
 if [ -n "${OPENGROK_CONFIGURATION}" -a -f "${OPENGROK_CONFIGURATION}" ]
 then
     # Load the Local OpenGrok Configuration Environment
+	echo Loading ${OPENGROK_CONFIGURATION} ...
     . "${OPENGROK_CONFIGURATION}"
 else
     # Use the built-in defaults. This section can be copied to its own
@@ -30,44 +42,69 @@ else
     # on each new release. A sample Cron Entry might look like:
     # 15 0 * * * OPENGROK_CONFIGURATION=/pkgs/etc/OpenGrok.sh /pkgs/sbin/OpenGrok updateQuietly
 
+    # Note: below is doing some small autodetection, use own config in case it fails
+
     # Note: It is not really possible to ever provided defaults for
     # these values which will run in every UNIX-like environment.
     # So I have provided a set which are functional for a given
     # environment on which you can based you own configuration.
 
+	STANDARD_ENV=/pkgs/sbin/CronExecutionEnvironment.sh
+
     # Setup a standard execution environment
-    if [ -f /pkgs/sbin/CronExecutionEnvironment.sh ]
+    if [ -f $STANDARD_ENV ]
     then
-	. /pkgs/sbin/CronExecutionEnvironment.sh
+	echo Loading $STANDARD_ENV ...
+	. $STANDARD_ENV
     fi
+
+	VARBASE="/var/opengrok"
+
+    if [ x"$OS" = x"SunOS" ]; then
+       BINARYBASE="/usr/share/lib/java"
+    elif [ x"$OS" = x"Linux" ]; then
+       BINARYBASE="/usr/share/java"
+    fi
+	# BINARYBASE="./" in case of local execution ...
 
     # REQUIRED: Source Code/Repository Root
     #           (your source code or the root of all repositories)
-    SRC_ROOT="/data/opengrok/src"
+    SRC_ROOT="$VARBASE/src"
 
     # REQUIRED: OpenGrok Generate Data Root
     #           (for Lucene index and hypertext cross-references)
     #           This area is rebuilt by "update" / "updateQuietly"
-    DATA_ROOT="/data/opengrok/data"
+    DATA_ROOT="$VARBASE/data"
 
     # OPTIONAL: User Provided Source Path to Description Mapping (Tab Separated Value)
     #           (The user maintained source of the generated EftarFile file)
-    PATH_DESC="/data/opengrok/etc/paths.tsv"
+    PATH_DESC="$VARBASE/paths.tsv"
 
     # REQUIRED: XML Configuration 
     #           (the configuration used by Web/GUI interfaces)
-    XML_CONFIGURATION="/data/opengrok/configuration.xml"
+    XML_CONFIGURATION="$VARBASE/etc/configuration.xml"
 
     # REQUIRED: Java Archive of OpenGrok
     #           (user building from source code will find this other key
     #            files in the "dist" directory after the build is completed)
-    OPENGROK_JAR="/data/opengrok/opengrok.jar"
+    OPENGROK_JAR="$BINARYBASE/opengrok.jar"
 
     # REQUIRED: Exuberant CTags (http://ctags.sf.net)
-    EXUBERANT_CTAGS="/pkgs/64-bit/release/ctags-5.7/bin/ctags"
+    if [ x"$OS" = x"SunOS" ]; then
+       EXCTAGS="exctags"
+    elif [ x"$OS" = x"Linux" ]; then
+       EXCTAGS="ctags-exuberant"
+    fi
+	EXUBERANT_CTAGS=`which $EXCTAGS`
+	# EXUBERANT_CTAGS="/pkgs/64-bit/release/ctags-5.7/bin/ctags"
 
     # REQUIRED: Java Home
-    JAVA_HOME="/usr/jdk/instances/jdk1.6.0"
+	if [ x"$OS" = x"SunOS" ]; then
+       JAVA_HOME="/usr/jdk/instances/jdk1.6.0"
+       #JAVA_HOME="/usr/jdk/latest/" # if we will be backwards compatible
+	elif [ x"$OS" = x"Linux" ]; then
+       JAVA_HOME="/usr/lib/jvm/java-6-sun/bin/"
+	fi
     export JAVA_HOME
 
     # REQUIRED: Java Virtual Machine
@@ -76,11 +113,21 @@ else
     # OPTIONAL: Uncomment the following line if your source contains Mercurial repositories.
     SCAN_FOR_REPOSITORY="-S"
 
+	HG=`which hg`
+	CVS=`which cvs`
+	SVN=`which svn`
+	SCCS=`which sccs`
+
     # OPTIONAL: Override Built-in Properties
-    PROPERTIES="-Dorg.opensolaris.opengrok.history.Mercurial=/pkgs/bin/hg"
+    PROPERTIES="-Dorg.opensolaris.opengrok.history.Mercurial=$HG \
+-Dorg.opensolaris.opengrok.history.cvs=$CVS \
+-Dorg.opensolaris.opengrok.history.Subversion=$SVN \
+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS"
 
     # OPTIONAL: JVM Options
     #JAVA_OPTS="-server -Xmx1024m"
+
+	WAR="dist/source.war"
 
     # DELIVERED: An update program for EftarFile
     # Usage: <class> inputFile [inputFile ...] outputFile
@@ -95,6 +142,21 @@ else
 
     # or alternatively, Be Verbose!
     #VERBOSE="-v"
+fi
+
+if [ ! -x $EXUBERANT_CTAGS ] ; then
+echo "Exuberant ctags for $OS: $EXCTAGS not found or not executable, exiting until this dependency is resolved ..."
+exit 2
+fi
+
+if [ ! -d $SRC_ROOT ] ; then
+echo "The source path: $SRC_ROOT doesn't exist, exiting cowardly ..."
+exit 2
+fi
+
+if [ ! -d $DATA_ROOT ] ; then
+echo "Index path $DATA_ROOT nonexistent, attempting to create one ... "
+mkdir -p $DATA_ROOT
 fi
 
 #
@@ -139,6 +201,53 @@ OpenGrokUsage()
     ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} '-?'
 }
 
+
+
+DeployWar()
+{
+# detection mechanism could be better, but as a starter this will do the job,
+# if you expect more, write it, we accept patches !
+CONTAINER=""
+
+# tomcat is preffered
+if [ x"$OS" = x"SunOS" ]; then
+   WARDIR=/var/tomcat6/webapps/ 
+elif [ x"$OS" = x"Linux" ]; then
+   WARDIR=/var/lib/tomcat6/webapps/
+fi
+CONTAINER="tomcat"
+
+DOMAINDIR=/var/appserver/domains
+
+if [ ! -d $WARDIR ]; then
+# test whether glassfish is there, only if tomcat webapp dir is not present
+ if [ -x /etc/init.d/appserv ]; then
+  if [ -d $DOMAINDIR ]; then
+	FIRSTDOMAIN=`ls -1 $DOMAINDIR  | head -1`
+	WARDIR=$DOMAINDIR/$FIRSTDOMAIN/autodeploy/
+	CONTAINER="glassfish"
+  else
+    error "Glassfish installed, but cannot get first domain from $DOMAINDIR."
+	exit 1;
+  fi
+ else
+	error "$WARDIR doesn't exist, seems this combination of application container and $OS is unsupported"
+	exit 1;
+ fi
+fi
+
+
+echo "Copying $WAR to $WARDIR , start your $CONTAINER or wait until it loads the war"
+cp $WAR $WARDIR/
+RC=$?
+if [ x$RC=x"0" ]; then
+echo "OpenGrok should be listening on HOST:PORT/source , where HOST and PORT are configured in your $CONTAINER."
+else
+echo "There was a problem copying the web archive to target directory, consult error message above."
+fi
+
+}
+
 #
 # Main Program
 #
@@ -149,6 +258,10 @@ then
 fi
 
 case "${1}" in
+
+    deploy)
+        DeployWar
+        ;;
 
     update)
 	UpdateGeneratedData
