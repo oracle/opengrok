@@ -25,8 +25,10 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -289,5 +291,57 @@ public class JDBCHistoryCacheTest extends TestCase {
         cache.store(hgRepos.getHistory(svnRoot), svnRepos);
         assertTrue(cache.hasCacheForDirectory(hgRoot, hgRepos));
         assertTrue(cache.hasCacheForDirectory(svnRoot, svnRepos));
+    }
+
+    /**
+     * Test that get() is able to continue and return successfully after a lock
+     * timeout when accessing the database.
+     */
+    public void testRetryGetOnTimeout() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository repos = RepositoryFactory.getRepository(reposRoot);
+        History history = repos.getHistory(reposRoot);
+        cache.store(history, repos);
+
+        // Set the lock timeout to one second to make it go faster.
+        final Connection c = DriverManager.getConnection(getURL());
+        Statement s = c.createStatement();
+        s.execute("call syscs_util.syscs_set_database_property" +
+                "('derby.locks.waitTimeout', '1')");
+
+        // Lock one of the tables exclusively in order to block get().
+        c.setAutoCommit(false);
+        s.execute("lock table filechanges in exclusive mode");
+        s.close();
+
+        // Roll back the transaction in 1.5 seconds so that get() is able to
+        // continue after the first timeout.
+        final Exception[] ex = new Exception[1];
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1500);
+                    c.rollback();
+                    c.close();
+                } catch (Exception e) {
+                    ex[0] = e;
+                }
+            }
+        };
+
+        t.start();
+
+        // get() should be able to continue after a timeout.
+        assertSameEntries(
+                history.getHistoryEntries(),
+                cache.get(reposRoot, repos).getHistoryEntries());
+
+        t.join();
+
+        // Expose any exception thrown in the helper thread.
+        if (ex[0] != null) {
+            throw ex[0];
+        }
     }
 }

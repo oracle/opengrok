@@ -37,6 +37,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.jdbc.ConnectionManager;
 import org.opensolaris.opengrok.jdbc.ConnectionResource;
@@ -54,6 +57,12 @@ class JDBCHistoryCache implements HistoryCache {
     private static final String[] TABLES = {
         "REPOSITORIES", "FILES", "AUTHORS", "CHANGESETS", "FILECHANGES"
     };
+
+    /**
+     * The number of times to retry an operation that failed in a way that
+     * indicates that it may succeed if it's tried again.
+     */
+    private static final int MAX_RETRIES = 2;
 
     private ConnectionManager connectionManager;
 
@@ -79,6 +88,32 @@ class JDBCHistoryCache implements HistoryCache {
     JDBCHistoryCache(String jdbcDriverClass, String url) {
         this.jdbcDriverClass = jdbcDriverClass;
         this.jdbcConnectionURL = url;
+    }
+
+    /**
+     * Handle an {@code SQLException}. If the exception indicates that the
+     * operation may succeed if it's retried and the number of attempts hasn't
+     * exceeded the limit defined by {@link #MAX_RETRIES}, ignore it and let
+     * the caller retry the operation. Otherwise, re-throw the exception.
+     *
+     * @param sqle the exception to handle
+     * @param attemptNo the attempt number, first attempt is 0
+     * @throws SQLException if the operation shouldn't be retried
+     */
+    private static void handleSQLException(SQLException sqle, int attemptNo)
+            throws SQLException {
+        // TODO: When we only support JDK 6 or later, check for
+        // SQLTransactionRollbackException instead of SQLState. Or
+        // perhaps SQLTransientException.
+        String sqlState = sqle.getSQLState();
+        if (attemptNo >= MAX_RETRIES ||
+                sqlState == null || !sqlState.startsWith("40")) {
+            throw sqle;
+        } else {
+            Logger logger = OpenGrokLogger.getLogger();
+            logger.info("Transient database failure detected. Retrying.");
+            logger.log(Level.FINE, "Transient database failure details:", sqle);
+        }
     }
 
     // Many of the tables contain columns with identical names and types,
@@ -162,18 +197,24 @@ class JDBCHistoryCache implements HistoryCache {
         try {
             connectionManager =
                     new ConnectionManager(jdbcDriverClass, jdbcConnectionURL);
-            final ConnectionResource conn =
-                    connectionManager.getConnectionResource();
-            try {
-                final Statement stmt = conn.createStatement();
+            for (int i = 0;; i++) {
+                final ConnectionResource conn =
+                        connectionManager.getConnectionResource();
                 try {
-                    initDB(stmt);
+                    final Statement stmt = conn.createStatement();
+                    try {
+                        initDB(stmt);
+                    } finally {
+                        stmt.close();
+                    }
+                    conn.commit();
+                    // Success! Break out of the loop.
+                    return;
+                } catch (SQLException sqle) {
+                    handleSQLException(sqle, i);
                 } finally {
-                    stmt.close();
+                    connectionManager.releaseConnection(conn);
                 }
-                conn.commit();
-            } finally {
-                connectionManager.releaseConnection(conn);
             }
         } catch (Exception e) {
             throw new HistoryException(e);
@@ -192,21 +233,25 @@ class JDBCHistoryCache implements HistoryCache {
             throws HistoryException {
         assert file.isDirectory();
         try {
-            final ConnectionResource conn =
-                    connectionManager.getConnectionResource();
-            try {
-                PreparedStatement ps = conn.getStatement(IS_DIR_IN_CACHE);
-                ps.setString(1, toUnixPath(repository.getDirectoryName()));
-                ps.setString(2, createDirPattern(
-                        getRelativePath(file, repository), '#'));
-                ResultSet rs = ps.executeQuery();
+            for (int i = 0;; i++) {
+                final ConnectionResource conn =
+                        connectionManager.getConnectionResource();
                 try {
-                    return rs.next();
+                    PreparedStatement ps = conn.getStatement(IS_DIR_IN_CACHE);
+                    ps.setString(1, toUnixPath(repository.getDirectoryName()));
+                    ps.setString(2, createDirPattern(
+                            getRelativePath(file, repository), '#'));
+                    ResultSet rs = ps.executeQuery();
+                    try {
+                        return rs.next();
+                    } finally {
+                        rs.close();
+                    }
+                } catch (SQLException sqle) {
+                    handleSQLException(sqle, i);
                 } finally {
-                    rs.close();
+                    connectionManager.releaseConnection(conn);
                 }
-            } finally {
-                connectionManager.releaseConnection(conn);
             }
         } catch (SQLException sqle) {
             throw new HistoryException(sqle);
@@ -308,51 +353,65 @@ class JDBCHistoryCache implements HistoryCache {
 
     public History get(File file, Repository repository)
             throws HistoryException {
-        final String filePath = getSourceRootRelativePath(file);
-        final String reposPath = toUnixPath(repository.getDirectoryName());
-        final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         try {
-            final ConnectionResource conn =
-                    connectionManager.getConnectionResource();
-            try {
-                final PreparedStatement ps;
-                if (file.isDirectory()) {
-                    // Fetch history for all files under this directory. Match
-                    // file names against a pattern with a LIKE clause.
-                    ps = conn.getStatement(GET_DIR_HISTORY);
-                    ps.setString(2, createDirPattern(filePath, '#'));
-                } else {
-                    // Fetch history for a single file only.
-                    ps = conn.getStatement(GET_FILE_HISTORY);
-                    ps.setString(2, filePath);
-                }
-                ps.setString(1, reposPath);
-                ResultSet rs = ps.executeQuery();
+            for (int i = 0;; i++) {
                 try {
-                    String currentRev = null;
-                    HistoryEntry entry = null;
-                    while (rs.next()) {
-                        String revision = rs.getString(1);
-                        if (!revision.equals(currentRev)) {
-                            currentRev = revision;
-                            String author = rs.getString(2);
-                            Timestamp time = rs.getTimestamp(3);
-                            String message = rs.getString(4);
-                            entry = new HistoryEntry(
-                                    revision, time, author, message, true);
-                            entries.add(entry);
-                        }
-                        String fileName = rs.getString(5);
-                        entry.addFile(fileName);
-                    }
-                } finally {
-                    rs.close();
+                    return getHistory(file, repository);
+                } catch (SQLException sqle) {
+                    handleSQLException(sqle, i);
                 }
-            } finally {
-                connectionManager.releaseConnection(conn);
             }
         } catch (SQLException sqle) {
             throw new HistoryException(sqle);
+        }
+    }
+
+    /**
+     * Helper for {@link #get(File, Repository)}.
+     */
+    private History getHistory(File file, Repository repository)
+            throws HistoryException, SQLException {
+        final String filePath = getSourceRootRelativePath(file);
+        final String reposPath = toUnixPath(repository.getDirectoryName());
+        final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        final ConnectionResource conn =
+                connectionManager.getConnectionResource();
+        try {
+            final PreparedStatement ps;
+            if (file.isDirectory()) {
+                // Fetch history for all files under this directory. Match
+                // file names against a pattern with a LIKE clause.
+                ps = conn.getStatement(GET_DIR_HISTORY);
+                ps.setString(2, createDirPattern(filePath, '#'));
+            } else {
+                // Fetch history for a single file only.
+                ps = conn.getStatement(GET_FILE_HISTORY);
+                ps.setString(2, filePath);
+            }
+            ps.setString(1, reposPath);
+            ResultSet rs = ps.executeQuery();
+            try {
+                String currentRev = null;
+                HistoryEntry entry = null;
+                while (rs.next()) {
+                    String revision = rs.getString(1);
+                    if (!revision.equals(currentRev)) {
+                        currentRev = revision;
+                        String author = rs.getString(2);
+                        Timestamp time = rs.getTimestamp(3);
+                        String message = rs.getString(4);
+                        entry = new HistoryEntry(
+                                revision, time, author, message, true);
+                        entries.add(entry);
+                    }
+                    String fileName = rs.getString(5);
+                    entry.addFile(fileName);
+                }
+            } finally {
+                rs.close();
+            }
+        } finally {
+            connectionManager.releaseConnection(conn);
         }
 
         History history = new History();
@@ -420,18 +479,47 @@ class JDBCHistoryCache implements HistoryCache {
     private void storeHistory(ConnectionResource conn, History history,
             Repository repository) throws SQLException {
 
-        int reposId = getRepositoryId(conn, repository);
-        conn.commit();
+        Integer reposId = null;
+        Map<String, Integer> authors = null;
+        Map<String, Integer> files = null;
+        PreparedStatement addChangeset = null;
+        PreparedStatement addFilechange = null;
 
-        Map<String, Integer> authors = getAuthors(conn, history, reposId);
-        conn.commit();
+        for (int i = 0;; i++) {
+            try {
+                if (reposId == null) {
+                    reposId = getRepositoryId(conn, repository);
+                    conn.commit();
+                }
 
-        Map<String, Integer> files = getFiles(conn, history, reposId);
-        conn.commit();
+                if (authors == null) {
+                    authors = getAuthors(conn, history, reposId);
+                    conn.commit();
+                }
 
-        PreparedStatement addChangeset = conn.getStatement(ADD_CHANGESET);
+                if (files == null) {
+                    files = getFiles(conn, history, reposId);
+                    conn.commit();
+                }
+
+                if (addChangeset == null) {
+                    addChangeset = conn.getStatement(ADD_CHANGESET);
+                }
+
+                if (addFilechange == null) {
+                    addFilechange = conn.getStatement(ADD_FILECHANGE);
+                }
+
+                // Success! Break out of the loop.
+                break;
+
+            } catch (SQLException sqle) {
+                handleSQLException(sqle, i);
+                conn.rollback();
+            }
+        }
+
         addChangeset.setInt(1, reposId);
-        PreparedStatement addFilechange = conn.getStatement(ADD_FILECHANGE);
 
         // getHistoryEntries() returns the entries in reverse chronological
         // order, but we want to insert them in chronological order so that
@@ -443,23 +531,35 @@ class JDBCHistoryCache implements HistoryCache {
         for (ListIterator<HistoryEntry> it =
                 entries.listIterator(entries.size());
                 it.hasPrevious();) {
-            HistoryEntry entry = it.previous();
-            addChangeset.setString(2, entry.getRevision());
-            addChangeset.setInt(3, authors.get(entry.getAuthor()));
-            addChangeset.setTimestamp(4,
-                    new Timestamp(entry.getDate().getTime()));
-            addChangeset.setString(5, entry.getMessage());
-            addChangeset.executeUpdate();
+            retry:
+            for (int i = 0;; i++) {
+                try {
+                    HistoryEntry entry = it.previous();
+                    addChangeset.setString(2, entry.getRevision());
+                    addChangeset.setInt(3, authors.get(entry.getAuthor()));
+                    addChangeset.setTimestamp(4,
+                            new Timestamp(entry.getDate().getTime()));
+                    addChangeset.setString(5, entry.getMessage());
+                    addChangeset.executeUpdate();
 
-            int changesetId = getGeneratedIntKey(addChangeset);
-            addFilechange.setInt(1, changesetId);
-            for (String file : entry.getFiles()) {
-                int fileId = files.get(toUnixPath(file));
-                addFilechange.setInt(2, fileId);
-                addFilechange.executeUpdate();
+                    int changesetId = getGeneratedIntKey(addChangeset);
+                    addFilechange.setInt(1, changesetId);
+                    for (String file : entry.getFiles()) {
+                        int fileId = files.get(toUnixPath(file));
+                        addFilechange.setInt(2, fileId);
+                        addFilechange.executeUpdate();
+                    }
+
+                    conn.commit();
+
+                    // Successfully added the entry. Break out of retry loop.
+                    break retry;
+
+                } catch (SQLException sqle) {
+                    handleSQLException(sqle, i);
+                    conn.rollback();
+                }
             }
-
-            conn.commit();
         }
     }
 
@@ -496,9 +596,20 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(1, SCHEMA);
                 for (String table : TABLES) {
                     ps.setString(2, table);
-                    ps.execute();
+                    retry:
+                    for (int i = 0;; i++) {
+                        try {
+                            ps.execute();
+                            // Successfully executed statement. Break out of
+                            // retry loop.
+                            break retry;
+                        } catch (SQLException sqle) {
+                            handleSQLException(sqle, i);
+                            conn.rollback();
+                        }
+                    }
+                    conn.commit();
                 }
-                conn.commit();
             } finally {
                 ps.close();
             }
@@ -655,22 +766,36 @@ class JDBCHistoryCache implements HistoryCache {
     public String getLatestCachedRevision(Repository repository)
             throws HistoryException {
         try {
-            final ConnectionResource conn =
-                    connectionManager.getConnectionResource();
-            try {
-                PreparedStatement ps = conn.getStatement(GET_LATEST_REVISION);
-                ps.setString(1, toUnixPath(repository.getDirectoryName()));
-                ResultSet rs = ps.executeQuery(); // NOPMD (we do check next)
+            for (int i = 0;; i++) {
                 try {
-                    return rs.next() ? rs.getString(1) : null;
-                } finally {
-                    rs.close();
+                    return getLatestRevisionForRepository(repository);
+                } catch (SQLException sqle) {
+                    handleSQLException(sqle, i);
                 }
-            } finally {
-                connectionManager.releaseConnection(conn);
             }
         } catch (SQLException sqle) {
             throw new HistoryException(sqle);
+        }
+    }
+
+    /**
+     * Helper for {@link #getLatestCachedRevision(Repository)}.
+     */
+    private String getLatestRevisionForRepository(Repository repository)
+            throws SQLException {
+        final ConnectionResource conn =
+                connectionManager.getConnectionResource();
+        try {
+            PreparedStatement ps = conn.getStatement(GET_LATEST_REVISION);
+            ps.setString(1, toUnixPath(repository.getDirectoryName()));
+            ResultSet rs = ps.executeQuery(); // NOPMD (we do check next)
+            try {
+                return rs.next() ? rs.getString(1) : null;
+            } finally {
+                rs.close();
+            }
+        } finally {
+            connectionManager.releaseConnection(conn);
         }
     }
 }
