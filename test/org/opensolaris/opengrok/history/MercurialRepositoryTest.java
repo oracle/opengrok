@@ -104,4 +104,37 @@ public class MercurialRepositoryTest {
         }
     }
 
+    /**
+     * Test that {@code getHistory()} throws an exception if the revision
+     * argument doesn't match any of the revisions in the history.
+     */
+    @Test
+    public void testGetHistoryWithNoSuchRevision() throws Exception {
+        setUpTestRepository();
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        MercurialRepository mr =
+                (MercurialRepository) RepositoryFactory.getRepository(root);
+
+        // Get the sequence number and the hash from one of the revisions.
+        String[] revisionParts = REVISIONS[1].split(":");
+        assertEquals(2, revisionParts.length);
+        int number = Integer.parseInt(revisionParts[0]);
+        String hash = revisionParts[1];
+
+        // Construct a revision identifier that doesn't exist.
+        String constructedRevision = (number + 1) + ":" + hash;
+        try {
+            mr.getHistory(root, constructedRevision);
+            fail("getHistory() should have failed");
+        } catch (HistoryException he) {
+            String msg = he.getMessage();
+            if (msg != null && msg.startsWith("No such revision")) {
+                // expected exception, do nothing
+            } else {
+                // unexpected exception, rethrow it
+                throw he;
+            }
+        }
+    }
+
 }

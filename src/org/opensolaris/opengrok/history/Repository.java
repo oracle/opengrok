@@ -104,14 +104,17 @@ public abstract class Repository extends RepositoryInfo {
         for (HistoryEntry entry : history.getHistoryEntries()) {
             if (sinceRevision.equals(entry.getRevision())) {
                 // Found revision right before the first one to return. Skip
-                // this one and the rest (older revisions).
-                break;
+                // this one and the rest (older revisions), and return those
+                // entries we have seen so far.
+                history.setHistoryEntries(partial);
+                return history;
             }
             partial.add(entry);
         }
 
-        history.setHistoryEntries(partial);
-        return history;
+        // If we got here, we never saw sinceRevision in the history, hence
+        // it doesn't exist. Raise an error.
+        throw new HistoryException("No such revision: " + sinceRevision);
     }
 
     /**
