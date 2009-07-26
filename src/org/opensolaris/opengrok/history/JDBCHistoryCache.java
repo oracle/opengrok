@@ -539,10 +539,10 @@ class JDBCHistoryCache implements HistoryCache {
         for (ListIterator<HistoryEntry> it =
                 entries.listIterator(entries.size());
                 it.hasPrevious();) {
+            HistoryEntry entry = it.previous();
             retry:
             for (int i = 0;; i++) {
                 try {
-                    HistoryEntry entry = it.previous();
                     addChangeset.setString(2, entry.getRevision());
                     addChangeset.setInt(3, authors.get(entry.getAuthor()));
                     addChangeset.setTimestamp(4,
