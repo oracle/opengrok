@@ -73,9 +73,13 @@ public class MercurialRepository extends Repository {
      * named file.
      * 
      * @param file The file to retrieve history for
+     * @param changeset the oldest changeset to return from the executor,
+     * or {@code null} if all changesets should be returned
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file) {
+    Executor getHistoryLogExecutor(File file, String changeset)
+            throws HistoryException
+    {
         String abs = file.getAbsolutePath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -85,6 +89,19 @@ public class MercurialRepository extends Repository {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("log");
+
+        if (changeset != null) {
+            cmd.add("-r");
+            String[] parts = changeset.split(":");
+            if (parts.length == 2) {
+                cmd.add("tip:" + parts[0]);
+            } else {
+                throw new HistoryException(
+                        "Don't know how to parse changeset identifier: " +
+                        changeset);
+            }
+        }
+
         cmd.add("--template");
         cmd.add(file.isDirectory() ? DIR_TEMPLATE : TEMPLATE);
         cmd.add(filename);
@@ -275,6 +292,12 @@ public class MercurialRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-        return new MercurialHistoryParser().parse(file, this);
+        return getHistory(file, null);
+    }
+
+    @Override
+    History getHistory(File file, String sinceRevision)
+            throws HistoryException {
+        return new MercurialHistoryParser(this).parse(file, sinceRevision);
     }
 }

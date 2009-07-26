@@ -32,6 +32,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -45,21 +46,31 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     /** Prefix which identifies lines with the description of a commit. */
     private static final String DESC_PREFIX = "description: ";
 
-    private History history;
-    private MercurialRepository repository;
-    String mydir;
-    int rootLength;
+    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+    private final MercurialRepository repository;
+    private final String mydir;
+    private final int rootLength;
 
-    History parse(File file, Repository repos) throws HistoryException {
-        return parseFile(file, repos);
+    MercurialHistoryParser(MercurialRepository repository) {
+        this.repository = repository;
+        mydir = repository.getDirectoryName() + File.separator;
+        rootLength =
+                RuntimeEnvironment.getInstance().getSourceRootPath().length();
     }
 
-    private History parseFile(File file, Repository repos) throws HistoryException {
-        repository = (MercurialRepository) repos;
-        mydir = repository.getDirectoryName() + File.separator;
-        rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-
-        Executor executor = repository.getHistoryLogExecutor(file);
+    /**
+     * Parse the history for the specified file or directory. If a changeset is
+     * specified, only return the history from the changeset right after the
+     * specified one.
+     *
+     * @param file the file or directory to get history for
+     * @param changeset the changeset right before the first one to fetch, or
+     * {@code null} if all changesets should be fetched
+     * @return history for the specified file or directory
+     * @throws HistoryException if an error happens when parsing the history
+     */
+    History parse(File file, String changeset) throws HistoryException {
+        Executor executor = repository.getHistoryLogExecutor(file, changeset);
         int status = executor.exec(true, this);
 
         if (status != 0) {
@@ -67,7 +78,19 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                     file.getAbsolutePath() + "\" Exit code: " + status);
         }
 
-        return history;
+        // If a changeset to start from is specified, remove that changeset
+        // from the list, since only the ones following it should be returned.
+        // Also check that the specified changeset was found, otherwise throw
+        // an exception.
+        if (changeset != null) {
+            HistoryEntry entry = entries.isEmpty() ?
+                null : entries.remove(entries.size() - 1);
+            if (entry == null || !changeset.equals(entry.getRevision())) {
+                throw new HistoryException("No such revision: " + changeset);
+            }
+        }
+
+        return new History(entries);
     }
 
     /**
@@ -80,7 +103,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     public void processStream(InputStream input) throws IOException {
         DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+        entries = new ArrayList<HistoryEntry>();
         String s;
         HistoryEntry entry = null;
         while ((s = in.readLine()) != null) {
@@ -112,9 +135,6 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                 entry.setMessage(decodeDescription(s));
             }
         }
-
-        history = new History();
-        history.setHistoryEntries(entries);
     }
 
     /**
