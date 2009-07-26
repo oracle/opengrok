@@ -105,14 +105,22 @@ class JDBCHistoryCache implements HistoryCache {
         // TODO: When we only support JDK 6 or later, check for
         // SQLTransactionRollbackException instead of SQLState. Or
         // perhaps SQLTransientException.
-        String sqlState = sqle.getSQLState();
-        if (attemptNo >= MAX_RETRIES ||
-                sqlState == null || !sqlState.startsWith("40")) {
-            throw sqle;
-        } else {
+        boolean isTransient = false;
+        Throwable t = sqle;
+        do {
+            if (t instanceof SQLException) {
+                String sqlState = ((SQLException) t).getSQLState();
+                isTransient = (sqlState != null) && sqlState.startsWith("40");
+            }
+            t = t.getCause();
+        } while (!isTransient && t != null);
+
+        if (isTransient && attemptNo < MAX_RETRIES) {
             Logger logger = OpenGrokLogger.getLogger();
             logger.info("Transient database failure detected. Retrying.");
             logger.log(Level.FINE, "Transient database failure details:", sqle);
+        } else {
+            throw sqle;
         }
     }
 
