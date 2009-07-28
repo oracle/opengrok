@@ -81,6 +81,7 @@ public class CommandLineOptions {
         options.add(new Option('n', null, "Do not generate indexes, but process all other command line options"));
         options.add(new Option('H', null, "Generate history cache for all external repositories"));
         options.add(new Option('h', "/path/to/repository", "Generate history cache for the specified repos (absolute path from source root)"));
+        options.add(new Option('D', null, "Store history cache in a Derby database (needs derby.jar in classpath)"));
         options.add(new Option('r', ON_OFF, "Turn on/off support for remote SCM systems"));
         options.add(new Option('L', "path", "Path to the subdirectory in the web-application containing the requested stylesheet. The following factory-defaults exist: \"default\", \"offwhite\" and \"polished\""));
         options.add(new Option('l', ON_OFF, "Turn on/off locking of the Lucene database during index generation"));

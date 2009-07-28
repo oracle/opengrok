@@ -167,6 +167,9 @@ public final class Indexer {
                         case 'h':
                             repositories.add(getopt.getOptarg());
                             break;
+                        case 'D':
+                            env.setStoreHistoryCacheInDB(true);
+                            break;
                         case 'r':
                              {
                                 if (getopt.getOptarg().equalsIgnoreCase(ON)) {
