@@ -45,7 +45,6 @@ d none var/opengrok/source 0755 noaccess noaccess
 d none var/svc 755 root sys
 d none var/svc/manifest 755 root sys
 d none var/svc/manifest/application 755 root sys
-d none var/svc/manifest/application 755 root sys
 
 f manifest var/svc/manifest/application/opengrok.xml=platform/solaris/smf/opengrok.xml 444 root sys
 f none lib/svc/method/opengrok=platform/solaris/smf/opengrok 555 root bin
