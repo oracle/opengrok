@@ -191,7 +191,7 @@ public class CommandLineOptions {
      * 
      * @return an iterator to iterate through all of the command line options
      */
-    public Iterator<Option> getOptionsIterator() {
+    Iterator<Option> getOptionsIterator() {
         return options.iterator();
     }
     
