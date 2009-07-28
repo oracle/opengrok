@@ -145,7 +145,9 @@ public class HistoryEntry {
     }
     
     public void addFile(String file) {
-        files.add(file);
+        if (!files.contains(file)) {
+            files.add(file);
+        }
     }
     
     public List<String> getFiles() {
@@ -162,7 +164,9 @@ public class HistoryEntry {
     }
     
     public void addChangeRequest(String changeRequest) {
-        changeRequests.add(changeRequest);
+        if (!changeRequests.contains(changeRequest)) {
+            changeRequests.add(changeRequest);
+        }
     }
     
     public List<String> getChangeRequests() {
