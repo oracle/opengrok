@@ -58,6 +58,18 @@ interface HistoryCache {
             throws HistoryException;
 
     /**
+     * Optimize how the history is stored on disk. This method is typically
+     * called after the cache has been populated, or after large modifications
+     * to the cache. The exact effect of this method is specific to each
+     * implementation, but it may for example include compressing, compacting
+     * or reordering the disk image of the cache in order to optimize
+     * performance or space usage.
+     *
+     * @throws HistoryException if an error happens during optimization
+     */
+    void optimize() throws HistoryException;
+
+    /**
      * Check if the specified directory is present in the cache.
      * @param directory the directory to check
      * @param repository the repository in which the directory is stored

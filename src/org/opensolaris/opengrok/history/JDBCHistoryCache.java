@@ -461,13 +461,6 @@ class JDBCHistoryCache implements HistoryCache {
                     connectionManager.getConnectionResource();
             try {
                 storeHistory(conn, history, repository);
-                // The tables may have grown significantly and made the
-                // index cardinality statistics outdated. Call this method
-                // as a workaround to keep the statistics up to date.
-                // Without this, we have observed very bad performance when
-                // calling get(), because the outdated statistics can make
-                // the optimizer choose a sub-optimal join strategy.
-                updateIndexCardinalityStatistics(conn);
             } finally {
                 connectionManager.releaseConnection(conn);
             }
@@ -572,6 +565,34 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
+     * Optimize how the cache is stored on disk. In particular, make sure
+     * index cardinality statistics are up to date, and perform a checkpoint
+     * to make sure all changes are forced to the tables on disk and that
+     * the unneeded transaction log is deleted.
+     *
+     * @throws HistoryException if an error happens when optimizing the cache
+     */
+    public void optimize() throws HistoryException {
+        try {
+            final ConnectionResource conn =
+                    connectionManager.getConnectionResource();
+            try {
+                updateIndexCardinalityStatistics(conn);
+                Statement s = conn.createStatement();
+                try {
+                    s.execute("CALL SYSCS_UTIL.SYSCS_CHECKPOINT_DATABASE()");
+                } finally {
+                    s.close();
+                }
+            } finally {
+                connectionManager.releaseConnection(conn);
+            }
+        } catch (SQLException sqle) {
+            throw new HistoryException(sqle);
+        }
+    }
+
+    /**
      * <p>
      * Make sure Derby's index cardinality statistics are up to date.
      * Otherwise, the optimizer may choose a bad execution strategy for
@@ -585,6 +606,11 @@ class JDBCHistoryCache implements HistoryCache {
      * <a href="https://issues.apache.org/jira/browse/DERBY-3788">DERBY-3788</a>.
      * When automatic update of index cardinality statistics has been
      * implemented in Derby, the workaround may be removed.
+     * </p>
+     *
+     * <p>
+     * Without this workaround, poor performance has been observed in
+     * {@code get()} due to bad choices made by the optimizer.
      * </p>
      *
      * <p>

@@ -59,6 +59,10 @@ class FileHistoryCache implements HistoryCache {
         // nothing to do
     }
 
+    public void optimize() {
+        // nothing to do
+    }
+
     /**
      * Get a <code>File</code> object describing the cache file.
      *

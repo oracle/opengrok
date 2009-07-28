@@ -395,6 +395,15 @@ public final class HistoryGuru {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
         }
+
+        // The cache has been populated. Now, optimize how it is stored on
+        // disk to enhance performance and save space.
+        try {
+            historyCache.optimize();
+        } catch (HistoryException he) {
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+                    "Failed optimizing the history cache database", he);
+        }
     }
 
     /**

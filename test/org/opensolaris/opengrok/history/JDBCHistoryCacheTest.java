@@ -176,6 +176,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         History historyToStore = repos.getHistory(reposRoot);
 
         cache.store(historyToStore, repos);
+        cache.optimize();
 
         // test get history for single file
 
@@ -217,6 +218,7 @@ public class JDBCHistoryCacheTest extends TestCase {
                 reposRoot, getClass().getResource("hg-export.txt").getPath());
 
         repos.createCache(cache, cache.getLatestCachedRevision(repos));
+        cache.optimize();
 
         History updatedHistory = cache.get(reposRoot, repos);
 
@@ -241,6 +243,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         Repository repos = RepositoryFactory.getRepository(reposRoot);
         History history = repos.getHistory(reposRoot);
         cache.store(history, repos);
+        cache.optimize();
 
         List<HistoryEntry> entries = history.getHistoryEntries();
         HistoryEntry oldestEntry = entries.get(entries.size() - 1);
