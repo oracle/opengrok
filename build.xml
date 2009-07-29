@@ -560,4 +560,14 @@ Use is subject to license terms.
         </java>
     </target>
 
+    <!-- Generate HTML test report -->
+    <target depends="init" name="test-report">
+        <junitreport todir="${build.test.results.dir}">
+            <fileset dir="${build.test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report todir="${build.test.results.dir}"/>
+        </junitreport>
+    </target>
+
 </project>
