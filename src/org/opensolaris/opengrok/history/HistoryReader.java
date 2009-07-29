@@ -29,6 +29,7 @@ import java.io.StringReader;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 
 /**
  * Class for reading history entries. The HistoryReader have
@@ -132,7 +133,7 @@ public class HistoryReader extends Reader {
         }
     }
 
-    public List<String> getFiles() {
+    public SortedSet<String> getFiles() {
         return current.getFiles();
     }
 

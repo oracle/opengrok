@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.history;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -224,7 +225,7 @@ public class HistoryEntryTest {
     @Test
     public void setFiles() {
         System.out.println("setFiles");
-        List<String> files = new ArrayList<String>();
+        TreeSet<String> files = new TreeSet<String>();
         files.add("file1.file");
         files.add("file2.file");
         instance.setFiles(files);
@@ -269,7 +270,7 @@ public class HistoryEntryTest {
      */
     @Test
     public void strip() {
-        List<String> files = new ArrayList<String>();
+        TreeSet<String> files = new TreeSet<String>();
         files.add("file1.file");
         files.add("file2.file");
         instance.setFiles(files);

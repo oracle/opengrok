@@ -26,6 +26,8 @@ package org.opensolaris.opengrok.history;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -44,13 +46,13 @@ public class HistoryEntry {
     private final StringBuffer message;
 
     private boolean active;
-    private List<String> files;
+    private SortedSet<String> files;
     private List<String> changeRequests;
     
     /** Creates a new instance of HistoryEntry */
     public HistoryEntry() {
         message = new StringBuffer();
-        files = new ArrayList<String>();
+        files = new TreeSet<String>();
         changeRequests = new ArrayList<String>();
     }
     
@@ -61,7 +63,7 @@ public class HistoryEntry {
         this.author = author;
         this.message = new StringBuffer(message);
         this.active = active;
-        this.files = new ArrayList<String>();
+        this.files = new TreeSet<String>();
         this.changeRequests = new ArrayList<String>();
     }
     
@@ -145,16 +147,14 @@ public class HistoryEntry {
     }
     
     public void addFile(String file) {
-        if (!files.contains(file)) {
-            files.add(file);
-        }
+        files.add(file);
     }
     
-    public List<String> getFiles() {
+    public SortedSet<String> getFiles() {
         return files;
     }
     
-    public void setFiles(List<String> files) {
+    public void setFiles(SortedSet<String> files) {
         this.files = files;
     }
     

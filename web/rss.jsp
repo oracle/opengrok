@@ -130,7 +130,7 @@ if (resourcePath.length() < rawSource.length()
     <title><%=Util.htmlize(hr.getComment())%></title>
     <description><%
     if(isDir) {
-        List<String> files = hr.getFiles();
+        Set<String> files = hr.getFiles();
         if(files != null) {
             for (String ifile : files) {
     %><%=Util.htmlize(ifile)%>

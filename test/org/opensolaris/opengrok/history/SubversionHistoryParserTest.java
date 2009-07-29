@@ -140,20 +140,20 @@ public class SubversionHistoryParserTest {
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
         assertEquals(1, e1.getFiles().size());
-        assertEquals("/" + file1, e1.getFiles().get(0));
+        assertEquals("/" + file1, e1.getFiles().first());
 
         HistoryEntry e2 = result.getHistoryEntries().get(1);
         assertEquals(revId2, e2.getRevision());
         assertEquals(author2, e2.getAuthor());
         assertEquals(1, e2.getFiles().size());
-        assertEquals("/" + file2, e2.getFiles().get(0));
+        assertEquals("/" + file2, e2.getFiles().first());
 
         HistoryEntry e3 = result.getHistoryEntries().get(2);
         assertEquals(revId3, e3.getRevision());
         assertEquals(author3, e3.getAuthor());
         assertEquals(2, e3.getFiles().size());
-        assertEquals("/" + file1, e3.getFiles().get(0));
-        assertEquals("/" + file2, e3.getFiles().get(1));
+        assertEquals("/" + file1, e3.getFiles().first());
+        assertEquals("/" + file2, e3.getFiles().last());
         assertTrue(e3.getMessage().contains("line1"));
         assertTrue(e3.getMessage().contains("line3"));
     }

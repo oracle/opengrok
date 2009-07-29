@@ -119,7 +119,7 @@ if (reviewPage != null && ! reviewPage.equals("")) {
     cout=reviewPattern.matcher(cout).replaceAll("<a href=\"" + reviewPage + "$1\">$1</a>"); }
 	%><%= cout  %>
 <%
-List<String> files = hr.getFiles();
+Set<String> files = hr.getFiles();
 if(files != null) {%><br/><%
     for (String ifile : files) {
         String jfile = ifile;

@@ -160,9 +160,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         assertEquals(expected.getRevision(), actual.getRevision());
         assertEquals(expected.getDate(), actual.getDate());
         assertEquals(expected.getMessage(), actual.getMessage());
-        assertEquals(
-                new HashSet<String>(expected.getFiles()),
-                new HashSet<String>(actual.getFiles()));
+        assertEquals(expected.getFiles(), actual.getFiles());
     }
 
     /**

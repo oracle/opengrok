@@ -25,13 +25,13 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
@@ -55,7 +55,8 @@ import org.opensolaris.opengrok.index.IndexDatabase;
  */
 public class DirectoryHistoryReader extends HistoryReader {
 
-    public Map<Date, HashMap<String, HashMap<String, ArrayList<String>>>> hash = new LinkedHashMap<Date, HashMap<String, HashMap<String, ArrayList<String>>>>();
+    private final Map<Date, Map<String, Map<String, SortedSet<String>>>> hash =
+        new LinkedHashMap<Date, Map<String, Map<String, SortedSet<String>>>>();
     Iterator<Date> diter;
     Date idate;
     Iterator<String> aiter;
@@ -138,25 +139,22 @@ public class DirectoryHistoryReader extends HistoryReader {
     public final void put(Date date, String author, String comment, String path) {
         long time = date.getTime();
         date.setTime(time - (time % 3600000l));
-        HashMap<String, HashMap<String, ArrayList<String>>> ac;
-        HashMap<String, ArrayList<String>> cf;
-        ArrayList<String> fls;
-        ac =
-                hash.get(date);
+
+        Map<String, Map<String, SortedSet<String>>> ac = hash.get(date);
         if (ac == null) {
-            ac = new HashMap<String, HashMap<String, ArrayList<String>>>();
+            ac = new HashMap<String, Map<String, SortedSet<String>>>();
             hash.put(date, ac);
         }
 
-        cf = ac.get(author);
+        Map<String, SortedSet<String>> cf = ac.get(author);
         if (cf == null) {
-            cf = new HashMap<String, ArrayList<String>>();
+            cf = new HashMap<String, SortedSet<String>>();
             ac.put(author, cf);
         }
 
-        fls = cf.get(comment);
+        SortedSet<String> fls = cf.get(comment);
         if (fls == null) {
-            fls = new ArrayList<String>();
+            fls = new TreeSet<String>();
             cf.put(comment, fls);
         }
 
@@ -216,7 +214,7 @@ public class DirectoryHistoryReader extends HistoryReader {
     }
 
     @Override
-    public List<String> getFiles() {
+    public SortedSet<String> getFiles() {
         return hash.get(idate).get(iauthor).get(icomment);
     }
 

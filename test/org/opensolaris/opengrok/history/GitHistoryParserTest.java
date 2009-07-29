@@ -189,14 +189,14 @@ public class GitHistoryParserTest {
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
         assertEquals(1, e0.getFiles().size());
-        assertEquals("/" + filename, e0.getFiles().get(0));
+        assertEquals("/" + filename, e0.getFiles().first());
         assertTrue(e0.getMessage().contains("Some heading"));
         assertTrue(e0.getMessage().contains("Signed-off-by"));
         HistoryEntry e1 = result.getHistoryEntries().get(1);
         assertEquals(commitId2, e1.getRevision());
         assertEquals(author2, e1.getAuthor());
         assertEquals(1, e1.getFiles().size());
-        assertEquals("/" + filename, e1.getFiles().get(0));
+        assertEquals("/" + filename, e1.getFiles().first());
         assertTrue(e1.getMessage().contains("paragraph of text"));
         assertTrue(e1.getMessage().contains("Signed-off-by"));
     }
@@ -274,15 +274,15 @@ public class GitHistoryParserTest {
         assertEquals(commitId1, e0.getRevision());
         assertEquals(author1, e0.getAuthor());
         assertEquals(1, e0.getFiles().size());
-        assertEquals("/" + filename1, e0.getFiles().get(0));
+        assertEquals("/" + filename1, e0.getFiles().first());
         assertTrue(e0.getMessage().contains("subject title"));
         assertTrue(e0.getMessage().contains("Signed-off-by"));
         HistoryEntry e1 = result.getHistoryEntries().get(1);
         assertEquals(commitId2, e1.getRevision());
         assertEquals(author2, e1.getAuthor());
         assertEquals(2, e1.getFiles().size());
-        assertEquals("/" + filename1, e1.getFiles().get(0));
-        assertEquals("/" + filename2, e1.getFiles().get(1));
+        assertEquals("/" + filename1, e1.getFiles().first());
+        assertEquals("/" + filename2, e1.getFiles().last());
         assertTrue(e1.getMessage().contains("[PATCH]"));
         assertTrue(e1.getMessage().contains("Signed-off-by"));
     }

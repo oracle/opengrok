@@ -23,6 +23,9 @@
  */
 package org.opensolaris.opengrok.history;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -150,25 +153,30 @@ public class BazaarHistoryParserTest {
         String revId1 = "1234";
         String author1 = "username@example.com";
         String date1 = "Wed 2008-10-01 10:01:34 +0200";
-        String file1 = "filename.ext";
-        String file2 = "directory";
-        String file3 = "directory/filename.ext";
-        String file4 = "directory/filename2.ext2";
-        String file5 = "otherdir/file.extension";
-        
-        String output = "------------------------------------------------------------\n" +
-                "revno: " + revId1 + "\n" +
-                "committer: " + author1 + "\n" +
-                "timestamp: " + date1 + "\n" +
-                "message:\n" +
-                "  Some message\n" +
-                "added:\n" +
-                "  " + file1 + "\n" +
-                "  " + file2 + "\n" +
-                "  " + file3 + "\n" +
-                "  " + file4 + "\n" +
-                "  " + file5 + "\n";
-        History result = instance.parse(output);              
+        String[] files = {
+            "/filename.ext",
+            "/directory",
+            "/directory/filename.ext",
+            "/directory/filename2.ext2",
+            "/otherdir/file.extension"
+        };
+
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < 60; i++) {
+            output.append('-');
+        }
+        output.append('\n');
+        output.append("revno: " + revId1 + "\n");
+        output.append("committer: " + author1 + "\n");
+        output.append("timestamp: " + date1 + "\n");
+        output.append("message:\n");
+        output.append("  Some message\n");
+        output.append("added:\n");
+        for (String file : files) {
+            output.append("  " + file.substring(1) + "\n");
+        }
+
+        History result = instance.parse(output.toString());
 
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
@@ -177,13 +185,7 @@ public class BazaarHistoryParserTest {
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
         assertEquals(author1, e1.getAuthor());
-        assertEquals(5, e1.getFiles().size());
-
-        assertEquals("/" + file1, e1.getFiles().get(0));
-        assertEquals("/" + file2, e1.getFiles().get(1));
-        assertEquals("/" + file3, e1.getFiles().get(2));
-        assertEquals("/" + file4, e1.getFiles().get(3));
-        assertEquals("/" + file5, e1.getFiles().get(4));
+        assertEquals(new HashSet(Arrays.asList(files)), e1.getFiles());
     }
     
 }
