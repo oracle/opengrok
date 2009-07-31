@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -68,6 +69,18 @@ class JDBCHistoryCache implements HistoryCache {
 
     private final String jdbcDriverClass;
     private final String jdbcConnectionURL;
+
+    /** SQL queries used by this class. */
+    private final static Properties QUERIES = new Properties();
+    static {
+        Class klazz = JDBCHistoryCache.class;
+        try {
+            QUERIES.load(klazz.getResourceAsStream(
+                    klazz.getSimpleName() + "_queries.properties"));
+        } catch (IOException ioe) {
+            throw new Error(ioe);
+        }
+    }
 
     /**
      * Create a new cache instance with the default JDBC driver and URL.
@@ -124,6 +137,15 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
+    /**
+     * Get the SQL text for a name query.
+     * @param key name of the query
+     * @return SQL text for the query
+     */
+    private static String getQuery(String key) {
+        return QUERIES.getProperty(key);
+    }
+
     // Many of the tables contain columns with identical names and types,
     // so there will be duplicate strings. Suppress warning from PMD.
     @SuppressWarnings("PMD.AvoidDuplicateLiterals")
@@ -137,55 +159,27 @@ class JDBCHistoryCache implements HistoryCache {
         DatabaseMetaData dmd = s.getConnection().getMetaData();
 
         if (!tableExists(dmd, SCHEMA, "REPOSITORIES")) {
-            s.executeUpdate("CREATE TABLE REPOSITORIES (" +
-                    "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
-                    "PATH VARCHAR(32672) UNIQUE NOT NULL)");
+            s.execute(getQuery("createTableRepositories"));
         }
 
         if (!tableExists(dmd, SCHEMA, "FILES")) {
-            s.executeUpdate("CREATE TABLE FILES (" +
-                    "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
-                    "PATH VARCHAR(32672) NOT NULL, " +
-                    "REPOSITORY INT NOT NULL REFERENCES REPOSITORIES " +
-                    "ON DELETE CASCADE, " +
-                    "UNIQUE (REPOSITORY, PATH))");
+            s.execute(getQuery("createTableFiles"));
         }
 
         if (!tableExists(dmd, SCHEMA, "AUTHORS")) {
-            s.executeUpdate("CREATE TABLE AUTHORS (" +
-                    "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
-                    "REPOSITORY INT NOT NULL REFERENCES REPOSITORIES " +
-                    "ON DELETE CASCADE, " +
-                    "NAME VARCHAR(32672) NOT NULL, " +
-                    "UNIQUE (REPOSITORY, NAME))");
+            s.execute(getQuery("createTableAuthors"));
         }
 
         if (!tableExists(dmd, SCHEMA, "CHANGESETS")) {
-            s.executeUpdate("CREATE TABLE CHANGESETS (" +
-                    "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
-                    "REPOSITORY INT NOT NULL REFERENCES REPOSITORIES " +
-                    "ON DELETE CASCADE, " +
-                    "REVISION VARCHAR(1024) NOT NULL, " +
-                    "AUTHOR INT NOT NULL REFERENCES AUTHORS " +
-                    "ON DELETE CASCADE, " +
-                    "TIME TIMESTAMP NOT NULL, " +
-                    "MESSAGE VARCHAR(32672) NOT NULL, " +
-                    "UNIQUE (REPOSITORY, REVISION))");
+            s.execute(getQuery("createTableChangesets"));
             // Create a descending index on the identity column to allow
             // faster retrieval of history in reverse chronological order in
             // get() and maximum value in getLatestCachedRevision().
-            s.executeUpdate("CREATE UNIQUE INDEX IDX_CHANGESETS_ID_DESC " +
-                    "ON CHANGESETS(ID DESC)");
+            s.execute(getQuery("createIndexChangesetsIdDesc"));
         }
 
         if (!tableExists(dmd, SCHEMA, "FILECHANGES")) {
-            s.executeUpdate("CREATE TABLE FILECHANGES (" +
-                    "ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, " +
-                    "FILE INT NOT NULL REFERENCES FILES " +
-                    "ON DELETE CASCADE, " +
-                    "CHANGESET INT NOT NULL REFERENCES CHANGESETS " +
-                    "ON DELETE CASCADE, " +
-                    "UNIQUE (FILE, CHANGESET))");
+            s.execute(getQuery("createTableFilechanges"));
         }
     }
 
@@ -229,10 +223,8 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static final PreparedQuery IS_DIR_IN_CACHE = new PreparedQuery(
-            "SELECT 1 FROM REPOSITORIES R WHERE R.PATH = ? AND EXISTS " +
-            "(SELECT 1 FROM FILES F WHERE F.REPOSITORY = R.ID AND " +
-            "F.PATH LIKE ? ESCAPE '#')");
+    private static final PreparedQuery IS_DIR_IN_CACHE =
+            new PreparedQuery(getQuery("hasCacheForDirectory"));
 
     // We do check the return value from ResultSet.next(), but PMD doesn't
     // understand it, so suppress the warning.
@@ -322,33 +314,12 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
-     * Build a statement that can be used to fetch the history for a given
-     * file or directory.
-     *
-     * @param isDir whether the statement should return history for a
-     * directory (if {@code true}) or for a file (if {@code false})
-     * @return an SQL statement that fetches the history for a file/directory
-     */
-    private static String buildGetHistoryQuery(boolean isDir) {
-        return "SELECT CS.REVISION, A.NAME, CS.TIME, CS.MESSAGE, F2.PATH " +
-                "FROM CHANGESETS CS, FILECHANGES FC, REPOSITORIES R, " +
-                "FILES F, AUTHORS A, FILECHANGES FC2, FILES F2 " +
-                "WHERE R.PATH = ? AND " +
-                (isDir ? "F.PATH LIKE ? ESCAPE '#'" : "F.PATH = ?") +
-                " AND F.REPOSITORY = R.ID AND A.REPOSITORY = R.ID AND " +
-                "CS.ID = FC.CHANGESET AND R.ID = CS.REPOSITORY AND " +
-                "FC.FILE = F.ID AND A.ID = CS.AUTHOR AND " +
-                "CS.ID = FC2.CHANGESET AND FC2.FILE = F2.ID " +
-                "ORDER BY CS.ID DESC";
-    }
-
-    /**
      * Statement that gets the history for the specified file and repository.
      * The result is ordered in reverse chronological order to match the
      * required ordering for {@link HistoryCache#get(File, Repository)}.
      */
     private static final PreparedQuery GET_FILE_HISTORY =
-            new PreparedQuery(buildGetHistoryQuery(false));
+            new PreparedQuery(getQuery("getFileHistory"));
 
     /**
      * Statement that gets the history for all files matching a pattern in the
@@ -357,7 +328,7 @@ class JDBCHistoryCache implements HistoryCache {
      * {@link HistoryCache#get(File, Repository)}.
      */
     private static final PreparedQuery GET_DIR_HISTORY =
-            new PreparedQuery(buildGetHistoryQuery(true));
+            new PreparedQuery(getQuery("getDirHistory"));
 
     public History get(File file, Repository repository)
             throws HistoryException {
@@ -448,11 +419,11 @@ class JDBCHistoryCache implements HistoryCache {
         return escaped.toString();
     }
 
-    private static PreparedQuery GET_REPOSITORY = new PreparedQuery(
-            "SELECT ID FROM REPOSITORIES WHERE PATH = ?");
+    private static PreparedQuery GET_REPOSITORY =
+            new PreparedQuery(getQuery("getRepository"));
 
-    private static InsertQuery INSERT_REPOSITORY = new InsertQuery(
-            "INSERT INTO REPOSITORIES(PATH) VALUES ?");
+    private static InsertQuery INSERT_REPOSITORY =
+            new InsertQuery(getQuery("addRepository"));
 
     public void store(History history, Repository repository)
             throws HistoryException {
@@ -469,13 +440,11 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static InsertQuery ADD_CHANGESET = new InsertQuery(
-            "INSERT INTO CHANGESETS" +
-            "(REPOSITORY, REVISION, AUTHOR, TIME, MESSAGE) " +
-            "VALUES (?,?,?,?,?)");
+    private static InsertQuery ADD_CHANGESET =
+            new InsertQuery(getQuery("addChangeset"));
 
-    private static PreparedQuery ADD_FILECHANGE = new PreparedQuery(
-            "INSERT INTO FILECHANGES(CHANGESET, FILE) VALUES (?,?)");
+    private static PreparedQuery ADD_FILECHANGE =
+            new PreparedQuery(getQuery("addFilechange"));
 
     private void storeHistory(ConnectionResource conn, History history,
             Repository repository) throws SQLException {
@@ -680,11 +649,11 @@ class JDBCHistoryCache implements HistoryCache {
         return getGeneratedIntKey(insert);
     }
 
-    private final static PreparedQuery GET_AUTHORS = new PreparedQuery(
-            "SELECT NAME, ID FROM AUTHORS WHERE REPOSITORY = ?");
+    private final static PreparedQuery GET_AUTHORS =
+            new PreparedQuery(getQuery("getAuthors"));
 
-    private final static InsertQuery ADD_AUTHOR = new InsertQuery(
-            "INSERT INTO AUTHORS (REPOSITORY, NAME) VALUES (?,?)");
+    private final static InsertQuery ADD_AUTHOR =
+            new InsertQuery(getQuery("addAuthor"));
 
     /**
      * Get a map from author names to their ids in the database. The authors
@@ -725,11 +694,11 @@ class JDBCHistoryCache implements HistoryCache {
         return map;
     }
 
-    private static PreparedQuery GET_FILES = new PreparedQuery(
-            "SELECT PATH, ID FROM FILES WHERE REPOSITORY = ?");
+    private static PreparedQuery GET_FILES =
+            new PreparedQuery(getQuery("getFiles"));
 
-    private static InsertQuery INSERT_FILE = new InsertQuery(
-            "INSERT INTO FILES(REPOSITORY, PATH) VALUES (?,?)");
+    private static InsertQuery INSERT_FILE =
+            new InsertQuery(getQuery("addFile"));
 
     /**
      * Get a map from file names to their ids in the database. The files
@@ -792,10 +761,8 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static PreparedQuery GET_LATEST_REVISION = new PreparedQuery(
-            "SELECT REVISION FROM CHANGESETS WHERE ID = " +
-            "(SELECT MAX(CS.ID) FROM CHANGESETS CS, REPOSITORIES R " +
-            "WHERE CS.REPOSITORY = R.ID AND R.PATH = ?)");
+    private static PreparedQuery GET_LATEST_REVISION =
+            new PreparedQuery(getQuery("getLatestCachedRevision"));
 
     public String getLatestCachedRevision(Repository repository)
             throws HistoryException {
