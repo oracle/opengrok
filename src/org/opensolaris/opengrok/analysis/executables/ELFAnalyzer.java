@@ -41,29 +41,32 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * Analyzes ELF (Executable and Linking Format) files.
  * Created on September 23, 2005
  *
  * @author Chandan
+ * @author Trond Norbye
  */
 public class ELFAnalyzer extends FileAnalyzer {
-    private char[] content;
+
+    private String content;
     private int len;
     PlainFullTokenizer plainfull;
     StringReader dummy = new StringReader("");
-    
+
     /**
      * Creates a new instance of ELFAnalyzer
      * @param factory The factory that creates ELFAnalyzers
      */
     protected ELFAnalyzer(FileAnalyzerFactory factory) {
-	super(factory);
-	content = new char[16*1024];
-	plainfull = new PlainFullTokenizer(dummy);
+        super(factory);
+        content = "";
+        plainfull = new PlainFullTokenizer(dummy);
     }
-    
+
     @Override
     public void analyze(Document doc, InputStream in) {
         try {
@@ -85,258 +88,446 @@ public class ELFAnalyzer extends FileAnalyzer {
                 }
             }
         } catch (IOException ioe) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Error analyzing ELF file", ioe);
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Error analyzing ELF file", ioe);
         }
     }
 
     public void parseELF(FileInputStream f) throws IOException {
-	FileChannel fch = f.getChannel();
-	MappedByteBuffer fmap = fch.map(FileChannel.MapMode.READ_ONLY, 0, fch.size());
-	if(fmap.getInt() != 0x7f454c46) {
-            throw new IOException("not an ELF File");
+        FileChannel fch = f.getChannel();
+        MappedByteBuffer fmap = fch.map(FileChannel.MapMode.READ_ONLY, 0, fch.size());
+        ELFHeader eh = new ELFHeader(fmap);
+
+        if (eh.e_shnum <= 0) {
+            OpenGrokLogger.getLogger().log(Level.FINE, "Skipping file, no section headers");
+            return;
         }
-	int shstrtab = 0;
-	HashMap<String,Integer> sectionMap = new HashMap<String, Integer>();
-	ELFHeader eh;
-	ELFSection[] sections;
-	eh = new ELFHeader(fmap);
-	shstrtab = fmap.getInt(eh.e_shoff + (eh.e_shstrndx) * eh.e_shentsize + 16);
-	fmap.position(eh.e_shoff);
-	sections = new ELFSection[eh.e_shnum];
-	int[] readables = new int[eh.e_shnum];
-	int ri = 0;
-	for(int i = 0 ; i< eh.e_shnum; i++) {
-	    sections[i] = new ELFSection(fmap);
-	    String sectionName;
-	    if((sectionName = getName(shstrtab, sections[i].sh_name, fmap)) != null) {
-		sectionMap.put(sectionName, sections[i].sh_offset);
-	    }
-	}
-	//StringBuilder symTab = new StringBuilder();
-	for(int i = 0 ; i< eh.e_shnum; i++) {
-	    String sname = getName(shstrtab,sections[i].sh_name, fmap);
-	    if(sections[i].sh_type == SHT_STRTAB) {
-		readables[ri++] = i;
-	    } else if(".debug_str".equals(sname) || ".comment".equals(sname)
-	    || ".data".equals(sname) || ".data1".equals(sname)
-	    ||".rodata".equals(sname) || ".rodata1".equals(sname)) {
-		readables[ri++] = i;
-	    }
-	}
-	boolean lastPrintable = false;
-	len = 0;
-	for(int i = 0 ; i < ri ; i++) {
-	    fmap.position(sections[readables[i]].sh_offset);
-	    int size = sections[readables[i]].sh_size;
-	    if(len + size > content.length) {
-		int max = content.length * 2 + size;
-		char[] content2 = new char[max];
-		System.arraycopy(content, 0, content2, 0, len);
-		content = content2;
-	    }
-	    byte c;
-	    while(size-->0) {
-		c = fmap.get();
-		if(isReadable(c)) {
-		    lastPrintable = true;
-		    content[len++] = (char)c;
-		} else if(lastPrintable) {
-		    lastPrintable = false;
-		    content[len++] = ' ';
-		}
-	    }
-	    content[len++] = '\n';
-	}
+
+        fmap.position(eh.e_shoff + (eh.e_shstrndx * eh.e_shentsize));
+        ELFSection stringSection = new ELFSection(fmap);
+
+        if (stringSection.sh_size == 0) {
+            OpenGrokLogger.getLogger().log(Level.FINE, "Skipping file, no section name string table");
+            return ;
+        }
+
+        HashMap<String, Integer> sectionMap = new HashMap<String, Integer>();
+        ELFSection[] sections = new ELFSection[eh.e_shnum];
+        int[] readables = new int[eh.e_shnum];
+
+        int ri = 0;
+        for (int i = 0; i < eh.e_shnum; i++) {
+            fmap.position(eh.e_shoff + (i * eh.e_shentsize));
+
+            sections[i] = new ELFSection(fmap);
+            String sectionName;
+            if ((sectionName = getName(stringSection.sh_offset, sections[i].sh_name, fmap)) != null) {
+                sectionMap.put(sectionName, sections[i].sh_offset);
+            }
+
+            if (sections[i].sh_type == ELFSection.SHT_STRTAB) {
+                readables[ri++] = i;
+            } else if (".debug_str".equals(sectionName) || ".comment".equals(sectionName)
+                    || ".data".equals(sectionName) || ".data1".equals(sectionName)
+                    || ".rodata".equals(sectionName) || ".rodata1".equals(sectionName)) {
+                readables[ri++] = i;
+            }
+        }
+
+        boolean lastPrintable = false;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ri; i++) {
+            fmap.position(sections[readables[i]].sh_offset);
+            int size = sections[readables[i]].sh_size;
+            byte c;
+            while (size-- > 0) {
+                c = fmap.get();
+                if (isReadable(c)) {
+                    lastPrintable = true;
+                    sb.append((char) c);
+                } else if (lastPrintable) {
+                    lastPrintable = false;
+                    sb.append(' ');
+                }
+            }
+            sb.append('\n');
+        }
+        content = sb.toString();
+
     }
     
     private boolean isReadable(int c) {
-	if(c > ' ' && c <= 127) {
-	    return true;
-	}
-	return false;
+        if (c > ' ' && c <= 127) {
+            return true;
+        }
+        return false;
     }
-    
+
     private String getName(int tab, int stroff, MappedByteBuffer fmap) {
-	if(tab == 0) {
+        if (tab == 0) {
             return null;
         }
-	StringBuilder sb = new StringBuilder(20);
-	byte c;
-	int start = tab + stroff;
-	while((c = fmap.get(start++)) != 0x00) {
-	    sb.append((char)c);
-	}
-	return sb.toString();
+        StringBuilder sb = new StringBuilder(20);
+        byte c;
+        int start = tab + stroff;
+        while ((c = fmap.get(start++)) != 0x00) {
+            sb.append((char) c);
+        }
+        return sb.toString();
     }
-    
+
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
-	if("full".equals(fieldName)) {
-	    plainfull.reInit(content,len);
-	    return plainfull;
-	}
-	return super.tokenStream(fieldName, reader);
+        if ("full".equals(fieldName)) {
+            plainfull.reInit(content.toCharArray(), content.length());
+            return plainfull;
+        }
+        return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write
      */
     @Override
     public void writeXref(Writer out) throws IOException {
-	out.write("</pre>");
-	out.write(content, 0, len);
-	out.write("<pre>");
-    }
-    
-    class ELFHeader {
-	// Elf32 Addr = readInt
-	// elf32 half = readUnsignedShort
-	// Off = int
-	// Sword = int
-	// Word = int
-	// un = unsignedBtye
-	public int ei_class;
-	public int ei_data;
-	public int ei_version;
-	
-	public int e_type;
-	public int e_machine;
-	public int e_version;
-	public int e_entry;
-	public int e_phoff;
-	public int e_shoff;
-	public int e_flags;
-	public int e_ehsize;
-	public int e_phentsize;
-	public int e_phnum;
-	public int e_shentsize;
-	public int e_shnum;
-	public int e_shstrndx;
-	
-	public ELFHeader(MappedByteBuffer fmap) {
-	    fmap.position(4);
-	    ei_class = fmap.get();
-	    ei_data = fmap.get();
-	    ei_version = fmap.get();
-	    if (ei_data == ELFDATA2LSB) {
-		fmap.order(ByteOrder.LITTLE_ENDIAN);
-	    } else {
-		fmap.order(ByteOrder.BIG_ENDIAN);
-	    }
-	    
-	    fmap.position(16);
-	    e_type = fmap.getShort();
-	    e_machine = fmap.getShort();
-	    e_version = fmap.getInt();
-	    e_entry = fmap.getInt();
-	    e_phoff = fmap.getInt();
-	    e_shoff = fmap.getInt();
-	    e_flags = fmap.getInt();
-	    e_ehsize = fmap.getShort();
-	    e_phentsize = fmap.getShort();
-	    e_phnum = fmap.getShort();
-	    e_shentsize = fmap.getShort();
-	    e_shnum = fmap.getShort();
-	    e_shstrndx = fmap.getShort();
-	}
-	
-        @Override
-	public String toString() {
-	    return(EMs[e_machine] + " " +
-		ECs[ei_class] + " " +
-		"\ne_type: "+e_type+
-		"\ne_machine: "+e_machine+
-		"\ne_version: "+e_version+
-		"\ne_entry: "+e_entry+
-		"\ne_phoff: "+e_phoff+
-		"\ne_shoff: "+e_shoff+
-		"\ne_flags: "+e_flags+
-		"\ne_ehsize: "+e_ehsize+
-		"\ne_phentsize:"+e_phentsize+
-		"\ne_phnum: "+e_phnum+
-		"\ne_shentsize"+e_shentsize+
-		"\ne_shnum: "+e_shnum+
-		"\ne_shstrndx: "+e_shstrndx);
-	}
-    }
-    static class ELFSection {
-	public int sh_name;
-	public int sh_type;
-	public int sh_flags;
-	public int sh_addr;
-	public int sh_offset;
-	public int sh_size;
-	public int sh_link;
-	public int sh_info;
-	public int sh_addralign;
-	public int sh_entsize;
-	
-	public ELFSection(MappedByteBuffer fmap ) {
-	    sh_name = fmap.getInt();
-	    sh_type = fmap.getInt();
-	    sh_flags = fmap.getInt();
-	    sh_addr = fmap.getInt();
-	    sh_offset = fmap.getInt();
-	    sh_size = fmap.getInt();
-	    sh_link = fmap.getInt();
-	    sh_info = fmap.getInt();
-	    sh_addralign = fmap.getInt();
-	    sh_entsize = fmap.getInt();
-	}
-	
-        @Override
-	public String toString() {
-	    return(
-		"\nsh_name : " + sh_name +
-		"\nsh_type : " + sh_type +
-		"\nsh_flags: " + sh_flags +
-		"\nsh_addr: " + sh_addr +
-		"\nsh_offset: " + sh_offset +
-		"\nsh_size: " + sh_size +
-		"\nsh_link: " + sh_link +
-		"\nsh_info: " + sh_info +
-		"\nsh_addralign: " + sh_addralign +
-		"\nsh_entsize: " + sh_entsize );
-	}
+        out.write("</pre>");
+        Util.htmlize(content, out);
+        out.write("<pre>");
     }
 
-    String[] ECs = {
-	"None", "32", "64"
+    class ELFHeader {
+        // Elf32 Addr = readInt
+        // elf32 half = readUnsignedShort
+        // Off = int
+        // Sword = int
+        // Word = int
+        // un = unsignedBtye
+
+        public EI_Class ei_class;
+        public EI_Data ei_data;
+        public int ei_version;
+        public E_Type e_type;
+        public E_Machine e_machine;
+        public E_Version e_version;
+        public int e_entry;
+        public int e_phoff;
+        public int e_shoff;
+        public int e_flags;
+        public int e_ehsize;
+        public int e_phentsize;
+        public int e_phnum;
+        public int e_shentsize;
+        public int e_shnum;
+        public int e_shstrndx;
+
+        public ELFHeader(MappedByteBuffer fmap) throws IllegalArgumentException {
+            if (fmap.get(ELFIdentification.EI_MAG0.value()) != 0x7f ||
+                fmap.get(ELFIdentification.EI_MAG1.value()) != 'E' ||
+                fmap.get(ELFIdentification.EI_MAG2.value()) != 'L' ||
+                fmap.get(ELFIdentification.EI_MAG3.value()) != 'F') {
+                throw new IllegalArgumentException("Not an ELF file");
+            }
+
+            ei_class = EI_Class.valueOf(fmap.get(ELFIdentification.EI_CLASS.value()));
+            ei_data = EI_Data.valueOf(fmap.get(ELFIdentification.EI_DATA.value()));
+            ei_version = fmap.get(ELFIdentification.EI_VERSION.value());
+
+            if (ei_data == EI_Data.ELFDATA2LSB) {
+                fmap.order(ByteOrder.LITTLE_ENDIAN);
+            } else {
+                fmap.order(ByteOrder.BIG_ENDIAN);
+            }
+
+            fmap.position(ELFIdentification.EI_NIDENT.value());
+            e_type = E_Type.valueOf(fmap.getShort());
+            e_machine = E_Machine.valueOf(fmap.getShort());
+            e_version = E_Version.valueOf(fmap.getInt());
+            e_entry = fmap.getInt();
+            e_phoff = fmap.getInt();
+            e_shoff = fmap.getInt();
+            e_flags = fmap.getInt();
+            e_ehsize = fmap.getShort();
+            e_phentsize = fmap.getShort();
+            e_phnum = fmap.getShort();
+            e_shentsize = fmap.getShort();
+            e_shnum = fmap.getShort();
+            e_shstrndx = fmap.getShort();
+        }
+
+        @Override
+        public String toString() {
+            return (e_machine.toString() + " " + ei_class.toString() + " " + "\ne_type: " + e_type.toString() + "\ne_machine: " + e_machine.value() + "\ne_version: " + e_version + "\ne_entry: " + e_entry + "\ne_phoff: " + e_phoff + "\ne_shoff: " + e_shoff + "\ne_flags: " + e_flags + "\ne_ehsize: " + e_ehsize + "\ne_phentsize:" + e_phentsize + "\ne_phnum: " + e_phnum + "\ne_shentsize" + e_shentsize + "\ne_shnum: " + e_shnum + "\ne_shstrndx: " + e_shstrndx);
+        }
+    }
+
+    private static class ELFSection {
+        public static final int SHT_NULL =	0;	/* Section header table entry unused */
+        public static final int SHT_PROGBITS =	1;	/* Program data */
+        public static final int SHT_SYMTAB =	2;	/* Symbol table */
+        public static final int SHT_STRTAB =	3;	/* String table */
+        public static final int SHT_RELA =	4;	/* Relocation entries with addends */
+        public static final int SHT_HASH =	5;	/* Symbol hash table */
+        public static final int SHT_DYNAMIC =	6;	/* Dynamic linking information */
+        public static final int SHT_NOTE =	7;	/* Notes */
+        public static final int SHT_NOBITS =	8;	/* Program space with no data (bss) */
+        public static final int SHT_REL =	9;	/* Relocation entries, no addends */
+        public static final int SHT_SHLIB =	10;	/* Reserved */
+        public static final int SHT_DYNSYM =	11;	/* Dynamic linker symbol table */
+        public static final int SHT_INIT_ARRAY =	14;	/* Array of constructors */
+        public static final int SHT_FINI_ARRAY =	15;	/* Array of destructors */
+        public static final int SHT_PREINIT_ARRAY =	16;	/* Array of pre-constructors */
+        public static final int SHT_GROUP =	17;	/* Section group */
+        public static final int SHT_SYMTAB_SHNDX =	18;	/* Extended section indeces */
+        public static final int SHT_NUM =	19;	/* Number of defined types.  */
+        public static final int SHT_LOOS =	0x60000000;	/* Start OS-specific */
+        public static final int SHT_GNU_LIBLIST =	0x6ffffff7;	/* Prelink library list */
+        public static final int SHT_CHECKSUM =	0x6ffffff8;	/* Checksum for DSO content.  */
+        public static final int SHT_LOSUNW =	0x6ffffffa;	/* Sun-specific low bound.  */
+        public static final int SHT_SUNW_COMDAT =	0x6ffffffb;
+        public static final int SHT_HISUNW =	0x6fffffff;	/* Sun-specific high bound.  */
+        public static final int SHT_HIOS =	0x6fffffff;	/* End OS-specific type */
+        public static final int SHT_LOPROC =	0x70000000;	/* Start of processor-specific */
+        public static final int SHT_HIPROC =	0x7fffffff;	/* End of processor-specific */
+        public static final int SHT_LOUSER =	0x80000000;	/* Start of application-specific */
+        public static final int SHT_HIUSER =	0x8fffffff;	/* End of application-specific */
+
+        public int sh_name;
+        public int sh_type;
+        public int sh_flags;
+        public int sh_addr;
+        public int sh_offset;
+        public int sh_size;
+        public int sh_link;
+        public int sh_info;
+        public int sh_addralign;
+        public int sh_entsize;
+
+        public ELFSection(MappedByteBuffer fmap) {
+            sh_name = fmap.getInt();
+            sh_type = fmap.getInt();
+            sh_flags = fmap.getInt();
+            sh_addr = fmap.getInt();
+            sh_offset = fmap.getInt();
+            sh_size = fmap.getInt();
+            sh_link = fmap.getInt();
+            sh_info = fmap.getInt();
+            sh_addralign = fmap.getInt();
+            sh_entsize = fmap.getInt();
+        }
+
+        @Override
+        public String toString() {
+            return ("\nsh_name : " + sh_name + "\nsh_type : " + sh_type + "\nsh_flags: " + sh_flags + "\nsh_addr: " + sh_addr + "\nsh_offset: " + sh_offset + "\nsh_size: " + sh_size + "\nsh_link: " + sh_link + "\nsh_info: " + sh_info + "\nsh_addralign: " + sh_addralign + "\nsh_entsize: " + sh_entsize);
+        }
+    }
+
+    private static enum ELFIdentification {
+
+        EI_MAG0(0),
+        EI_MAG1(1),
+        EI_MAG2(2),
+        EI_MAG3(3),
+        EI_CLASS(4),
+        EI_DATA(5),
+        EI_VERSION(6),
+        EI_PAD(7),
+        EI_NIDENT(16);
+        private final int value;
+
+        private ELFIdentification(int value) {
+            this.value = value;
+        }
+
+        public int value() {
+            return this.value;
+        }
     };
-    String[] EMs = {
-	"None","AT&T", "SPARC", "Intel 80386",
-	    "Motorola 68000", "Motorola 88000", "", "Intel 80860", "MIPS RS3000"
+
+    private static enum EI_Class {
+        ELFCLASSNONE(0),
+        ELFCLASS32(1),
+        ELFCLASS64(2);
+
+        final String[] textual = {
+            "None", "32", "64"
+        };
+
+        private final int value;
+
+        private EI_Class(int value) {
+            this.value = value;
+        }
+
+        static EI_Class valueOf(byte value) throws IllegalArgumentException {
+            switch (value) {
+                case 0: return ELFCLASSNONE;
+                case 1: return ELFCLASS32;
+                case 2: return ELFCLASS64;
+                default:
+                    throw new IllegalArgumentException("Invalid EI_CLASS value:" + value);
+            }
+        }
+
+        public int value() {
+            return this.value;
+        }
+
+        @Override
+        public String toString() {
+            return textual[value];
+        }
     };
-    public static final int SHT_NULL =	0;	/* Section header table entry unused */
-    public static final int SHT_PROGBITS =	1;	/* Program data */
-    public static final int SHT_SYMTAB =	2;	/* Symbol table */
-    public static final int SHT_STRTAB =	3;	/* String table */
-    public static final int SHT_RELA =	4;	/* Relocation entries with addends */
-    public static final int SHT_HASH =	5;	/* Symbol hash table */
-    public static final int SHT_DYNAMIC =	6;	/* Dynamic linking information */
-    public static final int SHT_NOTE =	7;	/* Notes */
-    public static final int SHT_NOBITS =	8;	/* Program space with no data (bss) */
-    public static final int SHT_REL =	9;	/* Relocation entries, no addends */
-    public static final int SHT_SHLIB =	10;	/* Reserved */
-    public static final int SHT_DYNSYM =	11;	/* Dynamic linker symbol table */
-    public static final int SHT_INIT_ARRAY =	14;	/* Array of constructors */
-    public static final int SHT_FINI_ARRAY =	15;	/* Array of destructors */
-    public static final int SHT_PREINIT_ARRAY =	16;	/* Array of pre-constructors */
-    public static final int SHT_GROUP =	17;	/* Section group */
-    public static final int SHT_SYMTAB_SHNDX =	18;	/* Extended section indeces */
-    public static final int SHT_NUM =	19;	/* Number of defined types.  */
-    public static final int SHT_LOOS =	0x60000000;	/* Start OS-specific */
-    public static final int SHT_GNU_LIBLIST =	0x6ffffff7;	/* Prelink library list */
-    public static final int SHT_CHECKSUM =	0x6ffffff8;	/* Checksum for DSO content.  */
-    public static final int SHT_LOSUNW =	0x6ffffffa;	/* Sun-specific low bound.  */
-    public static final int SHT_SUNW_COMDAT =	0x6ffffffb;
-    public static final int SHT_HISUNW =	0x6fffffff;	/* Sun-specific high bound.  */
-    public static final int SHT_HIOS =	0x6fffffff;	/* End OS-specific type */
-    public static final int SHT_LOPROC =	0x70000000;	/* Start of processor-specific */
-    public static final int SHT_HIPROC =	0x7fffffff;	/* End of processor-specific */
-    public static final int SHT_LOUSER =	0x80000000;	/* Start of application-specific */
-    public static final int SHT_HIUSER =	0x8fffffff;	/* End of application-specific */
-    
-    public static final int ELFDATA2LSB =	1;	/* 2's complement, little endian */
+
+    private static enum EI_Data {
+        ELFDATANONE(0),
+        ELFDATA2LSB(1),
+        ELFDATA2MSB(2);
+
+        private final int value;
+
+        private EI_Data(int value) {
+            this.value = value;
+        }
+
+        static EI_Data valueOf(byte value) throws IllegalArgumentException {
+            switch (value) {
+                case 0: return ELFDATANONE;
+                case 1: return ELFDATA2LSB;
+                case 2: return ELFDATA2MSB;
+                default:
+                    throw new IllegalArgumentException("Invalid EI_DATA value:" + value);
+            }
+        }
+
+        public int value() {
+            return this.value;
+        }
+    };
+
+    private static enum E_Type {
+        ET_NONE(0),
+        ET_REL(1),
+        ET_EXEC(2),
+        ET_DYN(3),
+        ET_CORE(4),
+        ET_UNKNOWN(0xFFFF);
+
+        final String[] textual = {
+            "None", "Relocable", "Executable", "Shared object", "Core"
+        };
+
+        private final int value;
+
+        private E_Type(int value) {
+            this.value = value;
+        }
+
+        static E_Type valueOf(short value) {
+            switch (value) {
+                case 0: return ET_NONE;
+                case 1: return ET_REL;
+                case 2: return ET_EXEC;
+                case 3: return ET_DYN;
+                case 4: return ET_CORE;
+                default:
+                    return ET_UNKNOWN;
+            }
+        }
+
+        public int value() {
+            return this.value;
+        }
+
+        @Override
+        public String toString() {
+            if (value == ET_UNKNOWN.value()) {
+                return "Unknown";
+            }
+            return textual[value];
+        }
+    };
+
+    private static enum E_Machine {
+        EM_NONE(0),
+        EM_M32(1),
+        EM_SPARC(2),
+        EM_386(3),
+        EM_68K(4),
+        EM_88K(5),
+        EM_860(7),
+        EM_MIPS(8),
+        EM_UNKNOWN(0xFFFF);
+
+        final String[] textual = {
+            "No machine", "AT&T WE 32100", "SPARC", "Intel 80386",
+            "Motorola 68000", "Motorola 88000", null,
+            "Intel 80860", "MIPS RS3000"
+        };
+
+        private final int value;
+
+        private E_Machine(int value) {
+            this.value = value;
+        }
+
+        static E_Machine valueOf(short value) {
+            switch (value) {
+                case 0: return EM_NONE;
+                case 1: return EM_M32;
+                case 2: return EM_SPARC;
+                case 3: return EM_386;
+                case 4: return EM_68K;
+                case 5: return EM_88K;
+                case 7: return EM_860;
+                case 8: return EM_MIPS;
+                default:
+                    return EM_UNKNOWN;
+            }
+        }
+
+        public int value() {
+            return this.value;
+        }
+
+        @Override
+        public String toString() {
+            if (value == EM_UNKNOWN.value()) {
+                return "Unknown";
+            }
+            return textual[value];
+        }
+    };
+
+    private static enum E_Version {
+        EV_NONE(0),
+        EV_CURRENT(1);
+
+        final String[] textual = {
+            "Invalid", "Current"
+        };
+
+        private final int value;
+
+        private E_Version(int value) {
+            this.value = value;
+        }
+
+        static E_Version valueOf(int value) throws IllegalArgumentException {
+            switch (value) {
+                case 0: return EV_NONE;
+                case 1: return EV_CURRENT;
+                default:
+                    throw new IllegalArgumentException("Illegal (or unknown) version number: " + value);
+            }
+        }
+
+        public int value() {
+            return this.value;
+        }
+
+        @Override
+        public String toString() {
+            return textual[value];
+        }
+    };
 }
