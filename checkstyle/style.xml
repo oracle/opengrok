@@ -4,15 +4,15 @@
     "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
     <module name="NewlineAtEndOfFile"/>
+    <module name="Header">
+        <property name="headerFile" value="checkstyle/fileheader.txt"/>
+    </module>
+    <module name="FileLength"/>
     <module name="TreeWalker">
-        <module name="Header">
-            <property name="headerFile" value="checkstyle/fileheader.txt"/>
-        </module>
         <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <module name="ImportOrder"/>
-        <module name="FileLength"/>
         <module name="MethodLength">
             <property name="max" value="200"/>
         </module>
