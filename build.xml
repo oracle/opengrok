@@ -127,7 +127,6 @@ Use is subject to license terms.
     <path id="checkstyle.lib.search.path">
         <pathelement path="${checkstyle.home}/"/>
         <pathelement path="${java.class.path}"/>
-        <pathelement path="lib/checkstyle/lib/"/>
     </path>
 
     <path id="pmd.lib.search.path">
