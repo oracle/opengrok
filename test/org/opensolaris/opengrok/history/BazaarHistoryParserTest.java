@@ -23,7 +23,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import org.junit.After;
@@ -149,6 +148,7 @@ public class BazaarHistoryParserTest {
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void parseLogDirectory() throws Exception {
         String revId1 = "1234";
         String author1 = "username@example.com";

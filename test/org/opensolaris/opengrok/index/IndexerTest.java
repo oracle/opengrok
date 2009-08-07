@@ -134,7 +134,7 @@ public class IndexerTest {
         List<RepositoryInfo> repos = env.getRepositories();
         Repository r = null;
         for (RepositoryInfo ri : repos) {
-            if (ri.getDirectoryName().equals(repository.getSourceRoot())) {
+            if (ri.getDirectoryName().equals(repository.getSourceRoot()+"/rfe2575")) {
                 r = RepositoryFactory.getRepository(ri);
                 break;
             }
@@ -156,8 +156,9 @@ public class IndexerTest {
             idb.addIndexChangedListener(listener);
             idb.update();
             assertEquals(1, listener.files.size());
+            RuntimeEnvironment.getInstance().setIndexVersionedFilesOnly(false);
         } else {
-            System.out.println("Skipping test. Could not find a ctags or an sccs I could use in path.");
+            System.out.println("Skipping test. Repository for rfe2575 not found or could not find a ctags or an sccs I could use in path.");
         }
     }
     

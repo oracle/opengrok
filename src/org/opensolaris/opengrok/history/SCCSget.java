@@ -39,8 +39,7 @@ public final class SCCSget {
         argv.add("get");
         argv.add("-p");
         if (revision != null) {
-            argv.add("-r");
-            argv.add(revision);
+            argv.add("-r"+revision);
         }
         argv.add(file.getCanonicalPath());
 

@@ -443,7 +443,7 @@ Use is subject to license terms.
         <antcall target="-create-razor-repository"/>
         <!-- Change root in CVS test repository -->
         <!-- Strange indentation in line two levels below to get newline correctly -->
-        <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${user.dir}/${test.cvs.root}/
+        <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
 </concat>
         <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
         <copy todir="${test.hg}/.hg">
