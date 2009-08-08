@@ -31,7 +31,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -312,7 +311,10 @@ public class JDBCHistoryCacheTest extends TestCase {
 
         // Lock one of the tables exclusively in order to block get().
         c.setAutoCommit(false);
-        s.execute("lock table filechanges in exclusive mode");
+        // Originally, we locked the FILECHANGES table here, but that triggered
+        // a Derby bug (https://issues.apache.org/jira/browse/DERBY-4330), so
+        // now we lock the AUTHORS table instead.
+        s.execute("lock table authors in exclusive mode");
         s.close();
 
         // Roll back the transaction in 1.5 seconds so that get() is able to
