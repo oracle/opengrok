@@ -78,7 +78,7 @@ class JDBCHistoryCache implements HistoryCache {
             QUERIES.load(klazz.getResourceAsStream(
                     klazz.getSimpleName() + "_queries.properties"));
         } catch (IOException ioe) {
-            throw new Error(ioe);
+            throw new ExceptionInInitializerError(ioe);
         }
     }
 
