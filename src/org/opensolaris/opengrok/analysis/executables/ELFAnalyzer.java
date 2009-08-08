@@ -195,7 +195,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         out.write("<pre>");
     }
 
-    class ELFHeader {
+    private static class ELFHeader {
         // Elf32 Addr = readInt
         // elf32 half = readUnsignedShort
         // Off = int
