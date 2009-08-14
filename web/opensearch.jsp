@@ -36,7 +36,7 @@ String path = request.getParameter("path");
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
 String Context = request.getContextPath();
 String laf = environment.getWebappLAF();
-if (project == null) { "" : project; }
+if (project == null) { project = ""; }
 StringBuffer url = request.getRequestURL();
 url=url.delete(url.lastIndexOf("/"),url.length());
 %><?xml version="1.0" encoding="UTF-8"?>
