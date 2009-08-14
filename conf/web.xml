@@ -57,6 +57,11 @@
     <jsp-file>/rss.jsp</jsp-file>
   </servlet>
   <servlet>
+    <servlet-name>opensearch</servlet-name>
+    <display-name>OpenSearch link for current project</display-name>
+    <jsp-file>/opensearch.jsp</jsp-file>
+  </servlet>
+  <servlet>
     <servlet-name>raw</servlet-name>
     <display-name>Raw Source lister</display-name>
     <jsp-file>/raw.jsp</jsp-file>
@@ -74,6 +79,10 @@
   <servlet-mapping>
     <servlet-name>search</servlet-name>
     <url-pattern>/search</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>opensearch</servlet-name>
+    <url-pattern>/opensearch</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>history</servlet-name>
