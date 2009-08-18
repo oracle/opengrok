@@ -2,6 +2,11 @@
 <FindBugsFilter>
    <!-- Remove JFlex generated files from output -->
   <Match>
+      <Field name="zzEOFDone"/>
+      <Bug code="UrF"/>
+  </Match>
+
+  <Match>
       <Method name="yylex"/>
       <Bug code="Bx"/>
   </Match>
