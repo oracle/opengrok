@@ -131,6 +131,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * @author Peter Bray <Peter.Darren.Bray@gmail.com>
  */
 public class RazorRepository extends Repository {
+    private static final long serialVersionUID = 1L;
 
     // The path of the repository itself is stored in the super class.
     // The directory containing our repository directory (usually SRC_ROOT,

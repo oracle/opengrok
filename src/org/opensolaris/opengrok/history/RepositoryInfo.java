@@ -33,6 +33,7 @@ import java.io.Serializable;
  * @author Trond Norbye
  */
 public class RepositoryInfo implements Serializable {
+    private static final long serialVersionUID = 1L;
     
     protected String directoryName;
     protected boolean working;

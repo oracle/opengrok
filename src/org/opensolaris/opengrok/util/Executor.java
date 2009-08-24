@@ -122,6 +122,7 @@ public class Executor {
             final SpoolHandler err = new SpoolHandler();
             Thread thread = new Thread(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         err.processStream(errorStream);
@@ -253,6 +254,7 @@ public class Executor {
             return bytes.toByteArray();
         }
 
+        @Override
         public void processStream(InputStream in) throws IOException {
             byte[] buffer = new byte[8092];
             int len;

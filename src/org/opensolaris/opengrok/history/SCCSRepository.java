@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * TeamWare).
  */
 public class SCCSRepository extends Repository {
+    private static final long serialVersionUID = 1L;
     private static ScmChecker sccsBinary = new ScmChecker(new String[] {
         System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs"),
         "help", "help" });
@@ -57,6 +58,7 @@ public class SCCSRepository extends Repository {
        return System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
     }
     
+    @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         try {
             File history = SCCSHistoryParser.getSCCSFile(parent, basename);
@@ -138,6 +140,7 @@ public class SCCSRepository extends Repository {
      * @param revision revision to annotate
      * @return file annotation
      */
+    @Override
     public Annotation annotate(File file, String revision) throws IOException {
         
         //System.out.println("annotating " + file.getCanonicalPath());
@@ -198,14 +201,17 @@ public class SCCSRepository extends Repository {
         }
     }
 
+    @Override
     public boolean fileHasAnnotation(File file) {
         return true;
     }
 
+    @Override
     public void update() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public boolean fileHasHistory(File file) {
         String parent = file.getParent();
         String name = file.getName();

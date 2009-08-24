@@ -49,16 +49,19 @@ class FileHistoryCache implements HistoryCache {
     private final Object lock = new Object();
 
     static class FilePersistenceDelegate extends PersistenceDelegate {
+        @Override
         protected Expression instantiate(Object oldInstance, Encoder out) {
             File f = (File)oldInstance;
             return new Expression(oldInstance, f.getClass(), "new", new Object[] {f.toString()});
         }
     }
 
+    @Override
     public void initialize() {
         // nothing to do
     }
 
+    @Override
     public void optimize() {
         // nothing to do
     }
@@ -168,6 +171,7 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
+    @Override
     public void store(History history, Repository repository)
             throws HistoryException {
 
@@ -203,6 +207,7 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
+    @Override
     public History get(File file, Repository repository)
             throws HistoryException {
         File cache = getCachedFile(file);
@@ -262,6 +267,7 @@ class FileHistoryCache implements HistoryCache {
      * @param directory the directory to check
      * @return {@code true} if the directory is in the cache
      */
+    @Override
     public boolean hasCacheForDirectory(File directory, Repository repository)
             throws HistoryException {
         assert directory.isDirectory();
@@ -275,6 +281,7 @@ class FileHistoryCache implements HistoryCache {
         return dir.exists();
     }
 
+    @Override
     public String getLatestCachedRevision(Repository repository) {
         return null;
     }

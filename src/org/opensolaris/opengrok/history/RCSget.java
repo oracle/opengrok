@@ -94,6 +94,7 @@ public class RCSget extends InputStream {
         return stream.read(buffer, pos, len);
     }
     
+    @Override
     public int read() throws IOException {
         throw new IOException("use a BufferedInputStream. just read() is not supported!");
     }

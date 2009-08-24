@@ -380,6 +380,7 @@ public final class HistoryGuru {
                 continue;
             }
             executor.submit(new Runnable() {
+                @Override
                 public void run() {
                     createCache(repos, latestRev);
                 }

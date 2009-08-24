@@ -44,6 +44,7 @@ import org.opensolaris.opengrok.util.Executor;
  * Access to a local CVS repository.
  */
 public class CVSRepository extends RCSRepository {
+    private static final long serialVersionUID = 1L;
 
     private static ScmChecker cvsBinary = new ScmChecker(new String[]{
                 getCommand(), "--version"

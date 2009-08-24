@@ -44,6 +44,7 @@ import org.opensolaris.opengrok.util.Executor;
  *
  */
 public class MercurialRepository extends Repository {
+    private static final long serialVersionUID = 1L;
 
     /** Template for formatting hg log output for files. */
     private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}\\nuser: {author}\\ndate: {date|isodate}\\ndescription: {desc|strip|obfuscate}\\n";
@@ -109,6 +110,7 @@ public class MercurialRepository extends Repository {
         return new Executor(cmd, new File(directoryName));
     }    
     
+    @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
@@ -173,6 +175,7 @@ public class MercurialRepository extends Repository {
      * @param revision revision to annotate
      * @return file annotation
      */
+    @Override
     public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<String>();
         argv.add(getCommand());
@@ -232,10 +235,12 @@ public class MercurialRepository extends Repository {
         return ret;
     }
 
+    @Override
     public boolean fileHasAnnotation(File file) {
         return true;
     }
 
+    @Override
     public void update() throws IOException {
         File directory = new File(directoryName);
 
@@ -259,6 +264,7 @@ public class MercurialRepository extends Repository {
         }
     }
 
+    @Override
     public boolean fileHasHistory(File file) {
         // Todo: is there a cheap test for whether mercurial has history
         // available for a file?

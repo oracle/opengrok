@@ -120,6 +120,7 @@ public class HistoryReader extends Reader {
         return current.isActive();
     }
 
+    @Override
     public int read(char[] cbuf, int off, int len) throws IOException {
         if (input == null) {
             input = createInternalReader();
@@ -127,6 +128,7 @@ public class HistoryReader extends Reader {
         return input.read(cbuf, off, len);
     }
     
+    @Override
     public void close() throws IOException {
         if (input != null) {
             input.close();

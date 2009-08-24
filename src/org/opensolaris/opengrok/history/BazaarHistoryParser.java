@@ -71,6 +71,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      * @param input The output from the process
      * @throws java.io.IOException If an error occurs while reading the stream
      */
+    @Override
     public void processStream(InputStream input) throws IOException {
         DateFormat df = repository.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();

@@ -37,6 +37,7 @@ import org.opensolaris.opengrok.util.Executor;
  *
  */
 public class ClearCaseRepository extends Repository {
+    private static final long serialVersionUID = 1L;
 
     private boolean verbose;
 
@@ -97,6 +98,7 @@ public class ClearCaseRepository extends Repository {
         return new Executor(cmd, new File(getDirectoryName()));
     }    
 
+    @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
@@ -125,6 +127,7 @@ public class ClearCaseRepository extends Repository {
 
             ret = new BufferedInputStream(new FileInputStream(tmp)) {
 
+                @Override
                 public void close() throws IOException {
                     super.close();
                     // delete the temporary file on close
@@ -181,6 +184,7 @@ public class ClearCaseRepository extends Repository {
      * @param revision revision to annotate
      * @return file annotation
      */
+    @Override
 public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<String>();
 
@@ -236,6 +240,7 @@ public Annotation annotate(File file, String revision) throws IOException {
         }
     }
 
+    @Override
     public boolean fileHasAnnotation(File file) {
         return true;
     }
@@ -251,6 +256,7 @@ public Annotation annotate(File file, String revision) throws IOException {
     }
 
     @SuppressWarnings("PMD.EmptyWhileStmt")
+    @Override
     public void update() throws IOException {
         Process process = null;
         BufferedReader in = null;
@@ -303,6 +309,7 @@ public Annotation annotate(File file, String revision) throws IOException {
         }
     }
 
+    @Override
     public boolean fileHasHistory(File file) {
         // Todo: is there a cheap test for whether ClearCase has history
         // available for a file?

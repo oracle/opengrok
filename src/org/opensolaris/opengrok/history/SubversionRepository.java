@@ -52,7 +52,8 @@ import org.xml.sax.ext.DefaultHandler2;
  * @author Trond Norbye
  */
 public class SubversionRepository extends Repository {
-
+    private static final long serialVersionUID = 1L;
+    
     protected String reposPath;
     private static ScmChecker svnBinary = new ScmChecker(new String[]{
                 getCommand(), "--help"
@@ -162,6 +163,7 @@ public class SubversionRepository extends Repository {
         return new Executor(cmd, new File(directoryName));
     }
 
+    @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
@@ -238,6 +240,7 @@ public class SubversionRepository extends Repository {
         }
     }
 
+    @Override
     public Annotation annotate(File file, String revision) throws IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = null;
@@ -298,10 +301,12 @@ public class SubversionRepository extends Repository {
         return ret;
     }
 
+    @Override
     public boolean fileHasAnnotation(File file) {
         return true;
     }
 
+    @Override
     public boolean fileHasHistory(File file) {
         // @TODO: Research how to cheaply test if a file in a given
         // SVN repo has history.  If there is a cheap test, then this
@@ -309,6 +314,7 @@ public class SubversionRepository extends Repository {
         return true;
     }
 
+    @Override
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
 

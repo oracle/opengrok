@@ -29,6 +29,7 @@ package org.opensolaris.opengrok.history;
  * fails.
  */
 public class HistoryException extends Exception {
+    private static final long serialVersionUID = 1L;
 
     /**
      * Construct a {@code HistoryException} with the specified message.

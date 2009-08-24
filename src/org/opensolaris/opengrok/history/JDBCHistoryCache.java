@@ -195,6 +195,7 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
+    @Override
     public void initialize() throws HistoryException {
         try {
             connectionManager =
@@ -229,6 +230,7 @@ class JDBCHistoryCache implements HistoryCache {
     // We do check the return value from ResultSet.next(), but PMD doesn't
     // understand it, so suppress the warning.
     @SuppressWarnings("PMD.CheckResultSet")
+    @Override
     public boolean hasCacheForDirectory(File file, Repository repository)
             throws HistoryException {
         assert file.isDirectory();
@@ -330,6 +332,7 @@ class JDBCHistoryCache implements HistoryCache {
     private static final PreparedQuery GET_DIR_HISTORY =
             new PreparedQuery(getQuery("getDirHistory"));
 
+    @Override
     public History get(File file, Repository repository)
             throws HistoryException {
         try {
@@ -425,6 +428,7 @@ class JDBCHistoryCache implements HistoryCache {
     private static InsertQuery INSERT_REPOSITORY =
             new InsertQuery(getQuery("addRepository"));
 
+    @Override
     public void store(History history, Repository repository)
             throws HistoryException {
         try {
@@ -541,6 +545,7 @@ class JDBCHistoryCache implements HistoryCache {
      *
      * @throws HistoryException if an error happens when optimizing the cache
      */
+    @Override
     public void optimize() throws HistoryException {
         try {
             final ConnectionResource conn =
@@ -764,6 +769,7 @@ class JDBCHistoryCache implements HistoryCache {
     private static PreparedQuery GET_LATEST_REVISION =
             new PreparedQuery(getQuery("getLatestCachedRevision"));
 
+    @Override
     public String getLatestCachedRevision(Repository repository)
             throws HistoryException {
         try {

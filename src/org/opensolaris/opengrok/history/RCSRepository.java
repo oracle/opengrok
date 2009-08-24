@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * Access to an RCS repository.
  */
 public class RCSRepository extends Repository {
+    private static final long serialVersionUID = 1L;
 
     public RCSRepository() {
         working = true;

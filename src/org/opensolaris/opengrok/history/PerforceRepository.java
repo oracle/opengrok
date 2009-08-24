@@ -16,7 +16,6 @@
  *
  * CDDL HEADER END
  */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
@@ -40,7 +39,9 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class PerforceRepository extends Repository {
-    private static ScmChecker p4Binary = new ScmChecker(new String[] {getCommand(), "help"});
+
+    private static final long serialVersionUID = 1L;
+    private static ScmChecker p4Binary = new ScmChecker(new String[]{getCommand(), "help"});
     private final static Pattern annotation_pattern = Pattern.compile("^(\\d+): .*");
 
     public PerforceRepository() {
@@ -56,6 +57,7 @@ public class PerforceRepository extends Repository {
         return System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4");
     }
 
+    @Override
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation a = new Annotation(file.getName());
 
@@ -100,7 +102,7 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet( String parent,  String basename,  String rev) {
+    InputStream getHistoryGet(String parent, String basename, String rev) {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("print");
@@ -125,7 +127,7 @@ public class PerforceRepository extends Repository {
     }
 
     @Override
-    boolean fileHasHistory( File file) {
+    boolean fileHasHistory(File file) {
         return true;
     }
 

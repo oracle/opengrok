@@ -44,6 +44,7 @@ import org.opensolaris.opengrok.util.Executor;
  * 
  */
 public class BazaarRepository extends Repository {
+    private static final long serialVersionUID = 1L;
     private static ScmChecker bzrBinary = new ScmChecker(new String[] {
         System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr"),
         "--help" });
@@ -88,6 +89,7 @@ public class BazaarRepository extends Repository {
        return new Executor(cmd, new File(getDirectoryName()));
     }    
     
+    @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
@@ -139,6 +141,7 @@ public class BazaarRepository extends Repository {
      * @param revision revision to annotate
      * @return file annotation
      */
+    @Override
     public Annotation annotate(File file, String revision) throws IOException {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
@@ -182,10 +185,12 @@ public class BazaarRepository extends Repository {
         return ret;
     }
 
+    @Override
     public boolean fileHasAnnotation(File file) {
         return true;
     }
 
+    @Override
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
 
@@ -208,6 +213,7 @@ public class BazaarRepository extends Repository {
         }
     }
 
+    @Override
     public boolean fileHasHistory(File file) {
         // Todo: is there a cheap test for whether Bazaar has history
         // available for a file?
