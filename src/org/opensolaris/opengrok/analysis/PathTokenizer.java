@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -36,10 +36,12 @@ public class PathTokenizer extends Tokenizer {
         super(input);
     }
 
-    public final Token next() throws java.io.IOException {
+    @Override
+    public final Token next(Token reusableToken) throws java.io.IOException {
         if (dot) {
             dot = false;
-            return new Token(".", 0, 0);
+            reusableToken.reinit(".", 0, 0);
+            return reusableToken;
         }
 
         char buf[] = new char[64];
@@ -64,6 +66,7 @@ public class PathTokenizer extends Tokenizer {
         if (c == '.') {
             dot = true;
         }
-        return (new Token(String.copyValueOf(buf, 0, i), 0, 0));
+        reusableToken.reinit(buf, 0, i, 0, 0);
+        return reusableToken;
     }
 }

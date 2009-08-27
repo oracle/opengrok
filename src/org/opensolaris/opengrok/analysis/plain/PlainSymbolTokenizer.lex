@@ -18,27 +18,24 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
-/*
- * ident	"@(#)PlainSymbolTokenizer.lex 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.analysis.plain;
-import java.util.*;
 import java.io.*;
-import org.apache.lucene.analysis.*;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.apache.lucene.analysis.Token;
 %%
 %public
 %class PlainSymbolTokenizer
-%extends Tokenizer
+%extends JFlexTokenizer
 %unicode
-%function next
 %type Token 
 
 %{
+  private Token reuseToken=new Token();
+
   public void close() throws IOException {
   	yyclose();
   }
@@ -54,7 +51,8 @@ import org.apache.lucene.analysis.*;
 
 
 %%
-//XXX decide if we should let one char symbols
-[a-zA-Z_] [a-zA-Z0-9_]+ {return new Token(yytext(), zzStartRead, zzMarkedPos);}
+//TODO decide if we should let one char symbols
+[a-zA-Z_] [a-zA-Z0-9_]+ {reuseToken.reinit(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        return reuseToken; }
 <<EOF>>   { return null;} 
 .|\n	{}

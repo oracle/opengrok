@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -215,8 +215,8 @@ public class AnalyzerGuru {
                                 FileAnalyzer fa) throws IOException {
         Document doc = new Document();
         String date = DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND);
-        doc.add(new Field("u", Util.uid(path, date), Field.Store.YES, Field.Index.UN_TOKENIZED));
-        doc.add(new Field("fullpath", file.getAbsolutePath(), Field.Store.YES, Field.Index.TOKENIZED));
+        doc.add(new Field("u", Util.uid(path, date), Field.Store.YES, Field.Index.NOT_ANALYZED));
+        doc.add(new Field("fullpath", file.getAbsolutePath(), Field.Store.YES, Field.Index.ANALYZED));
 
         try {
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
@@ -227,23 +227,23 @@ public class AnalyzerGuru {
         } catch (HistoryException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occurred while reading history: ", e);
         }
-        doc.add(new Field("date", date, Field.Store.YES, Field.Index.UN_TOKENIZED));
+        doc.add(new Field("date", date, Field.Store.YES, Field.Index.NOT_ANALYZED));
         if (path != null) {
-            doc.add(new Field("path", path, Field.Store.YES, Field.Index.TOKENIZED));
+            doc.add(new Field("path", path, Field.Store.YES, Field.Index.ANALYZED));
             Project project = Project.getProject(path);
             if (project != null) {
-                doc.add(new Field("project", project.getPath(), Field.Store.YES, Field.Index.TOKENIZED));
+                doc.add(new Field("project", project.getPath(), Field.Store.YES, Field.Index.ANALYZED));
             }
         }
 
         if (fa != null) {
             Genre g = fa.getGenre();
             if (g == Genre.PLAIN) {
-                doc.add(new Field("t", "p", Field.Store.YES, Field.Index.UN_TOKENIZED));
+                doc.add(new Field("t", "p", Field.Store.YES, Field.Index.NOT_ANALYZED));
             } else if (g == Genre.XREFABLE) {
-                doc.add(new Field("t", "x", Field.Store.YES, Field.Index.UN_TOKENIZED));
+                doc.add(new Field("t", "x", Field.Store.YES, Field.Index.NOT_ANALYZED));
             } else if (g == Genre.HTML) {
-                doc.add(new Field("t", "h", Field.Store.YES, Field.Index.UN_TOKENIZED));
+                doc.add(new Field("t", "h", Field.Store.YES, Field.Index.NOT_ANALYZED));
             }
             fa.analyze(doc, in);
         }

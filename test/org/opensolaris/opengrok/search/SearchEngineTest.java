@@ -166,7 +166,7 @@ public class SearchEngineTest {
         instance.setHistory("\"Add lint make target and fix lint warnings\"");
         int noHits =  instance.search();
         if (noHits > 0) {
-            instance.more(0, noHits, hits);
+            instance.results(0, noHits, hits);
             assertEquals(noHits, hits.size());
         }
 
@@ -176,7 +176,7 @@ public class SearchEngineTest {
         noHits = instance.search();
         assertEquals(8, noHits);
         hits.clear();
-        instance.more(0, noHits, hits);
+        instance.results(0, noHits, hits);
         for (Hit hit : hits) {
             assertEquals("main.c", hit.getFilename());
             assertEquals(1, 1);
@@ -191,7 +191,7 @@ public class SearchEngineTest {
         instance.setFile("main.c");
         noHits = instance.search();
         hits.clear();
-        instance.more(0, noHits, hits);
+        instance.results(0, noHits, hits);
         for (Hit hit : hits) {
             assertEquals("main.c", hit.getFilename());
             if (hit.getLine().indexOf("arguments") == -1) {
@@ -205,7 +205,7 @@ public class SearchEngineTest {
         instance.setFile("main.c");
         noHits = instance.search();
         hits.clear();
-        instance.more(0, noHits, hits);
+        instance.results(0, noHits, hits);
         for (Hit hit : hits) {
             assertEquals("main.c", hit.getFilename());
             if (hit.getLine().indexOf("main") == -1) {

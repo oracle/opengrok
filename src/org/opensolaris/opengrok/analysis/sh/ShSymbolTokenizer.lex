@@ -18,27 +18,24 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
-/*
- * ident	"@(#)ShSymbolTokenizer.lex 1.2     05/12/01 SMI"
- */
-
 package org.opensolaris.opengrok.analysis.sh;
-import java.util.*;
 import java.io.*;
-import org.apache.lucene.analysis.*;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.apache.lucene.analysis.Token;
 %%
 %public
 %class ShSymbolTokenizer
-%extends Tokenizer
+%extends JFlexTokenizer
 %unicode
-%function next
-%type Token 
+%type Token
 
 %{
+  private Token reuseToken=new Token();
+
   public void close() throws IOException {
   	yyclose();
   }
@@ -60,16 +57,18 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
 <YYINITIAL> {
 {Identifier} {String id = yytext();
-		if(!Consts.shkwd.contains(id))
-			return new Token(yytext(), zzStartRead, zzMarkedPos);}
+		if(!Consts.shkwd.contains(id)){
+                        reuseToken.reinit(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        return reuseToken; }
+              }
  \"	{ yybegin(STRING); }
  \'	{ yybegin(QSTRING); }
  "#"	{ yybegin(SCOMMENT); }
 }
 
 <STRING> {
-"$" {Identifier} { return new Token(new String( zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-1 ), zzStartRead, zzMarkedPos);}
-"${" {Identifier} "}" { return new Token(new String( zzBuffer, zzStartRead+2, zzMarkedPos-zzStartRead-3 ), zzStartRead, zzMarkedPos);}
+"$" {Identifier} { reuseToken.reinit( zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-1 , zzStartRead, zzMarkedPos);return reuseToken;}
+"${" {Identifier} "}" { reuseToken.reinit( zzBuffer, zzStartRead+2, zzMarkedPos-zzStartRead-3 , zzStartRead, zzMarkedPos);return reuseToken;}
 
  \"	{ yybegin(YYINITIAL); }
 \\\\ | \\\"	{}

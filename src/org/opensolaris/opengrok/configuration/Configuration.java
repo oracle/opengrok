@@ -83,9 +83,13 @@ public final class Configuration {
     private boolean useLuceneLocking;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
-    
+    private int hitsPerPage;
+    private int cachePages;
+
+   
     /** Creates a new instance of Configuration */
     public Configuration() {
+        //defaults for an opengrok instance configuration
         setHistoryCache(true);
         setHistoryCacheTime(30);
         setHistoryCacheInDB(false);
@@ -109,6 +113,8 @@ public final class Configuration {
         setUsingLuceneLocking(false);
         setCompressXref(true);
         setIndexVersionedFilesOnly(false);
+        setHitsPerPage(25);
+        setCachePages(5);
     }
     
     public String getCtags() {
@@ -117,6 +123,22 @@ public final class Configuration {
     
     public void setCtags(String ctags) {
         this.ctags = ctags;
+    }
+    
+    public int getCachePages() {
+        return cachePages;
+    }
+
+    public void setCachePages(int cachePages) {
+        this.cachePages = cachePages;
+    }
+
+    public int getHitsPerPage() {
+        return hitsPerPage;
+    }
+
+    public void setHitsPerPage(int hitsPerPage) {
+        this.hitsPerPage = hitsPerPage;
     }
 
     /**

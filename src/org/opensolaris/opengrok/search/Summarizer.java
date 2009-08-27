@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// modified by Lubos Kosco 2009 to upgrade lucene to 2.4.1
+
 package org.opensolaris.opengrok.search;
 
 import java.io.IOException;
@@ -112,10 +115,6 @@ public class Summarizer {
     public Summary getSummary(String text) throws IOException {
         if (text == null) {
             return null;
-            // Simplistic implementation.  Finds the first fragments in the document
-            // containing any query terms.
-            //
-            // @TODO: check that phrases in the query are matched in the fragment
         }
         // Simplistic implementation.  Finds the first fragments in the document
         // containing any query terms.
@@ -167,7 +166,7 @@ public class Summarizer {
             //
             // If we find a term that's in the query...
             //
-            if (highlight.contains(tokens[i].termText())) {
+            if (highlight.contains(tokens[i].term())) {
                 //
                 // Start searching at a point SUM_CONTEXT terms back,
                 // and move SUM_CONTEXT terms into the future.
@@ -197,8 +196,8 @@ public class Summarizer {
                     // Now grab the hit-element, if present
                     //
                     Token t = tokens[j];
-                    if (highlight.contains(t.termText())) {
-                        excerpt.addToken(t.termText());
+                    if (highlight.contains(t.term())) {
+                        excerpt.addToken(t.term());
                         excerpt.add(new Summary.Fragment(text.substring(offset, t.startOffset())));
                         excerpt.add(new Summary.Highlight(text.substring(t.startOffset(),t.endOffset())));
                         offset = t.endOffset();
@@ -282,11 +281,14 @@ public class Summarizer {
     }
     
     private Token[] getTokens(String text) throws IOException {
+        //TODO somehow integrate below cycle to getSummary to save the cloning and memory
         ArrayList<Token> result = new ArrayList<Token>();
         TokenStream ts = analyzer.tokenStream("full", new StringReader(text));
-        for (Token token = ts.next(); token != null; token = ts.next()) {
-            result.add(token);
-        }
+        Token token=new Token();
+        int i=0;
+        for (token=ts.next(token); token != null; token=ts.next(token)) {
+            result.add((Token)token.clone());
+        }        
         return result.toArray(new Token[result.size()]);
     }
     

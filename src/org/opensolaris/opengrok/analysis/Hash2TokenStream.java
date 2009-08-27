@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -37,7 +37,8 @@ public final class Hash2TokenStream extends TokenStream {
         keys = symbols.iterator();
     }
     
-    public Token next() {
+    @Override
+    public Token next(Token reusableToken ) {
 	while(true) {
 	    if (i <= 0) {
 		if (keys.hasNext()) {
@@ -45,7 +46,8 @@ public final class Hash2TokenStream extends TokenStream {
 		    terms = term.split("[^a-zA-Z_0-9]+");
 		    i = terms.length;
 		    if (i > 0) {
-			return new Token(terms[--i], 0, 0);
+                        reusableToken.reinit(terms[--i], 0, 0);
+			return reusableToken;
 		    } else {
                         // no tokens found in this key, try next
                         continue;
@@ -55,7 +57,8 @@ public final class Hash2TokenStream extends TokenStream {
 		}
 	    } else {
 		//System.out.println("Returning " + term + h.get(term));
-		return new Token(terms[--i], 0, 0);
+                reusableToken.reinit(terms[--i], 0, 0);
+		return reusableToken;		
 	    }
 	}
     }

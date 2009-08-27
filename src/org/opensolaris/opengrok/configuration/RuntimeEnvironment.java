@@ -220,6 +220,22 @@ public final class RuntimeEnvironment {
         threadConfig.get().setCtags(ctags);
     }
 
+    public int getCachePages() {
+        return threadConfig.get().getCachePages();
+    }
+
+    public void setCachePages(int cachePages) {
+        threadConfig.get().setCachePages(cachePages);
+    }
+
+    public int getHitsPerPage() {
+        return threadConfig.get().getHitsPerPage();
+    }
+
+    public void setHitsPerPage(int hitsPerPage) {
+        threadConfig.get().setHitsPerPage(hitsPerPage);
+    }
+
     /**
      * Validate that I have a Exuberant ctags program I may use
      * @return true if success, false otherwise

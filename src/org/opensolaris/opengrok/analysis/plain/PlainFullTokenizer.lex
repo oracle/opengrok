@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis.plain;
@@ -26,23 +26,22 @@ package org.opensolaris.opengrok.analysis.plain;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.List;
 import java.util.Locale;
-import java.util.TreeMap;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.apache.lucene.analysis.Token;
-import org.apache.lucene.analysis.Tokenizer;
 %%
 
 %public
 %class PlainFullTokenizer
-%extends Tokenizer
+%extends JFlexTokenizer
 %unicode
-%function next
 %type Token 
 %caseless
 %switch
 
 %{
+  private Token reuseToken=new Token();
+
   public void close() throws IOException {
   	yyclose();
   }
@@ -63,6 +62,8 @@ Number = [0-9]+|[0-9]+\.[0-9]+| "0[xX]" [0-9a-fA-F]+
 Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
-{Identifier}|{Number}|{Printable}	{return new Token(yytext().toLowerCase(Locale.US), zzStartRead, zzMarkedPos);}
+{Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
+                        reuseToken.reinit(yytext().toLowerCase(Locale.getDefault()), zzStartRead, zzMarkedPos);
+                        return reuseToken; }
 <<EOF>>   { return null;} 
 .|\n	{}

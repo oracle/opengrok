@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis.archive;
@@ -88,7 +88,7 @@ public class BZip2Analyzer extends FileAnalyzer {
 		    if(doc.get("t") != null) {
 			doc.removeField("t");
 			if (g == Genre.XREFABLE) {
-			    doc.add(new Field("t", "x", Field.Store.YES, Field.Index.UN_TOKENIZED));
+			    doc.add(new Field("t", "x", Field.Store.YES, Field.Index.NOT_ANALYZED));
 			}
 		    }
 		} else {

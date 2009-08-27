@@ -24,20 +24,23 @@
 package org.opensolaris.opengrok.search;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.search.Hits;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
@@ -50,7 +53,7 @@ public final class Results {
         // Util class, should not be constructed
     }
     
-    public static void prettyPrintHTML(Hits hits, int start, int end, Writer out,
+    public static void prettyPrintHTML(Document[] docs, int start, int end, Writer out,
             Context sourceContext, HistoryContext historyContext,
             Summarizer summer, String urlPrefix,
             String morePrefix,
@@ -62,7 +65,7 @@ public final class Results {
         char[] content = new char[1024*8];
         LinkedHashMap<String, ArrayList<Document>> dirHash = new LinkedHashMap<String, ArrayList<Document>>();
         for (int i = start; i < end; i++) {
-            Document doc = hits.doc(i);
+            Document doc = docs[i];
             String rpath = doc.get("path");
             String parent = rpath.substring(0,rpath.lastIndexOf('/'));
             ArrayList<Document> dirDocs = dirHash.get(parent);
@@ -105,7 +108,11 @@ public final class Results {
                             sourceContext.getContext(new FileReader(srcRoot + rpath), out, urlPrefix, morePrefix, rpath,
                                     tags, true, null);
                         } else if("x".equals(genre) && dataRoot != null && summer != null){
-                            Reader r = new TagFilter(new BufferedReader(new FileReader(dataRoot + "/xref" + rpath)));
+                            Reader r = null;
+                            if ( RuntimeEnvironment.getInstance().isCompressXref() ) {
+                                    r = new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(dataRoot + "/xref" + rpath+".gz"))))); }
+                            else {
+                                    r = new TagFilter(new BufferedReader(new FileReader(dataRoot + "/xref" + rpath))); }                            
                             int len = r.read(content);
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
                             r.close();
@@ -118,7 +125,7 @@ public final class Results {
                             sourceContext.getContext(null, out, urlPrefix, morePrefix, rpath, tags, true, null);
                         }
                     } catch (IOException e) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary", e);
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary of "+rpath, e);
                     }
                     //out.write("Genre = " + genre);
                 }

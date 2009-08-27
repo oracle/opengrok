@@ -37,10 +37,11 @@ import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TopFieldDocs;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -65,7 +66,7 @@ public class DirectoryHistoryReader extends HistoryReader {
     String icomment;
 
     @SuppressWarnings("PMD.ConfusingTernary")
-    public DirectoryHistoryReader(String path) throws IOException {
+    public DirectoryHistoryReader(String path,int hitsPerPage,int cachePages) throws IOException {
         IndexReader ireader = null;
         IndexSearcher searcher = null;
         try {
@@ -76,18 +77,20 @@ public class DirectoryHistoryReader extends HistoryReader {
             }
             searcher = new IndexSearcher(ireader);
             Sort sort = new Sort("date", true);
-            QueryParser qparser = new QueryParser("path", new CompatibleAnalyser());
-            Query query = null;
-            Hits hits = null;
+            QueryParser qparser = new QueryParser("path", new CompatibleAnalyser());            
+            Query query = null;            
+            ScoreDoc[] hits = null;
             try {
                 query = qparser.parse(path);
-                hits = searcher.search(query, sort);
+                TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sort);
+                hits = fdocs.scoreDocs;
             } catch (org.apache.lucene.queryParser.ParseException e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while parsing search query", e);
             }
             if (hits != null) {
-                for (int i = 0; i < 40 && i < hits.length(); i++) {
-                    Document doc = hits.doc(i);
+                for (int i = 0; i < 40 && i < hits.length; i++) {
+                    int docId = hits[i].doc;
+                    Document doc = searcher.doc(docId);
                     String rpath = doc.get("path");
                     if (!rpath.startsWith(path)) {
                         continue;

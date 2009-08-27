@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -40,7 +40,8 @@ public final class List2TokenStream extends TokenStream {
         subTokens = null;
     }
 
-    public Token next() {
+    @Override
+    public Token next(Token reusableToken) {
         if (l == null || l.isEmpty()) {
             OpenGrokLogger.getLogger().log(Level.FINE, "Cannot get tokens from an empty list!");
             return null;
@@ -55,13 +56,15 @@ public final class List2TokenStream extends TokenStream {
                     subTokens = tok.split("[^a-z0-9A-Z_]+");
                 } else {
                     subTokens = null;
-                    return new Token(tok, 0, 0);
+                    reusableToken.reinit(tok,0,0);
+                    return reusableToken;
                 }
                 si = 0;
             }
         }
         if (si < subTokens.length) {
-            return new Token(subTokens[si++], 0, 0);
+            reusableToken.reinit(subTokens[si++], 0, 0);
+            return reusableToken;
         } else {
             return null;
         }

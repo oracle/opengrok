@@ -18,29 +18,26 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
-/*
- * ident	"@(#)TroffFullTokenizer.lex 1.1     05/11/11 SMI"
- */
-
 package org.opensolaris.opengrok.analysis.document;
-import java.util.*;
 import java.io.*;
-import org.apache.lucene.analysis.*;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.apache.lucene.analysis.Token;
 %%
 
 %public
 %class TroffFullTokenizer
-%extends Tokenizer
+%extends JFlexTokenizer
 %unicode
-%function next
 %type Token 
 %caseless
 
 %{
+  private Token reuseToken=new Token();
+
   public void close() throws IOException {
   	yyclose();
   }
@@ -66,7 +63,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 \\f[ABCIR]  {}
 ^"...\\\"" {}
 
-\\&.        {return new Token(".", zzStartRead, zzMarkedPos);}
-{Identifier}|{Number}|{Printable}	{return new Token(yytext().toLowerCase(), zzStartRead, zzMarkedPos);}
+\\&.        {reuseToken.reinit(".", zzStartRead, zzMarkedPos);return reuseToken;}
+{Identifier}|{Number}|{Printable}	{reuseToken.reinit(yytext().toLowerCase(), zzStartRead, zzMarkedPos);return reuseToken;}
 <<EOF>>   { return null;}
 .|\n	{}

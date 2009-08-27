@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
 
+import org.apache.lucene.analysis.Token;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -59,8 +60,9 @@ public class List2TokenStreamTest {
     @Test
     public void testBug3094() {
         List2TokenStream instance = new List2TokenStream(null);
+        Token test=new Token();
         assertNotNull(instance);
-        assertNull(instance.next());
+        assertNull(instance.next(test));
         instance.close();
     }
 }

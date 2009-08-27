@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Trond Norbye.  All rights reserved.
+ * Copyright 2009 Sun Micosystems.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -33,17 +33,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MultiSearcher;
+import org.apache.lucene.search.ParallelMultiSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.TopDocCollector;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -60,7 +63,8 @@ import org.opensolaris.opengrok.web.Util;
  * This is an encapsulation of the details on how to seach in the index
  * database.
  *
- * @author Trond Norbye
+ * @author Trond Norbye 2005
+ * @author Lubos Kosco 2009 - upgrade to lucene 2.4.1
  */
 public class SearchEngine {
     /** Message text used when logging exceptions thrown when searching. */
@@ -99,12 +103,22 @@ public class SearchEngine {
     private final QueryParser qparser;
     private Context sourceContext;
     private HistoryContext historyContext;
-    private Summarizer summer;
-    private final List<org.apache.lucene.search.Hit> hits;
+    private Summarizer summarizer;
+    // internal structure to hold the results from lucene
+    private final List<org.apache.lucene.document.Document> docs;
     private final char[] content = new char[1024*8];
     private String source;
     private String data;
+
+    int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
+    int cachePages= RuntimeEnvironment.getInstance().getCachePages();
+    int totalHits=0;
     
+    private ScoreDoc[] hits=null;
+    private TopDocCollector collector=null;
+    private Searcher searcher=null;
+    boolean allCollected=false;
+
     /**
      * Creates a new instance of SearchEngine
      */
@@ -113,7 +127,7 @@ public class SearchEngine {
         qparser = new QueryParser("full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
-        hits = new ArrayList<org.apache.lucene.search.Hit>();
+        docs = new ArrayList<org.apache.lucene.document.Document>();
     }
 
     public boolean isValidQuery() {
@@ -132,21 +146,63 @@ public class SearchEngine {
         
         return ret;
     }
-    
-    private void searchSingleDatabase(File root) throws IOException {
-        IndexReader ireader = IndexReader.open(root);
-        Searcher searcher = new IndexSearcher(ireader);
-        Hits res = searcher.search(query);
-        if (res.length() > 0) {
-            Iterator iter = res.iterator();
-            while (iter.hasNext()) {
-                org.apache.lucene.search.Hit h = (org.apache.lucene.search.Hit) iter.next();
-                hits.add(h);
-            }
-        }
 
+    /**
+     *
+     * @param paging whether to use paging (if yes, first X pages will load faster)
+     * @param root which db to search     
+     * @throws IOException
+     */
+    private void searchSingleDatabase(File root,boolean paging) throws IOException {
+        IndexReader ireader = IndexReader.open(root);
+        searcher = new IndexSearcher(ireader);
+        collector = new TopDocCollector(hitsPerPage*cachePages);        
+        searcher.search(query,collector);
+        totalHits=collector.getTotalHits();
+        if (!paging) {
+               collector = new TopDocCollector(totalHits);
+               searcher.search(query,collector);
+        }
+        hits = collector.topDocs().scoreDocs;
+        for (int i = 0; i < hits.length; i++) {
+            int docId = hits[i].doc;
+            Document d = searcher.doc(docId);
+            docs.add(d);
+        }
     }
-    
+
+    /**
+     *
+     * @param paging whether to use paging (if yes, first X pages will load faster)
+     * @param root list of projects to search
+     * @throws IOException
+     */
+    private void searchMultiDatabase(List<Project> root,boolean paging) throws IOException {
+        IndexSearcher[] searchables=new IndexSearcher[root.size()];
+        File droot=new File(RuntimeEnvironment.getInstance().getDataRootFile(), "index");
+        int ii=0;
+        for (Project project : root) {
+        IndexReader ireader = (IndexReader.open(new File(droot,project.getPath()) ));
+        searchables[ii++]=new IndexSearcher(ireader);
+        }
+        if (Runtime.getRuntime().availableProcessors()>1) {
+            searcher = new ParallelMultiSearcher(searchables); }
+        else { searcher = new MultiSearcher(searchables); }
+        collector = new TopDocCollector(hitsPerPage*cachePages);        
+        searcher.search(query,collector);
+        totalHits=collector.getTotalHits();
+        if (!paging) {
+               collector = new TopDocCollector(totalHits);
+               searcher.search(query,collector);
+        }
+        hits = collector.topDocs().scoreDocs;
+        for (int i = 0; i < hits.length; i++) {
+            int docId = hits[i].doc;
+            Document d = searcher.doc(docId);
+            docs.add(d);
+        }
+    }
+
     public String getQuery() {
         return query.toString();
     }
@@ -154,13 +210,14 @@ public class SearchEngine {
     /**
      * Execute a search. Before calling this function, you must set the
      * appropriate seach critera with the set-functions.
+     * Note that this search will return the first cachePages of hitsPerPage, for more you need to call more
      *
-     * @return The number of hits
+     * @return The number of total hits
      */
     public int search() {
         source = RuntimeEnvironment.getInstance().getSourceRootPath();
         data = RuntimeEnvironment.getInstance().getDataRootPath();
-        hits.clear();
+        docs.clear();
                 
         String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
         if (qry.length() > 0) {
@@ -171,27 +228,26 @@ public class SearchEngine {
 
                 if (env.hasProjects()) {
                     // search all projects
-                    for (Project project : env.getProjects()) {
-                        searchSingleDatabase(new File(root, project.getPath()));
-                    }                
+                    //TODO support paging per project
+                        searchMultiDatabase(env.getProjects(),false);
                 } else {
                     // search the index database
-                    searchSingleDatabase(root);
+                    searchSingleDatabase(root,true);
                 }
             } catch (Exception e) {
                 OpenGrokLogger.getLogger().log(
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
         }
-        if (!hits.isEmpty()) {
+        if (!docs.isEmpty()) {
             sourceContext = null;
-            summer = null;
+            summarizer = null;
             try {
                 sourceContext = new Context(query);
                 if(sourceContext.isEmpty()) {
                     sourceContext = null;
                 }
-                summer = new Summarizer(query, analyzer);
+                summarizer = new Summarizer(query, analyzer);
             } catch (Exception e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary", e);
             }
@@ -206,27 +262,66 @@ public class SearchEngine {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting history context", e);
             }
         }
-        return hits.size();
+        return hits.length;
     }
-    
-    public void more(int start, int end, List<Hit> ret) {
-        int len = end;
-        if (end > hits.size()) {
-            len = hits.size();
+
+    /**
+     * get results , if no search was started before, no results are returned
+     * this method will requery if end end is more than first query from search,
+     * hence performance hit applies, if you want results in later pages than number of cachePages
+     * also end has to be bigger than start !
+     * @param start start of the hit list
+     * @param end end of the hit list
+     * @param ret list of results from start to end or null/empty if no search was started
+     */
+    public void results(int start, int end, List<Hit> ret) {
+
+        //return if no start search() was done
+        if (hits==null || (end<start) ) {ret.clear();return;}
+
+        ret.clear();
+
+        //TODO check if below fits for if end=old hits.length, or it should include it
+        if (end>hits.length & !allCollected) {
+         //do the requery, we want more than 5 pages
+         collector = new TopDocCollector(totalHits);
+         try {
+             searcher.search(query,collector);
+         } catch (Exception e) { // this exception should never be hit, since search() will hit this before
+                 OpenGrokLogger.getLogger().log(
+                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
+         }
+         hits = collector.topDocs().scoreDocs;
+         Document d=null;
+         for (int i = start; i < hits.length; i++) {
+             int docId = hits[i].doc;
+             try {
+             d = searcher.doc(docId);
+             }  catch (Exception e) {
+                 OpenGrokLogger.getLogger().log(
+                         Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
+             }
+             docs.add(d);
+         }
+         allCollected=true;
         }
-        for (int ii = start; ii < len; ++ii) {
+
+        //TODO generation of ret(results) could be cashed and consumers of engine would just print them in whatever form they need, this way we could get rid of docs
+        // the only problem is that count of docs is usually smaller than number of results
+        for (int ii = start; ii < end; ++ii) {
             boolean alt = (ii % 2 == 0);
             boolean hasContext = false;
             try {
-                Document doc = hits.get(ii).getDocument();
+                Document doc = docs.get(ii);
                 String filename = doc.get("path");
+
                 String genre = doc.get("t");
                 Definitions tags = null;
-                Fieldable tagsField = doc.getFieldable("tags");
+                Fieldable tagsField = doc.getFieldable("tags");                
                 if (tagsField != null) {
                     tags = Definitions.deserialize(tagsField.binaryValue());
                 }
-                int nhits = hits.size();
+                int nhits = docs.size();
                 
                 if(sourceContext != null) {
                     try {
@@ -234,15 +329,20 @@ public class SearchEngine {
                             hasContext = sourceContext.getContext(new InputStreamReader(new FileInputStream(source +
                                     filename)), null, null, null, filename,
                                     tags, nhits > 100, ret);
-                        } else if("x".equals(genre) && data != null && summer != null){
+                        } else if("x".equals(genre) && data != null && summarizer != null){
                             int l = 0;
-                            Reader r = new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename)));
+                            Reader r=null;                          
+                            if ( RuntimeEnvironment.getInstance().isCompressXref() ) {
+                                    r = new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + "/xref" + filename+".gz"))))); }
+                            else {
+                                    r = new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename))); }
                             try {
-                                l = r.read(content);
+                                l = r.read(content);                                                            
                             } finally {
                                 r.close();
                             }
-                            Summary sum = summer.getSummary(new String(content, 0, l));
+                            //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
+                            Summary sum = summarizer.getSummary(new String(content, 0, l));
                             Fragment fragments[] = sum.getFragments();
                             for (int jj = 0; jj < fragments.length; ++jj) {
                                 String match = fragments[jj].toString();
@@ -255,10 +355,11 @@ public class SearchEngine {
                                 }
                             }
                         } else {
-                            OpenGrokLogger.getLogger().warning("Unknown genre: " + genre);
+                            OpenGrokLogger.getLogger().warning("Unknown genre: " + genre + " for "+filename);
                             hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, ret);
                         }
                     } catch (FileNotFoundException exp) {
+                        OpenGrokLogger.getLogger().warning("Couldn't read summary from "+filename+" ("+exp.getMessage()+")");
                         hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, ret);
                     }
                 }

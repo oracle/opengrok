@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -27,19 +27,19 @@
  */
 
 package org.opensolaris.opengrok.analysis.lisp;
-import java.util.*;
 import java.io.*;
-import org.apache.lucene.analysis.*;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.apache.lucene.analysis.Token;
 
 %%
 %public
 %class LispSymbolTokenizer
-%extends Tokenizer
+%extends JFlexTokenizer
 %unicode
-%function next
 %type Token
 
 %{
+  private Token reuseToken=new Token();
 
   private int nestedComment;
 
@@ -64,8 +64,10 @@ Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 
 <YYINITIAL> {
 {Identifier} {String id = yytext();
-              if (!Consts.kwd.contains(id.toLowerCase()))
-                return new Token(yytext(), zzStartRead, zzMarkedPos);}
+              if (!Consts.kwd.contains(id.toLowerCase())) {
+                        reuseToken.reinit(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        return reuseToken; }
+              }
  \"     { yybegin(STRING); }
 ";"     { yybegin(SCOMMENT); }
 }

@@ -297,7 +297,8 @@ public class IndexDatabase {
         }
 
         try {
-            writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer());
+            //TODO we might need to add writer.commit after certain phases of index generation, right now it will only happen in the end
+            writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer(),IndexWriter.MaxFieldLength.UNLIMITED);
             writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
 
             if (directories.isEmpty()) {
@@ -335,7 +336,7 @@ public class IndexDatabase {
             }
         } finally {
             if (writer != null) {
-                try {
+                try {                    
                     writer.close();
                 } catch (IOException e) {
                     log.log(Level.WARNING, "An error occured while closing writer", e);                    
@@ -423,7 +424,7 @@ public class IndexDatabase {
             if (RuntimeEnvironment.getInstance().isVerbose()) {
                 log.info("Optimizing the index ... ");
             }
-            wrt = new IndexWriter(indexDirectory, null, false);
+            wrt = new IndexWriter(indexDirectory, null, false,IndexWriter.MaxFieldLength.UNLIMITED);
             wrt.optimize();
             if (RuntimeEnvironment.getInstance().isVerbose()) {
                 log.info("done");
