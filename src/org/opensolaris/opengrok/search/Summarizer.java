@@ -285,7 +285,6 @@ public class Summarizer {
         ArrayList<Token> result = new ArrayList<Token>();
         TokenStream ts = analyzer.tokenStream("full", new StringReader(text));
         Token token=new Token();
-        int i=0;
         for (token=ts.next(token); token != null; token=ts.next(token)) {
             result.add((Token)token.clone());
         }        

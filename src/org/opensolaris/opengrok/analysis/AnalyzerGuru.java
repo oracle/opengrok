@@ -216,7 +216,7 @@ public class AnalyzerGuru {
         Document doc = new Document();
         String date = DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND);
         doc.add(new Field("u", Util.uid(path, date), Field.Store.YES, Field.Index.NOT_ANALYZED));
-        doc.add(new Field("fullpath", file.getAbsolutePath(), Field.Store.YES, Field.Index.ANALYZED));
+        doc.add(new Field("fullpath", file.getAbsolutePath(), Field.Store.NO, Field.Index.NOT_ANALYZED));
 
         try {
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
@@ -247,7 +247,6 @@ public class AnalyzerGuru {
             }
             fa.analyze(doc, in);
         }
-        doc.removeField("fullpath");
 
         return doc;
     }

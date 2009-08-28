@@ -66,7 +66,10 @@ public class DirectoryHistoryReader extends HistoryReader {
     String icomment;
 
     @SuppressWarnings("PMD.ConfusingTernary")
-    public DirectoryHistoryReader(String path,int hitsPerPage,int cachePages) throws IOException {
+    public DirectoryHistoryReader(String path) throws IOException {
+        //TODO can we introduce paging here ???  this class is used just for rss.jsp !
+        int hitsPerPage=RuntimeEnvironment.getInstance().getHitsPerPage();
+        int cachePages=RuntimeEnvironment.getInstance().getCachePages();
         IndexReader ireader = null;
         IndexSearcher searcher = null;
         try {
@@ -83,6 +86,7 @@ public class DirectoryHistoryReader extends HistoryReader {
             try {
                 query = qparser.parse(path);
                 TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sort);
+                fdocs=searcher.search(query, null,fdocs.totalHits, sort);
                 hits = fdocs.scoreDocs;
             } catch (org.apache.lucene.queryParser.ParseException e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while parsing search query", e);

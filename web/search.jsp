@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 ident	"%Z%%M% %I%     %E% SMI"
@@ -59,13 +59,14 @@ String sort = null;
 
 final String LASTMODTIME = "lastmodtime";
 final String RELEVANCY = "relevancy";
+final String BY_PATH = "fullpath";
 
 Cookie[] cookies = request.getCookies();
 if (cookies != null) {
     for (Cookie cookie : cookies) {
         if (cookie.getName().equals("OpenGrok/sorting")) {
             sort = cookie.getValue();
-            if (!LASTMODTIME.equals(sort) && !RELEVANCY.equals(sort)) {
+            if (!LASTMODTIME.equals(sort) && !RELEVANCY.equals(sort) && !BY_PATH.equals(sort)) {
                 sort = null;
             }
             break;
@@ -79,6 +80,8 @@ if (sortParam != null) {
         sort = LASTMODTIME;
     } else if (RELEVANCY.equals(sortParam)) {
         sort = RELEVANCY;
+    } else if (BY_PATH.equals(sortParam)) {
+        sort = BY_PATH;
     }
     if (sort != null) {
         Cookie cookie = new Cookie("OpenGrok/sorting", sort);
@@ -86,7 +89,7 @@ if (sortParam != null) {
     }
 }
 
-Hits hits = null;
+List<org.apache.lucene.document.Document> docs=new ArrayList<org.apache.lucene.document.Document>();
 String errorMsg = null;
 
 if( q!= null && q.equals("")) q = null;
@@ -98,11 +101,20 @@ if (project != null && project.equals("")) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
     Searcher searcher = null;		    //the searcher used to open/search the index
+    TopDocCollector collector=null;         // the collector used
+    ScoreDoc[] hits = null;                 // list of documents which result from the query
     IndexReader ireader = null; 	    //the reader used to open/search the index
     Query query = null, defQuery = null; 		    //the Query created by the QueryParser
+    boolean allCollected=false;
+    int totalHits=0;
     
     int start = 0;		       //the first index displayed on this page
+    //TODO deprecate max this and merge with paging and param n
     int max    = 25;			//the maximum items displayed on this page
+
+    int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
+    int cachePages= RuntimeEnvironment.getInstance().getCachePages();
+
     int thispage = 0;			    //used for the for/next either max or
     String moreUrl = null;
     CompatibleAnalyser analyzer = new CompatibleAnalyser();
@@ -119,6 +131,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         }
         //String date = request.getParameter("date");
         try {
+            //TODO merge paging hitsPerPage with parameter n (has to reflect the search if changed so proper number is cached first time)
             start = Integer.parseInt(request.getParameter("start"));	//parse the max results first
             max = Integer.parseInt(request.getParameter("n"));      //then the start index
             if(max < 0 || (max % 10 != 0) || max > 50) max = 25;
@@ -144,15 +157,47 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             }
         }
 
+        //TODO check if below is somehow reusing sessions so we don't requery again and again
         if (errorMsg == null) {
             ireader = IndexReader.open(root);
-            searcher = new IndexSearcher(ireader);
-
-            if ("lastmodtime".equals(sort)) {
-                hits = searcher.search(query, new Sort("date", true));
+            searcher = new IndexSearcher(ireader);            
+            collector = new TopDocCollector(hitsPerPage*cachePages);
+            if (LASTMODTIME.equals(sort)) {
+                Sort sortf = new Sort("date", true);
+                TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sortf);
+                totalHits=fdocs.totalHits;
+                if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
+                 fdocs=searcher.search(query, null, totalHits, sortf);
+                 allCollected=true;
+                }
+                hits = fdocs.scoreDocs; 
+            } else if (BY_PATH.equals(sort)) {
+                Sort sortf = new Sort(BY_PATH);
+                TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sortf);
+                totalHits=fdocs.totalHits;
+                if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
+                 fdocs=searcher.search(query, null,totalHits, sortf);
+                 allCollected=true;
+                }
+                hits = fdocs.scoreDocs;
             } else {
-                hits = searcher.search(query);
+                searcher.search(query,collector);
+                totalHits=collector.getTotalHits();
+                if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
+                 collector = new TopDocCollector(totalHits);
+                 searcher.search(query,collector);
+                 allCollected=true;
+                }
+                hits=collector.topDocs().scoreDocs;
             }
+
+            //below will get all the documents
+//            for (int i = 0; i < hits.length; i++) {
+//              int docId = hits[i].doc;
+//              Document d = searcher.doc(docId);
+//              docs.add(d);
+//            }
+
         }
         thispage = max;
     } catch (BooleanQuery.TooManyClauses e) {
@@ -170,8 +215,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     }
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....
-    if (hits != null && hits.length() == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
-        String preFragmentPath = Util.URIEncodePath(context + "/xref" + hits.doc(0).get("path"));
+    if (hits != null && hits.length == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
+        String preFragmentPath = Util.URIEncodePath(context + "/xref" + searcher.doc(hits[0].doc).get("path"));
         String fragment = Util.URIEncode(((TermQuery)query).getTerm().text());
         
         StringBuilder url = new StringBuilder(preFragmentPath);
@@ -203,14 +248,18 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                 url.append(querys.substring(0, idx));
             }
         }
+ 
+        %>Sort by: <%
         url.append("sort=");
         
         if (sort == null || RELEVANCY.equals(sort)) {
-           url.append(LASTMODTIME);
-           %><b>Sort by relevance</b> <a href="<%=url.toString()%>">Sort by last modified time</a><%
+           %><b>relevance</b> | <a href="<%=url.toString()+LASTMODTIME%>">last modified time</a> | <a href="<%=url.toString()+BY_PATH%>">path</a><%
+        } else if (LASTMODTIME.equals(sort)) {
+           %><a href="<%=url.toString()+RELEVANCY%>">relevance</a> | <b>last modified time</b> | <a href="<%=url.toString()+BY_PATH%>">path</a><%
+        } else if (BY_PATH.equals(sort)) {
+           %><a href="<%=url.toString()+RELEVANCY%>">relevance</a> | <a href="<%=url.toString()+LASTMODTIME%>">last modified time</a> | <b>path</b><%
         } else {
-           url.append(RELEVANCY);
-           %><a href="<%=url.toString()%>">Sort by relevance</a> <b>Sort by last modified time</b><%
+           %><a href="<%=url.toString()+RELEVANCY%>">relevance</a> | <a href="<%=url.toString()+LASTMODTIME%>">last modified time</a> | <a href="<%=url.toString()+BY_PATH%>">path</a><%
         }
       } %></td></tr></table>
 </div>
@@ -221,7 +270,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
 <%
 if( hits == null || errorMsg != null) {
 	    	%><%=errorMsg%><%
-            } else if (hits.length() == 0) {
+            } else if (hits.length == 0) {
                 File spellIndex = new File(env.getDataRootPath(), "spellIndex");
 
                 if (RuntimeEnvironment.getInstance().hasProjects()) {
@@ -301,11 +350,11 @@ if( hits == null || errorMsg != null) {
 		</p><%
             } else { // We have a lots of results to show
                 StringBuilder slider = null;
-                if ( max < hits.length()) {
-                    if((start + max) < hits.length()) {
+                if ( max < hits.length) {
+                    if((start + max) < hits.length) {
                         thispage = max;
                     } else {
-                        thispage = hits.length() - start;
+                        thispage = hits.length - start;
                     }
                     String url =   (q == null ? "" : "&amp;q=" + Util.URIEncode(q) ) +
                             (defs == null ? "" : "&amp;defs=" + Util.URIEncode(defs)) +
@@ -327,13 +376,13 @@ if( hits == null || errorMsg != null) {
                     int label = labelStart;
                     int labelEnd = label + 11;
                     String arr;
-                    for(int i=sstart; i<hits.length() && label <= labelEnd; i+= max) {
+                    for(int i=sstart; i<totalHits && label <= labelEnd; i+= max) {
                         if (i <= start && start < i+ max) {
                             slider.append("<span class=\"sel\">" + label + "</span>");
                         } else {
                             if(label == labelStart && label != 1) {
                                 arr = "&lt;&lt";
-                            } else if(label == labelEnd && i < hits.length()) {
+                            } else if(label == labelEnd && i < totalHits) {
                                 arr = "&gt;&gt;";
                             } else {
                                 arr = label < 10 ? " " + label : String.valueOf(label);
@@ -344,10 +393,10 @@ if( hits == null || errorMsg != null) {
                         label++;
                     }
                 } else {
-                    thispage = hits.length() - start;      // set the max index to max or last
+                    thispage = totalHits - start;      // set the max index to max or last
                 }
 		%>&nbsp; &nbsp; Searched <b><%=query.toString()%></b> (Results <b><%=start+1%> -
-		<%=thispage+start%></b> of <b><%=hits.length()%></b>) sorted by <%=sort%> <p><%=slider != null ?
+		<%=thispage+start%></b> of <b><%=totalHits%></b>) sorted by <%=sort%> <p><%=slider != null ?
                     slider.toString(): ""%></p>
 		<table width="100%" cellpadding="3" cellspacing="0" border="0"><%
                 
@@ -373,7 +422,8 @@ if( hits == null || errorMsg != null) {
                     ef = new EftarFileReader(env.getDataRootPath() + "/index/dtags.eftar");
                 } catch (Exception e) {
                 }
-                Results.prettyPrintHTML(hits, start, start+thispage,
+                //TODO also fix the way what and how it is passed to prettyprint, can improve performance!
+                Results.prettyPrintHTML(searcher,hits, start, start+thispage,
                         out,
                         sourceContext, historyContext, summer,
                         context + "/xref",

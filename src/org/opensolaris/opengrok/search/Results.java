@@ -37,6 +37,8 @@ import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Searcher;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
@@ -53,7 +55,7 @@ public final class Results {
         // Util class, should not be constructed
     }
     
-    public static void prettyPrintHTML(Document[] docs, int start, int end, Writer out,
+    public static void prettyPrintHTML(Searcher searcher,ScoreDoc[] hits, int start, int end, Writer out,
             Context sourceContext, HistoryContext historyContext,
             Summarizer summer, String urlPrefix,
             String morePrefix,
@@ -65,7 +67,8 @@ public final class Results {
         char[] content = new char[1024*8];
         LinkedHashMap<String, ArrayList<Document>> dirHash = new LinkedHashMap<String, ArrayList<Document>>();
         for (int i = start; i < end; i++) {
-            Document doc = docs[i];
+            int docId = hits[i].doc;            
+            Document doc = searcher.doc(docId);
             String rpath = doc.get("path");
             String parent = rpath.substring(0,rpath.lastIndexOf('/'));
             ArrayList<Document> dirDocs = dirHash.get(parent);

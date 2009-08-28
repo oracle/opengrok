@@ -134,17 +134,16 @@ final class Search {
             if (nhits<totalResults) {
                 System.out.println("Printed results 1 - " + nhits +" of " + totalResults + " total matching documents collected.");
                 System.out.println("Collect the rest (y/n) ?");
-                BufferedReader in=null;
-                String line="";  
+                BufferedReader in=null;                
                 try {
                     in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));                                              
-                    line = in.readLine();
+                    String line = in.readLine();
+                    if (line.length() == 0 || line.charAt(0) == 'n') {
+                       return;
+                    }
                 } catch (Exception ex) {
                     Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                if (line.length() == 0 || line.charAt(0) == 'n') {
-                    return;
-                }
+                }                
               engine.results(nhits, totalResults, results);
               for (Hit hit : results) {
                 File file = new File(root, hit.getFilename());

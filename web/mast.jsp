@@ -25,7 +25,10 @@ Use is subject to license terms.
              java.util.*,
              java.io.*,
              org.opensolaris.opengrok.index.*,
-             org.opensolaris.opengrok.configuration.*
+             org.opensolaris.opengrok.configuration.*,
+             org.opensolaris.opengrok.web.EftarFileReader,
+             org.opensolaris.opengrok.web.Util,
+             org.opensolaris.opengrok.history.HistoryGuru
              "
              %>
 <%@ page session="false" %><%@ page errorPage="error.jsp"%><%

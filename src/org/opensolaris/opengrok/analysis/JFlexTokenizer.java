@@ -35,9 +35,6 @@ import org.apache.lucene.analysis.Tokenizer;
 
 public abstract class JFlexTokenizer extends Tokenizer {
 
-    // just for passing reference
-    private Token internal=null;
-
     // default jflex scanner method
     abstract public Token yylex() throws java.io.IOException ;
 
@@ -50,11 +47,12 @@ public abstract class JFlexTokenizer extends Tokenizer {
      */
     @Override
     public final Token next(Token preusableToken) throws java.io.IOException {
-        internal=this.yylex();
+        Token internal=this.yylex();
         if (internal!=null) {
         preusableToken.reinit(internal);
         return preusableToken; }
-        preusableToken=null;
+        //TODO do we need to clear it ? every routine HAS to just check for null return value
+        preusableToken.clear();
         return null;
     }
 }
