@@ -3,13 +3,6 @@
 <web-app>
   <display-name>OpenGrok</display-name>
   <description>A wicked fast source browser</description>
-
-  <!-- 
-       You may either use a configuration file, or just specify your
-       data-root and source root. If CONFIGURATION is specified, it will
-       override the values set in DATA_ROOT and SRC_ROOT.
-  -->
-  
   <context-param>
     <param-name>CONFIGURATION</param-name>
     <param-value>/etc/opengrok/configuration.xml</param-value>
