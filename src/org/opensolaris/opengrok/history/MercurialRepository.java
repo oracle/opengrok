@@ -90,6 +90,7 @@ public class MercurialRepository extends Repository {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("log");
+	cmd.add("-f");
 
         if (changeset != null) {
             cmd.add("-r");

@@ -41,7 +41,6 @@ import org.opensolaris.opengrok.web.Util;
 %class PlainLineTokenizer
 %line
 %unicode
-%function next
 %type String 
 %ignorecase
 %switch
