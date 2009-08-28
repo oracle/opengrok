@@ -350,11 +350,11 @@ if( hits == null || errorMsg != null) {
 		</p><%
             } else { // We have a lots of results to show
                 StringBuilder slider = null;
-                if ( max < hits.length) {
-                    if((start + max) < hits.length) {
+                if ( max < totalHits) {
+                    if((start + max) < totalHits) {
                         thispage = max;
                     } else {
-                        thispage = hits.length - start;
+                        thispage = totalHits - start;
                     }
                     String url =   (q == null ? "" : "&amp;q=" + Util.URIEncode(q) ) +
                             (defs == null ? "" : "&amp;defs=" + Util.URIEncode(defs)) +
