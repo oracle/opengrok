@@ -66,7 +66,8 @@ public final class IgnoredNames implements Serializable {
         "*~",
         "deleted_files",
         ".make.*",
-        ".del-*"
+        ".del-*",
+        "_MTN"
     };
     static final long serialVersionUID = 1L;
     

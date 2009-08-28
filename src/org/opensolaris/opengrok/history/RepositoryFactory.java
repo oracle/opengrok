@@ -41,6 +41,7 @@ public final class RepositoryFactory {
         new MercurialRepository(),
         new BazaarRepository(),
         new GitRepository(),
+        new MonotoneRepository(),
         new SubversionRepository(),
         new SCCSRepository(),
         new RazorRepository(),
