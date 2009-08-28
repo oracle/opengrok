@@ -90,7 +90,7 @@ public class MercurialRepository extends Repository {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("log");
-	cmd.add("-f");
+        if ( !file.isDirectory() ) { cmd.add("-f"); }
 
         if (changeset != null) {
             cmd.add("-r");
@@ -102,7 +102,7 @@ public class MercurialRepository extends Repository {
                         "Don't know how to parse changeset identifier: " +
                         changeset);
             }
-        }
+        }        
 
         cmd.add("--template");
         cmd.add(file.isDirectory() ? DIR_TEMPLATE : TEMPLATE);
