@@ -393,7 +393,10 @@ class JDBCHistoryCache implements HistoryCache {
                     // Fill the list of files touched by the changeset
                     int changeset = rs.getInt(5);
                     filePS.setInt(1, changeset);
-                    ResultSet fileRS = filePS.executeQuery();
+                    ResultSet fileRS = filePS.executeQuery(); // NOPMD (we do
+                                                              // check next(),
+                                                              // but PMD doesn't
+                                                              // understand it)
                     try {
                         while (fileRS.next()) {
                             entry.addFile(fileRS.getString(1));
