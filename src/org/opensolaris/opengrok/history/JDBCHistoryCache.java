@@ -332,6 +332,10 @@ class JDBCHistoryCache implements HistoryCache {
     private static final PreparedQuery GET_DIR_HISTORY =
             new PreparedQuery(getQuery("getDirHistory"));
 
+    /** Statement that retrieves all the files touched by a given changeset. */
+    private static final PreparedQuery GET_CS_FILES =
+            new PreparedQuery(getQuery("getFilesInChangeset"));
+
     @Override
     public History get(File file, Repository repository)
             throws HistoryException {
@@ -371,23 +375,32 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(2, filePath);
             }
             ps.setString(1, reposPath);
+
+            final PreparedStatement filePS = conn.getStatement(GET_CS_FILES);
+
             ResultSet rs = ps.executeQuery();
             try {
-                String currentRev = null;
-                HistoryEntry entry = null;
                 while (rs.next()) {
+                    // Get the information about a changeset
                     String revision = rs.getString(1);
-                    if (!revision.equals(currentRev)) {
-                        currentRev = revision;
-                        String author = rs.getString(2);
-                        Timestamp time = rs.getTimestamp(3);
-                        String message = rs.getString(4);
-                        entry = new HistoryEntry(
+                    String author = rs.getString(2);
+                    Timestamp time = rs.getTimestamp(3);
+                    String message = rs.getString(4);
+                    HistoryEntry entry = new HistoryEntry(
                                 revision, time, author, message, true);
-                        entries.add(entry);
+                    entries.add(entry);
+
+                    // Fill the list of files touched by the changeset
+                    int changeset = rs.getInt(5);
+                    filePS.setInt(1, changeset);
+                    ResultSet fileRS = filePS.executeQuery();
+                    try {
+                        while (fileRS.next()) {
+                            entry.addFile(fileRS.getString(1));
+                        }
+                    } finally {
+                        fileRS.close();
                     }
-                    String fileName = rs.getString(5);
-                    entry.addFile(fileName);
                 }
             } finally {
                 rs.close();
