@@ -24,19 +24,20 @@
 package org.opensolaris.opengrok.analysis.fortran;
 
 import java.io.Reader;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.apache.lucene.analysis.Token;
-import org.apache.lucene.analysis.Tokenizer;
 
 
 %%
 %public
 %class FortranSymbolTokenizer
-%extends Tokenizer
+%extends JFlexTokenizer
 %unicode
-%function next
 %type Token 
 
 %{
+  private Token reuseToken=new Token();
+
   public void close() {
   }
 
@@ -59,8 +60,10 @@ Label = [0-9]+
  ^{Label} { }
  ^[^ \t\f\r\n]+	{ yybegin(SCOMMENT); }
 {Identifier} {String id = yytext();
-		if(!Consts.kwd.contains(id.toLowerCase()))
-			return new Token(yytext(), zzStartRead, zzMarkedPos);}
+		if(!Consts.kwd.contains(id.toLowerCase())) {
+                        reuseToken.reinit(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        return reuseToken; }
+              }
  \"	{ yybegin(STRING); }
  \'	{ yybegin(QSTRING); }
  \!	{ yybegin(SCOMMENT); }
