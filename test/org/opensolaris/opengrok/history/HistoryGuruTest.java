@@ -114,7 +114,6 @@ public class HistoryGuruTest {
                     assertNotNull("Comment", r.getComment());
                     assertNotNull("Date", r.getDate());
                     assertNotNull("Files", r.getFiles());
-                    assertNotNull("Line", r.getLine());
                     assertNotNull("Revision", r.getRevision());
                     assertTrue("Active", r.isActive());
                 }

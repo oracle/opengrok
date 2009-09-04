@@ -33,12 +33,9 @@ import java.util.SortedSet;
 
 /**
  * Class for reading history entries. The HistoryReader have
- * three mutually exclusive usages:
+ * two mutually exclusive usages:
  * <ol>
  *   <li>where you read it as if from a Reader (used by lucene)</li>
- *   <li>you read each entry as one string ( one line = rev + date + author +
- *       comment) used for showing matching context in search results. '\n'
- *       doesn't matter.</li>
  *   <li>you read it in a structured way. (used by history.jsp)</li>
  * </ol>
  * Please note that it is the clients responsibility that if one access pattern
@@ -76,13 +73,6 @@ public class HistoryReader extends Reader {
             return true;
         }
         return false;
-    }
-    
-    /**
-     * @return  get the history line in one String of current log record
-     */
-    public String getLine() {
-        return current.getLine();
     }
     
     /**

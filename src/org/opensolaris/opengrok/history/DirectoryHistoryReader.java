@@ -196,11 +196,6 @@ public class DirectoryHistoryReader extends HistoryReader {
     }
 
     @Override
-    public String getLine() {
-        return null;
-    }
-
-    @Override
     public String getRevision() {
         return null;
     }

@@ -27,11 +27,14 @@ import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.history.History;
+import org.opensolaris.opengrok.history.HistoryEntry;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
@@ -67,7 +70,7 @@ public class HistoryContext {
             return false;
         }
         File f = new File(filename);
-        return getHistoryContext(HistoryGuru.getInstance().getHistoryReader(f),
+        return getHistoryContext(HistoryGuru.getInstance().getHistory(f),
                                  path, null, hits);
         
     }
@@ -79,17 +82,18 @@ public class HistoryContext {
         if (m == null) {
             return false;
         }
-        HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(
+        History hist = HistoryGuru.getInstance().getHistory(
                              new File(parent, basename));
-        return getHistoryContext(hr, path, out, null);
+        return getHistoryContext(hist, path, out, null);
     }
     
     /**
      * Writes matching History log entries from 'in' to 'out'
-     * @param in pass HistoryReader
+     * @param in the history to fetch entries from
      * @param out to write matched context
      */
-    private boolean getHistoryContext(HistoryReader in, String path, Writer out, List<Hit> hits) {
+    private boolean getHistoryContext(
+            History in, String path, Writer out, List<Hit> hits) {
         if (m == null) {
             return false;
         }
@@ -98,9 +102,10 @@ public class HistoryContext {
         tokens.setFilename(path);
         
         int matchedLines = 0;
+        Iterator<HistoryEntry> it = in.getHistoryEntries().iterator();
         try {
-            while(in.next() && matchedLines < 10) {
-                char[] content = in.getLine().toCharArray();
+            while(it.hasNext() && matchedLines < 10) {
+                char[] content = it.next().getLine().toCharArray();
                 tokens.reInit(content);
                 String token;
                 int matchState = LineMatcher.NOT_MATCHED;

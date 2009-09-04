@@ -125,20 +125,31 @@ public final class HistoryGuru {
      * @return A HistorReader that may be used to read out history data for a named file
      */
     public HistoryReader getHistoryReader(File file) throws HistoryException {
+        History history = getHistory(file);
+        return history == null ? null : new HistoryReader(history);
+    }
+
+    /**
+     * Get the history for the specified file.
+     *
+     * @param file the file to get the history for
+     * @return history for the file
+     * @throws HistoryException on error when accessing the history
+     */
+    public History getHistory(File file) throws HistoryException {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repos = getRepository(dir);
+
+        History history = null;
 
         if (repos != null && repos.isWorking() && repos.fileHasHistory(file) &&
                 (!repos.isRemote() ||
                 RuntimeEnvironment.getInstance().isRemoteScmSupported())) {
-            History history = useCache() ?
+            history = useCache() ?
                 historyCache.get(file, repos) : repos.getHistory(file);
-            if (history != null) {
-                return new HistoryReader(history);
-            }
         }
 
-        return null;
+        return history;
     }
 
     /**
