@@ -37,7 +37,6 @@ import org.opensolaris.opengrok.history.History;
 import org.opensolaris.opengrok.history.HistoryEntry;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.history.HistoryReader;
 import org.opensolaris.opengrok.search.Hit;
 
 /**
