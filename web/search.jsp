@@ -67,7 +67,7 @@ if (cookies != null) {
         if (cookie.getName().equals("OpenGrok/sorting")) {
             sort = cookie.getValue();
             if (!LASTMODTIME.equals(sort) && !RELEVANCY.equals(sort) && !BY_PATH.equals(sort)) {
-                sort = null;
+                sort = RELEVANCY;
             }
             break;
         }
@@ -87,9 +87,9 @@ if (sortParam != null) {
         Cookie cookie = new Cookie("OpenGrok/sorting", sort);
         response.addCookie(cookie);
     }
-}
+} else { sort = RELEVANCY; }
 
-List<org.apache.lucene.document.Document> docs=new ArrayList<org.apache.lucene.document.Document>();
+//List<org.apache.lucene.document.Document> docs=new ArrayList<org.apache.lucene.document.Document>();
 String errorMsg = null;
 
 if( q!= null && q.equals("")) q = null;
@@ -97,7 +97,7 @@ if( defs != null && defs.equals("")) defs = null;
 if( refs != null && refs.equals("")) refs = null;
 if( hist != null && hist.equals("")) hist = null;
 if( path != null && path.equals("")) path = null;
-if (project != null && project.equals("")) project = null;
+if (project != null && project.size()<1) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
     Searcher searcher = null;		    //the searcher used to open/search the index
@@ -109,8 +109,9 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     int totalHits=0;
     
     int start = 0;		       //the first index displayed on this page
-    //TODO deprecate max this and merge with paging and param n
-    int max    = 25;			//the maximum items displayed on this page
+    //TODO deprecate max this and merge with paging and param n - TEST needed
+    //int max    = 25;			//the maximum items displayed on this page
+    int max=RuntimeEnvironment.getInstance().getHitsPerPage();
 
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages= RuntimeEnvironment.getInstance().getCachePages();
@@ -145,7 +146,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         qparser.setAllowLeadingWildcard(env.isAllowLeadingWildcard());
 
         query = qparser.parse(qstr); //parse the
-
+        
         File root = new File(RuntimeEnvironment.getInstance().getDataRootFile(),
                 "index");
 
@@ -153,14 +154,33 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             if (project == null) {
                 errorMsg = "<b>Error:</b> You must select a project!";
             } else {
-                root = new File(root, project);
+                if (project.size() > 1) { //more projects
+                    IndexSearcher[] searchables = new IndexSearcher[project.size()];
+                    File droot = new File(RuntimeEnvironment.getInstance().getDataRootFile(), "index");
+                    int ii = 0;
+                    //TODO might need to rewrite to Project instead of String , need changes in projects.jspf too
+                    for (String proj : project) {
+                        ireader = (IndexReader.open(new File(droot, proj)));
+                        searchables[ii++] = new IndexSearcher(ireader);
+                    }
+                    if (Runtime.getRuntime().availableProcessors() > 1) {
+                        searcher = new ParallelMultiSearcher(searchables);
+                    } else {
+                        searcher = new MultiSearcher(searchables);
+                    }
+                } else { // just 1 project selected
+                    root = new File(root, project.get(0));
+                    ireader = IndexReader.open(root);
+                    searcher = new IndexSearcher(ireader);
+                }
             }
-        }
-
-        //TODO check if below is somehow reusing sessions so we don't requery again and again
-        if (errorMsg == null) {
+        } else { //no project setup
             ireader = IndexReader.open(root);
-            searcher = new IndexSearcher(ireader);            
+            searcher = new IndexSearcher(ireader);
+            }
+
+        //TODO check if below is somehow reusing sessions so we don't requery again and again, I guess 2min timeout sessions could be usefull, since you click on the next page within 2mins, if not, then wait ;)
+        if (errorMsg == null) {                        
             collector = new TopDocCollector(hitsPerPage*cachePages);
             if (LASTMODTIME.equals(sort)) {
                 Sort sortf = new Sort("date", true);
@@ -268,16 +288,34 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
 </div>
 <div id="results">
 <%
+//TODO spellchecking cycle below is not that great and we only create suggest links for every token in query, not for a query as whole
 if( hits == null || errorMsg != null) {
 	    	%><%=errorMsg%><%
             } else if (hits.length == 0) {
                 File spellIndex = new File(env.getDataRootPath(), "spellIndex");
+                File[] spellIndexes=null;
 
                 if (RuntimeEnvironment.getInstance().hasProjects()) {
-                    spellIndex = new File(spellIndex, project);
+                 if (project.size() > 1) { //more projects
+                    spellIndexes = new File[project.size()];                    
+                    int ii = 0;
+                    //TODO might need to rewrite to Project instead of String , need changes in projects.jspf too
+                    for (String proj : project) {                        
+                        spellIndexes[ii++] = new File(spellIndex,proj);
+                    }
+                 } else { // just 1 project selected
+                    spellIndex = new File(spellIndex, project.get(0));                    
+                 }
                 }
-                                              
-                if (spellIndex.exists()) {
+
+                int count=1;
+                if (spellIndexes!=null) {count=spellIndexes.length;}                
+
+                for (int idx = 0; idx < count; idx++) {
+   
+                if (spellIndexes!=null) spellIndex = spellIndexes[idx];
+                
+                 if (spellIndex.exists()) {
                     FSDirectory spellDirectory = FSDirectory.getDirectory(spellIndex);
                     SpellChecker checker = new SpellChecker(spellDirectory);
 
@@ -289,10 +327,10 @@ if( hits == null || errorMsg != null) {
                             if(toks != null){
                                 for(int j=0; j<toks.length; j++) {
                                     if(toks[j].length() > 3) {
-                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
+                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 5);
                                         for(int i = 0;i < ret.length; i++) {
                                             if (printHeader) {
-                                                %><p><font color="#cc0000">Did you mean</font>:<%
+                                                %><p><font color="#cc0000">Did you mean(for <%=spellIndex.getName()%>)</font>:<%
                                                 printHeader = false;
                                             }
                                             %> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp; <%
@@ -306,30 +344,31 @@ if( hits == null || errorMsg != null) {
                             if(toks != null){
                                 for(int j=0; j<toks.length; j++) {
                                     if(toks[j].length() > 3) {
-                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
+                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 5);
                                         for(int i = 0;i < ret.length; i++) {
                                             if (printHeader) {
-                                                %><p><font color="#cc0000">Did you mean</font>:<%
+                                                %><p><font color="#cc0000">Did you mean(for <%=spellIndex.getName()%>)</font>:<%
                                                 printHeader = false;
                                             }
-					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
+					%> <a href=search?refs=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
                                 }
                                 }
                         }
                         }
                         }
+                        //TODO it seems the only true spellchecker is for below field, see IndexDatabase createspellingsuggestions ...
                         if(defs != null) {
                             toks = defs.split("[\t ]+");
                             if(toks != null){
                                 for(int j=0; j<toks.length; j++) {
                                     if(toks[j].length() > 3) {
-                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 3);
+                                        String[] ret = checker.suggestSimilar(toks[j].toLowerCase(), 5);
                                         for(int i = 0;i < ret.length; i++) {
                                             if (printHeader) {
-                                                %><p><font color="#cc0000">Did you mean</font>:<%
+                                                %><p><font color="#cc0000">Did you mean(for <%=spellIndex.getName()%>)</font>:<%
                                                 printHeader = false;
                                             }
-					%> <a href=search?q=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
+					%> <a href=search?defs=<%=ret[i]%>><%=ret[i]%></a> &nbsp;  <%
                                         }
                                     }
                                 }
@@ -339,7 +378,10 @@ if( hits == null || errorMsg != null) {
                             %></p><%                          
                         }
                         spellDirectory.close();
+                 }
+
                 }
+                
 		%><p> Your search  <b><%=query.toString()%></b> did not match any files.
                     <br />
                     Suggestions:<br/><blockquote>- Make sure all terms are spelled correctly.<br/>
@@ -361,8 +403,10 @@ if( hits == null || errorMsg != null) {
                             (refs == null ? "" : "&amp;refs=" + Util.URIEncode(refs)) +
                             (path == null ? "" : "&amp;path=" + Util.URIEncode(path)) +
                             (hist == null ? "" : "&amp;hist=" + Util.URIEncode(hist)) +
-                            (sort == null ? "" : "&amp;sort=" + Util.URIEncode(sort)) +
-                            (project == null ? "" : "&amp;project=" + Util.URIEncode(project));
+                            (sort == null ? "" : "&amp;sort=" + Util.URIEncode(sort));
+                            for (Iterator it = project.iterator(); it.hasNext();) {
+                                  url=url+(project == null ? "" : "&amp;project=" + Util.URIEncode((String)it.next()));
+                                                  }                    
                     
                     slider = new StringBuilder();
                     int labelStart =1;
@@ -422,7 +466,7 @@ if( hits == null || errorMsg != null) {
                     ef = new EftarFileReader(env.getDataRootPath() + "/index/dtags.eftar");
                 } catch (Exception e) {
                 }
-                //TODO also fix the way what and how it is passed to prettyprint, can improve performance!
+                //TODO also fix the way what and how it is passed to prettyprint, can improve performance! SearchEngine integration is really needed here.
                 Results.prettyPrintHTML(searcher,hits, start, start+thispage,
                         out,
                         sourceContext, historyContext, summer,

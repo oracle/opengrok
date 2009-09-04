@@ -84,6 +84,7 @@ public class Project {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project proj : env.getProjects()) {
+                //TODO below is buggy, since on Windows the path separator is not "/", hence mast.jsp:192 will not show the searchbox
                 if (path.indexOf(proj.getPath()) == 0) {
                     ret = proj;
                 }

@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 ident	"@(#)diff.jsp 1.2     05/12/01 SMI"
@@ -89,8 +89,8 @@ if (valid) {
     try {
         tmp = rp1.split("@");	
         if (tmp != null && tmp.length == 2) {
-	    rpath1 = new File(srcRoot+URLDecoder.decode(tmp[0], "ISO-8859-1"));
-	    r1 = URLDecoder.decode(tmp[1], "ISO-8859-1");
+	    rpath1 = new File(srcRoot+URLDecoder.decode(tmp[0], "UTF-8"));
+	    r1 = URLDecoder.decode(tmp[1], "UTF-8");
 	}
     } catch (UnsupportedEncodingException e) {
     }
@@ -99,8 +99,8 @@ if (valid) {
         tmp = rp2.split("@");
         if (tmp != null && tmp.length == 2) {
 	    if (tmp != null && tmp.length == 2) {
-		rpath2 = new File(srcRoot+URLDecoder.decode(tmp[0], "ISO-8859-1"));
-		r2 = URLDecoder.decode(tmp[1], "ISO-8859-1");
+		rpath2 = new File(srcRoot+URLDecoder.decode(tmp[0], "UTF-8"));
+		r2 = URLDecoder.decode(tmp[1], "UTF-8");
 	    }
 	}
     } catch (UnsupportedEncodingException e) {

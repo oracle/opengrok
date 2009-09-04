@@ -104,7 +104,7 @@ a:link			{color:#2030A2;text-decoration:none;}
 a:visited		{color:#202062;text-decoration:none;}
 a:active, a:hover	{color:#202062;text-decoration:underline;}
 img {border:0;}
-tt {margin:none;}
+tt {margin:0;}
 form, pre {padding:0px;margin:0px;}
 
 #src .l  {text-align:right;color:#888;background-color: #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
@@ -136,7 +136,7 @@ a.h {font-size:small; margin-left:2em;}
 #more { line-height:1.25em;}
 #more b { background-color:#ffff99;}
 
-#diffbar {border-bottom: 2px solid #c5d5a9; padding-left:2em;font-size:normal; }
+#diffbar {border-bottom: 2px solid #c5d5a9; padding-left:2em;font-size:medium; }
 #difftable {border:#C5D5A9; border-collapse:collapse;font-size:small;}
 span.tab { padding: 5px; padding-top:3px; padding-bottom: 0px;  margin-left: 2px; margin-right: 2px; margin-bottom:0px ;background-color:#eee; border:2px solid #c5d5a9;border-bottom:2px none #eee;}
 span.tabsel {  padding: 6px ; padding-top:5px; padding-bottom: 1px; margin-left: 2px; margin-right: 2px; background-color:#fff; border:2px solid #c5d5a9; border-bottom:2px solid #fff;}

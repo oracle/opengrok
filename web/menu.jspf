@@ -20,41 +20,50 @@ Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 --%><%@ page import="org.opensolaris.opengrok.configuration.Project,
-org.opensolaris.opengrok.web.Util"%>
+org.opensolaris.opengrok.web.Util,java.util.Iterator"%>
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
         <td valign="top"><br /> &nbsp;</td>
         <td align="left" valign="middle">
             <br/><form action="search" name="sbox">
                 <table cellpadding="2" border="0" cellspacing="0">
-                    <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td></tr>
-                    <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
-                    <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
-                    <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
-                    <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
-                    <% if (hasProjects) { %>
-                    <tr>
-                        <td align="right" valign="top"> Project </td>
-                        <td>
-                            <select class="q" name="project" size="<%=Math.min(5, env.getProjects().size())%>" style="width: 300px">
+                    <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td>
+                    <% if (hasProjects) { %>                    
+                        <td rowspan="5" style="border-left:gray;border-left-width:thin;border-left-color:gray">
+                            <!--<td align="right" valign="top"> -->
+                            <table border="0">
+                                <tbody>
+                                    <tr>
+                                        <td nowrap>in project: &nbsp; <input type="checkbox" id="ALL" name="ALL" onchange="javascript:selectAllProjects();" /> all</td>
+                                    </tr>
+                                    <tr><td>
+                                            <select class="q" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>" onchange="javascript:allmodifier();" style="width: 300px">
                                 <%
                                 for (Project p : env.getProjects()) {
+                                    //TODO below "selected" has no effect if one refreshes the page with F5
                                 %><option value="<%=Util.formQuoteEscape(p.getPath())%>"<%
                                           if (project != null) {
-                                              String projectPath = p.getPath();                                          
-                                              for (String proj : project.split(" ")) {
-                                                  if (proj.equals(projectPath)) {
+                                              String projectPath = p.getPath();
+                                              for (Iterator it = project.iterator(); it.hasNext();) {
+                                                  if (it.next().equals(projectPath)) {
                                                       %> selected<%
-                                                      break;
                                                   }
                                               }
                                            }
                                           %>><%=Util.formQuoteEscape(p.getDescription())%></option>
                                 <%
                                 }
-                    %></select></td></tr><%
+                                %></select><br/><span style="font-size:xx-small" >(use Shift or Ctrl + Click to select more)</span></td>
+                                    </tr>
+                                </tbody>
+                            </table></td><%
                     }%>
-                    <tr><td></td><td>  &nbsp; <input class="submit" type="submit" value="Search"/> | 
+                    </tr>
+                    <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
+                    <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
+                    <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
+                    <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
+                    <tr><td></td><td colspan="0" align="center">  &nbsp; <input class="submit" type="submit" value="Search"/> |
                             <input class="submit" onClick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "/>
                     | <a href="help.jsp">Help</a></td></tr>
                 </table>

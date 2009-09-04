@@ -162,7 +162,7 @@ public class SearchEngine {
         if (!paging) {
                collector = new TopDocCollector(totalHits);
                searcher.search(query,collector);
-        }
+        } 
         hits = collector.topDocs().scoreDocs;
         for (int i = 0; i < hits.length; i++) {
             int docId = hits[i].doc;
@@ -212,7 +212,7 @@ public class SearchEngine {
      * appropriate seach critera with the set-functions.
      * Note that this search will return the first cachePages of hitsPerPage, for more you need to call more
      *
-     * @return The number of total hits
+     * @return The number of hits
      */
     public int search() {
         source = RuntimeEnvironment.getInstance().getSourceRootPath();
@@ -228,7 +228,8 @@ public class SearchEngine {
 
                 if (env.hasProjects()) {
                     // search all projects
-                    //TODO support paging per project
+                    //TODO support paging per project (in search.java)
+                    //TODO optimize if only one project by falling back to SingleDatabase ?
                         searchMultiDatabase(env.getProjects(),false);
                 } else {
                     // search the index database

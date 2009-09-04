@@ -465,6 +465,7 @@ public class IndexDatabase {
             }
             indexReader = IndexReader.open(indexDirectory);
             checker = new SpellChecker(spellDirectory);
+            //TODO below seems only to index "defs" , possible bug ?
             checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));
             if (RuntimeEnvironment.getInstance().isVerbose()) {
                 log.info("done");

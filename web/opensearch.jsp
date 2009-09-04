@@ -23,7 +23,7 @@ ident	"%Z%%M% %I%     %E% SMI"
 
 --%><%@ page import = "java.util.List,
 javax.servlet.*,
-javax.servlet.http.*,
+javax.servlet.http.*,java.util.Iterator,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment,
 org.opensolaris.opengrok.configuration.Project,
 org.opensolaris.opengrok.web.*"
@@ -36,19 +36,24 @@ String path = request.getParameter("path");
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
 String Context = request.getContextPath();
 String laf = environment.getWebappLAF();
-if (project == null) { project = ""; }
 StringBuffer url = request.getRequestURL();
 url=url.delete(url.lastIndexOf("/"),url.length());
+String proj="";
+String projtext="";String tproj="";
+if (project != null && project.size()>0) {
+for (Iterator it = project.iterator(); it.hasNext();) {
+  tproj=(String)it.next();
+  proj = "project=" + Util.URIEncode(tproj)+ "&amp;";
+  projtext = tproj + ",";
+ }
+}
+%>
 %><?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-<ShortName>OpenGrok <%=project%></ShortName>
-<Description>Search in OpenGrok <%=project%></Description>
+<ShortName>OpenGrok <%=projtext%></ShortName>
+<Description>Search in OpenGrok <%=projtext%></Description>
 <InputEncoding>UTF-8</InputEncoding>
 <Image height="16" width="16" type="image/png"><%=url%>/<%=laf%>/img/icon.png</Image><%-- 
 <Url type="application/x-suggestions+json" template="suggestionURL"/>
---%><%
-if (project != "") {
-project = "project=" + Util.URIEncode(project);
-project = project + "&amp;";}
-%><Url template="<%=url%>/s?<%=project%>q={searchTerms}&amp;start={startPage?}" type="text/html"/>
+--%><Url template="<%=url%>/s?<%=proj%>q={searchTerms}&amp;start={startPage?}" type="text/html"/>
 </OpenSearchDescription>
