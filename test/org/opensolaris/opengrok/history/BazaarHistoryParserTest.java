@@ -30,6 +30,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import static org.junit.Assert.*;
 
 /**
@@ -53,7 +54,10 @@ public class BazaarHistoryParserTest {
 
     @Before
     public void setUp() {
-        instance = new BazaarHistoryParser();
+        if (RuntimeEnvironment.getInstance().getSourceRootPath() == null) {
+            RuntimeEnvironment.getInstance().setSourceRoot("");
+        }
+        instance = new BazaarHistoryParser(new BazaarRepository());
     }
 
     @After

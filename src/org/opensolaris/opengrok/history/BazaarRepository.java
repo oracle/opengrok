@@ -70,7 +70,7 @@ public class BazaarRepository extends Repository {
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file) {
+    Executor getHistoryLogExecutor(final File file, final String sinceRevision) {
         String abs = file.getAbsolutePath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -85,6 +85,11 @@ public class BazaarRepository extends Repository {
            cmd.add("-v");
        }
        cmd.add(filename);
+
+       if (sinceRevision != null) {
+           cmd.add("-r");
+           cmd.add(sinceRevision + "..-1");
+       }
 
        return new Executor(cmd, new File(getDirectoryName()));
     }    
@@ -239,7 +244,12 @@ public class BazaarRepository extends Repository {
     }
 
     @Override
+    History getHistory(File file, String sinceRevision) throws HistoryException {
+        return new BazaarHistoryParser(this).parse(file, sinceRevision);
+    }
+
+    @Override
     History getHistory(File file) throws HistoryException {
-        return new BazaarHistoryParser().parse(file, this);
+        return getHistory(file, null);
     }
 }

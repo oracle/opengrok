@@ -33,6 +33,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -45,15 +46,18 @@ class BazaarHistoryParser implements Executor.StreamHandler {
 
     private String myDir;
     private int rootLength;
-    private History history;
+    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
     private BazaarRepository repository=new BazaarRepository();
 
-    History parse(File file, Repository repos) throws HistoryException {
-        myDir = repos.getDirectoryName()+ File.separator;
-        rootLength = RuntimeEnvironment.getInstance().getSourceRootPath().length();
-        repository = (BazaarRepository) repos;
+    BazaarHistoryParser(BazaarRepository repository) {
+        this.repository = repository;
+        myDir = repository.getDirectoryName() + File.separator;
+        rootLength =
+                RuntimeEnvironment.getInstance().getSourceRootPath().length();
+    }
 
-        Executor executor = repository.getHistoryLogExecutor(file);
+    History parse(File file, String sinceRevision) throws HistoryException {
+        Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
         int status = executor.exec(true, this);
 
         if (status != 0) {
@@ -61,7 +65,19 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                     file.getAbsolutePath() + "\" Exit code: " + status);
         }
 
-        return history;
+        // If a changeset to start from is specified, remove that changeset
+        // from the list, since only the ones following it should be returned.
+        // Also check that the specified changeset was found, otherwise throw
+        // an exception.
+        if (sinceRevision != null) {
+            HistoryEntry entry = entries.isEmpty() ?
+                null : entries.remove(entries.size() - 1);
+            if (entry == null || !sinceRevision.equals(entry.getRevision())) {
+                throw new HistoryException("No such revision: " + sinceRevision);
+            }
+        }
+
+        return new History(entries);
     }
 
       /**
@@ -74,7 +90,6 @@ class BazaarHistoryParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         DateFormat df = repository.getDateFormat();
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         String s;
@@ -104,8 +119,8 @@ class BazaarHistoryParser implements Executor.StreamHandler {
             switch (state) {
                 case 0:
                     if (ident == nident && s.startsWith("revno:")) {
-                        String rev = s.substring("revno:".length()).trim();
-                        entry.setRevision(rev);
+                        String rev[] = s.substring("revno:".length()).trim().split(" ");
+                        entry.setRevision(rev[0]);
                         ++state;
                     }
                     break;
@@ -157,9 +172,6 @@ class BazaarHistoryParser implements Executor.StreamHandler {
         if (entry != null && state > 2) {
             entries.add(entry);
         }
-
-        history = new History();
-        history.setHistoryEntries(entries);
     }
     
    /**
@@ -173,6 +185,6 @@ class BazaarHistoryParser implements Executor.StreamHandler {
         myDir = File.separator;
         rootLength = 0;
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
-        return history;
+        return new History(entries);
     }
 }
