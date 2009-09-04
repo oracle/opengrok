@@ -85,7 +85,8 @@ public final class Configuration {
     private boolean indexVersionedFilesOnly;
     private int hitsPerPage;
     private int cachePages;
-
+    private String databaseDriver;
+    private String databaseUrl;
    
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -115,6 +116,7 @@ public final class Configuration {
         setIndexVersionedFilesOnly(false);
         setHitsPerPage(25);
         setCachePages(5);
+        setDatabaseDriver("org.apache.derby.jdbc.EmbeddedDriver");
     }
     
     public String getCtags() {
@@ -393,7 +395,27 @@ public final class Configuration {
         File timestamp = new File(getDataRoot(), "timestamp");
         return new Date(timestamp.lastModified());
     }
-    
+
+    public String getDatabaseDriver() {
+        return databaseDriver;
+    }
+
+    public void setDatabaseDriver(String databaseDriver) {
+        this.databaseDriver = databaseDriver;
+    }
+
+    public String getDatabaseUrl() {
+        if (databaseUrl == null) {
+            return "jdbc:derby:" + getDataRoot() +
+                File.separator + "cachedb;create=true";
+        }
+        return databaseUrl;
+    }
+
+    public void setDatabaseUrl(String databaseUrl) {
+        this.databaseUrl = databaseUrl;
+    }
+
     /**
      * Write the current configuration to a file
      * @param file the file to write the configuration into

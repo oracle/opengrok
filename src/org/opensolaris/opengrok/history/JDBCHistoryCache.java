@@ -49,9 +49,6 @@ import org.opensolaris.opengrok.jdbc.PreparedQuery;
 
 class JDBCHistoryCache implements HistoryCache {
 
-    private static final String DERBY_EMBEDDED_DRIVER =
-            "org.apache.derby.jdbc.EmbeddedDriver";
-
     private static final String SCHEMA = "APP";
 
     /** The names of all the tables created by this class. */
@@ -86,10 +83,8 @@ class JDBCHistoryCache implements HistoryCache {
      * Create a new cache instance with the default JDBC driver and URL.
      */
     JDBCHistoryCache() {
-        this(DERBY_EMBEDDED_DRIVER,
-                "jdbc:derby:" +
-                RuntimeEnvironment.getInstance().getDataRootPath() +
-                File.separator + "cachedb;create=true");
+        this(RuntimeEnvironment.getInstance().getDatabaseDriver(),
+             RuntimeEnvironment.getInstance().getDatabaseUrl());
     }
 
     /**

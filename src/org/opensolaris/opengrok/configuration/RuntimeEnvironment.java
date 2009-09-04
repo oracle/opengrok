@@ -571,6 +571,22 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getDateForLastIndexRun();
     }
 
+    public String getDatabaseDriver() {
+        return threadConfig.get().getDatabaseDriver();
+    }
+
+    public void setDatabaseDriver(String databaseDriver) {
+        threadConfig.get().setDatabaseDriver(databaseDriver);
+    }
+
+    public String getDatabaseUrl() {
+        return threadConfig.get().getDatabaseUrl();
+    }
+
+    public void setDatabaseUrl(String databaseUrl) {
+        threadConfig.get().setDatabaseUrl(databaseUrl);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read
