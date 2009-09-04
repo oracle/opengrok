@@ -43,11 +43,10 @@ String projtext="";String tproj="";
 if (project != null && project.size()>0) {
 for (Iterator it = project.iterator(); it.hasNext();) {
   tproj=(String)it.next();
-  proj = "project=" + Util.URIEncode(tproj)+ "&amp;";
-  projtext = tproj + ",";
+  proj = proj + "project=" + Util.URIEncode(tproj)+ "&amp;";
+  projtext = projtext + tproj + ",";
  }
 }
-%>
 %><?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
 <ShortName>OpenGrok <%=projtext%></ShortName>
