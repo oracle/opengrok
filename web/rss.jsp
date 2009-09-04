@@ -103,7 +103,7 @@ if (resourcePath.length() < rawSource.length()
     <generator>Java</generator>
     <%
     Format df = new SimpleDateFormat("dd-MMM-yyyy");
-    HistoryReader hr = null;
+    History hist = null;
     if(isDir) {
         String[] apaths = request.getParameterValues("also");
         String apath = path;
@@ -115,22 +115,23 @@ if (resourcePath.length() < rawSource.length()
             }
             apath = paths.toString();
         }
-        hr = new DirectoryHistoryReader(apath);
+        hist = new DirectoryHistoryReader(apath).getHistory();
     } else {
         File f = new File(rawSource + parent, basename);
-        hr = HistoryGuru.getInstance().getHistoryReader(f);
+        hist = HistoryGuru.getInstance().getHistory(f);
     }
-    if (hr != null) {
+    if (hist != null) {
         int i = 20;
-        while (hr.next() && i-- > 0) {
-            String rev = hr.getRevision();
-            if(hr.isActive()) {
+        for (HistoryEntry entry : hist.getHistoryEntries()) {
+            if (i-- <= 0) break;
+            String rev = entry.getRevision();
+            if (entry.isActive()) {
 %>
 <item>
-    <title><%=Util.htmlize(hr.getComment())%></title>
+    <title><%=Util.htmlize(entry.getMessage())%></title>
     <description><%
     if(isDir) {
-        Set<String> files = hr.getFiles();
+        Set<String> files = entry.getFiles();
         if(files != null) {
             for (String ifile : files) {
     %><%=Util.htmlize(ifile)%>
@@ -138,16 +139,15 @@ if (resourcePath.length() < rawSource.length()
             }
         }
     } else {
-    %><%=Util.htmlize(path)%> - <%=Util.htmlize(hr.getRevision())%><%
+    %><%=Util.htmlize(path)%> - <%=Util.htmlize(entry.getRevision())%><%
     }
     %></description>
-    <pubDate><%=Util.htmlize(hr.getDate().toString())%></pubDate>
-    <dc:creator><%=Util.htmlize(hr.getAuthor())%></dc:creator>
+    <pubDate><%=Util.htmlize(entry.getDate().toString())%></pubDate>
+    <dc:creator><%=Util.htmlize(entry.getAuthor())%></dc:creator>
 </item>
 <%
             }
         }
-        hr.close();
     }
 %></channel></rss>
 <%

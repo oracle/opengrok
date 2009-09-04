@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -54,7 +55,7 @@ import org.opensolaris.opengrok.index.IndexDatabase;
  *
  * @author Chandan
  */
-public class DirectoryHistoryReader extends HistoryReader {
+public class DirectoryHistoryReader {
 
     private final Map<Date, Map<String, Map<String, SortedSet<String>>>> hash =
         new LinkedHashMap<Date, Map<String, Map<String, SortedSet<String>>>>();
@@ -64,6 +65,8 @@ public class DirectoryHistoryReader extends HistoryReader {
     String iauthor;
     Iterator<String> citer;
     String icomment;
+    HistoryEntry currentEntry;
+    History history;
 
     @SuppressWarnings("PMD.ConfusingTernary")
     public DirectoryHistoryReader(String path) throws IOException {
@@ -110,21 +113,28 @@ public class DirectoryHistoryReader extends HistoryReader {
                     if (ls != -1) {
                         String rparent = (ls != -1) ? rpath.substring(0, ls) : "";
                         String rbase = rpath.substring(ls + 1);
-                        HistoryReader hr = null;
+                        History hist = null;
                         try {
                             File f = new File(src_root + rparent, rbase);
-                            hr = HistoryGuru.getInstance().getHistoryReader(f);
+                            hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
                             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting history reader", e);
                         }
-                        if (hr == null) {
+                        if (hist == null) {
                             put(cdate, "-", "", rpath);
                         } else {
-                            readFromHistoryReader(hr, rpath, cdate);
+                            readFromHistory(hist, rpath);
                         }
                     }
                 }
             }
+
+            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            while (next()) {
+                entries.add(currentEntry);
+            }
+
+            history = new History(entries);
         } finally {
             if (searcher != null) {
                 try {
@@ -143,7 +153,11 @@ public class DirectoryHistoryReader extends HistoryReader {
         }
     }
 
-    public final void put(Date date, String author, String comment, String path) {
+    public History getHistory() {
+        return history;
+    }
+
+    private void put(Date date, String author, String comment, String path) {
         long time = date.getTime();
         date.setTime(time - (time % 3600000l));
 
@@ -168,13 +182,7 @@ public class DirectoryHistoryReader extends HistoryReader {
         fls.add(path);
     }
 
-    @Override
-    public void close() {
-        // don't close input
-    }
-
-    @Override
-    public boolean next() throws IOException {
+    private boolean next() throws IOException {
         if (diter == null) {
             diter = hash.keySet().iterator();
         }
@@ -192,54 +200,21 @@ public class DirectoryHistoryReader extends HistoryReader {
         }
 
         icomment = citer.next();
+
+        currentEntry = new HistoryEntry(null, idate, iauthor, icomment, true);
+
         return true;
     }
 
-    @Override
-    public String getRevision() {
-        return null;
-    }
-
-    @Override
-    public Date getDate() {
-        return (Date) idate.clone();
-    }
-
-    @Override
-    public String getAuthor() {
-        return iauthor;
-    }
-
-    @Override
-    public String getComment() {
-        return icomment;
-    }
-
-    @Override
-    public SortedSet<String> getFiles() {
-        return hash.get(idate).get(iauthor).get(icomment);
-    }
-
-    @Override
-    public boolean isActive() {
-        return true;
-    }
-
-    private void readFromHistoryReader(HistoryReader hr, String rpath, Date defaultCdate) {
-        try {
-            while (hr.next()) {
-                if (hr.isActive()) {
-                    String comment = hr.getComment();
-                    String cauthor = hr.getAuthor();
-                    Date cdate = hr.getDate();
-                    put(cdate, cauthor, comment, rpath);
-                    break;
-                }
+    private void readFromHistory(History hist, String rpath) {
+        for (HistoryEntry entry : hist.getHistoryEntries()) {
+            if (entry.isActive()) {
+                String comment = entry.getMessage();
+                String cauthor = entry.getAuthor();
+                Date cdate = entry.getDate();
+                put(cdate, cauthor, comment, rpath);
+                break;
             }
-            hr.close();
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading history", e);
-            put(defaultCdate, "-", "", rpath);
         }
     }
 }
