@@ -55,9 +55,9 @@ if (path.length() > 0 && valid) {
         response.sendError(404, "No history");
         return;        
     }
-    HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(f);
+    History hist = HistoryGuru.getInstance().getHistory(f);
 
-    if (hr == null) {
+    if (hist == null) {
         response.sendError(404, "No history");
         return;
     }
@@ -75,8 +75,8 @@ if (path.length() > 0 && valid) {
     %><td>Date</td><td>Author</td><td>Comments</td>
 </tr><%
 boolean alt = true;
-while (hr.next()) {
-    String rev = hr.getRevision();
+for (HistoryEntry entry : hist.getHistoryEntries()) {
+    String rev = entry.getRevision();
     if (rev == null || rev.length() == 0) {
         rev = "";
     }
@@ -85,7 +85,7 @@ while (hr.next()) {
     if (isDir) {
     %><td>&nbsp;<%=rev%>&nbsp;</td><%
     } else {
-        if(hr.isActive()) {
+        if (entry.isActive()) {
             String rp = Util.URIEncodePath(path);
 %><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center"><input type="radio" name="r1" value="<%=rp%>@<%=rev%>"/>
 <input type="radio" name="r2" value="<%=rp%>@<%=rev%>"/></td><%
@@ -95,7 +95,7 @@ while (hr.next()) {
         }
 }
 %><td><% 
-        Date date = hr.getDate(); 
+        Date date = entry.getDate();
         if (date != null) {
             %><%=df.format(date)%><%
         } else {
@@ -106,20 +106,20 @@ while (hr.next()) {
 <%
 
 if(userPage != null && ! userPage.equals("")) {
-	%><a href="<%= userPage + hr.getAuthor() %>"><%= hr.getAuthor() %></a><%
+	%><a href="<%= userPage + entry.getAuthor() %>"><%= entry.getAuthor() %></a><%
 } else {
-	%><%= hr.getAuthor() %><%
+	%><%= entry.getAuthor() %><%
 }
 
 %>&nbsp;</td><td><%
-String cout=Util.htmlize(hr.getComment());
+String cout=Util.htmlize(entry.getMessage());
 if (bugPage != null && ! bugPage.equals("")){
         cout=bugPattern.matcher(cout).replaceAll("<a href=\"" + bugPage + "$1\">$1</a>"); }
 if (reviewPage != null && ! reviewPage.equals("")) {
     cout=reviewPattern.matcher(cout).replaceAll("<a href=\"" + reviewPage + "$1\">$1</a>"); }
 	%><%= cout  %>
 <%
-Set<String> files = hr.getFiles();
+Set<String> files = entry.getFiles();
 if(files != null) {%><br/><%
     for (String ifile : files) {
         String jfile = ifile;
@@ -138,7 +138,6 @@ if(files != null) {%><br/><%
 %></td></tr><%
 }
 	%></table></form><%
-        hr.close();
         if(striked) {
             %><p><b>Note:</b> No associated file changes are available for revisions with strike-through numbers (eg. <strike>1.45</strike>)</p><%
         }
