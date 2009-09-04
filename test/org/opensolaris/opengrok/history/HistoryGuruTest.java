@@ -26,7 +26,6 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
@@ -104,36 +103,19 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void historyReader() throws HistoryException, IOException {
-        HistoryGuru instance = HistoryGuru.getInstance();
-        for (File f : files) {
-            if (instance.hasHistory(f)) {
-                HistoryReader r = instance.getHistoryReader(f);
-                while (r.next()) {
-                    r.getAuthor(); // sometimes null, why?
-                    assertNotNull("Comment", r.getComment());
-                    assertNotNull("Date", r.getDate());
-                    assertNotNull("Files", r.getFiles());
-                    assertNotNull("Revision", r.getRevision());
-                    assertTrue("Active", r.isActive());
-                }
-                r.close();
-            }
-        }
-    }
-
-    @Test
     public void getRevision() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (f.isFile() && instance.hasHistory(f)) {
-                HistoryReader reader = instance.getHistoryReader(f);
-                while (reader.next()) {
-                    InputStream in = instance.getRevision(f.getParent(), f.getName(), reader.getRevision());
-                    assertNotNull("Failed to get revision " + reader.getRevision() + " of " + f.getAbsolutePath(), in);
+                for (HistoryEntry entry :
+                        instance.getHistory(f).getHistoryEntries()) {
+                    String revision = entry.getRevision();
+                    InputStream in = instance.getRevision(
+                            f.getParent(), f.getName(), revision);
+                    assertNotNull("Failed to get revision " + revision +
+                            " of " + f.getAbsolutePath(), in);
                     in.close();
                 }
-                reader.close();
             }
         }
     }

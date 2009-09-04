@@ -87,18 +87,20 @@ public class PerforceRepositoryTest {
             if (instance.fileHasHistory(f)) {
                 History history = instance.getHistory(f);
                 assertNotNull("Failed to get history for: " + f.getAbsolutePath(), history);
-                HistoryReader reader = new HistoryReader(history);
 
-                while (reader.next()) {
-                    InputStream in = instance.getHistoryGet(f.getParent(), f.getName(), reader.getRevision());
-                    assertNotNull("Failed to get revision " + reader.getRevision() + " of " + f.getAbsolutePath(), in);
-                    in.close();
+                for (HistoryEntry entry : history.getHistoryEntries()) {
+                    String revision = entry.getRevision();
+                    InputStream in = instance.getHistoryGet(
+                            f.getParent(), f.getName(), revision);
+                    assertNotNull("Failed to get revision " + revision +
+                            " of " + f.getAbsolutePath(), in);
 
                     if (instance.fileHasAnnotation(f)) {
-                        assertNotNull("Failed to annotate: " + f.getAbsolutePath(), instance.annotate(f, reader.getRevision()));
+                        assertNotNull(
+                                "Failed to annotate: " + f.getAbsolutePath(),
+                                instance.annotate(f, revision));
                     }
                 }
-                reader.close();
             }
         }
     }

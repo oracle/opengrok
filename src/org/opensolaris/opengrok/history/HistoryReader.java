@@ -26,88 +26,18 @@ package org.opensolaris.opengrok.history;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
 
 /**
- * Class for reading history entries. The HistoryReader have
- * two mutually exclusive usages:
- * <ol>
- *   <li>where you read it as if from a Reader (used by lucene)</li>
- *   <li>you read it in a structured way. (used by history.jsp)</li>
- * </ol>
- * Please note that it is the clients responsibility that if one access pattern
- * is used, it should not switch access method.
+ * Class for reading history entries in a way suitable for indexing by Lucene.
  */
 public class HistoryReader extends Reader {
 
-    private List<HistoryEntry> entries;
-    private Iterator<HistoryEntry> iterator;
-    private HistoryEntry current;
+    private final List<HistoryEntry> entries;
     private Reader input;
 
-    HistoryReader() {
-        // So that DirectoryHistoryReader can inherit this class
-    }
-    
     HistoryReader(History history) {
         entries = history.getHistoryEntries();
-        iterator = entries.iterator();
-    }
-    
-    /**
-     * Read a single line of delta record and sets
-     *
-     * @return true if more log records exist
-     * Eg.
-     * do {
-     *    r.getRevision();
-     * } while(r.next())
-     *
-     */
-    public boolean next() throws IOException {
-        if (iterator.hasNext()) {
-            current = iterator.next();
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * @return  get the revision string of current log record
-     */
-    public String getRevision() {
-        return current.getRevision();
-    }
-    
-    /**
-     * @return  get the date assosiated with current log record
-     */
-    public Date getDate() {
-        return current.getDate();
-    }
-    
-    /**
-     * @return  get the author of current log record
-     */
-    public String getAuthor() {
-        return current.getAuthor();
-    }
-    
-    /**
-     * @return  get the comments of current log record
-     */
-    public String getComment() {
-        return current.getMessage();
-    }
-    
-    /**
-     * @return  Does current log record is actually point to a revision
-     */
-    public boolean isActive() {
-        return current.isActive();
     }
 
     @Override
@@ -123,10 +53,6 @@ public class HistoryReader extends Reader {
         if (input != null) {
             input.close();
         }
-    }
-
-    public SortedSet<String> getFiles() {
-        return current.getFiles();
     }
 
     private Reader createInternalReader() {
