@@ -208,7 +208,7 @@ class FileHistoryCache implements HistoryCache {
     }
 
     @Override
-    public History get(File file, Repository repository)
+    public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException {
         File cache = getCachedFile(file);
         if (isUpToDate(file, cache)) {

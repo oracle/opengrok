@@ -332,12 +332,12 @@ class JDBCHistoryCache implements HistoryCache {
             new PreparedQuery(getQuery("getFilesInChangeset"));
 
     @Override
-    public History get(File file, Repository repository)
+    public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException {
         try {
             for (int i = 0;; i++) {
                 try {
-                    return getHistory(file, repository);
+                    return getHistory(file, repository, withFiles);
                 } catch (SQLException sqle) {
                     handleSQLException(sqle, i);
                 }
@@ -350,7 +350,8 @@ class JDBCHistoryCache implements HistoryCache {
     /**
      * Helper for {@link #get(File, Repository)}.
      */
-    private History getHistory(File file, Repository repository)
+    private History getHistory(
+            File file, Repository repository, boolean withFiles)
             throws HistoryException, SQLException {
         final String filePath = getSourceRootRelativePath(file);
         final String reposPath = toUnixPath(repository.getDirectoryName());
@@ -371,7 +372,8 @@ class JDBCHistoryCache implements HistoryCache {
             }
             ps.setString(1, reposPath);
 
-            final PreparedStatement filePS = conn.getStatement(GET_CS_FILES);
+            final PreparedStatement filePS =
+                    withFiles ? conn.getStatement(GET_CS_FILES) : null;
 
             ResultSet rs = ps.executeQuery();
             try {
@@ -385,19 +387,21 @@ class JDBCHistoryCache implements HistoryCache {
                                 revision, time, author, message, true);
                     entries.add(entry);
 
-                    // Fill the list of files touched by the changeset
-                    int changeset = rs.getInt(5);
-                    filePS.setInt(1, changeset);
-                    ResultSet fileRS = filePS.executeQuery(); // NOPMD (we do
-                                                              // check next(),
-                                                              // but PMD doesn't
-                                                              // understand it)
-                    try {
-                        while (fileRS.next()) {
-                            entry.addFile(fileRS.getString(1));
+                    // Fill the list of files touched by the changeset, if
+                    // requested.
+                    if (withFiles) {
+                        int changeset = rs.getInt(5);
+                        filePS.setInt(1, changeset);
+
+                        // We do check next(), but PMD doesn't understand it.
+                        ResultSet fileRS = filePS.executeQuery(); // NOPMD
+                        try {
+                            while (fileRS.next()) {
+                                entry.addFile(fileRS.getString(1));
+                            }
+                        } finally {
+                            fileRS.close();
                         }
-                    } finally {
-                        fileRS.close();
                     }
                 }
             } finally {

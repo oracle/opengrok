@@ -43,9 +43,14 @@ interface HistoryCache {
      * @param parserClass The class that implements the parser to use
      * @param repository The external repository to read the history from (can
      * be <code>null</code>)
+     * @param withFiles A flag saying whether or not the returned history
+     * should include a list of files touched by each changeset. If false,
+     * the implementation is allowed to skip the file list, but it doesn't
+     * have to.
      * @throws HistoryException if the history cannot be fetched
      */
-    History get(File file, Repository repository) throws HistoryException;
+    History get(File file, Repository repository, boolean withFiles)
+            throws HistoryException;
 
     /**
      * Store the history for a repository.

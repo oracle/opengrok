@@ -180,7 +180,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         File makefile = new File(reposRoot, "Makefile");
         assertTrue(makefile.exists());
 
-        History retrievedHistory = cache.get(makefile, repos);
+        History retrievedHistory = cache.get(makefile, repos, true);
 
         List<HistoryEntry> entries = retrievedHistory.getHistoryEntries();
 
@@ -204,7 +204,7 @@ public class JDBCHistoryCacheTest extends TestCase {
 
         // test get history for directory
 
-        History dirHistory = cache.get(reposRoot, repos);
+        History dirHistory = cache.get(reposRoot, repos, true);
         assertSameEntries(
                 historyToStore.getHistoryEntries(),
                 dirHistory.getHistoryEntries());
@@ -217,7 +217,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         repos.createCache(cache, cache.getLatestCachedRevision(repos));
         cache.optimize();
 
-        History updatedHistory = cache.get(reposRoot, repos);
+        History updatedHistory = cache.get(reposRoot, repos, true);
 
         HistoryEntry newEntry = new HistoryEntry(
                 "3:78649c3ec6cb",
@@ -338,7 +338,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         // get() should be able to continue after a timeout.
         assertSameEntries(
                 history.getHistoryEntries(),
-                cache.get(reposRoot, repos).getHistoryEntries());
+                cache.get(reposRoot, repos, true).getHistoryEntries());
 
         t.join();
 

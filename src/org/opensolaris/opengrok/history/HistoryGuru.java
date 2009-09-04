@@ -125,7 +125,7 @@ public final class HistoryGuru {
      * @return A HistorReader that may be used to read out history data for a named file
      */
     public HistoryReader getHistoryReader(File file) throws HistoryException {
-        History history = getHistory(file);
+        History history = getHistory(file, false);
         return history == null ? null : new HistoryReader(history);
     }
 
@@ -137,6 +137,21 @@ public final class HistoryGuru {
      * @throws HistoryException on error when accessing the history
      */
     public History getHistory(File file) throws HistoryException {
+        return getHistory(file, true);
+    }
+
+    /**
+     * Get the history for the specified file.
+     *
+     * @param file the file to get the history for
+     * @param withFiles whether or not the returned history should contain
+     * a list of files touched by each changeset (the file list may be skipped
+     * if false, but it doesn't have to)
+     * @return history for the file
+     * @throws HistoryException on error when accessing the history
+     */
+    public History getHistory(File file, boolean withFiles)
+            throws HistoryException {
         final File dir = file.isDirectory() ? file : file.getParentFile();
         final Repository repos = getRepository(dir);
 
@@ -145,8 +160,11 @@ public final class HistoryGuru {
         if (repos != null && repos.isWorking() && repos.fileHasHistory(file) &&
                 (!repos.isRemote() ||
                 RuntimeEnvironment.getInstance().isRemoteScmSupported())) {
-            history = useCache() ?
-                historyCache.get(file, repos) : repos.getHistory(file);
+            if (useCache()) {
+                history = historyCache.get(file, repos, withFiles);
+            } else {
+                history = repos.getHistory(file);
+            }
         }
 
         return history;
