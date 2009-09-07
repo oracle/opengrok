@@ -178,8 +178,9 @@ if(resourcePath.length() < rawSource.length()
         </script> <%
         } else {
         %> | <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
-        }        
+        }
     }
+    %> | <a onClick="javascript:lntoggle();">Line #</a><%
             if (!isDir) {
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {

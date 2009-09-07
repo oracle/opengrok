@@ -109,6 +109,8 @@ form, pre {padding:0px;margin:0px;}
 
 #src .l  {text-align:right;color:#888;background-color: #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
 #src .hl {text-align:right;color:#000;background-color: #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
+#src .l-hide  {display: none}
+#src .hl-hide {display: none}
 #src tt{padding-left:1em; padding-right:1em;}
 
 .sl {color:#999;text-decoration:underline;}

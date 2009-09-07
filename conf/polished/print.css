@@ -33,7 +33,7 @@ body {
 
 #MastheadLogo h1 {
 	display:inline;
-	font-size:normal;
+	font-size:medium;
 }
 
 #MastheadLogo {
@@ -110,13 +110,15 @@ a:visited		{color:#000;text-decoration:none;}
 a:active, a:hover	{color:#000;text-decoration:underline;}
 img {border:0;}
 
-tt {margin:none;}
+tt {margin:0;}
 
 
 form, pre {padding:0px;margin:0px;}
 #src {font-size:75%;}
 #src .l  {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;}
 #src .hl {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;font-weight:bold;}
+#src .l-hide  {display: none}
+#src .hl-hide {display: none}
 #src tt{padding-left:1em; padding-right:1em;}
 .sl {color:#999;text-decoration:underline;}
 td.a{color:#000}
@@ -137,9 +139,9 @@ div.a{color:#000}
 #results td.f{width:3em;padding-left:2em;padding-right:.5em;}
 
 #more { line-height:1.25em;}
-#more b { background-color:none;}
+#more b { background-color:transparent;}
 
-#diffbar {border-bottom: 1px solid #000; padding-left:2em;font-size:normal; margin-top:1em;}
+#diffbar {border-bottom: 1px solid #000; padding-left:2em;font-size:medium; margin-top:1em;}
 #difftable {border:#000; border-collapse:collapse;font-size:small;}
 span.tab    { padding: 5px; padding-top:3px; padding-bottom: 0px; margin-left: 2px; margin-right: 2px; margin-bottom:0px ;background-color:#eee; border:1px solid #000;border-bottom:1px none;}
 span.tabsel { padding: 6px; padding-top:5px; padding-bottom: 1px; margin-left: 2px; margin-right: 2px; background-color:#fff; border:1px solid #000; border-bottom:2px solid #fff;}
@@ -168,7 +170,7 @@ strike.d{background-color:#bbddbb; margin-right:.2em;padding-left:1em;padding-ri
 	color: #000;
 }
 
-.more {background-color:none;border: 1px #ccc solid;padding:.3em;margin:1px;}
+.more {background-color:transparent;border: 1px #ccc solid;padding:.3em;margin:1px;}
 .sel {background-color:#ddd;border: 1px #000 solid;padding:.5em;margin:1px;}
 
 span.blame { }

@@ -37,7 +37,6 @@ String httpHeaderContext = request.getContextPath();
     <title><%=pageTitle%></title>
 
 <script type="text/javascript">
-<!--
 function toggle_annotations() {
    var spans = document.getElementsByTagName("span");
 
@@ -57,8 +56,7 @@ function selectAllProjects() {
             list.options[i].selected=all.checked ? true : false;
         }
 }
-function allmodifier() {
-    //TODO call original method too to set the project variable !
+function alltoggle() {
     var list = document.getElementById("project");
     var all = document.getElementById("ALL");
     var toggle=false;
@@ -73,6 +71,20 @@ function allmodifier() {
         //list.value=value;
         all.checked= toggle ? false : true;        
 }
-// -->
+function lntoggle() {
+       var a = document.getElementsByTagName("a");
+   for (var i = 0; i < a.length; i++) {
+      var el = a[i]; //fix all line #
+      if (el.className == 'l' || el.className == 'hl') {
+         el.className=el.className+'-hide';
+         el.setAttribute("temp", el.innerHTML);
+         el.innerHTML='';
+     }
+      else if (el.className == 'l-hide' || el.className == 'hl-hide') {          
+          el.innerHTML=el.getAttribute("temp");
+          el.className=el.className.substr(0,el.className.indexOf('-'));
+      }
+   }
+}
 </script>
 </head>

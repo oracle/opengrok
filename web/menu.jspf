@@ -37,7 +37,7 @@ org.opensolaris.opengrok.web.Util,java.util.Iterator"%>
                                         <td nowrap>in project: &nbsp; <input type="checkbox" id="ALL" name="ALL" onchange="javascript:selectAllProjects();" /> all</td>
                                     </tr>
                                     <tr><td>
-                                            <select class="q" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>" onchange="javascript:allmodifier();" style="width: 300px">
+                                            <select class="q" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>" onchange="javascript:alltoggle();" style="width: 300px">
                                 <%
                                 for (Project p : env.getProjects()) {
                                     //TODO below "selected" has no effect if one refreshes the page with F5

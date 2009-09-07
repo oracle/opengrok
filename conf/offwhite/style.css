@@ -42,7 +42,7 @@ body {
 
 #pagetitle {
 	float: left;
-	font-size: normal;
+	font-size: medium;
 	color:#755;
 	text-align:left;
 	padding:4px;
@@ -135,7 +135,7 @@ a:link			{color:#2030A2;text-decoration:none;}
 a:visited		{color:#202062;text-decoration:none;}
 a:active, a:hover	{color:#202062;text-decoration:underline;}
 img {border:0;}
-tt {margin:none;}
+tt {margin:0;}
 form, pre {padding:0px;margin:0px;}
 
 #results, #src {
@@ -144,6 +144,8 @@ form, pre {padding:0px;margin:0px;}
 
 #src .l  {text-align:right;color:#888;background-color: #e4e4c8; border-right:1px solid #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
 #src .hl {text-align:right;color:#000;background-color: #e4e4c8; border-right:1px solid #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
+#src .l-hide  {display: none}
+#src .hl-hide {display: none}
 #src tt{padding-left:1em; padding-right:1em;}
 
 .sl {color:#999;text-decoration:underline;}
@@ -201,7 +203,7 @@ a.h {font-size:small; margin-left:2em;}
 #more { line-height:1.25em;}
 #more b { background-color:#d6d6c0;}
 
-#diffbar {border-bottom: 1px solid #999; padding-left:2em;font-size:normal; }
+#diffbar {border-bottom: 1px solid #999; padding-left:2em;font-size:medium; }
 #difftable {border:#C5D5A9; border-collapse:collapse;font-size:small;}
 span.tab {
 	padding: 5px; padding-top:3px; padding-bottom: 0px;

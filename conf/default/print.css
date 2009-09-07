@@ -106,6 +106,8 @@ form, pre {padding:0px;margin:0px;}
 #src {font-size:75%;}
 #src .l  {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;}
 #src .hl {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;font-weight:bold;}
+#src .l-hide  {display: none}
+#src .hl-hide {display: none}
 #src tt{padding-left:1em; padding-right:1em;}
 .sl {color:#999;text-decoration:underline;}
 td.a{color:#000}
