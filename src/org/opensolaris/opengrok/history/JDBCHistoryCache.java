@@ -167,10 +167,10 @@ class JDBCHistoryCache implements HistoryCache {
 
         if (!tableExists(dmd, SCHEMA, "CHANGESETS")) {
             s.execute(getQuery("createTableChangesets"));
-            // Create a descending index on the identity column to allow
-            // faster retrieval of history in reverse chronological order in
-            // get() and maximum value in getLatestCachedRevision().
-            s.execute(getQuery("createIndexChangesetsIdDesc"));
+            // Create a composite index on the repository in ascending order
+            // and the id in descending order. This index may allow faster
+            // retrieval of history in reverse chronological order.
+            s.execute(getQuery("createIndexChangesetsRepoIdDesc"));
         }
 
         if (!tableExists(dmd, SCHEMA, "FILECHANGES")) {
