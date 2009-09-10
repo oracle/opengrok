@@ -116,7 +116,7 @@ public final class Configuration {
         setIndexVersionedFilesOnly(false);
         setHitsPerPage(25);
         setCachePages(5);
-        setDatabaseDriver("org.apache.derby.jdbc.EmbeddedDriver");
+        setDatabaseDriver("org.apache.derby.jdbc.ClientDriver");
     }
     
     public String getCtags() {
@@ -406,8 +406,7 @@ public final class Configuration {
 
     public String getDatabaseUrl() {
         if (databaseUrl == null) {
-            return "jdbc:derby:" + getDataRoot() +
-                File.separator + "cachedb;create=true";
+            return "jdbc:derby://localhost/cachedb;create=true";
         }
         return databaseUrl;
     }
