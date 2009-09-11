@@ -34,10 +34,12 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -53,7 +55,8 @@ class JDBCHistoryCache implements HistoryCache {
 
     /** The names of all the tables created by this class. */
     private static final String[] TABLES = {
-        "REPOSITORIES", "FILES", "AUTHORS", "CHANGESETS", "FILECHANGES"
+        "REPOSITORIES", "FILES", "AUTHORS", "CHANGESETS", "FILECHANGES",
+        "DIRECTORIES", "DIRCHANGES"
     };
 
     /**
@@ -157,6 +160,10 @@ class JDBCHistoryCache implements HistoryCache {
             s.execute(getQuery("createTableRepositories"));
         }
 
+        if (!tableExists(dmd, SCHEMA, "DIRECTORIES")) {
+            s.execute(getQuery("createTableDirectories"));
+        }
+
         if (!tableExists(dmd, SCHEMA, "FILES")) {
             s.execute(getQuery("createTableFiles"));
         }
@@ -171,6 +178,10 @@ class JDBCHistoryCache implements HistoryCache {
             // and the id in descending order. This index may allow faster
             // retrieval of history in reverse chronological order.
             s.execute(getQuery("createIndexChangesetsRepoIdDesc"));
+        }
+
+        if (!tableExists(dmd, SCHEMA, "DIRCHANGES")) {
+            s.execute(getQuery("createTableDirchanges"));
         }
 
         if (!tableExists(dmd, SCHEMA, "FILECHANGES")) {
@@ -236,8 +247,7 @@ class JDBCHistoryCache implements HistoryCache {
                 try {
                     PreparedStatement ps = conn.getStatement(IS_DIR_IN_CACHE);
                     ps.setString(1, toUnixPath(repository.getDirectoryName()));
-                    ps.setString(2, createDirPattern(
-                            getRelativePath(file, repository), '#'));
+                    ps.setString(2, getRelativePath(file, repository));
                     ResultSet rs = ps.executeQuery();
                     try {
                         return rs.next();
@@ -311,6 +321,59 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
+     * Get the base name of a path (with unix file separators).
+     *
+     * @param fullPath the full path of the file with unix file separators
+     * @return the base name of the file
+     */
+    private static String getBaseName(String fullPath) {
+        int idx = fullPath.lastIndexOf('/');
+        return (idx >= 0) ? fullPath.substring(idx + 1) : fullPath;
+    }
+
+    /**
+     * Get the path to the parent of the specified file.
+     *
+     * @param fullPath the full path of the file with unix file separators
+     * @return the full path of the file's parent
+     */
+    private static String getParentPath(String fullPath) {
+        int idx = fullPath.lastIndexOf('/');
+        return (idx >= 0) ? fullPath.substring(0, idx) : fullPath;
+    }
+
+    /**
+     * Split a full (unix-style) path into an array of path elements.
+     *
+     * @param fullPath the full unix-style path name
+     * @return an array with each separate element of the path
+     * @throws IllegalArgumentException if fullPath doesn't start with '/'
+     */
+    private static String[] splitPath(String fullPath) {
+        if (fullPath.isEmpty() || fullPath.charAt(0) != '/') {
+            throw new IllegalArgumentException("Not a full path: " + fullPath);
+        }
+        return fullPath.substring(1).split("/");
+    }
+
+    /**
+     * Reconstruct a path previously split by {@link #splitPath(String)}, or
+     * possibly just a part of it (only the {@code num} first elements will
+     * be used).
+     *
+     * @param pathElts the elements of the path
+     * @param num the number of elements to use when reconstructing the path
+     * @return a path name
+     */
+    private static String unsplitPath(String[] pathElts, int num) {
+        StringBuilder out = new StringBuilder("");
+        for (int i = 0; i < num; i++) {
+            out.append("/").append(pathElts[i]);
+        }
+        return out.toString();
+    }
+
+    /**
      * Statement that gets the history for the specified file and repository.
      * The result is ordered in reverse chronological order to match the
      * required ordering for {@link HistoryCache#get(File, Repository)}.
@@ -361,14 +424,14 @@ class JDBCHistoryCache implements HistoryCache {
         try {
             final PreparedStatement ps;
             if (file.isDirectory()) {
-                // Fetch history for all files under this directory. Match
-                // file names against a pattern with a LIKE clause.
+                // Fetch history for all files under this directory.
                 ps = conn.getStatement(GET_DIR_HISTORY);
-                ps.setString(2, createDirPattern(filePath, '#'));
+                ps.setString(2, filePath);
             } else {
                 // Fetch history for a single file only.
                 ps = conn.getStatement(GET_FILE_HISTORY);
-                ps.setString(2, filePath);
+                ps.setString(2, getParentPath(filePath));
+                ps.setString(3, getBaseName(filePath));
             }
             ps.setString(1, reposPath);
 
@@ -416,27 +479,6 @@ class JDBCHistoryCache implements HistoryCache {
         return history;
     }
 
-    /**
-     * Create a pattern that can be used to match file names against a
-     * directory name with LIKE.
-     *
-     * @param path the path name of the directory
-     * @param escape the escape character used in the LIKE query
-     * @return a pattern for use in LIKE queries
-     */
-    private static String createDirPattern(String path, char escape) {
-        StringBuilder escaped = new StringBuilder(path.length() + 2);
-        for (int i = 0; i < path.length(); i++) {
-            char c = path.charAt(i);
-            if (c == '%' || c == '_' || c == escape) {
-                escaped.append(escape);
-            }
-            escaped.append(c);
-        }
-        escaped.append("/%");
-        return escaped.toString();
-    }
-
     private static PreparedQuery GET_REPOSITORY =
             new PreparedQuery(getQuery("getRepository"));
 
@@ -462,6 +504,9 @@ class JDBCHistoryCache implements HistoryCache {
     private static InsertQuery ADD_CHANGESET =
             new InsertQuery(getQuery("addChangeset"));
 
+    private static PreparedQuery ADD_DIRCHANGE =
+            new PreparedQuery(getQuery("addDirchange"));
+
     private static PreparedQuery ADD_FILECHANGE =
             new PreparedQuery(getQuery("addFilechange"));
 
@@ -471,7 +516,9 @@ class JDBCHistoryCache implements HistoryCache {
         Integer reposId = null;
         Map<String, Integer> authors = null;
         Map<String, Integer> files = null;
+        Map<String, Integer> directories = null;
         PreparedStatement addChangeset = null;
+        PreparedStatement addDirchange = null;
         PreparedStatement addFilechange = null;
 
         for (int i = 0;; i++) {
@@ -486,13 +533,21 @@ class JDBCHistoryCache implements HistoryCache {
                     conn.commit();
                 }
 
-                if (files == null) {
-                    files = getFiles(conn, history, reposId);
+                if (directories == null || files == null) {
+                    Map<String, Integer> dirs = new HashMap<String, Integer>();
+                    Map<String, Integer> fls = new HashMap<String, Integer>();
+                    getFilesAndDirectories(conn, history, reposId, dirs, fls);
                     conn.commit();
+                    directories = dirs;
+                    files = fls;
                 }
 
                 if (addChangeset == null) {
                     addChangeset = conn.getStatement(ADD_CHANGESET);
+                }
+
+                if (addDirchange == null) {
+                    addDirchange = conn.getStatement(ADD_DIRCHANGE);
                 }
 
                 if (addFilechange == null) {
@@ -531,12 +586,28 @@ class JDBCHistoryCache implements HistoryCache {
                     addChangeset.setString(5, entry.getMessage());
                     addChangeset.executeUpdate();
 
+                    // Add one row for each file in FILECHANGES, and one row
+                    // for each path element of the directories in DIRCHANGES.
                     int changesetId = getGeneratedIntKey(addChangeset);
+                    Set<String> addedDirs = new HashSet<String>();
+                    addDirchange.setInt(1, changesetId);
                     addFilechange.setInt(1, changesetId);
                     for (String file : entry.getFiles()) {
-                        int fileId = files.get(toUnixPath(file));
+                        String fullPath = toUnixPath(file);
+                        int fileId = files.get(fullPath);
                         addFilechange.setInt(2, fileId);
                         addFilechange.executeUpdate();
+                        String[] pathElts = splitPath(fullPath);
+                        for (int j = 0; j < pathElts.length; j++) {
+                            String dir = unsplitPath(pathElts, j);
+                            // Only add to DIRCHANGES if we haven't already
+                            // added this dir/changeset combination.
+                            if (!addedDirs.contains(dir)) {
+                                addDirchange.setInt(2, directories.get(dir));
+                                addDirchange.executeUpdate();
+                                addedDirs.add(dir);
+                            }
+                        }
                     }
 
                     conn.commit();
@@ -714,26 +785,70 @@ class JDBCHistoryCache implements HistoryCache {
         return map;
     }
 
+    private static PreparedQuery GET_DIRS =
+            new PreparedQuery(getQuery("getDirectories"));
+
     private static PreparedQuery GET_FILES =
             new PreparedQuery(getQuery("getFiles"));
+
+    private static InsertQuery INSERT_DIR =
+            new InsertQuery(getQuery("addDirectory"));
 
     private static InsertQuery INSERT_FILE =
             new InsertQuery(getQuery("addFile"));
 
     /**
-     * Get a map from file names to their ids in the database. The files
-     * that are not in the database are added to it.
+     * Build maps from directory names and file names to their respective
+     * identifiers in the database. The directories and files that are not
+     * already in the database, are added to it.
      *
      * @param conn the connection to the database
-     * @param history the history to get the file names from
+     * @param history the history to get the file and directory names from
      * @param reposId the id of the repository
-     * @return a map from file names to file ids
+     * @param dirMap a map which will be filled with directory names and ids
+     * @param fileMap a map which will be filled with file names and ids
      */
-    private Map<String, Integer> getFiles(
-            ConnectionResource conn, History history, int reposId)
+    private void getFilesAndDirectories(
+            ConnectionResource conn, History history, int reposId,
+            Map<String, Integer> dirMap, Map<String, Integer> fileMap)
             throws SQLException {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        PreparedStatement ps = conn.getStatement(GET_FILES);
+
+        populateFileOrDirMap(conn.getStatement(GET_DIRS), reposId, dirMap);
+        populateFileOrDirMap(conn.getStatement(GET_FILES), reposId, fileMap);
+
+        PreparedStatement insDir = conn.getStatement(INSERT_DIR);
+        PreparedStatement insFile = conn.getStatement(INSERT_FILE);
+        for (HistoryEntry entry : history.getHistoryEntries()) {
+            for (String file : entry.getFiles()) {
+                String fullPath = toUnixPath(file);
+                // Add the file to the database and to the map if it isn't
+                // there already. Assumption: If the file is in the database,
+                // all its parent directories are also there.
+                if (!fileMap.containsKey(fullPath)) {
+                    // Get the dir id for this file, potentially adding the
+                    // parent directories to the db and to dirMap.
+                    int dir = addAllDirs(insDir, reposId, fullPath, dirMap);
+                    insFile.setInt(1, dir);
+                    insFile.setString(2, getBaseName(fullPath));
+                    insFile.executeUpdate();
+                    fileMap.put(fullPath, getGeneratedIntKey(insFile));
+                }
+            }
+        }
+    }
+
+    /**
+     * Populate a map with all path/id combinations found in the FILES or
+     * DIRECTORIES tables associated with a specified repository id.
+     *
+     * @param ps the statement used to get path names and ids from the correct
+     * table. It should take one parameter: the repository id.
+     * @param reposId the id of the repository to scan
+     * @param map the map into which to insert the path/id combinations
+     */
+    private void populateFileOrDirMap(
+            PreparedStatement ps, int reposId, Map<String, Integer> map)
+            throws SQLException {
         ps.setInt(1, reposId);
         ResultSet rs = ps.executeQuery();
         try {
@@ -743,21 +858,45 @@ class JDBCHistoryCache implements HistoryCache {
         } finally {
             rs.close();
         }
+    }
 
-        PreparedStatement insert = conn.getStatement(INSERT_FILE);
-        insert.setInt(1, reposId);
-        for (HistoryEntry entry : history.getHistoryEntries()) {
-            for (String file : entry.getFiles()) {
-                String path = toUnixPath(file);
-                if (!map.containsKey(path)) {
-                    insert.setString(2, path);
-                    insert.executeUpdate();
-                    map.put(path, getGeneratedIntKey(insert));
+    /**
+     * Add all the parent directories of a specified file to the database, if
+     * they haven't already been added, and also put their paths and ids into
+     * a map.
+     *
+     * @param ps statement that inserts a directory into the DIRECTORY table.
+     * Takes two parameters: the id of the repository and the path of the
+     * directory.
+     * @param reposId id of the repository to which the file belongs
+     * @param fullPath the file whose parents to add
+     * @param map a map from directory path to id for the directories already
+     * in the database. When a new directory is added, it's also added to this
+     * map.
+     * @return the id of the first parent of {@code fullPath}
+     */
+    private int addAllDirs(
+            PreparedStatement ps, int reposId, String fullPath,
+            Map<String, Integer> map) throws SQLException {
+        String[] pathElts = splitPath(fullPath);
+        String parent = unsplitPath(pathElts, pathElts.length - 1);
+        Integer dir = map.get(parent);
+        if (dir == null) {
+            for (int i = pathElts.length - 1; i >= 0; i--) {
+                String path = unsplitPath(pathElts, i);
+                if (map.containsKey(path)) {
+                    // Assumption: If a directory already exists in the
+                    // database, all its parents also exist.
+                    break;
                 }
+                ps.setInt(1, reposId);
+                ps.setString(2, path);
+                ps.executeUpdate();
+                map.put(path, getGeneratedIntKey(ps));
             }
+            dir = map.get(parent);
         }
-
-        return map;
+        return dir;
     }
 
     /**
