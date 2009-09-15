@@ -779,6 +779,7 @@ class JDBCHistoryCache implements HistoryCache {
                 insert.executeUpdate();
                 int id = getGeneratedIntKey(insert);
                 map.put(author, id);
+                conn.commit();
             }
         }
 
@@ -832,6 +833,7 @@ class JDBCHistoryCache implements HistoryCache {
                     insFile.setString(2, getBaseName(fullPath));
                     insFile.executeUpdate();
                     fileMap.put(fullPath, getGeneratedIntKey(insFile));
+                    conn.commit();
                 }
             }
         }
