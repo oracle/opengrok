@@ -181,8 +181,8 @@ form, pre {padding:0px;margin:0px;}
 	background-color:#fff;
 }
 
-#src .l  {text-align:right;color:#888;background-color: #e9ede8; border-right:1px solid #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
-#src .hl {text-align:right;color:#000;background-color: #e9ede8; border-right:1px solid #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
+#src .l  {text-align:right;color:#888;background-color: #e9ede8; border-right:1px solid #ddd;padding-right:.1em;margin-right:.2em;}
+#src .hl {text-align:right;color:#000;background-color: #e9ede8; border-right:1px solid #ddd;padding-right:.1em;margin-right:.2em;}
 #src .l-hide  {display: none}
 #src .hl-hide {display: none}
 #src tt{padding-left:1em; padding-right:1em;}

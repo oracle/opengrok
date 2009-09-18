@@ -107,8 +107,8 @@ img {border:0;}
 tt {margin:0;}
 form, pre {padding:0px;margin:0px;}
 
-#src .l  {text-align:right;color:#888;background-color: #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
-#src .hl {text-align:right;color:#000;background-color: #ddd;padding-right:.1em;margin-right:.2em;text-decoration:none;}
+#src .l  {color:#888;background-color:#ddd;padding-right:.1em;margin-right:.2em;text-align:right;}
+#src .hl {color:#000;background-color:#ddd;padding-right:.1em;margin-right:.2em;text-align:right;}
 #src .l-hide  {display: none}
 #src .hl-hide {display: none}
 #src tt{padding-left:1em; padding-right:1em;}

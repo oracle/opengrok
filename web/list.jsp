@@ -238,16 +238,7 @@ if (valid) {
             }
         }
     }
-    %><script type="text/javascript">
-   var a = document.getElementsByTagName("a");
-   for (var i = 0; i < a.length; i++) {
-      var el = a[i]; //fix all line #
-      if (el.className == 'l' || el.className == 'hl') {
-         if (el.getAttribute("temp")==null || el.getAttribute("temp")=='') {
-          el.setAttribute("href", document.URL.substring(0,document.URL.indexOf("#"))+"#"+el.name); }
-         el.innerHTML=el.innerHTML; }
-   }
-    </script>  <%@include file="foot.jspf"%><%
+    %><%@include file="foot.jspf"%><%
 }
 if (ef != null) {
     try {

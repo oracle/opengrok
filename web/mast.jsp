@@ -179,9 +179,9 @@ if(resourcePath.length() < rawSource.length()
         } else {
         %> | <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
         }
-    }
-    %> | <a onClick="javascript:lntoggle();">Line #</a><%
+    }    
             if (!isDir) {
+        %> | <a href="javascript:lntoggle();">Line #</a><%
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {
         %> | <a id="download" href="<%=context%>/raw<%=path%>">Download</a><%

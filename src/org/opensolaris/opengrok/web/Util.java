@@ -295,10 +295,12 @@ public final class Util {
         out.write((num % 10 == 0 ? "hl" : "l"));
         out.write("\" name=\"");
         out.write(snum);
-        out.write(closeQuotedTag);
-        out.write((num > 999 ? "   " : (num > 99 ? "    " : (num > 9 ? "     " : "      "))));
+        out.write("\" href=\"#");
         out.write(snum);
-        out.write(" ");
+        out.write(closeQuotedTag);
+        out.write((num > 999 ? "&nbsp;&nbsp;&nbsp;" : (num > 99 ? "&nbsp;&nbsp;&nbsp;&nbsp;" : (num > 9 ? "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" : "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"))));
+        out.write(snum);
+        out.write("&nbsp;");
         out.write(anchorEnd);
         if (annotation != null) {
             String r = annotation.getRevision(num);
