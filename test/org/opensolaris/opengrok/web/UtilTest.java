@@ -102,12 +102,12 @@ public class UtilTest {
     public void readableLine() throws Exception {
         StringWriter out = new StringWriter();
         Util.readableLine(42, out, null);
-        assertEquals("\n<a class=\"l\" name=\"42\">     42 </a>",
+        assertEquals("\n<a class=\"l\" name=\"42\" href=\"#42\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42&nbsp;</a>",
                      out.toString());
 
         out.getBuffer().setLength(0); // clear buffer
         Util.readableLine(110, out, null);
-        assertEquals("\n<a class=\"hl\" name=\"110\">    110 </a>",
+        assertEquals("\n<a class=\"hl\" name=\"110\" href=\"#110\">&nbsp;&nbsp;&nbsp;&nbsp;110&nbsp;</a>",
                      out.toString());
     }
 
