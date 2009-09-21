@@ -35,8 +35,6 @@ import org.apache.lucene.analysis.Token;
 %type Token 
 
 %{
-  private Token reuseToken=new Token();
-
   public void close() {
   }
 

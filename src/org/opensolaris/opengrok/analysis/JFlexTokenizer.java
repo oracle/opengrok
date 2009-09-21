@@ -38,6 +38,8 @@ public abstract class JFlexTokenizer extends Tokenizer {
     // default jflex scanner method
     abstract public Token yylex() throws java.io.IOException ;
 
+    protected static Token reuseToken=new Token();
+
     /**
      * This is a convenience method for having correctly generated classes who reuse Tokens and save gc for lucene summarizer
      * you MUST consume the returned token to properly get the null value !

@@ -39,8 +39,6 @@ import org.apache.lucene.analysis.Token;
 %type Token
 
 %{
-  private Token reuseToken=new Token();
-
   private int nestedComment;
 
   public void close() {

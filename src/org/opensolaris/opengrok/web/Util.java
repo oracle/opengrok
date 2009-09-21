@@ -362,6 +362,11 @@ public final class Util {
         return url.substring(0, url.lastIndexOf('/')); // remove date from end
     }
 
+    /**
+     * wrapper arround UTF-8 URL encoding of a string
+     * @param query
+     * @return null if fail, otherwise the encoded string
+     */
     public static String URIEncode(String q) {
         try {           
             return URLEncoder.encode(q, "UTF-8");

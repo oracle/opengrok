@@ -225,7 +225,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     } catch (ParseException e) {        
         errorMsg = "<b>Error parsing your query:</b><br/>" + Util.htmlize(qstr) + 
                 "<p/>You might try to enclose your search term in quotes: <br/>" + 
-                "<a href=search?q=\"" + qstr + "\">\"" + Util.htmlize(qstr) +
+                "<a href=search?q=\"" + Util.URIEncode(qstr) + "\">\"" + Util.htmlize(qstr) +
                 "\"</a><p/> or read the <a href=\"help.jsp\">Help</a> on query language(eventually <a href=\"help.jsp#escaping\">escape special characters</a> with <b>\\</b>)<p/>" + 
                 "Error message from parser:<br/>" + Util.htmlize(e.getMessage());
     } catch (FileNotFoundException e) {

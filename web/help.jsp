@@ -61,7 +61,7 @@ String pageTitle = "OpenGrok Help";
                 <ul>
                     <li> to perform a single character wildcard search use the "<b>?</b>" symbol, e.g.  te?t</li>
                     <li> to perform a multiple character wildcard search use the "<b>*</b>" symbol, e.g. test* or te*t</li>
-                    <li> you cannot use a * or ? symbol as the first character of a search.</li>
+                    <li> you cannot use a * or ? symbol as the first character of a search (unless enabled using indexer option -a).</li>
                     <li> to do a fuzzy search(find words similar in spelling, based on the Levenshtein Distance, or Edit Distance algorithm) use the tilde, "<b>~</b>", e.g. rcs~ </li>
                     <li> to do a proximity search use the tilde, "~", symbol at the end of a Phrase. For example to search for a "opengrok" and "help" within 10 words of each other enter: "opengrok help"~10 </li>
                     <li> range queries allow one to match documents whose field(s) values are between the lower and upper bound specified by the Range Query. Range Queries can be inclusive or exclusive of the upper and lower bounds. Sorting is done lexicographically. Inclusive queries are denoted by square brackets <b>[ ]</b> , exclusive by curly brackets <b>{ }</b>. For example: title:{Aida TO Carmen} - will find all documents between Aida to Carmen, exclusive of Aida and Carmen. </li>
@@ -103,6 +103,9 @@ String pageTitle = "OpenGrok Help";
                                 
                             To find perl files that do not use /usr/bin/perl but something else, 
                             <a href="search?q=-%22%2Fusr%2Fbin%2Fperl%22+%2B%22%2Fbin%2Fperl%22">-"/usr/bin/perl" +"/bin/perl"</a>
+
+                            To find all strings begining with foo use the wildcard,
+                            <a href="search?q=foo*">foo*</a>
                 </pre>
                     
                 <p>Opengrok search is powered by <a href="http://lucene.apache.org/">lucene</a>, for more detail on query syntax refer to lucene docs.</p>

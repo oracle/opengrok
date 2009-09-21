@@ -36,8 +36,6 @@ import org.apache.lucene.analysis.Token;
 %caseless
 
 %{
-  private Token reuseToken=new Token();
-
   public void close() throws IOException {
   	yyclose();
   }

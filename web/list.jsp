@@ -192,9 +192,11 @@ if (valid) {
         File xrefFile = new File(xrefSource, path + ".gz");
         Reader fileReader = null;
 
-        if (environment.isCompressXref() && xrefFile.exists()) {
+        if (environment.isCompressXref() ) {
+            if  (xrefFile.exists()) {
             fileReader = new InputStreamReader(new GZIPInputStream(new FileInputStream(xrefFile)));
-        } else {
+            }
+        } else {            
             xrefFile = new File(xrefSource, path);
             if (xrefFile.exists()) {
                 fileReader = new FileReader(xrefFile);

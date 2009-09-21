@@ -40,8 +40,6 @@ import org.apache.lucene.analysis.Token;
 %switch
 
 %{
-  private Token reuseToken=new Token();
-
   public void close() throws IOException {
   	yyclose();
   }
