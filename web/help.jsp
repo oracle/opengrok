@@ -39,7 +39,7 @@ String pageTitle = "OpenGrok Help";
                                 <tr><td align="right"> Symbol (refs) </td><td><input class="q" name="refs" size="25" value=""/></td></tr>
                                 <tr><td align="right"> File&nbsp;Path (path) </td><td><input class="q" name="path" size="25" value=""/></td></tr>
                                 <tr><td align="right"> History (hist) </td><td><input class="q" name="hist" size="25" value=""/></td></tr>
-                                <tr><td></td><td>  &nbsp; <input class="submit" type="submit" value=" Search "/> | <input class="submit" onClick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "/></td></tr>
+                                <tr><td></td><td>  &nbsp; <input class="submit" type="submit" value=" Search "/> | <input class="submit" onclick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "/></td></tr>
                             </table>
                         </form>
             </td></tr></table>
@@ -86,25 +86,25 @@ String pageTitle = "OpenGrok Help";
                 <u><b>Examples:</b></u>
                 <pre>
                     
-                            To find where setResourceMonitors is defined
+                            To find where setResourceMonitors is defined:
                             <a href="search?q=&defs=setResourceMonitors">defs:setResourceMonitors</a>
                                 
-                            To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/
+                            To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:
                             <a href="search?refs=sprintf&path=usr%2Fsrc%2Fcmd%2Fcmd-inet%2Fusr.sbin%2F">refs:sprintf path:usr/src/cmd/cmd-inet/usr.sbin</a>
                                 
-                            To find assignments to variable Asign
+                            To find assignments to variable Asign:
                             <a href="search?q=%22asign+%3D+%22">"Asign="</a>
                                 
-                            To find Makefiles where pstack binary is being built
+                            To find Makefiles where pstack binary is being built:
                             <a href="search?q=pstack&path=Makefile">pstack path:Makefile</a>
                                 
                             to search for phrase "Bill Joy":
                             <a href="search?q=%22Bill+Joy%22">"Bill Joy"</a>
                                 
-                            To find perl files that do not use /usr/bin/perl but something else, 
+                            To find perl files that do not use /usr/bin/perl but something else:
                             <a href="search?q=-%22%2Fusr%2Fbin%2Fperl%22+%2B%22%2Fbin%2Fperl%22">-"/usr/bin/perl" +"/bin/perl"</a>
 
-                            To find all strings begining with foo use the wildcard,
+                            To find all strings begining with foo use the wildcard:
                             <a href="search?q=foo*">foo*</a>
                 </pre>
                     

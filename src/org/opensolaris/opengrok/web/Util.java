@@ -314,7 +314,7 @@ public final class Util {
             if (enabled) {
                 out.write(anchorLinkStart);
                 out.write(URIEncode(annotation.getFilename()));
-                out.write("?a=true&r=");
+                out.write("?a=true&amp;r=");
                 out.write(URIEncode(r));
                 out.write(closeQuotedTag);
             }
@@ -364,7 +364,7 @@ public final class Util {
 
     /**
      * wrapper arround UTF-8 URL encoding of a string
-     * @param query
+     * @param q query to be encoded
      * @return null if fail, otherwise the encoded string
      */
     public static String URIEncode(String q) {

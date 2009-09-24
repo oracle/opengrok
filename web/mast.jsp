@@ -18,8 +18,7 @@ CDDL HEADER END
 
 Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
---%>
-<%@ page import = "javax.servlet.*,
+--%><%@ page import = "javax.servlet.*,
              java.lang.*,
              javax.servlet.http.*,
              java.util.*,
@@ -30,8 +29,7 @@ Use is subject to license terms.
              org.opensolaris.opengrok.web.Util,
              org.opensolaris.opengrok.history.HistoryGuru
              "
-             %>
-<%@ page session="false" %><%@ page errorPage="error.jsp"%><%
+             %><%@ page session="false" %><%@ page errorPage="error.jsp"%><%
 String context = request.getContextPath();
 String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();

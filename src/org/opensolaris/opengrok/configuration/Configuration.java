@@ -97,6 +97,7 @@ public final class Configuration {
         setProjects(new ArrayList<Project>());
         setRepositories(new ArrayList<RepositoryInfo>());
         setUrlPrefix("/source/s?");
+        //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
         setCtags("ctags");
         setIndexWordLimit(60000);
         setVerbose(false);

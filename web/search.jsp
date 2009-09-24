@@ -233,6 +233,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     } catch (Exception e) {
         errorMsg = "<b>Error:</b> " + Util.htmlize(e.getMessage());
     }
+
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....
     if (hits != null && hits.length == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
@@ -254,32 +255,32 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     <div id="header"><%@ include file="pageheader.jspf" %></div>
 <div id="Masthead"></div>
 <div id="bar">
-    <table border="0" width="100%"><tr><td><a href="<%=context%>" id="home">Home</a></td><td align="right"><%                
+    <table border="0" width="100%"><tr><td><a href="<%=context%>" id="home">Home</a></td><td align="right"><%
      {
-        StringBuffer url = request.getRequestURL();
-        url.append('?');
-        String querys = request.getQueryString();
-        if (querys != null) {
-            int idx = querys.indexOf("sort=");
-            if (idx == -1) {
-                url.append(querys);
-                url.append('&');
-            } else {
-                url.append(querys.substring(0, idx));
-            }
+        String url = "s?";
+                url = url + (q == null ? "" : "&amp;q=" + Util.URIEncode(q)) +
+                 (defs == null ? "" : "&amp;defs=" + Util.URIEncode(defs)) +
+                 (refs == null ? "" : "&amp;refs=" + Util.URIEncode(refs)) +
+                 (path == null ? "" : "&amp;path=" + Util.URIEncode(path)) +
+                 (hist == null ? "" : "&amp;hist=" + Util.URIEncode(hist));
+         if (hasProjects) {
+             url = url + "&amp;project=";
+             for (Iterator it = project.iterator(); it.hasNext();) {
+                 url = url + (project == null ? "" : Util.URIEncode((String) it.next()) + ",");
+             }
         }
- 
-        %>Sort by: <%
-        url.append("sort=");
+         
+        %>Sort by: <%        
+        url=url+("&amp;sort=");
         
         if (sort == null || RELEVANCY.equals(sort)) {
-           %><b>relevance</b> | <a href="<%=url.toString()+LASTMODTIME%>">last modified time</a> | <a href="<%=url.toString()+BY_PATH%>">path</a><%
+        %><b>relevance</b> | <a href="<%=url+LASTMODTIME%>">last modified time</a> | <a href="<%=url+BY_PATH%>">path</a><%
         } else if (LASTMODTIME.equals(sort)) {
-           %><a href="<%=url.toString()+RELEVANCY%>">relevance</a> | <b>last modified time</b> | <a href="<%=url.toString()+BY_PATH%>">path</a><%
+           %><a href="<%=url+RELEVANCY%>">relevance</a> | <b>last modified time</b> | <a href="<%=url+BY_PATH%>">path</a><%
         } else if (BY_PATH.equals(sort)) {
-           %><a href="<%=url.toString()+RELEVANCY%>">relevance</a> | <a href="<%=url.toString()+LASTMODTIME%>">last modified time</a> | <b>path</b><%
+           %><a href="<%=url+RELEVANCY%>">relevance</a> | <a href="<%=url+LASTMODTIME%>">last modified time</a> | <b>path</b><%
         } else {
-           %><a href="<%=url.toString()+RELEVANCY%>">relevance</a> | <a href="<%=url.toString()+LASTMODTIME%>">last modified time</a> | <a href="<%=url.toString()+BY_PATH%>">path</a><%
+           %><a href="<%=url+RELEVANCY%>">relevance</a> | <a href="<%=url+LASTMODTIME%>">last modified time</a> | <a href="<%=url+BY_PATH%>">path</a><%
         }
       } %></td></tr></table>
 </div>
@@ -398,16 +399,18 @@ if( hits == null || errorMsg != null) {
                     } else {
                         thispage = totalHits - start;
                     }
-                    String url =   (q == null ? "" : "&amp;q=" + Util.URIEncode(q) ) +
+                    String urlp = (q == null ? "" : "&amp;q=" + Util.URIEncode(q)) +
                             (defs == null ? "" : "&amp;defs=" + Util.URIEncode(defs)) +
                             (refs == null ? "" : "&amp;refs=" + Util.URIEncode(refs)) +
                             (path == null ? "" : "&amp;path=" + Util.URIEncode(path)) +
                             (hist == null ? "" : "&amp;hist=" + Util.URIEncode(hist)) +
                             (sort == null ? "" : "&amp;sort=" + Util.URIEncode(sort));
-                            for (Iterator it = project.iterator(); it.hasNext();) {
-                                  url=url+(project == null ? "" : "&amp;project=" + Util.URIEncode((String)it.next()));
-                                                  }                    
-                    
+                    if (hasProjects) {
+                        urlp = urlp + "&amp;project=";
+                        for (Iterator it = project.iterator(); it.hasNext();) {
+                            urlp = urlp + (project == null ? "" : Util.URIEncode((String) it.next()) + ",");
+                        }
+                    }
                     slider = new StringBuilder();
                     int labelStart =1;
                     int sstart = start - max* (start / max % 10 + 1) ;
@@ -431,7 +434,7 @@ if( hits == null || errorMsg != null) {
                             } else {
                                 arr = label < 10 ? " " + label : String.valueOf(label);
                             }
-                            slider.append("<a class=\"more\" href=\"search?n=" + max + "&amp;start=" + i + url + "\">"+
+                            slider.append("<a class=\"more\" href=\"s?n=" + max + "&amp;start=" + i + urlp + "\">"+
                                     arr + "</a>");
                         }
                         label++;

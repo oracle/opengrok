@@ -20,15 +20,17 @@ Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 --%><%@ page import="org.opensolaris.opengrok.configuration.*,
-java.util.ArrayList,java.util.List" %><%
+java.util.ArrayList,java.util.List,java.util.Iterator" %><%
 boolean hasProjects = false;
 // watch for iterators for below in case you will want to change it to List<Project>
+//TODO also deduplication at this point might be nice
 List<String> project = new ArrayList<String>();
 List<Project> projects;
 String context = request.getContextPath();
 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 env.setUrlPrefix(context + "/s?");
 env.register();
+StringBuffer sproject=new StringBuffer("");
 
 if (env.hasProjects()) {
     hasProjects = true;
@@ -38,37 +40,42 @@ if (env.hasProjects()) {
        project.add(defaultProject.getPath());
     }
 
-    
-    Cookie[] cookies = request.getCookies();
-    if (cookies != null) {
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("OpenGrok/project")) {
-                for (String proj : cookie.getValue().split(",")) {
-                    if (proj!="") {
-                        project.add(proj); }
-                    }
+    // TODO project is also in xref ... merge with cookie and existing project for multi to work ok ???
+
+    String pr[] = request.getParameterValues("project");
+    // see if a new parameter is passed...    
+    if (pr != null && pr[0].length() > 0) {        
+        //TODO this means project name CANNOT have a "," char in it !!!
+        String p[] = pr[0].split(",");
+        for (int idx = 0; idx < p.length; idx++) {
+            if (Project.getByDescription(p[idx]) != null) {
+                project.add(p[idx]);
             }
         }
-    }
-    
-    // see if a new parameter is passed...
-    String p[] = request.getParameterValues("project");
-    StringBuffer pc=new StringBuffer("");
-    if (p != null && p.length > 0) {
-        project.clear();
-        for (int idx = 0; idx < p.length; idx++) {
-            if (Project.getProject(p[idx]) != null) {
-                project.add(p[idx]);
-                pc.append(p[idx]);
-                pc.append(",");
-                }
+        //only save found projects into cookies        
+        for (Iterator it = project.iterator(); it.hasNext();) {
+           sproject.append((String)it.next()+",");
         }
-    }
-
-    if (pc.length()>0) {
-     // update the cookie
-     Cookie cookie = new Cookie("OpenGrok/project", pc.toString());
-     response.addCookie(cookie);
+        // update the cookie
+        Cookie cookie = new Cookie("OpenGrok/project", sproject.toString());
+        response.addCookie(cookie);
+    } else { //fill in from cookies        
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("OpenGrok/project")) {                    
+                    for (String proj : cookie.getValue().split(",")) {
+                        if (proj != "") {
+                            project.add(proj);
+                        }
+                    }
+                }
+            }
+        }
+        //only save found projects into cookies
+        for (Iterator it = project.iterator(); it.hasNext();) {
+           sproject.append((String)it.next()+",");
+        }
     }
 }
 %>

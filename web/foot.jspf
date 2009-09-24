@@ -25,6 +25,7 @@ Use is subject to license terms.
         <a href="http://www.opensolaris.org/os/project/opengrok/"><img src="<%=request.getContextPath()%>/<%=environment.getWebappLAF()%>/img/servedby.png" alt="Served by OpenGrok" title="Served by OpenGrok"/></a>
     </p>
     <p class="Center">Indexes created <%=org.opensolaris.opengrok.configuration.RuntimeEnvironment.getInstance().getDateForLastIndexRun()%>
+    </p>
 </div>
 </div>
 </body>

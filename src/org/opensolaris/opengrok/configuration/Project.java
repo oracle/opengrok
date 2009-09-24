@@ -108,4 +108,17 @@ public class Project {
         }
         return ret;
     }
+
+    public static Project getByDescription(String desc) {
+        Project ret = null;
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.hasProjects()) {
+            for (Project proj : env.getProjects()) {                
+                if (desc.indexOf(proj.getDescription()) == 0) {
+                    ret = proj;
+                }
+            }
+        }
+        return ret;
+    }    
 }

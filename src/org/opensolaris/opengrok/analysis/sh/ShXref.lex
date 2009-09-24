@@ -23,33 +23,24 @@
  */
 
 package org.opensolaris.opengrok.analysis.sh;
-import java.util.*;
-import java.io.*;
-import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.JFlexXref;
+import java.io.IOException;
+import java.io.Writer;
+import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.configuration.Project;
+import java.util.Stack;
 
 %%
 %public
 %class ShXref
+%extends JFlexXref
 %unicode
 %ignorecase
 %int
 %line
 %{
-  String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
-  Writer out;
-  Annotation annotation;
-  Project project;
-  private Definitions defs;
   private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
-
-  public void setDefs(Definitions defs) {
-  	this.defs = defs;
-  }
 
   public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
@@ -94,13 +85,6 @@ import org.opensolaris.opengrok.configuration.Project;
         out.write("<span class=\"" + style + "\">");
       }
     }
-  }
-
-  private void appendProject() throws IOException {
-      if (project != null) {
-          out.write("&project=");
-          out.write(project.getPath());
-      }
   }
 
 %}

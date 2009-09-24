@@ -33,7 +33,36 @@ org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*
 "
-%><%@include file="mast.jsp"%><%
+%><%@include file="mast.jsp"%><script type="text/javascript">/* <![CDATA[ */
+    function toggle_annotations() {
+   var spans = document.getElementsByTagName("span");
+
+   for (var i = 0; i < spans.length; i++) {
+      var span = spans[i];
+      if (span.className == 'blame') {
+         span.className = 'blame-hidden';
+      } else if (span.className == 'blame-hidden') {
+         span.className = 'blame';
+      }
+   }
+}
+function lntoggle() {
+       var a = document.getElementsByTagName("a");
+   for (var i = 0; i < a.length; i++) {
+      var el = a[i]; //fix all line #
+      if (el.className == 'l' || el.className == 'hl') {
+         el.className=el.className+'-hide';
+         el.setAttribute("tmp", el.innerHTML);
+         el.innerHTML='';
+      }
+      else if (el.className == 'l-hide' || el.className == 'hl-hide') {
+          el.innerHTML=el.getAttribute("tmp");
+          el.className=el.className.substr(0,el.className.indexOf('-'));
+      }
+   }
+}
+/* ]]> */
+</script><%
 String rev = null;
 if(!isDir && ef != null) {
     try {

@@ -18,32 +18,26 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-
-import java.util.*;
-import java.io.*;
+import org.opensolaris.opengrok.analysis.JFlexXref;
+import java.io.IOException;
+import java.io.Writer;
+import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %public
 %class PlainXref
+%extends JFlexXref
 %unicode
 %ignorecase
 %int
 %line
 %{
-  Writer out;
-  String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
-  Annotation annotation;
-  Project project;
-
   public void write(Writer out) throws IOException {
   	this.out = out;
         Util.readableLine(1, out, annotation);
@@ -57,13 +51,6 @@ import org.opensolaris.opengrok.configuration.Project;
 	zzAtEOF = true;
 	zzStartRead = 0;
 	annotation = null;
-  }
-
-  private void appendProject() throws IOException {
-      if (project != null) {
-          out.write("&project=");
-          out.write(project.getPath());
-      }
   }
 
 %}

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -26,33 +26,21 @@
  * Cross reference a Fortran file
  */
 package org.opensolaris.opengrok.analysis.fortran;
-
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.history.Annotation;
+import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
 %class FortranXref
+%extends JFlexXref
 %unicode
 %ignorecase
 %int
 %line
 %{
-  Writer out;
-  String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
-  Annotation annotation;
-  Project project;
-  private Definitions defs;
-  public void setDefs(Definitions defs) {
-  	this.defs = defs;
-  }
-
   public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
   	zzBuffer = buf;
@@ -68,13 +56,6 @@ import org.opensolaris.opengrok.web.Util;
 	yyline = 2;
 	while(yylex() != YYEOF) {
 	}
-  }
-
-  private void appendProject() throws IOException {
-      if (project != null) {
-          out.write("&project=");
-          out.write(project.getPath());
-      }
   }
 %}
 

@@ -21,68 +21,22 @@ Use is subject to license terms.
 
 --%><%@ page import="org.opensolaris.opengrok.configuration.*"%><%
 String laf = environment.getWebappLAF();
+%><%-- String server="http://"+request.getServerName()+":"+request.getServerPort();
+ <base href="<%=server%><%=httpHeaderContext%>/"/>
+ --%><%
 String httpHeaderContext = request.getContextPath();
 %><?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" lang="en-US">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <meta name="robots" content="noindex,nofollow">
+    <meta name="robots" content="noindex,nofollow"/>    
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="generator" content="<%=org.opensolaris.opengrok.Info.getVersion()%> (<%=org.opensolaris.opengrok.Info.getRevision()%>)"/>
     <link rel="icon" href="<%=httpHeaderContext%>/<%=laf%>/img/icon.png" type="image/png"/>
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/style.css"/>
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.autocomplete.css" />
     <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css"/>
     <link rel="search" href="<%=httpHeaderContext%>/opensearch" type="application/opensearchdescription+xml" title="OpenGrok Search for current project(s)" />
     <title><%=pageTitle%></title>
-
-<script type="text/javascript">
-function toggle_annotations() {
-   var spans = document.getElementsByTagName("span");
-
-   for (var i = 0; i < spans.length; i++) {
-      var span = spans[i];
-      if (span.className == 'blame') {
-         span.className = 'blame-hidden';
-      } else if (span.className == 'blame-hidden') {
-         span.className = 'blame';
-      }
-   }
-}
-function selectAllProjects() {
-    var list = document.getElementById("project");
-    var all = document.getElementById("ALL");
-        for(var i = 0; i < list.options.length; ++i) {
-            list.options[i].selected=all.checked ? true : false;
-        }
-}
-function alltoggle() {
-    var list = document.getElementById("project");
-    var all = document.getElementById("ALL");
-    var toggle=false;
-    var value="";
-        for(var i = 0; i < list.options.length; ++i) {
-            if (list.options[i].selected==false) {
-                toggle=true;
-            }
-            else value=value+list.options[i].value;
-        }
-        all.checked= toggle ? false : true;        
-}
-function lntoggle() {
-       var a = document.getElementsByTagName("a");
-   for (var i = 0; i < a.length; i++) {
-      var el = a[i]; //fix all line #
-      if (el.className == 'l' || el.className == 'hl') {
-         el.className=el.className+'-hide';
-         el.setAttribute("tmp", el.innerHTML);
-         el.innerHTML='';         
-      }
-      else if (el.className == 'l-hide' || el.className == 'hl-hide') {          
-          el.innerHTML=el.getAttribute("tmp");          
-          el.className=el.className.substr(0,el.className.indexOf('-'));
-      }
-   }
-}
-</script>
 </head>

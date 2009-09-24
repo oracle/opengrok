@@ -21,53 +21,71 @@ Use is subject to license terms.
 
 --%><%@ page import="org.opensolaris.opengrok.configuration.Project,
 org.opensolaris.opengrok.web.Util,java.util.Iterator"%>
+<% if (hasProjects) { %>
+<script type="text/javascript" src="jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="jquery.autocomplete-1.1.pack.js"></script>
+<script type="text/javascript">/* <![CDATA[ */
+    var projects = [
+<%
+for (Project p : env.getProjects()) { 
+   %>"<%=Util.formQuoteEscape(p.getDescription())%>",<%
+}
+%>
+  ];
+$().ready(function() {
+    $("#project").autocomplete(projects, {
+                minChars: 0,
+		multiple: true,
+                multipleSeparator: ",",
+		//mustMatch: true,
+                matchContains: "word",
+                max: 200,
+                cacheLength:20,
+		//autoFill: false,
+                formatItem: function(row, i, max) {
+                    if (row!=null)
+			return i + "/" + max + ": " + row[0];
+                    else return "";
+		},
+		formatMatch: function(row, i, max) {
+                    if (row!=null)
+			return row[0]
+                    else return "";
+		},
+		formatResult: function(row) {
+                    if (row!=null)
+			return row[0];
+                    else return "";
+		}
+	});
+   });        
+/* ]]> */
+</script>
+<%}%>
 <table cellpadding="0" cellspacing="0" border="0" width="100%">
     <tr>
         <td valign="top"><br /> &nbsp;</td>
         <td align="left" valign="middle">
-            <br/><form action="search" name="sbox">
+            <br/><form action="search" id="sbox">
                 <table cellpadding="2" border="0" cellspacing="0">
-                    <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td>
-                    <% if (hasProjects) { %>                    
-                        <td rowspan="5" style="border-left:gray;border-left-width:thin;border-left-color:gray">
-                            <!--<td align="right" valign="top"> -->
-                            <table border="0">
-                                <tbody>
-                                    <tr>
-                                        <td nowrap>in project: &nbsp; <input type="checkbox" id="ALL" name="ALL" onchange="javascript:selectAllProjects();" /> all</td>
-                                    </tr>
-                                    <tr><td>
-                                            <select class="q" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>" onchange="javascript:alltoggle();" style="width: 300px">
-                                <%
-                                for (Project p : env.getProjects()) {
-                                    //TODO below "selected" has no effect if one refreshes the page with F5
-                                %><option value="<%=Util.formQuoteEscape(p.getPath())%>"<%
-                                          if (project != null) {
-                                              String projectPath = p.getPath();
-                                              for (Iterator it = project.iterator(); it.hasNext();) {
-                                                  if (it.next().equals(projectPath)) {
-                                                      %> selected<%
-                                                  }
-                                              }
-                                           }
-                                          %>><%=Util.formQuoteEscape(p.getDescription())%></option>
-                                <%
-                                }
-                                %></select><br/><span style="font-size:xx-small" >(use Shift or Ctrl + Click to select more)</span></td>
-                                    </tr>
-                                </tbody>
-                            </table></td><%
-                    }%>
-                    </tr>
+                    <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td></tr>
                     <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
                     <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
                     <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
                     <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
-                    <tr><td></td><td colspan="0" align="center">  &nbsp; <input class="submit" type="submit" value="Search"/> |
-                            <input class="submit" onClick="document.sbox.q.value='';document.sbox.defs.value='';document.sbox.refs.value='';document.sbox.path.value='';document.sbox.hist.value='';" type="button" value=" Clear "/>
+                    <% if (hasProjects) { %>
+                    <tr><td align="right"> Project </td><td><input class="q" id="project" name="project" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(sproject.toString())%>"/></td></tr>
+                    <%}%>
+                    <tr><td colspan="2" align="center">  &nbsp; <input class="submit" type="submit" value="Search"/> |
+                            <input class="submit" onclick="javascript:var sbox=document.getElementById('sbox'); sbox.q.value='';sbox.defs.value='';sbox.refs.value='';sbox.path.value='';sbox.hist.value='';sbox.project.value='';" type="button" value=" Clear "/>
                     | <a href="help.jsp">Help</a></td></tr>
                 </table>
             </form>
         </td>
     <td valign="top" align="right"></td></tr>
 </table>
+<script type="text/javascript">/* <![CDATA[ */
+var p=document.getElementById('project');
+p.setAttribute("autocomplete", "off");
+/* ]]> */
+</script>

@@ -27,27 +27,21 @@
  */
 
 package org.opensolaris.opengrok.analysis.document;
-import java.io.*;
+import org.opensolaris.opengrok.analysis.JFlexXref;
+import java.io.IOException;
+import java.io.Writer;
+import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.configuration.Project;
 
 %%
 %public
 %class TroffXref
+%extends JFlexXref
 %unicode
 %int
 %line
-%{
-  String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
+%{ 
   boolean p = false;
-  Writer out;
-  Project project;
-
-  public void setURL(String urlPrefix) {
-    this.urlPrefix = urlPrefix;
-  }
-
   public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
   	zzBuffer = buf;
@@ -61,14 +55,6 @@ import org.opensolaris.opengrok.configuration.Project;
 	while(yylex() != YYEOF) {
 	}
   }
-
-  private void appendProject() throws IOException {
-      if (project != null) {
-          out.write("&project=");
-          out.write(project.getPath());
-      }
-  }
-
 %}
 
 WhiteSpace     = [ \t\f\r]
@@ -110,7 +96,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 "\\fP"	{ out.write("</span>"); }
 
 ^\.(PP|LP|P|TP|IP|HP|PD|SP|br|mk) { 
-    if(p) 
+    if(p)// TODO isn't this buggy ?
         out.write("</p>");
     out.write("<p>");
     p = true;
