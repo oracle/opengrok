@@ -40,6 +40,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -69,6 +70,15 @@ class JDBCHistoryCache implements HistoryCache {
 
     private final String jdbcDriverClass;
     private final String jdbcConnectionURL;
+
+    /** The id to be used for the next row inserted into FILES. */
+    private final AtomicInteger nextFileId = new AtomicInteger();
+
+    /** The id to be used for the next row inserted into DIRECTORIES. */
+    private final AtomicInteger nextDirId = new AtomicInteger();
+
+    /** The id to be used for the next row inserted into CHANGESETS. */
+    private final AtomicInteger nextChangesetId = new AtomicInteger();
 
     /** SQL queries used by this class. */
     private final static Properties QUERIES = new Properties();
@@ -147,7 +157,7 @@ class JDBCHistoryCache implements HistoryCache {
     // Many of the tables contain columns with identical names and types,
     // so there will be duplicate strings. Suppress warning from PMD.
     @SuppressWarnings("PMD.AvoidDuplicateLiterals")
-    private static void initDB(Statement s) throws SQLException {
+    private void initDB(Statement s) throws SQLException {
         // TODO Store a database version which is incremented on each
         // format change. When a version change is detected, drop the database
         // (or possibly in the future: add some upgrade code that makes the
@@ -187,6 +197,10 @@ class JDBCHistoryCache implements HistoryCache {
         if (!tableExists(dmd, SCHEMA, "FILECHANGES")) {
             s.execute(getQuery("createTableFilechanges"));
         }
+
+        initIdGenerator(s, "getMaxFileId", nextFileId);
+        initIdGenerator(s, "getMaxDirId", nextDirId);
+        initIdGenerator(s, "getMaxChangesetId", nextChangesetId);
     }
 
     private static boolean tableExists(
@@ -196,6 +210,33 @@ class JDBCHistoryCache implements HistoryCache {
                 null, schema, table, new String[] {"TABLE"});
         try {
             return rs.next();
+        } finally {
+            rs.close();
+        }
+    }
+
+    /**
+     * Initialize the {@code AtomicInteger} object that holds the value of
+     * the id to use for the next row in a certain table. If there are rows
+     * in the table, take the maximum value and increment it by one. Otherwise,
+     * the {@code AtomicInteger} will be left at its current value (presumably
+     * 0).
+     *
+     * @param s a statement object on which the max query is executed
+     * @param stmtKey name of the query to execute in order to get max id
+     * @param generator the {@code AtomicInteger} object to initialize
+     */
+    private static void initIdGenerator(
+            Statement s, String stmtKey, AtomicInteger generator)
+            throws SQLException {
+        ResultSet rs = s.executeQuery(getQuery(stmtKey));
+        try {
+            if (rs.next()) {
+                int val = rs.getInt(1);
+                if (!rs.wasNull()) {
+                    generator.set(val + 1);
+                }
+            }
         } finally {
             rs.close();
         }
@@ -584,11 +625,12 @@ class JDBCHistoryCache implements HistoryCache {
                     addChangeset.setTimestamp(4,
                             new Timestamp(entry.getDate().getTime()));
                     addChangeset.setString(5, entry.getMessage());
+                    int changesetId = nextChangesetId.getAndIncrement();
+                    addChangeset.setInt(6, changesetId);
                     addChangeset.executeUpdate();
 
                     // Add one row for each file in FILECHANGES, and one row
                     // for each path element of the directories in DIRCHANGES.
-                    int changesetId = getGeneratedIntKey(addChangeset);
                     Set<String> addedDirs = new HashSet<String>();
                     addDirchange.setInt(1, changesetId);
                     addFilechange.setInt(1, changesetId);
@@ -829,10 +871,12 @@ class JDBCHistoryCache implements HistoryCache {
                     // Get the dir id for this file, potentially adding the
                     // parent directories to the db and to dirMap.
                     int dir = addAllDirs(insDir, reposId, fullPath, dirMap);
+                    int fileId = nextFileId.getAndIncrement();
                     insFile.setInt(1, dir);
                     insFile.setString(2, getBaseName(fullPath));
+                    insFile.setInt(3, fileId);
                     insFile.executeUpdate();
-                    fileMap.put(fullPath, getGeneratedIntKey(insFile));
+                    fileMap.put(fullPath, fileId);
                     conn.commit();
                 }
             }
@@ -868,8 +912,8 @@ class JDBCHistoryCache implements HistoryCache {
      * a map.
      *
      * @param ps statement that inserts a directory into the DIRECTORY table.
-     * Takes two parameters: the id of the repository and the path of the
-     * directory.
+     * Takes three parameters: (1) the id of the repository, (2) the path of
+     * the directory, and (3) the id to use for the directory.
      * @param reposId id of the repository to which the file belongs
      * @param fullPath the file whose parents to add
      * @param map a map from directory path to id for the directories already
@@ -891,10 +935,12 @@ class JDBCHistoryCache implements HistoryCache {
                     // database, all its parents also exist.
                     break;
                 }
+                int dirId = nextDirId.getAndIncrement();
                 ps.setInt(1, reposId);
                 ps.setString(2, path);
+                ps.setInt(3, dirId);
                 ps.executeUpdate();
-                map.put(path, getGeneratedIntKey(ps));
+                map.put(path, dirId);
             }
             dir = map.get(parent);
         }
