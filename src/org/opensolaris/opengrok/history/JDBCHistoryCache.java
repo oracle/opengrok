@@ -859,6 +859,8 @@ class JDBCHistoryCache implements HistoryCache {
         populateFileOrDirMap(conn.getStatement(GET_DIRS), reposId, dirMap);
         populateFileOrDirMap(conn.getStatement(GET_FILES), reposId, fileMap);
 
+        int insertCount = 0;
+
         PreparedStatement insDir = conn.getStatement(INSERT_DIR);
         PreparedStatement insFile = conn.getStatement(INSERT_FILE);
         for (HistoryEntry entry : history.getHistoryEntries()) {
@@ -877,7 +879,17 @@ class JDBCHistoryCache implements HistoryCache {
                     insFile.setInt(3, fileId);
                     insFile.executeUpdate();
                     fileMap.put(fullPath, fileId);
-                    conn.commit();
+
+                    // Commit every now and then to allow the database to free
+                    // resources (like locks and transaction log), but not too
+                    // frequently, since that may kill the performance. It is
+                    // OK not to commit for every file added, since the worst
+                    // thing that could happen is that we need to re-insert
+                    // the files added since the last commit in case of a crash.
+                    insertCount++;
+                    if (insertCount % 30 == 0) {
+                        conn.commit();
+                    }
                 }
             }
         }
