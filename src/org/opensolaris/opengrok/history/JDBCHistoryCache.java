@@ -154,9 +154,6 @@ class JDBCHistoryCache implements HistoryCache {
         return QUERIES.getProperty(key);
     }
 
-    // Many of the tables contain columns with identical names and types,
-    // so there will be duplicate strings. Suppress warning from PMD.
-    @SuppressWarnings("PMD.AvoidDuplicateLiterals")
     private void initDB(Statement s) throws SQLException {
         // TODO Store a database version which is incremented on each
         // format change. When a version change is detected, drop the database
