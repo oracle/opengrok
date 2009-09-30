@@ -27,8 +27,8 @@ package org.opensolaris.opengrok.analysis;
 import java.io.IOException;
 import java.io.Writer;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.history.Annotation;
 
 /**
  *
@@ -48,12 +48,12 @@ public class JFlexXref {
   protected void appendProject() throws IOException {
       if (project != null) {
           out.write("&amp;project=");
-          out.write(project.getPath());
+          out.write(project.getDescription());
       }
   }
   
   protected String getProjectPostfix() {
-      return project == null ? "" : ("&amp;project=" + project.getPath());
+      return project == null ? "" : ("&amp;project=" + project.getDescription());
   }
 
 }

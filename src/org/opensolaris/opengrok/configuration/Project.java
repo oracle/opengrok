@@ -30,6 +30,7 @@ import java.io.File;
  */ 
 public class Project {
     private String path;
+    // this variable is very important, since it's used as the project identifier all over xrefs and webapp
     private String description;
     
     /**
@@ -57,7 +58,7 @@ public class Project {
     }
     
     /**
-     * Set a textual description of this project
+     * Set a textual description of this project, prefferably don't use " , " in the name, since it's used as delimiter for more projects
      * @param description a textual description of the project
      */
     public void setDescription(String description) {
@@ -109,6 +110,11 @@ public class Project {
         return ret;
     }
 
+    /**
+     * Returns project object by its description, used in webapp to figure out which project is to be searched
+     * @param desc description of the project
+     * @return project that fits the description
+     */
     public static Project getByDescription(String desc) {
         Project ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();

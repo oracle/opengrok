@@ -257,7 +257,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
 <div id="bar">
     <table border="0" width="100%"><tr><td><a href="<%=context%>" id="home">Home</a></td><td align="right"><%
      {
-        String url = "s?";
+        String url = "search?";
                 url = url + (q == null ? "" : "&amp;q=" + Util.URIEncode(q)) +
                  (defs == null ? "" : "&amp;defs=" + Util.URIEncode(defs)) +
                  (refs == null ? "" : "&amp;refs=" + Util.URIEncode(refs)) +
