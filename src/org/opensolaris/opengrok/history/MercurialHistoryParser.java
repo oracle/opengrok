@@ -49,13 +49,12 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
     private final MercurialRepository repository;
     private final String mydir;
-    private final int rootLength;
+    private final String rootPath;
 
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
         mydir = repository.getDirectoryName() + File.separator;
-        rootLength =
-                RuntimeEnvironment.getInstance().getSourceRootPath().length();
+        rootPath = RuntimeEnvironment.getInstance().getSourceRootPath();
     }
 
     /**
@@ -128,8 +127,13 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                 for (int ii = 1; ii < strings.length; ++ii) {
                     if (strings[ii].length() > 0) {
                         File f = new File(mydir, strings[ii]);
-                        String name = f.getCanonicalPath().substring(rootLength);
-                        entry.addFile(name);
+                        String name = f.getCanonicalPath();
+                        // Strip away the directories up to the source root.
+                        // If the file is not located under the source root,
+                        // ignore it (bug #11664).
+                        if (name.startsWith(rootPath)) {
+                            entry.addFile(name.substring(rootPath.length()));
+                        }
                     }
                 }
             } else if (s.startsWith(DESC_PREFIX) && entry != null) {
