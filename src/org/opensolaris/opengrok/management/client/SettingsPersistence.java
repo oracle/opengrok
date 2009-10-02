@@ -42,7 +42,7 @@ public class SettingsPersistence {
     public final static String CONSOLELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.consolelevel";
     private final Properties ogcProperties = new Properties();
     private File propertyFile;
-    private boolean existingSettings = false;
+    private boolean existingSettings = false; //NOPMD we do change it, but in deep finally block
 
     /**
      * Get settings for the OpenGrok Management Agent Client

@@ -40,7 +40,7 @@ public final class Info {
     private static final String REVISION;
     
     static {
-	InputStream in=null;;
+	InputStream in=null;
         try {
             in = Info.class.getResourceAsStream("info.properties");
             if (in != null) {
