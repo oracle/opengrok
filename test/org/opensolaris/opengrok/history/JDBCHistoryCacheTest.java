@@ -30,6 +30,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -346,5 +347,41 @@ public class JDBCHistoryCacheTest extends TestCase {
         if (ex[0] != null) {
             throw ex[0];
         }
+    }
+
+    /**
+     * Regression test for bug #11663. If the commit message was longer than
+     * the maximum VARCHAR length, a truncation error would be raised by the
+     * database. Now the message should be truncated if such a message is
+     * encountered.
+     */
+    public void testVeryLongCommitMessage() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository r = RepositoryFactory.getRepository(reposRoot);
+        HistoryEntry e0 = new HistoryEntry();
+        e0.setAuthor("dummy");
+        e0.setDate(new Date());
+        e0.addFile("/mercurial/readme.txt");
+        e0.setRevision("12:abcdef123456");
+        for (int msgLength = 0; msgLength < 40000; msgLength += 48) {
+            e0.appendMessage(
+                    "this is a line with 48 chars, including newline");
+        }
+
+        // Used to get a truncation error from the database here.
+        cache.store(new History(Collections.singletonList(e0)), r);
+
+        History h = cache.get(reposRoot, r, false);
+        assertEquals("One entry expected", 1, h.getHistoryEntries().size());
+        HistoryEntry e1 = h.getHistoryEntries().get(0);
+        assertEquals("Author", e0.getAuthor(), e1.getAuthor());
+        assertEquals("Date", e0.getDate(), e1.getDate());
+        assertEquals("Revision", e0.getRevision(), e1.getRevision());
+        assertTrue("No file list requested", e1.getFiles().isEmpty());
+        assertFalse("Long message should be truncated",
+                e0.getMessage().equals(e1.getMessage()));
+        assertEquals("Start of message should be equal to original",
+                e0.getMessage().substring(0, 1000),
+                e1.getMessage().substring(0, 1000));
     }
 }

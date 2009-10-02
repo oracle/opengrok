@@ -66,6 +66,12 @@ class JDBCHistoryCache implements HistoryCache {
      */
     private static final int MAX_RETRIES = 2;
 
+    /**
+     * The maximum number of characters in commit messages. Longer messages
+     * will be truncated.
+     */
+    private static final int MAX_MESSAGE_LENGTH = 32672;
+
     private ConnectionManager connectionManager;
 
     private final String jdbcDriverClass;
@@ -412,6 +418,25 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
+     * Truncate a string to the given length.
+     *
+     * @param str the string to truncate
+     * @param length the length of the string after truncation
+     * @return the truncated string
+     * @throws IllegalArgumentException if the string is not longer than the
+     * specified length
+     */
+    private static String truncate(String str, int length) {
+        if (str.length() < length) {
+            throw new IllegalArgumentException();
+        }
+        String suffix = " (...)";
+        return length < suffix.length() ?
+            str.substring(0, length) :
+            (str.substring(0, length - suffix.length()) + suffix);
+    }
+
+    /**
      * Statement that gets the history for the specified file and repository.
      * The result is ordered in reverse chronological order to match the
      * required ordering for {@link HistoryCache#get(File, Repository)}.
@@ -621,7 +646,13 @@ class JDBCHistoryCache implements HistoryCache {
                     addChangeset.setInt(3, authors.get(entry.getAuthor()));
                     addChangeset.setTimestamp(4,
                             new Timestamp(entry.getDate().getTime()));
-                    addChangeset.setString(5, entry.getMessage());
+                    String msg = entry.getMessage();
+                    // Truncate the message if it can't fit in a VARCHAR
+                    // (bug #11663).
+                    if (msg.length() > MAX_MESSAGE_LENGTH) {
+                        msg = truncate(msg, MAX_MESSAGE_LENGTH);
+                    }
+                    addChangeset.setString(5, msg);
                     int changesetId = nextChangesetId.getAndIncrement();
                     addChangeset.setInt(6, changesetId);
                     addChangeset.executeUpdate();
