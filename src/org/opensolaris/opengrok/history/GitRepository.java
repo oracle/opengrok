@@ -177,7 +177,7 @@ public class GitRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + lineno + ": [" + line + "]");
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + lineno + ": [" + line + "] of "+fileName);
             }
         }
         return ret;

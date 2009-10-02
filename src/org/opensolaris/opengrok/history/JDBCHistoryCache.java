@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -90,11 +91,21 @@ class JDBCHistoryCache implements HistoryCache {
     private final static Properties QUERIES = new Properties();
     static {
         Class klazz = JDBCHistoryCache.class;
+        InputStream in = null;
         try {
-            QUERIES.load(klazz.getResourceAsStream(
-                    klazz.getSimpleName() + "_queries.properties"));
+            in = klazz.getResourceAsStream(klazz.getSimpleName() + "_queries.properties");
+            if ( in != null ) {
+            QUERIES.load(in); }
         } catch (IOException ioe) {
             throw new ExceptionInInitializerError(ioe);
+        } finally {
+          try {
+             if (in != null ) { 
+              in.close(); }
+          } catch (IOException ioe) {
+            //ignore
+            //throw new ExceptionInInitializerError(ioe);
+          } 
         }
     }
 

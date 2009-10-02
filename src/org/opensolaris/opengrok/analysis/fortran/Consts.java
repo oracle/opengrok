@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.analysis.fortran;
 
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Holds static hash set containing the Fortran keywords.
@@ -31,7 +32,7 @@ import java.util.HashSet;
  */
 public class Consts {
 
-    public static final HashSet<String> kwd = new HashSet<String>();
+    public static final Set<String> kwd = new HashSet<String>();
 
     static {
         // multi-word keywords, such as "DOUBLE PRECISION", etc. are for
@@ -337,8 +338,5 @@ public class Consts {
         kwd.add("while");
         kwd.add("write");
         kwd.add("xor");
-    }
-
-    private Consts() {
     }
 }

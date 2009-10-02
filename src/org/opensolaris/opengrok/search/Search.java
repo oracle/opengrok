@@ -138,7 +138,7 @@ final class Search {
                 try {
                     in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));                                              
                     String line = in.readLine();
-                    if (line.length() == 0 || line.charAt(0) == 'n') {
+                    if (null == line || line.length() == 0 || line.charAt(0) == 'n') {
                        return;
                     }
                 } catch (Exception ex) {

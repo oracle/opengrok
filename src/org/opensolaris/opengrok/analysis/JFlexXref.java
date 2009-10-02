@@ -26,8 +26,8 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Writer;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**

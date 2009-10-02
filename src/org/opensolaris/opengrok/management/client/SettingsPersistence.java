@@ -51,17 +51,40 @@ public class SettingsPersistence {
      * @throws java.io.IOException
      */
     public SettingsPersistence(String cfgfile) throws IOException {
-        InputStream in = OGAgent.class.getResourceAsStream("oga.properties");
+        InputStream in=null;
+        try {
+        in = OGAgent.class.getResourceAsStream("oga.properties");
         if (in != null) {
             ogcProperties.load(in);
             in.close();
+            }
+        } catch (IOException ioe) {
+          throw ioe; //do we need to propagate this up ?
+        } finally {
+            if (in != null) {
+                in.close(); // this will be just thrown up
+            }
         }
+
         if (cfgfile != null) {
             propertyFile = new File(cfgfile);
-            FileInputStream is = new FileInputStream(propertyFile);
+            FileInputStream is=null;
+            try {
+            is = new FileInputStream(propertyFile);
             ogcProperties.load(is);
-            is.close();
-            existingSettings = true;
+            } catch (IOException ioe) {
+              throw ioe; //do we need to propagate this up ?
+            } finally {
+              try {
+              if (is != null) {
+                  is.close();
+              }
+              } catch (IOException ioe) {
+                throw ioe; 
+              } finally {
+              existingSettings = true;
+              }
+            }
         }
     }
 

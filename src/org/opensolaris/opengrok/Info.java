@@ -40,8 +40,9 @@ public final class Info {
     private static final String REVISION;
     
     static {
+	InputStream in=null;;
         try {
-            InputStream in = Info.class.getResourceAsStream("info.properties");
+            in = Info.class.getResourceAsStream("info.properties");
             if (in != null) {
                 properties.load(in);
             }
@@ -49,7 +50,15 @@ public final class Info {
             REVISION = properties.getProperty("changeset", "unknown");
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        }
+        } finally {
+            try {
+	    if (in != null) {
+		in.close();
+	        }
+            } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+            }
+	}
     }
 
     public static String getVersion() {

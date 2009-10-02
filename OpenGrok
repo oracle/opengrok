@@ -109,12 +109,7 @@ DefaultInstanceConfiguration()
     XML_CONFIGURATION="${OPENGROK_INSTANCE_BASE}/etc/configuration.xml"
 
     # REQUIRED: Java Archive of OpenGrok (Installation Location)
-    OPENGROK_JAR="${OPENGROK_INSTANCE_BASE}/opengrok.jar"
-
-    # REQUIRED(deploy): Java Archive of OpenGrok (Distribution Location)
-    #           (user building from source code will find this and other key
-    #            files in the "dist" directory after the build is completed)
-    OPENGROK_DIST_JAR="${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar"
+    OPENGROK_JAR="${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar"
 
     # REQUIRED(deploy): Web Archive of OpenGrok (Distribution Location)
     #           (user building from source code will find this and other key
@@ -243,7 +238,7 @@ FindJavaHome()
     case "${OS_NAME}:${OS_VERSION}" in
         SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.6.0" ;;
         SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
-        Linux:*)    javaHome="/usr/lib/jvm/java-6-sun/bin" ;;
+        Linux:*)    javaHome="/usr/lib/jvm/java-6-sun" ;;
         *)          javaHome=""                            ;;
     esac
         
@@ -448,6 +443,23 @@ CreateRuntimeRequirements()
         Progress "  Attempting to create generated data directory ... "
         ${DO} mkdir -p "${DATA_ROOT}"
     fi
+    if [ ! -d "${DATA_ROOT}" ]
+    then
+        FatalError "OpenGrok Data Path ${DATA_ROOT} doesn't exist"
+    fi
+
+    if [ ! -d "${OPENGROK_INSTANCE_BASE}/etc" ]
+    then
+        Warning  "OpenGrok Generated Etc Path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
+        Progress "  Attempting to create generated etc directory ... "
+        ${DO} mkdir -p "${OPENGROK_INSTANCE_BASE}/etc"
+    fi
+    if [ ! -d "${OPENGROK_INSTANCE_BASE}/etc" ]
+    then
+        FatalError "OpenGrok Etc Path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
+    fi
+
+
 }
 
 StdInvocation()
