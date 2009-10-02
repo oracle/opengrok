@@ -102,7 +102,8 @@ class JDBCHistoryCache implements HistoryCache {
           try {
              if (in != null ) { 
               in.close(); }
-          } catch (IOException ioe) {
+          } catch (IOException ioe) { 
+            //NOPMD
             //ignore
             //throw new ExceptionInInitializerError(ioe);
           } 

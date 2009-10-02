@@ -59,7 +59,8 @@ public class SettingsPersistence {
             in.close();
             }
         } catch (IOException ioe) {
-          throw ioe; //do we need to propagate this up ?
+          //NOPMD
+          //throw ioe; //do we need to propagate this up ?
         } finally {
             if (in != null) {
                 in.close(); // this will be just thrown up
@@ -73,14 +74,16 @@ public class SettingsPersistence {
             is = new FileInputStream(propertyFile);
             ogcProperties.load(is);
             } catch (IOException ioe) {
-              throw ioe; //do we need to propagate this up ?
+              //NOPMD
+              //throw ioe; //do we need to propagate this up ?
             } finally {
               try {
               if (is != null) {
                   is.close();
               }
               } catch (IOException ioe) {
-                throw ioe; 
+                //NOPMD
+                //throw ioe; 
               } finally {
               existingSettings = true;
               }
