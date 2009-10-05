@@ -59,6 +59,8 @@ public class IndexerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        assertTrue("No point in running indexer tests without valid ctags",
+                RuntimeEnvironment.getInstance().validateExuberantCtags());
     }
 
     @AfterClass
