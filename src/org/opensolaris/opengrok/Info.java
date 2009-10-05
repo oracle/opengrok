@@ -55,9 +55,8 @@ public final class Info {
 	    if (in != null) {
 		in.close();
 	        }
-            } catch (IOException ioe) {
-            //NOPMD
-            //throw new RuntimeException(ioe);
+            } catch (IOException ioe) {           
+            System.err.println(ioe.getMessage()); //NOPMD
             }
 	}
     }

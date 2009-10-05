@@ -6,7 +6,8 @@
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
- * language governing permissions and limitations under the License.                                                          *
+ * language governing permissions and limitations under the License.
+ *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file at LICENSE.txt.
  * If applicable, add the following below this CDDL HEADER, with the

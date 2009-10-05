@@ -175,7 +175,7 @@ class SCCSHistoryParser {
     private int read() throws java.io.IOException {
         int c, d, dt;
         while((c = in.read()) != -1) {
-            switch (c) {
+            switch (c) { //NOPMD
                 case 01:
                     d = in.read();
                     switch (d) {

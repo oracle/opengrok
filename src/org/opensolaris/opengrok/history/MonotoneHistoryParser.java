@@ -45,7 +45,7 @@ import org.opensolaris.opengrok.util.Executor;
  */
 class MonotoneHistoryParser implements Executor.StreamHandler {
 
-    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+    private List<HistoryEntry> entries = new ArrayList<HistoryEntry>(); //NOPMD
     private final MonotoneRepository repository;
     private final String mydir;
     private final int rootLength;
@@ -142,7 +142,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                     }
                     break;
                 case 4:
-                    if (s.startsWith("Modified ") || s.startsWith("Added ") || s.startsWith("Deleted ")) {
+                    if (s.startsWith("Modified ") || s.startsWith("Added ") || s.startsWith("Deleted ")) { //NOPMD
                         /* swallow */
                     } else if (s.equalsIgnoreCase("ChangeLog:")) {
                         state = 5;
