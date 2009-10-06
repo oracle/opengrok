@@ -87,6 +87,9 @@ class JDBCHistoryCache implements HistoryCache {
     /** The id to be used for the next row inserted into CHANGESETS. */
     private final AtomicInteger nextChangesetId = new AtomicInteger();
 
+    /** Info string to return from {@link #getInfo()}. */
+    private String info;
+
     /** SQL queries used by this class. */
     private final static Properties QUERIES = new Properties();
     static {
@@ -214,6 +217,16 @@ class JDBCHistoryCache implements HistoryCache {
         initIdGenerator(s, "getMaxFileId", nextFileId);
         initIdGenerator(s, "getMaxDirId", nextDirId);
         initIdGenerator(s, "getMaxChangesetId", nextChangesetId);
+
+        StringBuilder infoBuilder = new StringBuilder();
+        infoBuilder.append(getClass().getSimpleName() + "\n");
+        infoBuilder.append("Driver class: " + jdbcDriverClass + "\n");
+        infoBuilder.append("URL: " + jdbcConnectionURL + "\n");
+        infoBuilder.append("Database name: " +
+                dmd.getDatabaseProductName() + "\n");
+        infoBuilder.append("Database version: " +
+                dmd.getDatabaseProductVersion() + "\n");
+        info = infoBuilder.toString();
     }
 
     private static boolean tableExists(
@@ -1056,5 +1069,10 @@ class JDBCHistoryCache implements HistoryCache {
         } finally {
             connectionManager.releaseConnection(conn);
         }
+    }
+
+    @Override
+    public String getInfo() throws HistoryException {
+        return info;
     }
 }

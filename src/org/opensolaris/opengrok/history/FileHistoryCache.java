@@ -285,4 +285,9 @@ class FileHistoryCache implements HistoryCache {
     public String getLatestCachedRevision(Repository repository) {
         return null;
     }
+
+    @Override
+    public String getInfo() {
+        return getClass().getSimpleName();
+    }
 }

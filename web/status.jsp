@@ -24,10 +24,12 @@ javax.servlet.*,
 javax.servlet.http.*,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment,
 org.opensolaris.opengrok.configuration.Project,
+org.opensolaris.opengrok.history.HistoryGuru,
 org.opensolaris.opengrok.web.*"
  session="false" errorPage="error.jsp" %><%@ include file="projects.jspf" %><%
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
 environment.register();
+HistoryGuru historyGuru = HistoryGuru.getInstance();
 String pageTitle = "Status";
  %><%@ include file="httpheader.jspf" %>
 <body>
@@ -83,6 +85,10 @@ String pageTitle = "Status";
         </tr>
         <tr>
             <td>Allow leading wildcard in search</td><td><%=environment.isAllowLeadingWildcard()%></td>
+        </tr>
+        <tr>
+            <td>History cache</td>
+            <td><%=Util.htmlize(historyGuru.getCacheInfo())%></td>
         </tr>
 
     </table>

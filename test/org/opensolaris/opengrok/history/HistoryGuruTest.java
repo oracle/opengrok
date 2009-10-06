@@ -129,4 +129,11 @@ public class HistoryGuruTest {
             }
         }
     }
+
+    @Test
+    public void getCacheInfo() throws HistoryException {
+        // FileHistoryCache is used by default
+        assertEquals("FileHistoryCache",
+                HistoryGuru.getInstance().getCacheInfo());
+    }
 }

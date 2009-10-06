@@ -99,6 +99,16 @@ public final class HistoryGuru {
     }
 
     /**
+     * Get a string with information about the history cache.
+     *
+     * @return a free form text string describing the history cache instance
+     * @throws HistoryException if an error occurred while getting the info
+     */
+    public String getCacheInfo() throws HistoryException {
+        return historyCache == null ? "No cache" : historyCache.getInfo();
+    }
+
+    /**
      * Annotate the specified revision of a file.
      *
      * @param file the file to annotate

@@ -384,4 +384,12 @@ public class JDBCHistoryCacheTest extends TestCase {
                 e0.getMessage().substring(0, 1000),
                 e1.getMessage().substring(0, 1000));
     }
+
+    public void testGetInfo() throws HistoryException {
+        String info = cache.getInfo();
+        assertTrue("Info should contain name of history cache",
+                info.startsWith("JDBCHistoryCache"));
+        assertTrue("Info should contain driver class",
+                info.contains(DERBY_EMBEDDED_DRIVER));
+    }
 }

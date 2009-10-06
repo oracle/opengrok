@@ -94,4 +94,12 @@ interface HistoryCache {
      */
     String getLatestCachedRevision(Repository repository)
             throws HistoryException;
+
+    /**
+     * Get a string with information about the history cache.
+     *
+     * @return a free form text string describing the history cache instance
+     * @throws HistoryException if an error occurred while getting the info
+     */
+    String getInfo() throws HistoryException;
 }
