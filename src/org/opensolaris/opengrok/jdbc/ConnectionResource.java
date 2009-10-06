@@ -55,6 +55,19 @@ public class ConnectionResource {
     }
 
     /**
+     * Check if the connection is still valid.
+     * @return {@code true} if the connection is valid, {@code false} if not
+     * @throws SQLException if a database error occurs
+     */
+    public boolean isValid() throws SQLException {
+        // Check whether the connection is valid. Assume that the connection
+        // is lost if there's no response after 10 seconds. (Will normally
+        // return immediately if the connection is lost, but use a timeout
+        // in case of odd network issues.)
+        return conn.isValid(10);
+    }
+
+    /**
      * Commit the transaction.
      * @throws SQLException if a database error occurs
      */

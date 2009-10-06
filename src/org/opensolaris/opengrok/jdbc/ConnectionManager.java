@@ -76,7 +76,7 @@ public class ConnectionManager {
      */
     public ConnectionResource getConnectionResource() throws SQLException {
         ConnectionResource cr = connections.poll();
-        if (cr == null) {
+        if (cr == null || !cr.isValid()) {
             cr = new ConnectionResource(this);
         }
         return cr;
