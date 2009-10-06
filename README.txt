@@ -126,6 +126,46 @@ change the :
 	    This file will contain something like the Context described above.
 
 ---------------------------------------------------
+Using Java DB for history cache
+(instead of gzipped xml files)
+---------------------------------------------------
+
+You need Java DB 10.x (OpenSolaris: # pkg install SUNWjavadb or SUNWj6dev ,
+Debian/Ubuntu: # apt-get install sun-java6-javadb).
+There are two modes, having Java DB embedded, or running a Java DB server.
+Java DB server is default option, I will not describe how to set up embedded
+option.
+
+1) Start the server:
+$ mkdir -p $DATA_ROOT/derby
+
+OpenSolaris:
+# svcadm enable javadb
+OR
+$ java -Dderby.system.home=$DATA_ROOT/derby -jar /opt/SUNWjavadb/lib/derbynet.jar start
+OR
+$ java -Dderby.system.home=$DATA_ROOT/derby -jar /usr/jdk/instances/jdk1.6.0/db/lib/derbynet.jar start
+
+Debian:
+$ java -Dderby.system.home=$DATA_ROOT/derby -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
+
+
+2) You need to have the derbyclient.jar in lib directory of opengrok.jar and in source.war WEB-INF/lib
+Copy it over from
+OpenSolaris: /opt/SUNWjavadb/lib/derbyclient.jar OR /usr/jdk/instances/jdk1.6.0/db/lib/derbyclient.jar
+Debian: /usr/lib/jvm/java-6-sun/db/lib/derbyclient.jar
+
+3) Use these options with indexer when indexing/generating the configuration:
+    -D -H
+
+Also the Java DB server has to be running during indexing and for the web application.
+
+Note: To use a bigger database buffer, which may improve performance of both
+indexing and fetching of history, create a file named derby.properties in
+$DATA_ROOT/derby and add this line to it:
+derby.storage.pageCacheSize=25000
+
+---------------------------------------------------
 Using Findbugs
 ---------------------------------------------------
 If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
