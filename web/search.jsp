@@ -264,9 +264,11 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                  (path == null ? "" : "&amp;path=" + Util.URIEncode(path)) +
                  (hist == null ? "" : "&amp;hist=" + Util.URIEncode(hist));
          if (hasProjects) {
-             url = url + "&amp;project=";
-             for (Iterator it = project.iterator(); it.hasNext();) {
-                 url = url + (project == null ? "" : Util.URIEncode((String) it.next()) + ",");
+             if (project!=null) {
+              url = url + "&amp;project=";
+              for (Iterator it = project.iterator(); it.hasNext();) {
+                  url = url + (project == null ? "" : Util.URIEncode((String) it.next()) + ",");
+              }
              }
         }
          

@@ -66,7 +66,9 @@ if (env.hasProjects()) {
                 if (cookie.getName().equals("OpenGrok/project")) {                    
                     for (String proj : cookie.getValue().split(",")) {
                         if (proj != "") {
+                            if (Project.getByDescription(proj) != null) {
                             project.add(proj);
+                            }
                         }
                     }
                 }
