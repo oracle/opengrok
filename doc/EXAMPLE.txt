@@ -9,6 +9,9 @@ different deployments of OpenGrok. A simple configuration suitable for small
 deployments, and a more "advanced" one for sites that want to host multiple
 source projects with a single OpenGrok server.
 
+Note that projects cannot have a "," in their name because of web application
+project field separator.
+
 Simple configuration.
 ---------------------
 

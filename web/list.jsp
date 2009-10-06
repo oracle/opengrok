@@ -79,38 +79,52 @@ if (valid) {
         Project activeProject = Project.getProject(resourceFile);
 
         if (activeProject != null) {
-            String project = null;
+            List<String> project = new ArrayList<String>();
 
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if (cookie.getName().equals("OpenGrok/project")) {
-                        project = cookie.getValue();
-                        break;
+             for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("OpenGrok/project")) {
+                    for (String proj : cookie.getValue().split(",")) {
+                        if (proj != "") {
+                            if (Project.getByDescription(proj) != null) {
+                            project.add(proj);
+                            }
+                        }
                     }
                 }
+             }
             }
 
             boolean set = false;
             if (project != null) {
-               boolean found = false;
-               for (String aproj : project.split(" ")) {
-                    if (activeProject.getPath().equalsIgnoreCase(aproj)) {
+               boolean found = false;               
+               for (Iterator it = project.iterator(); it.hasNext();) {
+
+                   if (activeProject.getDescription().equalsIgnoreCase( (String)it.next() ) ) {
                         found = true;
                         break;
-                    }
-               }
+                    }           
+               }               
                if (!found) {
                    set = true;
                }
             } else {
                 set = true;
             }
-
+// set this in case there is no project selected or current cookie doesn't contain current project from the link, so the rest of search works 100% :)
             if (set) {
-                Cookie cookie = new Cookie("OpenGrok/project", activeProject.getPath());
-                cookie.setPath(context + "/");
-                response.addCookie(cookie);
+             StringBuffer sproject=new StringBuffer(activeProject.getDescription()+",");
+             if (project!=null) {
+                //only save found projects into cookies
+                for (Iterator it = project.iterator(); it.hasNext();) {
+                  sproject.append((String)it.next()+",");
+                }
+             }
+             // update the cookie
+             Cookie cookie = new Cookie("OpenGrok/project", sproject.toString());
+             cookie.setPath(context + "/");
+             response.addCookie(cookie);
             }
         }
 

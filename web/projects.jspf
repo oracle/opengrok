@@ -37,15 +37,13 @@ if (env.hasProjects()) {
     projects = env.getProjects();
     Project defaultProject = env.getDefaultProject();
     if (defaultProject != null) {
-       project.add(defaultProject.getPath());
+       project.add(defaultProject.getDescription());
     }
-
-    // TODO project is also in xref ... merge with cookie and existing project for multi to work ok ???
-
+    
     String pr[] = request.getParameterValues("project");
     // see if a new parameter is passed...    
     if (pr != null && pr[0].length() > 0) {        
-        //TODO this means project name CANNOT have a "," char in it !!!
+        //NOTE this means project name CANNOT have a "," char in it !!!
         String p[] = pr[0].split(",");
         for (int idx = 0; idx < p.length; idx++) {
             if (Project.getByDescription(p[idx]) != null) {
@@ -73,11 +71,7 @@ if (env.hasProjects()) {
                     }
                 }
             }
-        }
-        //only save found projects into cookies
-        for (Iterator it = project.iterator(); it.hasNext();) {
-           sproject.append((String)it.next()+",");
-        }
+        }        
     }
 }
 %>

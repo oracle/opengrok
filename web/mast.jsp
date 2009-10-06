@@ -194,7 +194,7 @@ if(resourcePath.length() < rawSource.length()
         <input type="submit" value="Search" class="submit"/>
         <%
         if (proj != null) {
-        %><input type="hidden" name="project" value="<%=proj.getId()%>"/><%
+        %><input type="hidden" name="project" value="<%=proj.getDescription()%>"/><%
         }
         if(isDir) {
                 if(path.length() > 0) {
