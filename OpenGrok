@@ -37,13 +37,13 @@
 Usage()
 {
     echo 1>&2
-    echo "Usage: ${0} <deploy|update|updateQuietly|updateConfiguration|usage>" 1>&2
+    echo "Usage: ${0} <deploy|index <directory>|update|updateQuietly|updateConfiguration|usage>" 1>&2
     echo 1>&2
     echo "  Optional environment variables:" 1>&2
     echo "    OPENGROK_CONFIGURATION - location of your configuartion" 1>&2
     echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... " 1>&2
     echo 1>&2
-    echo "    See the code for more information on configuration options" 1>&2
+    echo "    See the code for more information on configuration options / variables" 1>&2
     echo 1>&2
     exit 1
 }
@@ -79,17 +79,25 @@ DefaultInstanceConfiguration()
 
     OPENGROK_INSTANCE_BASE="${OPENGROK_INSTANCE_BASE:-/var/opengrok}"
 
+    LOGGERF="logging.properties"
+
     if [ -z "${OPENGROK_DISTRIBUTION_BASE}" ]
     then
-        if [ -d "dist" -a -f "dist/opengrok.jar" -a -f "dist/source.war" ]
+        if [ -d "`dirname $0`/dist" -a -f "`dirname $0`/dist/opengrok.jar" -a -f "`dirname $0`/dist/source.war" ]
         then
             # Handle Developer Build Environments
-            OPENGROK_DISTRIBUTION_BASE="`pwd`/dist"
+            OPENGROK_DISTRIBUTION_BASE="`dirname $0`/dist"
+            LOGGERS="`dirname $0`/conf/${LOGGERF}"
         else
             # Handle Binary Distributions
-            OPENGROK_DISTRIBUTION_BASE="`pwd`"
+#below might not work as intended when symlinks ??!?
+            OPENGROK_DISTRIBUTION_BASE="`dirname $0`"
+            LOGGERS="${OPENGROK_DISTRIBUTION_BASE}/doc/${LOGGERF}"
         fi
     fi
+    # logger
+    LOGGERP=${OPENGROK_INSTANCE_BASE}/${LOGGERF}
+    LOGGER="-Djava.util.logging.config.file=${LOGGERP}"
 
     # REQUIRED: Source Code/Repository Root
     #           (your source code or the root of all repositories)
@@ -126,8 +134,23 @@ DefaultInstanceConfiguration()
     # REQUIRED: Java Virtual Machine
     JAVA="${JAVA:-$JAVA_HOME/bin/java}"
 
+    # ignore these pattern as names of files/dirs
+    #IGNORE="-i dummy"
+
+    # enable projects, every dir in SRC_ROOT is considered a separate project
+    PROJECTS="-P"
+
     # OPTIONAL: Scanning Options (for Mercurial repositories)
     SCAN_FOR_REPOSITORY="-S"
+
+    # support remote repositories (cvs or svn), can be very time demanding, comment out if not needed
+    REMOTE_REPOS="-r on"
+
+    # allow leading wildcard searches, by default off
+    #LWILDCARD="-a on"
+
+    # skin \"default\", \"offwhite\" and \"polished\"
+    #SKIN="-L \"default\""
 
     # OPTIONAL: Full Path to History Utilities
     HG="`Which hg`"
@@ -144,6 +167,11 @@ ${SVN:+-Dorg.opensolaris.opengrok.history.Subversion=$SVN} \
 ${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
 "
 
+    #history cache in Java DB - derby ?
+    # derbyclient.jar needs to be present in lib directories in war and where opengrok.jar is
+    # by default standalone derby server on localhost:1527 is expected
+    #HCDERBY=-D
+
     # OPTIONAL: JVM Options
     #JAVA_OPTS="-server -Xmx1024m"
 
@@ -156,10 +184,16 @@ ${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
     EFTAR_OUTPUT_FILE="${DATA_ROOT}/index/dtags.eftar"
 
     # Be Quiet? (set indirectly by command line arguments in the main program)
-    QUIET=
+    #QUIET=
 
     # or alternatively, Be Verbose!
-    #VERBOSE="-v"
+    VERBOSE="-v"
+    
+    # maximum of words that will be indexed per file, 60000 is internal default
+    MAXWORDS="-m 100000"
+
+    # host:port of web application which we should update, localhost:2424 is internal default in web.xml
+    RWEBAPP="-U localhost:2424"
 }
 
 #
@@ -459,22 +493,34 @@ CreateRuntimeRequirements()
         FatalError "OpenGrok Etc Path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
     fi
 
-
+    if [ ! -f "logging.properties" ]
+    then
+        Progress "  Creating default ${OPENGROK_INSTANCE_BASE}/logging.properties ... "
+        ${DO} cp "${LOGGERS}" "${OPENGROK_INSTANCE_BASE}/logging.properties"
+# sed and lower the level?       ${DO}
+# set logging dir to instance base?
+    fi
 }
 
 StdInvocation()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    \
+        ${LOGGER}                                               \
         -jar ${OPENGROK_JAR}                                    \
-        ${SCAN_FOR_REPOSITORY} ${VERBOSE} ${QUIET}              \
+        ${IGNORE} ${PROJECTS} ${HCDERBY}                        \
+        ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOS}                  \
+        ${VERBOSE} ${QUIET}                                     \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
+        ${MAXWORDS} ${SKIN} ${LWILDCARD}                        \
         -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
         "${@}"
+#?        -R ${XML_CONFIGURATION}                                 \
+
 }
 
 UpdateGeneratedConfiguration()
 {
-    StdInvocation -W ${XML_CONFIGURATION}
+    StdInvocation -W ${XML_CONFIGURATION} ${RWEBAPP}
 }
 
 UpdateGeneratedData()
@@ -486,7 +532,7 @@ UpdateDescriptionCache()
 {
     # OPTIONAL : Update the EftarFile data
 
-    if [ -n "${PATH_DESC}" -o -s "${PATH_DESC}" ]
+    if [ -n "${PATH_DESC}" -a -s "${PATH_DESC}" ]
     then
         ${DO} ${JAVA} -classpath ${OPENGROK_JAR}                \
             ${EFTAR_UPDATE} ${PATH_DESC} ${EFTAR_OUTPUT_FILE}
@@ -495,6 +541,7 @@ UpdateDescriptionCache()
 
 OpenGrokUsage()
 {
+    Progress "Options for opengrok.jar:" 
     ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} '-?'
 }
 
@@ -546,7 +593,7 @@ DeployWar()
 # Main Program
 #
 
-if [ $# -ne 1 ]
+if [ $# -eq 0 -o $# -gt 2 ]
 then
     Usage
 fi
@@ -555,10 +602,6 @@ LoadStandardEnvironment
 
 LoadInstanceConfiguration
 
-ValidateConfiguration
-
-CreateRuntimeRequirements
-
 case "${1}" in
 
     deploy)
@@ -566,11 +609,15 @@ case "${1}" in
         ;;
 
     update)
+        ValidateConfiguration
+        CreateRuntimeRequirements
         UpdateGeneratedData
         UpdateDescriptionCache
         ;;
 
     updateQuietly)
+        ValidateConfiguration
+        CreateRuntimeRequirements
         QUIET="-q"
         VERBOSE=""
         UpdateGeneratedData
@@ -578,11 +625,25 @@ case "${1}" in
         ;;
 
     updateConfiguration)
+        ValidateConfiguration
+        CreateRuntimeRequirements
         UpdateGeneratedConfiguration
+        ;;
+
+    index)
+        if [ ${2}x != ""x ] ; then
+                SRC_ROOT=${2}
+        fi
+        ValidateConfiguration
+        CreateRuntimeRequirements
+        UpdateGeneratedConfiguration
+        UpdateGeneratedData
+        UpdateDescriptionCache
         ;;
 
     usage)
         OpenGrokUsage
+        Usage
         ;;
 
     *)
