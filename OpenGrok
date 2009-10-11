@@ -37,7 +37,8 @@
 Usage()
 {
     echo 1>&2
-    echo "Usage: ${0} <deploy|index <directory>|update|updateQuietly|updateConfiguration|usage>" 1>&2
+    echo "Usage: ${0} <deploy|update|updateQuietly|updateConfiguration|usage>" 1>&2
+    echo "       ${0} index [<directory>]" 1>&2
     echo 1>&2
     echo "  Optional environment variables:" 1>&2
     echo "    OPENGROK_CONFIGURATION - location of your configuartion" 1>&2
@@ -54,6 +55,10 @@ Usage()
 
 OS_NAME="`/bin/uname -s`"
 OS_VERSION="`/bin/uname -r`"
+
+# TODO: Handle symlinks correctly (especially in ${0})
+SCRIPT_DIRECTORY="`dirname ${0}`"
+SCRIPT_DIRECTORY="`cd ${SCRIPT_DIRECTORY}; pwd`"
 
 #
 # Default Instance Configuration
@@ -79,25 +84,24 @@ DefaultInstanceConfiguration()
 
     OPENGROK_INSTANCE_BASE="${OPENGROK_INSTANCE_BASE:-/var/opengrok}"
 
-    LOGGERF="logging.properties"
+    LOGGER_CONFIG_FILE="logging.properties"
 
     if [ -z "${OPENGROK_DISTRIBUTION_BASE}" ]
     then
-        if [ -d "`dirname $0`/dist" -a -f "`dirname $0`/dist/opengrok.jar" -a -f "`dirname $0`/dist/source.war" ]
+        if [ -d "${SCRIPT_DIRECTORY}/dist" -a \
+             -f "${SCRIPT_DIRECTORY}/dist/opengrok.jar" -a \
+             -f "${SCRIPT_DIRECTORY}/dist/source.war" \
+           ]
         then
             # Handle Developer Build Environments
-            OPENGROK_DISTRIBUTION_BASE="`dirname $0`/dist"
-            LOGGERS="`dirname $0`/conf/${LOGGERF}"
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/dist"
+            LOGGER_CONF_SOURCE="${SCRIPT_DIRECTORY}/conf/${LOGGER_CONFIG_FILE}"
         else
             # Handle Binary Distributions
-#below might not work as intended when symlinks ??!?
-            OPENGROK_DISTRIBUTION_BASE="`dirname $0`"
-            LOGGERS="${OPENGROK_DISTRIBUTION_BASE}/doc/${LOGGERF}"
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}"
+            LOGGER_CONF_SOURCE="${OPENGROK_DISTRIBUTION_BASE}/doc/${LOGGER_CONFIG_FILE}"
         fi
     fi
-    # logger
-    LOGGERP=${OPENGROK_INSTANCE_BASE}/${LOGGERF}
-    LOGGER="-Djava.util.logging.config.file=${LOGGERP}"
 
     # REQUIRED: Source Code/Repository Root
     #           (your source code or the root of all repositories)
@@ -115,6 +119,11 @@ DefaultInstanceConfiguration()
     # REQUIRED: XML Configuration
     #           (the configuration used by Web/GUI interfaces)
     XML_CONFIGURATION="${OPENGROK_INSTANCE_BASE}/etc/configuration.xml"
+
+    # TODO: Verify that Logger Configuration is REQUIRED and not OPTIONAL
+    # REQUIRED: Logger Configuration
+    LOGGER_CONFIG_PATH="${OPENGROK_INSTANCE_BASE}/${LOGGER_CONFIG_FILE}"
+    LOGGER_PROPERTIES="-Djava.util.logging.config.file=${LOGGER_CONFIG_PATH}"
 
     # REQUIRED: Java Archive of OpenGrok (Installation Location)
     OPENGROK_JAR="${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar"
@@ -134,23 +143,39 @@ DefaultInstanceConfiguration()
     # REQUIRED: Java Virtual Machine
     JAVA="${JAVA:-$JAVA_HOME/bin/java}"
 
-    # ignore these pattern as names of files/dirs
-    #IGNORE="-i dummy"
+    # OPTIONAL: Ignore these patterns as names of files or directories
+    #IGNORE_PATTERNS="-i dummy"
 
-    # enable projects, every dir in SRC_ROOT is considered a separate project
-    PROJECTS="-P"
+    # OPTIONAL: Enable Projects
+    #           (Every directory in SRC_ROOT is considered a separate project)
+    ENABLE_PROJECTS="-P"
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
     SCAN_FOR_REPOSITORY="-S"
 
-    # support remote repositories (cvs or svn), can be very time demanding, comment out if not needed
-    REMOTE_REPOS="-r on"
+    # OPTIONAL: Remote Repository Support (CVS or SVN)
+    #           (Can be very time demanding, uncomment if needed)
+    #REMOTE_REPOSITORIES="-r on"
 
-    # allow leading wildcard searches, by default off
-    #LWILDCARD="-a on"
+    # OPTIONAL: Allow Leading Wildcard Searches
+    #           (default: off)
+    #LEADING_WILDCARD="-a on"
 
-    # skin \"default\", \"offwhite\" and \"polished\"
-    #SKIN="-L \"default\""
+    # OPTIONAL: Web Site Look & Feel
+    #           (Options: default, offwhite and polished.
+    #            Note the quoting requirements)
+    #SKIN='-L "default"'
+
+    # OPTIONAL: Increase Maximum Indexed Words Per File
+    #           (default: 60000)
+    #MAX_INDEXED_WORDS="-m 100000"
+
+    # OPTIONAL: Configuration Address (host:port)
+    #           (conf/web.xml default is localhost:2424)
+    WEBAPP_CONFIG_ADDRESS="-U localhost:2424"
+
+    # OPTIONAL: JVM Options
+    #JAVA_OPTS="-server -Xmx1024m"
 
     # OPTIONAL: Full Path to History Utilities
     HG="`Which hg`"
@@ -167,13 +192,14 @@ ${SVN:+-Dorg.opensolaris.opengrok.history.Subversion=$SVN} \
 ${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
 "
 
-    #history cache in Java DB - derby ?
-    # derbyclient.jar needs to be present in lib directories in war and where opengrok.jar is
-    # by default standalone derby server on localhost:1527 is expected
-    #HCDERBY=-D
-
-    # OPTIONAL: JVM Options
-    #JAVA_OPTS="-server -Xmx1024m"
+    # OPTIONAL: Store The History Cache in Java DB (derby),
+    #           instead of file system (in gzipped xml files).
+    # 
+    # Requirements:
+    #   - derbyclient.jar      - See README.txt for more details
+    #   - Running Derby Server - Defaults to localhost:1527
+    #
+    #DERBY_HISTORY_CACHE=-D
 
     # DELIVERED: An update program for EftarFile
     # Usage: <class> inputFile [inputFile ...] outputFile
@@ -184,16 +210,10 @@ ${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
     EFTAR_OUTPUT_FILE="${DATA_ROOT}/index/dtags.eftar"
 
     # Be Quiet? (set indirectly by command line arguments in the main program)
-    #QUIET=
+    #QUIET=""
 
     # or alternatively, Be Verbose!
-    VERBOSE="-v"
-    
-    # maximum of words that will be indexed per file, 60000 is internal default
-    MAXWORDS="-m 100000"
-
-    # host:port of web application which we should update, localhost:2424 is internal default in web.xml
-    RWEBAPP="-U localhost:2424"
+    #VERBOSE="-v"
 }
 
 #
@@ -493,25 +513,33 @@ CreateRuntimeRequirements()
         FatalError "OpenGrok Etc Path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
     fi
 
-    if [ ! -f "logging.properties" ]
+    if [ -n "${LOGGER_CONFIG_PATH}" -a ! -f "${LOGGER_CONFIG_PATH}" ]
     then
-        Progress "  Creating default ${OPENGROK_INSTANCE_BASE}/logging.properties ... "
-        ${DO} cp "${LOGGERS}" "${OPENGROK_INSTANCE_BASE}/logging.properties"
-# sed and lower the level?       ${DO}
-# set logging dir to instance base?
+        Progress "  Creating default ${LOGGER_CONFIG_PATH} ... "
+        if [ ! -f "${LOGGER_CONF_SOURCE}" ]
+        then
+            FatalError "Can't find distribution logging configuration"
+                      "(${LOGGER_CONF_SOURCE}) to install as default"
+                      "logging configuration (${LOGGER_CONFIG_PATH})"
+        fi
+
+        ${DO} cp "${LOGGER_CONF_SOURCE}" "${LOGGER_CONFIG_PATH}"
+        # TODO: Consider automatically setting the logging directory
+        #       to within the instance base directory tree
     fi
 }
 
 StdInvocation()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    \
-        ${LOGGER}                                               \
+        ${LOGGER_PROPERTIES}                                    \
         -jar ${OPENGROK_JAR}                                    \
-        ${IGNORE} ${PROJECTS} ${HCDERBY}                        \
-        ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOS}                  \
+        ${IGNORE_PATTERNS} ${ENABLE_PROJECTS}                   \
+        ${DERBY_HISTORY_CACHE}                                  \
+        ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOSITORIES}           \
         ${VERBOSE} ${QUIET}                                     \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
-        ${MAXWORDS} ${SKIN} ${LWILDCARD}                        \
+        ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
         -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
         "${@}"
 #?        -R ${XML_CONFIGURATION}                                 \
@@ -520,7 +548,7 @@ StdInvocation()
 
 UpdateGeneratedConfiguration()
 {
-    StdInvocation -W ${XML_CONFIGURATION} ${RWEBAPP}
+    StdInvocation -W ${XML_CONFIGURATION} ${WEBAPP_CONFIG_ADDRESS}
 }
 
 UpdateGeneratedData()
@@ -541,7 +569,7 @@ UpdateDescriptionCache()
 
 OpenGrokUsage()
 {
-    Progress "Options for opengrok.jar:" 
+    echo "Options for opengrok.jar:" 1>&2
     ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} '-?'
 }
 
@@ -631,8 +659,9 @@ case "${1}" in
         ;;
 
     index)
-        if [ ${2}x != ""x ] ; then
-                SRC_ROOT=${2}
+        if [ -n "${2}" ]
+        then
+            SRC_ROOT="${2}"
         fi
         ValidateConfiguration
         CreateRuntimeRequirements
