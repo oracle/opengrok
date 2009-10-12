@@ -158,7 +158,7 @@ if(resourcePath.length() < rawSource.length()
         
             if (Boolean.parseBoolean(request.getParameter("a"))) {
         %> | <span id="toggle-annotate-by-javascript" style="display: none">
-            <a href="#" onClick="javascript:toggle_annotations(); return false;">Annotate</a>
+            <a href="#" onClick="javascript:toggle_annotations(); return false;" title="Show or hide line annotation(commit revisions,authors)." >Annotate</a>
         </span>
         <span id="toggle-annotate">
             <a href="<%=context%>/xref<%=path%><% 
@@ -179,7 +179,7 @@ if(resourcePath.length() < rawSource.length()
         }
     }    
             if (!isDir) {
-        %> | <a href="javascript:lntoggle();">Line #</a><%
+        %> | <a href="javascript:lntoggle();" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a><%
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {
         %> | <a id="download" href="<%=context%>/raw<%=path%>">Download</a><%

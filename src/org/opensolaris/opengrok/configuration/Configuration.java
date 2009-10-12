@@ -99,7 +99,8 @@ public final class Configuration {
         setUrlPrefix("/source/s?");
         //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
         setCtags("ctags");
-        setIndexWordLimit(60000);
+        //below can cause an outofmemory error, since it is defaulting to NO LIMIT
+        setIndexWordLimit(Integer.MAX_VALUE);
         setVerbose(false);
         setGenerateHtml(true);
         setQuickContextScan(true);

@@ -166,8 +166,11 @@ DefaultInstanceConfiguration()
     #            Note the quoting requirements)
     #SKIN='-L "default"'
 
-    # OPTIONAL: Increase Maximum Indexed Words Per File
-    #           (default: 60000)
+    # OPTIONAL: Set Maximum Indexed Words Per File
+    # Note, that you might run out of memory, then either increase JVM memory
+    # as noted in JAVA_OPTS, or set this limit(if you don't mind opengrok not
+    # indexing the rest of the file, once the limit is reached)
+    #           (default: unlimited)
     #MAX_INDEXED_WORDS="-m 100000"
 
     # OPTIONAL: Configuration Address (host:port)
