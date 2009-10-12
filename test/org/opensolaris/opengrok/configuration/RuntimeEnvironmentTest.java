@@ -220,7 +220,7 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testIndexWordLimit() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertEquals(60000, instance.getIndexWordLimit());
+        assertEquals(Integer.MAX_VALUE, instance.getIndexWordLimit());  //default is unlimited
         instance.setIndexWordLimit(100000);
         assertEquals(100000, instance.getIndexWordLimit());
     }
