@@ -607,6 +607,12 @@ public class IndexDatabase {
                     return false;
                 }
             }
+            //below will only let go files and directories, anything else is considered special and is
+            if (!file.isFile() && !file.isDirectory()) {
+                log.warning("Warning: ignored special file " + file.getAbsolutePath() +
+                            " -> " + file.getCanonicalPath());
+                    return false;
+            }
         } catch (IOException exp) {
             log.warning("Warning: Failed to resolve name: " + file.getAbsolutePath());
             log.log(Level.FINE,"Stack Trace: ",exp);       

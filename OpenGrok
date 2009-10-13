@@ -28,6 +28,8 @@
 #   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
 #   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
+#   - OPENGROK_VERBOSE            set any value to turn on verbosity from opengrok.jar
+#   - OPENGROK_REMOTE_REPOS       set to some value to enable history cache for remote repositories
 #
 
 #
@@ -156,6 +158,10 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Remote Repository Support (CVS or SVN)
     #           (Can be very time demanding, uncomment if needed)
     #REMOTE_REPOSITORIES="-r on"
+    if [ ! -z ${OPENGROK_REMOTE_REPOS} ]
+    then
+    REMOTE_REPOSITORIES="-r on"
+    fi
 
     # OPTIONAL: Allow Leading Wildcard Searches
     #           (default: off)
@@ -172,6 +178,7 @@ DefaultInstanceConfiguration()
     # indexing the rest of the file, once the limit is reached)
     #           (default: unlimited)
     #MAX_INDEXED_WORDS="-m 100000"
+        MAX_INDEXED_WORDS="-m 10000"
 
     # OPTIONAL: Configuration Address (host:port)
     #           (conf/web.xml default is localhost:2424)
@@ -217,6 +224,10 @@ ${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
 
     # or alternatively, Be Verbose!
     #VERBOSE="-v"
+    if [ ! -z ${OPENGROK_VERBOSE} ]
+    then 
+    VERBOSE=-v
+    fi
 }
 
 #
@@ -543,15 +554,12 @@ StdInvocation()
         ${VERBOSE} ${QUIET}                                     \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
         ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
+        -W ${XML_CONFIGURATION}                                 \
+        ${WEBAPP_CONFIG_ADDRESS}                                \
         -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
         "${@}"
 #?        -R ${XML_CONFIGURATION}                                 \
 
-}
-
-UpdateGeneratedConfiguration()
-{
-    StdInvocation -W ${XML_CONFIGURATION} ${WEBAPP_CONFIG_ADDRESS}
 }
 
 UpdateGeneratedData()
@@ -655,12 +663,6 @@ case "${1}" in
         UpdateDescriptionCache
         ;;
 
-    updateConfiguration)
-        ValidateConfiguration
-        CreateRuntimeRequirements
-        UpdateGeneratedConfiguration
-        ;;
-
     index)
         if [ -n "${2}" ]
         then
@@ -668,7 +670,6 @@ case "${1}" in
         fi
         ValidateConfiguration
         CreateRuntimeRequirements
-        UpdateGeneratedConfiguration
         UpdateGeneratedData
         UpdateDescriptionCache
         ;;
