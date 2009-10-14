@@ -49,14 +49,7 @@ if (env.hasProjects()) {
             if (Project.getByDescription(p[idx]) != null) {
                 project.add(p[idx]);
             }
-        }
-        //only save found projects into cookies        
-        for (Iterator it = project.iterator(); it.hasNext();) {
-           sproject.append((String)it.next()+",");
-        }
-        // update the cookie
-        Cookie cookie = new Cookie("OpenGrok/project", sproject.toString());
-        response.addCookie(cookie);
+        }        
     } else { //fill in from cookies        
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
@@ -73,5 +66,12 @@ if (env.hasProjects()) {
             }
         }        
     }
+    //only save found projects into cookies
+    for (Iterator it = project.iterator(); it.hasNext();) {
+        sproject.append((String) it.next() + ",");
+    }
+    // update the cookie
+    Cookie cookie = new Cookie("OpenGrok/project", sproject.toString());
+    response.addCookie(cookie);
 }
 %>
