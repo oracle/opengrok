@@ -108,7 +108,7 @@ public final class Configuration {
         setUserPage("http://www.opensolaris.org/viewProfile.jspa?username=");
         setBugPage("http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
-        setReviewPage("http://www.opensolaris.org/os/community/arc/caselog/");
+        setReviewPage("http://arc.opensolaris.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
         setWebappLAF("default");
         setRemoteScmSupported(false);
