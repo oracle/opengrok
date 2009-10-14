@@ -607,10 +607,9 @@ public class IndexDatabase {
                     return false;
                 }
             }
-            //below will only let go files and directories, anything else is considered special and is
+            //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
-                log.warning("Warning: ignored special file " + file.getAbsolutePath() +
-                            " -> " + file.getCanonicalPath());
+                log.warning("Warning: ignored special file " + file.getAbsolutePath());
                     return false;
             }
         } catch (IOException exp) {

@@ -43,6 +43,7 @@ import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.*;
@@ -203,5 +204,47 @@ public class IndexerTest {
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
+    }
+
+    @Test
+    public void testBug11896() throws Exception {
+
+        boolean test = true;
+        Executor executor = new Executor(new String[] {"mkfifo"});
+
+        executor.exec(true);
+        String output = executor.getErrorString();
+        if (output == null || output.indexOf("mkfifo") == -1 || output.indexOf("command not found") > -1) {
+            System.out.println("Error: No mkfifo found in PATH!\n");
+            test =  false;
+        }
+
+       if (test) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+
+        executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot()+"/testBug11896"});
+        executor.exec(true);
+
+        executor = new Executor(new String[] {"mkfifo", repository.getSourceRoot()+"/testBug11896/FIFO"});
+        executor.exec(true);      
+
+        if (env.validateExuberantCtags()) {
+            Project project = new Project();
+            project.setPath("/testBug11896");
+            IndexDatabase idb = new IndexDatabase(project);
+            assertNotNull(idb);
+            MyIndexChangeListener listener = new MyIndexChangeListener();
+            idb.addIndexChangedListener(listener);
+            System.out.println("Trying to index a special file - FIFO in this case.");
+            idb.update();
+            assertEquals(0, listener.files.size());
+        } else {
+            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+        }
+       } else {
+            System.out.println("Skipping test for bug 11896. Could not find a mkfifo in path.");
+       }
     }
 }

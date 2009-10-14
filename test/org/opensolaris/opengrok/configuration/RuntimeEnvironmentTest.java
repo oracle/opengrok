@@ -279,7 +279,7 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testReviewPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "http://www.opensolaris.org/os/community/arc/caselog/";
+        String page = "http://arc.opensolaris.org/caselog/PSARC/";
         assertEquals(page, instance.getReviewPage());
         instance.setReviewPage(page.substring(5));
         assertEquals(page.substring(5), instance.getReviewPage());
