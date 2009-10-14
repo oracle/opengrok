@@ -9,6 +9,7 @@
 #
 # Supported Deployment Engines:
 #   - Tomcat 6
+#   - Tomcat 5.5
 #   - Glassfish
 #
 # Supported Environment Variables:
@@ -42,7 +43,7 @@
 Usage()
 {
     echo 1>&2
-    echo "Usage: ${0} <deploy|update|updateQuietly|updateConfiguration|usage>" 1>&2
+    echo "Usage: ${0} <deploy|update|updateQuietly|usage>" 1>&2
     echo "       ${0} index [<directory>]" 1>&2
     echo 1>&2
     echo "  Optional environment variables:" 1>&2
@@ -148,6 +149,9 @@ DefaultInstanceConfiguration()
     # REQUIRED: Java Virtual Machine
     JAVA="${JAVA:-$JAVA_HOME/bin/java}"
 
+    # DEVELOPMENT: Debug option, if enabled current indexer will listen on the port 8010 until a debugger connects
+    #JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,address=8010,suspend=y"
+
     # OPTIONAL: Ignore these patterns as names of files or directories
     #IGNORE_PATTERNS="-i dummy"
 
@@ -195,6 +199,11 @@ DefaultInstanceConfiguration()
     CVS="`Which cvs`"
     SVN="`Which svn`"
     SCCS="`Which sccs`"
+    CLEARCASE="`Which cleartool`"
+    GIT="`Which git`"
+    P4="`Which p4`"
+    MTN="`Which mtn`"
+    BZR="`Which bzr`"
 
     # OPTIONAL: Override Built-in Properties
     # Assumption: We should not set properties to the empty string
@@ -203,6 +212,11 @@ ${HG:+-Dorg.opensolaris.opengrok.history.Mercurial=$HG} \
 ${CVS:+-Dorg.opensolaris.opengrok.history.cvs=$CVS} \
 ${SVN:+-Dorg.opensolaris.opengrok.history.Subversion=$SVN} \
 ${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
+${CLEARCASE:+-Dorg.opensolaris.opengrok.history.ClearCase=$CLEARCASE} \
+${GIT:+-Dorg.opensolaris.opengrok.history.git=$GIT} \
+${P4:+-Dorg.opensolaris.opengrok.history.Perforce=$P4} \
+${MTN:+-Dorg.opensolaris.opengrok.history.Monotone=$MTN} \
+${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
 "
 
     # OPTIONAL: Store The History Cache in Java DB (derby),
@@ -357,6 +371,7 @@ FindApplicationServerType()
 
     if [    -d "/var/tomcat6/webapps"     \
          -o -d "/var/lib/tomcat6/webapps" \
+         -o -d "/var/lib/tomcat5.5/webapps" \
        ]
     then
         echo "Tomcat"
@@ -389,6 +404,7 @@ DetermineWarDirectoryTomcat()
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
         /var/lib/tomcat6        \
+        /var/lib/tomcat5.5      \
 
     do
         if [ -d "${prefix}/webapps" ]
@@ -559,6 +575,7 @@ StdInvocation()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    \
         ${LOGGER_PROPERTIES}                                    \
+        ${JAVA_DEBUG}                                           \
         -jar ${OPENGROK_JAR}                                    \
         ${IGNORE_PATTERNS} ${ENABLE_PROJECTS}                   \
         ${DERBY_HISTORY_CACHE}                                  \
