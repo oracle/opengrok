@@ -7,16 +7,16 @@
 #   - OpenSolaris (SunOS 5.11)
 #   - Debian      (Linux)
 #
-# Supported Deployment Engines
+# Supported Deployment Engines:
 #   - Tomcat 6
 #   - Glassfish
 #
-# Supported Environment Variables :
-#   - OPENGROK_NON_INTERACTIVE    Suppress Progress and Warnings Messages
+# Supported Environment Variables:
+#   - OPENGROK_NON_INTERACTIVE    Suppress Progress and Warnings Messages (*)
 #   - OPENGROK_STANDARD_ENV       Run Time Shell Environment (Shell Script)
 #   - OPENGROK_CONFIGURATION      User Configuration (Shell Script)
 #
-# Supported Environment Variables for configuring the default setup
+# Supported Environment Variables for configuring the default setup:
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
 #   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
 #   - EXUBERANT_CTAGS             Full Path to Exuberant CTags
@@ -28,8 +28,11 @@
 #   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
 #   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
-#   - OPENGROK_VERBOSE            set any value to turn on verbosity from opengrok.jar
-#   - OPENGROK_REMOTE_REPOS       set to some value to enable history cache for remote repositories
+#   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
+#   - OPENGROK_REMOTE_REPOS       Enable History Cache for Remote Repositories (*)
+#
+# Notes:
+#   (*) Any Non-Empty String will enable these options
 #
 
 #
@@ -158,9 +161,9 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Remote Repository Support (CVS or SVN)
     #           (Can be very time demanding, uncomment if needed)
     #REMOTE_REPOSITORIES="-r on"
-    if [ ! -z ${OPENGROK_REMOTE_REPOS} ]
+    if [ ! -z "${OPENGROK_REMOTE_REPOS}" ]
     then
-    REMOTE_REPOSITORIES="-r on"
+        REMOTE_REPOSITORIES="-r on"
     fi
 
     # OPTIONAL: Allow Leading Wildcard Searches
@@ -178,7 +181,7 @@ DefaultInstanceConfiguration()
     # indexing the rest of the file, once the limit is reached)
     #           (default: unlimited)
     #MAX_INDEXED_WORDS="-m 100000"
-        MAX_INDEXED_WORDS="-m 10000"
+    MAX_INDEXED_WORDS="-m 10000"
 
     # OPTIONAL: Configuration Address (host:port)
     #           (conf/web.xml default is localhost:2424)
@@ -224,9 +227,11 @@ ${SCCS:+-Dorg.opensolaris.opengrok.history.SCCS=$SCCS} \
 
     # or alternatively, Be Verbose!
     #VERBOSE="-v"
-    if [ ! -z ${OPENGROK_VERBOSE} ]
+
+    if [ ! -z "${OPENGROK_VERBOSE}" ]
     then 
-    VERBOSE=-v
+        VERBOSE="-v"
+        QUIET=""
     fi
 }
 
@@ -500,6 +505,13 @@ ValidateConfiguration()
     if [ ! -d "${SRC_ROOT}" ]
     then
         FatalError "OpenGrok Source Path ${SRC_ROOT} doesn't exist"
+    fi
+
+    if [ -n "${QUIET}" -a -n "${VERBOSE}" ]
+    then
+        Warning "Both Quiet and Verbose Mode Enabled - Choosing Verbose"
+        QUIET=""
+        VERBOSE="-v"
     fi
 }
 
