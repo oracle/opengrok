@@ -285,6 +285,33 @@ public final class Util {
         }
     }
 
+    /**
+     * Converts different html special characters into their encodings used in html
+     * currently used only for tooltips of annotation revision number view
+     * @param s input text
+     * @return encoded text for use in <a title=""> tag
+     */
+    public static String encode(String s) {
+    	StringBuffer sb = new StringBuffer();
+    	for (int i = 0; i < s.length(); i++) {
+    		char c = s.charAt(i);
+
+        switch (c) {
+        		case '"': sb.append("'"); break; // \\\"
+	    		case '&': sb.append("&amp;"); break;
+	            case '>': sb.append("&gt;"); break;
+	            case '<': sb.append("&lt;"); break;
+    			case ' ': sb.append("&nbsp;"); break;
+    			case '\t': sb.append("&nbsp;&nbsp;&nbsp;&nbsp;"); break;
+    			case '\n': sb.append("<br/>"); break;
+    			case '\r': break;
+    			default: sb.append(c); break;
+    		}
+    	}
+
+    	return sb.toString();
+    } 
+
     public static void readableLine(int num, Writer out, Annotation annotation)
             throws IOException {
         String snum = String.valueOf(num);
@@ -316,6 +343,10 @@ public final class Util {
                 out.write(URIEncode(annotation.getFilename()));
                 out.write("?a=true&amp;r=");
                 out.write(URIEncode(r));
+                String msg=annotation.getDesc(r);
+                if (msg!=null) {
+                 out.write("\" id=\"r\" title=\""+msg+"\"");
+                }
                 out.write(closeQuotedTag);
             }
 

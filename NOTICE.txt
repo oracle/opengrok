@@ -1,0 +1,32 @@
+List of notices from Apache licensed software OpenGrok uses:
+
+Apache Lucene
+Copyright 2006 The Apache Software Foundation
+
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+
+The snowball stemmers in
+  contrib/snowball/src/java/net/sf/snowball
+were developed by Martin Porter and Richard Boulton.
+The full snowball package is available from
+  http://snowball.tartarus.org/
+
+The Arabic stemmer (contrib/analyzers) comes with a default
+stopword list that is BSD-licensed created by Jacques Savoy.  The file resides in 
+contrib/analyzers/common/src/resources/org/apache/lucene/analysis/ar/stopwords.txt.
+See http://members.unine.ch/jacques.savoy/clef/index.html.
+
+The Persian analyzer (contrib/analyzers) comes with a default
+stopword list that is BSD-licensed created by Jacques Savoy.  The file resides in
+contrib/analyzers/common/src/resources/org/apache/lucene/analysis/fa/stopwords.txt.
+See http://members.unine.ch/jacques.savoy/clef/index.html.
+
+Includes lib/servlet-api-2.4.jar from  Apache Tomcat
+
+The SmartChineseAnalyzer source code (under contrib/analyzers) was
+provided by Xiaoping Gao and copyright 2009 by www.imdict.net.
+
+ICU4J, (under contrib/collation) is licensed under an MIT styles license
+(contrib/collation/lib/ICU-LICENSE.txt) and Copyright (c) 1995-2008 
+International Business Machines Corporation and others

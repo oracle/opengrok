@@ -209,13 +209,13 @@ public class MercurialRepository extends Repository {
                 Matcher matcher = ANNOTATION_PATTERN.matcher(line);
                 if (matcher.find()) {
                     String author = matcher.group(1);
-                    String rev = matcher.group(2);
-                    ret.addLine(rev, author, true);
+                    String rev = matcher.group(2);                    
+                    ret.addLine(rev, author, true);                    
                 } else {
                     OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + 
                             lineno + ": [" + line + "]");
                 }
-            }
+            }                    
         } finally {
             if (in != null) {
                 try {

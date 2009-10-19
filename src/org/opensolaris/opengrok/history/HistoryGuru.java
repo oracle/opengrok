@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -122,6 +124,30 @@ public final class HistoryGuru {
         Repository repos = getRepository(file);
         if (repos != null) {
             ret = repos.annotate(file, rev);
+            History hist = null;
+            boolean h=true;
+            try {
+                hist = repos.getHistory(file);
+            } catch (HistoryException ex) {
+                Logger.getLogger(HistoryGuru.class.getName()).log(Level.FINEST, "Cannot get messages for tooltip: ", ex);
+                h=false;
+            }
+            if (h) {
+             HashSet<String> revs=ret.getRevisions();
+             List<HistoryEntry> hent = hist.getHistoryEntries();
+             //if (hent.indexOf(rev)>0) {
+             // hent = hent.subList(hent.indexOf(rev), hent.size()); // !!! cannot do this because of not matching rev ids (keys)
+              //first is the most recent one, so we need the position of "rev" until the end of the list
+             //}
+             for (Iterator it = hent.iterator(); it.hasNext();) {
+                HistoryEntry he = (HistoryEntry) it.next();
+                String cmr=he.getRevision();
+                String[] brev=cmr.split(":"); //TODO this is only for mercurial, for other SCMs it might also be a problem, we need to revise how we shorten the rev # for annotate
+                if (revs.contains(brev[0])) {
+                    ret.addDesc(brev[0], "changeset: "+he.getRevision()+"\nsummary: "+he.getMessage()+"\nuser: "+he.getAuthor()+"\ndate: "+he.getDate());
+                }
+             }
+            }
         }
 
         return ret;

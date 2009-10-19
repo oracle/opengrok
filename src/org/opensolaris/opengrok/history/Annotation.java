@@ -24,8 +24,17 @@
 
 package org.opensolaris.opengrok.history;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+
+import java.util.Map.Entry;
+import java.util.HashSet;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * Class representing file annotation, i.e., revision and author for the last
@@ -34,6 +43,7 @@ import java.util.List;
 public class Annotation {
 
     private final List<Line> lines = new ArrayList<Line>();
+    private final HashMap<String, String> desc = new HashMap<String, String>();
     private int widestRevision;
     private int widestAuthor;
     private final String filename;
@@ -55,6 +65,20 @@ public class Annotation {
         } catch (IndexOutOfBoundsException e) {
             return "";
         }
+    }
+
+    /**
+     * Gets all revisions that are in use, first is the lowest one (sorted using natural order)
+     *     
+     * @return list of all revisions the file has
+     */
+    public HashSet<String> getRevisions() {
+        HashSet<String> ret=new HashSet<String>();
+        for (Iterator<Line> it = this.lines.iterator(); it.hasNext();) {
+            Line ln = it.next();
+            ret.add(ln.revision);            
+        }        
+        return ret;
     }
 
     /**
@@ -127,6 +151,14 @@ public class Annotation {
         widestAuthor = Math.max(widestAuthor, line.author.length());
     }
 
+    void addDesc(String revision, String description) {        
+        desc.put(revision, Util.encode(description));
+    }
+
+    public String getDesc(String revision) {        
+        return desc.get(revision);
+    }
+
     /** Class representing one line in the file. */
     private static class Line {
         final String revision;
@@ -142,4 +174,34 @@ public class Annotation {
     public String getFilename() {
         return filename;
     }
+
+    //TODO below might be useless, need to test with more SCMs and different commit messages
+    // to see if it will not be usefull, if title attribute of <a> loses it's breath
+    public void writeTooltipMap(Writer out) throws IOException {
+    	StringBuffer map = new StringBuffer();
+    	map.append("<script type=\"text/javascript\">\n");
+        map.append("    var desc = new Object();\n");
+        for (Entry<String, String> entry : desc.entrySet()) {
+        	map.append("desc['"+entry.getKey()+"'] = \""+entry.getValue()+"\";\n");
+        }
+        map.append("</script>\n");
+    	out.write(map.toString());
+    }
+
+    @Override
+    public String toString() {
+    	StringBuffer sb = new StringBuffer();
+    	for (Line line : lines) {
+    		sb.append(line.revision+"|"+line.author+": "+"\n");
+    	}
+    	StringWriter sw = new StringWriter();
+    	try {
+			writeTooltipMap(sw);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		sb.append(sw.toString());
+
+    	return sb.toString();
+    } 
 }

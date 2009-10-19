@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 --%><%@ page import = "javax.servlet.*,
              java.lang.*,
@@ -62,7 +62,7 @@ if(resourcePath.length() < rawSource.length()
     response.sendError(404);
     return;
 } else if (!resourceFile.canRead() && resourcePath.startsWith(rawSource)) {
-    String newPath = rawSource + "/on/" + path;
+    String newPath = rawSource + "/on/" + path; //TODO do we still use "on" ???
     File newFile = new File(newPath);
     if(newFile.canRead()) {
         if(newFile.isDirectory() && servlet.startsWith("/xref") && !path.endsWith("/")) {
@@ -132,7 +132,32 @@ if(resourcePath.length() < rawSource.length()
     String pageTitle="Cross Reference: " + path;
 
 %><%@ include file="httpheader.jspf" %>
-<body><div id="page">
+<body>
+<% if (!noAnnotation) { %>
+<script type="text/javascript" src="<%=context%>/jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="<%=context%>/jquery.tooltip-1.3.pack.js"></script>
+<script type="text/javascript">/* <![CDATA[ */
+function toggle_annotations() {
+   var spans = document.getElementsByTagName("span");
+
+   for (var i = 0; i < spans.length; i++) {
+      var span = spans[i];
+      if (span.className == 'blame') {
+         span.className = 'blame-hidden';
+      } else if (span.className == 'blame-hidden') {
+         span.className = 'blame';
+      }
+   }
+}
+$().ready(function() {
+    $('a[id=r]').tooltip({
+        left: 5,
+	showURL: false,        
+});
+       } );
+/* ]]> */</script>
+<% } %>
+<div id="page">
 <form action="<%=context%>/search">
     <div id="header"><%@ include file="pageheader.jspf" %>
         <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><br/><%=dtag%></div>
@@ -179,7 +204,9 @@ if(resourcePath.length() < rawSource.length()
         }
     }    
             if (!isDir) {
+                if ( servlet.startsWith("/xr") ) {
         %> | <a href="javascript:lntoggle();" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a><%
+                }
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {
         %> | <a id="download" href="<%=context%>/raw<%=path%>">Download</a><%

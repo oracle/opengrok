@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 --%><%@ page import = "javax.servlet.*,
 java.lang.*,
@@ -34,22 +34,10 @@ org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*
 "
 %><%@include file="mast.jsp"%><script type="text/javascript">/* <![CDATA[ */
-    function toggle_annotations() {
-   var spans = document.getElementsByTagName("span");
-
-   for (var i = 0; i < spans.length; i++) {
-      var span = spans[i];
-      if (span.className == 'blame') {
-         span.className = 'blame-hidden';
-      } else if (span.className == 'blame-hidden') {
-         span.className = 'blame';
-      }
-   }
-}
 function lntoggle() {
-       var a = document.getElementsByTagName("a");
+   var a = document.getElementsByTagName("a");
    for (var i = 0; i < a.length; i++) {
-      var el = a[i]; //fix all line #
+      var el = a[i];
       if (el.className == 'l' || el.className == 'hl') {
          el.className=el.className+'-hide';
          el.setAttribute("tmp", el.innerHTML);
@@ -61,8 +49,7 @@ function lntoggle() {
       }
    }
 }
-/* ]]> */
-</script><%
+/* ]]> */</script><%
 String rev = null;
 if(!isDir && ef != null) {
     try {
@@ -201,6 +188,7 @@ if (valid) {
 		            %><div id="src"><span class="pagetitle"><%=basename%> revision <%=rev%> </span><pre><%
                             if (g == Genre.PLAIN) {
                                 Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
+                                //annotation.writeTooltipMap(out); //not needed yet
                                 AnalyzerGuru.writeXref(a, in, out, annotation, Project.getProject(resourceFile));
                             } else if (g == Genre.IMAGE) {
 			       %><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
@@ -275,7 +263,7 @@ if (valid) {
                 }
             } else if(g == Genre.PLAIN) {
                 %><div id="src"><pre><%
-                Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
+                Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;                
                 AnalyzerGuru.writeXref(a, bin, out, annotation, Project.getProject(resourceFile));
                 %></pre></div><%
             } else {
