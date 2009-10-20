@@ -731,12 +731,7 @@ class JDBCHistoryCache implements HistoryCache {
                     connectionManager.getConnectionResource();
             try {
                 updateIndexCardinalityStatistics(conn);
-                Statement s = conn.createStatement();
-                try {
-                    s.execute("CALL SYSCS_UTIL.SYSCS_CHECKPOINT_DATABASE()");
-                } finally {
-                    s.close();
-                }
+                checkpointDatabase(conn);
             } finally {
                 connectionManager.releaseConnection(conn);
             }
@@ -768,15 +763,13 @@ class JDBCHistoryCache implements HistoryCache {
      *
      * <p>
      * Note that this method uses a system procedure introduced in Derby 10.5.
-     * If the Derby version used is less than 10.5, this method is a no-op.
+     * If this procedure does not exist, this method is a no-op.
      * </p>
      */
     private void updateIndexCardinalityStatistics(ConnectionResource conn)
             throws SQLException {
         DatabaseMetaData dmd = conn.getMetaData();
-        int major = dmd.getDatabaseMajorVersion();
-        int minor = dmd.getDatabaseMinorVersion();
-        if (major > 10 || (major == 10 && minor >= 5)) {
+        if (procedureExists(dmd, "SYSCS_UTIL", "SYSCS_UPDATE_STATISTICS")) {
             PreparedStatement ps = conn.prepareStatement(
                     "CALL SYSCS_UTIL.SYSCS_UPDATE_STATISTICS(?, ?, NULL)");
             try {
@@ -800,6 +793,45 @@ class JDBCHistoryCache implements HistoryCache {
             } finally {
                 ps.close();
             }
+        }
+    }
+
+    /**
+     * If this is a Derby database, force a checkpoint so that the disk space
+     * occupied by the transaction log is freed as early as possible.
+     */
+    private void checkpointDatabase(ConnectionResource conn)
+            throws SQLException {
+        DatabaseMetaData dmd = conn.getMetaData();
+        if (procedureExists(dmd, "SYSCS_UTIL", "SYSCS_CHECKPOINT_DATABASE")) {
+            Statement s = conn.createStatement();
+            try {
+                s.execute("CALL SYSCS_UTIL.SYSCS_CHECKPOINT_DATABASE()");
+            } finally {
+                s.close();
+            }
+            conn.commit();
+        }
+    }
+
+    /**
+     * Check if a stored database procedure exists.
+     *
+     * @param dmd the meta-data object used for checking
+     * @param schema the procedure's schema
+     * @param proc the name of the procedure
+     * @return {@code true} if the procedure exists, {@code false} otherwise
+     * @throws SQLException if an error happens when reading the meta-data
+     */
+    private boolean procedureExists(DatabaseMetaData dmd,
+                                    String schema, String proc)
+            throws SQLException {
+        ResultSet rs = dmd.getProcedures(null, schema, proc);
+        try {
+            // If there's a row, there is such a procedure.
+            return rs.next();
+        } finally {
+            rs.close();
         }
     }
 
