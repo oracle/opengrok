@@ -28,10 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -133,7 +133,7 @@ public final class HistoryGuru {
                 h=false;
             }
             if (h) {
-             HashSet<String> revs=ret.getRevisions();
+             Set<String> revs=ret.getRevisions();
              List<HistoryEntry> hent = hist.getHistoryEntries();
              //if (hent.indexOf(rev)>0) {
              // hent = hent.subList(hent.indexOf(rev), hent.size()); // !!! cannot do this because of not matching rev ids (keys)

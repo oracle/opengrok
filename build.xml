@@ -333,7 +333,7 @@ Use is subject to license terms.
         <fail unless="findbugs-ant.jar.present" message="Please install Findbugs findbugs-ant.jar in ~/.ant/lib-directory (or in ant classpath) to run Findbugs, see README"/>
     </target>
     
-    <target name="findbugs" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate HTML output">
+    <target name="findbugs" depends="jar, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate HTML output">
         <path id="findbugs.lib" >
             <pathelement location="${findbugs.home}/lib/findbugs.jar"/>
             <pathelement location="${findbugs.home}/lib/findbugs-ant.jar"/>
@@ -351,7 +351,7 @@ Use is subject to license terms.
         </findbugs>
     </target>
     
-    <target name="findbugs-xml" depends="dist, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate XML output">
+    <target name="findbugs-xml" depends="jar, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate XML output">
         <path id="findbugs.lib" >
             <pathelement location="${findbugs.home}/lib/findbugs.jar"/>
             <pathelement location="${findbugs.home}/lib/findbugs-ant.jar"/>

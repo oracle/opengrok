@@ -29,11 +29,14 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.HashSet;
+import java.util.Set;
+
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -43,10 +46,11 @@ import org.opensolaris.opengrok.web.Util;
 public class Annotation {
 
     private final List<Line> lines = new ArrayList<Line>();
-    private final HashMap<String, String> desc = new HashMap<String, String>();
+    private final Map<String, String> desc = new HashMap<String, String>();
     private int widestRevision;
     private int widestAuthor;
     private final String filename;
+    static final Logger log = Logger.getLogger(Annotation.class.getName());
     
     public Annotation(String filename) {
         this.filename = filename;
@@ -72,8 +76,8 @@ public class Annotation {
      *     
      * @return list of all revisions the file has
      */
-    public HashSet<String> getRevisions() {
-        HashSet<String> ret=new HashSet<String>();
+    public Set<String> getRevisions() {
+        Set<String> ret=new HashSet<String>();
         for (Iterator<Line> it = this.lines.iterator(); it.hasNext();) {
             Line ln = it.next();
             ret.add(ln.revision);            
@@ -178,9 +182,8 @@ public class Annotation {
     //TODO below might be useless, need to test with more SCMs and different commit messages
     // to see if it will not be usefull, if title attribute of <a> loses it's breath
     public void writeTooltipMap(Writer out) throws IOException {
-    	StringBuffer map = new StringBuffer();
-    	map.append("<script type=\"text/javascript\">\n");
-        map.append("    var desc = new Object();\n");
+    	StringBuffer map = new StringBuffer(100);
+    	map.append("<script type=\"text/javascript\">\nvar desc = new Object();\n");
         for (Entry<String, String> entry : desc.entrySet()) {
         	map.append("desc['"+entry.getKey()+"'] = \""+entry.getValue()+"\";\n");
         }
@@ -192,13 +195,13 @@ public class Annotation {
     public String toString() {
     	StringBuffer sb = new StringBuffer();
     	for (Line line : lines) {
-    		sb.append(line.revision+"|"+line.author+": "+"\n");
+    		sb.append(line.revision+"|"+line.author+": \n");
     	}
     	StringWriter sw = new StringWriter();
     	try {
 			writeTooltipMap(sw);
 		} catch (IOException e) {
-			e.printStackTrace();
+                    log.finest(e.getMessage());
 		}
 		sb.append(sw.toString());
 

@@ -297,7 +297,7 @@ public final class Util {
     		char c = s.charAt(i);
 
         switch (c) {
-        		case '"': sb.append("'"); break; // \\\"
+        		case '"': sb.append('\''); break; // \\\"
 	    		case '&': sb.append("&amp;"); break;
 	            case '>': sb.append("&gt;"); break;
 	            case '<': sb.append("&lt;"); break;

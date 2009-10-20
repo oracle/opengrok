@@ -74,7 +74,7 @@ $().ready(function() {
                     <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
                     <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
                     <% if (hasProjects) { %>
-                    <tr><td align="right"> Project </td><td><input class="q" id="project" name="project" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(sproject.toString())%>"/></td></tr>
+                    <tr><td align="right"> Project(s) </td><td><input class="q" id="project" name="project" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(sproject.toString())%>"/></td></tr>
                     <%}%>
                     <tr><td colspan="2" align="center">  &nbsp; <input class="submit" type="submit" value="Search"/> |
                             <input class="submit" onclick="javascript:var sbox=document.getElementById('sbox'); sbox.q.value='';sbox.defs.value='';sbox.refs.value='';sbox.path.value='';sbox.hist.value='';sbox.project.value='';" type="button" value=" Clear "/>
