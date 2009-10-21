@@ -392,4 +392,22 @@ public class JDBCHistoryCacheTest extends TestCase {
         assertTrue("Info should contain driver class",
                 info.contains(DERBY_EMBEDDED_DRIVER));
     }
+
+    /**
+     * Test that it is possible to store an entry with no author.
+     * Bug #11662.
+     */
+    public void testNullAuthor() throws Exception {
+        File reposRoot = new File(repositories.getSourceRoot(), "svn");
+        Repository r = RepositoryFactory.getRepository(reposRoot);
+        // Create an entry where author is null
+        HistoryEntry e = new HistoryEntry(
+                "1", new Date(), null, "Initial revision", true);
+        e.addFile("/svn/file.txt");
+        List<HistoryEntry> entries = Collections.singletonList(e);
+        cache.store(new History(entries), r);
+        assertSameEntries(
+                entries,
+                cache.get(reposRoot, r, true).getHistoryEntries());
+    }
 }
