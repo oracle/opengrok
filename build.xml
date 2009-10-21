@@ -276,10 +276,10 @@ Use is subject to license terms.
     </target>
 
     <target name="package" depends="jar">
-      <exec os="SunOS" executable="/usr/bin/pkgmk">
+      <exec os="SunOS" executable="/usr/bin/pkgmk" failonerror="true">
         <arg line="-o -d build -r . -v ${version} -f platform/solaris/pkgdef/prototype"/>
       </exec>
-      <exec os="SunOS" executable="/usr/bin/pkgtrans">
+      <exec os="SunOS" executable="/usr/bin/pkgtrans" failonerror="true">
 	<arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
       </exec>
     </target>
