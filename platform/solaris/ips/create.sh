@@ -57,11 +57,12 @@ done
 PKGSEND add file platform/solaris/smf/opengrok.xml mode=0444 owner=root group=sys path=/var/svc/manifest/application/opengrok.xml restart_fmri=svc:/system/manifest-import:default
 PKGSEND add file platform/solaris/smf/opengrok mode=0555 owner=bin group=bin path=/lib/svc/method/opengrok
 PKGSEND add file dist/opengrok.jar mode=0555 owner=bin group=bin path=/usr/opengrok/bin/opengrok.jar
+PKGSEND add file OpenGrok mode=0777 owner=bin group=bin path=/usr/opengrok/bin/OpenGrok
 PKGSEND add link path=/usr/opengrok/bin/lib target=../lib
 
 # install libs
 for file in bcel-5.1.jar jakarta-oro-2.0.8.jar \
-            lucene-core-2.2.0.jar lucene-spellchecker-2.2.0.jar \
+            lucene-core-2.4.1.jar lucene-spellchecker-2.4.1.jar \
             org.apache.commons.jrcs.diff.jar org.apache.commons.jrcs.rcs.jar \
             swing-layout-0.9.jar
 do
