@@ -56,9 +56,10 @@ $().ready(function() {
                     if (row!=null)
 			return row[0];
                     else return "";
-		}
+		},
+                width: "300px"                
 	});
-   });        
+   });
 /* ]]> */
 </script>
 <%}%>
@@ -74,7 +75,16 @@ $().ready(function() {
                     <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
                     <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
                     <% if (hasProjects) { %>
-                    <tr><td align="right"> Project(s) </td><td><input class="q" id="project" name="project" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(sproject.toString())%>"/></td></tr>
+                    <tr><td align="right"> Project(s) </td><td>
+                <table cellspacing="0" cellpadding="0" border="0" class="combo_table" id="combotable">
+                <tbody><tr><td class="combo_td1">
+                <div class="combo_div4" style="background: transparent url(<%=httpHeaderContext%>/<%=laf%>/img/transparent_pixel.gif) repeat scroll 0% 0%;">
+                    <input class="combo_input1 combo_input" id="project" name="project" size="25" value="<%=Util.formQuoteEscape(sproject.toString())%>"/>
+                </div></td><td valign="top" align="left" class="combo_td2" id="combotable_button">
+                    <a onclick='javascript:$("#project").click();$("#project").click();'/>
+                    <img style="display: none;" alt="" src="<%=httpHeaderContext%>/<%=laf%>/img/button2.png"/>
+                </td></tr></tbody></table>
+                    </td></tr>
                     <%}%>
                     <tr><td colspan="2" align="center">  &nbsp; <input class="submit" type="submit" value="Search"/> |
                             <input class="submit" onclick="javascript:var sbox=document.getElementById('sbox'); sbox.q.value='';sbox.defs.value='';sbox.refs.value='';sbox.path.value='';sbox.hist.value='';sbox.project.value='';" type="button" value=" Clear "/>

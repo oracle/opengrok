@@ -37,6 +37,7 @@ String httpHeaderContext = request.getContextPath();
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css" media="print" />
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.autocomplete.css" />
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.tooltip.css" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.combo.css" />
     <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css"/>
     <link rel="search" href="<%=httpHeaderContext%>/opensearch" type="application/opensearchdescription+xml" title="OpenGrok Search for current project(s)" />
     <title><%=pageTitle%></title>

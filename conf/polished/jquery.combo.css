@@ -1,0 +1,68 @@
+.combo_td1 {
+  background: url('./img/bg.png') no-repeat;
+  width: 158px;
+}
+
+.combo_td1 input {
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-top: 3px;
+  height: 18px;
+  width: 274px;
+  border: 0;
+  display: block;
+}
+
+.combo_td1 div {
+  background-color: white;
+  margin-bottom: 2px;
+}
+
+.combo_td2 {
+  cursor: pointer;
+  height: 25px;
+  width: 22px;
+  cursor: pointer;
+}
+
+.combo_td2 img {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  height: 25px;
+}
+
+.combo_td2 a {
+  background: url('./img/button1.png');
+  display: block;
+  height: 25px; 
+  width: 22px;
+}
+
+.combo_td2 a:hover {
+  background: url('./img/button2.png');
+}
+
+.combo_input1 {    
+    background: transparent url(./img/transparent_pixel.gif) repeat scroll 0% 0%;
+/*    color: gray; */
+    -moz-background-clip: border;
+    -moz-background-origin: padding;
+    -moz-background-inline-policy: continuous;
+}
+ 
+.combo_div {
+  padding: 0;
+  margin: 0;
+  padding-left: 4px; 
+  background: url('./img/transparent_pixel.gif');
+}
+
+.combo_div4 {  
+  -moz-background-clip: border;
+  -moz-background-origin: padding;
+  -moz-background-inline-policy: continuous;
+}
+
+
