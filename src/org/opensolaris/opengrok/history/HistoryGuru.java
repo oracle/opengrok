@@ -196,7 +196,7 @@ public final class HistoryGuru {
         if (repos != null && repos.isWorking() && repos.fileHasHistory(file) &&
                 (!repos.isRemote() ||
                 RuntimeEnvironment.getInstance().isRemoteScmSupported())) {
-            if (useCache()) {
+            if (useCache() && historyCache.supportsRepository(repos)) {
                 history = historyCache.get(file, repos, withFiles);
             } else {
                 history = repos.getHistory(file);

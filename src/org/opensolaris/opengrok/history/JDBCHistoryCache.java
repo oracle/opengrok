@@ -131,6 +131,16 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
+     * Check whether this cache implementation can store history for the given
+     * repository. Only repositories that support retrieval of history for the
+     * whole directory at once are supported.
+     */
+    @Override
+    public boolean supportsRepository(Repository repository) {
+        return repository.hasHistoryForDirectories();
+    }
+
+    /**
      * Handle an {@code SQLException}. If the exception indicates that the
      * operation may succeed if it's retried and the number of attempts hasn't
      * exceeded the limit defined by {@link #MAX_RETRIES}, ignore it and let

@@ -36,6 +36,16 @@ interface HistoryCache {
     void initialize() throws HistoryException;
 
     /**
+     * Check whether this cache implementation can store history for the given
+     * repository.
+     *
+     * @param repository the repository to check
+     * @return {@code true} if this cache implementation can store history
+     * for the repository, or {@code false} otherwise
+     */
+    boolean supportsRepository(Repository repository);
+
+    /**
      * Retrieve the history for the given file, either from the cache or by
      * parsing the history information in the repository.
      *

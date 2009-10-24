@@ -66,6 +66,12 @@ class FileHistoryCache implements HistoryCache {
         // nothing to do
     }
 
+    @Override
+    public boolean supportsRepository(Repository repository) {
+        // all repositories are supported
+        return true;
+    }
+
     /**
      * Get a <code>File</code> object describing the cache file.
      *
