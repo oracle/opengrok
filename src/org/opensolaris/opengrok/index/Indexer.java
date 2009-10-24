@@ -57,6 +57,12 @@ public final class Indexer {
     private static Indexer index = new Indexer();
     private static final Logger log = Logger.getLogger(Indexer.class.getName());
 
+    private static final String DERBY_EMBEDDED_DRIVER =
+            "org.apache.derby.jdbc.EmbeddedDriver";
+
+    private static final String DERBY_CLIENT_DRIVER =
+            "org.apache.derby.jdbc.ClientDriver";
+
     public static Indexer getInstance() {
         return index;
     }
@@ -111,6 +117,9 @@ public final class Indexer {
                         break;
                     }
                 }
+
+                String databaseDriver = env.getDatabaseDriver();
+                String databaseURL = env.getDatabaseUrl();
 
                 // Now we can handle all the other options..
                 getopt.reset();
@@ -169,6 +178,20 @@ public final class Indexer {
                             break;
                         case 'D':
                             env.setStoreHistoryCacheInDB(true);
+                            break;
+                        case 'j':
+                            databaseDriver = getopt.getOptarg();
+                            // Should be a full class name, but we also accept
+                            // the shorthands "client" and "embedded". Expand
+                            // the shorthands here.
+                            if (databaseDriver.equals("client")) {
+                                databaseDriver = DERBY_CLIENT_DRIVER;
+                            } else if (databaseDriver.equals("embedded")) {
+                                databaseDriver = DERBY_EMBEDDED_DRIVER;
+                            }
+                            break;
+                        case 'u':
+                            databaseURL = getopt.getOptarg();
                             break;
                         case 'r':
                              {
@@ -340,6 +363,31 @@ public final class Indexer {
                         ++optind;
                     }
                 }
+
+                if (env.storeHistoryCacheInDB()) {
+                    // The default database driver is Derby's client driver.
+                    if (databaseDriver == null) {
+                        databaseDriver = DERBY_CLIENT_DRIVER;
+                    }
+
+                    // The default URL depends on the database driver.
+                    if (databaseURL == null) {
+                        StringBuilder defaultURL = new StringBuilder();
+                        defaultURL.append("jdbc:derby:");
+                        if (databaseDriver.equals(DERBY_EMBEDDED_DRIVER)) {
+                            defaultURL
+                                    .append(env.getDataRootPath())
+                                    .append(File.separator);
+                        } else {
+                            defaultURL.append("//localhost/");
+                        }
+                        defaultURL.append("cachedb;create=true");
+                        databaseURL = defaultURL.toString();
+                    }
+                }
+
+                env.setDatabaseDriver(databaseDriver);
+                env.setDatabaseUrl(databaseURL);
 
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,
