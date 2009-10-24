@@ -105,10 +105,13 @@ for (HistoryEntry entry : hist.getHistoryEntries()) {
 <td>
 <%
 
-if(userPage != null && ! userPage.equals("")) {
-	%><a href="<%= userPage + entry.getAuthor() %>"><%= entry.getAuthor() %></a><%
+String author = entry.getAuthor();
+if (author == null) {
+        %>(no author)<%
+} else if (userPage != null && ! userPage.equals("")) {
+        %><a href="<%= userPage + author %>"><%= author %></a><%
 } else {
-	%><%= entry.getAuthor() %><%
+        %><%= author %><%
 }
 
 %>&nbsp;</td><td><%
