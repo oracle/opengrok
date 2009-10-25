@@ -184,9 +184,9 @@ public final class Indexer {
                             // Should be a full class name, but we also accept
                             // the shorthands "client" and "embedded". Expand
                             // the shorthands here.
-                            if (databaseDriver.equals("client")) {
+                            if ("client".equals(databaseDriver)) {
                                 databaseDriver = DERBY_CLIENT_DRIVER;
-                            } else if (databaseDriver.equals("embedded")) {
+                            } else if ("embedded".equals(databaseDriver)) {
                                 databaseDriver = DERBY_EMBEDDED_DRIVER;
                             }
                             break;
