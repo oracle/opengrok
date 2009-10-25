@@ -54,7 +54,7 @@ public class ShAnalyzer extends PlainAnalyzer {
         xref = new ShXref(dummy);
     }
 
-    public void analyze(Document doc, InputStream in) {
+    public void analyze(Document doc, InputStream in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
     }    

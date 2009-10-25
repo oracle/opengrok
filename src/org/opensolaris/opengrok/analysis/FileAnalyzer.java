@@ -97,7 +97,7 @@ public class FileAnalyzer extends Analyzer {
         hista = new HistoryAnalyzer();
     }
 
-    public void analyze(Document doc, InputStream in) {
+    public void analyze(Document doc, InputStream in) throws IOException {
         // not used
     }
 

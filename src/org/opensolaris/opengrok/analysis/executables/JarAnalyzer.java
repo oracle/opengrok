@@ -33,13 +33,11 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -67,58 +65,55 @@ public class JarAnalyzer extends FileAnalyzer {
 	content = new byte[16*1024];
     }
     
-    public void analyze(Document doc, InputStream in) {
+    public void analyze(Document doc, InputStream in) throws IOException {
 	defs = new LinkedList<String>();
 	refs = new LinkedList<String>();
 	StringBuilder fullText = new StringBuilder();
 	xref = new StringWriter();
-	try {
-	    ZipInputStream zis = new ZipInputStream(in);
-	    ZipEntry entry;
-	    byte buf[] = new byte[1024];
-	    while ((entry = zis.getNextEntry()) != null) {
-		String ename = entry.getName();
-		xref.write("<br/><b>"+ ename + "</b>");
-		fullText.append(ename);
-		fullText.append('\n');
-		int len = 0;
-                FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
-		if (fac instanceof JavaClassAnalyzerFactory) {
-                    JavaClassAnalyzer jca =
-                        (JavaClassAnalyzer) fac.getAnalyzer();
-		    BufferedInputStream bif = new BufferedInputStream(zis);
-		    int r;
-		    while((r = bif.read(buf)) > 0) {
-			if( len + r > content.length) {
-			    byte[] content2 = new byte[content.length*2];
-			    System.arraycopy(content, 0, content2, 0, len);
-			    content = content2;
-			}
-			System.arraycopy(buf, 0, content, len, r);
-			len += r;
-		    }
-		    jca.analyze(doc, new ByteArrayInputStream(content));
-		    doc.removeField("defs");
-		    doc.removeField("refs");
-    		    doc.removeField("full");
-		    defs.addAll(jca.getDefs());
-		    refs.addAll(jca.getRefs());
-		    fullText.append(jca.getFull());
-		    xref.write("<pre>");
-		    jca.writeXref(xref);
-		    xref.write("</pre>");
-		}
-	    }
-	    doc.add(new Field("full", new TagFilter(new StringReader(fullText.toString()))));
-	    if(!defs.isEmpty()) {
-		doc.add(new Field("defs",dummy));
-	    }
-	    if(!refs.isEmpty()) {
-		doc.add(new Field("refs",dummy));
-	    }
-	} catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to read from ZIP ", e);
-	}
+
+        ZipInputStream zis = new ZipInputStream(in);
+        ZipEntry entry;
+        byte buf[] = new byte[1024];
+        while ((entry = zis.getNextEntry()) != null) {
+            String ename = entry.getName();
+            xref.write("<br/><b>"+ ename + "</b>");
+            fullText.append(ename);
+            fullText.append('\n');
+            int len = 0;
+            FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
+            if (fac instanceof JavaClassAnalyzerFactory) {
+                JavaClassAnalyzer jca =
+                    (JavaClassAnalyzer) fac.getAnalyzer();
+                BufferedInputStream bif = new BufferedInputStream(zis);
+                int r;
+                while((r = bif.read(buf)) > 0) {
+                    if( len + r > content.length) {
+                        byte[] content2 = new byte[content.length*2];
+                        System.arraycopy(content, 0, content2, 0, len);
+                        content = content2;
+                    }
+                    System.arraycopy(buf, 0, content, len, r);
+                    len += r;
+                }
+                jca.analyze(doc, new ByteArrayInputStream(content));
+                doc.removeField("defs");
+                doc.removeField("refs");
+                doc.removeField("full");
+                defs.addAll(jca.getDefs());
+                refs.addAll(jca.getRefs());
+                fullText.append(jca.getFull());
+                xref.write("<pre>");
+                jca.writeXref(xref);
+                xref.write("</pre>");
+            }
+        }
+        doc.add(new Field("full", new TagFilter(new StringReader(fullText.toString()))));
+        if(!defs.isEmpty()) {
+            doc.add(new Field("defs",dummy));
+        }
+        if(!refs.isEmpty()) {
+            doc.add(new Field("refs",dummy));
+        }
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {

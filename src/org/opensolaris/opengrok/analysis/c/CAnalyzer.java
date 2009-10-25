@@ -54,7 +54,7 @@ public class CAnalyzer extends PlainAnalyzer {
         xref = new CXref(dummy);
     }
 
-    public void analyze(Document doc, InputStream in) {
+    public void analyze(Document doc, InputStream in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
     }    

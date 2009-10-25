@@ -29,11 +29,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -68,41 +66,33 @@ public class PlainAnalyzer extends FileAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) {
-        try {
-            InputStreamReader inReader = new InputStreamReader(in);
-            len = 0;
-            do {
-                int rbytes = inReader.read(content, len, content.length - len);
-                if (rbytes > 0) {
-                    if (rbytes == (content.length - len)) {
-                        char[] content2 = new char[content.length * 2];
-                        System.arraycopy(content, 0, content2, 0, content.length);
-                        content = content2;
-                    }
-                    len += rbytes;
-                } else {
-                    break;
+    public void analyze(Document doc, InputStream in) throws IOException {
+        InputStreamReader inReader = new InputStreamReader(in);
+        len = 0;
+        do {
+            int rbytes = inReader.read(content, len, content.length - len);
+            if (rbytes > 0) {
+                if (rbytes == (content.length - len)) {
+                    char[] content2 = new char[content.length * 2];
+                    System.arraycopy(content, 0, content2, 0, content.length);
+                    content = content2;
                 }
-            } while (true);
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
-            return;
-        }
-        doc.add(new Field("full", dummy));
-        try {
-            String fullpath;
-            if ((fullpath = doc.get("fullpath")) != null && ctags != null) {
-                defs = ctags.doCtags(fullpath + "\n");
-                if (defs != null && defs.numberOfSymbols() > 0) {
-                    doc.add(new Field("defs", dummy));
-                    doc.add(new Field("refs", dummy)); //@FIXME adding a refs field only if it has defs?
-                    byte[] tags = defs.serialize();
-                    doc.add(new Field("tags", tags, Field.Store.YES));
-                }
+                len += rbytes;
+            } else {
+                break;
             }
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while analyzing stream.", e);
+        } while (true);
+
+        doc.add(new Field("full", dummy));
+        String fullpath;
+        if ((fullpath = doc.get("fullpath")) != null && ctags != null) {
+            defs = ctags.doCtags(fullpath + "\n");
+            if (defs != null && defs.numberOfSymbols() > 0) {
+                doc.add(new Field("defs", dummy));
+                doc.add(new Field("refs", dummy)); //@FIXME adding a refs field only if it has defs?
+                byte[] tags = defs.serialize();
+                doc.add(new Field("tags", tags, Field.Store.YES));
+            }
         }
     }
 

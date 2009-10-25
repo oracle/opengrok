@@ -48,7 +48,7 @@ public class LispAnalyzer extends PlainAnalyzer {
         xref = new LispXref(dummy);
     }
 
-    public void analyze(Document doc, InputStream in) {
+    public void analyze(Document doc, InputStream in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
     }

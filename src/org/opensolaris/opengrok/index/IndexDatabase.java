@@ -555,27 +555,34 @@ public class IndexDatabase {
             FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
             fa.setCtags(ctags);
 
-            Document d = analyzerGuru.getDocument(file, in, path, fa);
-            if (d == null) {
-                log.warning("Warning: did not add " + path);
-            } else {
-                writer.addDocument(d, fa);
-                Genre g = fa.getFactory().getGenre();
-                if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-                    File xrefFile = new File(xrefDir, path);
-                    // If mkdirs() returns false, the failure is most likely
-                    // because the file already exists. But to check for the
-                    // file first and only add it if it doesn't exists would
-                    // only increase the file IO...
-                    if (!xrefFile.getParentFile().mkdirs()) {
-                        assert xrefFile.getParentFile().exists();
-                    }
-                    fa.writeXref(xrefDir, path);
+            Document d;
+            try {
+                d = analyzerGuru.getDocument(file, in, path, fa);
+            } catch (Exception e) {
+                log.log(Level.INFO,
+                        "Skipped file ''{0}'' because the analyzer didn''t " +
+                        "understand it.",
+                        path);
+                log.log(Level.FINE, "Exception from analyzer:", e);
+                return;
+            }
+
+            writer.addDocument(d, fa);
+            Genre g = fa.getFactory().getGenre();
+            if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
+                File xrefFile = new File(xrefDir, path);
+                // If mkdirs() returns false, the failure is most likely
+                // because the file already exists. But to check for the
+                // file first and only add it if it doesn't exists would
+                // only increase the file IO...
+                if (!xrefFile.getParentFile().mkdirs()) {
+                    assert xrefFile.getParentFile().exists();
                 }
-                setDirty();
-                for (IndexChangedListener listener : listeners) {
-                    listener.fileAdded(path, fa.getClass().getSimpleName());
-                }
+                fa.writeXref(xrefDir, path);
+            }
+            setDirty();
+            for (IndexChangedListener listener : listeners) {
+                listener.fileAdded(path, fa.getClass().getSimpleName());
             }
         } finally {
             in.close();

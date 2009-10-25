@@ -68,27 +68,23 @@ public class ELFAnalyzer extends FileAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) {
-        try {
-            if (in instanceof FileInputStream) {
-                parseELF((FileInputStream) in);
+    public void analyze(Document doc, InputStream in) throws IOException {
+        if (in instanceof FileInputStream) {
+            parseELF((FileInputStream) in);
+            if (len > 0) {
+                doc.add(new Field("full", " ", Field.Store.YES, Field.Index.ANALYZED));
+            }
+        } else {
+            String fullpath = doc.get("fullpath");
+            final FileInputStream fin = new FileInputStream(fullpath);
+            try {
+                parseELF(fin);
                 if (len > 0) {
                     doc.add(new Field("full", " ", Field.Store.YES, Field.Index.ANALYZED));
                 }
-            } else {
-                String fullpath = doc.get("fullpath");
-                final FileInputStream fin = new FileInputStream(fullpath);
-                try {
-                    parseELF(fin);
-                    if (len > 0) {
-                        doc.add(new Field("full", " ", Field.Store.YES, Field.Index.ANALYZED));
-                    }
-                } finally {
-                    fin.close();
-                }
+            } finally {
+                fin.close();
             }
-        } catch (IOException ioe) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Error analyzing ELF file", ioe);
         }
     }
 

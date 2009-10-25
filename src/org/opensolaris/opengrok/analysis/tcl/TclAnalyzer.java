@@ -48,7 +48,7 @@ public class TclAnalyzer extends PlainAnalyzer {
         xref = new TclXref(dummy);
     }
 
-    public void analyze(Document doc, InputStream in) {
+    public void analyze(Document doc, InputStream in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
     }

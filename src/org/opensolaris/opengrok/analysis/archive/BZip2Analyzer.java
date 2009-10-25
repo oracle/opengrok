@@ -28,12 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
@@ -62,44 +60,39 @@ public class BZip2Analyzer extends FileAnalyzer {
     private FileAnalyzer fa;
     
     @SuppressWarnings("PMD.ConfusingTernary")
-    public void analyze(Document doc, InputStream in) {
-	try {
-	    if (in.read() != 'B') { 
-                throw new IOException("Not BZIP2 format");
+    public void analyze(Document doc, InputStream in) throws IOException {
+        if (in.read() != 'B') {
+            throw new IOException("Not BZIP2 format");
+        }
+        if (in.read() != 'Z') {
+            throw new IOException("Not BZIP2 format");
+        }
+        BufferedInputStream gzis = new BufferedInputStream(new CBZip2InputStream(in));
+        String path = doc.get("path");
+        if(path != null &&
+            (path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))
+            ) {
+            String newname = path.substring(0, path.lastIndexOf('.'));
+            //System.err.println("BZIPPED OF = " + newname);
+            fa = AnalyzerGuru.getAnalyzer(gzis, newname);
+            if (fa != null && fa.getClass() != BZip2Analyzer.class) {
+                if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
+                    this.g = Genre.XREFABLE;
+                } else {
+                    this.g = Genre.DATA;
+                }
+                fa.analyze(doc, gzis);
+                if(doc.get("t") != null) {
+                    doc.removeField("t");
+                    if (g == Genre.XREFABLE) {
+                        doc.add(new Field("t", "x", Field.Store.YES, Field.Index.NOT_ANALYZED));
+                    }
+                }
+            } else {
+                fa = null;
+                //System.err.println("Did not analyze " + newname);
             }
-	    if (in.read() != 'Z') { 
-                throw new IOException("Not BZIP2 format");
-            }
-	    BufferedInputStream gzis = new BufferedInputStream(new CBZip2InputStream(in));
-	    String path = doc.get("path");
-	    if(path != null && 
-		(path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))
-		) {
-		String newname = path.substring(0, path.lastIndexOf('.'));
-		//System.err.println("BZIPPED OF = " + newname);
-		fa = AnalyzerGuru.getAnalyzer(gzis, newname);
-		if (fa != null && fa.getClass() != BZip2Analyzer.class) {
-		    if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
-			this.g = Genre.XREFABLE;
-		    } else {
-			this.g = Genre.DATA;
-		    }
-		    fa.analyze(doc, gzis);
-		    if(doc.get("t") != null) {
-			doc.removeField("t");
-			if (g == Genre.XREFABLE) {
-			    doc.add(new Field("t", "x", Field.Store.YES, Field.Index.NOT_ANALYZED));
-			}
-		    }
-		} else {
-		    fa = null;
-		    //System.err.println("Did not analyze " + newname);
-		}
-	    }
-	} catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                    "Could not read from BZip2", e);
-	}
+        }
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
