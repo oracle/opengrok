@@ -21,7 +21,6 @@
  * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-
 /**
  * This is supposed to get the matching lines from sourcefile.
  * since lucene does not easily give the match context.
@@ -43,37 +42,43 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.web.Util;
 
-
 public class Context {
+
     private final LineMatcher[] m;
-    static final int MAXFILEREAD = 32768;
+    static final int MAXFILEREAD = 1024 * 1024;
     private char[] buffer;
     PlainLineTokenizer tokens;
     String queryAsURI;
     private static Set<String> tokenFields = new HashSet<String>(3);
+
     static {
         tokenFields.add("full");
         tokenFields.add("refs");
         tokenFields.add("defs");
     }
-    
+
     /**
      * Constructs a context generator
+     * @param query the query to generate the result for
      */
     public Context(Query query) {
         QueryMatchers qm = new QueryMatchers();
         m = qm.getMatchers(query, tokenFields);
-        if(m != null) {
-        queryAsURI = Util.URIEncode(query.toString());
-        //System.err.println("Found Matchers = "+ m.length + " for " + query);
-        buffer  = new char[MAXFILEREAD];
-        tokens = new PlainLineTokenizer((Reader)null);
+        if (m != null) {
+            queryAsURI = Util.URIEncode(query.toString());
+            //System.err.println("Found Matchers = "+ m.length + " for " + query);
+            buffer = new char[MAXFILEREAD];
+            tokens = new PlainLineTokenizer((Reader) null);
         }
     }
+
     public boolean isEmpty() {
         return m == null;
-    }    
-    /**
+    }
+
+    private boolean alt = true;
+
+        /**
      *
      * @param in File to be matched
      * @param out to write the context
@@ -83,10 +88,9 @@ public class Context {
      * @param limit should the number of matching lines be limited?
      * @return Did it get any matching context?
      */
-    private boolean alt = true;
     public boolean getContext(Reader in, Writer out, String urlPrefix,
-                              String morePrefix, String path, Definitions tags,
-                              boolean limit, List<Hit> hits) {
+            String morePrefix, String path, Definitions tags,
+            boolean limit, List<Hit> hits) {
         alt = !alt;
         if (m == null) {
             return false;
@@ -108,8 +112,7 @@ public class Context {
                                 tag.symbol,
                                 Integer.toString(tag.line),
                                 tag.type,
-                                tag.text,
-                            };
+                                tag.text,};
                             if (in == null) {
                                 if (out == null) {
                                     Hit hit = new Hit(path,
@@ -149,20 +152,20 @@ public class Context {
         }
         /**
          * Just to get the matching tag send a null in
-         */ 
+         */
         if (in == null) {
             return anything;
         }
         int charsRead = 0;
         boolean truncated = false;
-        
+
         boolean lim = limit;
         if (!RuntimeEnvironment.getInstance().isQuickContextScan()) {
             lim = false;
         }
-        
+
         if (lim) {
-            try{
+            try {
                 charsRead = in.read(buffer);
                 if (charsRead == MAXFILEREAD) {
                     // we probably only read parts of the file, so set the
@@ -171,7 +174,7 @@ public class Context {
                     truncated = true;
                     // truncate to last line read (don't look more than 100
                     // characters back)
-                    for (int i = charsRead - 1; i > charsRead-100; i--) {
+                    for (int i = charsRead - 1; i > charsRead - 100; i--) {
                         if (buffer[i] == '\n') {
                             charsRead = i;
                             break;
@@ -185,31 +188,31 @@ public class Context {
             if (charsRead == 0) {
                 return anything;
             }
-            
+
             tokens.reInit(buffer, charsRead, out, urlPrefix + path + "#", matchingTags);
         } else {
             tokens.reInit(in, out, urlPrefix + path + "#", matchingTags);
         }
-        
+
         if (hits != null) {
             tokens.setAlt(alt);
             tokens.setHitList(hits);
             tokens.setFilename(path);
         }
-        
+
         try {
             String token;
             int matchState = LineMatcher.NOT_MATCHED;
             int matchedLines = 0;
             while ((token = tokens.yylex()) != null && (!lim || matchedLines < 10)) {
-                for (int i = 0; i< m.length; i++) {
+                for (int i = 0; i < m.length; i++) {
                     matchState = m[i].match(token);
                     if (matchState == LineMatcher.MATCHED) {
                         tokens.printContext();
                         matchedLines++;
                         //out.write("<br> <i>Matched " + token + " maxlines = " + matchedLines + "</i><br>");
                         break;
-                    } else if ( matchState == LineMatcher.WAIT) {
+                    } else if (matchState == LineMatcher.WAIT) {
                         tokens.holdOn();
                     } else {
                         tokens.neverMind();
@@ -219,7 +222,7 @@ public class Context {
             anything = matchedLines > 0;
             tokens.dumpRest();
             if (lim && (truncated || matchedLines == 10) && out != null) {
-                out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?t=" +  queryAsURI + "\">all</a>...]");
+                out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?t=" + queryAsURI + "\">all</a>...]");
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
@@ -235,7 +238,7 @@ public class Context {
                 try {
                     out.flush();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while flushing stream", e);                    
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while flushing stream", e);
                 }
             }
         }
