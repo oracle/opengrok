@@ -497,7 +497,9 @@ public class IndexDatabase {
             try {
                 if (!dirty && !dirtyFile.createNewFile()) {
                     if (!dirtyFile.exists()) {
-                       log.log(Level.FINE, "Failed to create \"dirty-file\": ", dirtyFile.getAbsolutePath());
+                       log.log(Level.FINE,
+                               "Failed to create \"dirty-file\": {0}",
+                               dirtyFile.getAbsolutePath());
                     }
                     dirty = true;
                 }
