@@ -35,11 +35,7 @@ StringBuffer sproject=new StringBuffer("");
 if (env.hasProjects()) {
     hasProjects = true;
     projects = env.getProjects();
-    Project defaultProject = env.getDefaultProject();
-    if (defaultProject != null) {
-       project.add(defaultProject.getDescription());
-    }
-    
+       
     String pr[] = request.getParameterValues("project");
     // see if a new parameter is passed...    
     if (pr != null && pr[0].length() > 0) {        
@@ -66,6 +62,12 @@ if (env.hasProjects()) {
             }
         }        
     }
+
+    Project defaultProject = env.getDefaultProject();
+    if (defaultProject != null && !project.contains(defaultProject.getDescription())) {
+       project.add(defaultProject.getDescription());
+    }
+
     //only save found projects into cookies
     for (Iterator it = project.iterator(); it.hasNext();) {
         sproject.append((String) it.next() + ",");
