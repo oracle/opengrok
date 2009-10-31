@@ -32,7 +32,23 @@ org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*,
 java.util.regex.*
 "
-%><%@include file="mast.jsp"%><%
+%><%@include file="mast.jsp"%><script type="text/javascript">
+// <![CDATA[
+function toggle_filelist() {
+  var spans = document.getElementsByTagName("span");
+  for (var i = 0; i < spans.length; i++) {
+    var span = spans[i];
+    if (span.className == "filelist") {
+      span.setAttribute("style", "display: none;");
+      span.className = "filelist-hidden";
+    } else if (span.className == "filelist-hidden") {
+      span.setAttribute("style", "display: inline;");
+      span.className = "filelist";
+    }
+  }
+}
+// ]]>
+</script><%
 if (path.length() > 0 && valid) {
     boolean striked = false;
     String userPage = environment.getUserPage();
@@ -72,7 +88,15 @@ if (path.length() > 0 && valid) {
     if (!isDir) {
         %><th><input type="submit" value=" Compare "/></th><%
     }
-    %><td>Date</td><td>Author</td><td>Comments</td>
+    %><td>Date</td><td>Author</td><td>Comments
+      <a href="#" onclick="javascript: toggle_filelist(); return false;">
+      <span class="filelist-hidden" style="display: none;">
+        (&lt;&lt;&lt; Hide modified files)
+      </span>
+      <span class="filelist" style="display: inline;">
+        (Show modified files &gt;&gt;&gt;)
+      </span>
+      </a></td>
 </tr><%
 boolean alt = true;
 for (HistoryEntry entry : hist.getHistoryEntries()) {
@@ -123,7 +147,7 @@ if (reviewPage != null && ! reviewPage.equals("")) {
 	%><%= cout  %>
 <%
 Set<String> files = entry.getFiles();
-if(files != null) {%><br/><%
+if(files != null) {%><span class="filelist-hidden" style="display: none;"><br/><%
     for (String ifile : files) {
         String jfile = ifile;
         if ("/".equals(path)) {
@@ -136,7 +160,7 @@ if(files != null) {%><br/><%
         } else {
             %><a class="h" href="<%=context%>/xref<%=ifile%>?r=<%=rev%>"><%=jfile%></a><br/><%            
         }
-    }
+    }%></span><%
 }
 %></td></tr><%
 }
