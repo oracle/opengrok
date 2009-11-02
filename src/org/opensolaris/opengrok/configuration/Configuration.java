@@ -67,6 +67,7 @@ public final class Configuration {
     private List<RepositoryInfo> repositories;
     private String urlPrefix;
     private boolean generateHtml;
+    /** Default project will be used, when no project is selected and no project is in cookie, so basically only the first time you open the first page, or when you clear your web cookies */
     private Project defaultProject;
     private int indexWordLimit;
     private boolean verbose;
