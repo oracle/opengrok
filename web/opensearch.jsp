@@ -38,12 +38,18 @@ String Context = request.getContextPath();
 String laf = environment.getWebappLAF();
 StringBuffer url = request.getRequestURL();
 url=url.delete(url.lastIndexOf("/"),url.length());
+/* TODO  Bug 11749
 String proj="project=";
+ */
+String proj="";
 String projtext="";String tproj="";
 if (project != null && project.size()>0) {    
 for (Iterator it = project.iterator(); it.hasNext();) {
   tproj=(String)it.next();
+/* TODO  Bug 11749
    proj=proj + Util.URIEncode(tproj)+ ",";
+ */
+  proj = proj + "project=" + Util.URIEncode(tproj)+ "&amp;";
   projtext = projtext + tproj + ",";
  }
 }

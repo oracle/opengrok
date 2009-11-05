@@ -37,15 +37,18 @@ if (env.hasProjects()) {
     projects = env.getProjects();
        
     String pr[] = request.getParameterValues("project");
-    // see if a new parameter is passed...    
-    if (pr != null && pr[0].length() > 0) {        
+    // see if a new parameter(s) is passed...
+    // code bellow will accept more parameters project= and their format is either one by one, or separated by "," in one parameter
+    if (pr != null && pr[0].length() > 0) {
+       for (int midx = 0; midx < pr.length; midx++) {
         //NOTE this means project name CANNOT have a "," char in it !!!
-        String p[] = pr[0].split(",");
+        String p[] = pr[midx].split(",");
         for (int idx = 0; idx < p.length; idx++) {
             if (Project.getByDescription(p[idx]) != null) {
                 project.add(p[idx]);
             }
-        }        
+        }
+       }
     } else { //fill in from cookies        
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {

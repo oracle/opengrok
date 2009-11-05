@@ -183,7 +183,7 @@ $().ready(function() {
         
             if (Boolean.parseBoolean(request.getParameter("a"))) {
         %> | <span id="toggle-annotate-by-javascript" style="display: none">
-            <a href="#" onClick="javascript:toggle_annotations(); return false;" title="Show or hide line annotation(commit revisions,authors)." >Annotate</a>
+            <a href="#" onclick="javascript:toggle_annotations(); return false;" title="Show or hide line annotation(commit revisions,authors)." >Annotate</a>
         </span>
         <span id="toggle-annotate">
             <a href="<%=context%>/xref<%=path%><% 
@@ -205,7 +205,7 @@ $().ready(function() {
     }    
             if (!isDir) {
                 if ( servlet.startsWith("/xr") ) {
-        %> | <a href="javascript:lntoggle();" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a><%
+               %> | <a href="#" onclick="javascript:lntoggle();return false;" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a><%
                 }
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {

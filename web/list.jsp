@@ -64,7 +64,7 @@ if (valid) {
 
         // verify that the current path is part of the selected project
         Project activeProject = Project.getProject(resourceFile);
-
+//TODO: somehow integrate below with projects.jspf
         if (activeProject != null) {
             List<String> project = new ArrayList<String>();
 
