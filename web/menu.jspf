@@ -75,6 +75,9 @@ function invertAllProjects() {
      }
     );
 }
+function goFirstProject() {
+    var selected=$.map($('#project :selected'), function(e) { return $(e).text(); });window.location='xref/'+selected[0];
+}
 /* ]]> */
 </script>
 <%}%>
@@ -94,7 +97,7 @@ function invertAllProjects() {
                                         <td>in project(s): <span style="padding-left:60px;font-size:small"><a href="#" onclick="javascript:selectAllProjects();return false;">select all</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:invertAllProjects();return false;">invert selection</a></span></td>
                                     </tr>
                                     <tr><td>
-                                            <select class="q" style="width: 300px" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
+                                            <select class="q" style="width: 300px" id="project" onkeyup="javascript:if(event.keyCode=='13') { goFirstProject(); }" ondblclick="javascript:goFirstProject();" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
                                 <%
                                 for (Project p : env.getProjects()) {
                                     //TODO below "selected" has no effect if one refreshes the page with F5
