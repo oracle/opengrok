@@ -87,6 +87,9 @@ class JDBCHistoryCache implements HistoryCache {
     /** The id to be used for the next row inserted into CHANGESETS. */
     private final AtomicInteger nextChangesetId = new AtomicInteger();
 
+    /** The id to be used for the next row inserted into AUTHORS. */
+    private final AtomicInteger nextAuthorId = new AtomicInteger();
+
     /** Info string to return from {@link #getInfo()}. */
     private String info;
 
@@ -224,9 +227,16 @@ class JDBCHistoryCache implements HistoryCache {
             s.execute(getQuery("createTableFilechanges"));
         }
 
+        // Derby has some performance problems with auto-generated identity
+        // columns when multiple threads insert into the same table
+        // concurrently. Therefore, we have our own light-weight id generators
+        // that we initialize on start-up. Details can be found in Derby's
+        // bug tracker: https://issues.apache.org/jira/browse/DERBY-4437
+
         initIdGenerator(s, "getMaxFileId", nextFileId);
         initIdGenerator(s, "getMaxDirId", nextDirId);
         initIdGenerator(s, "getMaxChangesetId", nextChangesetId);
+        initIdGenerator(s, "getMaxAuthorId", nextAuthorId);
 
         StringBuilder infoBuilder = new StringBuilder();
         infoBuilder.append(getClass().getSimpleName() + "\n");
@@ -910,9 +920,10 @@ class JDBCHistoryCache implements HistoryCache {
         for (HistoryEntry entry : history.getHistoryEntries()) {
             String author = entry.getAuthor();
             if (!map.containsKey(author)) {
+                int id = nextAuthorId.getAndIncrement();
                 insert.setString(2, author);
+                insert.setInt(3, id);
                 insert.executeUpdate();
-                int id = getGeneratedIntKey(insert);
                 map.put(author, id);
                 conn.commit();
             }
