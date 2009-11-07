@@ -53,7 +53,8 @@ import org.opensolaris.opengrok.jdbc.PreparedQuery;
 
 class JDBCHistoryCache implements HistoryCache {
 
-    private static final String SCHEMA = "APP";
+    /** The schema in which the tables live. */
+    private static final String SCHEMA = "OPENGROK";
 
     /** The names of all the tables created by this class. */
     private static final String[] TABLES = {

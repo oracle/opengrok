@@ -315,7 +315,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         // Originally, we locked the FILECHANGES table here, but that triggered
         // a Derby bug (https://issues.apache.org/jira/browse/DERBY-4330), so
         // now we lock the AUTHORS table instead.
-        s.execute("lock table authors in exclusive mode");
+        s.execute("lock table opengrok.authors in exclusive mode");
         s.close();
 
         // Roll back the transaction in 1.5 seconds so that get() is able to
