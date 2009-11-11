@@ -127,7 +127,7 @@ final class Search {
             String root = RuntimeEnvironment.getInstance().getSourceRootPath();
             System.out.println("Printing results 1 - " + nhits +" of " + totalResults + " total matching documents collected.");
             for (Hit hit : results) {
-                File file = new File(root, hit.getFilename());
+                File file = new File(root, hit.getPath());
                 System.out.println(file.getAbsolutePath() + ":"+hit.getLineno()+" [" + hit.getLine() + "]");
             }
 
@@ -146,7 +146,7 @@ final class Search {
                 }                
               engine.results(nhits, totalResults, results);
               for (Hit hit : results) {
-                File file = new File(root, hit.getFilename());
+                File file = new File(root, hit.getPath());
                 System.out.println(file.getAbsolutePath() + ":"+hit.getLineno()+" [" + hit.getLine() + "]");
               }
             }
