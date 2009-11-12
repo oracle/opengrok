@@ -60,4 +60,19 @@ public class History {
     public List<HistoryEntry> getHistoryEntries() {
         return entries;
     }
+
+    /**
+     * Check if at least one history entry has a file list.
+     *
+     * @return {@code true} if at least one of the entries has a non-empty
+     * file list, {@code false} otherwise
+     */
+    public boolean hasFileList() {
+        for (HistoryEntry entry : entries) {
+            if (!entry.getFiles().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

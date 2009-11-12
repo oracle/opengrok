@@ -88,15 +88,18 @@ if (path.length() > 0 && valid) {
     if (!isDir) {
         %><th><input type="submit" value=" Compare "/></th><%
     }
-    %><td>Date</td><td>Author</td><td>Comments
-      <a href="#" onclick="javascript: toggle_filelist(); return false;">
+    %><td>Date</td><td>Author</td><td>Comments<%
+    if (hist.hasFileList()) {
+      %> <a href="#" onclick="javascript: toggle_filelist(); return false;">
       <span class="filelist-hidden" style="display: none;">
         (&lt;&lt;&lt; Hide modified files)
       </span>
       <span class="filelist" style="display: inline;">
         (Show modified files &gt;&gt;&gt;)
       </span>
-      </a></td>
+      </a><%
+    }
+    %></td>
 </tr><%
 boolean alt = true;
 for (HistoryEntry entry : hist.getHistoryEntries()) {

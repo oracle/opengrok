@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
@@ -202,8 +203,12 @@ public class HistoryEntryTest {
     public void addFile() {
         String fileName = "test.file";
         HistoryEntry instance = new HistoryEntry();
+        assertFalse(
+            new History(Collections.singletonList(instance)).hasFileList());
         instance.addFile(fileName);
         assertTrue(instance.getFiles().contains(fileName));
+        assertTrue(
+            new History(Collections.singletonList(instance)).hasFileList());
     }
 
     /**
