@@ -130,7 +130,8 @@ Using Java DB for history cache
 (instead of gzipped xml files)
 ---------------------------------------------------
 
-You need Java DB 10.x (OpenSolaris: # pkg install SUNWjavadb or SUNWj6dev ,
+You need Java DB 10.5.3 or later
+(OpenSolaris: # pkg install SUNWjavadb or SUNWj6dev ,
 Debian/Ubuntu: # apt-get install sun-java6-javadb).
 There are two modes, having Java DB embedded, or running a Java DB server.
 Java DB server is default option, I will not describe how to set up embedded
