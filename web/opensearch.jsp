@@ -42,17 +42,24 @@ url=url.delete(url.lastIndexOf("/"),url.length());
 String proj="project=";
  */
 String proj="";
-String projtext="";String tproj="";
-if (project != null && project.size()>0) {    
-for (Iterator it = project.iterator(); it.hasNext();) {
-  tproj=(String)it.next();
+StringBuilder text = new StringBuilder();
+boolean firstIteration = true;
+if (project != null) {
+for (String tproj : project) {
+  if (!firstIteration) {
+    text.append(',');
+  }
+  text.append(tproj);
 /* TODO  Bug 11749
    proj=proj + Util.URIEncode(tproj)+ ",";
  */
   proj = proj + "project=" + Util.URIEncode(tproj)+ "&amp;";
-  projtext = projtext + tproj + ",";
+  firstIteration = false;
  }
 }
+
+String projtext = text.toString();
+
 %><?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
 <ShortName>OpenGrok <%=projtext%></ShortName>
