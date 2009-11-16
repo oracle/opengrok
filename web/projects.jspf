@@ -68,7 +68,7 @@ if (env.hasProjects()) {
 
     //default project is only shown when no other project there (no cookie, empty project list)
     Project defaultProject = env.getDefaultProject();
-    if (defaultProject != null && project.isEmpty() && !project.contains(defaultProject.getDescription())) {
+    if (defaultProject != null && project.isEmpty()) {
        project.add(defaultProject.getDescription());
     }
 
