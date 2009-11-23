@@ -36,6 +36,7 @@ d none usr/opengrok/bin 0755 bin bin
 d none usr/opengrok/lib 0755 bin bin
 d none usr/opengrok/man 0755 bin bin
 d none usr/opengrok/man/sman1 0755 bin bin
+d none usr/opengrok/webapp 0755 bin bin
 d none var 0755 root sys
 d none var/opengrok 0755 noaccess noaccess
 d none var/opengrok/data 0755 noaccess noaccess
@@ -47,6 +48,7 @@ d none var/svc/manifest 755 root sys
 d none var/svc/manifest/application 755 root sys
 
 f manifest var/svc/manifest/application/opengrok.xml=platform/solaris/smf/opengrok.xml 444 root sys
+f none etc/opengrok/opengrok.properties=platform/solaris/default/opengrok.properties 0644 root sys
 f none lib/svc/method/opengrok=platform/solaris/smf/opengrok 555 root bin
 f none usr/opengrok/bin/OpenGrok=OpenGrok 0777 bin bin
 f none usr/opengrok/bin/opengrok.jar=dist/opengrok.jar 0555 bin bin
@@ -60,5 +62,5 @@ f none usr/opengrok/lib/org.apache.commons.jrcs.diff.jar=lib/org.apache.commons.
 f none usr/opengrok/lib/org.apache.commons.jrcs.rcs.jar=lib/org.apache.commons.jrcs.rcs.jar 0444 bin bin
 f none usr/opengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar 0444 bin bin
 f none usr/opengrok/man/sman1/opengrok.1=dist/opengrok.1 0444 bin bin
-f none etc/opengrok/opengrok.properties=platform/solaris/default/opengrok.properties 0644 root sys
+f none usr/opengrok/webapp/source.war=dist/source.war 0444 bin bin
 s none usr/opengrok/bin/lib=../lib
