@@ -93,7 +93,7 @@ public final class Indexer {
             String defaultProject = null;
             boolean listFiles = false;
             boolean createDict = false;
-            int noThreads = Runtime.getRuntime().availableProcessors();
+            int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
 
             // Parse command line options:
             Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
@@ -572,7 +572,7 @@ public final class Indexer {
                             }
                         } catch (Exception e) {
                             if (update) {
-                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating index", e);                                
+                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating index", e);
                             } else {
                                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while optimizing index", e);
                             }
