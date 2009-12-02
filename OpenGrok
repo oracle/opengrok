@@ -205,7 +205,8 @@ DefaultInstanceConfiguration()
     WEBAPP_CONFIG_ADDRESS="-U localhost:2424"
 
     # OPTIONAL: JVM Options
-    #JAVA_OPTS="-server -Xmx1024m"
+    #JAVA_OPTS="-server -Xmx2048m"
+    JAVA_OPTS="-Xmx2048m"
 
     # OPTIONAL: Full Path to History Utilities
     HG="`Which hg`"
