@@ -33,6 +33,7 @@ d none lib/svc/method 755 root bin
 d none usr 0755 root sys
 d none usr/opengrok 0755 bin bin
 d none usr/opengrok/bin 0755 bin bin
+d none usr/opengrok/doc 0755 bin bin
 d none usr/opengrok/lib 0755 bin bin
 d none usr/opengrok/man 0755 bin bin
 d none usr/opengrok/man/sman1 0755 bin bin
@@ -52,6 +53,8 @@ f none etc/opengrok/opengrok.properties=platform/solaris/default/opengrok.proper
 f none lib/svc/method/opengrok=platform/solaris/smf/opengrok 555 root bin
 f none usr/opengrok/bin/OpenGrok=OpenGrok 0777 bin bin
 f none usr/opengrok/bin/opengrok.jar=dist/opengrok.jar 0555 bin bin
+f none usr/opengrok/doc/logging.properties=conf/logging.properties 0444 bin bin
+f none usr/opengrok/doc/README.txt=conf/README.txt 0444 bin bin
 f none usr/opengrok/lib/ant.jar=dist/lib/ant.jar 0444 bin bin
 f none usr/opengrok/lib/bcel-5.1.jar=lib/bcel-5.1.jar 0444 bin bin
 f none usr/opengrok/lib/jakarta-oro-2.0.8.jar=lib/jakarta-oro-2.0.8.jar 0444 bin bin

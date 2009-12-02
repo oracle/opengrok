@@ -31,6 +31,9 @@
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
 #   - OPENGROK_REMOTE_REPOS       Enable History Cache for Remote Repositories (*)
+#   - OPENGROK_SCAN_REPOS         Scan for repositories (*)_
+#
+#   - READ_XML_CONFIGURATION      file with read only configuration - a temp workaround for bug # 327
 #
 # Notes:
 #   (*) Any Non-Empty String will enable these options
@@ -47,7 +50,7 @@ Usage()
     echo "       ${0} index [<directory>]" 1>&2
     echo 1>&2
     echo "  Optional environment variables:" 1>&2
-    echo "    OPENGROK_CONFIGURATION - location of your configuartion" 1>&2
+    echo "    OPENGROK_CONFIGURATION - location of your configuration" 1>&2
     echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... " 1>&2
     echo 1>&2
     echo "    See the code for more information on configuration options / variables" 1>&2
@@ -105,7 +108,7 @@ DefaultInstanceConfiguration()
         else
             # Handle Binary Distributions
             OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}"
-            LOGGER_CONF_SOURCE="${OPENGROK_DISTRIBUTION_BASE}/doc/${LOGGER_CONFIG_FILE}"
+            LOGGER_CONF_SOURCE="${OPENGROK_DISTRIBUTION_BASE}/../doc/${LOGGER_CONFIG_FILE}"
         fi
     fi
 
@@ -125,6 +128,13 @@ DefaultInstanceConfiguration()
     # REQUIRED: XML Configuration
     #           (the configuration used by Web/GUI interfaces)
     XML_CONFIGURATION="${OPENGROK_INSTANCE_BASE}/etc/configuration.xml"
+
+    # OPTIONAL: read only XML config, if it exists, it will be read
+    READ_XML_CONFIGURATION="${READ_XML_CONFIGURATION:-}"
+
+    if [ -f ${READ_XML_CONFIGURATION} ] ; then
+        READ_XML_CONF="-R ${READ_XML_CONFIGURATION}"
+    fi
 
     # TODO: Verify that Logger Configuration is REQUIRED and not OPTIONAL
     # REQUIRED: Logger Configuration
@@ -160,7 +170,10 @@ DefaultInstanceConfiguration()
     ENABLE_PROJECTS="-P"
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
-    SCAN_FOR_REPOSITORY="-S"
+    if [ ! -z "${OPENGROK_REMOTE_REPOS}" ]
+    then
+        SCAN_FOR_REPOSITORY="-S"
+    fi
 
     # OPTIONAL: Remote Repository Support (CVS or SVN)
     #           (Can be very time demanding, uncomment if needed)
@@ -560,8 +573,8 @@ CreateRuntimeRequirements()
         Progress "  Creating default ${LOGGER_CONFIG_PATH} ... "
         if [ ! -f "${LOGGER_CONF_SOURCE}" ]
         then
-            FatalError "Can't find distribution logging configuration"
-                      "(${LOGGER_CONF_SOURCE}) to install as default"
+            Warning "Can't find distribution logging configuration"   \
+                      "(${LOGGER_CONF_SOURCE}) to install as default" \
                       "logging configuration (${LOGGER_CONFIG_PATH})"
         fi
 
@@ -583,11 +596,11 @@ StdInvocation()
         ${VERBOSE} ${QUIET}                                     \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
         ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
+        ${READ_XML_CONF}                                        \
         -W ${XML_CONFIGURATION}                                 \
         ${WEBAPP_CONFIG_ADDRESS}                                \
         -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
         "${@}"
-#?        -R ${XML_CONFIGURATION}                                 \
 
 }
 
