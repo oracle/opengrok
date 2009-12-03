@@ -108,7 +108,7 @@ DefaultInstanceConfiguration()
         else
             # Handle Binary Distributions
             OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}"
-            LOGGER_CONF_SOURCE="${OPENGROK_DISTRIBUTION_BASE}/../doc/${LOGGER_CONFIG_FILE}"
+            LOGGER_CONF_SOURCE="${OPENGROK_DISTRIBUTION_BASE}/${LOGGER_CONFIG_FILE}"
         fi
     fi
 

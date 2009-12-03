@@ -302,6 +302,9 @@ Use is subject to license terms.
         <tarfileset dir="doc" prefix="${distname}-${version}">
           <include name="EXAMPLE.txt"/>
         </tarfileset>
+        <tarfileset dir="conf" prefix="${distname}-${version}">
+          <include name="logging.properties"/>
+        </tarfileset>
         <tarfileset dir="${dist.dir}" prefix="${distname}-${version}">
           <include name="opengrok.jar"/>
           <include name="source.war"/>
