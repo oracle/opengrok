@@ -198,7 +198,6 @@ DefaultInstanceConfiguration()
     # indexing the rest of the file, once the limit is reached)
     #           (default: unlimited)
     #MAX_INDEXED_WORDS="-m 100000"
-    MAX_INDEXED_WORDS="-m 10000"
 
     # OPTIONAL: Configuration Address (host:port)
     #           (conf/web.xml default is localhost:2424)
