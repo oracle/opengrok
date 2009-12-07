@@ -67,4 +67,5 @@ f none usr/opengrok/lib/org.apache.commons.jrcs.rcs.jar=lib/org.apache.commons.j
 f none usr/opengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar 0444 bin bin
 f none usr/opengrok/man/sman1/opengrok.1=dist/opengrok.1 0444 bin bin
 f none usr/opengrok/webapp/source.war=dist/source.war 0444 bin bin
+s none usr/opengrok/bin/source.war=../webapp/source.war
 s none usr/opengrok/bin/lib=../lib
