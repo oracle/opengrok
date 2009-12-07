@@ -132,7 +132,7 @@ DefaultInstanceConfiguration()
     # OPTIONAL: read only XML config, if it exists, it will be read
     READ_XML_CONFIGURATION="${READ_XML_CONFIGURATION:-}"
 
-    if [ -f ${READ_XML_CONFIGURATION} ] ; then
+    if [ -f "${READ_XML_CONFIGURATION}" ] ; then
         READ_XML_CONF="-R ${READ_XML_CONFIGURATION}"
     fi
 

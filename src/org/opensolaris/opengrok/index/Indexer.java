@@ -617,7 +617,7 @@ public final class Indexer {
                 System.err.println();
             }
             if (env.isVerbose()) {
-                log.info("Configuration successfully updated");
+                log.info("Configuration update routine done, check previous output for errors.");
             }
         }
     }
