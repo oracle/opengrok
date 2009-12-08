@@ -136,7 +136,6 @@ DefaultInstanceConfiguration()
         READ_XML_CONF="-R ${READ_XML_CONFIGURATION}"
     fi
 
-    # TODO: Verify that Logger Configuration is REQUIRED and not OPTIONAL
     # REQUIRED: Logger Configuration
     LOGGER_CONFIG_PATH="${OPENGROK_INSTANCE_BASE}/${LOGGER_CONFIG_FILE}"
     LOGGER_PROPERTIES="-Djava.util.logging.config.file=${LOGGER_CONFIG_PATH}"
@@ -576,11 +575,11 @@ CreateRuntimeRequirements()
             Warning "Can't find distribution logging configuration"   \
                       "(${LOGGER_CONF_SOURCE}) to install as default" \
                       "logging configuration (${LOGGER_CONFIG_PATH})"
+        else
+         ${DO} grep -v java.util.logging.FileHandler.pattern "${LOGGER_CONF_SOURCE}" > "${LOGGER_CONFIG_PATH}"
+         ${DO} grep java.util.logging.FileHandler.pattern "${LOGGER_CONF_SOURCE}" | sed "s|opengrok%g.%u.log|${OPENGROK_INSTANCE_BASE}/log/opengrok%g.%u.log|g" >> "${LOGGER_CONFIG_PATH}"
+         ${DO} mkdir ${OPENGROK_INSTANCE_BASE}/log
         fi
-
-        ${DO} cp "${LOGGER_CONF_SOURCE}" "${LOGGER_CONFIG_PATH}"
-        # TODO: Consider automatically setting the logging directory
-        #       to within the instance base directory tree
     fi
 }
 
