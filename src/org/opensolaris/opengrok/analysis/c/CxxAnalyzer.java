@@ -81,7 +81,7 @@ public class CxxAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(InputStream in, Writer out,
+    static void writeXref(Reader in, Writer out,
             Annotation annotation, Project project) throws IOException {
         CxxXref xref = new CxxXref(in);
         xref.annotation = annotation;

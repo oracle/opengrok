@@ -24,8 +24,8 @@
 
 package org.opensolaris.opengrok.analysis.plain;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -39,10 +39,9 @@ public class XMLAnalyzerTest {
                 "  <bar name=\"com.foo.bar.MyClass\"/>\n" +
                 "  <bar name=\"README.txt\"/>\n" +
                 "</foo>";
-        ByteArrayInputStream bais = new ByteArrayInputStream(
-                xmlText.getBytes("US-ASCII"));
+        StringReader sr = new StringReader(xmlText);
         StringWriter sw = new StringWriter();
-        XMLAnalyzer.writeXref(bais, sw, null, null);
+        XMLAnalyzer.writeXref(sr, sw, null, null);
         String[] xref = sw.toString().split("\n");
         // Reference to a Java class should have / instead of . in the path
         assertTrue(xref[2].contains("path=com/foo/bar/MyClass"));

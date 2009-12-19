@@ -189,7 +189,8 @@ if (valid) {
                             if (g == Genre.PLAIN) {
                                 Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
                                 //annotation.writeTooltipMap(out); //not needed yet
-                                AnalyzerGuru.writeXref(a, in, out, annotation, Project.getProject(resourceFile));
+                                Reader r = new InputStreamReader(in);
+                                AnalyzerGuru.writeXref(a, r, out, annotation, Project.getProject(resourceFile));
                             } else if (g == Genre.IMAGE) {
 			       %><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
                             } else if (g == Genre.HTML) {
@@ -264,7 +265,8 @@ if (valid) {
             } else if(g == Genre.PLAIN) {
                 %><div id="src"><pre><%
                 Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;                
-                AnalyzerGuru.writeXref(a, bin, out, annotation, Project.getProject(resourceFile));
+                Reader r = new InputStreamReader(bin);
+                AnalyzerGuru.writeXref(a, r, out, annotation, Project.getProject(resourceFile));
                 %></pre></div><%
             } else {
 	        %> Click <a href="<%=context%>/raw<%=path%>">download <%=basename%></a><%

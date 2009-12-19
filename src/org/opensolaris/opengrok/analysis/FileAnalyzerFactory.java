@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collections;
@@ -218,7 +219,7 @@ public class FileAnalyzerFactory {
      * @param project project the file belongs to (could be {@code null})
      * @throws java.io.IOException if an error occurs 
      */
-    public void writeXref(InputStream in, Writer out, Annotation annotation, Project project)
+    public void writeXref(Reader in, Writer out, Annotation annotation, Project project)
             throws IOException {
         throw new UnsupportedOperationException("Not yet implemented");
     }

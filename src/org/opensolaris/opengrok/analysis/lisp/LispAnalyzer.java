@@ -78,7 +78,7 @@ public class LispAnalyzer extends PlainAnalyzer {
      * @param out Output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(InputStream in, Writer out, Annotation annotation, Project project) throws IOException {
+    static void writeXref(Reader in, Writer out, Annotation annotation, Project project) throws IOException {
         LispXref xref = new LispXref(in);
         xref.annotation = annotation;
         xref.project = project;

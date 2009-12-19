@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -284,7 +285,7 @@ public class AnalyzerGuru {
      * @throws java.io.IOException If an error occurs while creating the
      *                             output
      */
-    public static void writeXref(FileAnalyzerFactory factory, InputStream in,
+    public static void writeXref(FileAnalyzerFactory factory, Reader in,
                                  Writer out, Annotation annotation, Project project)
         throws IOException
     {

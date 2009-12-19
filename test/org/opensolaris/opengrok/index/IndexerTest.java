@@ -24,9 +24,8 @@
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -174,7 +173,7 @@ public class IndexerTest {
             if (factory == null) {
                 continue;
             }
-            InputStream in = new FileInputStream(f);
+            FileReader in = new FileReader(f);
             StringWriter out = new StringWriter();
             try {
                 AnalyzerGuru.writeXref(factory, in, out, null, null);

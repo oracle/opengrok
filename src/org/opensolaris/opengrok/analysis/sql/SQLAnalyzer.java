@@ -25,7 +25,6 @@
 package org.opensolaris.opengrok.analysis.sql;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -60,7 +59,7 @@ public class SQLAnalyzer extends PlainAnalyzer {
      * @param out output xref writer
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(InputStream in, Writer out, Annotation annotation, Project project) throws IOException {
+    static void writeXref(Reader in, Writer out, Annotation annotation, Project project) throws IOException {
         SQLXref xref = new SQLXref(in);
         xref.annotation = annotation;
         xref.project = project;

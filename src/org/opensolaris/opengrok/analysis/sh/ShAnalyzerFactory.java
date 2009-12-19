@@ -24,7 +24,7 @@
 package org.opensolaris.opengrok.analysis.sh;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
@@ -74,7 +74,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     }
 
     @Override
-    public void writeXref(InputStream in, Writer out, Annotation annotation, Project project)
+    public void writeXref(Reader in, Writer out, Annotation annotation, Project project)
         throws IOException {
         ShAnalyzer.writeXref(in, out, annotation, project);
     }
