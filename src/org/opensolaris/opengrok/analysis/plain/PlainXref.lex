@@ -86,6 +86,13 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 		out.write(s);out.write("</a>");*/
 	}
 
+// Bug #13362: If there's a very long sequence that matches {FNameChar}+,
+// parsing the file will take forever because of all the backtracking. With
+// this rule, we avoid much of the backtracking and speed up the parsing
+// (in some cases from hours to seconds!). This rule will not interfere with
+// the rules above because JFlex always picks the longest match.
+{FNameChar}+ { out.write(yytext()); }
+
 "&"	{out.write( "&amp;");}
 "<"	{out.write( "&lt;");}
 ">"	{out.write( "&gt;");}
