@@ -127,7 +127,9 @@ public class ExpandTabsReader extends FilterReader {
         long skipped = 0;
         for (long l = 0; l < n; l++) {
             int c = read();
-            if (c == -1) break;
+            if (c == -1) {
+                break;
+            }
             skipped++;
         }
 
