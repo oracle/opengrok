@@ -78,6 +78,10 @@ public class FileAnalyzer extends Analyzer {
         this.ctags = ctags;
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     /**
      * Get the factory which created this analyzer.
      * @return the {@code FileAnalyzerFactory} which created this analyzer
@@ -125,12 +129,6 @@ public class FileAnalyzer extends Analyzer {
 
     public void writeXref(File xrefDir, String path) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-        if (env.hasProjects()) {
-            project = Project.getProject(path);
-        } else {
-            project = null;
-        }
 
         final boolean compressed = env.isCompressXref();
         final File file = new File(xrefDir, path + (compressed ? ".gz" : ""));

@@ -554,6 +554,7 @@ public class IndexDatabase {
         try {
             FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
             fa.setCtags(ctags);
+            fa.setProject(Project.getProject(path));
 
             Document d;
             try {

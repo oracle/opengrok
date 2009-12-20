@@ -33,6 +33,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.Hash2TokenStream;
@@ -67,7 +68,8 @@ public class PlainAnalyzer extends FileAnalyzer {
 
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
-        InputStreamReader inReader = new InputStreamReader(in);
+        Reader inReader =
+                ExpandTabsReader.wrap(new InputStreamReader(in), project);
         len = 0;
         do {
             int rbytes = inReader.read(content, len, content.length - len);

@@ -289,7 +289,13 @@ public class AnalyzerGuru {
                                  Writer out, Annotation annotation, Project project)
         throws IOException
     {
-        factory.writeXref(in, out, annotation, project);
+        Reader input = in;
+        if (factory.getGenre() == Genre.PLAIN) {
+            // This is some kind of text file, so we need to expand tabs to
+            // spaces to match the project's tab settings.
+            input = ExpandTabsReader.wrap(in, project);
+        }
+        factory.writeXref(input, out, annotation, project);
     }
 
     /**

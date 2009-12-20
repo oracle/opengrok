@@ -32,6 +32,12 @@ public class Project {
     private String path;
     // this variable is very important, since it's used as the project identifier all over xrefs and webapp
     private String description;
+
+    /**
+     * Size of tabs in this project. Used for displaying the xrefs correctly in
+     * projects with non-standard tab size.
+     */
+    private int tabSize;
     
     /**
      * Get a textual description of this project
@@ -56,7 +62,17 @@ public class Project {
     public String getId() {
         return path;
     }
-    
+
+    /**
+     * Get the tab size for this project, if tab size has been set.
+     *
+     * @return tab size if set, 0 otherwise
+     * @see #hasTabSizeSetting()
+     */
+    public int getTabSize() {
+        return tabSize;
+    }
+
     /**
      * Set a textual description of this project, prefferably don't use " , " in the name, since it's used as delimiter for more projects
      * @param description a textual description of the project
@@ -72,6 +88,26 @@ public class Project {
      */
     public void setPath(String path) {
         this.path = path;
+    }
+
+    /**
+     * Set tab size for this project. Used for expanding tabs to spaces
+     * in xrefs.
+     *
+     * @param tabSize the size of tabs in this project
+     */
+    public void setTabSize(int tabSize) {
+        this.tabSize = tabSize;
+    }
+
+    /**
+     * Has this project an explicit tab size setting?
+     *
+     * @return {@code true} if the tab size has been set for this project, or
+     * {@code false} if it hasn't and the default should be used
+     */
+    public boolean hasTabSizeSetting() {
+        return tabSize > 0;
     }
     
     /**
