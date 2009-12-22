@@ -133,7 +133,7 @@ if(resourcePath.length() < rawSource.length()
 
 %><%@ include file="httpheader.jspf" %>
 <body>
-<% if (!noAnnotation) { %>
+<% if (annotate) { %>
 <script type="text/javascript" src="<%=context%>/jquery-1.3.2.min.js"></script>
 <script type="text/javascript" src="<%=context%>/jquery.tooltip-1.3.pack.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
