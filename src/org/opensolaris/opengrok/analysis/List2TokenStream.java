@@ -24,10 +24,8 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.util.List;
-import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
-import org.opensolaris.opengrok.OpenGrokLogger;
 
 public final class List2TokenStream extends TokenStream {
 
@@ -37,15 +35,17 @@ public final class List2TokenStream extends TokenStream {
     private final TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
 
     public List2TokenStream(List<String> l) {
+        if (l == null) {
+            throw new NullPointerException();
+        }
         this.l = l;
         subTokens = null;
     }
 
     @Override
     public boolean incrementToken() throws java.io.IOException {
-        if (l == null || l.isEmpty()) {
-            //TODO check below, if it's needed, since on some repos we get this warning too many times ... might be because of bug 13364
-            OpenGrokLogger.getLogger().log(Level.FINE, "Cannot get tokens from an empty list!");
+        if (l.isEmpty()) {
+            // reached end of stream
             return false;
         }
 

@@ -24,6 +24,8 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -57,11 +59,29 @@ public class List2TokenStreamTest {
     public void tearDown() {
     }
 
+    /**
+     * Test that we don't get an error when the list is empty.
+     */
     @Test
     public void testBug3094() throws IOException {
-        List2TokenStream instance = new List2TokenStream(null);        
+        List<String> empty = Collections.emptyList();
+        List2TokenStream instance = new List2TokenStream(empty);
         assertNotNull(instance);
         assertFalse(instance.incrementToken());        
         instance.close();
+    }
+
+    /**
+     * Test that we get an error immediately when constructing a token stream
+     * where the list is {@code null}.
+     */
+    @Test
+    public void testFailfastOnNull() {
+        try {
+            new List2TokenStream(null);
+            fail("expected a NullPointerException");
+        } catch (NullPointerException npe) {
+            // expected
+        }
     }
 }
