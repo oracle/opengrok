@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis.executables;
@@ -67,6 +67,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * Created on September 23, 2005
  *
  * @author Chandan
+ * @author Lubos Kosco , January 2010 , updated bcel, comment on thread safety
  */
 public class JavaClassAnalyzer extends FileAnalyzer {
 
@@ -149,7 +150,8 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     protected String tagDef(String def) {
         return "<a class=\"d\" name=\"" + def + "\" href=\"" + urlPrefix + "defs=" + def + "\">" + def + "</a>";
     }
-
+    
+//TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
     private void getContent(Writer out) throws IOException {
         String t;
         cp = c.getConstantPool();
@@ -293,7 +295,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 }
             }
         }
-    }
+    }    
 
     /**
      * Write a cross referenced HTML file.

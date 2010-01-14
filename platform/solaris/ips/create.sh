@@ -61,8 +61,8 @@ PKGSEND add file OpenGrok mode=0777 owner=bin group=bin path=/usr/opengrok/bin/O
 PKGSEND add link path=/usr/opengrok/bin/lib target=../lib
 
 # install libs
-for file in bcel-5.1.jar jakarta-oro-2.0.8.jar \
-            lucene-core-2.4.1.jar lucene-spellchecker-2.4.1.jar \
+for file in bcel-5.2.jar jakarta-oro-2.0.8.jar \
+            lucene-core-3.0.0.jar lucene-spellchecker-3.0.0.jar \
             org.apache.commons.jrcs.diff.jar org.apache.commons.jrcs.rcs.jar \
             swing-layout-0.9.jar
 do
