@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -42,7 +42,9 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -54,6 +56,7 @@ import org.opensolaris.opengrok.index.IndexDatabase;
  * implement their own HistoryReader!)
  *
  * @author Chandan
+ * @author Lubos Kosco update for lucene 3.0.0
  */
 public class DirectoryHistoryReader {
 
@@ -82,8 +85,9 @@ public class DirectoryHistoryReader {
                 throw new IOException("Could not locate index database");
             }
             searcher = new IndexSearcher(ireader);
-            Sort sort = new Sort("date", true);
-            QueryParser qparser = new QueryParser("path", new CompatibleAnalyser());            
+            SortField sfield=new SortField("date",SortField.STRING, true);
+            Sort sort = new Sort(sfield);
+            QueryParser qparser = new QueryParser(Version.LUCENE_CURRENT,"path", new CompatibleAnalyser());
             Query query = null;            
             ScoreDoc[] hits = null;
             try {

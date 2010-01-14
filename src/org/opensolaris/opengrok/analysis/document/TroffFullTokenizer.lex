@@ -18,36 +18,41 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
 package org.opensolaris.opengrok.analysis.document;
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.apache.lucene.analysis.Token;
+
+
 %%
 
 %public
 %class TroffFullTokenizer
 %extends JFlexTokenizer
 %unicode
-%type Token 
+%type boolean
+%eofval{
+return false;
+%eofval}
 %caseless
 
 %{
-  public void close() throws IOException {
-  	yyclose();
-  }
-
-  public void reInit(char[] buf, int len) {
+    public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
   	zzBuffer = buf;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
-  }
+    }
 
+    @Override
+    public void close() throws IOException {
+       	yyclose();
+    }
 %}
 
 //WhiteSpace     = [ \t\f\r]+|\n
@@ -61,7 +66,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 \\f[ABCIR]  {}
 ^"...\\\"" {}
 
-\\&.        {reuseToken.reinit(".", zzStartRead, zzMarkedPos);return reuseToken;}
-{Identifier}|{Number}|{Printable}	{reuseToken.reinit(yytext().toLowerCase(), zzStartRead, zzMarkedPos);return reuseToken;}
-<<EOF>>   { return null;}
+\\&.        {setAttribs(".", zzStartRead, zzMarkedPos);return true;}
+{Identifier}|{Number}|{Printable}	{setAttribs(yytext().toLowerCase(), zzStartRead, zzMarkedPos);return true;}
+<<EOF>>   { return false;}
 .|\n	{}

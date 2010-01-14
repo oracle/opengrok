@@ -23,7 +23,7 @@
  */
 package org.opensolaris.opengrok.analysis;
 
-import org.apache.lucene.analysis.Token;
+import java.io.IOException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -58,11 +58,10 @@ public class List2TokenStreamTest {
     }
 
     @Test
-    public void testBug3094() {
-        List2TokenStream instance = new List2TokenStream(null);
-        Token test=new Token();
+    public void testBug3094() throws IOException {
+        List2TokenStream instance = new List2TokenStream(null);        
         assertNotNull(instance);
-        assertNull(instance.next(test));
+        assertFalse(instance.incrementToken());        
         instance.close();
     }
 }

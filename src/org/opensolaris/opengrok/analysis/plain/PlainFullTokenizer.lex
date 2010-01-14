@@ -18,40 +18,40 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis.plain;
-
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.util.Locale;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.apache.lucene.analysis.Token;
 %%
 
 %public
 %class PlainFullTokenizer
 %extends JFlexTokenizer
 %unicode
-%type Token 
+%type boolean
+%eofval{
+return false;
+%eofval}
 %caseless
 %switch
 
 %{
-  public void close() throws IOException {
-  	yyclose();
-  }
-
-  public void reInit(char[] buf, int len) {
+    public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
   	zzBuffer = buf;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
-  }
+    }
 
+    @Override
+    public void close() throws IOException {
+       	yyclose();
+    }
 %}
 
 //WhiteSpace     = [ \t\f\r]+|\n
@@ -61,7 +61,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
 {Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
-                        reuseToken.reinit(yytext().toLowerCase(Locale.getDefault()), zzStartRead, zzMarkedPos);
-                        return reuseToken; }
-<<EOF>>   { return null;} 
+                        setAttribs(yytext().toLowerCase(Locale.getDefault()), zzStartRead, zzMarkedPos);
+                        return true; }
+<<EOF>>   { return false;}
 .|\n	{}

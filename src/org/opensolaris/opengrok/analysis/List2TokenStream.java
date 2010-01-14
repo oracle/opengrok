@@ -18,15 +18,15 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.util.List;
 import java.util.logging.Level;
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.opensolaris.opengrok.OpenGrokLogger;
 
 public final class List2TokenStream extends TokenStream {
@@ -34,6 +34,7 @@ public final class List2TokenStream extends TokenStream {
     private List<String> l;
     private String[] subTokens;
     private int si;
+    private final TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
 
     public List2TokenStream(List<String> l) {
         this.l = l;
@@ -41,32 +42,33 @@ public final class List2TokenStream extends TokenStream {
     }
 
     @Override
-    public Token next(Token reusableToken) {
+    public boolean incrementToken() throws java.io.IOException {
         if (l == null || l.isEmpty()) {
+            //TODO check below, if it's needed, since on some repos we get this warning too many times ... might be because of bug 13364
             OpenGrokLogger.getLogger().log(Level.FINE, "Cannot get tokens from an empty list!");
-            return null;
+            return false;
         }
 
         if (subTokens == null || subTokens.length == si) {
             String tok = l.remove(0);
             if (tok == null) {
-                return null;
+                return false;
             } else {
                 if (tok.indexOf('.') > 0) {
                     subTokens = tok.split("[^a-z0-9A-Z_]+");
                 } else {
                     subTokens = null;
-                    reusableToken.reinit(tok,0,0);
-                    return reusableToken;
+                    termAtt.setTermBuffer(tok);                    
+                    return true;
                 }
                 si = 0;
             }
         }
         if (si < subTokens.length) {
-            reusableToken.reinit(subTokens[si++], 0, 0);
-            return reusableToken;
+            termAtt.setTermBuffer(subTokens[si++]);            
+            return true;
         } else {
-            return null;
+            return false;
         }
     }
 

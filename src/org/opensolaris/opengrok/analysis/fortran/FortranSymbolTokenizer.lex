@@ -18,34 +18,37 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis.fortran;
-
+import java.io.IOException;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.apache.lucene.analysis.Token;
-
 
 %%
 %public
 %class FortranSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
-%type Token 
+%type boolean
+%eofval{
+return false;
+%eofval}
 
 %{
-  public void close() {
-  }
-
-  public void reInit(char[] buf, int len) {
+    public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
   	zzBuffer = buf;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
-  }
+    }
+
+    @Override
+    public void close() throws IOException {
+       	yyclose();
+    }
 %}
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Label = [0-9]+
@@ -59,8 +62,8 @@ Label = [0-9]+
  ^[^ \t\f\r\n]+	{ yybegin(SCOMMENT); }
 {Identifier} {String id = yytext();
 		if(!Consts.kwd.contains(id.toLowerCase())) {
-                        reuseToken.reinit(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
-                        return reuseToken; }
+                        setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        return true; }
               }
  \"	{ yybegin(STRING); }
  \'	{ yybegin(QSTRING); }
@@ -85,6 +88,6 @@ Label = [0-9]+
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-<<EOF>>   { return null;} 
+<<EOF>>   { return false;}
 .|\n	{}
 }

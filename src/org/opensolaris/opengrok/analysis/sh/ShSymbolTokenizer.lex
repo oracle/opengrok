@@ -18,35 +18,39 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.apache.lucene.analysis.Token;
 %%
 %public
 %class ShSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
-%type Token
+%type boolean
+%eofval{
+return false;
+%eofval}
 
 %{
-  public void close() throws IOException {
-  	yyclose();
-  }
-
-  public void reInit(char[] buf, int len) {
+    public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
   	zzBuffer = buf;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
-  }
+    }
 
+    @Override
+    public void close() throws IOException {
+       	yyclose();
+    }
 %}
+
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
 %state STRING COMMENT SCOMMENT QSTRING
@@ -56,8 +60,8 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 <YYINITIAL> {
 {Identifier} {String id = yytext();
 		if(!Consts.shkwd.contains(id)){
-                        reuseToken.reinit(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
-                        return reuseToken; }
+                        setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        return true; }
               }
  \"	{ yybegin(STRING); }
  \'	{ yybegin(QSTRING); }
@@ -65,8 +69,8 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <STRING> {
-"$" {Identifier} { reuseToken.reinit( zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-1 , zzStartRead, zzMarkedPos);return reuseToken;}
-"${" {Identifier} "}" { reuseToken.reinit( zzBuffer, zzStartRead+2, zzMarkedPos-zzStartRead-3 , zzStartRead, zzMarkedPos);return reuseToken;}
+"$" {Identifier} { setAttribs( zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-1 , zzStartRead, zzMarkedPos);return true;}
+"${" {Identifier} "}" { setAttribs( zzBuffer, zzStartRead+2, zzMarkedPos-zzStartRead-3 , zzStartRead, zzMarkedPos);return true;}
 
  \"	{ yybegin(YYINITIAL); }
 \\\\ | \\\"	{}
@@ -81,6 +85,6 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING> {
-<<EOF>>   { return null;} 
+<<EOF>>   { return false;}
 .|\n	{}
 }

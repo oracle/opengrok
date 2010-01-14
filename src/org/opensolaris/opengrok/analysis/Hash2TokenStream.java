@@ -18,27 +18,29 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.util.Iterator;
 import java.util.Set;
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 public final class Hash2TokenStream extends TokenStream {
     int i=0;
     String term;
     String terms[];
     Iterator<String> keys;
+    private final TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
+
     public Hash2TokenStream(Set<String> symbols){
         keys = symbols.iterator();
     }
     
     @Override
-    public Token next(Token reusableToken ) {
+    public boolean incrementToken() throws java.io.IOException {
 	while(true) {
 	    if (i <= 0) {
 		if (keys.hasNext()) {
@@ -46,19 +48,19 @@ public final class Hash2TokenStream extends TokenStream {
 		    terms = term.split("[^a-zA-Z_0-9]+");
 		    i = terms.length;
 		    if (i > 0) {
-                        reusableToken.reinit(terms[--i], 0, 0);
-			return reusableToken;
+                        termAtt.setTermBuffer(terms[--i]);
+			return true;
 		    } else {
                         // no tokens found in this key, try next
                         continue;
 		    }
 		} else {
-		    return null;
+		    return false;
 		}
 	    } else {
 		//System.out.println("Returning " + term + h.get(term));
-                reusableToken.reinit(terms[--i], 0, 0);
-		return reusableToken;		
+                termAtt.setTermBuffer(terms[--i]);
+		return true;
 	    }
 	}
     }
@@ -66,5 +68,5 @@ public final class Hash2TokenStream extends TokenStream {
     @Override
     public void close() {
         // Nothing to close
-    }
+    }    
 }

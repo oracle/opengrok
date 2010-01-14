@@ -16,10 +16,8 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
-
-ident	"%Z%%M% %I%     %E% SMI"
 
 --%><%@ page import = "javax.servlet.*,
 java.lang.*,
@@ -33,14 +31,15 @@ org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
 java.util.regex.*,
 org.apache.lucene.queryParser.*,
-org.apache.lucene.search.*"
+org.apache.lucene.search.*,
+org.apache.lucene.util.Version"
 %><%@include file="mast.jsp"%><%
 
 if (valid) {
   String grepTerms = null;
   if((grepTerms = request.getParameter("t")) != null && !grepTerms.equals("")) {
 	try{
-		QueryParser qparser = new QueryParser("full", new CompatibleAnalyser());
+		QueryParser qparser = new QueryParser(Version.LUCENE_CURRENT,"full", new CompatibleAnalyser());
                 qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
                 qparser.setAllowLeadingWildcard(environment.isAllowLeadingWildcard());
 		Query tquery = qparser.parse(grepTerms);

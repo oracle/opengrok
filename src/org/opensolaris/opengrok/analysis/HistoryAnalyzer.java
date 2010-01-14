@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -55,7 +55,9 @@ public final class HistoryAnalyzer extends Analyzer {
     }
     
     /** Filters LowerCaseTokenizer with StopFilter. */
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
-        return new StopFilter(new PlainFullTokenizer(reader), stopWords);
+        //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
+        return new StopFilter(true,new PlainFullTokenizer(reader), stopWords);
     }
 }

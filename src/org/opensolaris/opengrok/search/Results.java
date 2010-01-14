@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.search;
@@ -104,7 +104,7 @@ public final class Results {
                     Definitions tags = null;
                     Fieldable tagsField = doc.getFieldable("tags");
                     if (tagsField != null) {
-                        tags = Definitions.deserialize(tagsField.binaryValue());
+                        tags = Definitions.deserialize(tagsField.getBinaryValue());
                     }
                     try {
                         if ("p".equals(genre) && srcRoot != null) {
@@ -117,6 +117,7 @@ public final class Results {
                             else {
                                     r = new TagFilter(new BufferedReader(new FileReader(dataRoot + "/xref" + rpath))); }                            
                             int len = r.read(content);
+                            //fixme use Highlighter from lucene contrib here, instead of summarizer, we'd also get rid of apache lucene in whole source ...
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
                             r.close();
                         } else if("h".equals(genre) && srcRoot != null && summer != null){

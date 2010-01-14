@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Micosystems.  All rights reserved.
+ * Copyright 2010 Sun Micosystems.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -46,7 +46,9 @@ import org.apache.lucene.search.ParallelMultiSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Searcher;
-import org.apache.lucene.search.TopDocCollector;
+import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -64,7 +66,7 @@ import org.opensolaris.opengrok.web.Util;
  * database.
  *
  * @author Trond Norbye 2005
- * @author Lubos Kosco 2009 - upgrade to lucene 2.4.1
+ * @author Lubos Kosco 2010 - upgrade to lucene 3.0.0
  */
 public class SearchEngine {
     /** Message text used when logging exceptions thrown when searching. */
@@ -109,13 +111,14 @@ public class SearchEngine {
     private final char[] content = new char[1024*8];
     private String source;
     private String data;
+    private final static boolean docsScoredInOrder=false;
 
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages= RuntimeEnvironment.getInstance().getCachePages();
     int totalHits=0;
     
     private ScoreDoc[] hits=null;
-    private TopDocCollector collector=null;
+    private TopScoreDocCollector collector=null;
     private Searcher searcher=null;
     boolean allCollected=false;
 
@@ -124,7 +127,7 @@ public class SearchEngine {
      */
     public SearchEngine() {
         analyzer = new CompatibleAnalyser();
-        qparser = new QueryParser("full", analyzer);
+        qparser = new QueryParser(Version.LUCENE_CURRENT,"full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
         docs = new ArrayList<org.apache.lucene.document.Document>();
@@ -154,13 +157,13 @@ public class SearchEngine {
      * @throws IOException
      */
     private void searchSingleDatabase(File root,boolean paging) throws IOException {
-        IndexReader ireader = IndexReader.open(root);
+        IndexReader ireader = IndexReader.open(FSDirectory.open(root),true);
         searcher = new IndexSearcher(ireader);
-        collector = new TopDocCollector(hitsPerPage*cachePages);        
+        collector = TopScoreDocCollector.create(hitsPerPage*cachePages,docsScoredInOrder);
         searcher.search(query,collector);
         totalHits=collector.getTotalHits();
         if (!paging) {
-               collector = new TopDocCollector(totalHits);
+               collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
                searcher.search(query,collector);
         } 
         hits = collector.topDocs().scoreDocs;
@@ -182,17 +185,17 @@ public class SearchEngine {
         File droot=new File(RuntimeEnvironment.getInstance().getDataRootFile(), "index");
         int ii=0;
         for (Project project : root) {
-        IndexReader ireader = (IndexReader.open(new File(droot,project.getPath()) ));
+        IndexReader ireader = (IndexReader.open(FSDirectory.open(new File(droot,project.getPath()) ),true));
         searchables[ii++]=new IndexSearcher(ireader);
         }
         if (Runtime.getRuntime().availableProcessors()>1) {
             searcher = new ParallelMultiSearcher(searchables); }
         else { searcher = new MultiSearcher(searchables); }
-        collector = new TopDocCollector(hitsPerPage*cachePages);        
+        collector = TopScoreDocCollector.create(hitsPerPage*cachePages,docsScoredInOrder);
         searcher.search(query,collector);
         totalHits=collector.getTotalHits();
         if (!paging) {
-               collector = new TopDocCollector(totalHits);
+               collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
                searcher.search(query,collector);
         }
         hits = collector.topDocs().scoreDocs;
@@ -285,7 +288,7 @@ public class SearchEngine {
         //TODO check if below fits for if end=old hits.length, or it should include it
         if (end>hits.length & !allCollected) {
          //do the requery, we want more than 5 pages
-         collector = new TopDocCollector(totalHits);
+         collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
          try {
              searcher.search(query,collector);
          } catch (Exception e) { // this exception should never be hit, since search() will hit this before
@@ -320,7 +323,7 @@ public class SearchEngine {
                 Definitions tags = null;
                 Fieldable tagsField = doc.getFieldable("tags");                
                 if (tagsField != null) {
-                    tags = Definitions.deserialize(tagsField.binaryValue());
+                    tags = Definitions.deserialize(tagsField.getBinaryValue());
                 }
                 int nhits = docs.size();
                 

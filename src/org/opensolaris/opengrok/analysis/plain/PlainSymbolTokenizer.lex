@@ -18,39 +18,42 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.apache.lucene.analysis.Token;
 %%
 %public
 %class PlainSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
-%type Token 
+%type boolean
+%eofval{
+return false;
+%eofval}
 
 %{
-  public void close() throws IOException {
-  	yyclose();
-  }
-  public void reInit(char[] buf, int len) {
+    public void reInit(char[] buf, int len) {
   	yyreset((Reader) null);
   	zzBuffer = buf;
   	zzEndRead = len;
 	zzAtEOF = true;
 	zzStartRead = 0;
-  }
+    }
 
+    @Override
+    public void close() throws IOException {
+       	yyclose();
+    }
 %}
-
 
 %%
 //TODO decide if we should let one char symbols
-[a-zA-Z_] [a-zA-Z0-9_]+ {reuseToken.reinit(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
-                        return reuseToken; }
-<<EOF>>   { return null;} 
+[a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        return true; }
+<<EOF>>   { return false;}
 .|\n	{}

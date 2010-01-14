@@ -16,10 +16,8 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
-
-ident	"%Z%%M% %I%     %E% SMI"
 
 --%><%@ page import = "javax.servlet.*,
 java.lang.Integer,
@@ -40,11 +38,14 @@ org.opensolaris.opengrok.search.context.*,
 org.opensolaris.opengrok.configuration.*,
 org.apache.lucene.search.spell.LuceneDictionary,
 org.apache.lucene.search.spell.SpellChecker,
+org.apache.lucene.search.SortField,
+org.apache.lucene.search.TopScoreDocCollector,
 org.apache.lucene.store.FSDirectory,
 org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
 org.apache.lucene.index.*,
 org.apache.lucene.search.*,
+org.apache.lucene.util.Version,
 org.apache.lucene.queryParser.*"
 %><%@ page session="false" %><%@ page errorPage="error.jsp" %><%
 Date starttime = new Date();
@@ -60,6 +61,7 @@ String sort = null;
 final String LASTMODTIME = "lastmodtime";
 final String RELEVANCY = "relevancy";
 final String BY_PATH = "fullpath";
+final SortField S_BY_PATH = new SortField(BY_PATH,SortField.STRING);
 
 Cookie[] cookies = request.getCookies();
 if (cookies != null) {
@@ -101,7 +103,7 @@ if (project != null && project.size()<1) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
     Searcher searcher = null;		    //the searcher used to open/search the index
-    TopDocCollector collector=null;         // the collector used
+    TopScoreDocCollector collector=null;         // the collector used
     ScoreDoc[] hits = null;                 // list of documents which result from the query
     IndexReader ireader = null; 	    //the reader used to open/search the index
     Query query = null, defQuery = null; 		    //the Query created by the QueryParser
@@ -115,6 +117,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
 
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages= RuntimeEnvironment.getInstance().getCachePages();
+    final boolean docsScoredInOrder=false;
 
     int thispage = 0;			    //used for the for/next either max or
     String moreUrl = null;
@@ -141,7 +144,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         
         qstr = Util.buildQueryString(q, defs, refs, path, hist);
                                 
-        QueryParser qparser = new QueryParser("full", analyzer);
+        QueryParser qparser = new QueryParser(Version.LUCENE_CURRENT,"full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         qparser.setAllowLeadingWildcard(env.isAllowLeadingWildcard());
 
@@ -160,7 +163,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                     int ii = 0;
                     //TODO might need to rewrite to Project instead of String , need changes in projects.jspf too
                     for (String proj : project) {
-                        ireader = (IndexReader.open(new File(droot, proj)));
+                        ireader = (IndexReader.open(FSDirectory.open(new File(droot, proj)),true));
                         searchables[ii++] = new IndexSearcher(ireader);
                     }
                     if (Runtime.getRuntime().availableProcessors() > 1) {
@@ -170,20 +173,20 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                     }
                 } else { // just 1 project selected
                     root = new File(root, project.get(0));
-                    ireader = IndexReader.open(root);
+                    ireader = IndexReader.open(FSDirectory.open(root),true);
                     searcher = new IndexSearcher(ireader);
                 }
             }
         } else { //no project setup
-            ireader = IndexReader.open(root);
+            ireader = IndexReader.open(FSDirectory.open(root),true);
             searcher = new IndexSearcher(ireader);
             }
 
         //TODO check if below is somehow reusing sessions so we don't requery again and again, I guess 2min timeout sessions could be usefull, since you click on the next page within 2mins, if not, then wait ;)
         if (errorMsg == null) {                        
-            collector = new TopDocCollector(hitsPerPage*cachePages);
+            collector = TopScoreDocCollector.create(hitsPerPage*cachePages,docsScoredInOrder);
             if (LASTMODTIME.equals(sort)) {
-                Sort sortf = new Sort("date", true);
+                Sort sortf = new Sort(new SortField("date",SortField.STRING,true));
                 TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sortf);
                 totalHits=fdocs.totalHits;
                 if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
@@ -192,7 +195,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                 }
                 hits = fdocs.scoreDocs; 
             } else if (BY_PATH.equals(sort)) {
-                Sort sortf = new Sort(BY_PATH);
+                Sort sortf = new Sort(S_BY_PATH);
                 TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sortf);
                 totalHits=fdocs.totalHits;
                 if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
@@ -204,7 +207,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                 searcher.search(query,collector);
                 totalHits=collector.getTotalHits();
                 if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
-                 collector = new TopDocCollector(totalHits);
+                 collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
                  searcher.search(query,collector);
                  allCollected=true;
                 }
@@ -319,7 +322,7 @@ if( hits == null || errorMsg != null) {
                 if (spellIndexes!=null) spellIndex = spellIndexes[idx];
                 
                  if (spellIndex.exists()) {
-                    FSDirectory spellDirectory = FSDirectory.getDirectory(spellIndex);
+                    FSDirectory spellDirectory = FSDirectory.open(spellIndex);
                     SpellChecker checker = new SpellChecker(spellDirectory);
 
                     Date sstart = new Date();

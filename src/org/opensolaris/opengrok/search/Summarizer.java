@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-// modified by Lubos Kosco 2009 to upgrade lucene to 2.4.1
+// modified by Lubos Kosco 2010 to upgrade lucene to 3.0.0
+
+// TODO : rewrite this to use Highlighter from lucene contrib ...
 
 package org.opensolaris.opengrok.search;
 
@@ -30,6 +32,8 @@ import java.util.TreeSet;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -135,6 +139,7 @@ public class Summarizer {
         //
         @SuppressWarnings("PMD.ConfusingTernary")
         SortedSet<Excerpt> excerptSet = new TreeSet<Excerpt>(new Comparator<Excerpt>() {
+            @Override
             public int compare(Excerpt excerpt1, Excerpt excerpt2) {
                 if (excerpt1 != null && excerpt2 != null) {
                     int numToks1 = excerpt1.numUniqueTokens();
@@ -162,7 +167,7 @@ public class Summarizer {
         // Iterate through all terms in the document
         //
         int lastExcerptPos = 0;
-        for (int i = 0; i < tokens.length; i++) {
+        for (int i = 0; i < tokens.length; i++) {        
             //
             // If we find a term that's in the query...
             //
@@ -281,12 +286,15 @@ public class Summarizer {
     }
     
     private Token[] getTokens(String text) throws IOException {
-        //TODO somehow integrate below cycle to getSummary to save the cloning and memory
+        //fixme somehow integrate below cycle to getSummary to save the cloning and memory,
+        //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
         ArrayList<Token> result = new ArrayList<Token>();
         TokenStream ts = analyzer.tokenStream("full", new StringReader(text));
-        Token token=new Token();
-        for (token=ts.next(token); token != null; token=ts.next(token)) {
-            result.add((Token)token.clone());
+        TermAttribute term = (TermAttribute) ts.addAttribute(TermAttribute.class);
+        OffsetAttribute offset=(OffsetAttribute) ts.addAttribute(OffsetAttribute.class);
+        while(ts.incrementToken()) {
+            Token t=new Token(term.termBuffer(),0,term.termLength(),offset.startOffset(),offset.endOffset());
+            result.add(t);
         }        
         return result.toArray(new Token[result.size()]);
     }

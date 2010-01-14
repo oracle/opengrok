@@ -48,6 +48,12 @@
     <Bug code="SF"/>
   </Match>
 
+  <!-- ignore generated analysis classes which don't need to override equals or hashcode -->
+  <Match>
+      <Class name="~org\.opensolaris\.opengrok\.analysis.*"/>
+      <Bug code="Eq"/>
+  </Match>
+
   <!-- exitListener must be allowed to call System.exit() -->
   <Match>
       <And>

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.index;
@@ -45,6 +45,9 @@ import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.store.SimpleFSLockFactory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
@@ -60,6 +63,7 @@ import org.opensolaris.opengrok.web.Util;
  * one index database per project. 
  * 
  * @author Trond Norbye
+ * @author Lubos Kosco , update for lucene 3.0.0
  */
 public class IndexDatabase {
 
@@ -80,6 +84,7 @@ public class IndexDatabase {
     private List<String> directories;
     private static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
     private Ctags ctags;
+    private LockFactory lockfact;
 
     /**
      * Create a new instance of the Index Database. Use this constructor if
@@ -88,7 +93,7 @@ public class IndexDatabase {
      * @throws java.io.IOException if an error occurs while creating directories
      */
     public IndexDatabase() throws IOException {
-        initialize();
+        this(null);        
     }
 
     /**
@@ -96,8 +101,9 @@ public class IndexDatabase {
      * @param project the project to create the database for
      * @throws java.io.IOException if an errror occurs while creating directories
      */
-    public IndexDatabase(Project project) throws IOException {
+    public IndexDatabase(Project project) throws IOException {        
         this.project = project;
+        lockfact = new SimpleFSLockFactory();
         initialize();
     }
 
@@ -230,12 +236,12 @@ public class IndexDatabase {
                     throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
                 }
             }
-
+            
             if (!env.isUsingLuceneLocking()) {
-                FSDirectory.setDisableLocks(true);
+                 lockfact = NoLockFactory.getNoLockFactory();
             }
-            indexDirectory = FSDirectory.getDirectory(indexDir);
-            spellDirectory = FSDirectory.getDirectory(spellDir);
+            indexDirectory = FSDirectory.open(indexDir,lockfact);
+            spellDirectory = FSDirectory.open(spellDir,lockfact);
             ignoredNames = env.getIgnoredNames();
             analyzerGuru = new AnalyzerGuru();
             if (env.isGenerateHtml()) {
@@ -320,7 +326,7 @@ public class IndexDatabase {
                 HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
 
                 String startuid = Util.uid(dir, "");
-                IndexReader reader = IndexReader.open(indexDirectory);		 // open existing index
+                IndexReader reader = IndexReader.open(indexDirectory,false);		 // open existing index
                 try {
                     uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
 
@@ -463,7 +469,7 @@ public class IndexDatabase {
             if (RuntimeEnvironment.getInstance().isVerbose()) {
                 log.info("Generating spelling suggestion index ... ");
             }
-            indexReader = IndexReader.open(indexDirectory);
+            indexReader = IndexReader.open(indexDirectory,false);
             checker = new SpellChecker(spellDirectory);
             //TODO below seems only to index "defs" , possible bug ?
             checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));
@@ -784,7 +790,7 @@ public class IndexDatabase {
         TermEnum iter = null;
 
         try {
-            ireader = IndexReader.open(indexDirectory);	      // open existing index
+            ireader = IndexReader.open(indexDirectory,false);	      // open existing index
             iter = ireader.terms(new Term("u", "")); // init uid iterator
             while (iter.term() != null) {
                 log.info(Util.uid2url(iter.term().text()));
@@ -845,7 +851,7 @@ public class IndexDatabase {
         TermEnum iter = null;
 
         try {
-            ireader = IndexReader.open(indexDirectory);
+            ireader = IndexReader.open(indexDirectory,false);
             iter = ireader.terms(new Term("defs", ""));
             while (iter.term() != null) {
                 if (iter.term().field().startsWith("f")) {
@@ -896,16 +902,15 @@ public class IndexDatabase {
                 indexDir = new File(indexDir, p.getPath());
             }
         }
-
-        if (indexDir.exists() && IndexReader.indexExists(indexDir)) {
             try {
-                ret = IndexReader.open(indexDir);
+                FSDirectory fdir=FSDirectory.open(indexDir,NoLockFactory.getNoLockFactory());
+                if (indexDir.exists() && IndexReader.indexExists(fdir)) {
+                    ret = IndexReader.open(fdir,false);
+                }
             } catch (Exception ex) {
                 log.severe("Failed to open index: " + indexDir.getAbsolutePath());
-                log.log(Level.FINE,"Stack Trace: ",ex); 
+                log.log(Level.FINE,"Stack Trace: ",ex);
             }
-        }
-
         return ret;
     }
 

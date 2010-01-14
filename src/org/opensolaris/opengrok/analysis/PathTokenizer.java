@@ -18,30 +18,32 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.Reader;
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 public class PathTokenizer extends Tokenizer {
 
     private static final char dirSep = '/';
     private boolean dot = false;
+    private final static char ADOT[]={'.'};
+    private final TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);    
 
     public PathTokenizer(Reader input) {
         super(input);
     }
 
     @Override
-    public final Token next(Token reusableToken) throws java.io.IOException {
+    public final boolean incrementToken() throws java.io.IOException {
         if (dot) {
             dot = false;
-            reusableToken.reinit(".", 0, 0);
-            return reusableToken;
+            termAtt.setTermBuffer(ADOT,0,1);
+            return true;
         }
 
         char buf[] = new char[64];
@@ -50,7 +52,7 @@ public class PathTokenizer extends Tokenizer {
         do {
             c = input.read();
             if (c == -1) {
-                return null;
+                return false;
             }
         } while (c == dirSep);
 
@@ -66,7 +68,7 @@ public class PathTokenizer extends Tokenizer {
         if (c == '.') {
             dot = true;
         }
-        reusableToken.reinit(buf, 0, i, 0, 0);
-        return reusableToken;
+        termAtt.setTermBuffer(buf, 0, i);       
+        return true;
     }
 }
