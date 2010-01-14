@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.index;
@@ -586,9 +586,8 @@ public final class Indexer {
         executor.shutdown();
         while (!executor.isTerminated()) {
             try {
-                // Wait forever
-                // @newjdk : 999,TimeUnit.DAYS
-                executor.awaitTermination(999*60*60*24, TimeUnit.SECONDS);
+                // Wait forever                
+                executor.awaitTermination(999,TimeUnit.DAYS);
             } catch (InterruptedException exp) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }

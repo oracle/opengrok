@@ -45,8 +45,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
     abstract public boolean yylex() throws java.io.IOException ;
     
     protected TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
-    protected OffsetAttribute offsetAtt=(OffsetAttribute) addAttribute(OffsetAttribute.class);
-    //fixme increasing below might be tricky, need more analysis
+    protected OffsetAttribute offsetAtt=(OffsetAttribute) addAttribute(OffsetAttribute.class);    
     protected PositionIncrementAttribute posIncrAtt= (PositionIncrementAttribute) addAttribute(PositionIncrementAttribute.class);
 
     /**
@@ -60,6 +59,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
     }
 
     protected void setAttribs(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
+        //FIXME increasing below by one(default) might be tricky, need more analysis
         this.posIncrAtt.setPositionIncrement(1);
         this.termAtt.setTermBuffer(startTermBuffer,termBufferOffset,termBufferLength);
         this.offsetAtt.setOffset(start, end);

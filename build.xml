@@ -88,7 +88,7 @@ Use is subject to license terms.
 
     -->
 
-    <property name="version" value="0.8.1"/>
+    <property name="version" value="0.9"/>
     <property name="distname" value="opengrok"/>
     
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>

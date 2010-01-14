@@ -454,9 +454,8 @@ public final class HistoryGuru {
         executor.shutdown();
         while (!executor.isTerminated()) {
             try {
-                // Wait forever
-                // @newjdk : 999,TimeUnit.DAYS
-                executor.awaitTermination(999 * 60 * 60 * 24, TimeUnit.SECONDS);
+                // Wait forever                
+                executor.awaitTermination(999,TimeUnit.DAYS);
             } catch (InterruptedException exp) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
