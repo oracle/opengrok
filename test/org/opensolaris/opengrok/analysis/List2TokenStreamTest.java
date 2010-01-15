@@ -79,8 +79,8 @@ public class List2TokenStreamTest {
     public void testFailfastOnNull() {
         try {
             new List2TokenStream(null);
-            fail("expected a NullPointerException");
-        } catch (NullPointerException npe) {
+            fail("expected an IllegalArgumentException");
+        } catch (IllegalArgumentException iae) {
             // expected
         }
     }

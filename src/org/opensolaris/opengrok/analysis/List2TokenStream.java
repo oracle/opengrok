@@ -36,7 +36,7 @@ public final class List2TokenStream extends TokenStream {
 
     public List2TokenStream(List<String> l) {
         if (l == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException("list is null");
         }
         this.l = l;
         subTokens = null;
