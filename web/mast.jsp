@@ -134,7 +134,7 @@ if(resourcePath.length() < rawSource.length()
 %><%@ include file="httpheader.jspf" %>
 <body>
 <% if (annotate) { %>
-<script type="text/javascript" src="<%=context%>/jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="<%=context%>/jquery-1.4.min.js"></script>
 <script type="text/javascript" src="<%=context%>/jquery.tooltip-1.3.pack.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
 function toggle_annotations() {
@@ -152,7 +152,7 @@ function toggle_annotations() {
 $().ready(function() {
     $('a[id=r]').tooltip({
         left: 5,
-	showURL: false,        
+	showURL: false
 });
        } );
 /* ]]> */</script>
