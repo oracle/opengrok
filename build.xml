@@ -175,19 +175,8 @@ Use is subject to license terms.
         <exec executable="${hg}"
               failifexecutionfails="no"
               outputproperty="changeset">
-            <arg value="log"/>
-            <arg value="-r"/>
-            <arg value="tip"/>
-            <redirector>
-                <outputfilterchain>
-                    <filterreader classname="org.apache.tools.ant.filters.LineContainsRegExp">
-                        <param type="regexp" value="^changeset:"/>
-                    </filterreader>
-                    <tokenfilter>
-                        <replaceregex pattern="^changeset:[^:]*:" replace=""/>
-                    </tokenfilter>
-                </outputfilterchain>
-            </redirector>
+            <arg value="identify"/>
+            <arg value="--id"/>
         </exec>
     </target>
 
