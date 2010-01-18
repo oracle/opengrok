@@ -19,7 +19,10 @@ CDDL HEADER END
 Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%><%@ page import="org.opensolaris.opengrok.configuration.*"%><%
+--%><%@ page import="org.opensolaris.opengrok.configuration.*"
+contentType="text/html; charset=UTF-8"
+pageEncoding="UTF-8"
+%><%
 String laf = environment.getWebappLAF();
 %><%-- String server="http://"+request.getServerName()+":"+request.getServerPort();
  <base href="<%=server%><%=httpHeaderContext%>/"/>
