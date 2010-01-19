@@ -286,7 +286,7 @@ public class Summarizer {
     }
     
     private Token[] getTokens(String text) throws IOException {
-        //fixme somehow integrate below cycle to getSummary to save the cloning and memory,
+        //FIXME somehow integrate below cycle to getSummary to save the cloning and memory,
         //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
         ArrayList<Token> result = new ArrayList<Token>();
         TokenStream ts = analyzer.tokenStream("full", new StringReader(text));
