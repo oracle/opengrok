@@ -28,11 +28,9 @@
 
 package org.opensolaris.opengrok.search.context;
 
-import org.opensolaris.opengrok.web.*;
 import org.opensolaris.opengrok.search.Hit;
 import java.io.*;
 import java.util.*;
-import org.apache.lucene.analysis.*;
 %%
 
 %public

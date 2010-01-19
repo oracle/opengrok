@@ -29,6 +29,7 @@ import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 public class PathTokenizer extends Tokenizer {
 
+    // below should be '/' since we try to convert even windows file separators to unix ones
     private static final char dirSep = '/';
     private boolean dot = false;
     private final static char ADOT[]={'.'};

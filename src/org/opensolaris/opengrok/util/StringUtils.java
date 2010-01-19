@@ -34,7 +34,7 @@ public final class StringUtils {
      * Returns true if the string is empty or only includes whitespace characters.
      * 
      * @param str the string to be checked
-     * @return tur if string is empty or only contains whitespace charadcters
+     * @return true if string is empty or only contains whitespace charadcters
      */
     public static boolean isOnlyWhitespace(String str) {
         for (int i = 0; i < str.length(); i++) {
@@ -44,5 +44,20 @@ public final class StringUtils {
         }
         return true;
     }
+
+    /**
+     * Returns true if the string is possibly a full java class name
+     *
+     * @param s the string to be checked
+     * @return true if string could be a java class name
+    */
+    public static boolean isPossiblyJavaClass(String s) {
+    // Only match a small subset of possible class names to prevent false
+    // positives:
+    //    - class must be qualified with a package name
+    //    - only letters in package name, starting with lower case
+    //    - class name must be in CamelCase, starting with upper case
+    return s.matches("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
+  }
     
 }

@@ -24,6 +24,7 @@
 
 package org.opensolaris.opengrok.analysis.plain;
 import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.util.StringUtils;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
@@ -51,15 +52,6 @@ import org.opensolaris.opengrok.web.Util;
 	zzAtEOF = true;
 	zzStartRead = 0;
 	annotation = null;
-  }
-
-  private static boolean isPossiblyJavaClass(String s) {
-    // Only match a small subset of possible class names to prevent false
-    // positives:
-    //    - class must be qualified with a package name
-    //    - only letters in package name, starting with lower case
-    //    - class name must be in CamelCase, starting with upper case
-    return s.matches("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
   }
 
 %}
@@ -122,7 +114,7 @@ NameChar = {FileChar}|"."
 {File}|{Path}
   {
     final String path = yytext();
-    final char separator = isPossiblyJavaClass(path) ? '.' : '/';
+    final char separator = StringUtils.isPossiblyJavaClass(path) ? '.' : '/';
     final String hyperlink =
             Util.breadcrumbPath(urlPrefix + "path=", path, separator,
                                 getProjectPostfix(), true);

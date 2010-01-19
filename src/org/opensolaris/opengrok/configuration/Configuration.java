@@ -88,7 +88,7 @@ public final class Configuration {
     private int cachePages;
     private String databaseDriver;
     private String databaseUrl;
-   
+
     /** Creates a new instance of Configuration */
     public Configuration() {
         //defaults for an opengrok instance configuration
@@ -120,15 +120,15 @@ public final class Configuration {
         setHitsPerPage(25);
         setCachePages(5);
     }
-    
+
     public String getCtags() {
         return ctags;
     }
-    
+
     public void setCtags(String ctags) {
         this.ctags = ctags;
     }
-    
+
     public int getCachePages() {
         return cachePages;
     }
@@ -206,59 +206,59 @@ public final class Configuration {
     public void setHistoryCacheInDB(boolean historyCacheInDB) {
         this.historyCacheInDB = historyCacheInDB;
     }
-    
+
     public List<Project> getProjects() {
         return projects;
     }
-    
+
     public void setProjects(List<Project> projects) {
         this.projects = projects;
     }
-    
+
     public String getSourceRoot() {
         return sourceRoot;
     }
-    
+
     public void setSourceRoot(String sourceRoot) {
         this.sourceRoot = sourceRoot;
     }
-    
+
     public String getDataRoot() {
         return dataRoot;
     }
-    
+
     public void setDataRoot(String dataRoot) {
         this.dataRoot = dataRoot;
     }
-    
+
     public List<RepositoryInfo> getRepositories() {
         return repositories;
     }
-    
+
     public void setRepositories(List<RepositoryInfo> repositories) {
         this.repositories = repositories;
     }
-    
+
     public String getUrlPrefix() {
         return urlPrefix;
     }
-    
+
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;
     }
-    
+
     public void setGenerateHtml(boolean generateHtml) {
         this.generateHtml = generateHtml;
     }
-    
+
     public boolean isGenerateHtml() {
         return generateHtml;
     }
-    
+
     public void setDefaultProject(Project defaultProject) {
         this.defaultProject = defaultProject;
     }
-    
+
     public Project getDefaultProject() {
         return defaultProject;
     }
@@ -278,21 +278,21 @@ public final class Configuration {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-    
+
     public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
         this.allowLeadingWildcard = allowLeadingWildcard;
     }
-    
+
     public boolean isAllowLeadingWildcard() {
         return allowLeadingWildcard;
     }
 
     private boolean quickContextScan;
-    
+
     public boolean isQuickContextScan() {
         return quickContextScan;
     }
-    
+
     public void setQuickContextScan(boolean quickContextScan) {
         this.quickContextScan = quickContextScan;
     }
@@ -328,7 +328,7 @@ public final class Configuration {
     public String getBugPattern() {
         return bugPattern;
     }
-    
+
     public String getReviewPage() {
         return reviewPage;
     }
@@ -392,8 +392,8 @@ public final class Configuration {
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
     }
-    
-    public Date getDateForLastIndexRun() {        
+
+    public Date getDateForLastIndexRun() {
         File timestamp = new File(getDataRoot(), "timestamp");
         return new Date(timestamp.lastModified());
     }
@@ -427,13 +427,13 @@ public final class Configuration {
             out.close();
         }
     }
-        
+
     public String getXMLRepresentationAsString() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         this.encodeObject(bos);
         return bos.toString();
     }
-    
+
     private void encodeObject(OutputStream out) {
         XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out));
         e.writeObject(this);
@@ -448,16 +448,16 @@ public final class Configuration {
             in.close();
         }
     }
-    
-    
-    
+
+
+
     public static Configuration makeXMLStringAsConfiguration(String xmlconfig) throws IOException {
         final Configuration ret;
         final ByteArrayInputStream in = new ByteArrayInputStream(xmlconfig.getBytes());
         ret = decodeObject(in);
         return ret;
     }
-    
+
     private static Configuration decodeObject(InputStream in) throws IOException {
         XMLDecoder d = new XMLDecoder(new BufferedInputStream(in));
         final Object ret = d.readObject();

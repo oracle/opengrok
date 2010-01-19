@@ -83,10 +83,11 @@ public class Project {
     
     /**
      * Set the path (relative from source root) this project is located
+     * It seems that you should ALWAYS prefix the path with current file.separator , current environment should always have it set up
      * @param path the relative path from source sroot where this project is
      *             located.
      */
-    public void setPath(String path) {
+    public void setPath(String path) {        
         this.path = path;
     }
 
@@ -118,10 +119,10 @@ public class Project {
      */
     public static Project getProject(String path) {
         Project ret = null;
+        if (System.getProperty("file.separator").compareTo("/")!=0) {path=path.replace(File.separatorChar, '/');}
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project proj : env.getProjects()) {
-                //TODO below is buggy, since on Windows the path separator is not "/", hence mast.jsp:192 will not show the searchbox
+            for (Project proj : env.getProjects()) {                
                 if (path.indexOf(proj.getPath()) == 0) {
                     ret = proj;
                 }
