@@ -64,7 +64,8 @@ Number = {Sign}? ({SimpleNumber} | {ScientificNumber})
 
 Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 
-Whitespace = [ \t\f\r]+
+Whitespace = [ \t\f]+
+EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
 
 %state STRING QUOTED_IDENTIFIER SINGLE_LINE_COMMENT BRACKETED_COMMENT
 
@@ -124,7 +125,7 @@ Whitespace = [ \t\f\r]+
 }
 
 <SINGLE_LINE_COMMENT> {
-    \n {
+    {EOL} {
         yybegin(YYINITIAL);
         out.append("</span>");
         Util.readableLine(yyline, out, annotation);
@@ -147,7 +148,7 @@ Whitespace = [ \t\f\r]+
     "&"    { out.append( "&amp;"); }
     "<"    { out.append( "&lt;"); }
     ">"    { out.append( "&gt;"); }
-    \n     { Util.readableLine(yyline, out, annotation); }
+    {EOL}     { Util.readableLine(yyline, out, annotation); }
     {Whitespace}  { out.append(yytext()); }
     [ \t\f\r!-~]  { out.append(yycharat(0)); }
     .      { }

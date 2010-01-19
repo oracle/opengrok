@@ -55,6 +55,7 @@ import org.opensolaris.opengrok.web.Util;
 
 %}
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
+EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
@@ -96,6 +97,6 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 "&"	{out.write( "&amp;");}
 "<"	{out.write( "&lt;");}
 ">"	{out.write( "&gt;");}
-\n	{Util.readableLine(yyline, out, annotation); }
-[ !-~\t\r\f]	{out.write(yycharat(0));}
+{EOL}	{Util.readableLine(yyline, out, annotation); }
+[ !-~\t\f]	{out.write(yycharat(0));}
 .	{}

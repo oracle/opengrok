@@ -89,7 +89,8 @@ import java.util.Stack;
 
 %}
 
-WhiteSpace     = [ \t\f\r]
+WhiteSpace     = [ \t\f]
+EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 Number = \$? [0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+
 
@@ -185,7 +186,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <SCOMMENT> {
-\n { popstate();
+{EOL} { popstate();
      Util.readableLine(yyline, out, annotation);}
 }
 
@@ -217,7 +218,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 "&"	{out.write( "&amp;");}
 "<"	{out.write( "&lt;");}
 ">"	{out.write( "&gt;");}
- \n	{ Util.readableLine(yyline, out, annotation); }
+ {EOL}	{ Util.readableLine(yyline, out, annotation); }
 {WhiteSpace}+	{ out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
 [!-~]	{ out.write(yycharat(0)); }
  .	{ }

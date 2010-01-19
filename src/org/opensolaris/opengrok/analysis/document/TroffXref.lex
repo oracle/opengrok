@@ -57,8 +57,8 @@ import org.opensolaris.opengrok.web.Util;
   }
 %}
 
-WhiteSpace     = [ \t\f\r]
-
+WhiteSpace     = [ \t\f]
+EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([chtsCHS]|"conf"|"java"|"cpp"|"CC"|"txt"|"htm"|"html"|"pl"|"xml")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
@@ -72,11 +72,11 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <HEADER> {
-\n	{ yybegin(YYINITIAL);out.write("</div>"); }
+{EOL}	{ yybegin(YYINITIAL);out.write("</div>"); }
 }
 
 <COMMENT> {
-\n	{ yybegin(YYINITIAL);out.write("</span><br>"); }
+{EOL}	{ yybegin(YYINITIAL);out.write("</span><br>"); }
 }
 
 ^\.(B|U|BI|BX|UL|LG|NL|SB|BR|RB) { yybegin(BOLD); out.write("<span class=\"b\">"); }
@@ -86,7 +86,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 ^\.DE   { out.write("</span>"); }
 
 <BOLD> {
-\n      { yybegin(YYINITIAL);out.write("</span> ");}
+{EOL}      { yybegin(YYINITIAL);out.write("</span> ");}
 }
 
 "\\fB"	{ out.write("<span class=\"b\">"); }
@@ -126,7 +126,7 @@ tab\(.\) { char tab = yycharat(4); }
 ^[\_\=]\n    {}
 T[\{\}] {}
 ^\.TE   { yybegin(YYINITIAL); out.write("</td></tr></table>"); }
-\n       { out.write("</td></tr><tr><td>");}
+{EOL}       { out.write("</td></tr><tr><td>");}
 }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
@@ -155,7 +155,7 @@ T[\{\}] {}
 "\\ "	{ out.write(' '); }
 "<"	{out.write( "&lt;");}
 ">"	{out.write( "&gt;");}
- \n	{ out.write("\n"); }
+{EOL}	{ out.write("\n"); }
 {WhiteSpace}+	{ out.write(' '); }
 [!-~]	{ out.write(yycharat(0)); }
  .	{ }

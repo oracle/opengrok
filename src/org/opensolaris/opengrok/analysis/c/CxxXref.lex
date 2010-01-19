@@ -60,7 +60,8 @@ import org.opensolaris.opengrok.web.Util;
   }
 %}
 
-WhiteSpace     = [ \t\f\r]+
+WhiteSpace     = [ \t\f]+
+EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
@@ -166,7 +167,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
 }
 
 <SCOMMENT> {
-{WhiteSpace}*\n	{ yybegin(YYINITIAL); out.write("</span>");
+{WhiteSpace}*{EOL}	{ yybegin(YYINITIAL); out.write("</span>");
                   Util.readableLine(yyline, out, annotation);}
 }
 
@@ -175,7 +176,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
 "&"	{out.write( "&amp;");}
 "<"	{out.write( "&lt;");}
 ">"	{out.write( "&gt;");}
-{WhiteSpace}*\n	{ Util.readableLine(yyline, out, annotation); }
+{WhiteSpace}*{EOL}	{ Util.readableLine(yyline, out, annotation); }
  {WhiteSpace}	{ out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
  [!-~]	{ out.write(yycharat(0)); }
  .	{ }

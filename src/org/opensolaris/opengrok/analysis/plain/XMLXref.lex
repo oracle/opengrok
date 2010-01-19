@@ -63,7 +63,8 @@ import org.opensolaris.opengrok.web.Util;
   }
 
 %}
-WhiteSpace     = [ \t\f\r]
+WhiteSpace     = [ \t\f]
+EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
@@ -150,7 +151,7 @@ NameChar = {FileChar}|"."
 	}
 
 "&"	{out.write( "&amp;");}
- \n	{Util.readableLine(yyline, out, annotation); }
-[ !-~\t\r\f]	{out.write(yycharat(0));}
+{EOL}   {Util.readableLine(yyline, out, annotation); }
+[ !-~\t\f]	{out.write(yycharat(0));}
 .	{}
 }
