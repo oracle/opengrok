@@ -58,7 +58,7 @@ import org.opensolaris.opengrok.web.Util;
 %}
 
 WhiteSpace     = [ \t\f]
-EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
+EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([chtsCHS]|"conf"|"java"|"cpp"|"CC"|"txt"|"htm"|"html"|"pl"|"xml")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]

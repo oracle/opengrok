@@ -64,7 +64,7 @@ import org.opensolaris.opengrok.web.Util;
 %}
 
 WhiteSpace     = [ \t\f]+
-EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
+EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
 Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]

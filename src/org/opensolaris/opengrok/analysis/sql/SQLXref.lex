@@ -65,7 +65,7 @@ Number = {Sign}? ({SimpleNumber} | {ScientificNumber})
 Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 
 Whitespace = [ \t\f]+
-EOL = [\r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085]
+EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
 
 %state STRING QUOTED_IDENTIFIER SINGLE_LINE_COMMENT BRACKETED_COMMENT
 
