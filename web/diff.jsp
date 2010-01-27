@@ -85,9 +85,9 @@ if (valid) {
     String r2 = null;
     File rpath1 = null;
     File rpath2 = null;
-    String[] tmp;
+    String[] tmp=null;
     try {
-        tmp = rp1.split("@");	
+        if (rp1!=null) tmp = rp1.split("@");
         if (tmp != null && tmp.length == 2) {
 	    rpath1 = new File(srcRoot+URLDecoder.decode(tmp[0], "UTF-8"));
 	    r1 = URLDecoder.decode(tmp[1], "UTF-8");
@@ -96,7 +96,7 @@ if (valid) {
     }
 
     try {
-        tmp = rp2.split("@");
+        if (rp2!=null) tmp = rp2.split("@");
         if (tmp != null && tmp.length == 2) {
 	    if (tmp != null && tmp.length == 2) {
 		rpath2 = new File(srcRoot+URLDecoder.decode(tmp[0], "UTF-8"));
