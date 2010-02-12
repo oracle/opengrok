@@ -30,8 +30,8 @@
 #   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
-#   - OPENGROK_REMOTE_REPOS       Enable History Cache for Remote Repositories (*)
-#   - OPENGROK_SCAN_REPOS         Scan for repositories (*)_
+#   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote) Repositories (*)
+#   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)_
 #
 #   - READ_XML_CONFIGURATION      file with read only configuration - a temp workaround for bug # 327
 #
@@ -169,17 +169,18 @@ DefaultInstanceConfiguration()
     ENABLE_PROJECTS="-P"
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
-    if [ ! -z "${OPENGROK_REMOTE_REPOS}" ]
+    SCAN_FOR_REPOSITORY="-S"
+    if [ ! -z "${OPENGROK_SCAN_REPOS}" ]
     then
-        SCAN_FOR_REPOSITORY="-S"
+        SCAN_FOR_REPOSITORY=""
     fi
 
     # OPTIONAL: Remote Repository Support (CVS or SVN)
     #           (Can be very time demanding, uncomment if needed)
-    #REMOTE_REPOSITORIES="-r on"
+    REMOTE_REPOSITORIES="-r on"
     if [ ! -z "${OPENGROK_REMOTE_REPOS}" ]
     then
-        REMOTE_REPOSITORIES="-r on"
+        REMOTE_REPOSITORIES=""
     fi
 
     # OPTIONAL: Allow Leading Wildcard Searches
