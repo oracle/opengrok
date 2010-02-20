@@ -237,9 +237,17 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         errorMsg = "<b>Error:</b> " + Util.htmlize(e.getMessage());
     }
 
+    // Bug #3900: Check if this is a search for a single term, and that term
+    // is a definition. If that's the case, and we only have one match, we'll
+    // generate a direct link instead of a listing.
+    boolean isSingleDefinitionSearch =
+            (query instanceof TermQuery) && (defs != null);
+
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....
-    if (hits != null && hits.length == 1 && request.getServletPath().equals("/s") && (query != null && query instanceof TermQuery)) {
+    if (hits != null && hits.length == 1 &&
+            request.getServletPath().equals("/s") &&
+            isSingleDefinitionSearch) {
         String preFragmentPath = Util.URIEncodePath(context + "/xref" + searcher.doc(hits[0].doc).get("path"));
         String fragment = Util.URIEncode(((TermQuery)query).getTerm().text());
         
