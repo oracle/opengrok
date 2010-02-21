@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Set;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -54,6 +55,61 @@ public class JFlexXref {
   
   protected String getProjectPostfix() {
       return project == null ? "" : ("&amp;project=" + project.getDescription());
+  }
+
+  /**
+   * Write a symbol and generate links as appropriate.
+   *
+   * @param symbol the symbol to write
+   * @param keywords a set of keywords recognized by this analyzer (no links
+   * will be generated if the symbol is a keyword)
+   * @param line the line number on which the symbol appears
+   * @throws IOException if an error occurs while writing to the stream
+   */
+  protected void writeSymbol(String symbol, Set<String> keywords, int line)
+          throws IOException {
+      if (keywords.contains(symbol)) {
+          // This is a keyword, so we don't create a link.
+          out.append("<b>").append(symbol).append("</b>");
+
+      } else if (defs != null && defs.hasDefinitionAt(symbol, line)) {
+          // This is the definition of the symbol.
+
+          // 1) Create an anchor for direct links. (Perhaps, we should only
+          //    do this when there's exactly one definition of the symbol in
+          //    this file? Otherwise, we may end up with multiple anchors with
+          //    the same name.)
+          out.append("<a class=\"d\" name=\"").append(symbol).append("\"/>");
+
+          // 2) Create a link that searches for all references to this symbol.
+          out.append("<a href=\"").append(urlPrefix).append("refs=");
+          out.append(symbol);
+          appendProject();
+          out.append("\" class=\"d\">").append(symbol).append("</a>");
+
+      } else if (defs == null || defs.occurrences(symbol) == 0) {
+          // This is a symbol that is not defined in this file.
+
+          // Create a link that searches for all definitions of the symbol.
+          out.append("<a href=\"").append(urlPrefix).append("defs=");
+          out.append(symbol);
+          appendProject();
+          out.append("\">").append(symbol).append("</a>");
+
+      } else if (defs.occurrences(symbol) == 1) {
+          // This is a reference to a symbol defined exactly once in this file.
+
+          // Generate a direct link to the symbol definition.
+          out.append("<a class=\"f\" href=\"#").append(symbol).append("\">")
+                  .append(symbol).append("</a>");
+
+      } else {
+          // This is a symbol that is defined multiple times in this file.
+          assert defs.occurrences(symbol) > 1;
+
+          // Don't generate a link (FIXME: this is bug #3435)
+          out.append("<span class=\"mf\">").append(symbol).append("</span>");
+      }
   }
 
 }

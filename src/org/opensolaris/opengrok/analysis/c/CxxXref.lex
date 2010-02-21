@@ -75,49 +75,11 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 %%
 <YYINITIAL>{
- {Identifier}	{ String id = yytext();
- 			if(CxxConsts.kwd.contains(id)) {
-				out.write("<b>");
-                out.write(id);
-                out.write("</b>");
-			} else {
-				if (defs != null && defs.hasSymbol(id)) {
-					if (defs.hasDefinitionAt(id, yyline-1)) {
-							out.write("<a class=\"d\" name=\"");
-							out.write(id);
-							out.write("\"/>");
-                            out.write("<a href=\"");
-				            out.write(urlPrefix);
-                            out.write("refs=");
-							out.write(id);
-                            appendProject();
-							out.write("\" class=\"d\">");
-							out.write(id);
-							out.write("</a>");
-							break;
-					} else if (defs.occurrences(id) == 1) {
-						out.write("<a class=\"f\" href=\"#");
-						out.write(id);
-						out.write("\">");
-						out.write(id);
-						out.write("</a>");
-					} else {
-						out.write("<span class=\"mf\">");
-						out.write(id);
-						out.write("</span>");
-					}
-				} else {
-                    out.write("<a href=\"");
-                    out.write(urlPrefix);
-                    out.write("defs=");
-                    out.write(id);
-                    appendProject();
-                    out.write("\">");
-                    out.write(id);
-                    out.write("</a>");
-				}
-			}
-		}
+
+{Identifier} {
+    String id = yytext();
+    writeSymbol(id, Consts.kwd, yyline - 1);
+}
 
 "<" {File} ">" {out.write("&lt;");
 	out.write("<a href=\""+urlPrefix+"path=");

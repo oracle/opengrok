@@ -74,27 +74,7 @@ EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
 <YYINITIAL> {
     {Identifier} {
         String id = yytext();
-        if (Consts.isReservedKeyword(id)) {
-            out.append("<b>").append(id).append("</b>");
-        } else if (defs != null && defs.hasSymbol(id)) {
-            if (defs.hasDefinitionAt(id, yyline - 1)) {
-                out.append("<a class=\"d\" name=\"").append(id).append("\"/>")
-                   .append("<a href=\"").append(urlPrefix).append("refs=")
-                   .append(id);
-                appendProject();
-                out.append("\" class=\"d\">").append(id).append("</a>");
-            } else if (defs.occurrences(id) == 1) {
-                out.append("<a class=\"f\" href=\"#").append(id).append("\">")
-                   .append(id).append("</a>");
-            } else {
-                out.append("<span class=\"mf\">").append(id).append("</span>");
-            }
-        } else {
-            out.append("<a href=\"").append(urlPrefix).append("defs=")
-               .append(id);
-            appendProject();
-            out.append("\">").append(id).append("</a>");
-        }
+        writeSymbol(id, Consts.getReservedKeywords(), yyline - 1);
     }
 
     {Number} {

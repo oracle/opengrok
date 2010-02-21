@@ -124,45 +124,10 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE> {
-\$ ? {Identifier}	{ String id = yytext();
- 			if(Consts.shkwd.contains(id)) {
-				out.write("<b>");out.write(id);out.write("</b>");
-			} else {
-				if (defs != null && defs.hasSymbol(id)) {
-					if (defs.hasDefinitionAt(id, yyline-1)) {
-							out.write("<a class=\"d\" name=\"");
-							out.write(id);
-							out.write("\"/>");
-                                                        out.write("<a href=\"");
-				                        out.write(urlPrefix);
-                                                        out.write("refs=");
-							out.write(id);
-                                                        appendProject();
-							out.write("\" class=\"d\">");
-							out.write(id);
-							out.write("</a>");
-							break;
-					} else if (defs.occurrences(id) == 1) {
-						out.write("<a class=\"f\" href=\"#");
-						out.write(id);
-						out.write("\">");
-						out.write(id);
-						out.write("</a>");
-					} else {
-						out.write("<span class=\"mf\">");
-						out.write(id);
-						out.write("</span>");
-					}
-				} else {
-                                    out.write("<a href=\""+urlPrefix+"refs=");
-                                    out.write(id);
-                                    appendProject();
-                                    out.write("\">");
-                                    out.write(id);
-                                    out.write("</a>");
-				}
-			}
-		}
+\$ ? {Identifier} {
+    String id = yytext();
+    writeSymbol(id, Consts.shkwd, yyline - 1);
+}
 
 {Number}	{ out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 

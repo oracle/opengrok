@@ -26,19 +26,22 @@ package org.opensolaris.opengrok.analysis.sql;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 public final class Consts {
-    private static final Set<String> reservedKeywords = new HashSet<String>();
+    private static final Set<String> reservedKeywords;
     static {
+        HashSet<String> kwds = new HashSet<String>();
         try {
-            populateKeywordSet(reservedKeywords, "sql2003reserved.dat");
+            populateKeywordSet(kwds, "sql2003reserved.dat");
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
+        reservedKeywords = Collections.unmodifiableSet(kwds);
     }
 
     private Consts() {
@@ -64,7 +67,7 @@ public final class Consts {
         }
     }
 
-    static boolean isReservedKeyword(String word) {
-        return reservedKeywords.contains(word.toLowerCase(Locale.US));
+    static Set<String> getReservedKeywords() {
+        return reservedKeywords;
     }
 }
