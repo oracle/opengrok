@@ -243,11 +243,23 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     boolean isSingleDefinitionSearch =
             (query instanceof TermQuery) && (defs != null);
 
+    // Attempt to create a direct link to the definition if we search for one
+    // single definition term AND we have exactly one match AND there is only
+    // one definition of that symbol in the document that matches.
+    boolean uniqueDefinition = false;
+    if (isSingleDefinitionSearch && hits != null && hits.length == 1) {
+        Document doc = searcher.doc(hits[0].doc);
+        byte[] rawTags = doc.getFieldable("tags").getBinaryValue();
+        Definitions tags = Definitions.deserialize(rawTags);
+        String symbol = ((TermQuery) query).getTerm().text();
+        if (tags.occurrences(symbol) == 1) {
+            uniqueDefinition = true;
+        }
+    }
+
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....
-    if (hits != null && hits.length == 1 &&
-            request.getServletPath().equals("/s") &&
-            isSingleDefinitionSearch) {
+    if (uniqueDefinition && request.getServletPath().equals("/s")) {
         String preFragmentPath = Util.URIEncodePath(context + "/xref" + searcher.doc(hits[0].doc).get("path"));
         String fragment = Util.URIEncode(((TermQuery)query).getTerm().text());
         
