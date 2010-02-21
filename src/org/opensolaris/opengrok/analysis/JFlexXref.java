@@ -87,16 +87,7 @@ public class JFlexXref {
           appendProject();
           out.append("\" class=\"d\">").append(symbol).append("</a>");
 
-      } else if (defs == null || defs.occurrences(symbol) == 0) {
-          // This is a symbol that is not defined in this file.
-
-          // Create a link that searches for all definitions of the symbol.
-          out.append("<a href=\"").append(urlPrefix).append("defs=");
-          out.append(symbol);
-          appendProject();
-          out.append("\">").append(symbol).append("</a>");
-
-      } else if (defs.occurrences(symbol) == 1) {
+      } else if (defs != null && defs.occurrences(symbol) == 1) {
           // This is a reference to a symbol defined exactly once in this file.
 
           // Generate a direct link to the symbol definition.
@@ -104,11 +95,14 @@ public class JFlexXref {
                   .append(symbol).append("</a>");
 
       } else {
-          // This is a symbol that is defined multiple times in this file.
-          assert defs.occurrences(symbol) > 1;
-
-          // Don't generate a link (FIXME: this is bug #3435)
-          out.append("<span class=\"mf\">").append(symbol).append("</span>");
+          // This is a symbol that is not defined in this file, or a symbol
+          // that is defined more than once in this file. In either case, we
+          // can't generate a direct link to the definition, so generate a
+          // link to search for all definitions of that symbol instead.
+          out.append("<a href=\"").append(urlPrefix).append("defs=");
+          out.append(symbol);
+          appendProject();
+          out.append("\">").append(symbol).append("</a>");
       }
   }
 
