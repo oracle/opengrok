@@ -249,7 +249,7 @@ Use is subject to license terms.
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">
 	<war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
-            <fileset dir="web"/>
+            <fileset dir="web" excludes="META-INF/context.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
             <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
         </war>

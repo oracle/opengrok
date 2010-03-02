@@ -57,6 +57,7 @@ done
 PKGSEND add file platform/solaris/smf/opengrok.xml mode=0444 owner=root group=sys path=/var/svc/manifest/application/opengrok.xml restart_fmri=svc:/system/manifest-import:default
 PKGSEND add file platform/solaris/smf/opengrok mode=0555 owner=bin group=bin path=/lib/svc/method/opengrok
 PKGSEND add file dist/opengrok.jar mode=0555 owner=bin group=bin path=/usr/opengrok/bin/opengrok.jar
+PKGSEND add file logging.properties mode=0555 owner=bin group=bin path=/usr/opengrok/bin/logging.properties
 PKGSEND add file OpenGrok mode=0777 owner=bin group=bin path=/usr/opengrok/bin/OpenGrok
 PKGSEND add link path=/usr/opengrok/bin/lib target=../lib
 
@@ -74,7 +75,7 @@ done
 PKGSEND add file dist/opengrok.1 mode=0444 owner=bin group=bin path=/usr/opengrok/man/sman1/opengrok.1
 
 # install default configuration
-PKGSEND add file platform/solaris/default/opengrok.properties mode=0444 owner=root group=sys path=/etc/opengrok/opengrok.properties preserve=renameold
+PKGSEND add file platform/solaris/default/opengrok.properties mode=0444 owner=root group=sys path=/var/opengrok/etc/opengrok.properties preserve=renameold
 PKGSEND add link path=/usr/opengrok/bin/lib/ant.jar target=/usr/share/lib/ant/ant.jar
 PKGSEND add link path=/usr/opengrok/bin/lib/jmxremote_optional.jar target=/usr/share/lib/jdmk/jmxremote_optional.jar
 PKGSEND add depend fmri=pkg:/SUNWjdmk-base type=require
