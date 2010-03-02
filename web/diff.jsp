@@ -134,7 +134,7 @@ if (valid) {
 				<tr><td><img src="<%=context%>/raw<%=path%>?r=<%=r1%>"/></td><td><img src="<%=context%>/raw<%=path%>?r=<%=r2%>"/></td></tr></table></div><%
                     } else if (g == Genre.PLAIN || g == Genre.HTML) {
 //--------Do THE DIFFS------------
-                        ArrayList l1 = new ArrayList();
+                        ArrayList<String> l1 = new ArrayList<String>();
                         String line;
                         BufferedReader reader1 = new BufferedReader(new InputStreamReader(in1));
                         BufferedReader reader2 = new BufferedReader(new InputStreamReader(in2));
@@ -143,7 +143,7 @@ if (valid) {
                             l1.add(line);
                         }
                         
-                        ArrayList l2 = new ArrayList();
+                        ArrayList<String> l2 = new ArrayList<String>();
                         while ((line = reader2.readLine()) != null) {
                             l2.add(line);
                         }

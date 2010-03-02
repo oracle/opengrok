@@ -29,17 +29,17 @@ org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.history.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
+org.opensolaris.opengrok.search.SearchEngine,
 java.util.regex.*,
 org.apache.lucene.queryParser.*,
-org.apache.lucene.search.*,
-org.apache.lucene.util.Version"
+org.apache.lucene.search.*"
 %><%@include file="mast.jsp"%><%
 
 if (valid) {
   String grepTerms = null;
   if((grepTerms = request.getParameter("t")) != null && !grepTerms.equals("")) {
-	try{
-		QueryParser qparser = new QueryParser(Version.LUCENE_CURRENT,"full", new CompatibleAnalyser());
+	try{                
+		QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION,"full", new CompatibleAnalyser());
                 qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
                 qparser.setAllowLeadingWildcard(environment.isAllowLeadingWildcard());
 		Query tquery = qparser.parse(grepTerms);

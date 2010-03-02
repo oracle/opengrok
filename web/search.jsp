@@ -35,6 +35,7 @@ org.opensolaris.opengrok.index.IndexDatabase,
 org.opensolaris.opengrok.search.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
+org.opensolaris.opengrok.search.SearchEngine,
 org.opensolaris.opengrok.configuration.*,
 org.apache.lucene.search.spell.LuceneDictionary,
 org.apache.lucene.search.spell.SpellChecker,
@@ -45,7 +46,6 @@ org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
 org.apache.lucene.index.*,
 org.apache.lucene.search.*,
-org.apache.lucene.util.Version,
 org.apache.lucene.queryParser.*"
 %><%@ page session="false" %><%@ page errorPage="error.jsp" %><%
 Date starttime = new Date();
@@ -143,8 +143,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         } catch (Exception e) {  }
         
         qstr = Util.buildQueryString(q, defs, refs, path, hist);
-                                
-        QueryParser qparser = new QueryParser(Version.LUCENE_CURRENT,"full", analyzer);
+
+        QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION,"full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         qparser.setAllowLeadingWildcard(env.isAllowLeadingWildcard());
 

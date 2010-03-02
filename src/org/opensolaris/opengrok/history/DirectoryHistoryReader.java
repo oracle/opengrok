@@ -44,11 +44,11 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldDocs;
-import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexDatabase;
+import org.opensolaris.opengrok.search.SearchEngine;
 
 /**
  * Generate SCM history for directory by using the Index database. (Please note
@@ -86,8 +86,8 @@ public class DirectoryHistoryReader {
             }
             searcher = new IndexSearcher(ireader);
             SortField sfield=new SortField("date",SortField.STRING, true);
-            Sort sort = new Sort(sfield);
-            QueryParser qparser = new QueryParser(Version.LUCENE_CURRENT,"path", new CompatibleAnalyser());
+            Sort sort = new Sort(sfield);            
+            QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION,"path", new CompatibleAnalyser());
             Query query = null;            
             ScoreDoc[] hits = null;
             try {

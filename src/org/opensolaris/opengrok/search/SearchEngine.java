@@ -72,6 +72,12 @@ public class SearchEngine {
     /** Message text used when logging exceptions thrown when searching. */
     private static final String SEARCH_EXCEPTION_MSG = "Exception searching";
 
+    //NOTE below will need to be changed after new lucene upgrade, if they
+    //increase the version - every change of below makes us incompatible with the
+    //old index and we need to ask for reindex
+    /** version of lucene index common for whole app*/
+    public static Version LUCENE_VERSION=Version.LUCENE_30;
+
     /**
      * Holds value of property definition.
      */
@@ -126,8 +132,8 @@ public class SearchEngine {
      * Creates a new instance of SearchEngine
      */
     public SearchEngine() {
-        analyzer = new CompatibleAnalyser();
-        qparser = new QueryParser(Version.LUCENE_CURRENT,"full", analyzer);
+        analyzer = new CompatibleAnalyser();        
+        qparser = new QueryParser(LUCENE_VERSION,"full", analyzer);
         qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
         qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
         docs = new ArrayList<org.apache.lucene.document.Document>();
