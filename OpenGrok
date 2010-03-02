@@ -104,7 +104,7 @@ DefaultInstanceConfiguration()
         then
             # Handle Developer Build Environments
             OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/dist"
-            LOGGER_CONF_SOURCE="${SCRIPT_DIRECTORY}/conf/${LOGGER_CONFIG_FILE}"
+            LOGGER_CONF_SOURCE="${SCRIPT_DIRECTORY}/${LOGGER_CONFIG_FILE}"
         else
             # Handle Binary Distributions
             OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}"

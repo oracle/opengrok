@@ -115,7 +115,8 @@ Use is subject to license terms.
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
         <pathelement path="${java.class.path}"/>
-        <pathelement path="lib"/>
+	<pathelement path="lib"/>
+	<pathelement path="../lib"/>
     </path>
 
     <path id="findbugs.lib.search.path">
@@ -140,34 +141,33 @@ Use is subject to license terms.
     </available>
     <fail unless="JFlex.present" message="Please download JFlex (http://jflex.de/) and put JFlex.jar it into ./lib directory (or in ant classpath)."/>
     
-    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar"/>    
-    <property name="gensrcdir" value="generatedsrc"/>
+    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar;../lib/JFlex.jar"/>    
     <target name="jflex">
-        <mkdir dir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/c/CxxXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/tcl/TclXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/plain/XMLXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/sql/SQLXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/analysis/sh/ShXref.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex" destdir="${gensrcdir}"/>
-        <jflex file="src/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="${gensrcdir}"/>
+        <mkdir dir="${src.generatedsrc.dir}"/>
+	<jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/XMLXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/SQLXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
     </target>
     
     <property name="hg" value="hg"/>
@@ -192,7 +192,7 @@ Use is subject to license terms.
     <property name="coverage.dir" value="${basedir}/coverage"/>
     <target name="-pre-compile" depends="jflex"/>
     <target name="-post-clean">
-        <delete dir="${gensrcdir}"/>
+        <delete dir="${src.generatedsrc.dir}"/>
         <delete file="${manifest.file}"/>
         <delete dir="${coverage.dir}"/>
         <antcall target="-delete-generated-repository-files"/>
@@ -248,9 +248,8 @@ Use is subject to license terms.
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">
-        <war destfile="${dist.war}" webxml="conf/web.xml">
+	<war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web"/>
-            <fileset dir="conf" excludes="web.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
             <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
         </war>
@@ -280,19 +279,17 @@ Use is subject to license terms.
           <include name="README.txt"/>
           <include name="CHANGES.txt"/>
           <include name="LICENSE.txt"/>
-          <include name="paths.tsv"/>
+	  <include name="paths.tsv"/>
+	  <include name="logging.properties"/>
         </tarfileset>
         <tarfileset dir="." prefix="${distname}-${version}" mode="755">
           <include name="OpenGrok"/>
           <include name="run.sh"/>
           <include name="run-quiet.sh"/>
-          <include name="run.bat"/>
+	  <include name="run.bat"/>
         </tarfileset>
         <tarfileset dir="doc" prefix="${distname}-${version}">
           <include name="EXAMPLE.txt"/>
-        </tarfileset>
-        <tarfileset dir="conf" prefix="${distname}-${version}">
-          <include name="logging.properties"/>
         </tarfileset>
         <tarfileset dir="${dist.dir}" prefix="${distname}-${version}">
           <include name="opengrok.jar"/>

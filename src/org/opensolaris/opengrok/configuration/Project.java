@@ -119,11 +119,12 @@ public class Project {
      */
     public static Project getProject(String path) {
         Project ret = null;
-        if (System.getProperty("file.separator").compareTo("/")!=0) {path=path.replace(File.separatorChar, '/');}
+        String lpath=path;
+        if (System.getProperty("file.separator").compareTo("/")!=0) {lpath=path.replace(File.separatorChar, '/');}
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project proj : env.getProjects()) {                
-                if (path.indexOf(proj.getPath()) == 0) {
+                if (lpath.indexOf(proj.getPath()) == 0) {
                     ret = proj;
                 }
             }

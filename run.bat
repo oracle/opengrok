@@ -19,7 +19,7 @@ REM A tab separated file that contains small
 REM descriptions for paths in the source tree
 set PATH_DESC=%PROGDIR%\paths.tsv
 
-set LOGGER="-Djava.util.logging.config.file=conf\logging.properties"
+set LOGGER="-Djava.util.logging.config.file=logging.properties"
 
 java %LOGGER% -jar %PROGDIR%opengrok.jar -c %EXUB_CTAGS% -s %SRC_ROOT% -d %DATA_ROOT%
 

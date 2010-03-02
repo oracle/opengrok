@@ -76,7 +76,7 @@ public class SearchEngine {
     //increase the version - every change of below makes us incompatible with the
     //old index and we need to ask for reindex
     /** version of lucene index common for whole app*/
-    public static Version LUCENE_VERSION=Version.LUCENE_30;
+    public static final Version LUCENE_VERSION=Version.LUCENE_30;
 
     /**
      * Holds value of property definition.

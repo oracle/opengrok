@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.web.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/web-project/3">
+            <name>opengrok-web-nbproject</name>
+            <minimum-ant-version>1.6.5</minimum-ant-version>
+            <web-module-libraries>
+                <library dirs="200">
+                    <file>${file.reference.ant.jar}</file>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.swing-layout-0.9.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.jakarta-oro-2.0.8.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.lucene-core-3.0.1.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.bcel-5.2.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.jmxremote_optional.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.org.apache.commons.jrcs.rcs.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.org.apache.commons.jrcs.diff.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+                <library dirs="200">
+                    <file>${file.reference.lucene-spellchecker-3.0.1.jar}</file>
+                    <path-in-war>WEB-INF\lib</path-in-war>
+                </library>
+            </web-module-libraries>
+            <web-module-additional-libraries/>
+            <source-roots>
+		<root id="src.dir" name="..\src"/>
+                <root id="src.generatedsrc.dir" name="..\generatedsrc"/>
+            </source-roots>
+            <test-roots>
+                <root id="test.test.dir" name="Test Packages"/>
+            </test-roots>
+        </data>
+    </configuration>
+</project>

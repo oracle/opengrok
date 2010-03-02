@@ -26,7 +26,7 @@ EXUB_CTAGS=/usr/local/bin/ctags
 # You might want to add more available memory, and perhaps use a server jvm?
 #JAVA_OPTS="-server -Xmx1024m"
 
-LOGGER="-Djava.util.logging.config.file=conf/logging.properties"
+LOGGER="-Djava.util.logging.config.file=logging.properties"
 
 java ${JAVA_OPTS} ${PROPERTIES} ${LOGGER} -jar ${PROGDIR}/opengrok.jar ${SCAN_FOR_REPOS} -c ${EXUB_CTAGS} -s ${SRC_ROOT} -d ${DATA_ROOT}
 
