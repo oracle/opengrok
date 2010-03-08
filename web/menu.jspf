@@ -87,17 +87,17 @@ function goFirstProject() {
         <td align="left" valign="middle">
             <br/><form action="search" id="sbox">
                 <table cellpadding="2" border="0" cellspacing="0">
-                    <tr><td align="right"> Full&nbsp;Search </td><td><input class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td>
+                    <tr><td align="right"> Full&nbsp;Search </td><td><input tabindex="1" class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td>
  <% if (hasProjects) { %>
                         <td rowspan="5" style="border-left:gray;border-left-width:thin;border-left-color:gray">
                             <!--<td align="right" valign="top"> -->
                             <table border="0">
                                 <tbody>
                                     <tr>
-                                        <td>in project(s): <span style="padding-left:60px;font-size:small"><a href="#" onclick="javascript:selectAllProjects();return false;">select all</a>&nbsp;|&nbsp;<a href="#" onclick="javascript:invertAllProjects();return false;">invert selection</a></span></td>
+                                        <td>in project(s): <span style="padding-left:60px;font-size:small"><a tabindex="6" href="#" onclick="javascript:selectAllProjects();return false;">select all</a>&nbsp;|&nbsp;<a href="#" tabindex="7" onclick="javascript:invertAllProjects();return false;">invert selection</a></span></td>
                                     </tr>
                                     <tr><td>
-                                            <select class="q" style="width: 300px" id="project" onkeyup="javascript:if(event.keyCode=='13') { goFirstProject(); }" ondblclick="javascript:goFirstProject();" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
+                                            <select tabindex="8" class="q" style="width: 300px" id="project" onkeyup="javascript:if(event.keyCode=='13' && sbox.q.value=='' && sbox.defs.value=='' && sbox.refs.value=='' && sbox.path.value=='' && sbox.hist.value=='') { goFirstProject(); } else if(event.keyCode=='13') {sbox.submit();};" ondblclick="javascript:goFirstProject();" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
                                 <%
                                 for (Project p : env.getProjects()) {
                                     //TODO below "selected" has no effect if one refreshes the page with F5
@@ -119,10 +119,10 @@ function goFirstProject() {
                             </table></td><%
                     }%>
                     </tr>
-                    <tr><td align="right"> Definition </td><td><input class="q" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
-                    <tr><td align="right"> Symbol </td><td><input class="q" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
-                    <tr><td align="right"> File&nbsp;Path </td><td><input class="q" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
-                    <tr><td align="right"> History </td><td><input class="q" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
+                    <tr><td align="right"> Definition </td><td><input class="q" tabindex="2" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
+                    <tr><td align="right"> Symbol </td><td><input class="q" tabindex="3" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
+                    <tr><td align="right"> File&nbsp;Path </td><td><input class="q" tabindex="4" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
+                    <tr><td align="right"> History </td><td><input class="q" tabindex="5" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
 <%-- TODO  Bug 11749
                     <% if (hasProjects) { %>
                     <tr><td align="right"> Project(s) </td><td>
@@ -138,17 +138,17 @@ function goFirstProject() {
                     <%}%>
 --%>
                     <tr><td colspan="2" align="center">  &nbsp; <input class="submit" type="submit" value="Search"/> |
-                            <input class="submit" onclick="javascript:var sbox=document.getElementById('sbox'); sbox.q.value='';sbox.defs.value='';sbox.refs.value='';sbox.path.value='';sbox.hist.value='';sbox.project.value='';" type="button" value=" Clear "/>
+                            <input class="submit" onclick="javascript:sbox.q.value='';sbox.defs.value='';sbox.refs.value='';sbox.path.value='';sbox.hist.value='';sbox.project.value='';" type="button" value=" Clear "/>
                     | <a href="help.jsp">Help</a></td></tr>
                 </table>
             </form>
         </td>
     <td valign="top" align="right"></td></tr>
 </table>
-<%-- TODO  Bug 11749
 <script type="text/javascript">/* <![CDATA[ */
-var p=document.getElementById('project');
-p.setAttribute("autocomplete", "off");
+//below is needed for menu functions
+var sbox=document.getElementById('sbox');
+//TODO  Bug 11749 var p=document.getElementById('project');
+//p.setAttribute("autocomplete", "off");
 /* ]]> */
 </script>
---%>
