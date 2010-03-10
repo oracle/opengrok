@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
@@ -45,6 +46,19 @@ public class AnalyzerGuruTest {
         ByteArrayInputStream in = new ByteArrayInputStream(xml);
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
         assertSame(XMLAnalyzer.class, fa.getClass());
+    }
+
+    @Test
+    public void testUTF8ByteOrderMarkPlainFile() throws Exception {
+        byte[] bytes = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF, // UTF-8 BOM
+                       'h', 'e', 'l', 'l', 'o', ' ',
+                       'w', 'o', 'r', 'l', 'd'};
+        
+        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
+        //@todo with bug 15097 fixed below condition shouldn't be necessary
+        if (Charset.defaultCharset()!=Charset.forName("UTF-8") )
+         assertSame(PlainAnalyzer.class, fa.getClass());
     }
 
     @Test

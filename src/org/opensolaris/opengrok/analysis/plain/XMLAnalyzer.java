@@ -24,16 +24,16 @@
 package org.opensolaris.opengrok.analysis.plain;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -43,7 +43,7 @@ import org.opensolaris.opengrok.history.Annotation;
  *
  * @author Chandan
  */
-public class XMLAnalyzer extends FileAnalyzer {
+public class XMLAnalyzer extends TextAnalyzer {
     
     private char[] content;
     private int len;
@@ -63,11 +63,10 @@ public class XMLAnalyzer extends FileAnalyzer {
     }
     
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        InputStreamReader inReader = new InputStreamReader(in);
+    public void analyze(Document doc, InputStreamReader in) throws IOException {
         len = 0;
         do{
-            int rbytes = inReader.read(content, len, content.length - len);
+            int rbytes = in.read(content, len, content.length - len);
             if(rbytes > 0 ) {
                 if(rbytes == (content.length - len)) {
                     char[] content2 = new char[content.length * 2];

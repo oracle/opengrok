@@ -25,9 +25,11 @@ package org.opensolaris.opengrok.analysis.fortran;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -51,7 +53,7 @@ public class FortranAnalyzer extends PlainAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
+    public void analyze(Document doc, InputStreamReader in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
     }

@@ -24,7 +24,6 @@
 package org.opensolaris.opengrok.analysis.plain;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -34,9 +33,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.Hash2TokenStream;
+import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -46,7 +45,7 @@ import org.opensolaris.opengrok.history.Annotation;
  *
  * @author Chandan
  */
-public class PlainAnalyzer extends FileAnalyzer {
+public class PlainAnalyzer extends TextAnalyzer {
 
     protected char[] content;
     protected int len;
@@ -67,9 +66,10 @@ public class PlainAnalyzer extends FileAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        Reader inReader =
-                ExpandTabsReader.wrap(new InputStreamReader(in), project);
+    public void analyze(Document doc, InputStreamReader in) throws IOException {
+    	Reader inReader =
+    		ExpandTabsReader.wrap(in, project);
+    	
         len = 0;
         do {
             int rbytes = inReader.read(content, len, content.length - len);

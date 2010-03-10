@@ -442,6 +442,12 @@ public class AnalyzerGuru {
             return null;
         }
 
+        String contentNoBOMStr = stripBOM(new String(content, 0, len));
+        byte[] contentNoBOM = null;
+        if (contentNoBOMStr != null) {
+        	contentNoBOM = contentNoBOMStr.getBytes();
+        }
+        
         FileAnalyzerFactory factory = find(content);
         if (factory != null) {
             return factory;
@@ -449,6 +455,9 @@ public class AnalyzerGuru {
 
         for (FileAnalyzerFactory.Matcher matcher : matchers) {
             FileAnalyzerFactory fac = matcher.isMagic(content, in);
+            if (fac == null && contentNoBOM != null) {
+            	fac = matcher.isMagic(contentNoBOM, in);
+            }
             if (fac != null) {
                 return fac;
             }
