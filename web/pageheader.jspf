@@ -20,4 +20,6 @@ Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 --%>
-<div id="MastheadLogo"><h1> OpenGrok </h1></div>
+<% String home = request.getContextPath();
+%>
+<a href="<%=home%>"><div id="MastheadLogo"><h1> OpenGrok </h1></div></a>

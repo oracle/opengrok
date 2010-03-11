@@ -158,12 +158,13 @@ $().ready(function() {
 /* ]]> */</script>
 <% } %>
 <div id="page">
-<form action="<%=context%>/search">
+<div id="whole_header" >
+<form action="<%=context%>/search">    
     <div id="header"><%@ include file="pageheader.jspf" %>
-        <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><br/><%=dtag%></div>
+        <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><% if (dtag!=null & dtag!="") { %><br/><%=dtag%><% } %></div>
     </div>
-    <div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>    
-    <div id="bar"><a href="<%=context%>" id="home">Home</a> | 
+    <div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>
+    <div id="bar"><a href="<%=context%>" id="home">Home</a> |
         <%
         
         if (noHistory || servlet.startsWith("/hi")) {
@@ -232,7 +233,8 @@ $().ready(function() {
         }
         }
         %>
-</div></form>
+</div></form></div>
+        <div id="filler_for_whole_header"> </div>
 <%        
 } // date check
     } // not a directory redirect

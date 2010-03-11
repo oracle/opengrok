@@ -10,14 +10,26 @@ body {
 }
 
 #header {
-	min-height:60px;
-	height:70px;
+	min-height:44px;
+	height:44px;
 	display:block;
+}
+
+#whole_header {
+position:fixed;
+top:0;
+background-color:#ededd5;
+width:100%
+}
+
+#filler_for_whole_header {
+min-height:99px;
+height:99px;
 }
 
 #Masthead {
 	display:block;
-	padding:3px;
+/*	padding:3px;*/
 	border-bottom:1px solid #bba;
 }
 
@@ -58,8 +70,8 @@ body {
 
 #bar {
 	padding-left: 0.5em;
-	padding-bottom:0.5em;
-	padding-top:0.5em;
+	padding-bottom:0.2em;
+	padding-top:0.2em;
 	border-bottom:1px solid #bba;
 	background-color:#FFFFE5;
 }

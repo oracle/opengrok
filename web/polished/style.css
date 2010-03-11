@@ -16,8 +16,8 @@ body {
 }
 
 #header {
-	min-height:60px;
-	height:70px;
+	min-height:44px;
+	height:44px;
 	display:block;
 	background-image: url(./img/t.gif);
 	background-position: 1px 0px;
@@ -25,9 +25,20 @@ body {
 	background-color:#fff;
 }
 
+#whole_header {
+position:fixed;
+top:0;
+width:100%
+}
+
+#filler_for_whole_header {
+min-height:86px;
+height:86px;
+}
+
 #Masthead {
 	display:block;
-	padding:3px;
+/*	padding:3px;*/
 	background-color: #426477;
 	background-image: url(./img/b.gif);
 	background-repeat: repeat-x;
@@ -74,8 +85,8 @@ body {
 
 #bar {
 	padding-left: 0.5em;
-	padding-bottom:0.5em;
-	padding-top:0.5em;
+	padding-bottom:0.2em;
+	padding-top:0.2em;
 	background-color: #e9ede8;
 	background-image: url(./img/r.gif);
 	background-repeat: repeat-x;

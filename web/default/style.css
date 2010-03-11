@@ -16,10 +16,24 @@ margin: 0em;
 	margin-bottom: 3px;
 }
 #header {
-min-height:48px;
-height:48px;
-display:block;
+min-height:44px;
+height:44px;
+display: block;
+width: 98%;
 }
+
+#whole_header {
+position:fixed;
+top:0;
+background-color:white;
+width:100%
+}
+
+#filler_for_whole_header {
+min-height:86px;
+height:86px;
+}
+
 #MastheadLogo h1 {
 	display: none;
 }
@@ -51,7 +65,7 @@ display:block;
 
 #bar {
 	padding-left: 0.5em;
-	margin-bottom:1em;
+	margin-bottom:0.2em;
 }
 
 input.q {

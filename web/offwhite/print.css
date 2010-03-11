@@ -16,8 +16,8 @@ body {
 	border: none;
 	color:#000;
 	border-bottom: 1px solid #000;
-	padding-bottom:3px;
-	margin-bottom: 3px;
+/*	padding-bottom:3px;
+	margin-bottom: 3px;*/
 }
 #Masthead a{
 	color:#000;
@@ -27,8 +27,20 @@ body {
 }
 #header {
 	background:none;
-	min-height:48px;
-	height:40px;
+	min-height:44px;
+	height:44px;
+}
+
+#whole_header {
+position:fixed;
+top:0;
+background-color:#ededd5;
+width:100%
+}
+
+#filler_for_whole_header {
+min-height:99px;
+height:99px;
 }
 
 #MastheadLogo h1 {
