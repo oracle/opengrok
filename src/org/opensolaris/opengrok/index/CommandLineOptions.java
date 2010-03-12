@@ -90,7 +90,7 @@ public class CommandLineOptions {
         options.add(new Option('O', ON_OFF, "Turn on/off the optimization of the index database as part of the indexing step"));
         options.add(new Option('a', ON_OFF, "Allow or disallow leading wildcards in a search"));
         options.add(new Option('w', "webapp-context", "Context of webapp. Default is /source. If you specify a different name, make sure to rename source.war to that name."));
-        options.add(new Option('i', "pattern", "Ignore the named files or directories"));
+        options.add(new Option('i', "pattern", "Ignore the named files or directories (supports wildcards, example: -i *.so -i *.dll)"));
         options.add(new Option('A', "ext:analyzer", "Files with the named extension should be analyzed with the specified class"));
         options.add(new Option('m', "number", "The maximum words to index in a file"));
         options.add(new Option('S', null, "Search for \"external\" source repositories and add them"));
