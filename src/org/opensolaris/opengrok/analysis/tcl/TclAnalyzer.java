@@ -24,8 +24,6 @@
 package org.opensolaris.opengrok.analysis.tcl;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -50,7 +48,8 @@ public class TclAnalyzer extends PlainAnalyzer {
         xref = new TclXref(dummy);
     }
 
-    public void analyze(Document doc, InputStreamReader in) throws IOException {
+    @Override
+    public void analyze(Document doc, Reader in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
     }

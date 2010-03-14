@@ -1,10 +1,9 @@
 package org.opensolaris.opengrok.analysis;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -88,8 +87,8 @@ public class TextAnalyzerTest {
 		}
 		
 		@Override
-		protected void analyze(Document doc, InputStreamReader r) throws IOException {
-			encoding = r.getEncoding();
+		protected void analyze(Document doc, Reader r) throws IOException {
+			encoding = ((InputStreamReader) r).getEncoding();
 
 			char[] buf = new char[1024];
 			int br = r.read(buf);

@@ -24,8 +24,6 @@
 package org.opensolaris.opengrok.analysis.lisp;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -50,7 +48,8 @@ public class LispAnalyzer extends PlainAnalyzer {
         xref = new LispXref(dummy);
     }
 
-    public void analyze(Document doc, InputStreamReader in) throws IOException {
+    @Override
+    public void analyze(Document doc, Reader in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
     }

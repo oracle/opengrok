@@ -24,7 +24,6 @@
 package org.opensolaris.opengrok.analysis.plain;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -66,7 +65,7 @@ public class PlainAnalyzer extends TextAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, InputStreamReader in) throws IOException {
+    public void analyze(Document doc, Reader in) throws IOException {
     	Reader inReader =
     		ExpandTabsReader.wrap(in, project);
     	

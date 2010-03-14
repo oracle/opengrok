@@ -3,6 +3,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.charset.Charset;
 
 import org.apache.lucene.document.Document;
@@ -42,5 +43,5 @@ public abstract class TextAnalyzer extends FileAnalyzer {
         analyze(doc, new InputStreamReader(in, charset));
     }
     
-	protected abstract void analyze(Document doc, InputStreamReader reader) throws IOException;
+    protected abstract void analyze(Document doc, Reader reader) throws IOException;
 }

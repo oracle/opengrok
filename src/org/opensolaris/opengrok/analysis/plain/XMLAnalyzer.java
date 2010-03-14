@@ -24,7 +24,6 @@
 package org.opensolaris.opengrok.analysis.plain;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -63,7 +62,7 @@ public class XMLAnalyzer extends TextAnalyzer {
     }
     
     @Override
-    public void analyze(Document doc, InputStreamReader in) throws IOException {
+    public void analyze(Document doc, Reader in) throws IOException {
         len = 0;
         do{
             int rbytes = in.read(content, len, content.length - len);
