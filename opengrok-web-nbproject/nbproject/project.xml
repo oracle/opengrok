@@ -44,12 +44,10 @@
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>
-		<root id="src.dir" name="..\src"/>
+                <root id="src.dir" name="..\src"/>
                 <root id="src.generatedsrc.dir" name="..\generatedsrc"/>
             </source-roots>
-            <test-roots>
-                <root id="test.test.dir" name="Test Packages"/>
-            </test-roots>
+            <test-roots/>
         </data>
     </configuration>
 </project>
