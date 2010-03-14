@@ -442,12 +442,6 @@ public class AnalyzerGuru {
             return null;
         }
 
-        String contentNoBOMStr = stripBOM(new String(content, 0, len));
-        byte[] contentNoBOM = null;
-        if (contentNoBOMStr != null) {
-        	contentNoBOM = contentNoBOMStr.getBytes();
-        }
-        
         FileAnalyzerFactory factory = find(content);
         if (factory != null) {
             return factory;
@@ -455,9 +449,6 @@ public class AnalyzerGuru {
 
         for (FileAnalyzerFactory.Matcher matcher : matchers) {
             FileAnalyzerFactory fac = matcher.isMagic(content, in);
-            if (fac == null && contentNoBOM != null) {
-            	fac = matcher.isMagic(contentNoBOM, in);
-            }
             if (fac != null) {
                 return fac;
             }
@@ -472,26 +463,24 @@ public class AnalyzerGuru {
      * @param signature the magic signature look up
      * @return the analyzer factory to use
      */
-    public static FileAnalyzerFactory find(byte[] signature) {
+    private static FileAnalyzerFactory find(byte[] signature)
+            throws IOException {
+        // XXX this assumes ISO-8859-1 encoding (and should work in most cases
+        // for US-ASCII, UTF-8 and other ISO-8859-* encodings, but not always),
+        // we should try to be smarter than this...
         char[] chars = new char[signature.length > 8 ? 8 : signature.length];
         for (int i = 0; i < chars.length; i++) {
             chars[i] = (char) (0xFF & signature[i]);
         }
-        return findMagic(new String(chars));
-    }
 
-    /**
-     * Get an analyzer by looking up the "magic signature"
-     * @param signature the signature to look up
-     * @return the analyzer factory to handle data with this signature
-     */
-    public static FileAnalyzerFactory findMagic(String signature) {
-        FileAnalyzerFactory a = magics.get(signature);
+        String sig = new String(chars);
+
+        FileAnalyzerFactory a = magics.get(sig);
         if (a == null) {
             String sigWithoutBOM = stripBOM(signature);
             for (Map.Entry<String, FileAnalyzerFactory> entry :
                      magics.entrySet()) {
-                if (signature.startsWith(entry.getKey())) {
+                if (sig.startsWith(entry.getKey())) {
                     return entry.getValue();
                 }
                 // See if text files have the magic sequence if we remove the
@@ -507,23 +496,38 @@ public class AnalyzerGuru {
     }
 
     /** Byte-order markers. */
-    private static final String[] BOMS = {
-        new String(new char[] {0xEF, 0xBB, 0xBF}), // UTF-8 BOM
-        new String(new char[] {0xFE, 0xFF}),       // UTF-16BE BOM
-        new String(new char[] {0xFF, 0xFE}),       // UTF-16LE BOM
+    private static final Map<String, byte[]> BOMS =
+            new HashMap<String, byte[]>();
+    static {
+        BOMS.put("UTF-8", new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+        BOMS.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF});
+        BOMS.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE});
     };
 
     /**
      * Strip away the byte-order marker from the string, if it has one.
      *
-     * @param str the string to remove the BOM from
+     * @param sig a sequence of bytes from which to remove the BOM
      * @return a string without the byte-order marker, or <code>null</code> if
      * the string doesn't start with a BOM
      */
-    private static String stripBOM(String str) {
-        for (String bom : BOMS) {
-            if (str.startsWith(bom)) {
-                return str.substring(bom.length());
+    public static String stripBOM(byte[] sig) throws IOException {
+        for (Map.Entry<String, byte[]> entry : BOMS.entrySet()) {
+            String encoding = entry.getKey();
+            byte[] bom = entry.getValue();
+            if (sig.length > bom.length) {
+                int i = 0;
+                while (i < bom.length && sig[i] == bom[i]) {
+                    i++;
+                }
+                if (i == bom.length) {
+                    // BOM matched beginning of signature
+                    return new String(
+                            sig,
+                            bom.length,                // offset
+                            sig.length - bom.length,   // length
+                            encoding);
+                }
             }
         }
         return null;

@@ -4,14 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.archive.ZipAnalyzer;
-import org.opensolaris.opengrok.analysis.c.CAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
@@ -56,9 +54,7 @@ public class AnalyzerGuruTest {
         
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, "/dummy/file");
-        //@todo with bug 15097 fixed below condition shouldn't be necessary
-        if (Charset.defaultCharset()!=Charset.forName("UTF-8") )
-         assertSame(PlainAnalyzer.class, fa.getClass());
+        assertSame(PlainAnalyzer.class, fa.getClass());
     }
 
     @Test
