@@ -116,7 +116,8 @@ public class CVSRepository extends RCSRepository {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("log");
-        cmd.add("-N");
+        cmd.add("-N"); //don't display tags
+	cmd.add("-b"); //just generate THIS branch history, we don't care about the other branches which are not checked out
 
         if (filename.length() > 0) {
            cmd.add(filename);
