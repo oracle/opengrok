@@ -134,27 +134,25 @@ if(resourcePath.length() < rawSource.length()
 %><%@ include file="httpheader.jspf" %>
 <body>
 <% if (annotate) { %>
-<script type="text/javascript" src="<%=context%>/jquery-1.4.min.js"></script>
+<script type="text/javascript" src="<%=context%>/jquery-1.4.2.min.js"></script>
 <script type="text/javascript" src="<%=context%>/jquery.tooltip-1.3.pack.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
 function toggle_annotations() {
-   var spans = document.getElementsByTagName("span");
-
-   for (var i = 0; i < spans.length; i++) {
-      var span = spans[i];
-      if (span.className == 'blame') {
-         span.className = 'blame-hidden';
-      } else if (span.className == 'blame-hidden') {
-         span.className = 'blame';
+  $("span").each(function() {      
+      if (this.className == 'blame') {
+         this.className = 'blame-hidden';
+      } else if (this.className == 'blame-hidden') {
+         this.className = 'blame';
       }
-   }
+     }
+    );   
 }
 $().ready(function() {
     $('a[id=r]').tooltip({
         left: 5,
 	showURL: false
-});
-       } );
+       });
+} );
 /* ]]> */</script>
 <% } %>
 <div id="page">

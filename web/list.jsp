@@ -35,19 +35,18 @@ org.opensolaris.opengrok.history.*
 "
 %><%@include file="mast.jsp"%><script type="text/javascript">/* <![CDATA[ */
 function lntoggle() {
-   var a = document.getElementsByTagName("a");
-   for (var i = 0; i < a.length; i++) {
-      var el = a[i];
-      if (el.className == 'l' || el.className == 'hl') {
-         el.className=el.className+'-hide';
-         el.setAttribute("tmp", el.innerHTML);
-         el.innerHTML='';
+   $("a").each(function() {
+      if (this.className == 'l' || this.className == 'hl') {
+         this.className=this.className+'-hide';
+         this.setAttribute("tmp", this.innerHTML);
+         this.innerHTML='';
       }
-      else if (el.className == 'l-hide' || el.className == 'hl-hide') {
-          el.innerHTML=el.getAttribute("tmp");
-          el.className=el.className.substr(0,el.className.indexOf('-'));
+      else if (this.className == 'l-hide' || this.className == 'hl-hide') {
+          this.innerHTML=this.getAttribute("tmp");
+          this.className=this.className.substr(0,this.className.indexOf('-'));
       }
-   }
+     }
+    );
 }
 /* ]]> */</script><%
 String rev = null;

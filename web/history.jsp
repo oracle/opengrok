@@ -32,21 +32,45 @@ org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*,
 java.util.regex.*
 "
-%><%@include file="mast.jsp"%><script type="text/javascript">
+%><%@include file="mast.jsp"%>
+<% String hcontext = request.getContextPath(); %>
+<script type="text/javascript" src="<%=hcontext%>/jquery-1.4.2.min.js"></script>
+<script type="text/javascript">
 // <![CDATA[
 function toggle_filelist() {
-  var spans = document.getElementsByTagName("span");
-  for (var i = 0; i < spans.length; i++) {
-    var span = spans[i];
-    if (span.className == "filelist") {
-      span.setAttribute("style", "display: none;");
-      span.className = "filelist-hidden";
-    } else if (span.className == "filelist-hidden") {
-      span.setAttribute("style", "display: inline;");
-      span.className = "filelist";
+  $("span").each(function() {
+     if (this.className == "filelist") {
+       this.setAttribute("style", "display: none;");
+       this.className = "filelist-hidden";
+     } else if (this.className == "filelist-hidden") {
+       this.setAttribute("style", "display: inline;");
+       this.className = "filelist";
+     }
     }
-  }
+    );
 }
+
+function togglediffs() {
+	var cr2 = false;
+	var cr1 = false;         
+        $("#revisions input[type=radio]").each(function() {           
+           if (this.name=="r1") { if (this.checked) {cr1=true;return true;};
+               if (cr2) { this.style.visibility = 'visible'}
+               else {this.style.visibility = 'hidden'} }
+           else if (this.name=="r2") { if (this.checked) {cr2=true;return true;}
+               if (!cr1) { this.style.visibility = 'visible'}
+               else {this.style.visibility = 'hidden'} }
+           }        
+    );
+}
+
+$(document).ready(function(){
+    // start state should ALWAYS be: first row: r1 hidden, r2 checked ; second row: r1 clicked, (r2 hidden)(optionally)
+    // I cannot say what will happen if they are not like that, togglediffs will go mad !
+    $("#revisions input[type=radio]").bind("click",togglediffs);
+    togglediffs();
+});
+
 // ]]>
 </script><%
 if (path.length() > 0 && valid) {
@@ -79,7 +103,7 @@ if (path.length() > 0 && valid) {
     }
     
 %><form action="<%=context%>/diff<%=path%>">
-<table cellspacing="0" cellpadding="2" border="0" width="100%" class="src">
+<table cellspacing="0" cellpadding="2" border="0" width="100%" class="src" id="revisions">
 <tr>
     <td colspan="4"><span class="pagetitle">History log of <a href="<%= context +"/xref" + path %>"><%=path%></a></span></td>
 </tr>
@@ -101,7 +125,7 @@ if (path.length() > 0 && valid) {
     }
     %></td>
 </tr><%
-boolean alt = true;
+boolean alt = true;int count=0;
 for (HistoryEntry entry : hist.getHistoryEntries()) {
     String rev = entry.getRevision();
     if (rev == null || rev.length() == 0) {
@@ -114,8 +138,9 @@ for (HistoryEntry entry : hist.getHistoryEntries()) {
     } else {
         if (entry.isActive()) {
             String rp = Util.URIEncodePath(path);
-%><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center"><input type="radio" name="r1" value="<%=rp%>@<%=rev%>"/>
-<input type="radio" name="r2" value="<%=rp%>@<%=rev%>"/></td><%
+%><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center">
+    <input type="radio" <% if (count==0) {%>style="visibility:hidden"<% } else if (count==1) {%>checked<%} %> name="r1" value="<%=rp%>@<%=rev%>"/>
+    <input type="radio" name="r2" <% if (count==0) {%>checked<% } %> value="<%=rp%>@<%=rev%>"/></td><%
         } else {
             striked = true;
   %><td><strike>&nbsp;<%=rev%>&nbsp; </strike></td><td>&nbsp;</td><%
@@ -166,6 +191,7 @@ if(files != null) {%><span class="filelist-hidden" style="display: none;"><br/><
     }%></span><%
 }
 %></td></tr><%
+count++;
 }
 	%></table></form><%
         if(striked) {
