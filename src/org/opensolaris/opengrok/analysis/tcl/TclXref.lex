@@ -111,7 +111,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 {WhiteSpace}*{EOL} { Util.readableLine(yyline, out, annotation); }
  {WhiteSpace}   { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
  [!-~]  { out.write(yycharat(0)); }
- .      { }
+ .      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, COMMENT, SCOMMENT> {

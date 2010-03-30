@@ -169,7 +169,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 {WhiteSpace}*{EOL}	{ Util.readableLine(yyline, out, annotation); }
  {WhiteSpace}	{ out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
  [!-~]	{ out.write(yycharat(0)); }
- .	{ }
+ .	{ writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, COMMENT, SCOMMENT, STRING, QSTRING, JAVADOC> {

@@ -131,5 +131,5 @@ EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
     {EOL}     { Util.readableLine(yyline, out, annotation); }
     {Whitespace}  { out.append(yytext()); }
     [ \t\f\r!-~]  { out.append(yycharat(0)); }
-    .      { }
+    .      { writeUnicodeChar(yycharat(0)); }
 }

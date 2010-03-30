@@ -106,4 +106,16 @@ public class JFlexXref {
       }
   }
 
+  /**
+   * Write HTML escape sequence for the specified Unicode character, unless
+   * it's an ISO control character, in which case it is ignored.
+   *
+   * @param c the character to write
+   * @throws IOException if an error occurs while writing to the stream
+   */
+  protected void writeUnicodeChar(char c) throws IOException {
+      if (!Character.isISOControl(c)) {
+          out.append("&#").append(Integer.toString((int) c)).append(';');
+      }
+  }
 }

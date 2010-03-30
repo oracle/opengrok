@@ -136,7 +136,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"0x" [0-9a-fA-F]+ )([udl]+)?
                   Util.readableLine(yyline, out, annotation);}
  {WhiteSpace}	{ out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
  [!-~]	{ out.write(yycharat(0)); }
- .	{ }
+ .	{ writeUnicodeChar(yycharat(0)); }
 }
 
 

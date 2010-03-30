@@ -99,4 +99,4 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 ">"	{out.write( "&gt;");}
 {EOL}	{Util.readableLine(yyline, out, annotation); }
 [ !-~\t\f]	{out.write(yycharat(0));}
-.	{}
+.	{ writeUnicodeChar(yycharat(0)); }

@@ -145,5 +145,5 @@ NameChar = {FileChar}|"."
 "&"	{out.write( "&amp;");}
 {EOL}   {Util.readableLine(yyline, out, annotation); }
 [ !-~\t\f]	{out.write(yycharat(0));}
-.	{}
+.	{ writeUnicodeChar(yycharat(0)); }
 }

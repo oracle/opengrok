@@ -158,4 +158,4 @@ T[\{\}] {}
 {EOL}	{ out.write("\n"); }
 {WhiteSpace}+	{ out.write(' '); }
 [!-~]	{ out.write(yycharat(0)); }
- .	{ }
+ .	{ writeUnicodeChar(yycharat(0)); }
