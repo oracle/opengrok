@@ -1,0 +1,66 @@
+#!/sbin/sh
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+# Use is subject to license terms.
+#
+
+. /lib/svc/share/smf_include.sh
+
+srcdir=`svcprop -p opengrok/srcdir opengrok`
+pipe=/var/opengrok/.refresh.pipe
+
+if [ "$srcdir" = "none" ]; then
+	echo "FATAL: please set srcdir property" >&2
+	exit $SMF_EXIT_ERR_CONFIG
+fi
+
+if [ ! -d "$srcdir" ]; then
+	echo "FATAL: srcdir $srcdir doesn't exist" >&2
+	exit $SMF_EXIT_ERR_CONFIG
+fi
+
+case "$1" in
+	'start')
+		echo starting
+		/usr/opengrok/lib/ogindexd &
+		;;
+
+	'stop')
+		smf_kill_contract $2 TERM 1
+		;;
+
+	'refresh')
+		if [ ! -p "$pipe" ]; then
+			echo "FATAL: $pipe doesn't exist yet." >&2
+			echo "Is service running?" >&2
+			exit $SMF_EXIT_ERR_CONFIG
+		fi
+		echo > "$pipe"
+		;;
+
+	*)
+		echo "Usage: $0 {start|stop}"
+		exit 1
+		;;
+esac
+
+exit $SMF_EXIT_OK

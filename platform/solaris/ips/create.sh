@@ -19,11 +19,11 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 # Use is subject to license terms.
 
 version=`grep 'name="version"' build.xml | cut -f 4 -d \"`
-revision=`hg log --template '{rev}' -r tip`
+revision=0.`uname -v | perl -ne 's/(\d+)/print "$1\n"/e'`
 
 PKGSEND() {
    pkgsend "$@"
@@ -42,47 +42,49 @@ then
     exit 1
 fi
 
-for dir in /etc/opengrok /usr/opengrok /usr/opengrok/bin /usr/opengrok/lib \
-           /usr/opengrok/man /usr/opengrok/man/sman1
+for dir in /etc/opengrok /usr/opengrok /usr/opengrok/man /usr/opengrok/man/man1\
+	   /usr/opengrok/doc
 do
    PKGSEND add dir mode=0755 owner=root group=sys path=${dir}
+done
+
+for dir in /usr/opengrok/bin /usr/opengrok/lib
+do
+   PKGSEND add dir mode=0755 owner=root group=bin path=${dir}
 done
 
 for dir in /var/opengrok /var/opengrok/data /var/opengrok/etc \
            /var/opengrok/log /var/opengrok/source
 do
-   PKGSEND add dir mode=0755 owner=noaccess group=noaccess path=${dir}
+   PKGSEND add dir mode=0755 owner=webservd group=webservd path=${dir}
 done
 
 PKGSEND add file platform/solaris/smf/opengrok.xml mode=0444 owner=root group=sys path=/var/svc/manifest/application/opengrok.xml restart_fmri=svc:/system/manifest-import:default
-PKGSEND add file platform/solaris/smf/opengrok mode=0555 owner=bin group=bin path=/lib/svc/method/opengrok
-PKGSEND add file dist/opengrok.jar mode=0555 owner=bin group=bin path=/usr/opengrok/bin/opengrok.jar
-PKGSEND add file logging.properties mode=0555 owner=bin group=bin path=/usr/opengrok/bin/logging.properties
-PKGSEND add file OpenGrok mode=0777 owner=bin group=bin path=/usr/opengrok/bin/OpenGrok
-PKGSEND add link path=/usr/opengrok/bin/lib target=../lib
+PKGSEND add file platform/solaris/smf/svc-opengrok mode=0555 owner=root group=bin path=/lib/svc/method/svc-opengrok
+PKGSEND add file platform/solaris/smf/ogindexd mode=0555 owner=root group=bin path=/usr/opengrok/lib/ogindexd
+PKGSEND add file dist/opengrok.jar mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
+PKGSEND add file logging.properties mode=0444 owner=root group=sys path=/etc/opengrok/logging.properties
+PKGSEND add file README.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/README.txt
+PKGSEND add file doc/EXAMPLE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/EXAMPLE.txt
 
 # install libs
-for file in bcel-5.2.jar jakarta-oro-2.0.8.jar \
+for file in ant.jar bcel-5.2.jar jakarta-oro-2.0.8.jar \
             lucene-core-3.0.1.jar lucene-spellchecker-3.0.1.jar \
             org.apache.commons.jrcs.diff.jar org.apache.commons.jrcs.rcs.jar \
             swing-layout-0.9.jar
 do
-   PKGSEND add file dist/lib/${file} mode=0444 owner=bin group=bin path=/usr/opengrok/lib/${file}
+   PKGSEND add file dist/lib/${file} mode=0444 owner=root group=bin path=/usr/opengrok/lib/${file}
 done
 
 
 # install man page
-PKGSEND add file dist/opengrok.1 mode=0444 owner=bin group=bin path=/usr/opengrok/man/sman1/opengrok.1
+PKGSEND add file dist/opengrok.1 mode=0444 owner=root group=bin path=/usr/opengrok/man/man1/opengrok.1
 
 # install default configuration
-PKGSEND add file platform/solaris/default/opengrok.properties mode=0444 owner=root group=sys path=/var/opengrok/etc/opengrok.properties preserve=renameold
-PKGSEND add link path=/usr/opengrok/bin/lib/ant.jar target=/usr/share/lib/ant/ant.jar
-PKGSEND add link path=/usr/opengrok/bin/lib/jmxremote_optional.jar target=/usr/share/lib/jdmk/jmxremote_optional.jar
-PKGSEND add depend fmri=pkg:/SUNWjdmk-base type=require
-PKGSEND add depend fmri=pkg:/SUNWant type=require
-PKGSEND add depend fmri=pkg:/SUNWj6rt type=require
-PKGSEND add depend fmri=pkg:/SUNWtcat type=require
-PKGSEND add file dist/source.war mode=0444 owner=root group=bin path=/var/apache/tomcat/webapps/source.war
+PKGSEND add depend fmri=pkg:/runtime/java type=require
+PKGSEND add depend fmri=pkg:/web/java-servlet/tomcat type=require
+PKGSEND add depend fmri=pkg:/developer/tool/exuberant-ctags type=require
+PKGSEND add file dist/source.war mode=0444 owner=webservd group=webservd path=/var/tomcat6/webapps/source.war
 
 PKGSEND add set name=description value="OpenGrok - Wicked fast source browser"
 PKGSEND close

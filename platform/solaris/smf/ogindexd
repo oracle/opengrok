@@ -1,0 +1,102 @@
+#!/sbin/sh
+#
+# CDDL HEADER START
+#
+# The contents of this file are subject to the terms of the
+# Common Development and Distribution License (the "License").
+# You may not use this file except in compliance with the License.
+#
+# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
+# or http://www.opensolaris.org/os/licensing.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+#
+# When distributing Covered Code, include this CDDL HEADER in each
+# file and include the License file at usr/src/OPENSOLARIS.LICENSE.
+# If applicable, add the following below this CDDL HEADER, with the
+# fields enclosed by brackets "[]" replaced with your own identifying
+# information: Portions Copyright [yyyy] [name of copyright owner]
+#
+# CDDL HEADER END
+#
+# Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+# Use is subject to license terms.
+#
+
+PATH="/usr/bin:/bin"
+
+getprop() {
+	svcprop -p opengrok/$1 opengrok | tr -d '\\' | (
+		read value
+		if [ "x$value" != 'x""' ]; then
+			printf "%s" "$value"
+		fi
+	)
+}
+
+read_config() {
+	SRCDIR=`getprop srcdir`
+
+	if [ ! -d "$SRCDIR" ]; then
+	   echo "FATAL: srcdir $SRCDIR doesn't exist" >&2
+	   exit $SMF_EXIT_ERR_CONFIG
+	fi
+
+	JAVA_OPTS="-Xmx`getprop maxmemory`m"
+	JAVA_EXTRA_PARAMS=`getprop java_extra_params`
+	DATADIR=`getprop cachedir`
+	OG_DEF_PARAMS=`getprop default_params`
+	OG_EXTRA_PARAMS=`getprop extra_params`
+	READONLY_CFG_FILE=`getprop readonly_config`
+	READ_XML_CONF=""
+	VERBOSE=""
+	if [ "`getprop verbose`" != "false" ]; then
+		VERBOSE="-v"
+	fi
+
+	if [ -r "$READONLY_CFG_FILE" ]; then
+		READ_XML_CONF="-R $a"
+	fi
+}
+
+JAVA=/usr/jdk/latest/bin/java
+LIBDIR=/usr/opengrok/lib
+LOCALSTATEDIR="/var/opengrok"
+WEBAPP_CONFIG_ADDRESS="-U localhost:2424"
+XML_CONFIGURATION="$LOCALSTATEDIR/etc/configuration.xml"
+CLASSPATH=$LIBDIR/ant.jar:$LIBDIR/bcel-5.2.jar:$LIBDIR/jakarta-oro-2.0.8.jar:$LIBDIR/lucene-core-3.0.1.jar:$LIBDIR/lucene-spellchecker-3.0.1.jar:$LIBDIR/org.apache.commons.jrcs.diff.jar:$LIBDIR/org.apache.commons.jrcs.rcs.jar:$LIBDIR/swing-layout-0.9.jar:$LIBDIR/opengrok.jar
+
+xx() {
+	echo "$@"
+	"$@"
+}
+
+runjava() {
+	xx ${JAVA} ${JAVA_OPTS} ${JAVA_EXTRA_PARAMS}		\
+	-cp ${CLASSPATH}					\
+	org.opensolaris.opengrok.index.Indexer			\
+	${OG_DEF_PARAMS} ${OG_EXTRA_PARAMS}			\
+	${READ_XML_CONF}					\
+	-W ${XML_CONFIGURATION}					\
+	${WEBAPP_CONFIG_ADDRESS}				\
+	${VERBOSE}						\
+	-s ${SRCDIR} -d ${DATADIR} "$@"
+}
+
+# Read configuration for the first time.
+read_config || exit $?
+
+pipe=/var/opengrok/.refresh.pipe
+if [ ! -p "$pipe" ]; then
+	mkfifo "$pipe" || exit 1
+fi
+if [ ! -f "$XML_CONFIGURATION" ]; then
+	# This is likely our first run. Let's do the initial indexing.
+	runjava -H || exit 1
+fi
+while read line; do
+	# Re-read configuration.
+	read_config || exit $?
+	runjava -H || exit 1
+done < "$pipe" 5> "$pipe"
+
