@@ -17,6 +17,11 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ */
+
 package org.opensolaris.opengrok.util;
 
 import java.io.ByteArrayInputStream;
@@ -114,6 +119,13 @@ public class Executor {
             }
         }
 
+        OpenGrokLogger.getLogger().log(Level.FINE,
+                "Executing command {0} in directory {1}",
+                new Object[] {
+                    processBuilder.command(),
+                    processBuilder.directory(),
+                });
+
         Process process = null;
         try {
             process = processBuilder.start();
@@ -160,6 +172,15 @@ public class Executor {
             } catch (IllegalThreadStateException e) {
                 process.destroy();
             }
+        }
+
+        if (ret != 0) {
+            OpenGrokLogger.getLogger().log(
+                reportExceptions ? Level.SEVERE : Level.FINE,
+                "Non-zero exit status {0} from command {1} in directory {2}",
+                new Object[] {
+                    ret, processBuilder.command(), processBuilder.directory()
+                });
         }
 
         return ret;
