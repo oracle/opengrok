@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -430,7 +431,7 @@ public final class HistoryGuru {
         }
     }
 
-    private void createCacheReal(List<Repository> repositories) {
+    private void createCacheReal(Collection<Repository> repositories) {
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
         for (final Repository repos : repositories) {
@@ -479,11 +480,7 @@ public final class HistoryGuru {
             return;
         }
 
-        ArrayList<Repository> repos = new ArrayList<Repository>();
-        for (Map.Entry<String, Repository> entry : repositories.entrySet()) {
-            repos.add(entry.getValue());
-        }
-        createCacheReal(repos);
+        createCacheReal(repositories.values());
     }
 
     public void createCache(List<String> repositories) {
