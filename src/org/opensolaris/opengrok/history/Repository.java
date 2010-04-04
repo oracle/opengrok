@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -102,19 +102,42 @@ public abstract class Repository extends RepositoryInfo {
 
         List<HistoryEntry> partial = new ArrayList<HistoryEntry>();
         for (HistoryEntry entry : history.getHistoryEntries()) {
-            if (sinceRevision.equals(entry.getRevision())) {
-                // Found revision right before the first one to return. Skip
-                // this one and the rest (older revisions), and return those
-                // entries we have seen so far.
-                history.setHistoryEntries(partial);
-                return history;
-            }
             partial.add(entry);
+            if (sinceRevision.equals(entry.getRevision())) {
+                // Found revision right before the first one to return.
+                break;
+            }
         }
 
-        // If we got here, we never saw sinceRevision in the history, hence
-        // it doesn't exist. Raise an error.
-        throw new HistoryException("No such revision: " + sinceRevision);
+        removeAndVerifyOldestChangeset(partial, sinceRevision);
+        history.setHistoryEntries(partial);
+        return history;
+    }
+
+    /**
+     * Remove the oldest changeset from a list (assuming sorted with most
+     * recent changeset first) and verify that it is the changeset we expected
+     * to find there.
+     *
+     * @param entries a list of {@code HistoryEntry} objects
+     * @param revision the revision we expect the oldest entry to have
+     * @throws HistoryException if the oldest entry was not the one we expected
+     */
+    void removeAndVerifyOldestChangeset(List<HistoryEntry> entries,
+                                        String revision)
+            throws HistoryException {
+        HistoryEntry entry =
+                entries.isEmpty() ? null : entries.remove(entries.size() - 1);
+
+        // TODO We should check more thoroughly that the changeset is the one
+        // we expected it to be, since some SCMs may change the revision
+        // numbers so that identical revision numbers does not always mean
+        // identical changesets. We could for example get the cached changeset
+        // and compare more fields, like author and date.
+        if (entry == null || !revision.equals(entry.getRevision())) {
+            throw new HistoryException("Cached revision '" + revision +
+                                       "' not found in the repository");
+        }
     }
 
     /**

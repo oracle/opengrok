@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -164,8 +164,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         // If we only fetch parts of the history, we're not interested in
         // sinceRevision. Remove it.
         if (sinceRevision != null) {
-            HistoryEntry removed = entries.remove(entries.size() - 1);
-            assert sinceRevision.equals(removed.getRevision());
+            repos.removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
         return new History(entries);

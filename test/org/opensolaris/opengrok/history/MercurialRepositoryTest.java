@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -128,7 +128,7 @@ public class MercurialRepositoryTest {
             fail("getHistory() should have failed");
         } catch (HistoryException he) {
             String msg = he.getMessage();
-            if (msg != null && msg.startsWith("No such revision")) {
+            if (msg != null && msg.contains("not found in the repository")) {
                 // expected exception, do nothing
             } else {
                 // unexpected exception, rethrow it

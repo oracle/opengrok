@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -82,11 +82,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
         // Also check that the specified changeset was found, otherwise throw
         // an exception.
         if (changeset != null) {
-            HistoryEntry entry = entries.isEmpty() ?
-                null : entries.remove(entries.size() - 1);
-            if (entry == null || !changeset.equals(entry.getRevision())) {
-                throw new HistoryException("No such revision: " + changeset);
-            }
+            repository.removeAndVerifyOldestChangeset(entries, changeset);
         }
 
         return new History(entries);

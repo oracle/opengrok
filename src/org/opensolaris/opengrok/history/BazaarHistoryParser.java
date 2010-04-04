@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -70,11 +70,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
         // Also check that the specified changeset was found, otherwise throw
         // an exception.
         if (sinceRevision != null) {
-            HistoryEntry entry = entries.isEmpty() ?
-                null : entries.remove(entries.size() - 1);
-            if (entry == null || !sinceRevision.equals(entry.getRevision())) {
-                throw new HistoryException("No such revision: " + sinceRevision);
-            }
+            repository.removeAndVerifyOldestChangeset(entries, sinceRevision);
         }
 
         return new History(entries);
