@@ -53,10 +53,7 @@
             <or/>
         </condition>
         <condition property="have.sources">
-            <or>
-                <available file="${src.dir}"/>
-                <available file="${src.generatedsrc.dir}"/>
-            </or>
+            <or/>
         </condition>
         <condition property="netbeans.home+have.tests">
             <and>
@@ -185,8 +182,6 @@
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
-        <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="src.generatedsrc.dir">Must set src.generatedsrc.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="build.web.dir">Must set build.web.dir</fail>
         <fail unless="build.generated.dir">Must set build.generated.dir</fail>
@@ -216,7 +211,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
     </target>
     <target name="-init-macrodef-javac">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/web-project/2">
-            <attribute default="${src.dir}:${src.generatedsrc.dir}" name="srcdir"/>
+            <attribute default="" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}:${j2ee.platform.classpath}" name="classpath"/>
             <attribute default="${includes}" name="includes"/>
@@ -385,8 +380,16 @@ exists or setup the property manually. For example like this:
     <!--
                 COMPILATION SECTION
             -->
-    <target depends="init" if="no.dist.ear.dir" name="deps-module-jar" unless="no.deps"/>
-    <target depends="init" if="dist.ear.dir" name="deps-ear-jar" unless="no.deps"/>
+    <target depends="init" if="no.dist.ear.dir" name="deps-module-jar" unless="no.deps">
+        <ant antfile="${project.opengrok}/build.xml" inheritall="false" target="jar">
+            <property name="deploy.on.save" value="false"/>
+        </ant>
+    </target>
+    <target depends="init" if="dist.ear.dir" name="deps-ear-jar" unless="no.deps">
+        <ant antfile="${project.opengrok}/build.xml" inheritall="false" target="jar">
+            <property name="deploy.on.save" value="false"/>
+        </ant>
+    </target>
     <target depends="init, deps-module-jar, deps-ear-jar" name="deps-jar" unless="no.deps"/>
     <target depends="init,deps-jar" name="-pre-pre-compile">
         <mkdir dir="${build.classes.dir}"/>
@@ -405,10 +408,7 @@ exists or setup the property manually. For example like this:
     </target>
     <target depends="init, deps-jar, -pre-pre-compile, -pre-compile, -copy-manifest, -copy-persistence-xml, -copy-webdir, library-inclusion-in-archive,library-inclusion-in-manifest" if="have.sources" name="-do-compile">
         <webproject2:javac destdir="${build.classes.dir}" gensrcdir="${build.generated.sources.dir}"/>
-        <copy todir="${build.classes.dir}">
-            <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.generatedsrc.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-        </copy>
+        <copy todir="${build.classes.dir}"/>
     </target>
     <target if="has.custom.manifest" name="-copy-manifest">
         <mkdir dir="${build.meta.inf.dir}"/>
@@ -434,10 +434,7 @@ exists or setup the property manually. For example like this:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <webproject2:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}"/>
-        <copy todir="${build.classes.dir}">
-            <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.generatedsrc.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-        </copy>
+        <copy todir="${build.classes.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -532,6 +529,7 @@ exists or setup the property manually. For example like this:
         <copyfiles files="${file.reference.org.apache.commons.jrcs.rcs.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
         <copyfiles files="${file.reference.org.apache.commons.jrcs.diff.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
         <copyfiles files="${file.reference.lucene-spellchecker-3.0.1.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
+        <copyfiles files="${reference.opengrok.jar}" iftldtodir="${build.web.dir}/WEB-INF" todir="${dist.ear.dir}/lib"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update"/>
     </target>
@@ -544,6 +542,7 @@ exists or setup the property manually. For example like this:
         <copyfiles files="${file.reference.org.apache.commons.jrcs.rcs.jar}" todir="${build.web.dir}/WEB-INF\lib"/>
         <copyfiles files="${file.reference.org.apache.commons.jrcs.diff.jar}" todir="${build.web.dir}/WEB-INF\lib"/>
         <copyfiles files="${file.reference.lucene-spellchecker-3.0.1.jar}" todir="${build.web.dir}/WEB-INF\lib"/>
+        <copyfiles files="${reference.opengrok.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init" if="dist.ear.dir" name="-clean-webinf-lib">
         <delete dir="${build.web.dir}/WEB-INF/lib"/>
@@ -732,12 +731,6 @@ exists or setup the property manually. For example like this:
             <classpath>
                 <path path="${javac.classpath}:${j2ee.platform.classpath}"/>
             </classpath>
-            <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${src.generatedsrc.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
             <fileset dir="${build.generated.sources.dir}" erroronmissingdir="false">
                 <include name="**/*.java"/>
             </fileset>
@@ -839,7 +832,9 @@ exists or setup the property manually. For example like this:
                 
                 CLEANUP SECTION
             -->
-    <target depends="init" if="no.dist.ear.dir" name="deps-clean" unless="no.deps"/>
+    <target depends="init" if="no.dist.ear.dir" name="deps-clean" unless="no.deps">
+        <ant antfile="${project.opengrok}/build.xml" inheritall="false" target="clean"/>
+    </target>
     <target depends="init" name="do-clean">
         <condition property="build.dir.to.clean" value="${build.web.dir}">
             <isset property="dist.ear.dir"/>

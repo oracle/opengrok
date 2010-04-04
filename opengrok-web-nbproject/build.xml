@@ -9,14 +9,5 @@
 <!-- in the project's Project Properties dialog box.-->
 <project name="opengrok-web-nbproject" default="default" basedir=".">
 	<description>Builds, tests, and runs the project opengrok-web-nbproject.</description>
-    <import file="nbproject/build-impl.xml"/>	
-    <import file="../build.xml"/>
-
-    <target name="-pre-compile" depends="jflex"/>
-
-    <target name="-post-clean">
-        <delete dir="${src.generatedsrc.dir}"/>
-        <delete file="${manifest.file}"/>
-    </target>
-
+    <import file="nbproject/build-impl.xml"/>
 </project>
