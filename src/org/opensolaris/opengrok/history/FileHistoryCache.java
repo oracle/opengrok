@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -290,6 +290,13 @@ class FileHistoryCache implements HistoryCache {
     @Override
     public String getLatestCachedRevision(Repository repository) {
         return null;
+    }
+
+    @Override
+    public void clear(Repository repository) {
+        // We only expect this method to be called if the cache supports
+        // incremental update, so it's not implemented here for now.
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -194,7 +194,33 @@ public abstract class Repository extends RepositoryInfo {
         }
 
         File directory = new File(getDirectoryName());
-        History history = getHistory(directory, sinceRevision);
+
+        History history;
+        try {
+            history = getHistory(directory, sinceRevision);
+        } catch (HistoryException he) {
+            if (sinceRevision == null) {
+                // Failed to get full history, so fail.
+                throw he;
+            } else {
+                // Failed to get partial history. This may have been caused
+                // by changes in the revision numbers since the last update
+                // (bug #14724) so we'll try to regenerate the cache from
+                // scratch instead.
+                OpenGrokLogger.getLogger().log(Level.INFO,
+                        "Failed to get partial history. Attempting to " +
+                        "recreate the history cache from scratch.", he);
+                history = null;
+            }
+        }
+
+        if (sinceRevision != null && history == null) {
+            // Failed to get partial history, now get full history instead.
+            history = getHistory(directory);
+            // Got full history successfully. Clear the history cache so that
+            // we can recreate it from scratch.
+            cache.clear(this);
+        }
 
         if (history != null) {
             cache.store(history, this);

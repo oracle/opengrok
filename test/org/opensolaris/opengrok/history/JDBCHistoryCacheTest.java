@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -230,6 +230,15 @@ public class JDBCHistoryCacheTest extends TestCase {
                 updatedHistory.getHistoryEntries());
         assertSameEntry(newEntry, updatedEntries.removeFirst());
         assertSameEntries(historyToStore.getHistoryEntries(), updatedEntries);
+
+        // test clearing of cache
+        cache.clear(repos);
+        History clearedHistory = cache.get(reposRoot, repos, true);
+        assertTrue("History should be empty",
+                clearedHistory.getHistoryEntries().isEmpty());
+        cache.store(historyToStore, repos);
+        assertSameEntries(historyToStore.getHistoryEntries(),
+                cache.get(reposRoot, repos, true).getHistoryEntries());
     }
 
     /**

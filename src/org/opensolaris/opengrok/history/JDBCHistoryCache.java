@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -1119,6 +1119,46 @@ class JDBCHistoryCache implements HistoryCache {
                 return rs.next() ? rs.getString(1) : null;
             } finally {
                 rs.close();
+            }
+        } finally {
+            connectionManager.releaseConnection(conn);
+        }
+    }
+
+    @Override
+    public void clear(Repository repository) throws HistoryException {
+        try {
+            for (int i = 0;; i++) {
+                try {
+                    clearHistoryForRepository(repository);
+                    return;
+                } catch (SQLException sqle) {
+                    handleSQLException(sqle, i);
+                }
+            }
+        } catch (SQLException sqle) {
+            throw new HistoryException(sqle);
+        }
+    }
+
+    /**
+     * Helper for {@link #clear(Repository)}.
+     */
+    private void clearHistoryForRepository(Repository repository)
+            throws SQLException {
+        final ConnectionResource conn =
+                connectionManager.getConnectionResource();
+        try {
+            // This statement shouldn't be called very frequently, so don't
+            // care about caching it...
+            PreparedStatement ps = conn.prepareStatement(
+                    getQuery("clearRepository"));
+            try {
+                ps.setInt(1, getRepositoryId(conn, repository));
+                ps.execute();
+                conn.commit();
+            } finally {
+                ps.close();
             }
         } finally {
             connectionManager.releaseConnection(conn);

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -104,6 +104,14 @@ interface HistoryCache {
      */
     String getLatestCachedRevision(Repository repository)
             throws HistoryException;
+
+    /**
+     * Clear the history cache for a repository.
+     *
+     * @param repository the repository whose cache to clear
+     * @throws HistoryException if the cache couldn't be cleared
+     */
+    void clear(Repository repository) throws HistoryException;
 
     /**
      * Get a string with information about the history cache.
