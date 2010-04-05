@@ -43,20 +43,20 @@ import java.util.Stack;
   private final Stack<String> styleStack = new Stack<String>();
 
   public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
-	annotation = null;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
+        annotation = null;
   }
 
   public void write(Writer out) throws IOException {
-  	this.out = out;
+        this.out = out;
         Util.readableLine(1, out, annotation);
-	yyline = 2;
-	while(yylex() != YYEOF) {
-	}
+        yyline = 2;
+        while(yylex() != YYEOF) {
+        }
   }
 
   private void pushstate(int state, String style) throws IOException {
@@ -103,16 +103,16 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 %%
 <STRING>{
- "$" {Identifier} 	{
- 			  out.write("<a href=\"");
-			  out.write(urlPrefix);
-			  out.write("refs=");
-			  out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+ "$" {Identifier}       {
+                          out.write("<a href=\"");
+                          out.write(urlPrefix);
+                          out.write("refs=");
+                          out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
                           appendProject();
-			  out.write("\">");
-			  out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
-			  out.write("</a>");
-			}
+                          out.write("\">");
+                          out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+                          out.write("</a>");
+                        }
 
   /* This rule matches associative arrays inside strings,
      for instance "${array["string"]}". Push a new STRING
@@ -129,7 +129,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
     writeSymbol(id, Consts.shkwd, yyline - 1);
 }
 
-{Number}	{ out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
  \$ ? \" { pushstate(STRING, "s"); out.write(yytext()); }
  \$ ? \' { pushstate(QSTRING, "s"); out.write(yytext()); }
@@ -138,7 +138,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 <STRING> {
  \" {WhiteSpace}* \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
- \"	{ out.write(yytext()); popstate(); }
+ \"     { out.write(yytext()); popstate(); }
  \\\\ | \\\" | \\\$   { out.write(yytext()); }
  \$\(   { pushstate(SUBSHELL, null); out.write(yytext()); }
  `      { pushstate(BACKQUOTE, null); out.write(yytext()); }
@@ -171,42 +171,42 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, STRING, SCOMMENT, QSTRING> {
 {File}
-	{out.write("<a href=\""+urlPrefix+"path=");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        {out.write("<a href=\""+urlPrefix+"path=");
+        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
         appendProject();
         out.write("\">");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
         out.write("</a>");}
 
 {Path}
- 	{ out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
-"&"	{out.write( "&amp;");}
-"<"	{out.write( "&lt;");}
-">"	{out.write( "&gt;");}
- {EOL}	{ Util.readableLine(yyline, out, annotation); }
-{WhiteSpace}+	{ out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
-[!-~]	{ out.write(yycharat(0)); }
- .	{ writeUnicodeChar(yycharat(0)); }
+        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+"&"     {out.write( "&amp;");}
+"<"     {out.write( "&lt;");}
+">"     {out.write( "&gt;");}
+ {EOL}  { Util.readableLine(yyline, out, annotation); }
+{WhiteSpace}+   { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
+[!-~]   { out.write(yycharat(0)); }
+ .      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, QSTRING> {
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-	{out.write("<a href=\"");
-	 out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-	 out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
+        {out.write("<a href=\"");
+         out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
+         out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-	{
-		for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-			if(zzBuffer[mi] != '@') {
-				out.write(zzBuffer[mi]);
-			} else {
-				out.write(" (at] ");
-			}
-		}
-		//out.write("<a href=\"mailto:");
-		//out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-		//out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");
-	}
+        {
+                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
+                        if(zzBuffer[mi] != '@') {
+                                out.write(zzBuffer[mi]);
+                        } else {
+                                out.write(" (at] ");
+                        }
+                }
+                //out.write("<a href=\"mailto:");
+                //out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
+                //out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");
+        }
 }

@@ -23,7 +23,7 @@
  */
 
 /*
- * ident	"%Z%%M% %I%     %E% SMI"
+ * ident        "%Z%%M% %I%     %E% SMI"
  */
 
 package org.opensolaris.opengrok.analysis.document;
@@ -43,17 +43,17 @@ import org.opensolaris.opengrok.web.Util;
 %{ 
   boolean p = false;
   public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
   }
 
   public void write(Writer out) throws IOException {
-  	this.out = out;
-	while(yylex() != YYEOF) {
-	}
+        this.out = out;
+        while(yylex() != YYEOF) {
+        }
   }
 %}
 
@@ -67,16 +67,16 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 %%
 <YYINITIAL> {
-^\.(SH|TH|SS|IP|NH|TL|UH)	{ yybegin(HEADER);out.write("<div class=\"b\">");}
+^\.(SH|TH|SS|IP|NH|TL|UH)       { yybegin(HEADER);out.write("<div class=\"b\">");}
 ^(".\\\"")|(\'\\\")|("...\\\"") { yybegin(COMMENT);out.write("<span class=\"c\">");}
 }
 
 <HEADER> {
-{EOL}	{ yybegin(YYINITIAL);out.write("</div>"); }
+{EOL}   { yybegin(YYINITIAL);out.write("</div>"); }
 }
 
 <COMMENT> {
-{EOL}	{ yybegin(YYINITIAL);out.write("</span><br>"); }
+{EOL}   { yybegin(YYINITIAL);out.write("</span><br>"); }
 }
 
 ^\.(B|U|BI|BX|UL|LG|NL|SB|BR|RB) { yybegin(BOLD); out.write("<span class=\"b\">"); }
@@ -89,11 +89,11 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 {EOL}      { yybegin(YYINITIAL);out.write("</span> ");}
 }
 
-"\\fB"	{ out.write("<span class=\"b\">"); }
-"\\fI"	{ out.write("<span class=\"s\">"); }
-"\\fC"|"\\f(CW"	{ out.write("<span class=\"k\">"); }
-"\\fR"	{ out.write("</span>"); }
-"\\fP"	{ out.write("</span>"); }
+"\\fB"  { out.write("<span class=\"b\">"); }
+"\\fI"  { out.write("<span class=\"s\">"); }
+"\\fC"|"\\f(CW" { out.write("<span class=\"k\">"); }
+"\\fR"  { out.write("</span>"); }
+"\\fP"  { out.write("</span>"); }
 
 ^\.(PP|LP|P|TP|IP|HP|PD|SP|br|mk) { 
     if(p)// TODO isn't this buggy ?
@@ -108,8 +108,8 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 ^\.(EQ|in|sp|ne|rt|br|pn|ds|de|if|ig|el|ft|hy|ie|ll|ps|rm|ta|ti)[^\n]*\n {}
 ^\.(NH|DT|EE)[^\n]* {}
 ^"\\(bu\n" {}
-^".nf"	{out.write("<pre>"); }
-^".fi"	{out.write("</pre>"); }
+^".nf"  {out.write("<pre>"); }
+^".fi"  {out.write("</pre>"); }
 \\\*\(Tm { out.write(" TM "); }
 \\\*\R { out.write(" (R) "); }
 \\\((l|r)q { out.write('"'); }
@@ -130,32 +130,32 @@ T[\{\}] {}
 }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-	{
-		for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-			if(zzBuffer[mi] != '@') {
-				out.write(zzBuffer[mi]);
-			} else {
-				out.write(" (at] ");
-			}
-		}
-	}
+        {
+                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
+                        if(zzBuffer[mi] != '@') {
+                                out.write(zzBuffer[mi]);
+                        } else {
+                                out.write(" (at] ");
+                        }
+                }
+        }
 
 {File}
-	{out.write("<a href=\""+urlPrefix+"path=");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        {out.write("<a href=\""+urlPrefix+"path=");
+        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
         appendProject();
         out.write("\">");
-	out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
         out.write("</a>");}
 
 {Path}
- 	{ out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
-\\&.	{out.write( zzBuffer[zzMarkedPos-1]);}
-\\-	{ out.write('-'); }
-"\\ "	{ out.write(' '); }
-"<"	{out.write( "&lt;");}
-">"	{out.write( "&gt;");}
-{EOL}	{ out.write("\n"); }
-{WhiteSpace}+	{ out.write(' '); }
-[!-~]	{ out.write(yycharat(0)); }
- .	{ writeUnicodeChar(yycharat(0)); }
+        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+\\&.    {out.write( zzBuffer[zzMarkedPos-1]);}
+\\-     { out.write('-'); }
+"\\ "   { out.write(' '); }
+"<"     {out.write( "&lt;");}
+">"     {out.write( "&gt;");}
+{EOL}   { out.write("\n"); }
+{WhiteSpace}+   { out.write(' '); }
+[!-~]   { out.write(yycharat(0)); }
+ .      { writeUnicodeChar(yycharat(0)); }

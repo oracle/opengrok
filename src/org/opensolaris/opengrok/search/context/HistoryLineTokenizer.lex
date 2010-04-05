@@ -97,7 +97,7 @@ stopset.add( "1.0");
   }
 
   public void setWriter(Writer out) {
-  	this.out = out;
+        this.out = out;
   }
   
   public void setHitList(List<Hit> hits) {
@@ -118,70 +118,70 @@ stopset.add( "1.0");
     }
 
   public void reInit(char[] buf) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = buf.length;
-	zzAtEOF = true;
-	zzStartRead = 0;
-	wait = false;
-	dumpRest = false;
-	rest = 0;
-	markedPos=0;
-	matchStart=-1;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = buf.length;
+        zzAtEOF = true;
+        zzStartRead = 0;
+        wait = false;
+        dumpRest = false;
+        rest = 0;
+        markedPos=0;
+        matchStart=-1;
   }
 
   public void holdOn() {
      if(!wait) {
-  	wait = true;
-	matchStart = zzStartRead;
+        wait = true;
+        matchStart = zzStartRead;
      }
   }
   
   public void neverMind() {
-  	wait = false;
-	matchStart = -1;
+        wait = false;
+        matchStart = -1;
   }
 
   private void printHTML(char[] buf, int start, int end) throws IOException {
-  	for(int i=start;i<end; i++) {
-		switch(buf[i]) {
-		case '\n':
-			out.write("<br/>");
-			break;
-		case '<':
-			out.write("&lt;");
-			break;
-		case '>':
-			out.write("&gt;");
-			break;
-		case '&':
-			out.write("&amp;");
-			break;
-		default:
-			out.write(buf[i]);
-		}
-	}
+        for(int i=start;i<end; i++) {
+                switch(buf[i]) {
+                case '\n':
+                        out.write("<br/>");
+                        break;
+                case '<':
+                        out.write("&lt;");
+                        break;
+                case '>':
+                        out.write("&gt;");
+                        break;
+                case '&':
+                        out.write("&amp;");
+                        break;
+                default:
+                        out.write(buf[i]);
+                }
+        }
   }
 
   private void formatHTML(char buf[], int start, int end) {
-  	for(int i=start;i<end; i++) {
-		switch(buf[i]) {
-		case '\n':
-			sb.append(" ");
-			break;
-		case '<':
-			sb.append("&lt;");
-			break;
-		case '>':
-			sb.append("&gt;");
-			break;
-		case '&':
-			sb.append("&amp;");
-			break;
-		default:
-			sb.append(buf[i]);
-		}
-	}
+        for(int i=start;i<end; i++) {
+                switch(buf[i]) {
+                case '\n':
+                        sb.append(" ");
+                        break;
+                case '<':
+                        sb.append("&lt;");
+                        break;
+                case '>':
+                        sb.append("&gt;");
+                        break;
+                case '&':
+                        sb.append("&amp;");
+                        break;
+                default:
+                        sb.append(buf[i]);
+                }
+        }
   } 
 
   public void printContext() throws IOException {
@@ -189,40 +189,40 @@ stopset.add( "1.0");
            sb = new StringBuilder();
         } 
 
-  	wait = false;
-	if (matchStart == -1) {
-		matchStart = zzStartRead;
-	}
+        wait = false;
+        if (matchStart == -1) {
+                matchStart = zzStartRead;
+        }
       
         if (out != null) {
-	   //System.err.println("markedPos = " + markedPos + " matchStart= " + matchStart + " zzMarkedPos=" + zzMarkedPos);
-	   printHTML(zzBuffer, markedPos, matchStart);
-	   out.write("<b>");
-	   printHTML(zzBuffer, matchStart, zzMarkedPos);
-	   out.write("</b>");
+           //System.err.println("markedPos = " + markedPos + " matchStart= " + matchStart + " zzMarkedPos=" + zzMarkedPos);
+           printHTML(zzBuffer, markedPos, matchStart);
+           out.write("<b>");
+           printHTML(zzBuffer, matchStart, zzMarkedPos);
+           out.write("</b>");
         } else {
            formatHTML(zzBuffer, markedPos, matchStart);
-	   sb.append("<b>");
-	   formatHTML(zzBuffer, matchStart, zzMarkedPos);
-	   sb.append("</b>");
+           sb.append("<b>");
+           formatHTML(zzBuffer, matchStart, zzMarkedPos);
+           sb.append("</b>");
         }
-	markedPos = zzMarkedPos;
-	matchStart = -1;
-	dumpRest = true;
-	rest = zzMarkedPos;
+        markedPos = zzMarkedPos;
+        matchStart = -1;
+        dumpRest = true;
+        rest = zzMarkedPos;
   }
 
   public void dumpRest() throws IOException {
-  	//System.err.println("dumpRest = " + dumpRest + " zzEndRead=" + zzEndRead + " zzMarkedPos=" + zzMarkedPos+ " rest = "+rest);
-	if(dumpRest) {
+        //System.err.println("dumpRest = " + dumpRest + " zzEndRead=" + zzEndRead + " zzMarkedPos=" + zzMarkedPos+ " rest = "+rest);
+        if(dumpRest) {
            if (out != null) {
-		printHTML(zzBuffer, rest, zzEndRead);
+                printHTML(zzBuffer, rest, zzEndRead);
            } else {
                 formatHTML(zzBuffer, rest, zzEndRead);
                 hits.add(new Hit(filename, sb.toString(), "", false, alt));
                 sb.setLength(0);
            }
-	}
+        }
   }
 %}
 
@@ -233,7 +233,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 %%
 
 
-{Identifier}|{Number}|{Printable}	{String m = yytext().toLowerCase();
-					if(stopset.contains(m)) { } else { return(m);}}
+{Identifier}|{Number}|{Printable}       {String m = yytext().toLowerCase();
+                                        if(stopset.contains(m)) { } else { return(m);}}
 <<EOF>>   { return null;}
-.|\n	{}
+.|\n    {}

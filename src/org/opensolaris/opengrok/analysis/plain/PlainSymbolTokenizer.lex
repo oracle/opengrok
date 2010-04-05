@@ -38,16 +38,16 @@ return false;
 
 %{
     public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
     }
 
     @Override
     public void close() throws IOException {
-       	yyclose();
+        yyclose();
     }
 %}
 
@@ -56,4 +56,4 @@ return false;
 [a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
                         return true; }
 <<EOF>>   { return false;}
-.|\n	{}
+.|\n    {}

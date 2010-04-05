@@ -39,18 +39,18 @@ import org.opensolaris.opengrok.web.Util;
 %line
 %{
   public void write(Writer out) throws IOException {
-  	this.out = out;
+        this.out = out;
         Util.readableLine(1, out, annotation);
-	yyline = 2;
-	while(yylex() != YYEOF);
+        yyline = 2;
+        while(yylex() != YYEOF);
   }
   public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
-	annotation = null;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
+        annotation = null;
   }
 
 %}
@@ -61,31 +61,31 @@ File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 %%
 {File}|{Path}
-	{String s=yytext();
-	out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
-	out.write(s);appendProject();out.write("\">");
-	out.write(s);out.write("</a>");} 
+        {String s=yytext();
+        out.write("<a href=\"");out.write(urlPrefix);out.write("path=");
+        out.write(s);appendProject();out.write("\">");
+        out.write(s);out.write("</a>");}
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-	{String s=yytext();
-	 out.write("<a href=\"");
-	 out.write(s);out.write("\">");
-	 out.write(s);out.write("</a>");}
+        {String s=yytext();
+         out.write("<a href=\"");
+         out.write(s);out.write("\">");
+         out.write(s);out.write("</a>");}
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-	{	
-		for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-			if(zzBuffer[mi] != '@') {
-				out.write(zzBuffer[mi]);
-			} else {
-				out.write(" (a] ");
-			}
-		}
-/*		String s=yytext();
-		out.write("<a href=\"mailto:");
-		out.write(s);out.write("\">");
-		out.write(s);out.write("</a>");*/
-	}
+        {
+                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
+                        if(zzBuffer[mi] != '@') {
+                                out.write(zzBuffer[mi]);
+                        } else {
+                                out.write(" (a] ");
+                        }
+                }
+/*              String s=yytext();
+                out.write("<a href=\"mailto:");
+                out.write(s);out.write("\">");
+                out.write(s);out.write("</a>");*/
+        }
 
 // Bug #13362: If there's a very long sequence that matches {FNameChar}+,
 // parsing the file will take forever because of all the backtracking. With
@@ -94,9 +94,9 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 // the rules above because JFlex always picks the longest match.
 {FNameChar}+ { out.write(yytext()); }
 
-"&"	{out.write( "&amp;");}
-"<"	{out.write( "&lt;");}
-">"	{out.write( "&gt;");}
-{EOL}	{Util.readableLine(yyline, out, annotation); }
-[ !-~\t\f]	{out.write(yycharat(0));}
-.	{ writeUnicodeChar(yycharat(0)); }
+"&"     {out.write( "&amp;");}
+"<"     {out.write( "&lt;");}
+">"     {out.write( "&gt;");}
+{EOL}   {Util.readableLine(yyline, out, annotation); }
+[ !-~\t\f]      {out.write(yycharat(0));}
+.       { writeUnicodeChar(yycharat(0)); }

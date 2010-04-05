@@ -38,16 +38,16 @@ return false;
 
 %{
     public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
     }
 
     @Override
     public void close() throws IOException {
-       	yyclose();
+        yyclose();
     }
 %}
 
@@ -59,32 +59,32 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
 <YYINITIAL> {
 {Identifier} {String id = yytext();
-		if(!Consts.shkwd.contains(id)){
+                if(!Consts.shkwd.contains(id)){
                         setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
                         return true; }
               }
- \"	{ yybegin(STRING); }
- \'	{ yybegin(QSTRING); }
- "#"	{ yybegin(SCOMMENT); }
+ \"     { yybegin(STRING); }
+ \'     { yybegin(QSTRING); }
+ "#"    { yybegin(SCOMMENT); }
 }
 
 <STRING> {
 "$" {Identifier} { setAttribs( zzBuffer, zzStartRead+1, zzMarkedPos-zzStartRead-1 , zzStartRead, zzMarkedPos);return true;}
 "${" {Identifier} "}" { setAttribs( zzBuffer, zzStartRead+2, zzMarkedPos-zzStartRead-3 , zzStartRead, zzMarkedPos);return true;}
 
- \"	{ yybegin(YYINITIAL); }
-\\\\ | \\\"	{}
+ \"     { yybegin(YYINITIAL); }
+\\\\ | \\\"     {}
 }
 
 <QSTRING> {
- \'	{ yybegin(YYINITIAL); }
+ \'     { yybegin(YYINITIAL); }
 }
 
 <SCOMMENT> {
-\n	{ yybegin(YYINITIAL);}
+\n      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, SCOMMENT, QSTRING> {
 <<EOF>>   { return false;}
-.|\n	{}
+.|\n    {}
 }

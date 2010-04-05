@@ -40,18 +40,18 @@ import org.opensolaris.opengrok.web.Util;
 %line
 %{
   public void write(Writer out) throws IOException {
-  	this.out = out;
+        this.out = out;
         Util.readableLine(1, out, annotation);
-	yyline = 2;
-	while(yylex() != YYEOF);
+        yyline = 2;
+        while(yylex() != YYEOF);
   }
   public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
-	annotation = null;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
+        annotation = null;
   }
 
 %}
@@ -74,7 +74,7 @@ NameChar = {FileChar}|"."
     yybegin(CDATA);
     out.write("&lt;<span class=\"n\">![CDATA[</span><span class=\"c\">");
  }
- "<"	{ yybegin(TAG); out.write("&lt;");}
+ "<"    { yybegin(TAG); out.write("&lt;");}
 }
 
 <TAG> {
@@ -88,16 +88,16 @@ NameChar = {FileChar}|"."
 
 <STRING> {
  \" {WhiteSpace}* \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
- \"	{ yybegin(TAG); out.write("\"</span>"); }
+ \"     { yybegin(TAG); out.write("\"</span>"); }
 }
 <STRING, STRING, COMMENT, CDATA> {
- "<"	{out.write( "&lt;");}
- ">"	{out.write( "&gt;");}
+ "<"    {out.write( "&lt;");}
+ ">"    {out.write( "&gt;");}
 }
 
 <SSTRING> {
  \' {WhiteSpace}* \'  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
- \'	{ yybegin(TAG); out.write("'</span>"); }
+ \'     { yybegin(TAG); out.write("'</span>"); }
 }
 
 <COMMENT> {
@@ -122,28 +122,28 @@ NameChar = {FileChar}|"."
   }
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-	{String s=yytext();
-	 out.write("<a href=\"");
-	 out.write(s);out.write("\">");
-	 out.write(s);out.write("</a>");}
+        {String s=yytext();
+         out.write("<a href=\"");
+         out.write(s);out.write("\">");
+         out.write(s);out.write("</a>");}
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+
-	{	
-		for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-			if(zzBuffer[mi] != '@') {
-				out.write(zzBuffer[mi]);
-			} else {
-				out.write(" (a] ");
-			}
-		}
-/*		String s=yytext();
-		out.write("<a href=\"mailto:");
-		out.write(s);out.write("\">");
-		out.write(s);out.write("</a>");*/
-	}
+        {
+                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
+                        if(zzBuffer[mi] != '@') {
+                                out.write(zzBuffer[mi]);
+                        } else {
+                                out.write(" (a] ");
+                        }
+                }
+/*              String s=yytext();
+                out.write("<a href=\"mailto:");
+                out.write(s);out.write("\">");
+                out.write(s);out.write("</a>");*/
+        }
 
-"&"	{out.write( "&amp;");}
+"&"     {out.write( "&amp;");}
 {EOL}   {Util.readableLine(yyline, out, annotation); }
-[ !-~\t\f]	{out.write(yycharat(0));}
-.	{ writeUnicodeChar(yycharat(0)); }
+[ !-~\t\f]      {out.write(yycharat(0));}
+.       { writeUnicodeChar(yycharat(0)); }
 }

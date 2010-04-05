@@ -45,16 +45,16 @@ return false;
     private int nestedComment;
 
     public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
     }
 
     @Override
     public void close() throws IOException {
-       	yyclose();
+        yyclose();
     }
 %}
 

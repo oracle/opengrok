@@ -68,8 +68,8 @@ import org.opensolaris.opengrok.web.Util;
    * @param out The new writer to write to
    */
   public void setWriter(Writer out) {
-  	yyline = 1;
-  	this.out = out;
+        yyline = 1;
+        this.out = out;
   }
 
   /**
@@ -96,140 +96,140 @@ import org.opensolaris.opengrok.web.Util;
 
 
   public void reInit(char[] buf, int len, Writer out, String url, TreeMap<Integer, String[]> tags) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-	zzStartRead = 0;
-  	zzEndRead = len;
-	zzAtEOF = true;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzStartRead = 0;
+        zzEndRead = len;
+        zzAtEOF = true;
 
-	wait = false;
-	dumpRest = false;
-	rest = 0;
-	markedPos=0;
-	curLinePos=0;
-	matchStart=-1;
-	markedLine=0;
-	yyline = 1;
-  	this.out = out;
-	this.url = url;
-	this.tags = tags;
-	if(this.tags == null) {
-		this.tags = new TreeMap<Integer, String[]>();
-	}
-	prevHi = false;
+        wait = false;
+        dumpRest = false;
+        rest = 0;
+        markedPos=0;
+        curLinePos=0;
+        matchStart=-1;
+        markedLine=0;
+        yyline = 1;
+        this.out = out;
+        this.url = url;
+        this.tags = tags;
+        if(this.tags == null) {
+                this.tags = new TreeMap<Integer, String[]>();
+        }
+        prevHi = false;
   }
 
   public void reInit(Reader in, Writer out, String url, TreeMap<Integer, String[]> tags) {
-  	yyreset(in);
-	zzStartRead = 0;
+        yyreset(in);
+        zzStartRead = 0;
 
-	wait = false;
-	dumpRest = false;
-	rest = 0;
-	markedPos=0;
-	curLinePos=0;
-	matchStart=-1;
-	markedLine=0;
-	yyline = 1;
-  	this.out = out;
-	this.url = url;
-	this.tags = tags;
-	if(this.tags == null) {
-		this.tags = new TreeMap<Integer, String[]>();
-	}
-	prevHi = false;
+        wait = false;
+        dumpRest = false;
+        rest = 0;
+        markedPos=0;
+        curLinePos=0;
+        matchStart=-1;
+        markedLine=0;
+        yyline = 1;
+        this.out = out;
+        this.url = url;
+        this.tags = tags;
+        if(this.tags == null) {
+                this.tags = new TreeMap<Integer, String[]>();
+        }
+        prevHi = false;
   }
 
   public void holdOn() {
      if(!wait) {
-  	wait = true;
-	matchStart = zzStartRead;
+        wait = true;
+        matchStart = zzStartRead;
      }
   }
   
   public void neverMind() {
-  	wait = false;
-	if(!dumpRest) {
-		markedPos = curLinePos;
-		markedLine = yyline;
-	}
-	matchStart = -1;
+        wait = false;
+        if(!dumpRest) {
+                markedPos = curLinePos;
+                markedLine = yyline;
+        }
+        matchStart = -1;
   }
 
   
   private int printWithNum(char[] buf, int start, int end, int lineNo) throws IOException {
-  	for(int i=start;i<end; i++) {
-		switch(buf[i]) {
-		case '\n':
-			++lineNo;
-			Integer ln = Integer.valueOf(lineNo);
-			boolean hi = tags.containsKey(ln);
+        for(int i=start;i<end; i++) {
+                switch(buf[i]) {
+                case '\n':
+                        ++lineNo;
+                        Integer ln = Integer.valueOf(lineNo);
+                        boolean hi = tags.containsKey(ln);
 
-			out.write("</a>");
-			if(prevHi){
-				out.write(" <i> ");
-				String[] desc = tags.remove(prevLn);
-				out.write(desc[2]);
-				out.write(" </i>");
-			}
-			out.write("<br/>");
-			
-			prevHi = hi;
-			prevLn = ln;
-			if(hi) out.write("<spans class=\"h\">"); 
-			out.write("<a href=\"");
-			out.write(url);
-			String num = String.valueOf(lineNo);
-			out.write(num);
-			out.write("\"><span class=\"l\">");
-			out.write(num);
-			out.write("</span> ");
-			break;
-		case '<':
-			out.write("&lt;");
-			break;
-		case '>':
-			out.write("&gt;");
-			break;
-		case '&':
-			out.write("&amp;");
-			break;
-		default:
-			out.write(buf[i]);
-		}
-	}
-	return lineNo;
+                        out.write("</a>");
+                        if(prevHi){
+                                out.write(" <i> ");
+                                String[] desc = tags.remove(prevLn);
+                                out.write(desc[2]);
+                                out.write(" </i>");
+                        }
+                        out.write("<br/>");
+
+                        prevHi = hi;
+                        prevLn = ln;
+                        if(hi) out.write("<spans class=\"h\">");
+                        out.write("<a href=\"");
+                        out.write(url);
+                        String num = String.valueOf(lineNo);
+                        out.write(num);
+                        out.write("\"><span class=\"l\">");
+                        out.write(num);
+                        out.write("</span> ");
+                        break;
+                case '<':
+                        out.write("&lt;");
+                        break;
+                case '>':
+                        out.write("&gt;");
+                        break;
+                case '&':
+                        out.write("&amp;");
+                        break;
+                default:
+                        out.write(buf[i]);
+                }
+        }
+        return lineNo;
   }
 
   private int formatWithNum(char[] buf, int start, int end, int lineNo) {
-  	for(int i=start;i<end; i++) {
-		switch(buf[i]) {
-		case '\n':
-			++lineNo;
-			Integer ln = Integer.valueOf(lineNo);
-			boolean hi = tags.containsKey(ln);
-			if(prevHi){
-			   String[] desc = tags.remove(prevLn);
+        for(int i=start;i<end; i++) {
+                switch(buf[i]) {
+                case '\n':
+                        ++lineNo;
+                        Integer ln = Integer.valueOf(lineNo);
+                        boolean hi = tags.containsKey(ln);
+                        if(prevHi){
+                           String[] desc = tags.remove(prevLn);
                            hit.setTag(desc[2]);
-			}
-			prevHi = hi;
-			prevLn = ln;
+                        }
+                        prevHi = hi;
+                        prevLn = ln;
                         sb.append(' ');
-			break;
-		case '<':
+                        break;
+                case '<':
                         sb.append("&lt;");
-			break;
-		case '>':
-			sb.append("&gt;");
-			break;
-		case '&':
-			sb.append("&amp;");
-			break;
-		default:
-			sb.append(buf[i]);
-		}
-	}
-	return lineNo;
+                        break;
+                case '>':
+                        sb.append("&gt;");
+                        break;
+                case '&':
+                        sb.append("&amp;");
+                        break;
+                default:
+                        sb.append(buf[i]);
+                }
+        }
+        return lineNo;
   }
 
 
@@ -242,56 +242,56 @@ import org.opensolaris.opengrok.web.Util;
            hit = new Hit(url, null, null, false, alt);
         }
 
-  	wait = false;
-	if (matchStart == -1) {
-		matchStart = zzStartRead;
-	}
+        wait = false;
+        if (matchStart == -1) {
+                matchStart = zzStartRead;
+        }
 
-	if(curLinePos == markedPos) {
-			Integer ln = Integer.valueOf(markedLine);
-			prevHi = tags.containsKey(ln);
-			prevLn = ln;
-			if (prevHi) {
-				prevLn = ln;
-			}
+        if(curLinePos == markedPos) {
+                        Integer ln = Integer.valueOf(markedLine);
+                        prevHi = tags.containsKey(ln);
+                        prevLn = ln;
+                        if (prevHi) {
+                                prevLn = ln;
+                        }
 
                         if (out != null) {
-			   out.write("<a class=\"s\" href=\"");
-			   out.write(url);
-			   String num = String.valueOf(markedLine);
-			   out.write(num);
-			   out.write("\"><span class=\"l\">");
-			   out.write(num);
-		           out.write("</span> ");
+                           out.write("<a class=\"s\" href=\"");
+                           out.write(url);
+                           String num = String.valueOf(markedLine);
+                           out.write(num);
+                           out.write("\"><span class=\"l\">");
+                           out.write(num);
+                           out.write("</span> ");
                         }
-	}
+        }
 
         if (out != null) {
            markedLine = printWithNum(zzBuffer, markedPos, matchStart, markedLine);
-	   out.write("<b>");
-	   markedLine = printWithNum(zzBuffer, matchStart, zzMarkedPos, markedLine);
-	   out.write("</b>");
+           out.write("<b>");
+           markedLine = printWithNum(zzBuffer, matchStart, zzMarkedPos, markedLine);
+           out.write("</b>");
         } else {
            markedLine = formatWithNum(zzBuffer, markedPos, matchStart, markedLine);
            hit.setLineno(String.valueOf(markedLine));
-	   sb.append("<b>");
-	   markedLine = formatWithNum(zzBuffer, matchStart, zzMarkedPos, markedLine);
-	   sb.append("</b>");
+           sb.append("<b>");
+           markedLine = formatWithNum(zzBuffer, matchStart, zzMarkedPos, markedLine);
+           sb.append("</b>");
         }
-	markedPos = zzMarkedPos;
-	matchStart = -1;
-	dumpRest = true;
-	rest = zzMarkedPos;
+        markedPos = zzMarkedPos;
+        matchStart = -1;
+        dumpRest = true;
+        rest = zzMarkedPos;
   }
   public void dumpRest() throws IOException {
-	if(dumpRest) {
+        if(dumpRest) {
         final int maxLooks = 100;
         for (int i=0; ; i++) {
             final boolean endOfBuffer = (i >= zzEndRead - rest);
             final boolean newline = !endOfBuffer && zzBuffer[rest+i] == '\n';
             if (endOfBuffer || newline || i >= maxLooks) {
                            if (out != null) {
-				printWithNum(zzBuffer, rest, rest+i-1, markedLine);
+                                printWithNum(zzBuffer, rest, rest+i-1, markedLine);
 
                 // Assume that this line has been truncated if we don't find
                 // a newline after looking at maxLooks characters, or if we
@@ -304,52 +304,52 @@ import org.opensolaris.opengrok.web.Util;
                     out.write(" (&hellip;)");
                 }
 
-				out.write("</a>");
-				if (prevHi) {
-					out.write(" <i> ");
-					String[] desc = tags.remove(prevLn);
-					out.write(desc[2]);
-					out.write(" </i>");
-				}
-				out.write("<br/>");
+                                out.write("</a>");
+                                if (prevHi) {
+                                        out.write(" <i> ");
+                                        String[] desc = tags.remove(prevLn);
+                                        out.write(desc[2]);
+                                        out.write(" </i>");
+                                }
+                                out.write("<br/>");
                            } else {
                                formatWithNum(zzBuffer, rest, rest+i-1, markedLine);
                                hit.setLine(sb.toString());
-			       if (prevHi) {
+                               if (prevHi) {
                                   String[] desc = tags.remove(prevLn);
                                   hit.setTag(desc[2]);
-			       }
+                               }
                                hits.add(hit);
                            }
                            break;
-			}
-		}
-	}
-	if (tags.size() > 0) {
+                        }
+                }
+        }
+        if (tags.size() > 0) {
         if (out != null) {
-	   for(Integer rem : tags.keySet()) {
-		String[] desc = tags.get(rem);
-		out.write("<a class=\"s\" href=\"");
-		out.write(url);
-		out.write(desc[1]);
-		out.write("\"><span class=\"l\">");
-		out.write(desc[1]);
-		out.write("</span> ");
-		out.write(Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
-		out.write("</a> <i> ");
-		out.write(desc[2]);
-		out.write(" </i><br/>");
-	   }
+           for(Integer rem : tags.keySet()) {
+                String[] desc = tags.get(rem);
+                out.write("<a class=\"s\" href=\"");
+                out.write(url);
+                out.write(desc[1]);
+                out.write("\"><span class=\"l\">");
+                out.write(desc[1]);
+                out.write("</span> ");
+                out.write(Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
+                out.write("</a> <i> ");
+                out.write(desc[2]);
+                out.write(" </i><br/>");
+           }
         } else {
-	   for(Integer rem : tags.keySet()) {
-		String[] desc = tags.get(rem);
+           for(Integer rem : tags.keySet()) {
+                String[] desc = tags.get(rem);
                 hit = new Hit(url, "<html>" + Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"), 
                               desc[1], false, alt);
                 hit.setTag(desc[2]);
                 hits.add(hit);
-	   }
+           }
         }
-	}
+        }
   }
 %}
 
@@ -360,41 +360,41 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 
 %%
-{Identifier}|{Number}|{Printable}	{return yytext().toLowerCase(Locale.US);}
+{Identifier}|{Number}|{Printable}       {return yytext().toLowerCase(Locale.US);}
 <<EOF>>   { return null;}
 
-\n	{
-		if(!wait) {
-			markedPos = zzMarkedPos;
-			markedLine = yyline+1;
-			matchStart = -1;
-			curLinePos=zzMarkedPos;
-		}
-		if(dumpRest) {
+\n      {
+                if(!wait) {
+                        markedPos = zzMarkedPos;
+                        markedLine = yyline+1;
+                        matchStart = -1;
+                        curLinePos=zzMarkedPos;
+                }
+                if(dumpRest) {
                         if (out != null) {
-			   printWithNum(zzBuffer, rest, zzMarkedPos-1, markedLine);
-			   out.write("</a>");
-			   if(prevHi){
-		   		out.write(" <i> ");
-				String[] desc = tags.remove(prevLn);
-				out.write(desc[2]);
-				out.write("</i> ");
-			   }
-			   out.write("<br/>");
+                           printWithNum(zzBuffer, rest, zzMarkedPos-1, markedLine);
+                           out.write("</a>");
+                           if(prevHi){
+                                out.write(" <i> ");
+                                String[] desc = tags.remove(prevLn);
+                                out.write(desc[2]);
+                                out.write("</i> ");
+                           }
+                           out.write("<br/>");
                         } else {
                            formatWithNum(zzBuffer, rest, zzMarkedPos-1, markedLine);
                            hit.setLine(sb.toString());
-			   if(prevHi){
-				String[] desc = tags.remove(prevLn);
-				hit.setTag(desc[2]);
-			   }
+                           if(prevHi){
+                                String[] desc = tags.remove(prevLn);
+                                hit.setTag(desc[2]);
+                           }
                            hits.add(hit);
                            sb.setLength(0);
                            hit = new Hit(url, null, null, false, alt);
                      }
-			dumpRest = false;
+                        dumpRest = false;
 
-		}
-	}
+                }
+        }
 
-.	{}
+.       {}

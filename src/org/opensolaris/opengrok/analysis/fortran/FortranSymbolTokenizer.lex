@@ -38,16 +38,16 @@ return false;
 
 %{
     public void reInit(char[] buf, int len) {
-  	yyreset((Reader) null);
-  	zzBuffer = buf;
-  	zzEndRead = len;
-	zzAtEOF = true;
-	zzStartRead = 0;
+        yyreset((Reader) null);
+        zzBuffer = buf;
+        zzEndRead = len;
+        zzAtEOF = true;
+        zzStartRead = 0;
     }
 
     @Override
     public void close() throws IOException {
-       	yyclose();
+        yyclose();
     }
 %}
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
@@ -59,35 +59,35 @@ Label = [0-9]+
 
 <YYINITIAL> {
  ^{Label} { }
- ^[^ \t\f\r\n]+	{ yybegin(SCOMMENT); }
+ ^[^ \t\f\r\n]+ { yybegin(SCOMMENT); }
 {Identifier} {String id = yytext();
-		if(!Consts.kwd.contains(id.toLowerCase())) {
+                if(!Consts.kwd.contains(id.toLowerCase())) {
                         setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
                         return true; }
               }
- \"	{ yybegin(STRING); }
- \'	{ yybegin(QSTRING); }
- \!	{ yybegin(SCOMMENT); }
+ \"     { yybegin(STRING); }
+ \'     { yybegin(QSTRING); }
+ \!     { yybegin(SCOMMENT); }
 }
 
 <STRING> {
- \"	{ yybegin(YYINITIAL); }
-\\\\ | \\\"	{}
+ \"     { yybegin(YYINITIAL); }
+\\\\ | \\\"     {}
 }
 
 <QSTRING> {
- \'	{ yybegin(YYINITIAL); }
+ \'     { yybegin(YYINITIAL); }
 }
 
 <COMMENT> {
-"*/"	{ yybegin(YYINITIAL);}
+"*/"    { yybegin(YYINITIAL);}
 }
 
 <SCOMMENT> {
-\n	{ yybegin(YYINITIAL);}
+\n      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
 <<EOF>>   { return false;}
-.|\n	{}
+.|\n    {}
 }
