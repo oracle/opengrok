@@ -40,7 +40,7 @@ public final class Info {
     private static final String REVISION;
     
     static {
-	InputStream in=null;
+        InputStream in = null;
         try {
             in = Info.class.getResourceAsStream("info.properties");
             if (in != null) {
@@ -52,13 +52,13 @@ public final class Info {
             throw new RuntimeException(ioe);
         } finally {
             try {
-	    if (in != null) {
-		in.close();
-	        }
-            } catch (IOException ioe) {           
-            System.err.println(ioe.getMessage()); //NOPMD
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ioe) {
+                System.err.println(ioe.getMessage()); //NOPMD
             }
-	}
+        }
     }
 
     public static String getVersion() {

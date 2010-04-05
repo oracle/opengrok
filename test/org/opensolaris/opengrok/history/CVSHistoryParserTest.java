@@ -23,8 +23,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -94,7 +92,7 @@ public class CVSHistoryParserTest {
                 "locks: strict\n" +
                 "access list:\n" +
                 "keyword substitution: kv\n" +
-                "total revisions: 4;	selected revisions: 3\n" +
+                "total revisions: 4;\tselected revisions: 3\n" +
                 "description:\n" +
                 "----------------------------\n" +
                 "revision " + revId1 + "\n" +

@@ -43,7 +43,7 @@ public class JFlexXref {
   protected Definitions defs;
   
   public void setDefs(Definitions defs) {
-  	this.defs = defs;
+      this.defs = defs;
   }
   
   protected void appendProject() throws IOException {

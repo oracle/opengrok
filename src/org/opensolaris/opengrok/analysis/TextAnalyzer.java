@@ -28,17 +28,17 @@ import java.nio.charset.Charset;
 import org.apache.lucene.document.Document;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
-	public TextAnalyzer(FileAnalyzerFactory factory) {
-		super(factory);
-	}
+    public TextAnalyzer(FileAnalyzerFactory factory) {
+        super(factory);
+    }
 
     public final void analyze(Document doc, InputStream in) throws IOException {
-    	String charset = null;
-    	
-    	in.mark(3);
-    	
-    	byte[] head = new byte[3];
-    	int br = in.read(head, 0, 3);
+        String charset = null;
+
+        in.mark(3);
+
+        byte[] head = new byte[3];
+        int br = in.read(head, 0, 3);
 
         if (br >= 2 &&
                 (head[0] == (byte)0xFE && head[1] == (byte)0xFF) ||
@@ -52,11 +52,11 @@ public abstract class TextAnalyzer extends FileAnalyzer {
             charset = "UTF-8";
         }
 
-    	if (charset == null) {
-    		in.reset();
-    		charset = Charset.defaultCharset().name();
-    	}
-    	
+        if (charset == null) {
+            in.reset();
+            charset = Charset.defaultCharset().name();
+        }
+
         analyze(doc, new InputStreamReader(in, charset));
     }
     

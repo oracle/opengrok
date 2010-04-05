@@ -45,20 +45,20 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
  */
 public class BZip2Analyzer extends FileAnalyzer {
     private Genre g;
-    
+
     public Genre getGenre() {
-	if (g != null) {
+        if (g != null) {
             return g;
         }
         return super.getGenre();
     }
 
     protected BZip2Analyzer(FileAnalyzerFactory factory) {
-	super(factory);
+        super(factory);
     }
-    
+
     private FileAnalyzer fa;
-    
+
     @SuppressWarnings("PMD.ConfusingTernary")
     public void analyze(Document doc, InputStream in) throws IOException {
         if (in.read() != 'B') {
@@ -96,19 +96,19 @@ public class BZip2Analyzer extends FileAnalyzer {
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
-	if(fa != null) {
-	    return fa.tokenStream(fieldName, reader);
-	}
-	return super.tokenStream(fieldName, reader);
+        if (fa != null) {
+            return fa.tokenStream(fieldName, reader);
+        }
+        return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to store HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-	if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
+        if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
             fa.writeXref(out);
-	}
+        }
     }
 }

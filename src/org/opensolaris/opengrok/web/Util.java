@@ -292,25 +292,42 @@ public final class Util {
      * @return encoded text for use in <a title=""> tag
      */
     public static String encode(String s) {
-    	StringBuffer sb = new StringBuffer();
-    	for (int i = 0; i < s.length(); i++) {
-    		char c = s.charAt(i);
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
 
-        switch (c) {
-        		case '"': sb.append('\''); break; // \\\"
-	    		case '&': sb.append("&amp;"); break;
-	            case '>': sb.append("&gt;"); break;
-	            case '<': sb.append("&lt;"); break;
-    			case ' ': sb.append("&nbsp;"); break;
-    			case '\t': sb.append("&nbsp;&nbsp;&nbsp;&nbsp;"); break;
-    			case '\n': sb.append("<br/>"); break;
-    			case '\r': break;
-    			default: sb.append(c); break;
-    		}
-    	}
+            switch (c) {
+                case '"':
+                    sb.append('\'');
+                    break; // \\\"
+                case '&':
+                    sb.append("&amp;");
+                    break;
+                case '>':
+                    sb.append("&gt;");
+                    break;
+                case '<':
+                    sb.append("&lt;");
+                    break;
+                case ' ':
+                    sb.append("&nbsp;");
+                    break;
+                case '\t':
+                    sb.append("&nbsp;&nbsp;&nbsp;&nbsp;");
+                    break;
+                case '\n':
+                    sb.append("<br/>");
+                    break;
+                case '\r':
+                    break;
+                default:
+                    sb.append(c);
+                    break;
+            }
+        }
 
-    	return sb.toString();
-    } 
+        return sb.toString();
+    }
 
     public static void readableLine(int num, Writer out, Annotation annotation)
             throws IOException {

@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class TroffAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] MAGICS = {
-	"'\\\"", ".so", ".\\\"", ".TH"
+        "'\\\"", ".so", ".\\\"", ".TH"
     };
 
     public TroffAnalyzerFactory() {

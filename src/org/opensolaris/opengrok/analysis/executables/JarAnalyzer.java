@@ -61,15 +61,15 @@ public class JarAnalyzer extends FileAnalyzer {
 
     private static final Reader dummy = new StringReader("");
     protected JarAnalyzer(FileAnalyzerFactory factory) {
-	super(factory);
-	content = new byte[16*1024];
+        super(factory);
+        content = new byte[16 * 1024];
     }
     
     public void analyze(Document doc, InputStream in) throws IOException {
-	defs = new LinkedList<String>();
-	refs = new LinkedList<String>();
-	StringBuilder fullText = new StringBuilder();
-	xref = new StringWriter();
+        defs = new LinkedList<String>();
+        refs = new LinkedList<String>();
+        StringBuilder fullText = new StringBuilder();
+        xref = new StringWriter();
 
         ZipInputStream zis = new ZipInputStream(in);
         ZipEntry entry;
@@ -117,14 +117,14 @@ public class JarAnalyzer extends FileAnalyzer {
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
-	if("defs".equals(fieldName)) {
-	    return new List2TokenStream(defs);
-	} else if ( "refs".equals(fieldName)) {
-	    return new List2TokenStream(refs);
-	} else if ("full".equals(fieldName)) {
-	    return new PlainFullTokenizer(reader);
-	}
-	return super.tokenStream(fieldName, reader);
+        if ("defs".equals(fieldName)) {
+            return new List2TokenStream(defs);
+        } else if ("refs".equals(fieldName)) {
+            return new List2TokenStream(refs);
+        } else if ("full".equals(fieldName)) {
+            return new PlainFullTokenizer(reader);
+        }
+        return super.tokenStream(fieldName, reader);
     }
     
     /**
@@ -132,6 +132,6 @@ public class JarAnalyzer extends FileAnalyzer {
      * @param out Writer to write HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-	out.write(xref.toString());
+        out.write(xref.toString());
     }
 }

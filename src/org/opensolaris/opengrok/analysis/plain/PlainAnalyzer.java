@@ -66,9 +66,9 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     @Override
     public void analyze(Document doc, Reader in) throws IOException {
-    	Reader inReader =
-    		ExpandTabsReader.wrap(in, project);
-    	
+        Reader inReader =
+                ExpandTabsReader.wrap(in, project);
+
         len = 0;
         do {
             int rbytes = inReader.read(content, len, content.length - len);

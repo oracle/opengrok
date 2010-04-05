@@ -55,10 +55,10 @@ public class XMLAnalyzer extends TextAnalyzer {
      */
     protected XMLAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-	content = new char[64 * 1024];
-	len = 0;
-	plainfull = new PlainFullTokenizer(dummy);
-	xref = new XMLXref(dummy);
+        content = new char[64 * 1024];
+        len = 0;
+        plainfull = new PlainFullTokenizer(dummy);
+        xref = new XMLXref(dummy);
     }
     
     @Override
@@ -82,11 +82,11 @@ public class XMLAnalyzer extends TextAnalyzer {
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
-	if ("full".equals(fieldName)) {
-	    plainfull.reInit(content, len);
-	    return plainfull;
-	}
-	return super.tokenStream(fieldName, reader);
+        if ("full".equals(fieldName)) {
+            plainfull.reInit(content, len);
+            return plainfull;
+        }
+        return super.tokenStream(fieldName, reader);
     }
     
     /**
@@ -94,9 +94,9 @@ public class XMLAnalyzer extends TextAnalyzer {
      * @param out Writer to write HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-	xref.reInit(content, len);
+        xref.reInit(content, len);
         xref.project = project;
-	xref.write(out);
+        xref.write(out);
     }
     
     /**
@@ -106,9 +106,9 @@ public class XMLAnalyzer extends TextAnalyzer {
      * @param annotation annotation for the file (could be null)
      */
     static void writeXref(Reader in, Writer out, Annotation annotation, Project project) throws IOException {
-	XMLXref xref = new XMLXref(in);
+        XMLXref xref = new XMLXref(in);
         xref.annotation = annotation;
         xref.project = project;
-	xref.write(out);
+        xref.write(out);
     }
 }

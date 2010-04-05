@@ -111,7 +111,7 @@ public class DirectoryListing {
                     out.write(file + "</a>");
                 }
                 Date lastm = new Date(child.lastModified());
-                out.write("</tt></td><td>" + ((now - lastm.getTime()) < 86400000 ? "Today" : dateFormatter.format(lastm))		+ "</td>");
+                out.write("</tt></td><td>" + ((now - lastm.getTime()) < 86400000 ? "Today" : dateFormatter.format(lastm)) + "</td>");
                 out.write("<td><tt>" + (isDir ? "" : Util.redableSize(child.length())) + "</tt></td>");
 
                 if (parentFNode != null && parentFNode.childOffset > 0) {

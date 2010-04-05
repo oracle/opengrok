@@ -55,9 +55,9 @@ public class TroffAnalyzer extends FileAnalyzer {
      */
     protected TroffAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-	troffull = new TroffFullTokenizer(dummy);
-	xref = new TroffXref(dummy);
-	content = new char[12*1024];
+        troffull = new TroffFullTokenizer(dummy);
+        xref = new TroffXref(dummy);
+        content = new char[12 * 1024];
     }
     
     @Override
@@ -82,11 +82,11 @@ public class TroffAnalyzer extends FileAnalyzer {
     }
     
     public TokenStream tokenStream(String fieldName, Reader reader) {
-	if("full".equals(fieldName)) {
-	    troffull.reInit(content, len);
-	    return troffull;
-	}
-	return super.tokenStream(fieldName, reader);
+        if ("full".equals(fieldName)) {
+            troffull.reInit(content, len);
+            return troffull;
+        }
+        return super.tokenStream(fieldName, reader);
     }
     
     /**
@@ -94,11 +94,11 @@ public class TroffAnalyzer extends FileAnalyzer {
      * @param out Writer to write HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-	xref.reInit(content, len);
+        xref.reInit(content, len);
         xref.project = project;
-	out.write("</pre>");
-	xref.write(out);
-	out.write("<pre>");
+        out.write("</pre>");
+        xref.write(out);
+        out.write("<pre>");
     }
     
     /**
@@ -108,10 +108,10 @@ public class TroffAnalyzer extends FileAnalyzer {
      * @param annotation annotation for the file (could be null)
      */
     static void writeXref(Reader in, Writer out, Annotation annotation, Project project) throws IOException {
-	TroffXref xref = new TroffXref(in);
+        TroffXref xref = new TroffXref(in);
         xref.project = project;
-	out.write("</pre>");
-	xref.write(out);
-	out.write("<pre>");
+        out.write("</pre>");
+        xref.write(out);
+        out.write("<pre>");
     }
 }

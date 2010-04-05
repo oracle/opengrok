@@ -204,7 +204,7 @@ class SCCSHistoryParser {
                             }
                             break;
                         case -1:
-                        case 'I':	//the file contents start
+                        case 'I':   //the file contents start
                         case 'D':
                         case 'E':
                         case 'T':

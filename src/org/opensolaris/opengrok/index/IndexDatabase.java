@@ -326,7 +326,7 @@ public class IndexDatabase {
                 HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
 
                 String startuid = Util.uid(dir, "");
-                IndexReader reader = IndexReader.open(indexDirectory,false);		 // open existing index
+                IndexReader reader = IndexReader.open(indexDirectory,false); // open existing index
                 try {
                     uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
 
@@ -680,7 +680,7 @@ public class IndexDatabase {
                     indexDown(file, path);
                 } else {
                     if (uidIter != null) {
-                        String uid = Util.uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND));	 // construct uid for doc
+                        String uid = Util.uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         while (uidIter.term() != null && uidIter.term().field().equals("u") &&
                                 uidIter.term().text().compareTo(uid) < 0) {
                             removeFile();
@@ -689,7 +689,7 @@ public class IndexDatabase {
 
                         if (uidIter.term() != null && uidIter.term().field().equals("u") &&
                                 uidIter.term().text().compareTo(uid) == 0) {
-                            uidIter.next();		   // keep matching docs
+                            uidIter.next(); // keep matching docs
                             continue;
                         }
                     }
@@ -790,7 +790,7 @@ public class IndexDatabase {
         TermEnum iter = null;
 
         try {
-            ireader = IndexReader.open(indexDirectory,false);	      // open existing index
+            ireader = IndexReader.open(indexDirectory,false); // open existing index
             iter = ireader.terms(new Term("u", "")); // init uid iterator
             while (iter.term() != null) {
                 log.info(Util.uid2url(iter.term().text()));

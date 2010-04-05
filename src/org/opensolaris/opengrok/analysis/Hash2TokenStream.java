@@ -41,30 +41,30 @@ public final class Hash2TokenStream extends TokenStream {
     
     @Override
     public boolean incrementToken() throws java.io.IOException {
-	while(true) {
-	    if (i <= 0) {
-		if (keys.hasNext()) {
-		    term = keys.next();
-		    terms = term.split("[^a-zA-Z_0-9]+");
-		    i = terms.length;
-		    if (i > 0) {
+        while (true) {
+            if (i <= 0) {
+                if (keys.hasNext()) {
+                    term = keys.next();
+                    terms = term.split("[^a-zA-Z_0-9]+");
+                    i = terms.length;
+                    if (i > 0) {
                         termAtt.setTermBuffer(terms[--i]);
-			return true;
-		    } else {
+                        return true;
+                    } else {
                         // no tokens found in this key, try next
                         continue;
-		    }
-		} else {
-		    return false;
-		}
-	    } else {
-		//System.out.println("Returning " + term + h.get(term));
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                //System.out.println("Returning " + term + h.get(term));
                 termAtt.setTermBuffer(terms[--i]);
-		return true;
-	    }
-	}
+                return true;
+            }
+        }
     }
-    
+
     @Override
     public void close() {
         // Nothing to close
