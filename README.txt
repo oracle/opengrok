@@ -10,7 +10,7 @@ OpenGrok is the tool used for the OpenSolaris Source Browser.
 
 Requirements
 ------------
-    * Latest Java http://java.sun.com/ (At least 1.5)
+    * Latest Java http://java.sun.com/ (At least 1.6)
     * A servlet container like Tomcat (5.x or later)
       http://tomcat.apache.org/
       supporting Servlet 2.4 and JSP 2.0
@@ -29,19 +29,139 @@ SRC_ROOT refers to the directory containing your source tree.
 OpenGrok analyzes the source tree and builds a search index along with
 cross-referenced hypertext versions of the source files. These generated
 data files will be stored in DATA_ROOT directory. 
+Project concept - one project is one directory underneath SRC_ROOT and
+usually contains a checkout of a project(or it's branch, version, ...)
+sources, it can have several attributes (in its XML description), note that
+interface of projects is being stabilized so it can change. Projects
+effectively replace need for more web applications with opengrok .war and
+leave you with one indexer and one web application serving MORE source code
+repositories - projects. A nice concept is to have directories underneath
+SRC_ROOT with a naming convention, thereby creating a good overview of
+projects (e.g. name-version-branch). Then you have a simple update script &
+simple index refresher script in place, which simplifies management of more
+repositories.
 
 OpenGrok setup Step.0 - Setting up the Sources.
 ----------------------------------------------
 Source base must be available locally for OpenGrok to work efficiently. No
 changes are required to your source tree. If the code is under source control
 management (SCM) OpenGrok requires the checked out source tree under SRC_ROOT.
-It is possible for some SCM systems to use a remote repository (Subversion),
-but this is not recommended due to the performance penalty. CVS must have a
-local repository.
+It is possible for some SCM systems to use a remote repository (Subversion,
+CVS), but this is not recommended due to the performance penalty. Special
+option is needed to enable remote repository support(-r on).
 Note that OpenGrok ignores symbolic links.
 
 ---------------------------------------------------
-Using command line interface.
+Using Opengrok wrapper script(Solaris and Linux) to create indexes.
+---------------------------------------------------
+
+Step.1 - Deploy the web application
+=====================================
+
+We provided you with OpenGrok wrapper script, which should aid in deploying
+the web application.
+Please change to opengrok directory (can vary on your system)
+
+# cd /usr/opengrok/bin
+
+and run 
+
+# ./OpenGrok deploy
+
+This command will do some sanity checks and will deploy the source.war in
+its directory to one of detected web application containers.
+Please follow the error message it provides.
+If it fails to discover your container, please refer to optional steps on
+changing web application properties, which has manual steps on how to do
+this.
+
+Note that OpenGrok script expects the directory /var/opengrok to be
+available to user running opengrok with all permissions. In root user case
+it will create all the directories needed, otherwise you have to manually
+create the directory and grant all permissions to the user used.
+
+
+Step.2 - Populate DATA_ROOT Directory, let the indexer generate the project
+XML config file, update configuration.xml to your web app
+=====================================
+
+Second step is to just run the indexing (can take a lot of time). After this
+is done, indexer automatically attempts to upload newly generated
+configuration to the web application. Most probably you will not be able to
+use {Opengrok before this is done.
+
+Please change to opengrok directory (can vary on your system)
+
+# cd /usr/opengrok/bin
+
+and run, if your SRC_ROOT is prepared under /var/opengrok/src
+
+# ./OpenGrok index
+
+otherwise (if SRC_ROOT is in different directory) run:
+
+# ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
+
+Above command should try to upload latest index status reflected into
+configuration.xml to a running source web application.
+Once above command finishes without errors(e.g. SEVERE: Failed to send
+configuration to localhost:2424
+), you should be able to enjoy your opengrok and search your sources using
+latest indexes and setup.
+
+Congratulations, you should now be able to point your browser to
+http://<YOUR_WEBAPP_SERVER>:<WEBAPPSRV_PORT>/source to work with your fresh
+opengrok installation! :-)
+
+
+At this time we'd like to point out some customization to OpenGrok script
+for advanced users.
+A common case would be, that you want the data in some other directory than
+/var/opengrok.
+This can be easily achieved by using environment variable
+OPENGROK_INSTANCE_BASE .
+E.g. if my opengrok data directory is /tank/opengrok and my source root is
+in /tank/source and I'd like to get more verbosity I'd run the indexer as:
+
+# OPENGROK_REMOTE_REPOS=true OPENGROK_VERBOSE=true \
+  OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source 
+
+Since above will also change default location of config file, beforehands(or
+restart your web container after creating this symlink) I suggest doing
+below for our case of having opengrok instance in /tank/opengrok :
+
+# ln -s /tank/opengrok/etc/configuration.xml
+# /var/opengrok/etc/configuration.xml 
+
+A lot more customizations can be found inside the script, you just need to
+have a look at it, eventually create a configuration out of it and use
+OPENGROK_CONFIGURATION environment variable to point to it. Obviously such
+setups can be used for nightly cron job updates of index or other automated
+purposes.
+
+
+---------------------------------------------------
+Using smf service(Solaris and OpenSolaris only) to maintain opengrok indexes.
+---------------------------------------------------
+
+If you installed opengrok from a package, then configure the service like this:
+
+# svccfg -s opengrok
+# listprop opengrok 
+# setprop opengrok/srcdir="/absolute/path/to/your/sourcetree" 
+# setprop opengrok/maxmemory="2048" 
+
+then make the service start the indexing, at this point it would be nice if 
+the web application is already running.
+
+# svcadm enable opengrok 
+
+to force a rebuild just run:  
+# svcadm refresh opengrok
+
+
+---------------------------------------------------
+Using command line interface(general pointers) to create indexes.
 ---------------------------------------------------
 
 Step.1 - Populate DATA_ROOT Directory
@@ -125,6 +245,7 @@ change the :
 
 	    This file will contain something like the Context described above.
 
+
 ---------------------------------------------------
 Using Java DB for history cache
 (instead of gzipped xml files)
@@ -165,6 +286,71 @@ Note: To use a bigger database buffer, which may improve performance of both
 indexing and fetching of history, create a file named derby.properties in
 $DATA_ROOT/derby and add this line to it:
 derby.storage.pageCacheSize=25000
+
+---------------------------------------------------
+Optional CLI - Command Line Interface Usage
+---------------------------------------------------
+
+ You need to pass location of project file + the query to Search class, e.g.
+for fulltext search for project with above generated configuration.xml you'd
+do:
+
+$ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search -R
+/var/opengrok/etc/configuration.xml -f fulltext_search_string
+
+ For quick help run:
+
+$ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search
+
+
+---------------------------------------------------
+Optional need to change web application properties or name
+---------------------------------------------------
+
+ You might need to modify the web application if you don't store the
+configuration file in the default location
+(/var/opengrok/etc/configuration.xml).
+
+To configure the webapp source.war, look into the parameters defined in
+WEB-INF/web.xml of source.war (use jar or zip/unzip or your preffered zip
+tool to get into it - e.g. extract the web.xml file from source.war ($ unzip
+source.war WEB-INF/web.xml) file, edit web.xml and re-package the jar file
+(zip -u source.war WEB-INF/web.xml) ) file and change those web.xml
+parameters appropriately. These sample parameters need modifying(there are
+more options, refer to manual or read param comments).
+
+    * CONFIGURATION - the absolute path to XML file containing project
+    * configuration (e.g. /var/opengrok/etc/configuration.xml )
+    * ConfigAddress - port for remote updates to configuration, optional,
+    * but advised(since there is no authentification) to be set to
+    * localhost:<some_port> (e.g. localhost:2424), if you choose some_port
+    * below 1024 you have to have root privileges
+
+If you need to change name of the web application from source to something
+else you need to use special option -w <new_name> for indexer to create
+proper xrefs, besides changing the .war file name. Examples below show just
+deploying source.war, but you can use it to deploy your new_name.war too.
+
+Deploy the modified .war file in glassfish/Sun Java App Server:
+-----------------------------------
+
+    * Option 1: Use browser and log into glassfish web administration
+    * interface
+
+    Common Tasks / Applications / Web Applications , button Deploy and point
+it to your source.war webarchive
+
+    * Option 2: Copy the source.war file to
+    * GLASSFISH/domains/YOURDOMAIN/autodeploy directory, glassfish will try
+    * to deploy it "automagically".
+    * Option 3: Use cli from GLASSFISH directory:
+
+# ./bin/asadmin deploy /path/to/source.war
+
+Deploy the modified .war file in tomcat:
+-----------------------------------
+
+    * just copy the source.war file to TOMCAT_INSTALL/webapps directory.
 
 ---------------------------------------------------
 Using Findbugs
@@ -265,19 +451,19 @@ To check that your code follows the standard coding conventions,
 you can use checkstyle from http://checkstyle.sourceforge.net/
 
 First you must download checkstyle from http://checkstyle.sourceforge.net/ ,
-You need Version 5.0-beta01 (or newer). Extract the package you have
+You need Version 5.1 (or newer). Extract the package you have
 downloaded, and create a symbolic link to it from ~/.ant/lib/checkstyle,
 e.g. like this:
 
    cd ~/.ant/lib
-   unzip ~/Desktop/checkstyle-5.0-beta01.zip
-   ln -s checkstyle-5.0-beta01 checkstyle
+   unzip ~/Desktop/checkstyle-5.1.zip
+   ln -s checkstyle-5.1 checkstyle
 
 You also have to create symbolic links to the jar files:
 
    cd checkstyle
-   ln -s checkstyle-5.0-beta01.jar checkstyle.jar
-   ln -s checkstyle-all-5.0-beta01.jar checkstyle-all.jar
+   ln -s checkstyle-5.1.jar checkstyle.jar
+   ln -s checkstyle-all-5.1.jar checkstyle-all.jar
 
 To run checkstyle on the source code, just run ant checkstyle:
 
@@ -302,13 +488,13 @@ from http://pmd.sourceforge.net/.
 How to install:
 
   cd ~/.ant/lib
-  unzip ~/Desktop/pmd-bin-4.2.2.zip
-  ln -s pmd-4.2.2/ pmd
+  unzip ~/Desktop/pmd-bin-4.2.5.zip
+  ln -s pmd-4.2.5/ pmd
 
 You also have to make links to the jar files:
 
   cd ~/.ant/lib/pmd/lib
-  ln -s pmd-4.2.2.jar pmd.jar
+  ln -s pmd-4.2.5.jar pmd.jar
   ln -s jaxen-1.1.1.jar jaxen.jar
 
 To run PMD on the rource code, just run ant pmd:
@@ -325,7 +511,7 @@ unzip the .zip file to a directory, and use the pmd.home property
 to tell ant where to find PMD, like this (if you have installed 
 PMD under the lib directory):
 
-  ant pmd -Dpmd.home=lib/pmd-4.2.3
+  ant pmd -Dpmd.home=lib/pmd-4.2.5
 
 ---------------------------------------------------
 Using JDepend
@@ -357,3 +543,4 @@ Trond Norbye, norbye.org
 Knut Pape, eBriefkasten.de
 Martin Englund, Sun Microsystems
 Knut Anders Hatlen, Sun Microsystems
+Lubos Kosco, Sun Microsystems

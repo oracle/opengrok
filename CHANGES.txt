@@ -1,6 +1,188 @@
+April 2010 update 0.9
+-------------------------------------------------
+This is a major update. It's advised you cleanup your old DATA_ROOT and run
+indexing from fresh. Also the web application should be replaced, since new
+indexes are not compatible with old application.
+This is also a general rule for most of opengrok updates. We don't really
+support backwards compatibility, unless it would be a really minor update.
+
+New Features:
+
+faster lucene engine(3.0.1) underneath - faster analyzers
+new jquery(1.4.2) underneath - UI improvements
+support for xrefs with Unicode characters(not indexed yet, but finally viewable!)
+new smf service - just pass the source root, the rest is taken care by the service(Solaris)
+
+Bugs fixed:
+
+Bug #13280: RFE: Configurable tab size for xref
+Bug #13362: plainanalyzer xref writer can never end for a file with long lines
+Bug #13529: listing of a file (in xref) might take a LONG time
+Bug #13330: Wrong URL when search for camel-case identifier has only one match
+Bug #13364: regression : Jar analyzer doesn't analyze the jars it used to for 0.7
+Bug #13884: IndexOutOfBoundsException in List2TokenStream.next()
+Bug #13952: size output not correct
+Bug #13951: Wrong revision in info.properties when not building from head of trunk
+Bug #13949: Missing line numbers in xref for XML file
+Bug #13961: no quick search box shown on windows (path separator problem in project names/IDs)
+Bug #14030: Many lines with same line number (regression)
+Bug #5848: trimmed diff link results in NULL pointer dereference
+Bug #3900: Unexpected result when clicking a symbol definition
+Bug #3435: C functions are not considered as functions
+Bug #14978: upgrade lucene to 3.0.1
+Bug #13185: broken focus
+Bug #14757: pressing Enter on project select list box takes you to xref instead of submit of the search form
+Bug #15004: Improved handling of UTF Byte Order Marks
+Bug #15097: make the search bar in listing stay on top of the page
+Bug #13997: main logo should take you HOME ;)
+Bug #15114: AnalyzerGuru:stripBOM should not use String to avoid encoding issues
+Bug #14953: history index for CVS repos should only include default branch if CVS/Tag is set
+Bug #15240: radio buttons in history could behave like e.g. on wikipedia
+Bug #437: OpenGrok should support source files with multibyte characters
+Bug #15394: improve IPS package and SMF for OpenSolaris
+Bug #15391: Executor should log the commands executed
+Bug #14724: Incremental update of Bazaar history broken by instability in revision numbers
+
+for bug details refer to:
+http://defect.opensolaris.org/bz/buglist.cgi?query_format=advanced&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=INCOMPLETE&bug_status=ACCEPTED&bug_status=CAUSEKNOWN&bug_status=FIXUNDERSTOOD&bug_status=FIXINPROGRESS&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&target_milestone=0.9&product=opengrok
+
+Contributors:
+
+We'd like to thank all the people that report bugs, send us ideas and
+improvements. Below are just people that sent patches or pushed code, that
+doesn't mean that we don't appreciate your work. On the contrary, you are
+the people showing other people(who have the time to write code) what would
+be good to fix when you use this software and file bugs against it!
+Note that this is just a summary of how many changes each person made which
+doesn't necessarily reflect how significant each change was. (inspect the
+history log with "hg log -v -r 0.8.1:tip" to get all details)
+
+ 33 Knut Anders Hatlen <Knut.Hatlen@sun.com>
+ 22 Lubos Kosco <Lubos.Kosco@sun.com>
+  1 Chris Eldredge <chris.eldredge@gmail.com>
+  1 Vitezslav Batrla <Vitezslav.Batrla@Sun.COM>
+
+
+December 2009 update 0.8.1
+-------------------------------------------------
+minor changes from OpenGrok 0.8. Most importantly, the 0.8.1 release fixes 
+the broken Solaris packages. Also OpenGrok script is now improved and 2G of
+memory is needed for it to accommodate most deployments.
+
+November 2009 update 0.8
+-------------------------------------------------
+FEATURES
+
+    * Support more source code repository backends:
+          o Bazaar
+          o Monotone
+    * Support for more languages:
+          o Fortran
+          o Detect C++ keywords
+          o Parse C# files with the C analyzer
+    * Search through multiple projects at the same time
+    * Possibility to register an opengrok search as a search
+    * engine(provider) in Firefox(Internet Explorer)
+    * History cache stored in Java DB
+    * Simplified installation & setup. Improved user interface.
+
+BUG FIXES
+
+    * Bug #405: Mercurial history parser may easily get out of sync
+    * Bug #2243: Show date and time of the last index update
+    * Bug #3401: C analyzer recognizes C++ keywords
+    * Bug #3624: History cache should be stored in Java DB
+    * Bug #4154: History cache should be created automatically for new
+    * repositories
+    * Bug #4505: resource leakage of ctags processes if started from the
+    * agent
+    * Bug #4580: The agent tries to create the repositories on the client
+    * side
+    * Bug #5826: "remote" subversion repositories no longer detected
+    * Bug #6658: rss.jsp generates ill-formed XML
+    * Bug #9468: history of renamed files is lost (mercurial) - use -f only
+    * for files
+    * Bug #10440: Skip files with no sections or empty section name string
+    * table
+    * Bug #10442: zip analyzer fails to parse odps
+    * Bug #11661: Invalid author link when revision has no author
+    * Bug #11662: No author not handled by JDBCHistoryCache
+    * Bug #11663: Failure when commit message exceeds ~32K
+    * Bug #11664: StringIndexOutOfBoundsException in MercurialHistoryParser
+    * Bug #11886: set no word limit for indexing of files (can result in out
+    * of memory errors!)
+    * Bug #11896: indexer chokes on fifos
+    * Bug #12029: Check the first 1MB of the file
+    * Bug #12081: History not returned for uncached repositories when using
+    * JDBCHistoryCache
+    * Bug #12324: history view should not contain lists of files
+
+THE ROAD AHEAD
+
+A tentative roadmap for OpenGrok can be found here:
+http://www.opensolaris.org/os/project/opengrok/Roadmap/
+
+As of OpenGrok 0.8 we will change the release model to the train model and
+start with quarterly releases.
+
+CONTRIBUTORS
+
+The following people contributed to this release since 0.7.
+
+Note that this is just a summary of how many changes each person made which
+doesn't necessarily reflect how significant each change was. (inspect the
+history log with "hg log -v -r 0.7:tip" to get all details)
+
+ 121 Knut Anders Hatlen <Knut.Hatlen@sun.com>
+  69 Trond Norbye <trond.norbye@sun.com>
+  50 Lubos Kosco <Lubos.Kosco@sun.com>
+  39 Jorgen Austvik <jorgen.austvik@sun.com>
+   4 Jan Berg <jan.berg@sun.com>
+   4 Peter Bray <Peter.Darren.Bray@gmail.com>
+   1 Scott Halstead <shaltead@bloomberg.net>
+
+October 2008 update 0.7
+-------------------------------------------------
+NEW FEATURES
+
+* Support more source code repository backends:
+   o ClearCase (Magnus Lind)
+   o Git (Jorgen Austvik)
+   o Razor (Peter Bray)
+
+* JMX Agent (Jan Stale Berg)
+
+OpenGrok can now talk JMX with clients. This work is the start of a 
+project to make it easier to configure OpenGrok. The first proof of 
+concept is a system tray applet to show OpenGrok status.
+
+* Use external Subversion binary instead of svn-javahl.jar (Trond)
+
+A lot of our users had problems installing svn-javahl.jar, now we use 
+the system provided svn binary.
+
+* Logging
+
+OpenGrok is changed to use standard java.util.logging (Jan Stale Berg, 
+Trond, Lubos Kosco)
+
+* Store history cache in compressed files to save disk space (Trond)
+
+* Quality (Trond, Knut Anders, Lubos Kosco, Jorgen Austvik)
+   - We have incorporated tools like PMD, FindBugs, CheckStyle and 
+Hudson into our development process, and fixed lots and lots of 
+potential bugs long before any users experience them.
+   - We have started to write unit-tests, and use Emma to measure how 
+good they are. In this release our unit tests cover 61% of our code 
+(block coverage), for OpenGrok 0.8 we aim for 70%.
+
+* General code and design cleanup (Peter Bray, Trond, Knut Anders, Lubos 
+Kosco, Jorgen Austvik)
+
+
 April 2008 update 0.6.1
 -------------------------------------------------
-Thgis is a bugfix release.
+This is a bugfix release.
 
 Please see http://src.opensolaris.org/source/history/opengrok/trunk/ for
 full history information, and for the list of contributors. The following is
@@ -13,7 +195,7 @@ Bug #779: Add option to disable index optimization upon indexing
 Bug #829: create links to account details in annotate mode
 Bug #966: fails on directory names that contain a plus (+) character
 Bug #989: Can't reindex a subtree
-Bug #988: Make it possible to optimize the index without reingexing
+Bug #988: Make it possible to optimize the index without reindexing
 Bug #1007: Add URL friendly project handling
 Bug #1009: Economical mode generates suggestion database
 Bug #1057: double-colon in search pattern throws an error
@@ -117,7 +299,7 @@ Compatibility Note:
    with this release. Changing the source.war parameters
    and redeploying should work.
    However to get full advantage, it is advisable to
-   generate the data from scratch (i.e remove the old
+   generate the data from scratch (i.e. remove the old
    DATA_ROOT and run the run.sh again).
 
 Initial public release, November 2005 Version 0.2
