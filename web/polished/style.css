@@ -6,13 +6,13 @@ body {
 }
 
 #page {
-	background-color: #fff;
+	/*background-color: #fff;*/
 	margin: 0.5em;
 	margin-top: 1em;
 	padding:1px;
-	border: 1px solid #bbb;
+	/*border: 1px solid #bbb;
 	border-right: 1px solid #888;
-	border-bottom: 1px solid #666;
+	border-bottom: 1px solid #666;*/
 }
 
 #header {
@@ -25,16 +25,22 @@ body {
 	background-color:#fff;
 }
 
-#whole_header {
-position:fixed;
-top:0;
-width:100%
-}
+#content {
+  position:absolute;
+  top:107px;
+  bottom:1px;
+  left:0px;
+  right:0px;
+  padding-left: 1em;
+  overflow:auto;
+  }
 
-#filler_for_whole_header {
-min-height:86px;
-height:86px;
-}
+#whole_header {
+  position:absolute;
+  top:0;
+  width:98%;
+  overflow:auto;
+  }  
 
 #Masthead {
 	display:block;

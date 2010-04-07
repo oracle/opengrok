@@ -10,6 +10,7 @@ body {
 	border: none;
 	margin:0;
 }
+
 #Masthead {
 	background: none;
 	display:block;
@@ -31,16 +32,22 @@ body {
 	height:44px;
 }
 
-#whole_header {
-position:fixed;
-top:0;
-width:100%
-}
+#content {
+  position:absolute;
+  top:107px;
+  bottom:1px;
+  left:0px;
+  right:0px;
+  padding-left: 1em;
+  overflow:auto;
+  }
 
-#filler_for_whole_header {
-min-height:86px;
-height:86px;
-}
+#whole_header {
+  position:absolute;
+  top:0;
+  width:98%;
+  overflow:auto;
+  }
 
 #MastheadLogo h1 {
 	display:inline;
