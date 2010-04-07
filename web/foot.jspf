@@ -26,7 +26,10 @@ Use is subject to license terms.
     </p>
     <p class="Center">Indexes created <%=org.opensolaris.opengrok.configuration.RuntimeEnvironment.getInstance().getDateForLastIndexRun()%>
     </p>
-</div>
-</div>
+</div><%
+String fservlet = request.getServletPath();
+if ( fservlet.startsWith("/xr") || fservlet.startsWith("/hi") || fservlet.startsWith("/di") || fservlet.startsWith("/mo") ) { %>
+</div><% } // just for content from xref / lister / history / diff / more pages %>
+</div><% // from page %>
 </body>
 </html>

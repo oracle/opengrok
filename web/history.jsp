@@ -32,8 +32,7 @@ org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*,
 java.util.regex.*
 "
-%><%@include file="mast.jsp"%>
-<% String hcontext = request.getContextPath(); %>
+%><%@include file="mast.jsp"%><% String hcontext = request.getContextPath(); %>
 <script type="text/javascript" src="<%=hcontext%>/jquery-1.4.2.min.js"></script>
 <script type="text/javascript">
 // <![CDATA[
@@ -105,7 +104,7 @@ if (path.length() > 0 && valid) {
 %><form action="<%=context%>/diff<%=path%>">
 <table cellspacing="0" cellpadding="2" border="0" width="100%" class="src" id="revisions">
 <tr>
-    <td colspan="4"><span class="pagetitle">History log of <a href="<%= context +"/xref" + path %>"><%=path%></a></span></td>
+    <td colspan="5"><span class="pagetitle">History log of <a href="<%= context +"/xref" + path %>"><%=path%></a></span></td>
 </tr>
 <tr class="thead">
     <td>Revision</td><%
