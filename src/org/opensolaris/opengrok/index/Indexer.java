@@ -606,7 +606,7 @@ public final class Indexer {
                     InetAddress host = InetAddress.getByName(cfg[0]);
                     RuntimeEnvironment.getInstance().writeConfiguration(host, Integer.parseInt(cfg[1]));
                 } catch (Exception ex) {
-                    log.log(Level.SEVERE, "Failed to send configuration to " + configHost, ex);
+                    log.log(Level.SEVERE, "Failed to send configuration to " + configHost+" (is web application server running with opengrok deployed?)", ex);
                 }
             } else {
                 System.err.println("Syntax error: ");

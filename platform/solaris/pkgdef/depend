@@ -2,5 +2,6 @@ P SUNWcsr Core Solaris, (Root)
 P SUNWcsu Core Solaris, (Root)
 P SUNWcsd Core Solaris Devices
 P SUNWcsl Core Solaris, (Shared Libs)
+P SUNWj6rt SUNWj6rt JDK 6.0 Runtime Env. 
 P SUNWtcatu Tomcat Servlet/JSP Container
-P exuberant-ctags The Exuberant Ctags Utility
+P SUNWexctags The Exuberant Ctags Utility

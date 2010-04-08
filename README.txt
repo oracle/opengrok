@@ -61,12 +61,14 @@ Step.1 - Deploy the web application
 We provided you with OpenGrok wrapper script, which should aid in deploying
 the web application.
 Please change to opengrok directory (can vary on your system)
+Note that now you might need to change to user which owns the target 
+directories for data, e.g. on Solaris you'd do # pfexec su - webservd
 
-# cd /usr/opengrok/bin
+$ cd /usr/opengrok/bin
 
 and run 
 
-# ./OpenGrok deploy
+$ ./OpenGrok deploy
 
 This command will do some sanity checks and will deploy the source.war in
 its directory to one of detected web application containers.
@@ -92,15 +94,15 @@ use {Opengrok before this is done.
 
 Please change to opengrok directory (can vary on your system)
 
-# cd /usr/opengrok/bin
+$ cd /usr/opengrok/bin
 
 and run, if your SRC_ROOT is prepared under /var/opengrok/src
 
-# ./OpenGrok index
+$ ./OpenGrok index
 
 otherwise (if SRC_ROOT is in different directory) run:
 
-# ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
+$ ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
 
 Above command should try to upload latest index status reflected into
 configuration.xml to a running source web application.
@@ -123,15 +125,15 @@ OPENGROK_INSTANCE_BASE .
 E.g. if my opengrok data directory is /tank/opengrok and my source root is
 in /tank/source and I'd like to get more verbosity I'd run the indexer as:
 
-# OPENGROK_REMOTE_REPOS=true OPENGROK_VERBOSE=true \
-  OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source 
+$ OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok \
+  ./OpenGrok index /tank/source 
 
 Since above will also change default location of config file, beforehands(or
 restart your web container after creating this symlink) I suggest doing
 below for our case of having opengrok instance in /tank/opengrok :
 
-# ln -s /tank/opengrok/etc/configuration.xml
-# /var/opengrok/etc/configuration.xml 
+$ ln -s /tank/opengrok/etc/configuration.xml \
+ /var/opengrok/etc/configuration.xml 
 
 A lot more customizations can be found inside the script, you just need to
 have a look at it, eventually create a configuration out of it and use
@@ -147,18 +149,23 @@ Using smf service(Solaris and OpenSolaris only) to maintain opengrok indexes.
 If you installed opengrok from a package, then configure the service like this:
 
 # svccfg -s opengrok
-# listprop opengrok 
-# setprop opengrok/srcdir="/absolute/path/to/your/sourcetree" 
-# setprop opengrok/maxmemory="2048" 
+ listprop opengrok 
+ setprop opengrok/srcdir="/absolute/path/to/your/sourcetree" 
+ setprop opengrok/maxmemory="2048" 
+ end
 
 then make the service start the indexing, at this point it would be nice if 
 the web application is already running.
 
+# svcadm enable tomcat6
+(if you haven't done so already)
 # svcadm enable opengrok 
 
 to force a rebuild just run:  
 # svcadm refresh opengrok
 
+Note: when removing opengrok package the smf service will not be removed 
+automatically. In such case please remove it manually.
 
 ---------------------------------------------------
 Using command line interface(general pointers) to create indexes.
@@ -203,48 +210,47 @@ for the web application. It is in a Jar file named source.war, you can
 change the :
 
     * Option 1: Unzip the file to TOMCAT/webapps/source/ directory and
-    change the source/WEB-INF/web.xml and other static html files like
-    index.html to customize to your project. 
+     change the source/WEB-INF/web.xml and other static html files like
+     index.html to customize to your project. 
     
     * Option 2: Extract the web.xml file from source.war file
 
-    	$ unzip source.war WEB-INF/web.xml
-	
-    edit web.xml and re-package the jar file. 
+     $ unzip source.war WEB-INF/web.xml
 
-    	$ zip -u source.war WEB-INF/web.xml
+     edit web.xml and re-package the jar file. 
 
-    Then copy the war files to <i>TOMCAT</i>/webapps directory.
+     $ zip -u source.war WEB-INF/web.xml
+
+     Then copy the war files to <i>TOMCAT</i>/webapps directory.
 
     * Option 3: Edit the Context container element for the webapp
 
-	Copy source.war to TOMCAT/webapps
+     Copy source.war to TOMCAT/webapps
 
-        When invoking OpenGrok to build the index, use -w <webapp> to set the 
-        context.
+     When invoking OpenGrok to build the index, use -w <webapp> to set the 
+     context.
 
-        After the index is built, there's a couple different ways to set the
-        Context for the servlet container:
-          - Add the Context inside a Host element in TOMCAT/conf/server.xml
+     After the index is built, there's a couple different ways to set the
+     Context for the servlet container:
+     - Add the Context inside a Host element in TOMCAT/conf/server.xml
 
-	    <Context path="/<webapp>" docBase="source.war">
-	        <Parameter name="DATA_ROOT" value="/path/to/data/root" override="false" />
-		<Parameter name="SRC_ROOT" value="/path/to/src/root" override="false" />
-		<Parameter name="HEADER" value='...' override="false" />
-	    </Context>
+     <Context path="/<webapp>" docBase="source.war">
+        <Parameter name="DATA_ROOT" value="/path/to/data/root" override="false" />
+        <Parameter name="SRC_ROOT" value="/path/to/src/root" override="false" />
+        <Parameter name="HEADER" value='...' override="false" />
+     </Context>
 
-          - Create a Context file for the webapp
+     - Create a Context file for the webapp
 
-	    This file will be named `<webapp>.xml'.
+     This file will be named `<webapp>.xml'.
 
-	    For Tomcat, the file will be located at:
-	    `TOMCAT/conf/<engine_name>/<hostname>', where <engine_name>
-	    is the Engine that is processing requests and <hostname> is a Host
-	    associated with that Engine.  By default, this path is
-	    'TOMCAT/conf/Catalina/localhost' or 'TOMCAT/conf/Standalone/localhost'.
+     For Tomcat, the file will be located at:
+     `TOMCAT/conf/<engine_name>/<hostname>', where <engine_name>
+     is the Engine that is processing requests and <hostname> is a Host
+     associated with that Engine.  By default, this path is
+     'TOMCAT/conf/Catalina/localhost' or 'TOMCAT/conf/Standalone/localhost'.
 
-	    This file will contain something like the Context described above.
-
+     This file will contain something like the Context described above.
 
 ---------------------------------------------------
 Using Java DB for history cache
@@ -295,13 +301,12 @@ Optional CLI - Command Line Interface Usage
 for fulltext search for project with above generated configuration.xml you'd
 do:
 
-$ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search -R
+$ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search -R \
 /var/opengrok/etc/configuration.xml -f fulltext_search_string
 
  For quick help run:
 
 $ java -cp ./opengrok.jar org.opensolaris.opengrok.search.Search
-
 
 ---------------------------------------------------
 Optional need to change web application properties or name
@@ -351,6 +356,27 @@ Deploy the modified .war file in tomcat:
 -----------------------------------
 
     * just copy the source.war file to TOMCAT_INSTALL/webapps directory.
+
+---------------------------------------------------
+Optional opengrok indexer setup with agent and systray GUI control application
+---------------------------------------------------
+
+we provide an example opengrok-agent.properties file, which can be used when
+starting special OpenGrok Agent, where you can connect with a systray GUI
+application.
+
+To start the indexer with configuration run:
+$ java -cp ./opengrok.jar org.opensolaris.opengrok.management.OGAgent \
+--config opengrok-agent.properties
+
+then from the remote machine one can run:
+$ java -cp ./opengrok.jar \
+org.opensolaris.opengrok.management.client.OpenGrokTrayApp
+
+assuming configuration permits remote connections(so not listening on
+localhost, but rather on a physical network interface)
+
+This agent is work in progress, so it might not fully work.
 
 ---------------------------------------------------
 Using Findbugs

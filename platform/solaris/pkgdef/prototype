@@ -36,6 +36,7 @@ d none usr/opengrok 0755 root sys
 d none usr/opengrok/bin 0755 root bin
 d none usr/opengrok/doc 0755 root sys
 d none usr/opengrok/lib 0755 root bin
+s none usr/opengrok/lib/lib=../lib
 d none usr/opengrok/man 0755 root sys
 d none usr/opengrok/man/man1 0755 root sys
 d none var 0755 root sys
@@ -47,12 +48,20 @@ d none var/opengrok/source 0755 webservd webservd
 d none var/svc 755 root sys
 d none var/svc/manifest 755 root sys
 d none var/svc/manifest/application 755 root sys
+d none var/tomcat6 0755 root bin
+d none var/tomcat6/webapps 0755 webservd webservd
 
 f manifest var/svc/manifest/application/opengrok.xml=platform/solaris/smf/opengrok.xml 444 root sys
-f none etc/opengrok/logging.properties=logging.properties 0444 root sys
 f none lib/svc/method/svc-opengrok=platform/solaris/smf/svc-opengrok 555 root bin
+f none usr/opengrok/bin/OpenGrok=OpenGrok 0777 bin bin
+f none usr/opengrok/doc/logging.properties=logging.properties 0444 root sys
 f none usr/opengrok/doc/README.txt=README.txt 0444 root sys
+f none usr/opengrok/doc/CHANGES.txt=CHANGES.txt 0444 root sys
+f none usr/opengrok/doc/LICENSE.txt=LICENSE.txt 0444 root sys
+f none usr/opengrok/doc/NOTICE.txt=NOTICE.txt 0444 root sys
+f none usr/opengrok/doc/paths.tsv=paths.tsv 0444 root sys
 f none usr/opengrok/doc/EXAMPLE.txt=doc/EXAMPLE.txt 0444 root sys
+f none usr/opengrok/doc/opengrok-agent.properties=platform/solaris/default/opengrok-agent.properties 0444 root sys
 f none usr/opengrok/lib/opengrok.jar=dist/opengrok.jar 0444 root bin
 f none usr/opengrok/lib/ant.jar=dist/lib/ant.jar 0444 root bin
 f none usr/opengrok/lib/bcel-5.2.jar=lib/bcel-5.2.jar 0444 root bin
@@ -66,3 +75,4 @@ f none usr/opengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar 0444 root 
 f none usr/opengrok/lib/ogindexd=platform/solaris/smf/ogindexd 0555 root bin
 f none usr/opengrok/man/man1/opengrok.1=dist/opengrok.1 0444 root bin
 f none var/tomcat6/webapps/source.war=dist/source.war 0444 webservd webservd
+s none usr/opengrok/lib/source.war=../../../var/tomcat6/webapps/source.war

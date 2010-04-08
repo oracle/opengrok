@@ -1,0 +1,22 @@
+Checklist for releasing OpenGrok:
+--------------------------------------
+../ext_lib - is a directory where we keep latest JFlex.jar and all necessary jars/dirs for tests
+
+0) set proper version in build.xml , <property name="version" value="???"/>
+
+1) build must be clean
+ant -lib ../ext_lib/ clean
+ant -lib ../ext_lib/ 
+(defaults to jar currently)
+
+2) check all tests, tests code coverage: junit, pmd, findbugs, checkstyle, emma, jdepend
+(they should be ok, currently only checkstyle has 7 warnings, the rest is clean;
+emma reports should be based according to what is set for the release, usually it's overall coverage above 80%)
+(hudson can help here, see README.txt on setup)
+
+3) produce proper distributions, check them before upload
+ant -lib ../ext_lib/ dist
+ant -lib ../ext_lib/ dist-src
+ant -lib ../ext_lib/ package
+
+the release is OK, once above is fullfilled to our satisfaction

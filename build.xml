@@ -88,7 +88,7 @@ Use is subject to license terms.
 
     -->
 
-    <property name="version" value="0.9"/>
+    <property name="version" value="0.9-rc1"/>
     <property name="distname" value="opengrok"/>
     
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
@@ -275,23 +275,24 @@ Use is subject to license terms.
     <target name="dist" depends="jar">
       <tar destfile="${dist.dir}/${distname}-${version}.tar.gz"
            compression="gzip">
-        <tarfileset dir="." prefix="${distname}-${version}">
+        <tarfileset dir="." prefix="${distname}-${version}/doc">
           <include name="README.txt"/>
           <include name="CHANGES.txt"/>
           <include name="LICENSE.txt"/>
+          <include name="NOTICE.txt"/>
 	  <include name="paths.tsv"/>
 	  <include name="logging.properties"/>
-        </tarfileset>
-        <tarfileset dir="." prefix="${distname}-${version}" mode="755">
-          <include name="OpenGrok"/>
           <include name="run.sh"/>
           <include name="run-quiet.sh"/>
-	  <include name="run.bat"/>
+          <include name="run.bat"/>
         </tarfileset>
-        <tarfileset dir="doc" prefix="${distname}-${version}">
+        <tarfileset dir="." prefix="${distname}-${version}/bin" mode="755">
+          <include name="OpenGrok"/>
+        </tarfileset>
+        <tarfileset dir="doc" prefix="${distname}-${version}/doc">
           <include name="EXAMPLE.txt"/>
         </tarfileset>
-        <tarfileset dir="${dist.dir}" prefix="${distname}-${version}">
+        <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/lib">
           <include name="opengrok.jar"/>
           <include name="source.war"/>
           <include name="lib/*"/>

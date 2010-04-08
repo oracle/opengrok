@@ -59,13 +59,21 @@ do
    PKGSEND add dir mode=0755 owner=webservd group=webservd path=${dir}
 done
 
+PKGSEND add link path=/usr/opengrok/lib/lib target=../lib
+
 PKGSEND add file platform/solaris/smf/opengrok.xml mode=0444 owner=root group=sys path=/var/svc/manifest/application/opengrok.xml restart_fmri=svc:/system/manifest-import:default
 PKGSEND add file platform/solaris/smf/svc-opengrok mode=0555 owner=root group=bin path=/lib/svc/method/svc-opengrok
 PKGSEND add file platform/solaris/smf/ogindexd mode=0555 owner=root group=bin path=/usr/opengrok/lib/ogindexd
+PKGSEND add file OpenGrok mode=0555 owner=root group=bin path=/usr/opengrok/bin/OpenGrok
 PKGSEND add file dist/opengrok.jar mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
-PKGSEND add file logging.properties mode=0444 owner=root group=sys path=/etc/opengrok/logging.properties
+
+PKGSEND add file logging.properties mode=0444 owner=root group=sys path=/usr/opengrok/doc/logging.properties
 PKGSEND add file README.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/README.txt
+PKGSEND add file CHANGES.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/CHANGES.txt
+PKGSEND add file LICENSE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/LICENSE.txt
+PKGSEND add file NOTICE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/NOTICE.txt
 PKGSEND add file doc/EXAMPLE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/EXAMPLE.txt
+
 
 # install libs
 for file in ant.jar bcel-5.2.jar jakarta-oro-2.0.8.jar \
