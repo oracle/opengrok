@@ -16,8 +16,8 @@ body {
 }
 
 #header {
-	min-height:44px;
-	height:44px;
+	min-height:40px;
+	height:40px;
 	display:block;
 	background-image: url(./img/t.gif);
 	background-position: 1px 0px;
@@ -27,11 +27,12 @@ body {
 
 #content {
   position:absolute;
-  top:107px;
-  bottom:1px;
+  top:104px;
+  bottom:0px;
   left:0px;
   right:0px;
   padding-left: 1em;
+  padding-top:6px;
   overflow:auto;
   }
 
@@ -277,11 +278,11 @@ span.tabsel {
 	background-position: 1px 1px;
 	background-repeat: repeat-x;
 	background-color:#fff;
-	border:1px solid #999;
+	border:1px solid #999;        
 	border-bottom:2px solid #fff;
 }
-#difftable .d { background-color:#8BD98B;}
-#difftable .a { background-color:#FFCC40;}
+#difftable .d { background-color:#FFCC40;}
+#difftable .a { background-color:#8BD98B;}
 tr.k{border-bottom:1px dashed #ccc;}
 #difftable i  {color:#666;background-color:#ddd;margin-right:.2em;padding-left:1em;padding-right:.5em;text-decoration:none; font-weight:normal;}
 #difftable i.a  {background-color:#FFDD80;color:#666;}

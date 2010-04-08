@@ -28,17 +28,18 @@ body {
 }
 #header {
 	background:none;
-	min-height:44px;
-	height:44px;
+	min-height:40px;
+	height:40px;
 }
 
 #content {
   position:absolute;
-  top:107px;
-  bottom:1px;
+  top:104px;
+  bottom:0px;
   left:0px;
   right:0px;
   padding-left: 1em;
+  padding-top:6px;
   overflow:auto;
   }
 
@@ -162,8 +163,8 @@ div.a{color:#000}
 #difftable {border:#000; border-collapse:collapse;font-size:small;}
 span.tab    { padding: 5px; padding-top:3px; padding-bottom: 0px; margin-left: 2px; margin-right: 2px; margin-bottom:0px ;background-color:#eee; border:1px solid #000;border-bottom:1px none;}
 span.tabsel { padding: 6px; padding-top:5px; padding-bottom: 1px; margin-left: 2px; margin-right: 2px; background-color:#fff; border:1px solid #000; border-bottom:2px solid #fff;}
-#difftable .d { background-color:#8BD98B;font-weight:bold;}
-#difftable .a { background-color:#FFCC40;font-weight:bold;}
+#difftable .d { background-color:#FFCC40;font-weight:bold;}
+#difftable .a { background-color:#8BD98B;font-weight:bold;}
 tr.k {border-bottom:1px dashed #000;}
 #difftable i  {color:#666;background-color:#ddd;margin-right:.2em;padding-left:1em;padding-right:.5em;text-decoration:none;}
 #difftable i.a  {background-color:#FFDD80;color:#666; font-weight:bold;}

@@ -10,18 +10,19 @@ body {
 }
 
 #header {
-	min-height:44px;
-	height:44px;
+	min-height:40px;
+	height:40px;
 	display:block;
 }
 
 #content {
   position:absolute;
-  top:106px;
-  bottom:1px;
+  top:104px;
+  bottom:0px;
   left:0px;
   right:0px;
   padding-left: 1em;
+  padding-top:6px;
   overflow:auto;
   }
 
@@ -238,8 +239,8 @@ span.tabsel {
 	border:1px solid #998;
 	border-bottom:2px solid #ededd5;
 }
-#difftable .d { background-color:#8BD98B;}
-#difftable .a { background-color:#FFCC40;}
+#difftable .d { background-color:#FFCC40;}
+#difftable .a { background-color:#8BD98B;}
 tr.k{border-bottom:1px dashed #ccc;}
 #difftable i  {color:#000;background-color:#d6d6c0;margin-right:.2em;padding-left:1em;padding-right:.5em;text-decoration:none; font-weight:normal;}
 #difftable i.a  {background-color:#FFDD80;color:#000;}

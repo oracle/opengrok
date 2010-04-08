@@ -104,11 +104,11 @@ function checkEnter(event) {
                                         <td>in project(s): <span style="padding-left:60px;font-size:small"><a tabindex="6" href="#" onclick="javascript:selectAllProjects();return false;">select all</a>&nbsp;|&nbsp;<a href="#" tabindex="7" onclick="javascript:invertAllProjects();return false;">invert selection</a></span></td>
                                     </tr>
                                     <tr><td>
-                                            <select tabindex="8" class="q" style="width: 300px" id="project" onkeyup="javascript:checkEnter(event);" ondblclick="javascript:goFirstProject();" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
+                                            <select tabindex="8" onkeyup="javascript:checkEnter(event);" class="q" style="width: 300px" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
                                 <%
                                 for (Project p : env.getProjects()) {
                                     //TODO below "selected" has no effect if one refreshes the page with F5
-                                %><option value="<%=Util.formQuoteEscape(p.getDescription())%>"<%
+                                %><option ondblclick="javascript:goFirstProject();" value="<%=Util.formQuoteEscape(p.getDescription())%>"<%
                                           if (project != null) {
                                               String projectPath = p.getDescription();
                                               for (Iterator it = project.iterator(); it.hasNext();) {
