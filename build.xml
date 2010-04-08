@@ -298,6 +298,9 @@ Use is subject to license terms.
           <include name="lib/*"/>
           <exclude name="lib/servlet-api.jar"/>
         </tarfileset>
+	<tarfileset dir="${dist.dir}" prefix="${distname}-${version}/man/man1">
+          <include name="opengrok.1"/>
+        </tarfileset>
       </tar>
     </target>
 
@@ -307,6 +310,8 @@ Use is subject to license terms.
         <arg value="archive"/>
         <arg value="-t"/>
         <arg value="tgz"/>
+<!--	<arg value="-p"/>
+	<arg value="${distname}-${version}-src"/> -->
         <arg value="${dist.dir}/${distname}-${version}-src.tar.gz"/>
       </exec>
     </target>
