@@ -133,7 +133,12 @@ if(resourcePath.length() < rawSource.length()
 
 %><%@ include file="httpheader.jspf" %><%//below style is for the fancy always on top search bar%>
 <script type="text/javascript" src="<%=context%>/jquery-1.4.2.min.js"></script>
-<body style="overflow: hidden;" onload="$('#search').focus();">
+<script type="text/javascript">/* <![CDATA[ */
+    $().ready(function() {
+    if (!window.location.hash) {$('#content').focus();}
+} );
+/* ]]> */</script>
+<body style="overflow: hidden;">
 <% if (annotate) { %>
 <script type="text/javascript" src="<%=context%>/jquery.tooltip-1.3.pack.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
@@ -151,7 +156,7 @@ $().ready(function() {
     $('a[id=r]').tooltip({
         left: 5,
 	showURL: false
-       });
+       });    
 } );
 /* ]]> */</script>
 <% } %>

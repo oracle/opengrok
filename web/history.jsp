@@ -54,11 +54,11 @@ function togglediffs() {
 	var cr1 = false;         
         $("#revisions input[type=radio]").each(function() {           
            if (this.name=="r1") { if (this.checked) {cr1=true;return true;};
-               if (cr2) { this.style.visibility = 'visible'}
-               else {this.style.visibility = 'hidden'} }
+               if (cr2) { this.disabled = ''}
+               else {this.disabled = 'true'} }
            else if (this.name=="r2") { if (this.checked) {cr2=true;return true;}
-               if (!cr1) { this.style.visibility = 'visible'}
-               else {this.style.visibility = 'hidden'} }
+               if (!cr1) { this.disabled = ''}
+               else {this.disabled = 'true'} }
            }        
     );
 }
@@ -94,10 +94,15 @@ if (path.length() > 0 && valid) {
         response.sendError(404, "No history");
         return;        
     }
-    History hist = HistoryGuru.getInstance().getHistory(f);
-
+    History hist=null;
+    try {
+    hist = HistoryGuru.getInstance().getHistory(f);
+    } catch (Exception e)    {
+        %>Problem: <%=e.getMessage()%><%
+    }
     if (hist == null) {
-        response.sendError(404, "No history");
+    //    response.sendError(404, "No history");
+        %><%@include file="foot.jspf"%><%
         return;
     }
     
@@ -138,7 +143,7 @@ for (HistoryEntry entry : hist.getHistoryEntries()) {
         if (entry.isActive()) {
             String rp = Util.URIEncodePath(path);
 %><td>&nbsp;<a name="<%=rev%>" href="<%= context +"/xref" + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center">
-    <input type="radio" <% if (count==0) {%>style="visibility:hidden"<% } else if (count==1) {%>checked<%} %> name="r1" value="<%=rp%>@<%=rev%>"/>
+    <input type="radio" <% if (count==0) {%>disabled<% } else if (count==1) {%>checked<%} %> name="r1" value="<%=rp%>@<%=rev%>"/>
     <input type="radio" name="r2" <% if (count==0) {%>checked<% } %> value="<%=rp%>@<%=rev%>"/></td><%
         } else {
             striked = true;

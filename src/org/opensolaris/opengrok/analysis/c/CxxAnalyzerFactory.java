@@ -41,6 +41,7 @@ public class CxxAnalyzerFactory extends FileAnalyzerFactory {
         "HH",
         "CXX",
         "HXX",
+        "TXX"
     };
 
     public CxxAnalyzerFactory() {

@@ -117,7 +117,7 @@ public class CVSRepository extends RCSRepository {
         cmd.add(getCommand());
         cmd.add("log");
         cmd.add("-N"); //don't display tags
-        File tagFile = new File(file, "CVS/Tag");
+        File tagFile = new File(getDirectoryName(), "CVS/Tag");
         if ( tagFile.isFile() ) {
                 cmd.add("-b"); //just generate THIS branch history, we don't care about the other branches which are not checked out
         }

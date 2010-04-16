@@ -559,6 +559,8 @@ public class IndexDatabase {
                 new BufferedInputStream(new FileInputStream(file));
         try {
             FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Adding file:"+path);}
             fa.setCtags(ctags);
             fa.setProject(Project.getProject(path));
 
