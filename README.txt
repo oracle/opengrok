@@ -143,7 +143,7 @@ purposes.
 
 
 ---------------------------------------------------
-Using smf service(Solaris and OpenSolaris only) to maintain opengrok indexes.
+Using smf service(OpenSolaris) to maintain opengrok indexes.
 ---------------------------------------------------
 
 If you installed opengrok from a package, then configure the service like this:
@@ -157,15 +157,20 @@ If you installed opengrok from a package, then configure the service like this:
 then make the service start the indexing, at this point it would be nice if 
 the web application is already running.
 
-# svcadm enable tomcat6
-(if you haven't done so already)
-# svcadm enable opengrok 
+# svcadm enable -rs opengrok 
+(which will enable tomcat6 as dependency)
 
-to force a rebuild just run:  
+When the service starts indexing for first time, it's already enabled and
+depending on tomcat6, so at this point the web application should be 
+already running.
+The indexing is not done when opengrok service is disabled.
+
+To rebuild the index later (e.g. after source code changed)just run:
 # svcadm refresh opengrok
 
-Note: when removing opengrok package the smf service will not be removed 
-automatically. In such case please remove it manually.
+Note: before removing opengrok package please disable the service.
+If you don't do it, it will not be removed automatically.
+In such case please remove it manually.
 
 ---------------------------------------------------
 Using command line interface(general pointers) to create indexes.

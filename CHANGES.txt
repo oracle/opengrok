@@ -43,6 +43,13 @@ Bug #15394: improve IPS package and SMF for OpenSolaris
 Bug #15391: Executor should log the commands executed
 Bug #14724: Incremental update of Bazaar history broken by instability in revision numbers
 Bug #13524: Color coding in diffs is confusing 
+Bug #15643: Simplify CLASSPATH in ogindexd
+Bug #15652: history page shows a stack trace if file doesn't have a history
+Bug #15609: self organizing buttons in history view are confusing
+Bug #15608: Search field should not be active in file display
+Bug #14953: history index for CVS repos should only include default branch if CVS/Tag is set
+Bug #13777: Indexer should print "Adding: ..." before it adds a file
+Bug #6641: .txx file extension should be included in the list for C++ analyzer
 
 for bug details refer to:
 http://defect.opensolaris.org/bz/buglist.cgi?query_format=advanced&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=INCOMPLETE&bug_status=ACCEPTED&bug_status=CAUSEKNOWN&bug_status=FIXUNDERSTOOD&bug_status=FIXINPROGRESS&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&target_milestone=0.9&product=opengrok
