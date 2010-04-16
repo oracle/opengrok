@@ -64,7 +64,7 @@ LIBDIR=/usr/opengrok/lib
 LOCALSTATEDIR="/var/opengrok"
 WEBAPP_CONFIG_ADDRESS="-U localhost:2424"
 XML_CONFIGURATION="$LOCALSTATEDIR/etc/configuration.xml"
-CLASSPATH=$LIBDIR/ant.jar:$LIBDIR/bcel-5.2.jar:$LIBDIR/jakarta-oro-2.0.8.jar:$LIBDIR/lucene-core-3.0.1.jar:$LIBDIR/lucene-spellchecker-3.0.1.jar:$LIBDIR/org.apache.commons.jrcs.diff.jar:$LIBDIR/org.apache.commons.jrcs.rcs.jar:$LIBDIR/swing-layout-0.9.jar:$LIBDIR/opengrok.jar
+CLASSPATH=$LIBDIR/opengrok.jar
 
 xx() {
 	echo "$@"
