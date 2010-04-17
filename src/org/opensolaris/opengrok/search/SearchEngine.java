@@ -50,7 +50,6 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.Project;
@@ -107,7 +106,6 @@ public class SearchEngine {
      * Holds value of property indexDatabase.
      */
     private Query query;
-    private final CompatibleAnalyser analyzer;
     private final QueryParser qparser;
     private Context sourceContext;
     private HistoryContext historyContext;
@@ -132,11 +130,16 @@ public class SearchEngine {
      * Creates a new instance of SearchEngine
      */
     public SearchEngine() {
-        analyzer = new CompatibleAnalyser();        
-        qparser = new QueryParser(LUCENE_VERSION,"full", analyzer);
-        qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
-        qparser.setAllowLeadingWildcard(RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
+        qparser = createQueryParser();
         docs = new ArrayList<org.apache.lucene.document.Document>();
+    }
+
+    /**
+     * Create a query parser customized for OpenGrok.
+     * @return a query parser
+     */
+    public static QueryParser createQueryParser() {
+        return new CustomQueryParser();
     }
 
     public boolean isValidQuery() {
@@ -257,7 +260,7 @@ public class SearchEngine {
                 if(sourceContext.isEmpty()) {
                     sourceContext = null;
                 }
-                summarizer = new Summarizer(query, analyzer);
+                summarizer = new Summarizer(query, qparser.getAnalyzer());
             } catch (Exception e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary", e);
             }

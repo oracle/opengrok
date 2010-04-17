@@ -120,10 +120,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     final boolean docsScoredInOrder=false;
 
     int thispage = 0;			    //used for the for/next either max or
-    String moreUrl = null;
-    CompatibleAnalyser analyzer = new CompatibleAnalyser();
+    QueryParser qparser = null;
     String qstr = "";
-    String result = "";
     try {
         String DATA_ROOT = env.getDataRootPath();
         if(DATA_ROOT.equals("")) {
@@ -144,9 +142,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         
         qstr = Util.buildQueryString(q, defs, refs, path, hist);
 
-        QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION,"full", analyzer);
-        qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
-        qparser.setAllowLeadingWildcard(env.isAllowLeadingWildcard());
+        qparser = SearchEngine.createQueryParser();
 
         query = qparser.parse(qstr); //parse the
         
@@ -478,7 +474,8 @@ if( hits == null || errorMsg != null) {
                     try{
                         sourceContext = new Context(query);
                         if(sourceContext != null)
-                            summer = new Summarizer(query, analyzer);
+                            summer = new Summarizer(query,
+                                                    qparser.getAnalyzer());
                     } catch (Exception e) {
                         
                     }

@@ -39,9 +39,7 @@ if (valid) {
   String grepTerms = null;
   if((grepTerms = request.getParameter("t")) != null && !grepTerms.equals("")) {
 	try{                
-		QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION,"full", new CompatibleAnalyser());
-                qparser.setDefaultOperator(QueryParser.AND_OPERATOR);
-                qparser.setAllowLeadingWildcard(environment.isAllowLeadingWildcard());
+		QueryParser qparser = SearchEngine.createQueryParser();
 		Query tquery = qparser.parse(grepTerms);
 		if (tquery != null) {
 			Context sourceContext = new Context(tquery);

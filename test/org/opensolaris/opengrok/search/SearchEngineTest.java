@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.search;
@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.Indexer;
-import org.opensolaris.opengrok.index.IndexerTest;
 import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.*;
 
@@ -213,5 +212,36 @@ public class SearchEngineTest {
             }
         }
         assertEquals(8, noHits);
+
+        // wildcards and case sensitivity of definition search
+        instance = new SearchEngine();
+        instance.setDefinition("Mai*"); // definition is case sensitive
+        instance.setFile("Main.java OR main.c");
+        instance.search();
+        assertEquals(2, instance.search());
+        instance.setDefinition("MaI*"); // should not match Main
+        instance.search();
+        assertEquals(0, instance.search());
+
+        // wildcards and case sensitivity of symbol search
+        instance = new SearchEngine();
+        instance.setSymbol("Mai*"); // symbol is case sensitive
+        instance.setFile("Main.java OR main.c");
+        instance.search();
+        assertEquals(2, instance.search());
+        instance.setSymbol("MaI*"); // should not match Main
+        instance.search();
+        assertEquals(0, instance.search());
+
+        // wildcards and case insensitivity of freetext search
+        instance = new SearchEngine();
+        instance.setFreetext("MaI*"); // should match both Main and main
+        instance.setFile("Main.java OR main.c");
+        assertEquals(10, instance.search());
+
+        // file name search is case insensitive
+        instance = new SearchEngine();
+        instance.setFile("JaVa"); // should match java
+        assertEquals(4, instance.search());
     }
 }
