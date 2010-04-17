@@ -35,7 +35,6 @@ org.opensolaris.opengrok.index.IndexDatabase,
 org.opensolaris.opengrok.search.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
-org.opensolaris.opengrok.search.SearchEngine,
 org.opensolaris.opengrok.configuration.*,
 org.apache.lucene.search.spell.LuceneDictionary,
 org.apache.lucene.search.spell.SpellChecker,
@@ -106,7 +105,7 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     TopScoreDocCollector collector=null;         // the collector used
     ScoreDoc[] hits = null;                 // list of documents which result from the query
     IndexReader ireader = null; 	    //the reader used to open/search the index
-    Query query = null, defQuery = null; 		    //the Query created by the QueryParser
+    Query query = null;         //the Query created by the QueryBuilder
     boolean allCollected=false;
     int totalHits=0;
     
@@ -120,8 +119,12 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     final boolean docsScoredInOrder=false;
 
     int thispage = 0;			    //used for the for/next either max or
-    QueryParser qparser = null;
-    String qstr = "";
+
+    QueryBuilder queryBuilder =
+            new QueryBuilder()
+            .setFreetext(q).setDefs(defs).setRefs(refs)
+            .setPath(path).setHist(hist);
+
     try {
         String DATA_ROOT = env.getDataRootPath();
         if(DATA_ROOT.equals("")) {
@@ -139,12 +142,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             if(max < 0 || (max % 10 != 0) || max > 50) max = 25;
             if(start < 0 ) start = 0;
         } catch (Exception e) {  }
-        
-        qstr = Util.buildQueryString(q, defs, refs, path, hist);
 
-        qparser = SearchEngine.createQueryParser();
-
-        query = qparser.parse(qstr); //parse the
+        query = queryBuilder.build();
         
         File root = new File(RuntimeEnvironment.getInstance().getDataRootFile(),
                 "index");
@@ -221,11 +220,12 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         thispage = max;
     } catch (BooleanQuery.TooManyClauses e) {
         errorMsg = "<b>Error:</b> Too many results for wildcard!";
-    } catch (ParseException e) {        
-        errorMsg = "<b>Error parsing your query:</b><br/>" + Util.htmlize(qstr) + 
-                "<p/>You might try to enclose your search term in quotes: <br/>" + 
-                "<a href=search?q=\"" + Util.URIEncode(qstr) + "\">\"" + Util.htmlize(qstr) +
-                "\"</a><p/> or read the <a href=\"help.jsp\">Help</a> on query language(eventually <a href=\"help.jsp#escaping\">escape special characters</a> with <b>\\</b>)<p/>" + 
+    } catch (ParseException e) {
+        errorMsg = "<b>Error parsing your query</b>" +
+                "<p/>You might try to enclose your search term in quotes, " +
+                "<a href=\"help.jsp#escaping\">escape special characters</a> " +
+                "with <b>\\</b>, or read the <a href=\"help.jsp\">Help</a> " +
+                "on the query language.<p/>" +
                 "Error message from parser:<br/>" + Util.htmlize(e.getMessage());
     } catch (FileNotFoundException e) {
         errorMsg = "<b>Error:</b> Index database not found";
@@ -472,10 +472,11 @@ if( hits == null || errorMsg != null) {
                 Summarizer summer = null;
                 if (query != null) {
                     try{
-                        sourceContext = new Context(query);
+                        sourceContext =
+                                new Context(query, queryBuilder.getQueries());
                         if(sourceContext != null)
                             summer = new Summarizer(query,
-                                                    qparser.getAnalyzer());
+                                                    new CompatibleAnalyser());
                     } catch (Exception e) {
                         
                     }

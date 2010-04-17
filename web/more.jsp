@@ -29,6 +29,7 @@ org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.history.*,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.search.context.*,
+org.opensolaris.opengrok.search.QueryBuilder,
 org.opensolaris.opengrok.search.SearchEngine,
 java.util.regex.*,
 org.apache.lucene.queryParser.*,
@@ -36,21 +37,24 @@ org.apache.lucene.search.*"
 %><%@include file="mast.jsp"%><%
 
 if (valid) {
-  String grepTerms = null;
-  if((grepTerms = request.getParameter("t")) != null && !grepTerms.equals("")) {
-	try{                
-		QueryParser qparser = SearchEngine.createQueryParser();
-		Query tquery = qparser.parse(grepTerms);
-		if (tquery != null) {
-			Context sourceContext = new Context(tquery);
-                        %><p><span class="pagetitle">Lines Matching <b><%=tquery%></b></span></p><div id="more" style="line-height:1.5em;"><pre><%
-                        sourceContext.getContext(new FileReader(resourceFile), out, context+"/xref", null,  path ,null, false, null);
-			%></pre></div><%
-		}
-	} catch (Exception e) {
+    QueryBuilder qbuilder = new QueryBuilder()
+            .setFreetext(request.getParameter("full"))
+            .setDefs(request.getParameter("defs"))
+            .setRefs(request.getParameter("refs"))
+            .setPath(request.getParameter("path"))
+            .setHist(request.getParameter("hist"));
+
+    try {
+        Query tquery = qbuilder.build();
+        if (tquery != null) {
+            Context sourceContext = new Context(tquery, qbuilder.getQueries());
+            %><p><span class="pagetitle">Lines Matching <b><%=tquery%></b></span></p><div id="more" style="line-height:1.5em;"><pre><%
+            sourceContext.getContext(new FileReader(resourceFile), out, context+"/xref", null, path, null, false, null);
+            %></pre></div><%
+        }
+    } catch (Exception e) {
 	
-	}
-   }
+    }
 }
 
 %><%@include file="foot.jspf"%>

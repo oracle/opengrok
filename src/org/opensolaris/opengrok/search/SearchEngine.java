@@ -39,7 +39,6 @@ import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MultiSearcher;
 import org.apache.lucene.search.ParallelMultiSearcher;
@@ -50,6 +49,7 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.Project;
@@ -58,7 +58,6 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
-import org.opensolaris.opengrok.web.Util;
 
 /**
  * This is an encapsulation of the details on how to seach in the index
@@ -106,7 +105,7 @@ public class SearchEngine {
      * Holds value of property indexDatabase.
      */
     private Query query;
-    private final QueryParser qparser;
+    private final CompatibleAnalyser analyzer = new CompatibleAnalyser();
     private Context sourceContext;
     private HistoryContext historyContext;
     private Summarizer summarizer;
@@ -130,32 +129,33 @@ public class SearchEngine {
      * Creates a new instance of SearchEngine
      */
     public SearchEngine() {
-        qparser = createQueryParser();
         docs = new ArrayList<org.apache.lucene.document.Document>();
     }
 
     /**
-     * Create a query parser customized for OpenGrok.
-     * @return a query parser
+     * Create a QueryBuilder using the fields that have been set on this
+     * SearchEngine.
+     *
+     * @return a query builder
      */
-    public static QueryParser createQueryParser() {
-        return new CustomQueryParser();
+    private QueryBuilder createQueryBuilder() {
+        return new QueryBuilder()
+                .setFreetext(freetext)
+                .setDefs(definition)
+                .setRefs(symbol)
+                .setPath(file)
+                .setHist(history);
     }
 
     public boolean isValidQuery() {
         boolean ret;
-        String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
-        if (qry.length() > 0) {
-            try {
-                query = qparser.parse(qry);
-                ret = true;
-            } catch (Exception e) {
-                ret = false;
-            }
-        } else {
+        try {
+            query = createQueryBuilder().build();
+            ret = (query != null);
+        } catch (Exception e) {
             ret = false;
         }
-        
+
         return ret;
     }
 
@@ -230,11 +230,12 @@ public class SearchEngine {
         source = RuntimeEnvironment.getInstance().getSourceRootPath();
         data = RuntimeEnvironment.getInstance().getDataRootPath();
         docs.clear();
-                
-        String qry = Util.buildQueryString(freetext, definition, symbol, file, history);
-        if (qry.length() > 0) {
-            try {
-                query = qparser.parse(qry);
+
+        QueryBuilder queryBuilder = createQueryBuilder();
+
+        try {
+            query = queryBuilder.build();
+            if (query != null) {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 File root = new File(env.getDataRootFile(), "index");            
 
@@ -247,20 +248,21 @@ public class SearchEngine {
                     // search the index database
                     searchSingleDatabase(root,true);
                 }
-            } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(
-                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
+        } catch (Exception e) {
+            OpenGrokLogger.getLogger().log(
+                    Level.WARNING, SEARCH_EXCEPTION_MSG, e);
         }
+
         if (!docs.isEmpty()) {
             sourceContext = null;
             summarizer = null;
             try {
-                sourceContext = new Context(query);
+                sourceContext = new Context(query, queryBuilder.getQueries());
                 if(sourceContext.isEmpty()) {
                     sourceContext = null;
                 }
-                summarizer = new Summarizer(query, qparser.getAnalyzer());
+                summarizer = new Summarizer(query, analyzer);
             } catch (Exception e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary", e);
             }

@@ -18,9 +18,10 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
+
 /**
  * This is supposed to get the matching lines from sourcefile.
  * since lucene does not easily give the match context.
@@ -32,6 +33,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -60,12 +62,13 @@ public class Context {
     /**
      * Constructs a context generator
      * @param query the query to generate the result for
+     * @param queryStrings map from field names to queries against the fields
      */
-    public Context(Query query) {
+    public Context(Query query, Map<String, String> queryStrings) {
         QueryMatchers qm = new QueryMatchers();
         m = qm.getMatchers(query, tokenFields);
         if (m != null) {
-            queryAsURI = Util.URIEncode(query.toString());
+            buildQueryAsURI(queryStrings);
             //System.err.println("Found Matchers = "+ m.length + " for " + query);
             buffer = new char[MAXFILEREAD];
             tokens = new PlainLineTokenizer((Reader) null);
@@ -74,6 +77,27 @@ public class Context {
 
     public boolean isEmpty() {
         return m == null;
+    }
+
+    /**
+     * Build the {@code queryAsURI} string that holds the query in a form
+     * that's suitable for sending it as part of a URI.
+     *
+     * @param subqueries a map containing the query text for each field
+     */
+    private void buildQueryAsURI(Map<String, String> subqueries) {
+        boolean first = true;
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : subqueries.entrySet()) {
+            String field = entry.getKey();
+            String queryText = entry.getValue();
+            if (!first) {
+                sb.append('&');
+            }
+            sb.append(field).append("=").append(Util.URIEncode(queryText));
+            first = false;
+        }
+        queryAsURI = sb.toString();
     }
 
     private boolean alt = true;
@@ -222,7 +246,7 @@ public class Context {
             anything = matchedLines > 0;
             tokens.dumpRest();
             if (lim && (truncated || matchedLines == 10) && out != null) {
-                out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?t=" + queryAsURI + "\">all</a>...]");
+                out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?" + queryAsURI + "\">all</a>...]");
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);

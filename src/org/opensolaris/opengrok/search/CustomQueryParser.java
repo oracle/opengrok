@@ -34,15 +34,13 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * A custom query parser for OpenGrok.
  */
 class CustomQueryParser extends QueryParser {
-    private static final String FULL = "full";
-    private static final String DEFS = "defs";
-    private static final String REFS = "refs";
-
     /**
      * Create a query parser customized for OpenGrok.
+     *
+     * @param field default field for unqualified query terms
      */
-    CustomQueryParser() {
-        super(SearchEngine.LUCENE_VERSION, FULL, new CompatibleAnalyser());
+    CustomQueryParser(String field) {
+        super(SearchEngine.LUCENE_VERSION, field, new CompatibleAnalyser());
         setDefaultOperator(AND_OPERATOR);
         setAllowLeadingWildcard(
                 RuntimeEnvironment.getInstance().isAllowLeadingWildcard());
@@ -60,7 +58,8 @@ class CustomQueryParser extends QueryParser {
      */
     private static boolean isCaseSensitive(String field) {
         // Only definition search and reference search are case sensitive
-        return DEFS.equals(field) || REFS.equals(field);
+        return QueryBuilder.DEFS.equals(field) ||
+                QueryBuilder.REFS.equals(field);
     }
 
     /**
@@ -72,6 +71,9 @@ class CustomQueryParser extends QueryParser {
      * @return the canonical form of the search term, which matches how it
      *         is stored in the index
      */
+    // The analyzers use the default locale. They probably should have used
+    // a fixed locale, but since they don't, we ignore that PMD warning here.
+    @SuppressWarnings("PMD.UseLocaleWithCaseConversions")
     private static String getCanonicalTerm(String field, String term) {
         return isCaseSensitive(field) ? term : term.toLowerCase();
     }

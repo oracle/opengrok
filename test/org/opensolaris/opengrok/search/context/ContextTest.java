@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -29,9 +29,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.queryParser.ParseException;
 import org.junit.Test;
+import org.opensolaris.opengrok.search.QueryBuilder;
 import static org.junit.Assert.*;
 
 public class ContextTest {
@@ -43,7 +43,7 @@ public class ContextTest {
      * Bug #383.
      */
     @Test
-    public void testLongLineNearBufferBoundary() {
+    public void testLongLineNearBufferBoundary() throws ParseException {
         char[] chars = new char[Context.MAXFILEREAD];
         Arrays.fill(chars, 'a');
         char[] substring = " this is a test ".toCharArray();
@@ -51,9 +51,8 @@ public class ContextTest {
                          chars, Context.MAXFILEREAD - substring.length,
                          substring.length);
         Reader in = new CharArrayReader(chars);
-        Term t = new Term("full", "test");
-        TermQuery tq = new TermQuery(t);
-        Context c = new Context(tq);
+        QueryBuilder qb = new QueryBuilder().setFreetext("test");
+        Context c = new Context(qb.build(), qb.getQueries());
         StringWriter out = new StringWriter();
         boolean match =
                 c.getContext(in, out, "", "", "", null, true, null);
@@ -69,7 +68,7 @@ public class ContextTest {
      * buffer boundary. Bug 383.
      */
     @Test
-    public void testAllLinkWithLongLines() {
+    public void testAllLinkWithLongLines() throws ParseException {
         // Create input which consists of one single line longer than
         // Context.MAXFILEREAD.
         StringBuilder sb = new StringBuilder();
@@ -80,9 +79,8 @@ public class ContextTest {
         Reader in = new StringReader(sb.toString());
         StringWriter out = new StringWriter();
 
-        Term t = new Term("full", "search_for_me");
-        TermQuery tq = new TermQuery(t);
-        Context c = new Context(tq);
+        QueryBuilder qb = new QueryBuilder().setFreetext("search_for_me");
+        Context c = new Context(qb.build(), qb.getQueries());
 
         boolean match =
                 c.getContext(in, out, "", "", "", null, true, null);
@@ -97,7 +95,7 @@ public class ContextTest {
      * truncated. Bug 383.
      */
     @Test
-    public void testLongTruncatedLine() {
+    public void testLongTruncatedLine() throws ParseException {
         StringBuilder sb = new StringBuilder();
         sb.append("search_for_me");
         while (sb.length() <= 100) {
@@ -108,9 +106,8 @@ public class ContextTest {
         Reader in = new StringReader(sb.toString());
         StringWriter out = new StringWriter();
 
-        Term t = new Term("full", "search_for_me");
-        TermQuery tq = new TermQuery(t);
-        Context c = new Context(tq);
+        QueryBuilder qb = new QueryBuilder().setFreetext("search_for_me");
+        Context c = new Context(qb.build(), qb.getQueries());
 
         boolean match =
                 c.getContext(in, out, "", "", "", null, true, null);

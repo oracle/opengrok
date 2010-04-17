@@ -150,7 +150,7 @@ public class SearchEngineTest {
         instance.setSymbol("toString");
         instance.setFreetext("OpenGrok");
         assertTrue(instance.isValidQuery());
-        assertEquals("+full:opengrok +defs:\"std string\" +refs:toString +path:makefile +(+hist:once +hist:upon +hist:time)",
+        assertEquals("+defs:\"std string\" +full:opengrok +hist:once +hist:upon +hist:time +path:makefile +refs:toString",
                 instance.getQuery());
     }
 
@@ -218,6 +218,8 @@ public class SearchEngineTest {
         instance.setDefinition("Mai*"); // definition is case sensitive
         instance.setFile("Main.java OR main.c");
         instance.search();
+        assertEquals("+defs:Mai* +(path:\"main . java\" path:\"main . c\")",
+                     instance.getQuery());
         assertEquals(2, instance.search());
         instance.setDefinition("MaI*"); // should not match Main
         instance.search();
