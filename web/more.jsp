@@ -44,6 +44,16 @@ if (valid) {
             .setPath(request.getParameter("path"))
             .setHist(request.getParameter("hist"));
 
+    // This is for backward compatibility with links created by OpenGrok 0.8.x
+    // and earlier. We used to concatenate the entire query into a single
+    // string and send it in the t parameter. If we get such a link, just add
+    // it to the freetext field, and we'll get the old behaviour. We can
+    // probably remove this code in the first feature release after 0.9.
+    String t = request.getParameter("t");
+    if (t != null) {
+        qbuilder.setFreetext(t);
+    }
+
     try {
         Query tquery = qbuilder.build();
         if (tquery != null) {
