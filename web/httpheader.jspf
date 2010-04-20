@@ -36,12 +36,12 @@ String httpHeaderContext = request.getContextPath();
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="generator" content="<%=org.opensolaris.opengrok.Info.getVersion()%> (<%=org.opensolaris.opengrok.Info.getRevision()%>)"/>
     <link rel="icon" href="<%=httpHeaderContext%>/<%=laf%>/img/icon.png" type="image/png"/>
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/style.css"/>
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css" media="print" />
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.autocomplete.css" />
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.tooltip.css" />
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.combo.css" />
-    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css"/>
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/style.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>"/>
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" media="print" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.autocomplete.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.tooltip.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.combo.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" />
+    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>"/>
     <link rel="search" href="<%=httpHeaderContext%>/opensearch" type="application/opensearchdescription+xml" title="OpenGrok Search for current project(s)" />
     <title><%=pageTitle%></title>
 </head>
