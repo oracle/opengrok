@@ -130,6 +130,15 @@ public final class Util {
         }
     }
 
+    private static String versionP=htmlize(org.opensolaris.opengrok.Info.getRevision());
+    /**
+     * used by BUI - CSS needs this parameter for proper cache refresh (per changeset) in client browser
+     * @return html escaped version (hg changeset)
+     */
+    public static String versionParameter() {
+        return versionP;
+    }
+
     /**
      * Same as {@code breadcrumbPath(urlPrefix, l, '/')}.
      * @see #breadcrumbPath(String, String, char)

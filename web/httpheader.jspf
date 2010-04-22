@@ -19,7 +19,7 @@ CDDL HEADER END
 Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%><%@ page import="org.opensolaris.opengrok.configuration.*"
+--%><%@ page import="org.opensolaris.opengrok.configuration.*,org.opensolaris.opengrok.web.Util"
 contentType="text/html; charset=UTF-8"
 pageEncoding="UTF-8"
 %><%
@@ -35,13 +35,13 @@ String httpHeaderContext = request.getContextPath();
     <meta name="robots" content="noindex,nofollow"/>    
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="generator" content="<%=org.opensolaris.opengrok.Info.getVersion()%> (<%=org.opensolaris.opengrok.Info.getRevision()%>)"/>
-    <link rel="icon" href="<%=httpHeaderContext%>/<%=laf%>/img/icon.png" type="image/png"/>
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/style.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>"/>
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" media="print" />
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.autocomplete.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" />
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.tooltip.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" />
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.combo.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>" />
-    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=org.opensolaris.opengrok.Info.getRevision()%>"/>
+    <link rel="icon" href="<%=httpHeaderContext%>/<%=laf%>/img/icon.png" type="image/png"/>    
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/style.css?v=<%=Util.versionParameter()%>"/>
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=Util.versionParameter()%>" media="print" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.autocomplete.css?v=<%=Util.versionParameter()%>" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.tooltip.css?v=<%=Util.versionParameter()%>" />
+    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.combo.css?v=<%=Util.versionParameter()%>" />
+    <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=Util.versionParameter()%>"/>
     <link rel="search" href="<%=httpHeaderContext%>/opensearch" type="application/opensearchdescription+xml" title="OpenGrok Search for current project(s)" />
     <title><%=pageTitle%></title>
 </head>
