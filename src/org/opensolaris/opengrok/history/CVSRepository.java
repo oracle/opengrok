@@ -124,7 +124,7 @@ public class CVSRepository extends RCSRepository {
             if ( tagFile.isFile() ) {isBranch=Boolean.TRUE;}
             else { isBranch=Boolean.FALSE; }
         }
-        if (isBranch==Boolean.TRUE) {
+        if (isBranch.equals(Boolean.TRUE)) {
             cmd.add("-b"); //just generate THIS branch history, we don't care about the other branches which are not checked out
         }
         
