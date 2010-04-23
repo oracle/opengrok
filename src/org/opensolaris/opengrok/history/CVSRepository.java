@@ -122,6 +122,7 @@ public class CVSRepository extends RCSRepository {
         if (isBranch==null) {
             File tagFile = new File(getDirectoryName(), "CVS/Tag");
             if ( tagFile.isFile() ) {isBranch=Boolean.TRUE;}
+            else { isBranch=Boolean.FALSE; }
         }
         if (isBranch==Boolean.TRUE) {
             cmd.add("-b"); //just generate THIS branch history, we don't care about the other branches which are not checked out
