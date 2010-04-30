@@ -229,8 +229,11 @@ public class BazaarRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
+       if (file.isDirectory()) {
         File f = new File(file, ".bzr");
         return f.exists() && f.isDirectory();
+       } else {
+        return false; }
     }
     
     @Override

@@ -224,7 +224,10 @@ public class SCCSRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
+       if (file.isDirectory()) {        
         return new File(file, "SCCS").isDirectory();
+       } else {
+        return false; }
     }
 
     @Override

@@ -94,9 +94,10 @@ public class CommandLineOptions {
         options.add(new Option('A', "ext:analyzer", "Files with the named extension should be analyzed with the specified class"));
         options.add(new Option('m', "number", "The maximum words to index in a file"));
         options.add(new Option('S', null, "Search for \"external\" source repositories and add them"));
+        options.add(new Option('z', "number", "depth of scanning for repositories in directory structure relative to source root"));
         options.add(new Option('s', "/path/to/source/root", "The root directory of the source tree"));
         options.add(new Option('d', "/path/to/data/root", "The directory where OpenGrok stores the generated data"));
-        options.add(new Option('T', "number", "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));
+        options.add(new Option('T', "number", "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));        
         options.add(new Option('?', null, "Help"));
         options.add(new Option('V', null, "Print version and quit"));
     }

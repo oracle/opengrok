@@ -224,8 +224,11 @@ public class GitRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
+       if (file.isDirectory()) {
         File f = new File(file, ".git");
         return f.exists() && f.isDirectory();
+       } else {
+        return false; }
     }
 
     @Override

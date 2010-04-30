@@ -82,8 +82,11 @@ public class CVSRepository extends RCSRepository {
 
     @Override
     public boolean isRepositoryFor(File file) {
+       if (file.isDirectory()) {
         File cvsDir = new File(file, "CVS");
         return cvsDir.isDirectory();
+       } else {
+        return false; }
     }
     
     @Override

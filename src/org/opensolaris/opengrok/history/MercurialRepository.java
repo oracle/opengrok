@@ -276,8 +276,11 @@ public class MercurialRepository extends Repository {
     
     @Override
     boolean isRepositoryFor(File file) {
+      if (file.isDirectory()) {
         File f = new File(file, ".hg");
         return f.exists() && f.isDirectory();
+      } else {
+        return false; }
     }
 
     @Override

@@ -329,8 +329,11 @@ public class SubversionRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
+       if (file.isDirectory()) {
         File f = new File(file, ".svn");
         return f.exists() && f.isDirectory();
+       } else {
+        return false; }
     }
 
     @Override

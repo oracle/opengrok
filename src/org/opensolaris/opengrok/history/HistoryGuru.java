@@ -58,6 +58,7 @@ public final class HistoryGuru {
     private final HistoryCache historyCache;
     
     private Map<String, Repository> repositories = new HashMap<String, Repository>();
+    private Integer scanningDepth;
 
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
@@ -66,6 +67,7 @@ public final class HistoryGuru {
     private HistoryGuru() {
         HistoryCache cache = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        scanningDepth=env.getScanningDepth();
         if (env.useHistoryCache()) {
             if (env.storeHistoryCacheInDB()) {
                 cache = new JDBCHistoryCache();
@@ -263,13 +265,21 @@ public final class HistoryGuru {
     }
 
     private void addRepositories(File[] files, List<RepositoryInfo> repos,
-            IgnoredNames ignoredNames) {
-        addRepositories(files, repos, ignoredNames, true);
+            IgnoredNames ignoredNames, Integer depth) {
+        addRepositories(files, repos, ignoredNames, true, depth);
     }
 
+    /**
+     * recursivelly search for repositories with a depth limit
+     * @param files list of files to check if they contain a repo
+     * @param repos list of found repos
+     * @param ignoredNames what files to ignore
+     * @param recursiveSearch whether to use recursive search
+     * @param depth current depth - using global scanningDepth - one can limit this to improve scanning performance
+     */
     @SuppressWarnings("PMD.ConfusingTernary")
     private void addRepositories(File[] files, List<RepositoryInfo> repos,
-            IgnoredNames ignoredNames, boolean recursiveSearch) {        
+            IgnoredNames ignoredNames, boolean recursiveSearch, Integer depth) {
         for (File file : files) {
             Repository repository = null;
             try {
@@ -296,7 +306,11 @@ public final class HistoryGuru {
                             log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                         } else {
                             // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
-                            addRepositories(subFiles, repos, ignoredNames, false); 
+                            if (depth<=scanningDepth) {
+                            ++depth;
+                            addRepositories(subFiles, repos, ignoredNames, false, depth);
+                            --depth;
+                            }
                         }
                     }
                     
@@ -311,7 +325,11 @@ public final class HistoryGuru {
                     if (subFiles == null) {
                         log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                     } else {
-                        addRepositories(subFiles, repos, ignoredNames);
+                        if (depth<=scanningDepth) {
+                           ++depth;
+                           addRepositories(subFiles, repos, ignoredNames, depth);
+                           --depth;
+                        }
                     }
                 }
             }
@@ -327,7 +345,7 @@ public final class HistoryGuru {
     public void addRepositories(String dir) {
         List<RepositoryInfo> repos = new ArrayList<RepositoryInfo>();
         addRepositories(new File[] {new File(dir)}, repos,
-                RuntimeEnvironment.getInstance().getIgnoredNames());
+                RuntimeEnvironment.getInstance().getIgnoredNames(),new Integer(0));
         RuntimeEnvironment.getInstance().setRepositories(repos);
         invalidateRepositories(repos);
     }

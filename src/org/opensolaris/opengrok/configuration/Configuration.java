@@ -88,6 +88,15 @@ public final class Configuration {
     private int cachePages;
     private String databaseDriver;
     private String databaseUrl;
+    private Integer scanningDepth;
+
+    public Integer getScanningDepth() {
+        return scanningDepth;
+    }
+
+    public void setScanningDepth(Integer scanningDepth) {
+        this.scanningDepth = scanningDepth;
+    }
 
     /** Creates a new instance of Configuration */
     public Configuration() {
@@ -119,6 +128,7 @@ public final class Configuration {
         setIndexVersionedFilesOnly(false);
         setHitsPerPage(25);
         setCachePages(5);
+        setScanningDepth(3); // default depth of scanning for repositories
     }
 
     public String getCtags() {

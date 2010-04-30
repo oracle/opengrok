@@ -89,6 +89,14 @@ public final class RuntimeEnvironment {
         }
     }
 
+    public Integer getScanningDepth() {
+        return threadConfig.get().getScanningDepth();
+    }
+
+    public void setScanningDepth(Integer scanningDepth) {
+        threadConfig.get().setScanningDepth(scanningDepth);
+    }
+
     /**
      * Get the path to the where the index database is stored
      * @return the path to the index database
