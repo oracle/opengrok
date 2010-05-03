@@ -58,7 +58,7 @@ public final class HistoryGuru {
     private final HistoryCache historyCache;
     
     private Map<String, Repository> repositories = new HashMap<String, Repository>();
-    private Integer scanningDepth;
+    private final Integer scanningDepth;
 
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
@@ -306,10 +306,8 @@ public final class HistoryGuru {
                             log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                         } else {
                             // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
-                            if (depth<=scanningDepth) {
-                            ++depth;
-                            addRepositories(subFiles, repos, ignoredNames, false, depth);
-                            --depth;
+                            if (depth<=scanningDepth) {                            
+                            addRepositories(subFiles, repos, ignoredNames, false, depth+1);
                             }
                         }
                     }
@@ -326,9 +324,7 @@ public final class HistoryGuru {
                         log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
                     } else {
                         if (depth<=scanningDepth) {
-                           ++depth;
-                           addRepositories(subFiles, repos, ignoredNames, depth);
-                           --depth;
+                           addRepositories(subFiles, repos, ignoredNames, depth+1);
                         }
                     }
                 }
@@ -345,7 +341,7 @@ public final class HistoryGuru {
     public void addRepositories(String dir) {
         List<RepositoryInfo> repos = new ArrayList<RepositoryInfo>();
         addRepositories(new File[] {new File(dir)}, repos,
-                RuntimeEnvironment.getInstance().getIgnoredNames(),new Integer(0));
+                RuntimeEnvironment.getInstance().getIgnoredNames(),0);
         RuntimeEnvironment.getInstance().setRepositories(repos);
         invalidateRepositories(repos);
     }

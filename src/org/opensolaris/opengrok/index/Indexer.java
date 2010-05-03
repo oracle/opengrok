@@ -329,6 +329,14 @@ public final class Indexer {
                                 System.exit(1);
                             }
                             break;
+                        case 'z':
+                            try {
+                                env.setScanningDepth(Integer.parseInt(getopt.getOptarg()));
+                            } catch (NumberFormatException exp) {
+                                System.err.println("ERROR: Failed to parse argument to \"-z\": " + exp.getMessage());
+                                System.exit(1);
+                            }
+                            break;
                         case 'l':
                             if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                                 env.setUsingLuceneLocking(true);

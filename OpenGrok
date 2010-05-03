@@ -32,6 +32,7 @@
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
 #   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote) Repositories (*)
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)_
+#   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go (by default 3 directories from SRC_ROOT)
 #
 #   - READ_XML_CONFIGURATION      file with read only configuration - a temp workaround for bug # 327
 #
@@ -181,6 +182,12 @@ DefaultInstanceConfiguration()
     if [ ! -z "${OPENGROK_REMOTE_REPOS}" ]
     then
         REMOTE_REPOSITORIES=""
+    fi
+
+    # OPTIONAL: override depth of scanning for repositories
+    if [ ! -z "${OPENGROK_SCAN_DEPTH}" ]
+    then
+        SCAN_DEPTH="-z${OPENGROK_SCAN_DEPTH}"
     fi
 
     # OPTIONAL: Allow Leading Wildcard Searches
@@ -593,6 +600,7 @@ StdInvocation()
         ${IGNORE_PATTERNS} ${ENABLE_PROJECTS}                   \
         ${DERBY_HISTORY_CACHE}                                  \
         ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOSITORIES}           \
+        ${SCAN_DEPTH}                                           \
         ${VERBOSE} ${QUIET}                                     \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
         ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
