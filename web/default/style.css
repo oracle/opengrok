@@ -1,10 +1,11 @@
 body {
 background-color: #ffffff;
-font-size: 100.01%; /* 12px [1] */
+/*font-size: 100.01%; /* 12px [1] */
 color: black;
 font-family: arial, sans-serif;
-padding: 1em;
-margin: 0em;
+/*padding: 1em;
+margin: 0em;*/
+overflow:hidden;
 }
 
 #Masthead {
@@ -12,31 +13,36 @@ margin: 0em;
 	border: none;
 	display:block;
 	border-bottom: 4px solid #FFC726;
-	padding-bottom:3px;
-	margin-bottom: 3px;
+/*	padding-bottom:3px;
+	margin-bottom: 3px;*/
 }
 #header {
 min-height:44px;
 height:44px;
 display: block;
-width: 98%;
+/*width: 98%;*/
 }
 
 #content {
-  position:absolute;
-  top:104px;
-  bottom:1px;
+  position:absolute;    
+  bottom:0px;
   left:0px;
   right:0px;
   padding-left: 1em;
-  padding-top:6px;
-  overflow:auto;  
+  padding-top:7px;
+  overflow:auto;
+  top:6em;
   }
 
-#whole_header {
+#whole_header {  
+  height:6em;
+  padding-left: 1em;
+  padding-right: 1em;
   position:absolute;
   top:0;
-  width:98%;
+  right:0px;
+  left:0px;
+  /*width:98%;*/
   overflow:auto;  
   }
 
@@ -135,7 +141,7 @@ form, pre {padding:0px;margin:0px;}
 
 .sl {color:#999;text-decoration:underline;}
 td.a{color:#000}
-.n  {color:brown;} /* numbers */ 
+.n  {color:brown;} /* numbers */
 .s  {color:green;} /* strings */
 .c  {color:#666;} /* comments */
 .b  {color:#000; font-weight:bold;} /* comments */

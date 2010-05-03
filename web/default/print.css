@@ -1,10 +1,10 @@
 body {
 	background-color: #ffffff;
-	font-size: 100.01%;
+/*	font-size: 100.01%;*/
 	color: black;
 	font-family: arial, sans-serif;
-	padding: 1em;
-	margin: 0em;
+/*	padding: 1em;
+	margin: 0em;*/
 }
 
 #Masthead {
@@ -12,8 +12,8 @@ body {
 	display:block;
 	border: none;
 	border-bottom: 1px solid #000;
-	padding-bottom:3px;
-	margin-bottom: 3px;
+	/*padding-bottom:3px;
+	margin-bottom: 3px;*/
 }
 
 #header {
@@ -21,20 +21,25 @@ min-height:44px;
 }
 
 #content {
-  position:absolute;
-  top:104px;
-  bottom:1px;
+  position:absolute;  
+  bottom:0px;
   left:0px;
   right:0px;
   padding-left: 1em;
-  padding-top:6px;
+  padding-top:7px;
   overflow:auto;
+  top:6em;
   }
 
 #whole_header {
+  height:6em;
+  padding-left: 1em;
+  padding-right: 1em;
   position:absolute;
   top:0;
-  width:98%;
+  right:0px;
+  left:0px;
+  /*width:98%;*/
   overflow:auto;
   }
 

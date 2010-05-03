@@ -1,16 +1,17 @@
 body {
 	background-color: #d8dbd7;
-	font-size: 100.01%; /* 12px [1] */
+	/*font-size: 100.01%; /* 12px [1] */
 	color: black;
 	font-family: arial, sans-serif;
+        overflow:hidden;
 }
 
 #page {
 	/*background-color: #fff;*/
-	margin: 0.5em;
+/*	margin: 0.5em;
 	margin-top: 1em;
 	padding:1px;
-	/*border: 1px solid #bbb;
+	border: 1px solid #bbb;
 	border-right: 1px solid #888;
 	border-bottom: 1px solid #666;*/
 }
@@ -26,20 +27,25 @@ body {
 }
 
 #content {
-  position:absolute;
-  top:104px;
+  position:absolute;  
   bottom:0px;
   left:0px;
   right:0px;
-  padding-left: 1em;
+  padding-left: 1em;  
   padding-top:6px;
   overflow:auto;
+  top:6em;
   }
 
 #whole_header {
+  height:6em;
+  padding-left: 1em;
+/*padding-right: 1em;*/
   position:absolute;
   top:0;
-  width:98%;
+  right:0px;
+  left:0px;
+  /*width:98%;*/
   overflow:auto;
   }  
 

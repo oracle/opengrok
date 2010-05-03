@@ -2,13 +2,13 @@ body {
 	background: none;
 	color: black;
 	font-family: arial, sans-serif;
-	padding: 1em;
-	margin: 0em;
+/*	padding: 1em;
+	margin: 0em;*/        
 }
 #page {
 	background: none;
 	border: none;
-	margin:0;
+	/*margin:0;*/
 }
 #Masthead {
 	background: none;
@@ -32,20 +32,25 @@ body {
 }
 
 #content {
-  position:absolute;
-  top:104px;
-  bottom:1px;
+  position:absolute;  
+  bottom:0px;
   left:0px;
   right:0px;
   padding-left: 1em;
   padding-top:6px;
   overflow:auto;
+  top:6em;
   }
 
 #whole_header {
+  height:6em;
+  padding-left: 1em;
+  /*padding-right: 1em;*/
   position:absolute;
   top:0;
-  width:98%;
+  right:0px;
+  left:0px;
+  /*width:98%;*/
   overflow:auto;
   }  
 
