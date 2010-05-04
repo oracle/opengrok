@@ -510,7 +510,7 @@ checkstyle under the lib directory):
   ant checkstyle -Dcheckstyle.home=lib/checkstyle
 
 ---------------------------------------------------
-Using PMD
+Using PMD and CPD
 ---------------------------------------------------
 
 To check the quality of the OpenGrok code you can also use PMD
@@ -543,6 +543,15 @@ to tell ant where to find PMD, like this (if you have installed
 PMD under the lib directory):
 
   ant pmd -Dpmd.home=lib/pmd-4.2.5
+
+To run CPD, just use the same as above, but use targets:
+
+  ant cpd cpd-xml
+
+Which will result in
+
+  % ls pmd
+  cpd_report.xml cpd_report.txt
 
 ---------------------------------------------------
 Using JDepend
