@@ -431,6 +431,32 @@ Use is subject to license terms.
         <echo message="PMD finished, found ${pmd.num.warnings} warnings, see pmd/pmd_report.html"/>
     </target>
 
+    <target name="cpd-xml" depends="compile, -check_pmd" description="Run CPD on OpenGrok source code, print output in xml">
+      <path id="pmd.lib" >
+            <pathelement location="${pmd.home}/lib/pmd.jar"/>
+            <pathelement location="${pmd.home}/lib/jaxen.jar"/>
+      </path>
+      <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="pmd.lib"/>
+      <cpd minimumTokenCount="100" format="xml" outputFile="pmd/cpd_report.xml">
+        <fileset dir="src">
+            <include name="**/*.java"/>
+        </fileset>
+      </cpd>
+    </target>
+
+    <target name="cpd" depends="compile, -check_pmd" description="Run CPD on OpenGrok source code">
+      <path id="pmd.lib" >
+            <pathelement location="${pmd.home}/lib/pmd.jar"/>
+            <pathelement location="${pmd.home}/lib/jaxen.jar"/>
+      </path>
+      <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="pmd.lib"/>
+      <cpd minimumTokenCount="100" outputFile="pmd/cpd_report.txt">
+        <fileset dir="src">
+            <include name="**/*.java"/>
+        </fileset>
+      </cpd>
+    </target>
+
     <target name="-check_emma" description="Check that emma jar files are present">
         <available file="emma.jar" type="file" property="emma.jar.present">
             <filepath refid="lib.search.path"/>
