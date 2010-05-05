@@ -138,7 +138,7 @@ if(resourcePath.length() < rawSource.length()
     if (!window.location.hash) {$('#content').focus();}
 } );
 /* ]]> */</script>
-<body>
+<body style="overflow:hidden;">
 <% if (annotate) { %>
 <script type="text/javascript" src="<%=context%>/jquery.tooltip-1.3.pack.js"></script>
 <script type="text/javascript">/* <![CDATA[ */

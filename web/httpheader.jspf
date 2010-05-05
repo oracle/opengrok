@@ -40,7 +40,7 @@ String httpHeaderContext = request.getContextPath();
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=Util.versionParameter()%>" media="print" />
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.autocomplete.css?v=<%=Util.versionParameter()%>" />
     <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.tooltip.css?v=<%=Util.versionParameter()%>" />
-    <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.combo.css?v=<%=Util.versionParameter()%>" />
+    <%-- TODO  Bug 11749 <link rel="stylesheet" type="text/css" href="<%=httpHeaderContext%>/<%=laf%>/jquery.combo.css?v=<%=Util.versionParameter()%>" />--%>
     <link rel="alternate stylesheet" type="text/css" media="all" title="Paper White" href="<%=httpHeaderContext%>/<%=laf%>/print.css?v=<%=Util.versionParameter()%>"/>
     <link rel="search" href="<%=httpHeaderContext%>/opensearch" type="application/opensearchdescription+xml" title="OpenGrok Search for current project(s)" />
     <title><%=pageTitle%></title>
