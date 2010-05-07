@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -103,6 +104,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     private Boolean isBranch=null;
+    private String branch=null;
     /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
@@ -124,11 +126,31 @@ public class CVSRepository extends RCSRepository {
 
         if (isBranch==null) {
             File tagFile = new File(getDirectoryName(), "CVS/Tag");
-            if ( tagFile.isFile() ) {isBranch=Boolean.TRUE;}
+            if ( tagFile.isFile() ) {
+                isBranch=Boolean.TRUE;
+                try {
+                 BufferedReader br=new BufferedReader(new FileReader(tagFile));
+                 try {                  
+                  String line=br.readLine();                  
+                  if (line!=null) {
+                         branch=line.substring(1); }
+                 } catch (Exception exp) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get revision tag of {0}", getDirectoryName() + ": "+exp.getClass().toString() );
+                 } finally {
+                    br.close();
+                   }
+                } catch (IOException ex){
+                 OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to work with CVS/Tag file of {0}", getDirectoryName() + ": "+ex.getClass().toString() );
+                }
+
+
+            }
             else { isBranch=Boolean.FALSE; }
         }
         if (isBranch.equals(Boolean.TRUE)) {
-            cmd.add("-b"); //just generate THIS branch history, we don't care about the other branches which are not checked out
+            if (branch!=null && !branch.isEmpty()) {
+             cmd.add("-r"+branch); //just generate THIS branch history, we don't care about the other branches which are not checked out
+            }
         }
         
         if (filename.length() > 0) {
