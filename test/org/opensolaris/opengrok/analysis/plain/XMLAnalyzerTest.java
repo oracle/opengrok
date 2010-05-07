@@ -48,4 +48,22 @@ public class XMLAnalyzerTest {
         // Ordinary file names should not have .'s replaced
         assertTrue(xref[3].contains("path=README.txt"));
     }
+
+    /**
+     * XML special chars inside a string were not escaped if single quotes
+     * were used around the string. Bug #15859.
+     */
+    @Test
+    public void xrefWithSpecialCharsInStringLiterals() throws IOException {
+        StringReader input =
+                new StringReader("<foo xyz='<betweensinglequotes>'> </foo>");
+        StringWriter output = new StringWriter();
+        XMLAnalyzer.writeXref(input, output, null, null);
+        assertTrue(output.toString().contains("&lt;betweensinglequotes&gt;"));
+
+        input = new StringReader("<foo xyz=\"<betweendoublequotes>\"> </foo>");
+        output = new StringWriter();
+        XMLAnalyzer.writeXref(input, output, null, null);
+        assertTrue(output.toString().contains("&lt;betweendoublequotes&gt;"));
+    }
 }

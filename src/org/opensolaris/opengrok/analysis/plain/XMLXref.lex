@@ -90,7 +90,8 @@ NameChar = {FileChar}|"."
  \" {WhiteSpace}* \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
  \"     { yybegin(TAG); out.write("\"</span>"); }
 }
-<STRING, STRING, COMMENT, CDATA> {
+
+<STRING, SSTRING, COMMENT, CDATA> {
  "<"    {out.write( "&lt;");}
  ">"    {out.write( "&gt;");}
 }
