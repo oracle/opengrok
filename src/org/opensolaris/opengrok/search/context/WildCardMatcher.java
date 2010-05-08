@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.search.context;
@@ -26,27 +26,15 @@ package org.opensolaris.opengrok.search.context;
 import org.apache.lucene.search.WildcardTermEnum;
 
 public class WildCardMatcher extends LineMatcher {
-    String pattern = "";
-    String pre = "";
-    int preLen = 0;
+    final String pattern;
     
     public WildCardMatcher(String pattern) {
         this.pattern = pattern;
-        int sidx = pattern.indexOf(WildcardTermEnum.WILDCARD_STRING);
-        int cidx = pattern.indexOf(WildcardTermEnum.WILDCARD_CHAR);
-        int idx = sidx;
-        if (idx == -1) {
-            idx = cidx;
-        } else if (cidx >= 0) {
-            idx = Math.min(idx, cidx);
-        }
-        pre = pattern.substring(0,idx);
-        preLen = pre.length();
-        this.pattern = pattern.substring(preLen);
     }
-    
+
+    @Override
     public int match(String token) {
-        if(token.startsWith(pre) && WildcardTermEnum.wildcardEquals(pattern, 0, token, 0)) {
+        if (WildcardTermEnum.wildcardEquals(pattern, 0, token, 0)) {
             return MATCHED;
         }
         return NOT_MATCHED;
