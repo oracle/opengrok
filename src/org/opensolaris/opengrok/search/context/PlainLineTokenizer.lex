@@ -157,13 +157,22 @@ import org.opensolaris.opengrok.web.Util;
   }
 
   
-  private int printWithNum(char[] buf, int start, int end, int lineNo) throws IOException {
+  private int printWithNum(char[] buf, int start, int end, int lineNo,
+                           boolean bold) throws IOException {
+        if (bold) {
+            out.write("<b>");
+        }
+
         for(int i=start;i<end; i++) {
                 switch(buf[i]) {
                 case '\n':
                         ++lineNo;
                         Integer ln = Integer.valueOf(lineNo);
                         boolean hi = tags.containsKey(ln);
+
+                        if (bold) {
+                            out.write("</b>");
+                        }
 
                         out.write("</a>");
                         if(prevHi){
@@ -176,14 +185,17 @@ import org.opensolaris.opengrok.web.Util;
 
                         prevHi = hi;
                         prevLn = ln;
-                        if(hi) out.write("<spans class=\"h\">");
-                        out.write("<a href=\"");
+                        if(hi) out.write("<span class=\"h\">");
+                        out.write("<a class=\"s\" href=\"");
                         out.write(url);
                         String num = String.valueOf(lineNo);
                         out.write(num);
                         out.write("\"><span class=\"l\">");
                         out.write(num);
                         out.write("</span> ");
+                        if (bold) {
+                            out.write("<b>");
+                        }
                         break;
                 case '<':
                         out.write("&lt;");
@@ -198,6 +210,11 @@ import org.opensolaris.opengrok.web.Util;
                         out.write(buf[i]);
                 }
         }
+
+        if (bold) {
+            out.write("</b>");
+        }
+
         return lineNo;
   }
 
@@ -267,10 +284,12 @@ import org.opensolaris.opengrok.web.Util;
         }
 
         if (out != null) {
-           markedLine = printWithNum(zzBuffer, markedPos, matchStart, markedLine);
-           out.write("<b>");
-           markedLine = printWithNum(zzBuffer, matchStart, zzMarkedPos, markedLine);
-           out.write("</b>");
+           // print first part of line without normal font
+           markedLine = printWithNum(
+                   zzBuffer, markedPos, matchStart, markedLine, false);
+           // use bold font for the match
+           markedLine = printWithNum(
+                   zzBuffer, matchStart, zzMarkedPos, markedLine, true);
         } else {
            markedLine = formatWithNum(zzBuffer, markedPos, matchStart, markedLine);
            hit.setLineno(String.valueOf(markedLine));
@@ -291,7 +310,8 @@ import org.opensolaris.opengrok.web.Util;
             final boolean newline = !endOfBuffer && zzBuffer[rest+i] == '\n';
             if (endOfBuffer || newline || i >= maxLooks) {
                            if (out != null) {
-                                printWithNum(zzBuffer, rest, rest+i-1, markedLine);
+                                printWithNum(zzBuffer, rest, rest+i-1,
+                                             markedLine, false);
 
                 // Assume that this line has been truncated if we don't find
                 // a newline after looking at maxLooks characters, or if we
@@ -372,7 +392,8 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                 }
                 if(dumpRest) {
                         if (out != null) {
-                           printWithNum(zzBuffer, rest, zzMarkedPos-1, markedLine);
+                           printWithNum(zzBuffer, rest, zzMarkedPos-1,
+                                        markedLine, false);
                            out.write("</a>");
                            if(prevHi){
                                 out.write(" <i> ");
