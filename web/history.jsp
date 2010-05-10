@@ -165,7 +165,7 @@ String author = entry.getAuthor();
 if (author == null) {
         %>(no author)<%
 } else if (userPage != null && ! userPage.equals("")) {
-        %><a href="<%= userPage + author %>"><%= author %></a><%
+        %><a href="<%= userPage + Util.htmlize(author) %>"><%= Util.htmlize(author) %></a><%
 } else {
         %><%= author %><%
 }
