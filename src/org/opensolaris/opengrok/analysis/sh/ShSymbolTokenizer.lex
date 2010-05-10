@@ -76,7 +76,11 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 "${" {Identifier} "}" {
-    setAttribs(yytext().substring(2), yychar + 2, yychar + yylength() - 1);
+    int startOffset = 2;            // trim away the "${" prefix
+    int endOffset = yylength() - 1; // trim away the "}" suffix
+    setAttribs(yytext().substring(startOffset, endOffset),
+               yychar + startOffset,
+               yychar + endOffset);
     return true;
 }
 

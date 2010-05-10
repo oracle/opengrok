@@ -110,4 +110,21 @@ public class JFlexTokenizerTest {
 
         assertEquals("wrong number of tokens", expectedTokens.length, count);
     }
+
+    /**
+     * The fix for bug #15858 caused a regression in ShSymbolTokenizer where
+     * variables on the form {@code ${VARIABLE}} were not correctly indexed
+     * if they were inside a quoted string. The closing brace would be part of
+     * the indexed term in that case.
+     */
+    @Test
+    public void testShellVariableInBraces() throws Exception {
+        // Shell command to tokenize
+        String inputText = "echo \"${VARIABLE} $abc xyz\"";
+        // "echo" is an ignored token in ShSymbolTokenizer, "xyz" is a string
+        // and not a symbol. Therefore, expect just the two tokens that name
+        // variables.
+        String[] expectedTokens = {"VARIABLE", "abc"};
+        testOffsetAttribute(ShSymbolTokenizer.class, inputText, expectedTokens);
+    }
 }
