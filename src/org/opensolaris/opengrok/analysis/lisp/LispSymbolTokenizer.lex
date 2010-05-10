@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %eofval{
 return false;
 %eofval}
+%char
 
 %{
     private int nestedComment;
@@ -67,7 +68,7 @@ Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 <YYINITIAL> {
 {Identifier} {String id = yytext();
               if (!Consts.kwd.contains(id.toLowerCase())) {
-                        setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        setAttribs(id, yychar, yychar + yylength());
                         return true; }
               }
  \"     { yybegin(STRING); }

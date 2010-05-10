@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 return false;
 %eofval}
 %caseless
+%char
 
 %{
     public void reInit(char[] buf, int len) {
@@ -66,7 +67,10 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 \\f[ABCIR]  {}
 ^"...\\\"" {}
 
-\\&.        {setAttribs(".", zzStartRead, zzMarkedPos);return true;}
-{Identifier}|{Number}|{Printable}       {setAttribs(yytext().toLowerCase(), zzStartRead, zzMarkedPos);return true;}
+\\&.        {setAttribs(".", yychar, yychar + yylength()); return true;}
+{Identifier}|{Number}|{Printable} {
+    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+    return true;
+}
 <<EOF>>   { return false;}
 .|\n    {}

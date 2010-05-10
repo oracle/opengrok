@@ -37,6 +37,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %eofval{
 return false;
 %eofval}
+%char
 
 %{
     public void reInit(char[] buf, int len) {
@@ -62,7 +63,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 <YYINITIAL> {
 {Identifier} {String id = yytext();
                 if(!CxxConsts.kwd.contains(id)) {
-                        setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+                        setAttribs(id, yychar, yychar + yylength());
                         return true; }
               }
  \"     { yybegin(STRING); }

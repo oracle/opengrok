@@ -35,6 +35,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %eofval{
 return false;
 %eofval}
+%char
 
 %{
     public void reInit(char[] buf, int len) {
@@ -53,7 +54,7 @@ return false;
 
 %%
 //TODO decide if we should let one char symbols
-[a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead, zzStartRead, zzMarkedPos);
+[a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(yytext(), yychar, yychar + yylength());
                         return true; }
 <<EOF>>   { return false;}
 .|\n    {}

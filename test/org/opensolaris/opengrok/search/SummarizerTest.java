@@ -37,12 +37,9 @@ public class SummarizerTest {
      * If the last token in a text fragment is a token we're searching for,
      * and that token is also present earlier in the fragment, getSummary()
      * used to throw a StringIndexOutOfBoundsException. Bug #15858.
-     *
-     * The test case is currently disabled because the bug is not fixed.
      */
     @Test
     public void bug15858() throws Exception {
-        if (true) return; // disable until bug #15858 has been fixed
         Query query = new QueryBuilder().setFreetext("beta").build();
         Summarizer instance = new Summarizer(query, new CompatibleAnalyser());
         // This call used to result in a StringIndexOutOfBoundsException

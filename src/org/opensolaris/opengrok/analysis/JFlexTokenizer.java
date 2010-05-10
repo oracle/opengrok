@@ -58,14 +58,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
         return this.yylex();        
     }
 
-    protected void setAttribs(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
+    protected void setAttribs(String str, int start, int end) {
         //FIXME increasing below by one(default) might be tricky, need more analysis
         this.posIncrAtt.setPositionIncrement(1);
-        this.termAtt.setTermBuffer(startTermBuffer,termBufferOffset,termBufferLength);
+        this.termAtt.setTermBuffer(str);
         this.offsetAtt.setOffset(start, end);
-    }
-
-    protected void setAttribs(String str, int start, int end) {
-        this.setAttribs(str.toCharArray(),0,str.length(),start, end);
     }
 }

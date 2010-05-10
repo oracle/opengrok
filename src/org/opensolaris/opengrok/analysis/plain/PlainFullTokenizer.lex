@@ -38,6 +38,7 @@ return false;
 %eofval}
 %caseless
 %switch
+%char
 
 %{
     public void reInit(char[] buf, int len) {
@@ -61,7 +62,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
 {Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
-                        setAttribs(yytext().toLowerCase(Locale.getDefault()), zzStartRead, zzMarkedPos);
+                        setAttribs(yytext().toLowerCase(Locale.getDefault()), yychar, yychar + yylength());
                         return true; }
 <<EOF>>   { return false;}
 .|\n    {}
