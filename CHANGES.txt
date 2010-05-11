@@ -1,72 +1,84 @@
-April 2010 update 0.9
+May 2010 update 0.9
 -------------------------------------------------
 This is a major update. It's advised you cleanup your old DATA_ROOT and run
 indexing from fresh. Also the web application should be replaced, since new
 indexes are not compatible with old application.
-This is also a general rule for most of opengrok updates. We don't really
+This is also a general rule for most of OpenGrok updates. We don't really
 support backwards compatibility, unless it would be a really minor update.
 
 New Features:
 
-faster lucene engine(3.0.1) underneath - faster analyzers
-new jquery(1.4.2) underneath - UI improvements
-support for xrefs with Unicode characters(not indexed yet, but finally viewable!)
-new smf service - just pass the source root, the rest is taken care by the service(Solaris)
+* Faster Lucene engine (3.0.1) underneath - faster analyzers
+* New jQuery (1.4.2) underneath - UI improvements
+* Support for xrefs with Unicode characters (not indexed yet, but
+  finally viewable)
+* New SMF service - just pass the source root, the rest is taken care
+  of by the service (Solaris/OpenSolaris only)
 
 Bugs fixed:
 
-Bug #13280: RFE: Configurable tab size for xref
-Bug #13362: plainanalyzer xref writer can never end for a file with long lines
-Bug #13529: listing of a file (in xref) might take a LONG time
-Bug #13330: Wrong URL when search for camel-case identifier has only one match
-Bug #13364: regression : Jar analyzer doesn't analyze the jars it used to for 0.7
-Bug #13884: IndexOutOfBoundsException in List2TokenStream.next()
-Bug #13952: size output not correct
-Bug #13951: Wrong revision in info.properties when not building from head of trunk
-Bug #13949: Missing line numbers in xref for XML file
-Bug #13961: no quick search box shown on windows (path separator problem in project names/IDs)
-Bug #14030: Many lines with same line number (regression)
-Bug #5848: trimmed diff link results in NULL pointer dereference
-Bug #3900: Unexpected result when clicking a symbol definition
+Bug #437 (partial): OpenGrok should support source files with multibyte characters
 Bug #3435: C functions are not considered as functions
-Bug #14978: upgrade lucene to 3.0.1
+Bug #3900: Unexpected result when clicking a symbol definition
+Bug #5042: Author field empty in opengrok after a multiple changeset push
+Bug #5848: trimmed diff link results in NULL pointer dereference
+Bug #6641: .txx file extension should be included in the list for C++ analyzer
+Bug #9407: set limit for directory traversal during search for repositories
 Bug #13185: broken focus
+Bug #13280: RFE: Configurable tab size for xref
+Bug #13330: Wrong URL when search for camel-case identifier has only one match
+Bug #13362: plainanalyzer xref writer can never end for a file with long lines
+Bug #13364: regression : Jar analyzer doesn't analyze the jars it used to for 0.7
+Bug #13524: Color coding in diffs is confusing
+Bug #13529: listing of a file (in xref) might take a LONG time
+Bug #13777: Indexer should print "Adding: ..." before it adds a file
+Bug #13884: IndexOutOfBoundsException in List2TokenStream.next()
+Bug #13949: Missing line numbers in xref for XML file
+Bug #13951: Wrong revision in info.properties when not building from head of trunk
+Bug #13952: size output not correct
+Bug #13961: no quick search box shown on windows (path separator problem in project names/IDs)
+Bug #13996: build.xml should provide a version info for generated src.tar.gz so we don't depend on hg
+Bug #13997: main logo should take you HOME ;)
+Bug #14030: Many lines with same line number (regression)
+Bug #14724: Incremental update of Bazaar history broken by instability in revision numbers
 Bug #14757: pressing Enter on project select list box takes you to xref instead of submit of the search form
+Bug #14953: history index for CVS repos should only include default branch if CVS/Tag is set
+Bug #14978: upgrade lucene to 3.0.1
 Bug #15004: Improved handling of UTF Byte Order Marks
 Bug #15097: make the search bar in listing stay on top of the page
-Bug #13997: main logo should take you HOME ;)
 Bug #15114: AnalyzerGuru:stripBOM should not use String to avoid encoding issues
-Bug #14953: history index for CVS repos should only include default branch if CVS/Tag is set
 Bug #15240: radio buttons in history could behave like e.g. on wikipedia
-Bug #437: OpenGrok should support source files with multibyte characters
-Bug #15394: improve IPS package and SMF for OpenSolaris
 Bug #15391: Executor should log the commands executed
-Bug #14724: Incremental update of Bazaar history broken by instability in revision numbers
-Bug #13524: Color coding in diffs is confusing 
-Bug #15643: Simplify CLASSPATH in ogindexd
-Bug #15652: history page shows a stack trace if file doesn't have a history
-Bug #15609: self organizing buttons in history view are confusing
+Bug #15394: improve IPS package and SMF for OpenSolaris
 Bug #15608: Search field should not be active in file display
-Bug #14953: history index for CVS repos should only include default branch if CVS/Tag is set
-Bug #13777: Indexer should print "Adding: ..." before it adds a file
-Bug #6641: .txx file extension should be included in the list for C++ analyzer
+Bug #15609: self organizing buttons in history view are confusing
+Bug #15632: Strange results when searching for dotted identifier
+Bug #15636: wildcard search for definitions does not work
+Bug #15637: query constructed only for AND operators
+Bug #15643: Simplify CLASSPATH in ogindexd
+Bug #15644: Matching lines not shown when using single-character wildcard (?)
+Bug #15652: history page shows a stack trace if file doesn't have a history
+Bug #15690: css browser caching breaks UI
+Bug #15858: String index out of range: -8161 from Summarizer
+Bug #15859: html analyzer doesn't escape forms
 
-for bug details refer to:
-http://defect.opensolaris.org/bz/buglist.cgi?query_format=advanced&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=INCOMPLETE&bug_status=ACCEPTED&bug_status=CAUSEKNOWN&bug_status=FIXUNDERSTOOD&bug_status=FIXINPROGRESS&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&target_milestone=0.9&product=opengrok
+For bug details refer to:
+http://defect.opensolaris.org/bz/buglist.cgi?bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&target_milestone=0.9&product=opengrok
 
 Contributors:
 
-We'd like to thank all the people that report bugs, send us ideas and
-improvements. Below are just people that sent patches or pushed code, that
-doesn't mean that we don't appreciate your work. On the contrary, you are
-the people showing other people(who have the time to write code) what would
-be good to fix when you use this software and file bugs against it!
-Note that this is just a summary of how many changes each person made which
-doesn't necessarily reflect how significant each change was. (inspect the
-history log with "hg log -v -r 0.8.1:tip" to get all details)
+We'd like to thank all the people who report bugs, send us ideas and
+improvements. Below are just people that sent patches or pushed code.
+That doesn't mean that we don't appreciate your work. On the contrary,
+you are the people showing other people (who have the time to write
+code) what would be good to fix when you use this software and file
+bugs against it!  Note that this is just a summary of how many changes
+each person made, which doesn't necessarily reflect how significant
+each change was. (Inspect the history log with "hg log -v -r 0.8.1:0.9"
+to get all details.)
 
- 33 Knut Anders Hatlen <Knut.Hatlen@sun.com>
- 22 Lubos Kosco <Lubos.Kosco@sun.com>
+ 45 Knut Anders Hatlen <Knut.Hatlen@sun.com>
+ 42 Lubos Kosco <Lubos.Kosco@sun.com>
   1 Chris Eldredge <chris.eldredge@gmail.com>
   1 Vitezslav Batrla <Vitezslav.Batrla@Sun.COM>
 
