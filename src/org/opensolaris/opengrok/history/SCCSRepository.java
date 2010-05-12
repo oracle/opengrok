@@ -46,6 +46,9 @@ public class SCCSRepository extends Repository {
     private static ScmChecker sccsBinary = new ScmChecker(new String[] {
         System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs"),
         "help", "help" });
+    private static ScmChecker csscBinary = new ScmChecker(new String[] {
+        System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs"),
+        "--version" });
 
     private Map<String, String> authors_cache;
 
@@ -232,7 +235,7 @@ public class SCCSRepository extends Repository {
 
     @Override
     public boolean isWorking() {
-        return sccsBinary.available;
+        return sccsBinary.available || csscBinary.available;
     }
 
     @Override
