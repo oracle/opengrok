@@ -519,7 +519,7 @@ Use is subject to license terms.
       <delete dir="${test.svn}"/>
       <delete dir="${build.test.reposroots}/svn"/>
       <mkdir dir="${build.test.reposroots}"/>
-      <exec executable="svnadmin" failifexecutionfails="false">
+      <exec executable="svnadmin" failifexecutionfails="true">
         <arg value="create"/>
         <arg value="${build.test.reposroots}/svn"/>
       </exec>
