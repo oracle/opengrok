@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -131,26 +131,21 @@ T[\{\}] {}
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-                        if(zzBuffer[mi] != '@') {
-                                out.write(zzBuffer[mi]);
-                        } else {
-                                out.write(" (at] ");
-                        }
-                }
+          out.write(yytext().replace("@", " (at] "));
         }
 
-{File}
-        {out.write("<a href=\""+urlPrefix+"path=");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+{File} {
+        String path = yytext();
+        out.write("<a href=\""+urlPrefix+"path=");
+        out.write(path);
         appendProject();
         out.write("\">");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write(path);
         out.write("</a>");}
 
 {Path}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
-\\&.    {out.write( zzBuffer[zzMarkedPos-1]);}
+\\&.    {out.write(yycharat(yylength() - 1));}
 \\-     { out.write('-'); }
 "\\ "   { out.write(' '); }
 "<"     {out.write( "&lt;");}

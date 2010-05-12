@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -103,16 +103,17 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 %%
 <STRING>{
- "$" {Identifier}       {
-                          out.write("<a href=\"");
-                          out.write(urlPrefix);
-                          out.write("refs=");
-                          out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
-                          appendProject();
-                          out.write("\">");
-                          out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
-                          out.write("</a>");
-                        }
+ "$" {Identifier} {
+    String id = yytext();
+    out.write("<a href=\"");
+    out.write(urlPrefix);
+    out.write("refs=");
+    out.write(id);
+    appendProject();
+    out.write("\">");
+    out.write(id);
+    out.write("</a>");
+ }
 
   /* This rule matches associative arrays inside strings,
      for instance "${array["string"]}". Push a new STRING
@@ -137,7 +138,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <STRING> {
- \" {WhiteSpace}* \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
+ \" {WhiteSpace}* \"  { out.write(yytext()); }
  \"     { out.write(yytext()); popstate(); }
  \\\\ | \\\" | \\\$   { out.write(yytext()); }
  \$\(   { pushstate(SUBSHELL, null); out.write(yytext()); }
@@ -145,7 +146,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <QSTRING> {
- \' {WhiteSpace}* \' { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
+ \' {WhiteSpace}* \' { out.write(yytext()); }
  \\'  { out.write("\\'"); }
  \'   { out.write(yytext()); popstate(); }
 }
@@ -170,13 +171,15 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, STRING, SCOMMENT, QSTRING> {
-{File}
-        {out.write("<a href=\""+urlPrefix+"path=");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
-        appendProject();
-        out.write("\">");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
-        out.write("</a>");}
+{File} {
+    String path = yytext();
+    out.write("<a href=\""+urlPrefix+"path=");
+    out.write(path);
+    appendProject();
+    out.write("\">");
+    out.write(path);
+    out.write("</a>");
+}
 
 {Path}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
@@ -184,7 +187,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
  {EOL}  { Util.readableLine(yyline, out, annotation); }
-{WhiteSpace}+   { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
+{WhiteSpace}+   { out.write(yytext()); }
 [!-~]   { out.write(yycharat(0)); }
  .      { writeUnicodeChar(yycharat(0)); }
 }
@@ -192,21 +195,15 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 <STRING, SCOMMENT, QSTRING> {
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {out.write("<a href=\"");
-         out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-         out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
+{
+    String url = yytext();
+    out.write("<a href=\"");
+    out.write(url);out.write("\">");
+    out.write(url);out.write("</a>");
+}
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-                        if(zzBuffer[mi] != '@') {
-                                out.write(zzBuffer[mi]);
-                        } else {
-                                out.write(" (at] ");
-                        }
-                }
-                //out.write("<a href=\"mailto:");
-                //out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-                //out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");
+          out.write(yytext().replace("@", " (at] "));
         }
 }

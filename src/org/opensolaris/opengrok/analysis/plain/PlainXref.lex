@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -74,17 +74,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-                        if(zzBuffer[mi] != '@') {
-                                out.write(zzBuffer[mi]);
-                        } else {
-                                out.write(" (a] ");
-                        }
-                }
-/*              String s=yytext();
-                out.write("<a href=\"mailto:");
-                out.write(s);out.write("\">");
-                out.write(s);out.write("</a>");*/
+          out.write(yytext().replace("@", " (a] "));
         }
 
 // Bug #13362: If there's a very long sequence that matches {FNameChar}+,

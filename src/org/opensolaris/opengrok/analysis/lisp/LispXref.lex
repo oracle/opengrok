@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -85,7 +85,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 }
 
 {Number}        { out.write("<span class=\"n\">");
-                  out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+                  out.write(yytext());
                   out.write("</span>"); }
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
@@ -93,7 +93,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
+ \" {WhiteSpace} \"  { out.write(yytext()); }
  \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
  \\\\   { out.write("\\\\"); }
  \\\"   { out.write("\\\""); }
@@ -127,7 +127,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
 {WhiteSpace}*{EOL} { Util.readableLine(yyline, out, annotation); }
- {WhiteSpace}   { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); }
+ {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  .      { writeUnicodeChar(yycharat(0)); }
 }
@@ -138,27 +138,23 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 
 {File}
         {
+        String path = yytext();
         out.write("<a href=\""+urlPrefix+"path=");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write(path);
         appendProject();
         out.write("\">");
-        out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);
+        out.write(path);
         out.write("</a>");}
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
         {
+         String url = yytext();
          out.write("<a href=\"");
-         out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("\">");
-         out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);out.write("</a>");}
+         out.write(url);out.write("\">");
+         out.write(url);out.write("</a>");}
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-            if(zzBuffer[mi] != '@') {
-              out.write(zzBuffer[mi]);
-            } else {
-              out.write(" (at) ");
-            }
-          }
+          out.write(yytext().replace("@", " (at) "));
         }
 }

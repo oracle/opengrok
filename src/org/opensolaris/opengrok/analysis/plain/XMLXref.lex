@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -78,8 +78,8 @@ NameChar = {FileChar}|"."
 }
 
 <TAG> {
-[a-zA-Z_0-9]+{WhiteSpace}*\= { out.write("<b>"); out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); out.write("</b>"); }
-[a-zA-Z_0-9]+ { out.write("<span class=\"n\">"); out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead); out.write("</span>"); }
+[a-zA-Z_0-9]+{WhiteSpace}*\= { out.write("<b>"); out.write(yytext()); out.write("</b>"); }
+[a-zA-Z_0-9]+ { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 \"      { yybegin(STRING); out.write("<span class=\"s\">\""); }
 \'      { yybegin(SSTRING); out.write("<span class=\"s\">'"); }
 ">"      { yybegin(YYINITIAL); out.write("&gt;"); }
@@ -87,7 +87,7 @@ NameChar = {FileChar}|"."
 }
 
 <STRING> {
- \" {WhiteSpace}* \"  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
+ \" {WhiteSpace}* \"  { out.write(yytext());}
  \"     { yybegin(TAG); out.write("\"</span>"); }
 }
 
@@ -97,7 +97,7 @@ NameChar = {FileChar}|"."
 }
 
 <SSTRING> {
- \' {WhiteSpace}* \'  { out.write(zzBuffer, zzStartRead, zzMarkedPos-zzStartRead);}
+ \' {WhiteSpace}* \'  { out.write(yytext());}
  \'     { yybegin(TAG); out.write("'</span>"); }
 }
 
@@ -130,17 +130,7 @@ NameChar = {FileChar}|"."
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+
         {
-                for(int mi = zzStartRead; mi < zzMarkedPos; mi++) {
-                        if(zzBuffer[mi] != '@') {
-                                out.write(zzBuffer[mi]);
-                        } else {
-                                out.write(" (a] ");
-                        }
-                }
-/*              String s=yytext();
-                out.write("<a href=\"mailto:");
-                out.write(s);out.write("\">");
-                out.write(s);out.write("</a>");*/
+          out.write(yytext().replace("@", " (a] "));
         }
 
 "&"     {out.write( "&amp;");}
