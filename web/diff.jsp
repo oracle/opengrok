@@ -44,29 +44,30 @@ String readableLine(int n) {
 }
 
 String[] diffline(String line1, String line2) {
-    int i=0, j=1;
-    int l1 =  line1.length();
-    int l2 =  line2.length();
     String[] ret = new String[2];
-    while (i < l1 && i < l2 && (line1.charAt(i) == line2.charAt(i)))
-        i++;
-    
-    while (j < l1 && j < l2 && (line1.charAt(l1 - j) == line2.charAt(l2 - j)))
-        j++;
-    
+    int s=0;
+    int m=line1.length()-1;
+    int n=line2.length()-1;
+    while (s <= m && s <= n && (line1.charAt(s) == line2.charAt(s)))
+       { s++; }
+
+    while (s <= m && s <= n && (line1.charAt(m) == line2.charAt(n)))
+        { m--;n--; }
+
     StringBuilder sb = new StringBuilder(line1);
-    if(i <= l1 - j) {
-        sb.insert(i, "<span class=\"d\">");
-        sb.insert(sb.length()-j+1, "</span>");
+    String spand="<span class=\"d\">";
+    if(s <= m) {
+        sb.insert(s, spand);
+        sb.insert(spand.length()+m+1, "</span>");
         ret[0] = sb.toString();
     } else {
         ret[0] = line1;
     }
-    
-    if(i <= l2 - j) {
+    String spana="<span class=\"a\">";
+    if(s <= n) {
         sb = new StringBuilder(line2);
-        sb.insert(i, "<span class=\"a\">");
-        sb.insert(sb.length()-j+1, "</span>");
+        sb.insert(s, spana);
+        sb.insert(spana.length()+n+1, "</span>");
         ret[1] = sb.toString();
     } else {
         ret[1] = line2;

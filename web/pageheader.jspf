@@ -22,4 +22,4 @@ Use is subject to license terms.
 --%>
 <% String home = request.getContextPath();
 %>
-<a href="<%=home%>"><div id="MastheadLogo"><h1> OpenGrok </h1></div></a>
+<a href="<%=home%>"><span id="MastheadLogo"></span></a>
