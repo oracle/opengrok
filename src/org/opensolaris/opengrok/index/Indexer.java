@@ -30,6 +30,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -86,6 +87,7 @@ public final class Indexer {
             boolean searchRepositories = false;
             ArrayList<String> subFiles = new ArrayList<String>();
             ArrayList<String> repositories = new ArrayList<String>();
+            HashSet<String> allowedSymlinks = new HashSet<String>();
             String configFilename = null;
             String configHost = null;
             boolean addProjects = false;
@@ -166,6 +168,9 @@ public final class Indexer {
                             break;
                         case 'R':
                             // already handled
+                            break;
+                        case 'N':
+                            allowedSymlinks.add(getopt.getOptarg());
                             break;
                         case 'n':
                             runIndex = false;
@@ -396,6 +401,9 @@ public final class Indexer {
 
                 env.setDatabaseDriver(databaseDriver);
                 env.setDatabaseUrl(databaseURL);
+
+                allowedSymlinks.addAll(env.getAllowedSymlinks());
+                env.setAllowedSymlinks(allowedSymlinks);
 
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,

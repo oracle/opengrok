@@ -27,6 +27,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -35,6 +36,7 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -160,6 +162,36 @@ public final class RuntimeEnvironment {
      */
     public void setSourceRoot(String sourceRoot) {
         threadConfig.get().setSourceRoot(getCanonicalPath(sourceRoot));
+    }
+
+    /**
+     * Returns a path relative to source root. This would just be a simple
+     * substring operation, except we need to support symlinks outside the
+     * source root.
+     * @param file A file to resolve
+     * @param stripCount Number of characters past source root to strip
+     * @throws IOException If an IO error occurs
+     * @throws FileNotFoundException If the file is not relative to source root
+     * @return Path relative to source root
+     */
+    public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
+        try {
+            String canonicalPath = file.getCanonicalPath();
+            String sourceRoot = getSourceRootPath();
+            if (canonicalPath.startsWith(sourceRoot)) {
+                return canonicalPath.substring(sourceRoot.length() + stripCount);
+            } 
+            for (String allowedSymlink : getAllowedSymlinks()) {
+                String allowedTarget = new File(allowedSymlink).getCanonicalPath();
+                if (canonicalPath.startsWith(allowedTarget)) {
+                    return canonicalPath.substring(allowedTarget.length() + stripCount);
+                }
+            }
+            throw new FileNotFoundException("Failed to resolve ["+canonicalPath+"] relative to source root ["+sourceRoot+"]");
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get canonical path", e);
+            throw e;
+        }
     }
     
     /**
@@ -595,6 +627,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setDatabaseUrl(databaseUrl);
     }
 
+    public Set<String> getAllowedSymlinks() {
+        return threadConfig.get().getAllowedSymlinks();
+    }
+
+    public void setAllowedSymlinks(Set<String> allowedSymlinks) {
+        threadConfig.get().setAllowedSymlinks(allowedSymlinks);
+    }
+    
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read

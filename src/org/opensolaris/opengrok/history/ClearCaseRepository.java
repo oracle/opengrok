@@ -78,8 +78,8 @@ public class ClearCaseRepository extends Repository {
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file) {
-        String abs = file.getAbsolutePath();
+    Executor getHistoryLogExecutor(final File file) throws IOException {
+        String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
@@ -104,11 +104,11 @@ public class ClearCaseRepository extends Repository {
 
         File directory = new File(directoryName);
 
-        String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         try {
+            String filename = (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
             final File tmp = File.createTempFile("opengrok", "tmp");
-            String tmpName = tmp.getAbsolutePath();
+            String tmpName = tmp.getCanonicalPath();
 
             // cleartool can't get to a previously existing file
             if (tmp.exists() && !tmp.delete()) {

@@ -127,12 +127,17 @@ class CVSHistoryParser implements Executor.StreamHandler {
      */
     History parse(File file, Repository repos) throws HistoryException {
         repository = (CVSRepository) repos;
-        Executor executor = repository.getHistoryLogExecutor(file);
-        int status = executor.exec(true, this);
+        try {
+            Executor executor = repository.getHistoryLogExecutor(file);
+            int status = executor.exec(true, this);
 
-        if (status != 0) {
+            if (status != 0) {
+                throw new HistoryException("Failed to get history for: \"" +
+                                           file.getAbsolutePath() + "\" Exit code: " + status);
+            }
+        } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
-                    file.getAbsolutePath() + "\" Exit code: " + status);
+                                       file.getAbsolutePath() + "\"", e);
         }
 
         return history;

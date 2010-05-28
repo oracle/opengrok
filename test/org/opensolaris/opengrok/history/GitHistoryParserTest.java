@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  *
@@ -37,12 +38,15 @@ import static org.junit.Assert.*;
 public class GitHistoryParserTest {
 
     GitHistoryParser instance;
+    private static TestRepository repository = new TestRepository();
 
     public GitHistoryParserTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        repository = new TestRepository();
+        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
     }
 
     @AfterClass

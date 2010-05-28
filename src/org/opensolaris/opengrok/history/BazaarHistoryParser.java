@@ -45,24 +45,26 @@ import org.opensolaris.opengrok.util.Executor;
 class BazaarHistoryParser implements Executor.StreamHandler {
 
     private String myDir;
-    private int rootLength;
     private List<HistoryEntry> entries = new ArrayList<HistoryEntry>(); //NOPMD
     private BazaarRepository repository=new BazaarRepository(); //NOPMD
 
     BazaarHistoryParser(BazaarRepository repository) {
         this.repository = repository;
         myDir = repository.getDirectoryName() + File.separator;
-        rootLength =
-                RuntimeEnvironment.getInstance().getSourceRootPath().length();
     }
 
     History parse(File file, String sinceRevision) throws HistoryException {
-        Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
-        int status = executor.exec(true, this);
+        try {
+            Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
+            int status = executor.exec(true, this);
 
-        if (status != 0) {
+            if (status != 0) {
+                throw new HistoryException("Failed to get history for: \"" +
+                                           file.getAbsolutePath() + "\" Exit code: " + status);
+            }
+        } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
-                    file.getAbsolutePath() + "\" Exit code: " + status);
+                                       file.getAbsolutePath() + "\"", e);
         }
 
         // If a changeset to start from is specified, remove that changeset
@@ -86,6 +88,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
     @Override
     public void processStream(InputStream input) throws IOException {
         DateFormat df = repository.getDateFormat();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         String s;
@@ -155,7 +158,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                         }
 
                         File f = new File(myDir, s);
-                        String name = f.getCanonicalPath().substring(rootLength);
+                        String name = env.getPathRelativeToSourceRoot(f, 0);
                         entry.addFile(name);
                     }
                     break;
@@ -179,7 +182,6 @@ class BazaarHistoryParser implements Executor.StreamHandler {
      */
     History parse(String buffer) throws IOException {
         myDir = File.separator;
-        rootLength = 0;
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return new History(entries);
     }

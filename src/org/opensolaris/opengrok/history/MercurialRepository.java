@@ -79,9 +79,9 @@ public class MercurialRepository extends Repository {
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(File file, String changeset)
-            throws HistoryException
+             throws HistoryException, IOException
     {
-        String abs = file.getAbsolutePath();
+        String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
@@ -117,7 +117,6 @@ public class MercurialRepository extends Repository {
 
         File directory = new File(directoryName);
 
-        String filename =  (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
         Process process = null;
         InputStream in = null;
         String revision = rev;
@@ -126,6 +125,7 @@ public class MercurialRepository extends Repository {
             revision = rev.substring(0, rev.indexOf(':'));
         }
         try {
+            String filename =  (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
             String argv[] = {getCommand(), "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
             

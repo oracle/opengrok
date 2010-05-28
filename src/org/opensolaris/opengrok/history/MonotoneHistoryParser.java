@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -48,13 +49,10 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
     private List<HistoryEntry> entries = new ArrayList<HistoryEntry>(); //NOPMD
     private final MonotoneRepository repository;
     private final String mydir;
-    private final int rootLength;
 
     MonotoneHistoryParser(MonotoneRepository repository) {
         this.repository = repository;
         mydir = repository.getDirectoryName() + File.separator;
-        rootLength =
-                RuntimeEnvironment.getInstance().getSourceRootPath().length();
     }
 
     /**
@@ -69,12 +67,17 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
      * @throws HistoryException if an error happens when parsing the history
      */
     History parse(File file, String changeset) throws HistoryException {
-        Executor executor = repository.getHistoryLogExecutor(file, changeset);
-        int status = executor.exec(true, this);
-
-        if (status != 0) {
+        try {
+            Executor executor = repository.getHistoryLogExecutor(file, changeset);
+            int status = executor.exec(true, this);
+            
+            if (status != 0) {
+                throw new HistoryException("Failed to get history for: \"" +
+                                           file.getAbsolutePath() + "\" Exit code: " + status);
+            }
+        } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
-                    file.getAbsolutePath() + "\" Exit code: " + status);
+                                       file.getAbsolutePath() + "\"", e);
         }
 
         return new History(entries);
@@ -89,6 +92,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         String s;
@@ -150,8 +154,11 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                         String files[] = s.split(" ");
                         for (String f : files) {
                             File file = new File(mydir, f);
-                            String name = file.getCanonicalPath().substring(rootLength);
-                            entry.addFile(name);
+                            try {
+                                entry.addFile(env.getPathRelativeToSourceRoot(file, 0));
+                            } catch (FileNotFoundException e) { // NOPMD
+                                // If the file is not located under the source root, ignore it
+                            }
                         }
                     }
                     break;

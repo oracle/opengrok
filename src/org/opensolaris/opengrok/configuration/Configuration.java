@@ -37,7 +37,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
@@ -89,6 +91,7 @@ public final class Configuration {
     private String databaseDriver;
     private String databaseUrl;
     private Integer scanningDepth;
+    private Set<String> allowedSymlinks;
 
     public Integer getScanningDepth() {
         return scanningDepth;
@@ -129,6 +132,7 @@ public final class Configuration {
         setHitsPerPage(25);
         setCachePages(5);
         setScanningDepth(3); // default depth of scanning for repositories
+        setAllowedSymlinks(new HashSet<String>());
     }
 
     public String getCtags() {
@@ -422,6 +426,14 @@ public final class Configuration {
 
     public void setDatabaseUrl(String databaseUrl) {
         this.databaseUrl = databaseUrl;
+    }
+
+    public Set<String> getAllowedSymlinks() {
+        return allowedSymlinks;
+    }
+
+    public void setAllowedSymlinks(Set<String> allowedSymlinks) {
+        this.allowedSymlinks = allowedSymlinks;
     }
 
     /**

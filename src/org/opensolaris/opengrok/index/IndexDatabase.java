@@ -608,30 +608,27 @@ public class IndexDatabase {
             return false;
         }
 
+        String absolutePath = file.getAbsolutePath();
+
         if (!file.canRead()) {
-            log.warning("Warning: could not read " + file.getAbsolutePath());
+            log.warning("Warning: could not read " + absolutePath);
             return false;
         }
 
         try {
-            if (!file.getAbsolutePath().equals(file.getCanonicalPath())) {
-                if (file.getParentFile().equals(file.getCanonicalFile().getParentFile())) {
-                    // Lets support symlinks within the same directory, this
-                    // should probably be extended to within the same repository
-                    return true;
-                } else {
-                    log.warning("Warning: ignored non-local symlink " + file.getAbsolutePath() +
-                            " -> " + file.getCanonicalPath());
-                    return false;
-                }
+            String canonicalPath = file.getCanonicalPath();
+            if (!absolutePath.equals(canonicalPath) && !acceptSymlink(absolutePath, canonicalPath)) {
+                log.fine("Skipped symlink '" + absolutePath +
+                            "' -> '" + canonicalPath + "'");
+                return false;
             }
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
-                log.warning("Warning: ignored special file " + file.getAbsolutePath());
+                log.warning("Warning: ignored special file " + absolutePath);
                     return false;
             }
         } catch (IOException exp) {
-            log.warning("Warning: Failed to resolve name: " + file.getAbsolutePath());
+            log.warning("Warning: Failed to resolve name: " + absolutePath);
             log.log(Level.FINE,"Stack Trace: ",exp);       
         }
 
@@ -647,6 +644,25 @@ public class IndexDatabase {
 
         // this is an unversioned file, check if it should be indexed
         return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
+    }
+
+    /**
+     * Check if I should accept the path containing a symlink
+     * @param absolutePath the path with a symlink to check
+     * @param canonicalPath the canonical path to the file
+     * @return true if the file should be accepted, false otherwise
+     */
+    private boolean acceptSymlink(String absolutePath, String canonicalPath) throws IOException {
+        for (String allowedSymlink : RuntimeEnvironment.getInstance().getAllowedSymlinks()) {
+            if (absolutePath.startsWith(allowedSymlink)) {
+                String allowedTarget = new File(allowedSymlink).getCanonicalPath();
+                if (canonicalPath.startsWith(allowedTarget) &&
+                    absolutePath.substring(allowedSymlink.length()).equals(canonicalPath.substring(allowedTarget.length()))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

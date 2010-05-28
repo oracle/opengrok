@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,12 +50,10 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
     private final MercurialRepository repository;
     private final String mydir;
-    private final String rootPath;
 
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
         mydir = repository.getDirectoryName() + File.separator;
-        rootPath = RuntimeEnvironment.getInstance().getSourceRootPath();
     }
 
     /**
@@ -69,12 +68,17 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * @throws HistoryException if an error happens when parsing the history
      */
     History parse(File file, String changeset) throws HistoryException {
-        Executor executor = repository.getHistoryLogExecutor(file, changeset);
-        int status = executor.exec(true, this);
-        
-        if (status != 0) {
+        try {
+            Executor executor = repository.getHistoryLogExecutor(file, changeset);
+            int status = executor.exec(true, this);
+            
+            if (status != 0) {
+                throw new HistoryException("Failed to get history for: \"" +
+                                           file.getAbsolutePath() + "\" Exit code: " + status);
+            }
+        } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
-                    file.getAbsolutePath() + "\" Exit code: " + status);
+                                       file.getAbsolutePath() + "\"", e);
         }
 
         // If a changeset to start from is specified, remove that changeset
@@ -97,6 +101,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         DateFormat df = repository.getDateFormat();
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         entries = new ArrayList<HistoryEntry>();
@@ -123,12 +128,11 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                 for (int ii = 1; ii < strings.length; ++ii) {
                     if (strings[ii].length() > 0) {
                         File f = new File(mydir, strings[ii]);
-                        String name = f.getCanonicalPath();
-                        // Strip away the directories up to the source root.
-                        // If the file is not located under the source root,
-                        // ignore it (bug #11664).
-                        if (name.startsWith(rootPath)) {
-                            entry.addFile(name.substring(rootPath.length()));
+                        try {
+                            entry.addFile(env.getPathRelativeToSourceRoot(f, 0));
+                        } catch (FileNotFoundException e) { // NOPMD
+                            // If the file is not located under the source root,
+                            // ignore it (bug #11664).
                         }
                     }
                 }

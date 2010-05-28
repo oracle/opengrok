@@ -112,8 +112,8 @@ public class CVSRepository extends RCSRepository {
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file) {
-        String abs = file.getAbsolutePath();
+    Executor getHistoryLogExecutor(final File file) throws IOException {
+        String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);

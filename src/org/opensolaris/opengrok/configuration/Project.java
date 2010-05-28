@@ -24,6 +24,8 @@
 package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Placeholder for the information that builds up a project
@@ -140,10 +142,12 @@ public class Project {
      */
     public static Project getProject(File file) {
         Project ret = null;
-        String root = RuntimeEnvironment.getInstance().getSourceRootFile().getAbsolutePath();
-        String me = file.getAbsolutePath();
-        if (me.startsWith(root)) {
-            ret = getProject(me.substring(root.length()));
+        try {
+            ret = getProject(RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(file, 0));
+        } catch (FileNotFoundException e) { // NOPMD
+            // ignore if not under source root
+        } catch (IOException e) { // NOPMD
+            // problem has already been logged, just return null
         }
         return ret;
     }

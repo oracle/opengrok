@@ -85,27 +85,17 @@ class FileHistoryCache implements HistoryCache {
         sb.append(env.getDataRootPath());
         sb.append(File.separatorChar);
         sb.append("historycache");
-        
-        String sourceRoot = env.getSourceRootPath();
-        if (sourceRoot == null) {
-            return null;
-        }
 
-        String add;
         try {
-            try {
-                add = file.getCanonicalPath().substring(sourceRoot.length());
-            } catch (StringIndexOutOfBoundsException exp) {
-                throw new HistoryException("Failed to get path for: <" + file + "> [" + file.getCanonicalPath() + "] [" + sourceRoot + "]", exp);
+            String add = env.getPathRelativeToSourceRoot(file, 0);
+            if (add.length() == 0) {
+                add = File.separator;
             }
-        } catch (IOException ioe) {
-            throw new HistoryException("Failed to get path for: " + file, ioe);
+            sb.append(add);
+            sb.append(".gz");
+        } catch (IOException e) {
+            throw new HistoryException("Failed to get path relative to source root for " + file, e);
         }
-        if (add.length() == 0) {
-            add = File.separator;
-        }
-        sb.append(add);
-        sb.append(".gz");
         
         return new File(sb.toString());
     }
@@ -281,9 +271,14 @@ class FileHistoryCache implements HistoryCache {
         if (repos == null) {
             return true;
         }
-        File dir = RuntimeEnvironment.getInstance().getDataRootFile();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        File dir = env.getDataRootFile();
         dir = new File(dir, "historycache");
-        dir = new File(dir, repos.getDirectoryName().substring(RuntimeEnvironment.getInstance().getSourceRootPath().length()));
+        try {
+            dir = new File(dir, env.getPathRelativeToSourceRoot(new File(repos.getDirectoryName()), 0));
+        } catch (IOException e) {
+            throw new HistoryException("Could not resolve "+repos.getDirectoryName()+" relative to source root", e);
+        }
         return dir.exists();
     }
 
