@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
@@ -38,6 +40,10 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public class ClearCaseRepository extends Repository {
     private static final long serialVersionUID = 1L;
+
+    private static ScmChecker cleartoolBinary = new ScmChecker(new String[]{
+                getCommand(), "-version"
+            });
 
     private boolean verbose;
 
@@ -51,7 +57,7 @@ public class ClearCaseRepository extends Repository {
      * Get the name of the ClearCase command that should be used
      * @return the name of the cleartool command in use
      */
-    private String getCommand() {
+    private static String getCommand() {
         return System.getProperty("org.opensolaris.opengrok.history.ClearCase", "cleartool");
     }
 
@@ -319,14 +325,61 @@ public Annotation annotate(File file, String revision) throws IOException {
     }
 
     @Override
+    public boolean isWorking() {
+        return cleartoolBinary.available;
+    }
+
+    @Override
     boolean isRepositoryFor(File file) {
         // if the parent contains a file named "view.dat" or
-        // the parent is named "vobs"
+        // the parent is named "vobs" or the canonical path
+        // is found in "cleartool lsvob -s"
         File f = new File(file, "view.dat");
         if (f.exists()) {
             return true;
+        } else if (file.isDirectory() && file.getName().equalsIgnoreCase("vobs")) {
+            return true;
+        } else if (isWorking()) {
+            try {
+                String canonicalPath = file.getCanonicalPath();
+                for (String vob : getAllVobs()) {
+                    if (canonicalPath.equalsIgnoreCase(vob)) {
+                        return true;
+                    }
+                }
+            } catch (IOException e) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get canonical path for \""+file+"\"", e);
+            }
+        }
+        return false;
+    }
+
+    private static class VobsHolder {
+        public static String[] vobs = runLsvob();
+    }
+
+    private static String[] getAllVobs() {
+        return VobsHolder.vobs;
+    }
+
+    private static String[] runLsvob() {
+        Executor exec = new Executor(new String[] {getCommand(), "lsvob", "-s"});
+        int rc;
+        if ((rc = exec.exec(true)) == 0) {
+            String output = exec.getOutputString();
+
+            if (output == null) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "\"cleartool lsvob -s\" output was null");
+                return new String[0];
+            } else {
+                String sep = System.getProperty("line.separator");
+                String[] vobs = output.split(Pattern.quote(sep));
+                OpenGrokLogger.getLogger().log(Level.INFO, "Found VOBs: "+Arrays.asList(vobs));
+                return vobs;
+            }
         } else {
-            return file.isDirectory() && file.getName().equalsIgnoreCase("vobs");
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "\"cleartool lsvob -s\" returned non-zero status: "+rc);
+            return new String[0];
         }
     }
 
