@@ -110,6 +110,7 @@ public class InternerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testInternNull() {
         assertNull(new Interner().intern(null));
     }

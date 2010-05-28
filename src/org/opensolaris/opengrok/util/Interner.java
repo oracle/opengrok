@@ -25,6 +25,7 @@
 package org.opensolaris.opengrok.util;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -50,7 +51,7 @@ import java.util.HashMap;
 public class Interner<T> {
 
     /** Map of interned objects. Key and value contain the same object. */
-    private final HashMap<T, T> map = new HashMap<T, T>();
+    private final Map<T, T> map = new HashMap<T, T>();
 
     /**
      * <p>

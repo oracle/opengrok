@@ -147,10 +147,8 @@ public class CVSRepository extends RCSRepository {
             }
             else { isBranch=Boolean.FALSE; }
         }
-        if (isBranch.equals(Boolean.TRUE)) {
-            if (branch!=null && !branch.isEmpty()) {
-             cmd.add("-r"+branch); //just generate THIS branch history, we don't care about the other branches which are not checked out
-            }
+        if (isBranch.equals(Boolean.TRUE) && branch!=null && !branch.isEmpty()) {
+             cmd.add("-r"+branch); //just generate THIS branch history, we don't care about the other branches which are not checked out            
         }
         
         if (filename.length() > 0) {

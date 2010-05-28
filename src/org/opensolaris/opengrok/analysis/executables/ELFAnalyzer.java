@@ -53,7 +53,7 @@ import org.opensolaris.opengrok.web.Util;
 public class ELFAnalyzer extends FileAnalyzer {
 
     private String content;
-    private int len;
+    private int len=0;
     PlainFullTokenizer plainfull;
     StringReader dummy = new StringReader("");
 
@@ -148,6 +148,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             sb.append('\n');
         }
         content = sb.toString();
+        len = content.length();
 
     }
     
