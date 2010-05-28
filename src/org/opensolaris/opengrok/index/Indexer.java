@@ -402,6 +402,19 @@ public final class Indexer {
                 env.setDatabaseDriver(databaseDriver);
                 env.setDatabaseUrl(databaseURL);
 
+                // automatically allow symlinks that are directly in source root
+                File sourceRootFile = env.getSourceRootFile();
+                if (sourceRootFile != null) {
+                    File[] projectDirs = sourceRootFile.listFiles();
+                    if (projectDirs != null) {
+                        for (File projectDir : projectDirs) {
+                            if (!projectDir.getCanonicalPath().equals(projectDir.getAbsolutePath())) {
+                                allowedSymlinks.add(projectDir.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+                
                 allowedSymlinks.addAll(env.getAllowedSymlinks());
                 env.setAllowedSymlinks(allowedSymlinks);
 
