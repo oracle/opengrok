@@ -39,7 +39,6 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
-%line
 %{
   private int nestedComment;
 
@@ -53,18 +52,15 @@ import org.opensolaris.opengrok.web.Util;
         annotation = null;
   }
 
-  public void write(Writer out) throws IOException {
-        this.out = out;
-        Util.readableLine(1, out, annotation);
-        yyline = 2;
-        while(yylex() != YYEOF) {
-        }
-  }
-
+  // TODO move this into an include file when bug #16053 is fixed
+  @Override
+  protected int getLineNumber() { return yyline; }
+  @Override
+  protected void setLineNumber(int x) { yyline = x; }
 %}
 
 WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
+EOL = \r|\n|\r\n
 Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
@@ -81,7 +77,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline - 1);
+    writeSymbol(id, Consts.kwd, yyline);
 }
 
 {Number}        { out.write("<span class=\"n\">");
@@ -118,7 +114,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 <SCOMMENT> {
   {WhiteSpace}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
-    Util.readableLine(yyline, out, annotation);
+    startNewLine();
   }
 }
 
@@ -126,7 +122,7 @@ Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL} { Util.readableLine(yyline, out, annotation); }
+{WhiteSpace}*{EOL} { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  .      { writeUnicodeChar(yycharat(0)); }

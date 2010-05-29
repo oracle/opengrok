@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -30,12 +30,12 @@ import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
 
 %%
+%public
 %class SQLXref
 %extends JFlexXref
 %unicode
 %ignorecase
 %int
-%line
 %{
     private int commentLevel;
 
@@ -48,12 +48,11 @@ import org.opensolaris.opengrok.web.Util;
         annotation = null;
     }
 
-    public void write(Writer out) throws IOException {
-        this.out = out;
-        Util.readableLine(1, out, annotation);
-        yyline = 2;
-        while (yylex() != YYEOF);
-    }
+  // TODO move this into an include file when bug #16053 is fixed
+  @Override
+  protected int getLineNumber() { return yyline; }
+  @Override
+  protected void setLineNumber(int x) { yyline = x; }
 %}
 
 Sign = "+" | "-"
@@ -65,7 +64,7 @@ Number = {Sign}? ({SimpleNumber} | {ScientificNumber})
 Identifier = [a-zA-Z] [a-zA-Z0-9_]*
 
 Whitespace = [ \t\f]+
-EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
+EOL = \r|\n|\r\n
 
 %state STRING QUOTED_IDENTIFIER SINGLE_LINE_COMMENT BRACKETED_COMMENT
 
@@ -74,7 +73,7 @@ EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
 <YYINITIAL> {
     {Identifier} {
         String id = yytext();
-        writeSymbol(id, Consts.getReservedKeywords(), yyline - 1);
+        writeSymbol(id, Consts.getReservedKeywords(), yyline);
     }
 
     {Number} {
@@ -108,7 +107,7 @@ EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
     {EOL} {
         yybegin(YYINITIAL);
         out.append("</span>");
-        Util.readableLine(yyline, out, annotation);
+        startNewLine();
     }
 }
 
@@ -128,7 +127,7 @@ EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
     "&"    { out.append( "&amp;"); }
     "<"    { out.append( "&lt;"); }
     ">"    { out.append( "&gt;"); }
-    {EOL}     { Util.readableLine(yyline, out, annotation); }
+    {EOL}     { startNewLine(); }
     {Whitespace}  { out.append(yytext()); }
     [ \t\f\r!-~]  { out.append(yycharat(0)); }
     .      { writeUnicodeChar(yycharat(0)); }

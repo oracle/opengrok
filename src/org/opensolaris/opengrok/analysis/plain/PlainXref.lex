@@ -27,7 +27,6 @@ import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
-import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
@@ -36,14 +35,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
-%line
 %{
-  public void write(Writer out) throws IOException {
-        this.out = out;
-        Util.readableLine(1, out, annotation);
-        yyline = 2;
-        while(yylex() != YYEOF);
-  }
   public void reInit(char[] buf, int len) {
         yyreset((Reader) null);
         zzBuffer = buf;
@@ -53,9 +45,14 @@ import org.opensolaris.opengrok.web.Util;
         annotation = null;
   }
 
+  // TODO move this into an include file when bug #16053 is fixed
+  @Override
+  protected int getLineNumber() { return yyline; }
+  @Override
+  protected void setLineNumber(int x) { yyline = x; }
 %}
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
-EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
+EOL = \r|\n|\r\n
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
@@ -87,6 +84,6 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{EOL}   {Util.readableLine(yyline, out, annotation); }
+{EOL}   {startNewLine(); }
 [ !-~\t\f]      {out.write(yycharat(0));}
 .       { writeUnicodeChar(yycharat(0)); }

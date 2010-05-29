@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -26,22 +26,47 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.util.Set;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.web.Util;
 
 /**
+ * Base class for Xref lexers.
  *
  * @author Lubos Kosco
  */
-public class JFlexXref {
+public abstract class JFlexXref {
   public Writer out;
   public String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
   public Annotation annotation;
   public Project project;
   protected Definitions defs;
-  
+
+  /** EOF value returned by yylex(). */
+  private final int yyeof;
+
+  protected JFlexXref() {
+      try {
+        // TODO when bug #16053 is fixed, we should add a getter to a file
+        // that's included from all the Xref classes so that we avoid the
+        // reflection.
+        Field f = getClass().getField("YYEOF");
+        yyeof = f.getInt(null);
+      } catch (Exception e) {
+          // The auto-generated constructors for the Xref classes don't
+          // expect a checked exception, so wrap it in an AssertionError.
+          // This should never happen, since all the Xref classes will get
+          // a public static YYEOF field from JFlex.
+          AssertionError ae = new AssertionError("Couldn't initialize yyeof");
+          ae.initCause(e);
+          throw ae; // NOPMD (stack trace is preserved by initCause(), but PMD
+                    // thinks it's lost)
+      }
+  }
+
   public void setDefs(Definitions defs) {
       this.defs = defs;
   }
@@ -55,6 +80,42 @@ public class JFlexXref {
   
   protected String getProjectPostfix() {
       return project == null ? "" : ("&amp;project=" + project.getDescription());
+  }
+
+  /** Get the next token from the scanner. */
+  public abstract int yylex() throws IOException;
+
+  /** Get the value of {@code yyline}. */
+  protected abstract int getLineNumber();
+
+  /** Set the value of {@code yyline}. */
+  protected abstract void setLineNumber(int x);
+
+  /**
+   * Write xref to the specified {@code Writer}.
+   *
+   * @param out xref destination
+   * @throws IOException on error when writing the xref
+   */
+  public void write(Writer out) throws IOException {
+      this.out = out;
+      setLineNumber(0);
+      startNewLine();
+      while (yylex() != yyeof) { // NOPMD while statement intentionally empty
+          // nothing to do here, yylex() will do the work
+      }
+  }
+
+  /**
+   * Terminate the current line and insert preamble for the next line. The
+   * line count will be incremented.
+   *
+   * @throws IOException on error when writing the xref
+   */
+  protected void startNewLine() throws IOException {
+      int line = getLineNumber() + 1;
+      setLineNumber(line);
+      Util.readableLine(line, out, annotation);
   }
 
   /**

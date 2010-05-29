@@ -37,14 +37,7 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
-%line
 %{
-  public void write(Writer out) throws IOException {
-        this.out = out;
-        Util.readableLine(1, out, annotation);
-        yyline = 2;
-        while(yylex() != YYEOF);
-  }
   public void reInit(char[] buf, int len) {
         yyreset((Reader) null);
         zzBuffer = buf;
@@ -54,9 +47,14 @@ import org.opensolaris.opengrok.web.Util;
         annotation = null;
   }
 
+  // TODO move this into an include file when bug #16053 is fixed
+  @Override
+  protected int getLineNumber() { return yyline; }
+  @Override
+  protected void setLineNumber(int x) { yyline = x; }
 %}
 WhiteSpace     = [ \t\f]
-EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
+EOL = \r|\n|\r\n
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+) {FNameChar}*
@@ -134,7 +132,7 @@ NameChar = {FileChar}|"."
         }
 
 "&"     {out.write( "&amp;");}
-{EOL}   {Util.readableLine(yyline, out, annotation); }
+{EOL}   {startNewLine(); }
 [ !-~\t\f]      {out.write(yycharat(0));}
 .       { writeUnicodeChar(yycharat(0)); }
 }

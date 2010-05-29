@@ -40,7 +40,6 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %ignorecase
 %int
-%line
 %{
   /* Must match WhiteSpace regex */
   private final static String WHITE_SPACE = "[ \t\f\r]+";
@@ -54,18 +53,16 @@ import org.opensolaris.opengrok.web.Util;
         annotation = null;
   }
 
-  public void write(Writer out) throws IOException {
-        this.out = out;
-        Util.readableLine(1, out, annotation);
-        yyline = 2;
-        while(yylex() != YYEOF) {
-        }
-  }
+  // TODO move this into an include file when bug #16053 is fixed
+  @Override
+  protected int getLineNumber() { return yyline; }
+  @Override
+  protected void setLineNumber(int x) { yyline = x; }
 %}
 
 /* Must match WHITE_SPACE constant */
 WhiteSpace     = [ \t\f]+
-EOL = \r|\n|\r\n|\u2028|\u2029|\u000B|\u000C|\u0085
+EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
@@ -88,7 +85,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline - 1);
+    writeSymbol(id, Consts.kwd, yyline);
 }
 
 "<" ({File}|{Path}) ">" {
@@ -152,7 +149,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 <SCOMMENT> {
   {WhiteSpace}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
-    Util.readableLine(yyline, out, annotation);
+    startNewLine();
   }
 }
 
@@ -161,7 +158,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { Util.readableLine(yyline, out, annotation); }
+{WhiteSpace}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
  .      { writeUnicodeChar(yycharat(0)); }
