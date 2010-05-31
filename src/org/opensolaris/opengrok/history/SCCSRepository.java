@@ -107,9 +107,7 @@ public class SCCSRepository extends Repository {
                     String auth = matcher.group(2);
                     authors_cache.put(rev, auth);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                            "Error: did not find authors in line " + lineno +
-                            ": [" + line + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find authors in line {0}: [{1}]", new Object[]{lineno, line});
                 }
             }
         } finally {
@@ -180,9 +178,7 @@ public class SCCSRepository extends Repository {
                     
                     a.addLine(rev, author, true);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                            "Error: did not find annotations in line " + lineno +
-                            ": [" + line + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotations in line {0}: [{1}]", new Object[]{lineno, line});
                 }
             }
             return a;
@@ -227,8 +223,16 @@ public class SCCSRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
-       if (file.isDirectory()) {        
-        return new File(file, "SCCS").isDirectory();
+       if (file.isDirectory()) {
+         File f = new File(file, "codemgr_wsdata");
+         if (f.isDirectory()) {
+             return true;
+         }
+         f = new File(file, "Codemgr_wsdata");
+         if (f.isDirectory()) {
+             return true;
+         }
+         return new File(file, "SCCS").isDirectory();
        } else {
         return false; }
     }
