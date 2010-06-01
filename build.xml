@@ -403,6 +403,7 @@ Use is subject to license terms.
         <taskdef resource="checkstyletask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
         <checkstyle config="checkstyle/style.xml" failOnViolation="false">
             <fileset dir="src" includes="**/*.java"/>
+            <fileset dir="test" includes="**/*.java"/>
             <formatter type="plain"/>
             <formatter type="plain"  toFile="checkstyle/checkstyle_errors.txt"/>
             <formatter type="xml" toFile="checkstyle/checkstyle_errors.xml"/>

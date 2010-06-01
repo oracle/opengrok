@@ -108,7 +108,7 @@ public class GetoptTest {
 
     @Test
     public void testParseFailure() throws Exception {
-        String[] argv = new String[]{ "-a" };
+        String[] argv = new String[]{"-a"};
         Getopt instance = new Getopt(argv, "a:");
 
         try {

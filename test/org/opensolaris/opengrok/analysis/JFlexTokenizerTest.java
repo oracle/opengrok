@@ -74,7 +74,7 @@ public class JFlexTokenizerTest {
      * Helper method for {@link #testOffsetAttribute()} that runs the test
      * on one single implementation class.
      */
-    private void testOffsetAttribute(Class <? extends JFlexTokenizer> klass)
+    private void testOffsetAttribute(Class<? extends JFlexTokenizer> klass)
             throws Exception {
         String inputText = "alpha beta gamma delta";
         String[] expectedTokens = inputText.split(" ");
@@ -86,7 +86,7 @@ public class JFlexTokenizerTest {
      * on one single implementation class with the specified input text and
      * expected tokens.
      */
-    private void testOffsetAttribute(Class <? extends JFlexTokenizer> klass,
+    private void testOffsetAttribute(Class<? extends JFlexTokenizer> klass,
                                      String inputText, String[] expectedTokens)
             throws Exception {
         JFlexTokenizer tokenizer = klass.getConstructor(Reader.class)

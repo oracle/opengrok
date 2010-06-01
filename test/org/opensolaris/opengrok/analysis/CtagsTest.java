@@ -26,12 +26,12 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.File;
 import java.io.IOException;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.*;
 

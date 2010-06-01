@@ -18,9 +18,10 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2010 Sun Micosystems.  All rights reserved.
  * Use is subject to license terms.
  */
+
 package org.opensolaris.opengrok.history;
 
 import java.util.Arrays;
