@@ -70,6 +70,7 @@ public class JFlexXrefTest {
     public static void tearDownClass() throws Exception {
         ctags.close();
         ctags = null;
+        repository.destroy();
     }
 
     /**
@@ -135,7 +136,7 @@ public class JFlexXrefTest {
      */
     private void bug15890Anchor(Class<? extends JFlexXref> klass, String path)
             throws Exception {
-        File file = new File(repository.getSourceRoot() + "/" + path);
+        File file = new File(repository.getSourceRoot() + File.separator + path);
         Definitions defs = ctags.doCtags(file.getAbsolutePath() + "\n");
 
         // Input files contain non-ascii characters and are encoded in UTF-8

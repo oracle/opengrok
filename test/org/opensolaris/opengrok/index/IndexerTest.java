@@ -222,7 +222,7 @@ public class IndexerTest {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
-
+        
         executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot()+"/testBug11896"});
         executor.exec(true);
 
