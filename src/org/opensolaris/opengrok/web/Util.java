@@ -459,4 +459,44 @@ public final class Util {
         }
         return sb.toString();
     }
+
+    /**
+     * Highlight the diffs between line1 and line2
+     * @param line1
+     * @param line2
+     * @return new strings with html tags highlighting the diffs
+     */
+    public static String[] diffline(String line1, String line2) {
+    String[] ret = new String[2];
+    int s=0;
+    int m=line1.length()-1;
+    int n=line2.length()-1;
+    while (s <= m && s <= n && (line1.charAt(s) == line2.charAt(s)))
+       { s++; }
+
+    while (s <= m && s <= n && (line1.charAt(m) == line2.charAt(n)))
+        { m--;n--; }
+
+    StringBuilder sb = new StringBuilder(line1);
+    String spand="<span class=\"d\">";
+    if(s <= m) {
+        sb.insert(s, spand);
+        sb.insert(spand.length()+m+1, "</span>");
+        ret[0] = sb.toString();
+    } else {
+        ret[0] = line1;
+    }
+    String spana="<span class=\"a\">";
+    if(s <= n) {
+        sb = new StringBuilder(line2);
+        sb.insert(s, spana);
+        sb.insert(spana.length()+n+1, "</span>");
+        ret[1] = sb.toString();
+    } else {
+        ret[1] = line2;
+    }
+    return ret;
+
+    }
 }
+

@@ -172,4 +172,21 @@ public class UtilTest {
         assertEquals("abc", Util.formQuoteEscape("abc"));
         assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
     }
+
+    @Test
+    public void diffline() {
+        String[] strings=Util.diffline("\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"","\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, exp_url, d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"");        
+        assertEquals(strings[0],"\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"");
+        assertEquals(strings[1],"\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, <span class=\"a\">exp_url, </span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"");
+        strings=Util.diffline("\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);","\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);");
+        assertEquals(strings[0],"\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);");
+        assertEquals(strings[1],"\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span class=\"a\">, ?</span>)\", values);");
+        strings=Util.diffline("char    *config_list = NULL;","char    **config_list = NULL;");
+        assertEquals(strings[0],"char    *config_list = NULL;");
+        assertEquals(strings[1],"char    *<span class=\"a\">*</span>config_list = NULL;");
+        strings=Util.diffline("* An error occured or there is non-numeric stuff at the end","* An error occurred or there is non-numeric stuff at the end");
+        assertEquals(strings[0],"* An error occured or there is non-numeric stuff at the end");
+        assertEquals(strings[1],"* An error occur<span class=\"a\">r</span>ed or there is non-numeric stuff at the end");
+    }
 }
+
