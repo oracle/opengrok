@@ -38,10 +38,8 @@ public class IgnoredNamesTest {
     public void testIgnoredPatterns() {
         IgnoredNames instance = new IgnoredNames();
 
-        List<String> names = instance.getIgnoredPatterns();
+        List<String> names = instance.getItems();
         assertNotNull(names);
-
-        int total = names.size();
 
         for (String name : names) {
             assertTrue(instance.ignore(name));
@@ -50,23 +48,21 @@ public class IgnoredNamesTest {
         names = new ArrayList<String>();
         names.add("*.o");
         
-        instance.setIgnoredPatterns(names);
-        names = instance.getIgnoredPatterns();
+        instance.setItems(names);
+        names = instance.getItems();
         assertEquals(1, names.size());
         
         assertTrue(instance.ignore("foo.o"));
         assertFalse(instance.ignore("foo"));
         
         instance.add("Makefile");
-        names = instance.getIgnoredPatterns();
+        names = instance.getItems();
         assertEquals(2, names.size());
         assertTrue(instance.ignore(new File("Makefile")));
         assertFalse(instance.ignore("main.c"));
 
         instance.clear();
-        names = instance.getIgnoredPatterns();
+        names = instance.getItems();
         assertEquals(0, names.size());
-        instance.addDefaultPatterns();
-        assertEquals(total, instance.getIgnoredPatterns().size());
     }
 }
