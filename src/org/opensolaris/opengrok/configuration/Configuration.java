@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
@@ -75,6 +76,7 @@ public final class Configuration {
     private boolean verbose;
     private boolean allowLeadingWildcard;
     private IgnoredNames ignoredNames;
+    private Filter includedNames;
     private String userPage;
     private String bugPage;
     private String bugPattern;
@@ -118,6 +120,7 @@ public final class Configuration {
         setGenerateHtml(true);
         setQuickContextScan(true);
         setIgnoredNames(new IgnoredNames());
+        setIncludedNames(new Filter());
         setUserPage("http://www.opensolaris.org/viewProfile.jspa?username=");
         setBugPage("http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
@@ -317,6 +320,14 @@ public final class Configuration {
 
     public IgnoredNames getIgnoredNames() {
         return ignoredNames;
+    }
+
+    public void setIncludedNames(Filter includedNames) {
+        this.includedNames = includedNames;
+    }
+
+    public Filter getIncludedNames() {
+        return includedNames;
     }
 
     public void setUserPage(String userPage) {

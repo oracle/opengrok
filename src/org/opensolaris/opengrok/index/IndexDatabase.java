@@ -73,6 +73,7 @@ public class IndexDatabase {
     private IndexWriter writer;
     private TermEnum uidIter;
     private IgnoredNames ignoredNames;
+    private Filter includedNames;
     private AnalyzerGuru analyzerGuru;
     private File xrefDir;
     private boolean interrupted;
@@ -243,6 +244,7 @@ public class IndexDatabase {
             indexDirectory = FSDirectory.open(indexDir,lockfact);
             spellDirectory = FSDirectory.open(spellDir,lockfact);
             ignoredNames = env.getIgnoredNames();
+            includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
             if (env.isGenerateHtml()) {
                 xrefDir = new File(env.getDataRootFile(), "xref");
@@ -604,6 +606,12 @@ public class IndexDatabase {
      * @return true if the file should be included, false otherwise
      */
     private boolean accept(File file) {
+        if (!includedNames.isEmpty()) {
+            // the filter should not affect directory names
+            if (!(file.isDirectory() || includedNames.match(file))) {
+                return false;
+            }
+        }
         if (ignoredNames.ignore(file)) {
             return false;
         }

@@ -186,7 +186,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         this.projectsTable.setModel(model);
 
         IgnoredNames in = config.getIgnoredNames();
-        List<String> ignoredpatternlist = in.getIgnoredPatterns();
+        List<String> ignoredpatternlist = in.getItems();
         DefaultTableModel ignoredModel = new DefaultTableModel(ignoredNamesHeaders,ignoredpatternlist.size());
         row = 0;
         for (String item: ignoredpatternlist) {

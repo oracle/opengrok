@@ -255,6 +255,9 @@ public final class Indexer {
                         case 'i':
                             env.getIgnoredNames().add(getopt.getOptarg());
                             break;
+                        case 'I':
+                            env.getIncludedNames().add(getopt.getOptarg());
+                            break;
                         case 'S':
                             searchRepositories = true;
                             break;

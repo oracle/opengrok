@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.util.Executor;
 
@@ -484,6 +485,14 @@ public final class RuntimeEnvironment {
 
     public void setIgnoredNames(IgnoredNames ignoredNames) {
         threadConfig.get().setIgnoredNames(ignoredNames);
+    }
+
+    public Filter getIncludedNames() {
+        return threadConfig.get().getIncludedNames();
+    }
+
+    public void setIncludedNames(Filter includedNames) {
+        threadConfig.get().setIncludedNames(includedNames);
     }
 
     /**
