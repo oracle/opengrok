@@ -245,11 +245,13 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     boolean uniqueDefinition = false;
     if (isSingleDefinitionSearch && hits != null && hits.length == 1) {
         Document doc = searcher.doc(hits[0].doc);
-        byte[] rawTags = doc.getFieldable("tags").getBinaryValue();
-        Definitions tags = Definitions.deserialize(rawTags);
-        String symbol = ((TermQuery) query).getTerm().text();
-        if (tags.occurrences(symbol) == 1) {
+        if (doc.getFieldable("tags")!=null) {
+         byte[] rawTags = doc.getFieldable("tags").getBinaryValue();
+         Definitions tags = Definitions.deserialize(rawTags);
+         String symbol = ((TermQuery) query).getTerm().text();
+         if (tags.occurrences(symbol) == 1) {
             uniqueDefinition = true;
+         }
         }
     }
 

@@ -77,7 +77,7 @@ PKGSEND add file doc/EXAMPLE.txt mode=0444 owner=root group=sys path=/usr/opengr
 
 # install libs
 for file in ant.jar bcel-5.2.jar jakarta-oro-2.0.8.jar \
-            lucene-core-3.0.1.jar lucene-spellchecker-3.0.1.jar \
+            lucene-core-3.0.2.jar lucene-spellchecker-3.0.2.jar \
             org.apache.commons.jrcs.diff.jar org.apache.commons.jrcs.rcs.jar \
             swing-layout-0.9.jar
 do

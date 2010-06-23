@@ -75,7 +75,7 @@ String pageTitle = "Status";
         </tr>
         <tr>
             <td>Ignored files</td><td><ul><%
-            for (String s : environment.getIgnoredNames().getIgnoredPatterns()) {
+            for (String s : environment.getIgnoredNames().getItems()) {
               %><li><%=s%></li><%
             }
             %></ul></td>
