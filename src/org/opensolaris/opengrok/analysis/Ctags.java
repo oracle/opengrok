@@ -212,6 +212,7 @@ public class Ctags {
                         int space = arg.lastIndexOf(' ');//TODO this is not the best way, but works to find the last string(name) in the argument, hence skipping type
                         if (space > 0 && space < arg.length()) {
                             String afters=arg.substring(space+1);
+                            //FIXME this will not work for typeless languages such as python or assignments inside signature ... but since ctags doesn't provide signatures for python yet and assigning stuff in signature is not the case for c or java, we don't care ...
                             String[] names=afters.split("[\\W]"); //this should just parse out variables, we assume first non empty text is the argument name
                             for (String string : names) {
                              if (string.length()>0) {

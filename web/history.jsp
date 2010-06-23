@@ -33,7 +33,6 @@ org.opensolaris.opengrok.history.*,
 java.util.regex.*
 "
 %><%@include file="mast.jsp"%><% String hcontext = request.getContextPath(); %>
-<script type="text/javascript" src="<%=hcontext%>/jquery-1.4.2.min.js"></script>
 <script type="text/javascript">
 // <![CDATA[
 function toggle_filelist() {

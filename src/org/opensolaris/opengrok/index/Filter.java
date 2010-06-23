@@ -16,6 +16,8 @@
  *
  * CDDL HEADER END
  */
+
+
 package org.opensolaris.opengrok.index;
 
 import java.io.File;

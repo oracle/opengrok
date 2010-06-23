@@ -21,7 +21,8 @@
  * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
-package org.opensolaris.opengrok.analysis.sh;
+
+package org.opensolaris.opengrok.analysis.python;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -32,49 +33,32 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class ShAnalyzerFactory extends FileAnalyzerFactory {
-    private static final String[] NAMES = {
-        "MAKEFILE", "GNUMAKEFILE"
-    };
+/**
+ *
+ * @author Lubos Kosco
+ */
 
+public class PythonAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
-        "SH",
-        "KSH",
-        "CSH",
-        "BASH",
-        "PERL",
-        "RUBY",
-        "PM",
-        "RB",        
-        "PL",
-        "P5",
-        "AWK",
-        "GMK",
-        "CONF",
-        "COM",
-        "SPEC",
-        "FLG",
-        "XCL",                  // message
+        "PY"
     };
 
     private static final String[] MAGICS = {
-        "#!",
-        "##",
-        "#\n#",
+        "#!/usr/bin/env python"
     };
 
-    public ShAnalyzerFactory() {
-        super(NAMES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+    public PythonAnalyzerFactory() {
+        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new ShAnalyzer(this);
+        return new PythonAnalyzer(this);
     }
 
     @Override
     public void writeXref(Reader in, Writer out, Annotation annotation, Project project)
         throws IOException {
-        ShAnalyzer.writeXref(in, out, annotation, project);
+        PythonAnalyzer.writeXref(in, out, annotation, project);
     }
 }

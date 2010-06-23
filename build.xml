@@ -153,6 +153,8 @@ Use is subject to license terms.
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>

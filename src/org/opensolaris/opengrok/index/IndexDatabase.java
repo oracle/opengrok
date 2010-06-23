@@ -606,11 +606,11 @@ public class IndexDatabase {
      * @return true if the file should be included, false otherwise
      */
     private boolean accept(File file) {
-        if (!includedNames.isEmpty()) {
-            // the filter should not affect directory names
-            if (!(file.isDirectory() || includedNames.match(file))) {
+
+        if (!includedNames.isEmpty() &&
+           // the filter should not affect directory names
+            (!(file.isDirectory() || includedNames.match(file))) ) {
                 return false;
-            }
         }
         if (ignoredNames.ignore(file)) {
             return false;

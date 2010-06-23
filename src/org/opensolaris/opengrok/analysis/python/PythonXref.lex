@@ -23,10 +23,10 @@
  */
 
 /*
- * Cross reference a Java file
+ * Cross reference a Python file
  */
 
-package org.opensolaris.opengrok.analysis.java;
+package org.opensolaris.opengrok.analysis.python;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
 import java.io.Writer;
@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
-%class JavaXref
+%class PythonXref
 %extends JFlexXref
 %unicode
 %ignorecase
@@ -67,18 +67,12 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]
-File = [a-zA-Z]{FNameChar}* "." ("java")
+File = [a-zA-Z]{FNameChar}* "." ("py")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([ufdlUFDL]+)?
+Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([loxbLOXB]+)?
 
-JavadocWithClassArg = "@throws" | "@exception"
-JavadocWithParamNameArg = "@param"
-
-ClassName = ({Identifier} ".")* {Identifier}
-ParamName = {Identifier} | "<" {Identifier} ">"
-
-%state  STRING COMMENT SCOMMENT QSTRING JAVADOC
+%state  STRING LSTRING SCOMMENT QSTRING LQSTRING
 
 %%
 <YYINITIAL>{
@@ -101,23 +95,23 @@ ParamName = {Identifier} | "<" {Identifier} ">"
         out.write("&gt;");
 }
 
-/*{Hier}
-        { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
-*/
 {Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
+ \"\"\" { yybegin(LSTRING);out.write("<span class=\"s\">\"\"\"");}
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "/**"  { yybegin(JAVADOC);out.write("<span class=\"c\">/**");}
- "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
- "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
+ \'\'\' { yybegin(LQSTRING);out.write("<span class=\"s\">\'\'\'");}
+ "#"   { yybegin(SCOMMENT);out.write("<span class=\"c\">#");}
 }
 
 <STRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
+  \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
  \\\\   { out.write("\\\\"); }
  \\\"   { out.write("\\\""); }
+ {WhiteSpace}*{EOL} {
+    yybegin(YYINITIAL); out.write("</span>");
+    startNewLine();
+  }
 }
 
 <QSTRING> {
@@ -125,25 +119,24 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  "\\\'" { out.write("\\\'"); }
  \' {WhiteSpace} \' { out.write(yytext()); }
  \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+ {WhiteSpace}*{EOL} {
+    yybegin(YYINITIAL); out.write("</span>");
+    startNewLine();
+  }
 }
 
-<COMMENT, JAVADOC> {
-"*/"    { yybegin(YYINITIAL); out.write("*/</span>"); }
+<LSTRING> {
+ \" {WhiteSpace} \"  { out.write(yytext());}
+ \"\"\" { yybegin(YYINITIAL); out.write("\"\"\"</span>"); }
+ \\\\   { out.write("\\\\"); }
+ \\\"   { out.write("\\\""); }
 }
 
-<JAVADOC> {
-  {JavadocWithParamNameArg} {WhiteSpace} {ParamName} |
-  {JavadocWithClassArg} {WhiteSpace} {ClassName} {
-    String text = yytext();
-    String[] tokens = text.split(WHITE_SPACE, 2);
-    out.append("<strong>").append(tokens[0]).append("</strong>")
-      .append(text.substring(tokens[0].length(),
-                             text.length() - tokens[1].length()))
-      .append("<em>").append(tokens[1]).append("</em>");
-  }
-  "@" {Identifier} {
-    out.append("<strong>").append(yytext()).append("</strong>");
-  }
+<LQSTRING> {
+ "\\\\" { out.write("\\\\"); }
+ "\\\'" { out.write("\\\'"); }
+ \' {WhiteSpace} \' { out.write(yytext()); }
+ \'\'\'     { yybegin(YYINITIAL); out.write("'''</span>"); }
 }
 
 <SCOMMENT> {
@@ -154,7 +147,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 }
 
 
-<YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, JAVADOC> {
+<YYINITIAL, STRING, SCOMMENT, QSTRING , LSTRING, LQSTRING> {
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
@@ -164,7 +157,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
  .      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, COMMENT, SCOMMENT, STRING, QSTRING, JAVADOC> {
+<STRING, SCOMMENT, STRING, QSTRING , LSTRING, LQSTRING> {
 {Path}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 

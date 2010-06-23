@@ -74,7 +74,7 @@ String pageTitle = "OpenGrok Help";
                     
                 valid <u>FIELDs</u> are
                 <pre>
-                            <b>full:</b> Full text search.
+                            <b>full:</b> Search through all text tokens(words,strings,identifiers,numbers) in index.
                             <b>defs:</b> Only finds symbol definitions.
                             <b>refs:</b> Only finds symbols.
                             <b>path:</b> path of the source file.

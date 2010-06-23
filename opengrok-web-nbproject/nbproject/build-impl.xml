@@ -192,6 +192,20 @@
         <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
         <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
         <fail unless="dist.war">Must set dist.war</fail>
+        <condition property="missing.j2ee.server.home">
+            <and>
+                <matches pattern="j2ee.server.home" string="${j2ee.platform.classpath}"/>
+                <not>
+                    <isset property="j2ee.server.home"/>
+                </not>
+            </and>
+        </condition>
+        <fail if="missing.j2ee.server.home">
+The Java EE server classpath is not correctly set up - server home directory is missing.
+Either open the project in the IDE and assign the server or setup the server classpath manually.
+For example like this:
+   ant -Dj2ee.server.home=&lt;app_server_installation_directory&gt;
+                </fail>
         <fail unless="j2ee.platform.classpath">
 The Java EE server classpath is not correctly set up. Your active server type is ${j2ee.server.type}.
 Either open the project in the IDE and assign the server or setup the server classpath manually.
@@ -209,11 +223,51 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
             </sequential>
         </macrodef>
     </target>
-    <target name="-init-macrodef-javac">
+    <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/web-project/2">
             <attribute default="" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}:${j2ee.platform.classpath}" name="classpath"/>
+            <attribute default="${javac.processorpath}" name="processorpath"/>
+            <attribute default="${build.generated.sources.dir}/ap-source-output" name="apgeneratedsrcdir"/>
+            <attribute default="${includes}" name="includes"/>
+            <attribute default="${excludes}" name="excludes"/>
+            <attribute default="${javac.debug}" name="debug"/>
+            <attribute default="${empty.dir}" name="gensrcdir"/>
+            <element name="customize" optional="true"/>
+            <sequential>
+                <property location="${build.dir}/empty" name="empty.dir"/>
+                <mkdir dir="${empty.dir}"/>
+                <mkdir dir="@{apgeneratedsrcdir}"/>
+                <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includeantruntime="false" includes="@{includes}" source="${javac.source}" srcdir="@{srcdir}" target="${javac.target}">
+                    <src>
+                        <dirset dir="@{gensrcdir}" erroronmissingdir="false">
+                            <include name="*"/>
+                        </dirset>
+                    </src>
+                    <classpath>
+                        <path path="@{classpath}"/>
+                    </classpath>
+                    <compilerarg line="${endorsed.classpath.cmd.line.arg}"/>
+                    <compilerarg line="${javac.compilerargs}"/>
+                    <compilerarg value="-processorpath"/>
+                    <compilerarg path="@{processorpath}:${empty.dir}"/>
+                    <compilerarg line="${ap.processors.internal}"/>
+                    <compilerarg value="-s"/>
+                    <compilerarg path="@{apgeneratedsrcdir}"/>
+                    <compilerarg line="${ap.proc.none.internal}"/>
+                    <customize/>
+                </javac>
+            </sequential>
+        </macrodef>
+    </target>
+    <target depends="-init-ap-cmdline-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
+        <macrodef name="javac" uri="http://www.netbeans.org/ns/web-project/2">
+            <attribute default="" name="srcdir"/>
+            <attribute default="${build.classes.dir}" name="destdir"/>
+            <attribute default="${javac.classpath}:${j2ee.platform.classpath}" name="classpath"/>
+            <attribute default="${javac.processorpath}" name="processorpath"/>
+            <attribute default="${build.generated.sources.dir}/ap-source-output" name="apgeneratedsrcdir"/>
             <attribute default="${includes}" name="includes"/>
             <attribute default="${excludes}" name="excludes"/>
             <attribute default="${javac.debug}" name="debug"/>
@@ -235,6 +289,35 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <compilerarg line="${javac.compilerargs}"/>
                     <customize/>
                 </javac>
+            </sequential>
+        </macrodef>
+    </target>
+    <target depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
+        <macrodef name="depend" uri="http://www.netbeans.org/ns/web-project/2">
+            <attribute default="" name="srcdir"/>
+            <attribute default="${build.classes.dir}" name="destdir"/>
+            <attribute default="${javac.classpath}:${j2ee.platform.classpath}" name="classpath"/>
+            <sequential>
+                <depend cache="${build.dir}/depcache" destdir="@{destdir}" excludes="${excludes}" includes="${includes}" srcdir="@{srcdir}">
+                    <classpath>
+                        <path path="@{classpath}"/>
+                    </classpath>
+                </depend>
+            </sequential>
+        </macrodef>
+        <macrodef name="force-recompile" uri="http://www.netbeans.org/ns/web-project/2">
+            <attribute default="${build.classes.dir}" name="destdir"/>
+            <sequential>
+                <fail unless="javac.includes">Must set javac.includes</fail>
+                <pathconvert pathsep="," property="javac.includes.binary">
+                    <path>
+                        <filelist dir="@{destdir}" files="${javac.includes}"/>
+                    </path>
+                    <globmapper from="*.java" to="*.class"/>
+                </pathconvert>
+                <delete>
+                    <files includes="${javac.includes.binary}"/>
+                </delete>
             </sequential>
         </macrodef>
     </target>
@@ -376,7 +459,30 @@ exists or setup the property manually. For example like this:
                 </fail>
         <taskdef classpath="${libs.CopyLibs.classpath}" resource="org/netbeans/modules/java/j2seproject/copylibstask/antlib.xml"/>
     </target>
-    <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-nbjsdebug,-init-macrodef-debug,-init-taskdefs" name="init"/>
+    <target name="-init-ap-cmdline-properties">
+        <property name="annotation.processing.enabled" value="true"/>
+        <property name="annotation.processing.processors.list" value=""/>
+        <property name="annotation.processing.run.all.processors" value="true"/>
+        <property name="javac.processorpath" value="${javac.classpath}"/>
+        <property name="javac.test.processorpath" value="${javac.test.classpath}"/>
+        <condition property="ap.supported.internal" value="true">
+            <not>
+                <matches pattern="1\.[0-5](\..*)?" string="${javac.source}"/>
+            </not>
+        </condition>
+    </target>
+    <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-ap-cmdline-supported">
+        <condition else="" property="ap.processors.internal" value="-processor ${annotation.processing.processors.list}">
+            <isfalse value="${annotation.processing.run.all.processors}"/>
+        </condition>
+        <condition else="" property="ap.proc.none.internal" value="-proc:none">
+            <isfalse value="${annotation.processing.enabled}"/>
+        </condition>
+    </target>
+    <target depends="-init-ap-cmdline-properties,-init-ap-cmdline-supported" name="-init-ap-cmdline">
+        <property name="ap.cmd.line.internal" value=""/>
+    </target>
+    <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-nbjsdebug,-init-macrodef-debug,-init-taskdefs,-init-ap-cmdline" name="init"/>
     <!--
                 COMPILATION SECTION
             -->
@@ -452,10 +558,10 @@ exists or setup the property manually. For example like this:
             <arg value="-compilerSourceVM ${javac.source}"/>
             <arg value="-compilerTargetVM ${javac.target}"/>
             <arg value="-javaEncoding ${source.encoding}"/>
-            <classpath path="${java.home}/../lib/tools.jar:${jspctask.classpath}:${jspcompilation.classpath}"/>
+            <classpath path="${java.home}/../lib/tools.jar:${libs.jsp-compiler.classpath}:${libs.jsp-compilation.classpath}"/>
         </java>
         <mkdir dir="${build.generated.dir}/classes"/>
-        <webproject2:javac classpath="${j2ee.platform.classpath}:${build.classes.dir}:${jspcompilation.classpath}" destdir="${build.generated.dir}/classes" srcdir="${build.generated.dir}/src"/>
+        <webproject2:javac classpath="${build.classes.dir}:${libs.jsp-compilation.classpath}:${javac.classpath}:${j2ee.platform.classpath}" destdir="${build.generated.dir}/classes" srcdir="${build.generated.dir}/src"/>
     </target>
     <target depends="compile" if="jsp.includes" name="-do-compile-single-jsp">
         <fail unless="javac.jsp.includes">Must select some files in the IDE or set javac.jsp.includes</fail>
@@ -471,10 +577,10 @@ exists or setup the property manually. For example like this:
             <arg value="-compilerSourceVM ${javac.source}"/>
             <arg value="-compilerTargetVM ${javac.target}"/>
             <arg value="-javaEncoding ${source.encoding}"/>
-            <classpath path="${java.home}/../lib/tools.jar:${jspctask.classpath}:${jspcompilation.classpath}"/>
+            <classpath path="${java.home}/../lib/tools.jar:${libs.jsp-compiler.classpath}:${libs.jsp-compilation.classpath}"/>
         </java>
         <mkdir dir="${build.generated.dir}/classes"/>
-        <webproject2:javac classpath="${j2ee.platform.classpath}:${build.classes.dir}:${jspcompilation.classpath}" destdir="${build.generated.dir}/classes" srcdir="${build.generated.dir}/src">
+        <webproject2:javac classpath="${build.classes.dir}:${libs.jsp-compilation.classpath}:${javac.classpath}:${j2ee.platform.classpath}" destdir="${build.generated.dir}/classes" srcdir="${build.generated.dir}/src">
             <customize>
                 <patternset includes="${javac.jsp.includes}"/>
             </customize>
@@ -725,7 +831,7 @@ exists or setup the property manually. For example like this:
     <!--
                 JAVADOC SECTION
             -->
-    <target depends="init" name="javadoc-build">
+    <target depends="init" if="have.sources" name="javadoc-build">
         <mkdir dir="${dist.javadoc.dir}"/>
         <javadoc additionalparam="${javadoc.additionalparam}" author="${javadoc.author}" charset="UTF-8" destdir="${dist.javadoc.dir}" docencoding="UTF-8" encoding="${javadoc.encoding.used}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}">
             <classpath>
