@@ -140,8 +140,8 @@ Use is subject to license terms.
         <filepath refid="lib.search.path"/>
     </available>
     <fail unless="JFlex.present" message="Please download JFlex (http://jflex.de/) and put JFlex.jar it into ./lib directory (or in ant classpath)."/>
-    
-    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpath="lib/JFlex.jar;../lib/JFlex.jar"/>    
+
+    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path"/>    
     <target name="jflex">
         <mkdir dir="${src.generatedsrc.dir}"/>
 	<jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
