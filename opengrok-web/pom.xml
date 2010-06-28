@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.opensolaris.opengrok</groupId>
+    <artifactId>opengrok-web</artifactId>
+    <packaging>war</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>OpenGrok Web</name>
+
+    <parent>
+        <groupId>org.opensolaris.opengrok</groupId>
+        <artifactId>opengrok</artifactId>
+        <version>0.10-SNAPSHOT</version>
+    </parent>
+
+    <build>
+        <!-- Unstandard paths inherited by old directory structure -->
+        <sourceDirectory>../web</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <webXml>../web/WEB-INF/web.xml</webXml>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>${groupId}</groupId>
+            <artifactId>opengrok-indexer</artifactId>
+            <version>${version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

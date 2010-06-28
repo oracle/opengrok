@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.opensolaris.opengrok</groupId>
+    <artifactId>opengrok-indexer</artifactId>
+    <packaging>jar</packaging>
+    <version>0.10-SNAPSHOT</version>
+    <name>OpenGrok Indexer</name>
+
+    <parent>
+        <groupId>org.opensolaris.opengrok</groupId>
+        <artifactId>opengrok</artifactId>
+        <version>0.10-SNAPSHOT</version>
+    </parent>
+
+    <build>
+        <sourceDirectory>../src</sourceDirectory>
+        <testSourceDirectory>../test</testSourceDirectory>
+
+        <plugins>
+            <plugin>
+                <groupId>de.jflex</groupId>
+                <artifactId>maven-jflex-plugin</artifactId>
+                <version>1.4.3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>../src/</outputDirectory>
+                            <lexDefinitions>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/c/CXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/c/CxxXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/document/TroffXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/java/JavaXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/lisp/LispXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/plain/PlainXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/plain/XMLXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/python/PythonXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/sh/ShXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/sql/SQLXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/tcl/TclXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex</lexDefinition>
+                            </lexDefinitions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.bcel</groupId>
+            <artifactId>bcel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-spellchecker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>oro</groupId>
+            <artifactId>oro</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons.jcrc</groupId>
+            <artifactId>rcs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons.jcrc</groupId>
+            <artifactId>diff</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.management</groupId>
+            <artifactId>jmxremote_optional</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>
