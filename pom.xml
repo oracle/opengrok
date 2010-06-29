@@ -219,4 +219,11 @@
         </repository>
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>snapshots.repository.codehaus.org</id>
+            <url>http://snapshots.repository.codehaus.org</url>
+        </pluginRepository>
+    </pluginRepositories>
+
 </project>
