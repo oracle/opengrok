@@ -98,10 +98,6 @@
             <artifactId>ant</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.management</groupId>
-            <artifactId>jmxremote_optional</artifactId>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

@@ -23,10 +23,6 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.jmxremote_optional.jar}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
-                </library>
-                <library dirs="200">
                     <file>${file.reference.org.apache.commons.jrcs.rcs.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
