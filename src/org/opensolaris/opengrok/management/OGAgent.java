@@ -42,9 +42,8 @@ import javax.management.MBeanServerFactory;
 import javax.management.NotificationFilter;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
+import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
-import javax.management.remote.jmxmp.JMXMPConnectorServer;
-import javax.management.remote.rmi.RMIConnectorServer;
 import javax.management.timer.Timer;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -215,15 +214,9 @@ final public class OGAgent {
         log.fine("Starting JMX connector");
         HashMap<String, Object> env = new HashMap<String, Object>();
         JMXServiceURL url = new JMXServiceURL(connprotocol, machinename, connectorport);
-        JMXConnectorServer connectorServer = null;
+        JMXConnectorServer connectorServer =
+                JMXConnectorServerFactory.newJMXConnectorServer(url, env, server);
 
-        if ("jmxmp".equals(connprotocol)) {
-            connectorServer = new JMXMPConnectorServer(url, env, server);
-        } else if ("rmi".equals(connprotocol) || "iiop".equals(connprotocol)) {
-            connectorServer = new RMIConnectorServer(url, env, server);
-        } else {
-            throw new IOException("Unknown connector protocol");
-        }
         connectorServer.start();
 
         log.info("OGA is ready and running...");
