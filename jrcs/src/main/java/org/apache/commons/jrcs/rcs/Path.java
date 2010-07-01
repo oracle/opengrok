@@ -58,6 +58,7 @@
 package org.apache.commons.jrcs.rcs;
 
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -78,7 +79,7 @@ import org.apache.commons.jrcs.diff.PatchFailedException;
  */
 class Path
 {
-    private List path = new LinkedList();
+    private List<Node> path = new LinkedList();
 
     /**
      * Creates an empty Path
@@ -206,4 +207,74 @@ class Path
         }
         return lines;
     }
+
+    public List newpatch(List<Line> lines, boolean annotate)
+            throws InvalidFileFormatException,
+            PatchFailedException
+    {
+        if (!annotate)
+        {
+            Iterator<Node> p = path.iterator();
+
+            TrunkNode head = (TrunkNode) p.next();
+            head.patch0(lines, false);
+
+            while (p.hasNext())
+            {
+                Node n = (Node) p.next();
+                n.patch(lines, false);
+            }
+        }
+        else // annotate
+        {
+            ListIterator<Node>  p = path.listIterator();
+            Node  n    = p.next();
+            Node  root = n.root();
+
+            ((TrunkNode)n).newpatch0(lines, root);
+
+            // Construct revision (but only to branchpoint if we're annotating a branchrev)
+            while (p.hasNext())
+            {
+                Node pn = p.next();
+
+                if (pn.version.isBranch())
+                {
+                    p.previous();
+                    break;
+                }
+
+                n = pn;
+                n.newpatch(lines, false, root);
+            }
+
+            // Annotate to root
+            if (root != n)
+            {
+                try
+                {
+                    Path ap = n.rcsnext.pathTo(root.version);
+
+                    LinkedList annoList = new LinkedList(lines); // We need to annotate on a copy
+
+                    for (Node tn : ap.path)
+                    {
+                        tn.newpatch(annoList, true, root); 
+                    }
+                }
+                catch (NodeNotFoundException e) // This cannot happen
+                    { }
+            }
+
+            // Annotate+construct branch lines
+            while (p.hasNext())
+            {
+                n = p.next();
+                n.newpatch(lines, false, n);
+            }
+        }
+
+        return lines;
+    }
 }
+

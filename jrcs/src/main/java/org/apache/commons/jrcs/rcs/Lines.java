@@ -79,7 +79,7 @@ class Lines
 {
 
     public static final Format annotationFormat = new MessageFormat(
-            "{0,,        } ({1} {2,  date,dd-MMM-yyyy}):"
+            "{0,,        } ({1} {2,  date,dd-MMM-yyyy}): {3}"
     );
 
     public Lines()
@@ -114,12 +114,25 @@ class Lines
         return super.add((Line) o);
     }
 
-    public Object[] toArray()
+    public Node[] nodesToArray()
     {
-        return toArray(false);
+        Node[] result = new Node[this.size()];
+        int x = 0;
+
+        for (Object o : this)
+        {
+            result[x++] = ((Line)o).revision;
+        }
+
+        return result;
     }
 
-    public Object[] toArray(boolean annotate)
+    public Object[] textToArray()
+    {
+        return textToArray(false);
+    }
+
+    public Object[] textToArray(boolean annotate)
     {
         Object[] result = new Object[this.size()];
         Iterator r = this.iterator();
@@ -131,7 +144,7 @@ class Lines
             if (annotate)
             {
                 Node rev = l.getRevision();
-                o = annotationFormat.format(new Object[]{rev.getVersion(), rev.getAuthor(), rev.getDate()});
+                o = annotationFormat.format(new Object[]{rev.getVersion(), rev.getAuthor(), rev.getDate(), o});
             }
             result[i++] = o;
         }
@@ -145,7 +158,7 @@ class Lines
 
     public String toString(boolean annotate)
     {
-        return Diff.arrayToString(this.toArray(annotate));
+        return Diff.arrayToString(this.textToArray(annotate));
     }
 }
 

@@ -131,6 +131,10 @@ public class ToString
 		l.add(value.substring(p, i));
 		p = i+1;
 	}
+
+	if (p < value.length())
+		l.add(value.substring(p, value.length()));
+
 	//System.err.println("lsize =" +l.size());
         return (String[]) l.toArray(new String[l.size()]);
     }
@@ -184,7 +188,10 @@ public class ToString
             buf.append(o[i]);
             buf.append(EOL);
         }
-        buf.append(o[o.length - 1]);
+
+	if (o.length > 0)
+		buf.append(o[o.length - 1]);
+
         return buf.toString();
     }
 }

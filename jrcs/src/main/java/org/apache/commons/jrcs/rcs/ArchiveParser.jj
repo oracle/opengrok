@@ -55,8 +55,6 @@
  *
  */
 
-
-
 options {
 COMMON_TOKEN_ACTION=false;
 CHOICE_AMBIGUITY_CHECK=2;
@@ -99,85 +97,86 @@ import java.io.Reader;
  * @see Archive
  */
 class ArchiveParser {
-  public ArchiveParser(InputStream in) {
-    this(new FastCharStream(in));
-  }
+	public ArchiveParser(InputStream in) {
+		this(new FastCharStream(in));
+	}
 
-  static final String ident = "RCS ArchiveParser Parser $version$:";
+	static final String ident = "RCS ArchiveParser Parser $version$:";
 
-  public static void main(String args[]) {
-    ArchiveParser parser;
-    if (args.length == 0)
-    {
-      System.out.println(ident + "  Reading from standard input . . .");
-      parser = new ArchiveParser(System.in);
-    }
-    else if (args.length == 1)
-    {
-      System.out.println(ident + "  Reading from file " + args[0] + " . . .");
-      try
-      {
-        parser = new ArchiveParser(new FileInputStream(args[0]));
-      }
-      catch (java.io.FileNotFoundException e)
-      {
-        System.out.println(ident + "  File " + args[0] + " not found.");
-        return;
-      }
-    }
-    else
-    {
-      System.out.println(ident+"  Usage is one of:");
-      System.out.println("         java ArchiveParser < inputfile");
-      System.out.println("OR");
-      System.out.println("         java ArchiveParser inputfile");
-      return;
-    }
-    parser.parse();
-  }
+	public static void main(String args[]) {
+		ArchiveParser parser;
+		if (args.length == 0)
+		{
+			System.out.println(ident + "  Reading from standard input . . .");
+			parser = new ArchiveParser(System.in);
+		}
+		else if (args.length == 1)
+		{
+			System.out.println(ident + "  Reading from file " + args[0] + " . . .");
+			try
+			{
+				parser = new ArchiveParser(new FileInputStream(args[0]));
+			}
+			catch (java.io.FileNotFoundException e)
+			{
+				System.out.println(ident + "  File " + args[0] + " not found.");
+				return;
+			}
+		}
+		else
+		{
+			System.out.println(ident+"  Usage is one of:");
+			System.out.println("         java ArchiveParser < inputfile");
+			System.out.println("OR");
+			System.out.println("         java ArchiveParser inputfile");
+			return;
+		}
+		parser.parse();
+	}
 
-  public static void load(Archive arc, InputStream input) throws ParseException
-  {
-      ArchiveParser parser = new ArchiveParser(input);
-      parser.archive(arc);
-  }
+	public static void load(Archive arc, InputStream input) throws ParseException
+	{
+		ArchiveParser parser = new ArchiveParser(input);
+		parser.archive(arc);
+	}
 
-  public static void load(Archive arc, String fname) throws FileNotFoundException, ParseException
-  {
-    load(arc, new FileInputStream(fname) );
-  }
+	public static void load(Archive arc, String fname) throws FileNotFoundException, ParseException
+	{
+		load(arc, new FileInputStream(fname) );
+	}
 
-  public void parse()
-  {
-    try
-    {
-      archive(null);
-      System.out.println("RCS ArchiveParser Parser version 1.1:  RCS ArchiveParser parsed successfully.");
-    }
-    catch (ParseException e)
-    {
-      System.out.println("RCS ArchiveParser Parser version 1.1:  Encountered errors during parse.");
-    }
-  }
-
+	public void parse()
+	{
+		try
+		{
+			archive(new Archive());
+			System.out.println("RCS ArchiveParser Parser version 1.1:  RCS ArchiveParser parsed successfully.");
+		}
+		catch (ParseException e)
+		{
+			System.out.println("RCS ArchiveParser Parser version 1.1:  Encountered errors during parse.");
+		}
+	}
 }
+
 PARSER_END(ArchiveParser)
 
-<DEFAULT,PRE_DELTA> SKIP : /* WHITE SPACE */
+<DEFAULT,IDSTATE,DATESTATE,SYMBOLSTATE> SKIP : /* WHITE SPACE */
 {
   " "
 | "\n"
 | "\t"
 | "\r"
 | "\f"
+| "\b"
 }
 
 
-TOKEN : /* keywords */
+<DEFAULT> TOKEN : /* keywords */
 {
- < ACCESS: "access" >
+ < ACCESS: "access" > : IDSTATE
 |
- < AUTHOR: "author" >
+ < AUTHOR: "author" > : IDSTATE
 |
  < BRANCH: "branch" >
 |
@@ -185,7 +184,7 @@ TOKEN : /* keywords */
 |
  < COMMENT: "comment" >
 |
- < DATE: "date" >
+ < DATE: "date" > : DATESTATE
 |
  < DESC: "desc" >
 |
@@ -193,35 +192,54 @@ TOKEN : /* keywords */
 |
  < HEAD : "head" >
 |
- < LOCKS: "locks" >
+ < LOCKS: "locks" > : IDSTATE
 |
  < LOG: "log" >
 |
  < NEXT: "next" >
 |
- < STATE: "state">
+ < STATE: "state"> : IDSTATE
 |
  < STRICT: "strict">
 |
- < SYMBOLS: "symbols" >
+ < SYMBOLS: "symbols" > : SYMBOLSTATE
 |
  < TEXT: "text" >
 }
 
-
-TOKEN :
+<DATESTATE> TOKEN :
 {
-  < ID:  (<DIGIT>|".")? <IDCHAR> (<IDCHAR>|<DIGIT>|".")*>
+	< DIGITS: ( <DIGIT> )+ >
 |
-  < SYM: (<DIGIT>)* <IDCHAR> (<IDCHAR>|<DIGIT>)* >
+	< DOT: "." >
+}
+
+<DEFAULT,IDSTATE,SYMBOLSTATE> TOKEN :
+{
+	< NUM: ( <DIGIT>|"." )+ >
+}
+
+<DEFAULT,IDSTATE> TOKEN :
+{
+	< ID:  (<NUM>)? <IDCHAR> (<IDCHAR>|<NUM>)* > : IDSTATE
+}
+
+<DEFAULT,SYMBOLSTATE> TOKEN :
+{
+	< SYM: (<DIGIT>)* <IDCHAR> (<IDCHAR>|<DIGIT>)* >
+}
+
+<DEFAULT,IDSTATE,SYMBOLSTATE,DATESTATE> TOKEN :
+{
+	< EOS: ";" > : DEFAULT
 |
-  < STRING: "@" ( ~["@"] | "@@" )* "@" >
+	< COLON: ":" >
 |
-  < #IDCHAR: ["A"-"Z", "a"-"z", "-", "_"] >
+	< STRING: "@" ( ~["@"] | "@@" )* "@" >
 |
-  < #DIGIT: ["0"-"9"]  >
+	< #IDCHAR: ~[ ";", " ", "0"-"9", "$", ",", ".", ":", "@", "\n", "\b", "\t", "\f", "\r" ] >
 |
-  < NUM: ( <DIGIT> )+ >
+	< #DIGIT: ["0"-"9"]  >
 }
 
 /**
@@ -239,127 +257,24 @@ void archive(Archive arc) :
 }
 
 void admin(Archive arc) :
-{}
 {
-     head(arc)
-   [ branch(arc) ]
-     access(arc)
-     symbols(arc)
-     locks(arc)
-     optionals(arc)
-}
-
-void optionals(Archive arc) :
-{}
-{
-   ( comment(arc)
-   | expand(arc)
-   | newPhrase(arc.phrases)
-   )*
-}
-
-void newPhrases(Map map) :
-{}
-{
- ( newPhrase(map) )*
-}
-
-void head(Archive arc)    :
-{
-    Version v;
-}
-{ <HEAD> [ v = version() { arc.setHead(v); } ]   ";"
-}
-
-void branch(Archive arc)  :
-{ Version v;
-}
-{ <BRANCH> [ v = version() { arc.setBranch(v); } ] ";"
-}
-
-void access(Archive arc)  :
-{
-    String name;
-}
-{ <ACCESS> ( name = id() { arc.addUser(name);} )* ";"
-}
-
-void symbols(Archive arc) :
-{
-    String  s;
-    Version v;
-}
-{ <SYMBOLS> ( s = sym() ":" v = version() { arc.addSymbol(s, v); }
-            )* ";"
-}
-
-void locks(Archive arc)   :
-{
-    String  name;
-    Version v;
-}
-{ <LOCKS> ( name = id() ":" v = version() { arc.addLock(name, v);} )* ";"
-[<STRICT> ";" {arc.setStrictLocking(true); } ]
-}
-
-void comment(Archive arc) :
-{ String s; }
-{ <COMMENT> [ s = string() {arc.setComment(s);} ] ";"
-}
-
-void expand(Archive arc) :
-{String s;}
-{ <EXPAND> [ s = string() {arc.setExpand(s);} ] ";"
-}
-
-void newPhrase(Map map) :
-{ String key;
-  String value;
-  StringBuffer values = new StringBuffer();
- }
-{ key = id()
-  ( value = word() { values.append(" " + value); }
-  )*
-  ";"
-  { if (map != null) map.put(key, values.toString()); }
-}
-
-String word():
-{ String result, right; }
-{  
-   result = simpleWord() [ right = range() { result = result + right; } ]
-   {return result;}
-}
-
-String simpleWord() :
-{
-    String  result;
-    Version v;
+	Version  v;
+	String   id;
+	String   sym;
+	String   string;
 }
 {
- (
- result = id()
- |
- v = version() { result = v.toString(); }
- |
- result = string()
- )
- { return result; }
-}
+	<HEAD>      [ v  = version() { arc.setHead(v); } ] <EOS>
+	[ <BRANCH>    v  = version() { arc.setBranch(v); } <EOS> ]
+	<ACCESS>   ( id  = id()      { arc.addUser(id);  } )* <EOS>
+	<SYMBOLS>  ( sym = sym() <COLON> v = version() { arc.addSymbol(sym, v); } )* <EOS>
 
-String range() :
-{
-    String rightSide;
-}
-{
-    ":" rightSide = simpleWord()
-    { return ":" + rightSide; }
-}
+	<LOCKS> ( id = id() <COLON> v = version() { arc.addLock(id, v); } )* <EOS>
+	( <STRICT> { arc.setStrictLocking(true); } <EOS> | { arc.setStrictLocking(false); } )
 
-void desc(Archive arc) :
-{ String s; }
-{
-    <DESC> s = string() { arc.setDesc(s); }
+	[ <COMMENT> [ string = string() { arc.setComment(string); } ] <EOS> ]
+	[ <EXPAND> [ string = string() { arc.setExpand(string); } ] <EOS> ]
+	( newPhrase(arc.phrases) )*
 }
 
 void delta(Archive arc)   :
@@ -372,12 +287,18 @@ void delta(Archive arc)   :
 {
      v = version()
      { node = arc.newNode(v); }
-    <DATE>     d   = date() { node.setDate(d);   }    ";"
-    <AUTHOR>   s   = id()   { node.setAuthor(s); }    ";"
-    <STATE>    [ s = id() { node.setState(s);   } ] ";"
-    <BRANCHES> ( v = version() { node.addBranch(arc.newBranchNode(v));  } )* ";"
-    <NEXT>     [ v = version() { node.setRCSNext(arc.newNode(v));} ]  ";"
-     newPhrases(node.phrases)
+    <DATE>     d   = date() { node.setDate(d);   } <EOS>
+    <AUTHOR>   s   = id()   { node.setAuthor(s); } <EOS>
+    <STATE>    [ s = id()   { node.setState(s);  } ] <EOS>
+    <BRANCHES> ( v = version() { node.addBranch(arc.newBranchNode(v));  } )* <EOS>
+    <NEXT>     [ v = version() { node.setRCSNext(arc.newNode(v));} ] <EOS>
+    ( newPhrase(node.phrases) )*
+}
+
+void desc(Archive arc) :
+{ String s; }
+{
+    <DESC> s = string() { arc.setDesc(s); }
 }
 
 void text(Archive arc) :
@@ -392,64 +313,57 @@ void text(Archive arc) :
     {
       node = arc.getNode(v);
     }
-
     <LOG> log = string()
     {
       node.setLog(log);
     }
-    newPhrases(node.phrases)
-
+    ( newPhrase(node.phrases) )*
     <TEXT> txt = string()
     {
        node.setText(txt);
     }
 }
 
-String id()      : {Token t; } { t = <ID>  { return t.image; } }
-String sym()     :
-{
-  Token t;
-}
-{
-  ( t = <SYM>
-  |
-    t = <ID>
-  )
-  { return t.image; }
-}
-
-Version version() :
-{
-  Version v;
-  int   n, r;
-}
-{
-  n = num()
-  { v = new Version(n); }
-  ( "." n = num() { v.__addBranch(n); } )*
-  { return v; }
+void newPhrase(Map map) :
+{ String key;
+  String value;
+  StringBuffer values = new StringBuffer();
+ }
+{ key = id()
+  ( value = word() { values.append(" " + value); }
+  )*
+	  <EOS>
+  { if (map != null) map.put(key, values.toString()); }
 }
 
-int[] date() :
-{
-  int[] n = new int[6];
-}
-{
-  n[0] = num() "."
-  n[1] = num() "."
-  n[2] = num() "."
-  n[3] = num() "."
-  n[4] = num() "."
-  n[5] = num()
-  {return n; }
-}
 
-int num() : { Token t; } {t = <NUM> { return Integer.parseInt(t.image);} }
+String num()    : { Token num; } { num = <NUM> { return num.image; } }
+String id()     : { Token id;  } { id  = <ID>  { return id.image; } }
+String sym()    : { Token sym; } { sym = <SYM> { return sym.image; } }
 
-String string()  :
-{Token t;}
+String string() : { Token s;   }
+	{ s = <STRING> { return Archive.unquoteString(s.image); } }
+
+String word()   : { String word; }
 {
-  t = <STRING> { return Archive.unquoteString(t.image); }
+	( word = id() | word = num() | word = string() | <COLON> { word = ":"; } )
+	{ return word; }
 }
 
+
+/* Custom symbol parsing */
+Version version() : { Token v; } { v = <NUM> { return new Version(v.image); } }
+
+int[] date() : { int[] n = new int[6]; }
+{
+	n[0] = digits() <DOT>
+	n[1] = digits() <DOT>
+	n[2] = digits() <DOT>
+	n[3] = digits() <DOT>
+	n[4] = digits() <DOT>
+	n[5] = digits()
+	{ return n; }
+}
+
+int digits() : { Token t; } { t = <DIGITS> { return Integer.parseInt(t.image); } }
 

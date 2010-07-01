@@ -166,6 +166,8 @@ public class Archive
     protected String comment = "# ";
     protected String filename = "__unknown__,v";
 
+    Lines     revLines  = null;
+
     // synchronize this if this has to be used in MT !
     private static final KeywordsFormat FORMATTER = new KeywordsFormat();
 
@@ -174,7 +176,7 @@ public class Archive
      * @param text The text of the initial revision.
      * @param desc The archives description (not the log message).
      */
-    public Archive(Object[] text, String desc)
+    public Archive(String text, String desc)
     {
         this(text, desc, new Version(1, 1));
     }
@@ -187,7 +189,7 @@ public class Archive
      * @param desc   The archives description (not the log message).
      * @param vernum The initial revision number.
      */
-    public Archive(Object[] text, String desc, String vernum)
+    public Archive(String text, String desc, String vernum)
     {
         this(text, desc, new Version(vernum));
     }
@@ -200,7 +202,7 @@ public class Archive
      * @param desc   The archives description (not the log message).
      * @param vernum The initial revision number.
      */
-    public Archive(Object[] text, String desc, Version vernum)
+    public Archive(String text, String desc, Version vernum)
     {
         // can only add a trunk version
         if (vernum.size() > 2)
@@ -941,9 +943,26 @@ public class Archive
         }
         Lines lines = new Lines();
         Node revisionFound = path.last();
-        path.patch(lines, annotate);
 
-        return doKeywords(lines.toArray(), revisionFound);
+        //path.patch(lines, annotate);
+        path.newpatch(lines, annotate);
+
+        if (annotate)
+            { revLines = lines; }
+        else
+            { revLines = null; }
+
+        return doKeywords(lines.textToArray(false), revisionFound);
+    }
+
+    /* If you didnt pass true to getRevision() this will throw NullPointerException.
+     * I consider that to be quite acceptable right now since this hardly cannot be
+     * considered a "public API" anymore. In other words, if you create a bug, it
+     * it will surely be discovered, maybe not in such a "classy" way though.
+     */
+    public Node[] getRevisionNodes()
+    {
+        return revLines.nodesToArray();
     }
 
     /**
@@ -1049,8 +1068,9 @@ public class Archive
         }
         else
         {
-            Object[] oldText = path.patch().toArray();
-            deltaText = Diff.diff(oldText, text).toRCSString(RCS_NEWLINE);
+            // Object[] oldText = path.patch().toArray();
+            Lines die = (Lines) path.patch();
+            deltaText = Diff.diff(die.textToArray(), text).toRCSString(RCS_NEWLINE);
         }
         if (deltaText.length() == 0)
         {

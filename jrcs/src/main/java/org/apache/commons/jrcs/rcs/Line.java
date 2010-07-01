@@ -71,8 +71,8 @@ package org.apache.commons.jrcs.rcs;
  */
 final public class Line
 {
-    private final Node revision;
-    private final Object text;
+    Node   revision;
+    Object text;
 
     Line(Node revision, Object text)
     {

@@ -137,10 +137,12 @@ public class Version
         StringTokenizer t = new StringTokenizer(v, ".");
 
         int count = t.countTokens();
+		/*
         if (even(count) && v.endsWith(".0"))
         {
             count--;
         } // allow a .0 ending only in branch revisions
+		*/
 
         numbers = new int[count];
         for (int i = 0; i < count; i++)

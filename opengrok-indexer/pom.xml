@@ -86,12 +86,9 @@
             <artifactId>oro</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons.jcrc</groupId>
-            <artifactId>rcs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons.jcrc</groupId>
-            <artifactId>diff</artifactId>
+            <groupId>org.opensolaris.opengrok</groupId>
+            <artifactId>jrcs</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ant</groupId>

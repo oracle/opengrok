@@ -70,6 +70,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.Scanner;
 
 import org.apache.commons.jrcs.diff.AddDelta;
 import org.apache.commons.jrcs.diff.Chunk;
@@ -112,6 +113,7 @@ public abstract class Node
     protected Node child;
     protected TreeMap branches = null;
     protected Phrases phrases = null;
+    protected boolean endWithNewLine = true;
 
     protected static final Format dateFormatter = new MessageFormat(
             "\t{0,number,##00}." +
@@ -343,6 +345,9 @@ public abstract class Node
     public void setText(String value)
     {
         this.text = org.apache.commons.jrcs.diff.Diff.stringToArray(value);
+
+	if (false == value.endsWith("\n"))
+		endWithNewLine = false;
     }
 
     /**
@@ -574,6 +579,48 @@ public abstract class Node
     }
 
 
+    void newpatch(List original, boolean annotate, Node root) throws InvalidFileFormatException
+    {
+        DeltaText dt = new DeltaText(root, this.child, annotate);
+
+        for (int i = 0; i < text.length; i++)
+        {
+            try
+            {
+                char action = ((String)text[i]).charAt(0);
+
+                Scanner s = new Scanner(((String)text[i]).substring(1));
+
+                int atLine  = s.nextInt();
+                int noLines = s.nextInt();
+
+                switch (action)
+                {
+                    case 'a' :
+                        dt.addDeltaText(new DeltaAddTextLine(atLine, noLines, text, i+1));
+                        i += noLines;
+                        break;
+
+                    case 'd' :
+                        dt.addDeltaText(new DeltaDelTextLine(atLine, noLines));
+                        break;
+
+                    default :
+                        throw new InvalidFileFormatException("Expected 'a' or 'd', got: '" + action
+                                + "' while parsing deltatext for revision: " + version);
+                }
+            } // This is not very neat. But it will work.
+            catch (Exception e)
+            {
+                throw new InvalidFileFormatException("While parsing delta text for revision: " + version
+                        + ", got: " + e.getMessage());
+            }
+        }
+
+        dt.patch(original);
+    }
+
+
     /**
      * Conver the current node and all of its branches
      * to their RCS string representation and
@@ -685,7 +732,12 @@ public abstract class Node
         }
 
         s.append("text" + EOL);
-        s.append(Archive.quoteString(Diff.arrayToString(text, EOL) + EOL));
+
+	if (true == endWithNewLine)
+		s.append(Archive.quoteString(arrayToString(text, EOL) + EOL));
+	else
+		s.append(Archive.quoteString(arrayToString(text, EOL)));
+
         s.append(EOL);
 
         if (branches != null)

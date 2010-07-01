@@ -178,14 +178,17 @@ class TrunkNode
             NodeNotFoundException,
             org.apache.commons.jrcs.diff.PatchFailedException
     {
-        Node root = this.root();
         for (int it = 0; it < getText().length; it++)
         {
-            original.add(new Line(root, getText()[it]));
+            original.add(new Line(this, getText()[it]));
         }
-        if (annotate && getParent() != null)
+    }
+
+    void newpatch0(List original, Node root)
+    {
+        for (int i = 0; i < text.length; i++)
         {
-            getParent().pathTo(root.version).patch(original, true);
+            original.add(new Line(root, text[i]));
         }
     }
 }
