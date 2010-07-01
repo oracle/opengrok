@@ -1,0 +1,455 @@
+/*
+ * ====================================================================
+ *
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 1999-2003 The Apache Software Foundation.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution, if
+ *    any, must include the following acknowlegement:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowlegement may appear in the software itself,
+ *    if and wherever such third-party acknowlegements normally appear.
+ *
+ * 4. The names "The Jakarta Project", "Commons", and "Apache Software
+ *    Foundation" must not be used to endorse or promote products derived
+ *    from this software without prior written permission. For written
+ *    permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called "Apache"
+ *    nor may "Apache" appear in their names without prior written
+ *    permission of the Apache Group.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
+ *
+ */
+
+
+
+options {
+COMMON_TOKEN_ACTION=false;
+CHOICE_AMBIGUITY_CHECK=2;
+BUILD_PARSER=true;
+BUILD_TOKEN_MANAGER=true;
+OPTIMIZE_TOKEN_MANAGER=true;
+DEBUG_TOKEN_MANAGER=false;
+CACHE_TOKENS=true;
+DEBUG_LOOKAHEAD=false;
+DEBUG_PARSER=false;
+ERROR_REPORTING=false;
+FORCE_LA_CHECK=true;
+IGNORE_CASE=false;
+JAVA_UNICODE_ESCAPE=false;  // RCS files are plain ASCII
+LOOKAHEAD=1;
+OTHER_AMBIGUITY_CHECK=1;
+SANITY_CHECK=true;
+STATIC=false;
+UNICODE_INPUT=false;
+USER_CHAR_STREAM=true;
+USER_TOKEN_MANAGER=false;
+}
+
+PARSER_BEGIN(ArchiveParser)
+
+package org.apache.commons.jrcs.rcs;
+
+import java.util.Map;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.Reader;
+
+/**
+ * Parses an RCS/CVS style version control archive into an Archive.
+ * This class is NOT thread safe.
+ * 
+ * @author <a href="mailto:juanco@suigeneris.org">Juanco Anez</a>
+ * @version $Revision: 1.4 $ $Date: 2003/05/06 14:50:52 $
+ * @see Archive
+ */
+class ArchiveParser {
+  public ArchiveParser(InputStream in) {
+    this(new FastCharStream(in));
+  }
+
+  static final String ident = "RCS ArchiveParser Parser $version$:";
+
+  public static void main(String args[]) {
+    ArchiveParser parser;
+    if (args.length == 0)
+    {
+      System.out.println(ident + "  Reading from standard input . . .");
+      parser = new ArchiveParser(System.in);
+    }
+    else if (args.length == 1)
+    {
+      System.out.println(ident + "  Reading from file " + args[0] + " . . .");
+      try
+      {
+        parser = new ArchiveParser(new FileInputStream(args[0]));
+      }
+      catch (java.io.FileNotFoundException e)
+      {
+        System.out.println(ident + "  File " + args[0] + " not found.");
+        return;
+      }
+    }
+    else
+    {
+      System.out.println(ident+"  Usage is one of:");
+      System.out.println("         java ArchiveParser < inputfile");
+      System.out.println("OR");
+      System.out.println("         java ArchiveParser inputfile");
+      return;
+    }
+    parser.parse();
+  }
+
+  public static void load(Archive arc, InputStream input) throws ParseException
+  {
+      ArchiveParser parser = new ArchiveParser(input);
+      parser.archive(arc);
+  }
+
+  public static void load(Archive arc, String fname) throws FileNotFoundException, ParseException
+  {
+    load(arc, new FileInputStream(fname) );
+  }
+
+  public void parse()
+  {
+    try
+    {
+      archive(null);
+      System.out.println("RCS ArchiveParser Parser version 1.1:  RCS ArchiveParser parsed successfully.");
+    }
+    catch (ParseException e)
+    {
+      System.out.println("RCS ArchiveParser Parser version 1.1:  Encountered errors during parse.");
+    }
+  }
+
+}
+PARSER_END(ArchiveParser)
+
+<DEFAULT,PRE_DELTA> SKIP : /* WHITE SPACE */
+{
+  " "
+| "\n"
+| "\t"
+| "\r"
+| "\f"
+}
+
+
+TOKEN : /* keywords */
+{
+ < ACCESS: "access" >
+|
+ < AUTHOR: "author" >
+|
+ < BRANCH: "branch" >
+|
+ < BRANCHES: "branches" >
+|
+ < COMMENT: "comment" >
+|
+ < DATE: "date" >
+|
+ < DESC: "desc" >
+|
+ < EXPAND: "expand" >
+|
+ < HEAD : "head" >
+|
+ < LOCKS: "locks" >
+|
+ < LOG: "log" >
+|
+ < NEXT: "next" >
+|
+ < STATE: "state">
+|
+ < STRICT: "strict">
+|
+ < SYMBOLS: "symbols" >
+|
+ < TEXT: "text" >
+}
+
+
+TOKEN :
+{
+  < ID:  (<DIGIT>|".")? <IDCHAR> (<IDCHAR>|<DIGIT>|".")*>
+|
+  < SYM: (<DIGIT>)* <IDCHAR> (<IDCHAR>|<DIGIT>)* >
+|
+  < STRING: "@" ( ~["@"] | "@@" )* "@" >
+|
+  < #IDCHAR: ["A"-"Z", "a"-"z", "-", "_"] >
+|
+  < #DIGIT: ["0"-"9"]  >
+|
+  < NUM: ( <DIGIT> )+ >
+}
+
+/**
+* PARSER STARTS HERE
+*/
+
+void archive(Archive arc) :
+{}
+{
+    admin(arc)
+  ( delta(arc) )*
+    desc(arc)
+  ( text(arc) )*
+    <EOF>
+}
+
+void admin(Archive arc) :
+{}
+{
+     head(arc)
+   [ branch(arc) ]
+     access(arc)
+     symbols(arc)
+     locks(arc)
+     optionals(arc)
+}
+
+void optionals(Archive arc) :
+{}
+{
+   ( comment(arc)
+   | expand(arc)
+   | newPhrase(arc.phrases)
+   )*
+}
+
+void newPhrases(Map map) :
+{}
+{
+ ( newPhrase(map) )*
+}
+
+void head(Archive arc)    :
+{
+    Version v;
+}
+{ <HEAD> [ v = version() { arc.setHead(v); } ]   ";"
+}
+
+void branch(Archive arc)  :
+{ Version v;
+}
+{ <BRANCH> [ v = version() { arc.setBranch(v); } ] ";"
+}
+
+void access(Archive arc)  :
+{
+    String name;
+}
+{ <ACCESS> ( name = id() { arc.addUser(name);} )* ";"
+}
+
+void symbols(Archive arc) :
+{
+    String  s;
+    Version v;
+}
+{ <SYMBOLS> ( s = sym() ":" v = version() { arc.addSymbol(s, v); }
+            )* ";"
+}
+
+void locks(Archive arc)   :
+{
+    String  name;
+    Version v;
+}
+{ <LOCKS> ( name = id() ":" v = version() { arc.addLock(name, v);} )* ";"
+[<STRICT> ";" {arc.setStrictLocking(true); } ]
+}
+
+void comment(Archive arc) :
+{ String s; }
+{ <COMMENT> [ s = string() {arc.setComment(s);} ] ";"
+}
+
+void expand(Archive arc) :
+{String s;}
+{ <EXPAND> [ s = string() {arc.setExpand(s);} ] ";"
+}
+
+void newPhrase(Map map) :
+{ String key;
+  String value;
+  StringBuffer values = new StringBuffer();
+ }
+{ key = id()
+  ( value = word() { values.append(" " + value); }
+  )*
+  ";"
+  { if (map != null) map.put(key, values.toString()); }
+}
+
+String word():
+{ String result, right; }
+{  
+   result = simpleWord() [ right = range() { result = result + right; } ]
+   {return result;}
+}
+
+String simpleWord() :
+{
+    String  result;
+    Version v;
+}
+{
+ (
+ result = id()
+ |
+ v = version() { result = v.toString(); }
+ |
+ result = string()
+ )
+ { return result; }
+}
+
+String range() :
+{
+    String rightSide;
+}
+{
+    ":" rightSide = simpleWord()
+    { return ":" + rightSide; }
+}
+
+void desc(Archive arc) :
+{ String s; }
+{
+    <DESC> s = string() { arc.setDesc(s); }
+}
+
+void delta(Archive arc)   :
+{
+    Version   v;
+    Node      node;
+    int[]     d;
+    String    s;
+}
+{
+     v = version()
+     { node = arc.newNode(v); }
+    <DATE>     d   = date() { node.setDate(d);   }    ";"
+    <AUTHOR>   s   = id()   { node.setAuthor(s); }    ";"
+    <STATE>    [ s = id() { node.setState(s);   } ] ";"
+    <BRANCHES> ( v = version() { node.addBranch(arc.newBranchNode(v));  } )* ";"
+    <NEXT>     [ v = version() { node.setRCSNext(arc.newNode(v));} ]  ";"
+     newPhrases(node.phrases)
+}
+
+void text(Archive arc) :
+{
+  Version v;
+  Node node;
+  String log;
+  String txt;
+}
+{
+    v = version()
+    {
+      node = arc.getNode(v);
+    }
+
+    <LOG> log = string()
+    {
+      node.setLog(log);
+    }
+    newPhrases(node.phrases)
+
+    <TEXT> txt = string()
+    {
+       node.setText(txt);
+    }
+}
+
+String id()      : {Token t; } { t = <ID>  { return t.image; } }
+String sym()     :
+{
+  Token t;
+}
+{
+  ( t = <SYM>
+  |
+    t = <ID>
+  )
+  { return t.image; }
+}
+
+Version version() :
+{
+  Version v;
+  int   n, r;
+}
+{
+  n = num()
+  { v = new Version(n); }
+  ( "." n = num() { v.__addBranch(n); } )*
+  { return v; }
+}
+
+int[] date() :
+{
+  int[] n = new int[6];
+}
+{
+  n[0] = num() "."
+  n[1] = num() "."
+  n[2] = num() "."
+  n[3] = num() "."
+  n[4] = num() "."
+  n[5] = num()
+  {return n; }
+}
+
+int num() : { Token t; } {t = <NUM> { return Integer.parseInt(t.image);} }
+
+String string()  :
+{Token t;}
+{
+  t = <STRING> { return Archive.unquoteString(t.image); }
+}
+
+

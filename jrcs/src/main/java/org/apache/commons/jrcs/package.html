@@ -1,0 +1,13 @@
+ The {@link org.apache.maven.jrcs.diff diff} package implements the differencing engine that JRCS uses. The engine has the power of Unix diff, is simple to understand, and can be used independently of the archive handling functionality. The entry point to the differencing engine is class {@link org.apache.maven.jrcs.diff.Diff Diff}.
+
+Text is represented as Object[] because the diff engine is capable of handling more than plain ascci. In fact, arrays of any type that implements {@link java.lang.Object#hashCode hashCode()} and {@link java.lang.Object#equals equals()} correctly can be subject to differencing using this library.
+
+Two implementations of the differencing algorithm are provided.
+
+    * {@link SimpleDiff Simple Diff} is a verys imple algorithm that is fast and works well with very large input sequences, but that frequently produces result that are subotimal (at times four or more times larger than GNU diff).
+    * {@link org.apache.commons.jrcs.diff.myers.MyersDiff MyersDiff} is an implementation of Gene Myers differencing algorithm. Myer's algorithm produces optimum results (minimum diffs), but consumes considerably more memory than SimpleDiff, so its not suitable for very large files.
+
+@author Juanco Anez
+@version $Id: package.html,v 1.2 2003/05/10 18:55:10 juanco Exp $
+@see Diff 
+@see org.apache.maven.jrcs.rcs.Archive

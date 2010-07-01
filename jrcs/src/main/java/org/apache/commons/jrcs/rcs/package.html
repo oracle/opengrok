@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<!--
+/* ====================================================================
+ * The Apache Software License, Version 1.1
+ *
+ * Copyright (c) 2002 The Apache Software Foundation.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * 3. The end-user documentation included with the redistribution,
+ *    if any, must include the following acknowledgment:
+ *       "This product includes software developed by the
+ *        Apache Software Foundation (http://www.apache.org/)."
+ *    Alternately, this acknowledgment may appear in the software itself,
+ *    if and wherever such third-party acknowledgments normally appear.
+ *
+ * 4. The names "Apache" and "Apache Software Foundation" and
+ *    "Apache Maven" must not be used to endorse or promote products
+ *    derived from this software without prior written permission. For
+ *    written permission, please contact apache@apache.org.
+ *
+ * 5. Products derived from this software may not be called "Apache",
+ *    "Apache Maven", nor may "Apache" appear in their name, without
+ *    prior written permission of the Apache Software Foundation.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
+ */
+ -->
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <title>
+    </title>
+  </head>
+  <body>
+    JRCS is a library that knows how to manipulate the archive files
+    produced by the RCS and CVS version control systems. 
+    <p>
+      JRCS is not intended to replace RCS nor CVS. JRCS was written to
+      be able create archive analysis tools that can do things like
+      identify hot spots in the source code, measure the contributions
+      by each developer, or assess how bugs make it in.
+    </p>
+    <p>
+      The reasons why JRCS has the ability do do check-ins and save
+      archives is API symmetry, and to simplify the writing of unit
+      tests.
+    </p>
+    <p>
+      The {@link org.apache.maven.jrcs.rcs rcs} package implements th8e
+      archive handling functionality. The entry point to the library is
+      class {@link org.apache.maven.jrcs.rcs.Archive Archive}.
+    </p>
+    <p>
+      <b>CAVEAT UTILITOR:</b> Do not make modifications to your
+      archives with JRCS. There needs to be an important amount of
+      additional testing before it's safe to do that.
+    </p>
+    <p>
+      The {@link org.apache.maven.jrcs.diff diff} package implements
+      the differencing engine that JRCS uses. The engine has the power
+      of Unix diff, is simple to understand, and can be used
+      independently of the archive handling functionality. The entry
+      point to the differencing engine is class {@link
+      org.apache.maven.jrcs.diff.Diff Diff}.
+    </p>
+    <h2>
+      Package Dependencies
+    </h2>
+    <h3>
+      Jakarta ORO Regexp
+    </h3>
+    <p>
+      The Jakarta ORO Regexp library is used for RCS keyword
+      management. You can get a copy of Jakarta ORO from:
+    </p>
+    <blockquote>
+      <a href="http://jakarta.apache.org/oro/">http://jakarta.apache.org/oro/</a>
+    </blockquote>
+    <p>
+      A copy of Jakarta Regexp is included in the full distribution of
+      this library.
+    </p>
+    <h3>
+      JavaCC
+    </h3>
+    <p>
+      The RCS parser is constructed using the JavaCC compiler compiler.
+      You can get a copy of JavaCC from:
+    </p>
+    <blockquote>
+      <a href="http://www.metamata.com/javacc/">http://www.metamata.com/javacc/</a>
+    </blockquote>
+    <p>
+      JavaCC is not distributable, so you must get a copy of it
+      yourself if you intend to use it. Keep in mind that, as
+      distributed, this library does not require JavaCC to be compiled
+      because all the JavaCC generated .java files are included.
+    </p>
+    <p>
+      If you decide to use JavaCC, please adjust the "javacc.lib.dir"
+      property as needed. You'll also need to download the set of
+      optional tasks for Ant.
+    </p>
+    <h3>
+      JUnit
+    </h3>
+    <p>
+      The library tests are written for the JUnit Testing Framework.
+      For distributions and documentation see:
+    </p>
+    <blockquote>
+      <a href="http://www.junit.org/">http://www.junit.org/</a>
+    </blockquote>
+    <p>
+      @author <a href="mailto:juanco@suigeneris.org">Juanco Anez</a>
+      @version $Id: Archive.java,v 1.16 2002/02/27 20:58:58 sbailliez
+      Exp $ @see Archive @see org.apache.maven.jrcs.diff.Diff
+    </p>
+  </body>
+</html>
+
