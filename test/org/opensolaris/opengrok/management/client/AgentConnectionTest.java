@@ -24,6 +24,7 @@
 
 package org.opensolaris.opengrok.management.client;
 
+import org.junit.Ignore;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.Properties;
@@ -34,6 +35,7 @@ import org.opensolaris.opengrok.management.OGAgent;
 import org.opensolaris.opengrok.util.FileUtilities;
 import static org.junit.Assert.*;
 
+@Ignore("Bug #16451")
 public class AgentConnectionTest {
 
     private Properties savedProperties;

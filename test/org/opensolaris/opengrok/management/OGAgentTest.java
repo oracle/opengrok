@@ -31,11 +31,13 @@ import java.io.PrintStream;
 import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.FileUtilities;
 import static org.junit.Assert.*;
 
+@Ignore("Bug #16451")
 public class OGAgentTest {
 
     private Properties savedProperties;
