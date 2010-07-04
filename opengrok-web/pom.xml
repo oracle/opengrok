@@ -17,12 +17,14 @@
     <build>
         <!-- Unstandard paths inherited by old directory structure -->
         <sourceDirectory>../web</sourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
                     <webXml>../web/WEB-INF/web.xml</webXml>
+                    <warSourceDirectory>../web</warSourceDirectory>
                 </configuration>
             </plugin>
         </plugins>
