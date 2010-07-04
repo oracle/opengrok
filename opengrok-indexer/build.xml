@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").  
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+Use is subject to license terms.
+
+-->
+<project name="OpenGrok" default="jar" basedir=".">
+    <description>Builds, tests, and runs the project opengrok.</description>
+
+    <property name="version" value="0.9.1-alpha"/>
+    <property name="distname" value="opengrok"/>
+    
+
+    <property name="test.repositories" value="../testdata/repositories"/>
+    <property name="test.sources" value="../testdata/sources"/>
+    <property name="test.cvs" value="${test.repositories}/cvs"/>
+    <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
+    <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
+    <property name="test.hg" value="${test.repositories}/mercurial"/>
+    <property name="test.svn" value="${test.repositories}/svn"/>
+    <property name="test.razor" value="${test.repositories}/razor"/>
+    <property name="test.razor.repo" value="../ext/SampleRazorRepository/"/>
+    <property name="build.test.reposroots" value="target/reposroot"/>
+    <property name="build.test.classes.dir" value="target/test-classes"/>
+
+                 
+    <path id="lib.search.path">
+        <pathelement path="${user.home}/.ant/lib"/>
+        <pathelement path="${java.class.path}"/>
+	<pathelement path="lib"/>
+	<pathelement path="../lib"/>
+    </path>
+    
+    <property name="hg" value="hg"/>
+
+    <!-- Get the id of the changeset we're building from using a
+         Mercurial command.
+      -->
+    <target name="-get-changeset-from-command"
+            depends="-check-is-hg-repo" if="build.from.repo">
+        <exec executable="${hg}"
+              failifexecutionfails="no"
+              outputproperty="changeset">
+            <arg value="identify"/>
+            <arg value="--id"/>
+        </exec>
+    </target>
+
+    <!-- Check if we build from a checked out copy of the repository,
+         so that we have history information from Mercurial available.
+      -->
+    <target name="-check-is-hg-repo">
+      <available property="build.from.repo" file=".hg" type="dir"/>
+    </target>
+
+
+    <target name="-post-compile-test">
+        <antcall target="-create-svn-repository"/>
+        <antcall target="-create-razor-repository"/>
+        <!-- Change root in CVS test repository -->
+        <!-- Strange indentation in line two levels below to get newline correctly -->
+        <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
+</concat>
+        <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
+        <copy todir="${test.hg}/.hg">
+            <fileset dir="${test.hg}/hg"/>
+        </copy>
+        <copy file="${test.hg}/hgignore" tofile="${test.hg}/.hgignore"/>
+        
+        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
+              basedir="${test.sources}"
+              update="false"
+              defaultexcludes="no"/>
+        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
+                basedir="${test.repositories}"
+                excludes="mercurial/hg/**, mercurial/hgignore"
+                update="false"
+                defaultexcludes="no"/>
+
+        <antcall target="-delete-generated-repository-files"/>
+    </target>
+
+    <target name="-create-svn-repository">
+      <delete dir="${test.svn}"/>
+      <delete dir="${build.test.reposroots}/svn"/>
+      <mkdir dir="${build.test.reposroots}"/>
+      <exec executable="svnadmin" failifexecutionfails="true">
+        <arg value="create"/>
+        <arg value="${build.test.reposroots}/svn"/>
+      </exec>
+      
+      <!-- need absolute path for svn url -->
+      <pathconvert property="test.svn.url">
+        <map from="" to="file://"/>
+        <path location="${build.test.reposroots}/svn"/>
+      </pathconvert>
+
+      <exec executable="svn" failifexecutionfails="false">
+        <arg value="import"/>
+        <arg value="${test.sources}"/>
+        <arg value="${test.svn.url}"/>
+        <arg value="-m"/>
+        <arg value="Initial import"/>
+      </exec>
+      <exec executable="svn" failifexecutionfails="false">
+        <arg value="checkout"/>
+        <arg value="${test.svn.url}"/>
+        <arg value="${test.svn}"/>
+      </exec>
+    </target>
+    
+    <target name="-create-razor-repository">
+      <delete dir="${test.razor}"/>
+      <copy todir="${test.razor}/Razor-Simple">
+        <fileset dir="${test.razor.repo}/UserSandbox"/>
+      </copy>
+      <copy todir="${test.razor}/Razor-Simple/SimpleCProgram/.razor">
+        <fileset dir="${test.razor.repo}/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
+      </copy>
+
+      <!--
+          The support for binaries in Razor repositories is not fully
+          functional, so the next copy target is commented out for now.
+        -->
+
+      <!--copy todir="${test.razor}/Razor-Simple/SimpleCProgram-BinaryRelease/.razor">
+        <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
+      </copy-->
+
+    </target>
+
+    <!-- clean up generated test repositories -->
+    <target name="-delete-generated-repository-files">
+      <delete dir="${test.hg}/.hg"/>
+      <delete file="${test.hg}/.hgignore"/>
+      <delete dir="${test.svn}"/>
+      <delete dir="${test.razor}"/>
+      <delete file="${test.cvs.repo}/CVS/Root"/>
+    </target>
+
+</project>
