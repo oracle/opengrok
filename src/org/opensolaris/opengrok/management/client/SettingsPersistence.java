@@ -17,6 +17,10 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.opensolaris.opengrok.management.client;
 
 import java.io.File;
@@ -26,6 +30,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.management.OGAgent;
+import org.opensolaris.opengrok.management.Constants;
 
 /**
  *
@@ -33,11 +38,13 @@ import org.opensolaris.opengrok.management.OGAgent;
  */
 public class SettingsPersistence {
 
-    public final static String HOST = "org.opensolaris.opengrok.management.connection.host";
-    public final static String JMXPORT = "org.opensolaris.opengrok.management.connection.jmxmp.port";
+    public final static String HOST = Constants.JMX_HOST;
+    public final static String JMXPORT = Constants.JMX_PORT;
+    public final static String RMIPORT = Constants.RMI_PORT;
+    public final static String JMXURL = Constants.JMX_URL;
     public final static String INDEXTIMEOUTKEY = "org.opensolaris.opengrok.management.indextimeout";
     public final static String CONNECTIONTIMEOUTKEY = "org.opensolaris.opengrok.management.connectiontimeout";
-    public final static String LOGGINGPATHKEY = "org.opensolaris.opengrok.management.logging.path";
+    public final static String LOGGINGPATHKEY = Constants.LOG_PATH;
     public final static String FILELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.filelevel";
     public final static String CONSOLELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.consolelevel";
     private final Properties ogcProperties = new Properties();
@@ -88,8 +95,24 @@ public class SettingsPersistence {
         }
     }
 
+    /**
+     * Get the JMX URL to the agent. Generate a URL from host and port
+     * properties if no URL has been specified.
+     *
+     * @return the URL to the agent
+     */
     public String getAgentUrl() {
-        return ogcProperties.getProperty(HOST) + ":" + ogcProperties.getProperty(JMXPORT);
+        String url = ogcProperties.getProperty(JMXURL);
+        if (url == null) {
+            String host = ogcProperties.getProperty(HOST, "localhost");
+            int jmxport = Integer.valueOf(
+                    ogcProperties.getProperty(JMXPORT, "9292"));
+            int rmiport = Integer.valueOf(ogcProperties.getProperty(
+                    RMIPORT, String.valueOf(jmxport + 1)));
+            url = "service:jmx:rmi://" + host + ":" + jmxport +
+                    "/jndi/rmi://" + host + ":" + rmiport + "/opengrok";
+        }
+        return url;
     }
 
     public boolean hasExistingSettings() {

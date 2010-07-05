@@ -17,6 +17,10 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.opensolaris.opengrok.management.client;
 
 import java.awt.event.ActionEvent;
@@ -62,7 +66,7 @@ public class AgentConnection implements NotificationListener {
 
     /**
      * Constructor for AgentConnection to OpenGrok JMX Agent
-     * @param url The url for the agent to connect to (format host:port)
+     * @param url The JMX url for the agent to connect to
      * @throws java.net.MalformedURLException if url is not in correct format
      * @throws java.io.IOException if a connection error occurs
      * @throws javax.management.MalformedObjectNameException if the JMX object name is not correct
@@ -230,9 +234,7 @@ public class AgentConnection implements NotificationListener {
     }
 
     protected void connect() throws MalformedURLException, IOException {
-        String[] hostport = agenturl.split(":");
-        int port = Integer.parseInt(hostport[1]);
-        JMXServiceURL url = new JMXServiceURL("jmxmp", hostport[0], port);
+        JMXServiceURL url = new JMXServiceURL(agenturl);
         logger.info("jmx url " + url);
         HashMap<String, Object> env = new HashMap<String, Object>();
         jmxconn = JMXConnectorFactory.connect(url, env);

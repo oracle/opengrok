@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.management;
 
 import java.io.File;
@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,6 +48,9 @@ import javax.management.remote.JMXServiceURL;
 import javax.management.timer.Timer;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
+
+// PMD thinks this import is unused (confused because it's static?)
+import static org.opensolaris.opengrok.management.Constants.*; // NOPMD
 
 /**
  * OG Agent main class.
@@ -129,25 +133,22 @@ final public class OGAgent {
         }
 
         if (success) {
-            if (props.getProperty("org.opensolaris.opengrok.management.logging.path") == null) {
-                props.setProperty("org.opensolaris.opengrok.management.logging.path",
-                        uri.getPath() + "/log");
-            }
+            setIfNotSet(props, LOG_PATH, uri.getPath() + "/log");
 
-            if (props.getProperty("org.opensolaris.opengrok.configuration.file") == null) {
-                props.setProperty("org.opensolaris.opengrok.configuration.file",
-                        uri.getPath() + "/etc/configuration.xml");
-            }
+            setIfNotSet(props, CONFIG_FILE,
+                    uri.getPath() + "/etc/configuration.xml");
 
-            if (props.getProperty("org.opensolaris.opengrok.management.connection.host") == null) {
-                props.setProperty("org.opensolaris.opengrok.management.connection.host",
-                        uri.getHost());
-            }
+            setIfNotSet(props, JMX_HOST, uri.getHost());
 
-            if (props.getProperty("org.opensolaris.opengrok.management.connection.port") == null) {
-                props.setProperty("org.opensolaris.opengrok.management.connection.port",
-                        Integer.toString(uri.getPort()));
-            }
+            setIfNotSet(props, JMX_PORT, String.valueOf(uri.getPort()));
+
+            setIfNotSet(props, RMI_PORT, String.valueOf(uri.getPort() + 1));
+
+            setIfNotSet(props, JMX_URL,
+                    "service:jmx:rmi://" + props.getProperty(JMX_HOST) + ":" +
+                    props.getProperty(JMX_PORT) + "/jndi/rmi://" +
+                    props.getProperty(JMX_HOST) + ":" +
+                    props.getProperty(RMI_PORT) + "/opengrok");
 
             success = createLogger(props);
         }
@@ -176,18 +177,22 @@ final public class OGAgent {
         this.props = props;
     }
 
+    /**
+     * Set a property if it is not already set to some value.
+     */
+    private static void setIfNotSet(Properties props, String key, String val) {
+        if (!props.keySet().contains(key)) {
+            props.setProperty(key, val);
+        }
+    }
+
     public void runOGA() throws MalformedURLException, IOException, JMException {
-        String machinename = java.net.InetAddress.getLocalHost().getHostName();
         String javaver = System.getProperty("java.version");
 
 
         log.info("Starting " + Info.getFullVersion() +
                 " JMX Agent, with java version " + javaver);
         //create mbeanserver
-
-        String connprotocol = props.getProperty("org.opensolaris.opengrok.management.connection.protocol", "jmxmp");
-        int connectorport = Integer.parseInt(props.getProperty("org.opensolaris.opengrok.management.connection.port"));
-        log.fine("Using protocol " + connprotocol + ", port: " + connectorport);
 
         ArrayList mbservs = MBeanServerFactory.findMBeanServer(null);
         log.fine("Finding MBeanservers, size " + mbservs.size());
@@ -211,9 +216,20 @@ final public class OGAgent {
         log.info("MBeans registered");
 
         // Create and start connector server
-        log.fine("Starting JMX connector");
+        String urlString = props.getProperty(JMX_URL);
         HashMap<String, Object> env = new HashMap<String, Object>();
-        JMXServiceURL url = new JMXServiceURL(connprotocol, machinename, connectorport);
+        JMXServiceURL url = new JMXServiceURL(urlString);
+
+        // If the protocol is RMI we need to have an RMI registry running.
+        // Start an embedded registry if so requested.
+        if (url.getProtocol().equals(RMI_PROTOCOL) &&
+                Boolean.valueOf(props.getProperty(RMI_START))) {
+            int rmiport = Integer.valueOf(props.getProperty(RMI_PORT));
+            log.log(Level.FINE, "Starting RMI registry on port {0}", rmiport);
+            LocateRegistry.createRegistry(rmiport);
+        }
+
+        log.log(Level.FINE, "Starting JMX connector on {0}", urlString);
         JMXConnectorServer connectorServer =
                 JMXConnectorServerFactory.newJMXConnectorServer(url, env, server);
 

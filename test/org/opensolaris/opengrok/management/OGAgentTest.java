@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.management;
@@ -31,13 +30,11 @@ import java.io.PrintStream;
 import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.FileUtilities;
 import static org.junit.Assert.*;
 
-@Ignore("Bug #16451")
 public class OGAgentTest {
 
     private Properties savedProperties;

@@ -18,13 +18,11 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.management.client;
 
-import org.junit.Ignore;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.Properties;
@@ -35,7 +33,6 @@ import org.opensolaris.opengrok.management.OGAgent;
 import org.opensolaris.opengrok.util.FileUtilities;
 import static org.junit.Assert.*;
 
-@Ignore("Bug #16451")
 public class AgentConnectionTest {
 
     private Properties savedProperties;
@@ -60,7 +57,10 @@ public class AgentConnectionTest {
 //        OGAgent oga = new OGAgent();
 //        oga.runOGA();
         OGAgent.main(new String[0]);
-        String url = InetAddress.getLocalHost().getHostName() + ":" + 9292;
+        String host = InetAddress.getLocalHost().getHostName();
+        String url =
+                "service:jmx:rmi://" + host + ":9292/jndi/rmi://" +
+                host + ":9293/opengrok";
         AgentConnection ac = new AgentConnection(url);
         assertFalse("Shouldn't be connected", ac.isConnected());
         assertEquals(url, ac.getAgentURL());
