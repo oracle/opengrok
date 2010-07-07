@@ -79,9 +79,7 @@ public class SettingsFrame extends javax.swing.JFrame {
         //properties.setProperty(properties.PASSWORDKEY, 
         //        String.copyValueOf(passwordField.getPassword()));
         //properties.setPassword(passwordField.getPassword());
-        String[] agenturl = agentURLField.getText().split(":");
-        properties.setProperty(SettingsPersistence.HOST, agenturl[0]);
-        properties.setProperty(SettingsPersistence.JMXPORT, agenturl[1]);
+        properties.setProperty(SettingsPersistence.JMXURL, agentURLField.getText());
         properties.setProperty(SettingsPersistence.INDEXTIMEOUTKEY, indexingTimeoutField.getText());
         properties.setProperty(SettingsPersistence.CONNECTIONTIMEOUTKEY, connTimeoutField.getText());
 
