@@ -18,6 +18,19 @@
         <sourceDirectory>../src</sourceDirectory>
         <testSourceDirectory>../test</testSourceDirectory>
 
+        <resources>
+            <resource>
+                <targetPath>org/opensolaris/opengrok/analysis/sql/sql2003reserved.dat</targetPath>
+                <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
+            </resource>
+<!--
+            <resource>
+                <targetPath>org/opensolaris/opengrok/management/oga.properties</targetPath>
+                <directory>../src/org/opensolaris/opengrok/management/</directory>
+            </resource>
+-->
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>de.jflex</groupId>

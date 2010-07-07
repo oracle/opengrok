@@ -88,7 +88,7 @@ public class SCCSgetTest {
                 fail("Failed to set up the test-directory");
             }
             sccsfile = new File(sccsdir, "s.note.txt");
-            InputStream in = SCCSgetTest.class.getResourceAsStream("s.note.txt");
+            InputStream in = getClass().getResourceAsStream("s.note.txt");
             FileOutputStream out = new FileOutputStream(sccsfile);
             byte[] buffer = new byte[8192];
             int nr;
@@ -142,7 +142,7 @@ public class SCCSgetTest {
             System.out.println("sccs not available. Skipping test");
             return;
         }
-        ZipInputStream zstream = new ZipInputStream(SCCSgetTest.class.getResourceAsStream("sccs-revisions.zip"));
+        ZipInputStream zstream = new ZipInputStream(getClass().getResourceAsStream("sccs-revisions.zip"));
         ZipEntry entry;
 
         while ((entry = zstream.getNextEntry()) != null) {
