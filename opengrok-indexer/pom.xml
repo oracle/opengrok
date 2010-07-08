@@ -18,18 +18,42 @@
         <sourceDirectory>../src</sourceDirectory>
         <testSourceDirectory>../test</testSourceDirectory>
 
-        <resources>
+        <resources>            
             <resource>
-                <targetPath>org/opensolaris/opengrok/analysis/sql/sql2003reserved.dat</targetPath>
+                <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
+                <excludes><exclude>*.java</exclude></excludes>
             </resource>
-<!--
             <resource>
-                <targetPath>org/opensolaris/opengrok/management/oga.properties</targetPath>
-                <directory>../src/org/opensolaris/opengrok/management/</directory>
+                <targetPath>org/opensolaris/opengrok/index/</targetPath>
+                <directory>../src/org/opensolaris/opengrok/index/</directory>
+                <excludes><exclude>*.java</exclude></excludes>
             </resource>
--->
+            <resource>
+                <targetPath>org/opensolaris/opengrok/management/</targetPath>
+                <directory>../src/org/opensolaris/opengrok/management/</directory>
+                <excludes>
+                  <exclude>*.java</exclude>
+                  <exclude>*.html</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <targetPath>org/opensolaris/opengrok/history/</targetPath>
+                <directory>../src/org/opensolaris/opengrok/history/</directory>
+                <excludes>
+                  <exclude>*.java</exclude>
+                  <exclude>*.html</exclude>
+                </excludes>
+            </resource>
         </resources>
+
+        <testResources>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/history/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/history/</directory>
+                <excludes><exclude>*.java</exclude></excludes>
+            </testResource>
+        </testResources>
 
         <plugins>
             <plugin>
@@ -42,7 +66,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>../src/</outputDirectory>
+                            <outputDirectory>../generatedsrc/</outputDirectory>
                             <lexDefinitions>
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex</lexDefinition>
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/c/CXref.lex</lexDefinition>
@@ -95,6 +119,18 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- Test helper class with name that confuses surefire -->
+                        <exclude>**/TestRepository.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+
         </plugins>
     </build>
 
@@ -133,6 +169,20 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
+            <version>10.6.1.0</version>
+            <scope>test</scope>
+        </dependency>
+<!--        <dependency>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derbyclient</artifactId>
+            <version>10.6.1.0</version>
+            <scope>run</scope>
+        </dependency>
+-->
+
     </dependencies>
 
 </project>
