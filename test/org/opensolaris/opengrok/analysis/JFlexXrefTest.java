@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -150,5 +149,52 @@ public class JFlexXrefTest {
         assertTrue(
                 "No anchor found",
                 out.toString().contains("<a class=\"d\" name=\"bug15890\"/>"));
+    }
+
+    /**
+     * Regression test case for bug #14663, which used to break syntax
+     * highlighting in ShXref.
+     */
+    @Test
+    public void testBug14663() throws Exception {
+        // \" should not start a new string literal
+        assertXrefLine(ShXref.class, "echo \\\"", "<b>echo</b> \\\"");
+        // \" should not terminate a string literal
+        assertXrefLine(ShXref.class, "echo \"\\\"\"",
+                "<b>echo</b> <span class=\"s\">\"\\\"\"</span>");
+        // \` should not start a command substitution
+        assertXrefLine(ShXref.class, "echo \\`", "<b>echo</b> \\`");
+        // \` should not start command substitution inside a string
+        assertXrefLine(ShXref.class, "echo \"\\`\"",
+                "<b>echo</b> <span class=\"s\">\"\\`\"</span>");
+        // \` should not terminate command substitution
+        assertXrefLine(ShXref.class, "echo `\\``",
+                "<b>echo</b> <span>`\\``</span>");
+        // $# should not start a comment
+        assertXrefLine(ShXref.class, "$#", "$#");
+    }
+
+    /**
+     * Helper method that checks that the expected output is produced for a
+     * line with the specified xref class. Fails if the output is not as
+     * expected.
+     *
+     * @param xrefClass xref class to test
+     * @param inputLine the source code line to parse
+     * @param expectedOutput the expected output from the xreffer
+     */
+    private void assertXrefLine(Class<? extends JFlexXref> xrefClass,
+            String inputLine, String expectedOutput) throws Exception {
+        JFlexXref xref = xrefClass.getConstructor(Reader.class).newInstance(
+                new StringReader(inputLine));
+
+        StringWriter output = new StringWriter();
+        xref.write(output);
+
+        // This prefix is always prepended to the first line:
+        String prefix = "<a class=\"l\" name=\"1\" href=\"#1\">"
+                + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;</a>";
+
+        assertEquals(prefix + expectedOutput, output.toString());
     }
 }
