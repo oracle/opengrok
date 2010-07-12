@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
@@ -137,7 +136,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 <STRING> {
  \" {WhiteSpace}* \"  { out.write(yytext()); }
  \"     { out.write(yytext()); popstate(); }
- \\\\ | \\\" | \\\$   { out.write(yytext()); }
+ \\\\ | \\\" | \\\$ | \\` { out.write(yytext()); }
  \$\(   { pushstate(SUBSHELL, null); out.write(yytext()); }
  `      { pushstate(BACKQUOTE, null); out.write(yytext()); }
 }
@@ -162,7 +161,13 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE> {
+  /* Don't enter new state if special character is escaped. */
   \\` | \\\( | \\\) | \\\\ { out.write(yytext()); }
+  \\\" | \\' | \\\$ | \\\# { out.write(yytext()); }
+
+  /* $# should not start a comment. */
+  "$#" { out.write(yytext()); }
+
   \$ ? \( { pushstate(SUBSHELL, null); out.write(yytext()); }
   ` { pushstate(BACKQUOTE, null); out.write(yytext()); }
 }
