@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.index;
 
 import java.io.BufferedInputStream;
@@ -661,6 +661,11 @@ public class IndexDatabase {
      * @return true if the file should be accepted, false otherwise
      */
     private boolean acceptSymlink(String absolutePath, String canonicalPath) throws IOException {
+        // Always accept local symlinks
+        if (isLocal(canonicalPath)) {
+            return true;
+        }
+
         for (String allowedSymlink : RuntimeEnvironment.getInstance().getAllowedSymlinks()) {
             if (absolutePath.startsWith(allowedSymlink)) {
                 String allowedTarget = new File(allowedSymlink).getCanonicalPath();
@@ -671,6 +676,36 @@ public class IndexDatabase {
             }
         }
         return false;
+    }
+
+    /**
+     * Check if a file is local to the current project. If we don't have
+     * projects, check if the file is in the source root.
+     *
+     * @param path the path to a file
+     * @return true if the file is local to the current repository
+     */
+    private boolean isLocal(String path) {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String srcRoot = env.getSourceRootPath();
+
+        boolean local = false;
+
+        if (path.startsWith(srcRoot)) {
+            if (env.hasProjects()) {
+                String relPath = path.substring(srcRoot.length());
+                if (project.equals(Project.getProject(relPath))) {
+                    // File is under the current project, so it's local.
+                    local = true;
+                }
+            } else {
+                // File is under source root, and we don't have projects, so
+                // consider it local.
+                local = true;
+            }
+        }
+
+        return local;
     }
 
     /**
