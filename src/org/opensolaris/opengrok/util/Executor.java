@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.util;
@@ -31,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -53,10 +52,7 @@ public class Executor {
      * @param cmd An array containing the command to execute
      */
     public Executor(String[] cmd) {
-        cmdList = new ArrayList<String>();
-        for (String s : cmd) {
-            cmdList.add(s);
-        }
+        this(Arrays.asList(cmd));
     }
 
     /**
