@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
@@ -89,6 +89,9 @@ public class SubversionRepository extends Repository {
         super.setDirectoryName(directoryName);
 
         if (isWorking()) {
+            boolean working = false; // set to true if we manage to find the
+                                     // root directory
+
             List<String> cmd = new ArrayList<String>();
             cmd.add(getCommand());
             cmd.add("info");
@@ -114,6 +117,7 @@ public class SubversionRepository extends Repository {
                     String root = getValue(document.getElementsByTagName("root").item(0));
                     if (url != null && root != null) {
                         reposPath = url.substring(root.length());
+                        working = true;
                     } 
                 } catch (SAXException saxe) {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "Parser error parsing svn output", saxe);
@@ -124,8 +128,9 @@ public class SubversionRepository extends Repository {
                 }
             } else {
                 OpenGrokLogger.getLogger().warning("Failed to execute svn info for ["+ directoryName + "]. Repository disabled.");
-                setWorking(false);
             }
+
+            setWorking(working);
         }
     }
 
@@ -338,6 +343,6 @@ public class SubversionRepository extends Repository {
 
     @Override
     public boolean isWorking() {
-        return svnBinary.available;
+        return super.isWorking() && svnBinary.available;
     }
 }
