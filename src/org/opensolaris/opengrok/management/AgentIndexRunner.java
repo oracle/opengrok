@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.management;
 
@@ -91,22 +90,27 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         return indexerInstance;
     }
 
+    @Override
     public ObjectName preRegister(MBeanServer serverParam, ObjectName name) {
         return name;
     }
 
+    @Override
     public void postRegister(Boolean registrationDone) {
         // not used
     }
 
+    @Override
     public void preDeregister() {
         // not used
     }
 
+    @Override
     public void postDeregister() {
         // not used
     }
 
+    @Override
     public void run() {
         try {
             //Indexer ind = new Indexer();
@@ -121,7 +125,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
             File cfgFile = new File(configfile);
             if (cfgFile.exists()) {
                 env = RuntimeEnvironment.getInstance();
-                log.info("Running indexer with configuration " + configfile);
+                log.log(Level.INFO, "Running indexer with configuration {0}", configfile);
                 env.readConfiguration(cfgFile);
 
                 Indexer index = Indexer.getInstance();
@@ -131,7 +135,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 log.info("Update source repositories");
                 HistoryGuru.getInstance().updateRepositories();
                 List<String> subFiles = Arrays.asList(sublist);
-                log.info("Starting index, update " + update + " noThreads " + noThreads + " subfiles " + subFiles.size());
+                log.log(Level.INFO, "Starting index, update {0} noThreads {1} subfiles {2}", new Object[]{update, noThreads, subFiles.size()});
                 index.doIndexerExecution(update, noThreads, subFiles, this);
                 log.info("Finished indexing");
                 lastIndexFinish = System.currentTimeMillis();
@@ -148,7 +152,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
 
 
             } else {
-                log.warning("Cannot Run indexing without proper configuration file " + configfile);
+                log.log(Level.WARNING, "Cannot Run indexing without proper configuration file {0}", configfile);
                 doNotify(NOTIFICATIONEXCEPTIONTYPE, "Configuration file not valid", configfile);
             }
         } catch (Exception e) {
@@ -161,6 +165,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     /**
      * Disables indexer
      */
+    @Override
     public void disable() {
         enabled = false;
     }
@@ -168,6 +173,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     /**
      * Enables the indexer
      */
+    @Override
     public void enable() {
         enabled = true;
     }
@@ -176,6 +182,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
      * Handle timer notifications to the purgatory.
      * Will start the purger if it is enabled and return immediately.
      */
+    @Override
     public void handleNotification(Notification n, Object hb) {
         if (n.getType().equals("timer.notification")) {
             log.finer("Received timer notification");
@@ -185,7 +192,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 log.info("Indexing is disabled, doing nothing");
             }
         } else {
-            log.warning("Received unknown notification type: " + n.getType());
+            log.log(Level.WARNING, "Received unknown notification type: {0}", n.getType());
         }
     }
 
@@ -195,6 +202,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
      * @param waitForFinished if false the command returns immediately, if true
      * it will return when the indexing is done.
      */
+    @Override
     public void index(boolean waitForFinished) {
         log.info("Starting indexing.");
         /*
@@ -227,19 +235,33 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         }
     }
 
+    @Override
+    public void fileAdd(String path, String analyzer) {
+        log.log(Level.INFO, "Add {0} analyzer {1}", new Object[]{path, analyzer});        
+    }
+
+    @Override
+    public void fileRemove(String path) {
+        log.log(Level.INFO, "File remove {0}", path);        
+    }
+
+    @Override
+    public void fileUpdate(String path) {
+        log.log(Level.INFO, "File updated {0}", path);
+        addFileAction("U:", path);
+    }
+
+
+    @Override
     public void fileAdded(String path, String analyzer) {
-        log.info("Added " + path + " analyzer " + analyzer);
+        log.log(Level.INFO, "Added {0} analyzer {1}", new Object[]{path, analyzer});
         addFileAction("A:", path);
     }
 
+    @Override
     public void fileRemoved(String path) {
-        log.info("File removed " + path);
+        log.log(Level.INFO, "File removed {0}", path);
         addFileAction("R:", path);
-    }
-
-    public void fileUpdated(String path) {
-        log.info("File updated " + path);
-        addFileAction("U:", path);
     }
 
     private void addFileAction(String type, String path) {
@@ -258,24 +280,29 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         }
     }
 
+    @Override
     public long lastIndexTimeFinished() {
         return lastIndexFinish;
     }
 
+    @Override
     public long lastIndexTimeStarted() {
         return lastIndexStart;
     }
 
+    @Override
     public long lastIndexTimeUsed() {
         return lastIndexUsedTime;
     }
 
+    @Override
     public Exception getExceptions() {
         return lastException;
     }
 
+    @Override
     public void addNotificationListener(NotificationListener notiflistener, NotificationFilter notfilt, Object obj) throws IllegalArgumentException {
-        log.info("Adds a notiflistner, with obj " + obj.toString());
+        log.log(Level.CONFIG, "Adds a notiflistner, with obj {0}", obj.toString());
         if (notiflistener == null) {
             throw new IllegalArgumentException("Must have legal NotificationListener");
         }
@@ -284,6 +311,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         }
     }
 
+    @Override
     public void removeNotificationListener(NotificationListener notiflistener) throws ListenerNotFoundException {
         log.info("removes a notiflistener, no obj");
         boolean removed = false;
@@ -302,8 +330,9 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         }
     }
 
+    @Override
     public void removeNotificationListener(NotificationListener notiflistener, NotificationFilter filt, Object obj) throws ListenerNotFoundException {
-        log.info("removes a notiflistener obj " + obj);
+        log.log(Level.CONFIG, "removes a notiflistener obj {0}", obj);
         boolean removed = false;
         synchronized (notifListeners) {
             Iterator it = notifListeners.iterator();
@@ -326,6 +355,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
      * Method that the subclass can override, but doesn't have to
      * @return MBeanNotificationInfo array of notification (and types) this class can emitt.
      */
+    @Override
     public MBeanNotificationInfo[] getNotificationInfo() {
         MBeanNotificationInfo[] info = new MBeanNotificationInfo[1];
         String[] supptypes = {NOTIFICATIONACTIONTYPE, NOTIFICATIONINFOLONGTYPE, NOTIFICATIONINFOSTRINGTYPE};
@@ -339,21 +369,21 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
 
     private void doNotify(String type, String msg, Object userdata) {
         try {
-            log.info("start notifying " + notifListeners.size() + " listeners");
+            log.log(Level.CONFIG, "start notifying {0} listeners", notifListeners.size());
             long ts = System.currentTimeMillis();
             sequenceNo++;
             Notification notif = new Notification(type, this, sequenceNo, ts, msg);
             notif.setUserData(userdata);
             synchronized (notifListeners) {
                 for (NotificationHolder nl : notifListeners) {
-                    log.fine("having one with obj " + nl.getObj());
+                    log.log(Level.FINE, "having one with obj {0}", nl.getObj());
                     try {
                         if ((nl.getFilter() == null) ||
                                 nl.getFilter().isNotificationEnabled(notif)) {
                             nl.getNL().handleNotification(notif, nl.getObj());
                         }
                     } catch (Exception exnot) {
-                        log.log(Level.INFO, "Ex " + exnot, exnot);
+                        log.log(Level.WARNING, "Ex " + exnot, exnot);
                     }
                 }
             }

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -42,6 +41,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public final class WebappListener implements ServletContextListener {
 
+    @Override
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -59,7 +59,7 @@ public final class WebappListener implements ServletContextListener {
 
         String address = context.getInitParameter("ConfigAddress");
         if (address != null && address.length() > 0) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Will listen for configuration on [" + address + "]");
+            OpenGrokLogger.getLogger().log(Level.CONFIG, "Will listen for configuration on [{0}]", address);
             String[] cfg = address.split(":");
             if (cfg.length == 2) {
                 try {
@@ -75,12 +75,13 @@ public final class WebappListener implements ServletContextListener {
             } else {
                 OpenGrokLogger.getLogger().log(Level.SEVERE, "Incorrect format for the configuration address: ");
                 for (int i = 0; i < cfg.length; ++i) {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, "[" + cfg[i] + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, "[{0}]", cfg[i]);
                 }
             }
         }
     }
 
+    @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
     }

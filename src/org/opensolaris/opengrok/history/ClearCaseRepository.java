@@ -374,11 +374,11 @@ public Annotation annotate(File file, String revision) throws IOException {
             } else {
                 String sep = System.getProperty("line.separator");
                 String[] vobs = output.split(Pattern.quote(sep));
-                OpenGrokLogger.getLogger().log(Level.INFO, "Found VOBs: "+Arrays.asList(vobs));
+                OpenGrokLogger.getLogger().log(Level.CONFIG, "Found VOBs: {0}", Arrays.asList(vobs));
                 return vobs;
             }
         } else {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "\"cleartool lsvob -s\" returned non-zero status: "+rc);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "\"cleartool lsvob -s\" returned non-zero status: {0}", rc);
             return new String[0];
         }
     }

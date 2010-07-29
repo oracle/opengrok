@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -30,14 +29,30 @@ package org.opensolaris.opengrok.index;
  */
 public interface IndexChangedListener {
     /**
-     * A file is added to the index database
+     * A file is to be added to the index database
+     * @param path The path to the file (absolute from source root)
+     * @param analyzer The analyzer being used to analyze the file
+     */
+    void fileAdd(String path, String analyzer);
+    /**
+     * A file is to be added to the index database
      * @param path The path to the file (absolute from source root)
      * @param analyzer The analyzer being used to analyze the file
      */
     void fileAdded(String path, String analyzer);
     /**
-     * A file is being removed from the index database
+     * A file is to be removed from the index database
+     * @param path The path to the file (absolute from source root)
+     */
+    void fileRemove(String path);
+    /**
+     * A file is to be removed from the index database
      * @param path The path to the file (absolute from source root)
      */
     void fileRemoved(String path);
+    /**
+     * A file is to be updated in the index database
+     * @param path The path to the file (absolute from source root)
+     */
+    void fileUpdate(String path);
 }

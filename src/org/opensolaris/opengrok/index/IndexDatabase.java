@@ -144,6 +144,7 @@ public class IndexDatabase {
             
             executor.submit(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         db.update();
@@ -169,7 +170,7 @@ public class IndexDatabase {
         for (String path : paths) {
             Project project = Project.getProject(path);
             if (project == null && env.hasProjects()) {
-                log.warning("Could not find a project for \"" + path + "\"");
+                log.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
             } else {
                 IndexDatabase db;
 
@@ -190,7 +191,7 @@ public class IndexDatabase {
                             dbs.add(db);
                         }
                     } else {
-                        log.warning("Directory does not exist \"" + path + "\"");
+                        log.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
                     }
                 } catch (IOException e) {
                     log.log(Level.WARNING, "An error occured while updating index", e);
@@ -202,6 +203,7 @@ public class IndexDatabase {
                 db.addIndexChangedListener(listener);
                 executor.submit(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             db.update();
@@ -344,7 +346,7 @@ public class IndexDatabase {
             }
         } finally {
             if (writer != null) {
-                try {                    
+                try {
                     writer.close();
                 } catch (IOException e) {
                     log.log(Level.WARNING, "An error occured while closing writer", e);                    
@@ -373,11 +375,11 @@ public class IndexDatabase {
             File timestamp = new File(env.getDataRootFile(), "timestamp");
             if (timestamp.exists()) {
                 if (!timestamp.setLastModified(System.currentTimeMillis())) {
-                   log.warning("Failed to set last modified time on '" + timestamp.getAbsolutePath() + "', used for timestamping the index database."); 
+                   log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
                 }
             } else {
                 if (!timestamp.createNewFile()) {
-                   log.warning("Failed to create file '" + timestamp.getAbsolutePath() + "', used for timestamping the index database."); 
+                   log.log(Level.WARNING, "Failed to create file ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
                 }
             }
         }
@@ -404,6 +406,7 @@ public class IndexDatabase {
             if (db.isDirty()) {
                 executor.submit(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             db.update();
@@ -428,24 +431,19 @@ public class IndexDatabase {
             running = true;
         }
         IndexWriter wrt = null;
-        try {
-            if (RuntimeEnvironment.getInstance().isVerbose()) {
-                log.info("Optimizing the index ... ");
-            }
+        try {            
+            log.info("Optimizing the index ... ");            
             wrt = new IndexWriter(indexDirectory, null, false,IndexWriter.MaxFieldLength.UNLIMITED);
-            wrt.optimize();
-            if (RuntimeEnvironment.getInstance().isVerbose()) {
-                log.info("done");
-            }
+            wrt.optimize();            
+            log.info("done");            
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
-                    log.fine("Failed to remove \"dirty-file\": " +
-                            dirtyFile.getAbsolutePath());
+                    log.log(Level.FINE, "Failed to remove \"dirty-file\": {0}", dirtyFile.getAbsolutePath());
                 }
                 dirty = false;
             }
         } catch (IOException e) {
-            log.severe("ERROR: optimizing index: " + e);
+            log.log(Level.SEVERE, "ERROR: optimizing index: {0}", e);
         } finally {
             if (wrt != null) {
                 try {
@@ -467,19 +465,15 @@ public class IndexDatabase {
         IndexReader indexReader = null;
         SpellChecker checker = null;
 
-        try {
-            if (RuntimeEnvironment.getInstance().isVerbose()) {
-                log.info("Generating spelling suggestion index ... ");
-            }
+        try {            
+            log.info("Generating spelling suggestion index ... ");            
             indexReader = IndexReader.open(indexDirectory,false);
             checker = new SpellChecker(spellDirectory);
             //TODO below seems only to index "defs" , possible bug ?
-            checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));
-            if (RuntimeEnvironment.getInstance().isVerbose()) {
-                log.info("done");
-            }
+            checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));            
+            log.info("done");            
         } catch (IOException e) {
-            log.severe("ERROR: Generating spelling: " + e);
+            log.log(Level.SEVERE, "ERROR: Generating spelling: {0}", e);
         } finally {
             if (indexReader != null) {
                 try {
@@ -525,7 +519,7 @@ public class IndexDatabase {
         String path = Util.uid2url(uidIter.term().text());
 
         for (IndexChangedListener listener : listeners) {
-            listener.fileRemoved(path);
+            listener.fileRemove(path);
         }
         writer.deleteDocuments(uidIter.term());
 
@@ -538,16 +532,17 @@ public class IndexDatabase {
         File parent = xrefFile.getParentFile();
 
         if (!xrefFile.delete() && xrefFile.exists()) {
-            log.info("Failed to remove obsolete xref-file: " +
-                    xrefFile.getAbsolutePath());
+            log.log(Level.INFO, "Failed to remove obsolete xref-file: {0}", xrefFile.getAbsolutePath());
         }
 
         // Remove the parent directory if it's empty
         if (parent.delete()) {
-            log.fine("Removed empty xref dir:" + parent.getAbsolutePath());
+            log.log(Level.FINE, "Removed empty xref dir:{0}", parent.getAbsolutePath());
         }
-
         setDirty();
+        for (IndexChangedListener listener : listeners) {
+            listener.fileRemoved(path);
+        }        
     }
 
     /**
@@ -560,9 +555,10 @@ public class IndexDatabase {
         final InputStream in =
                 new BufferedInputStream(new FileInputStream(file));
         try {
-            FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
-            if (log.isLoggable(Level.FINER)) {
-                log.finer("Adding file:"+path);}
+            FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);            
+            for (IndexChangedListener listener : listeners) {
+                listener.fileAdd(path, fa.getClass().getSimpleName());
+            }
             fa.setCtags(ctags);
             fa.setProject(Project.getProject(path));
 
@@ -619,24 +615,23 @@ public class IndexDatabase {
         String absolutePath = file.getAbsolutePath();
 
         if (!file.canRead()) {
-            log.warning("Warning: could not read " + absolutePath);
+            log.log(Level.WARNING, "Warning: could not read {0}", absolutePath);
             return false;
         }
 
         try {
             String canonicalPath = file.getCanonicalPath();
             if (!absolutePath.equals(canonicalPath) && !acceptSymlink(absolutePath, canonicalPath)) {
-                log.fine("Skipped symlink '" + absolutePath +
-                            "' -> '" + canonicalPath + "'");
+                log.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''", new Object[]{absolutePath, canonicalPath});
                 return false;
             }
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
-                log.warning("Warning: ignored special file " + absolutePath);
+                log.log(Level.WARNING, "Warning: ignored special file {0}", absolutePath);
                     return false;
             }
         } catch (IOException exp) {
-            log.warning("Warning: Failed to resolve name: " + absolutePath);
+            log.log(Level.WARNING, "Warning: Failed to resolve name: {0}", absolutePath);
             log.log(Level.FINE,"Stack Trace: ",exp);       
         }
 
@@ -724,11 +719,11 @@ public class IndexDatabase {
 
         File[] files = dir.listFiles();
         if (files == null) {
-            log.severe("Failed to get file listing for: " + dir.getAbsolutePath());
+            log.log(Level.SEVERE, "Failed to get file listing for: {0}", dir.getAbsolutePath());
             return;
         }
         Arrays.sort(files, new Comparator<File>() {
-
+            @Override
                 public int compare(File p1, File p2) {
                     return p1.getName().compareTo(p2.getName());
                 }
@@ -828,7 +823,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        log.warning("Warning: Could not find a project for \"" + path + "\"");
+                        log.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listFiles();
@@ -894,7 +889,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        log.warning("Warning: Could not find a project for \"" + path + "\"");
+                        log.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listTokens(4);
@@ -969,7 +964,7 @@ public class IndexDatabase {
                     ret = IndexReader.open(fdir,false);
                 }
             } catch (Exception ex) {
-                log.severe("Failed to open index: " + indexDir.getAbsolutePath());
+                log.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());
                 log.log(Level.FINE,"Stack Trace: ",ex);
             }
         return ret;

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
@@ -294,7 +294,7 @@ public final class HistoryGuru {
                     String path = file.getCanonicalPath();
                     repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        log.log(Level.INFO, "Adding <" + repository.getClass().getName() +  "> repository: <" + path + ">");
+                        log.log(Level.CONFIG, "Adding <{0}> repository: <{1}>", new Object[]{repository.getClass().getName(), path});
                     }
                     
                     repos.add(new RepositoryInfo(repository));
@@ -303,7 +303,7 @@ public final class HistoryGuru {
                     if (recursiveSearch && repository.supportsSubRepositories()) {
                         File subFiles[] = file.listFiles();
                         if (subFiles == null) {
-                            log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                            log.log(Level.WARNING, "Failed to get sub directories for ''{0}'', check access permissions.", file.getAbsolutePath());
                         } else {
                             // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
                             if (depth<=scanningDepth) {                            
@@ -313,7 +313,7 @@ public final class HistoryGuru {
                     }
                     
                 } catch (IOException exp) {
-                    log.log(Level.WARNING, "Failed to get canonical path for " + file.getAbsolutePath() + ": " + exp.getMessage());
+                    log.log(Level.WARNING, "Failed to get canonical path for {0}: {1}", new Object[]{file.getAbsolutePath(), exp.getMessage()});
                     log.log(Level.WARNING, "Repository will be ignored...", exp);
                 }
             } else {
@@ -321,7 +321,7 @@ public final class HistoryGuru {
                 if (file.isDirectory() && !ignoredNames.ignore(file)) {
                     File subFiles[] = file.listFiles();
                     if (subFiles == null) {
-                        log.log(Level.WARNING, "Failed to get sub directories for '" + file.getAbsolutePath() + "', check access permissions.");
+                        log.log(Level.WARNING, "Failed to get sub directories for ''{0}'', check access permissions.", file.getAbsolutePath());
                     } else {
                         if (depth<=scanningDepth) {
                            addRepositories(subFiles, repos, ignoredNames, depth+1);
@@ -427,7 +427,7 @@ public final class HistoryGuru {
             long start = System.currentTimeMillis();
 
             if (verbose) {
-                log.log(Level.INFO, "Create historycache for " + path + " (" + type + ")");
+                log.log(Level.INFO, "Create historycache for {0} ({1})", new Object[]{path, type});
             }
 
             try {
@@ -438,7 +438,7 @@ public final class HistoryGuru {
 
             if (verbose) {
                 long stop = System.currentTimeMillis();
-                log.log(Level.INFO, "Creating historycache for " + path + " took (" + (stop - start) + "ms)");
+                log.log(Level.INFO, "Creating historycache for {0} took ({1}ms)", new Object[]{path, stop - start});
             }
         } else {
             log.warning(String.format("Skipping creation of historycache of %s repository in %s: Missing SCM dependencies?", type, path));
@@ -508,7 +508,7 @@ public final class HistoryGuru {
             File f = new File(root, file);
             Repository r = getRepository(f);
             if (r == null) {
-                log.warning("Could not locate a repository for " + f.getAbsolutePath());
+                log.log(Level.WARNING, "Could not locate a repository for {0}", f.getAbsolutePath());
             } else {
                 repos.add(r);
             }
@@ -590,7 +590,7 @@ public final class HistoryGuru {
                 try {
                     Repository r = RepositoryFactory.getRepository(i);
                     if (r == null) {
-                        log.warning("Failed to instanciate internal repository data for " + i.getType() + " in " + i.getDirectoryName());
+                        log.log(Level.WARNING, "Failed to instanciate internal repository data for {0} in {1}", new Object[]{i.getType(), i.getDirectoryName()});
                     } else {
                         nrep.put(r.getDirectoryName(), r);
                     }

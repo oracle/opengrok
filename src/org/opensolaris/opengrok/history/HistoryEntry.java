@@ -18,6 +18,7 @@
  */
 
 /*
+ * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
  * Copyright 2006 Trond Norbye.  All rights reserved.
  * Use is subject to license terms.
  */
@@ -74,24 +75,24 @@ public class HistoryEntry {
     public void dump() {
         Logger log = OpenGrokLogger.getLogger();
 
-        log.log(Level.INFO, "HistoryEntry : revision       = " + revision);
-        log.log(Level.INFO, "HistoryEntry : date           = " + date);
-        log.log(Level.INFO, "HistoryEntry : author         = " + author);
-        log.log(Level.INFO, "HistoryEntry : active         = " + (active ? "True" : "False") );
+        log.log(Level.FINE, "HistoryEntry : revision       = {0}", revision);
+        log.log(Level.FINE, "HistoryEntry : date           = {0}", date);
+        log.log(Level.FINE, "HistoryEntry : author         = {0}", author);
+        log.log(Level.FINE, "HistoryEntry : active         = {0}", (active ? "True" : "False"));
         String[] lines = message.toString().split("\n");
         String separator = "=";
         for (String line : lines) {
-            log.log(Level.INFO, "HistoryEntry : message        " + separator + " " + line);
+            log.log(Level.FINE, "HistoryEntry : message        {0} {1}", new Object[]{separator, line});
             separator = ">";
         }
         separator = "=";
         for (String cr : changeRequests) {
-            log.log(Level.INFO, "HistoryEntry : changeRequests " + separator + " " + cr);
+            log.log(Level.FINE, "HistoryEntry : changeRequests {0} {1}", new Object[]{separator, cr});
             separator = ">";
         }
         separator = "=";
         for (String file : files) {
-            log.log(Level.INFO, "HistoryEntry : files          " + separator + " " + file);
+            log.log(Level.FINE, "HistoryEntry : files          {0} {1}", new Object[]{separator, file});
             separator = ">";
         }
    }

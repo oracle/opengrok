@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -35,24 +36,50 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 class DefaultIndexChangedListener implements IndexChangedListener {
 
     private final boolean verbose;
+    private static final Logger log = Logger.getLogger(DefaultIndexChangedListener.class.getName());
 
     DefaultIndexChangedListener() {
         verbose = RuntimeEnvironment.getInstance().isVerbose();
     }
     
-    public void fileAdded(String path, String analyzer) {
+    @Override
+    public void fileAdd(String path, String analyzer) {        
         if (verbose) {
-            synchronized (this) {
-                System.out.println("Added: " + path + " (" + analyzer + ")");
+            synchronized (this) {                
+                System.out.println("Add: " + path + " (" + analyzer + ")");
             }
         }
+        if (log.isLoggable(Level.INFO)) {
+            log.log(Level.INFO, "Add: {0} ({1})", new Object[]{path, analyzer});}
     }
 
-    public void fileRemoved(String path) {
+    @Override
+    public void fileRemove(String path) {
         if (verbose) {
             synchronized (this) {
                 System.out.println("Remove stale file: " + path);
             }
         }
+        log.log(Level.INFO, "Remove file:{0}", path);
+    }
+    @Override
+    public void fileUpdate(String path) {
+        if (verbose) {
+            synchronized (this) {
+                System.out.println("Update: " + path);
+            }
+        }
+        log.log(Level.INFO, "Update: {0}", path);
+    }
+
+    @Override
+    public void fileAdded(String path, String analyzer) {
+        if (log.isLoggable(Level.FINER)) {
+            log.log(Level.FINER, "Added: {0} ({1})", new Object[]{path, analyzer});}
+    }
+
+    @Override
+    public void fileRemoved(String path) {
+        log.log(Level.FINER, "Removed file:{0}", path);
     }
 }

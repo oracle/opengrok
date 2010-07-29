@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -116,12 +115,24 @@ public class IndexerTest {
     private class MyIndexChangeListener implements org.opensolaris.opengrok.index.IndexChangedListener {
         List<String> files = new ArrayList<String>();
 
+        @Override
+        public void fileAdd(String path, String analyzer) {            
+        }
+
+        @Override
         public void fileAdded(String path, String analyzer) {
             files.add(path);
         }
 
-        public void fileRemoved(String path) {
-            files.add(path);
+        @Override
+        public void fileRemove(String path) {
+        }
+        @Override
+        public void fileUpdate(String path) {
+        }
+
+        @Override
+        public void fileRemoved(String path) {            
         }
     }
 

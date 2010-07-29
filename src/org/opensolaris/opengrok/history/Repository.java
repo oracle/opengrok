@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -85,12 +84,11 @@ public abstract class Repository extends RepositoryInfo {
         // If we want an incremental history update and get here, warn that
         // it may be slow.
         if (sinceRevision != null) {
-            Logger logger = OpenGrokLogger.getLogger();
-            Level level = Level.INFO;
-            logger.log(level,
+            Logger logger = OpenGrokLogger.getLogger();            
+            logger.log(Level.WARNING,
                     "Incremental history retrieval is not implemented for {0}.",
                     getClass().getSimpleName());
-            logger.log(level,
+            logger.log(Level.WARNING,
                     "Falling back to slower full history retrieval.");
         }
 

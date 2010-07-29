@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -319,9 +318,8 @@ public final class Indexer {
                                             arg[0],
                                             AnalyzerGuru.findFactory(arg[1]));
                                 } catch (Exception e) {
-                                    System.err.println("Unable to use " + arg[1] +
-                                            " as a FileAnalyzerFactory");
-                                    e.printStackTrace();
+                                    log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
+                                    log.log(Level.SEVERE, "Stack: ",e.fillInStackTrace());
                                     System.exit(1);
                                 }
                             }
@@ -466,16 +464,12 @@ public final class Indexer {
             throw new IndexerException("Didn't find Exuberant Ctags");
         }
 
-        if (searchRepositories) {
-            if (env.isVerbose()) {
-                System.out.println("Scanning for repositories...");
-            }
+        if (searchRepositories) {            
+            log.log(Level.INFO,"Scanning for repositories...");
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
-            long time = (System.currentTimeMillis() - start) / 1000;
-            if (env.isVerbose()) {
-                System.out.println("Done searching for repositories (" + time + "s)");
-            }
+            long time = (System.currentTimeMillis() - start) / 1000;            
+            log.log(Level.INFO, "Done searching for repositories ({0}s)", time);
         }
 
         if (addProjects) {
@@ -495,6 +489,7 @@ public final class Indexer {
             // The projects should be sorted...
             Collections.sort(projects, new Comparator<Project>() {
 
+                @Override
                 public int compare(Project p1, Project p2) {
                     String s1 = p1.getDescription();
                     String s2 = p2.getDescription();
@@ -519,16 +514,10 @@ public final class Indexer {
             }
         }
 
-        if (configFilename != null) {
-            if (env.isVerbose()) {
-                System.out.println("Writing configuration to " + configFilename);
-                System.out.flush();
-            }
-            env.writeConfiguration(new File(configFilename));
-            if (env.isVerbose()) {
-                System.out.println("Done...");
-                System.out.flush();
-            }
+        if (configFilename != null) {            
+            log.log(Level.INFO, "Writing configuration to {0}", configFilename);
+            env.writeConfiguration(new File(configFilename));            
+            log.info("Done...");
         }
 
         if (refreshHistory) {
@@ -567,7 +556,7 @@ public final class Indexer {
             for (String path : subFiles) {
                 Project project = Project.getProject(path);
                 if (project == null && env.hasProjects()) {
-                    System.err.println("Warning: Could not find a project for \"" + path + "\"");
+                    log.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                 } else {
                     IndexDatabase db;
                     if (project == null) {
@@ -585,7 +574,7 @@ public final class Indexer {
                             dbs.add(db);
                         }
                     } else {
-                        System.err.println("Warning: Directory does not exist \"" + path + "\"");
+                        log.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
                     }
                 }
             }
@@ -595,6 +584,7 @@ public final class Indexer {
                 db.addIndexChangedListener(progress);
                 executor.submit(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             if (update) {
@@ -608,7 +598,7 @@ public final class Indexer {
                             } else {
                                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while optimizing index", e);
                             }
-                            e.printStackTrace();
+                            log.log(Level.SEVERE,"Stack trace: ",e.fillInStackTrace());
                         }
                     }
                 });
@@ -629,10 +619,7 @@ public final class Indexer {
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
         if (configHost != null) {
             String[] cfg = configHost.split(":");
-            if (env.isVerbose()) {
-                log.info("Send configuration to: " + configHost);
-            }
-
+            log.log(Level.INFO, "Send configuration to: {0}", configHost);            
             if (cfg.length == 2) {
                 try {
                     InetAddress host = InetAddress.getByName(cfg[0]);
@@ -641,15 +628,12 @@ public final class Indexer {
                     log.log(Level.SEVERE, "Failed to send configuration to " + configHost+" (is web application server running with opengrok deployed?)", ex);
                 }
             } else {
-                System.err.println("Syntax error: ");
+                log.severe("Syntax error: ");
                 for (String s : cfg) {
-                    System.err.print("[" + s + "]");
-                }
-                System.err.println();
+                    log.log(Level.SEVERE, "[{0}]", s);
+                }                
             }
-            if (env.isVerbose()) {
-                log.info("Configuration update routine done, check previous output for errors.");
-            }
+            log.info("Configuration update routine done, check log output for errors.");            
         }
     }
 

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -28,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
  */
 public class GZIPAnalyzer extends FileAnalyzer {
     private Genre g;
+    @Override
     public Genre getGenre() {
         if (g != null) {
             return g;
@@ -59,6 +60,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
     
     private FileAnalyzer fa;
     
+    @Override
     public void analyze(Document doc, InputStream in) throws IOException {
         BufferedInputStream gzis = new BufferedInputStream(new GZIPInputStream(in));
         String path = doc.get("path");
@@ -69,7 +71,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
             fa = AnalyzerGuru.getAnalyzer(gzis, newname);
             if (fa == null) {
                 this.g = Genre.DATA;
-                OpenGrokLogger.getLogger().info("Did not analyze " + newname);
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Did not analyze {0}, detected as data.", newname);
             } else { // cant recurse!
                 if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
                     this.g = Genre.XREFABLE;
@@ -88,6 +90,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
         }
     }
     
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if (fa != null) {
             return fa.tokenStream(fieldName, reader);
@@ -99,6 +102,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
      * Write a cross referenced HTML file.
      * @param out Writer to store HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
         if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
             fa.writeXref(out);

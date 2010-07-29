@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -130,7 +129,7 @@ public final class RuntimeEnvironment {
         final File file = new File(dataRoot);
         if (!file.exists() && !file.mkdirs()) {
             OpenGrokLogger.getLogger().log(
-                    Level.SEVERE, "Failed to create dataroot: " + dataRoot);
+                    Level.SEVERE, "Failed to create dataroot: {0}", dataRoot);
         }
         threadConfig.get().setDataRoot(getCanonicalPath(dataRoot));
     }
@@ -288,9 +287,9 @@ public final class RuntimeEnvironment {
         executor.exec(false);
         String output = executor.getOutputString();
         if (output == null || output.indexOf("Exuberant Ctags") == -1) {
-            log.severe("Error: No Exuberant Ctags found in PATH!\n" +
-                    "(tried running " + getCtags() + ")\n" +
-                    "Please use option -c to specify path to a good Exuberant Ctags program");
+            log.log(Level.SEVERE,"Error: No Exuberant Ctags found in PATH!\n" +
+                    "(tried running " + "{0}" + ")\n" +
+                    "Please use option -c to specify path to a good Exuberant Ctags program", getCtags());
             ret =  false;
         }
 
@@ -676,7 +675,7 @@ public final class RuntimeEnvironment {
         try {
             sock.close();
         } catch (Exception ex) {
-            log.log(Level.INFO, "Couldn't close socket after writing configuration.", ex);
+            log.log(Level.CONFIG, "Couldn't close socket after writing configuration.", ex);
         }
     }
 
@@ -720,12 +719,13 @@ public final class RuntimeEnvironment {
             ret = true;
             final ServerSocket sock = configServerSocket;
             Thread t = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     while (!sock.isClosed()) {
                         Socket s = null;
                         try {
                             s = sock.accept();
-                            log.info(" OpenGrok: Got request from " + s.getInetAddress().getHostAddress());
+                            log.log(Level.FINE, " OpenGrok: Got request from {0}", s.getInetAddress().getHostAddress());
                             BufferedInputStream in = new BufferedInputStream(s.getInputStream());
                             
                             XMLDecoder d = new XMLDecoder(new BufferedInputStream(in));
@@ -734,7 +734,7 @@ public final class RuntimeEnvironment {
                             
                             if (obj instanceof Configuration) {
                                 setConfiguration((Configuration)obj);
-                                log.info("Configuration updated: " + configuration.getSourceRoot());
+                                log.log(Level.INFO, "Configuration updated: {0}", configuration.getSourceRoot());
                             }
                         } catch (IOException e) {
                             log.log(Level.SEVERE, "Error reading config file: ",e);

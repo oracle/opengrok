@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -163,8 +162,7 @@ public class BazaarRepository extends Repository {
         int status = exec.exec();
         
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.INFO, "Failed to get annotations for: \"" +
-                    file.getAbsolutePath() + "\" Exit code: " + status);
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get annotations for: \"{0}\" Exit code: {1}", new Object[]{file.getAbsolutePath(), status});
         }
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
@@ -184,7 +182,7 @@ public class BazaarRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + lineno + ": [" + line + "]");
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line {0}: [{1}]", new Object[]{lineno, line});
             }
         }
         return ret;

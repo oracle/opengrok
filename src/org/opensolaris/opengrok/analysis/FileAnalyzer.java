@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -32,6 +32,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -105,16 +106,14 @@ public class FileAnalyzer extends Analyzer {
         // not used
     }
 
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("path".equals(fieldName) || "project".equals(fieldName)) {
             return new PathTokenizer(reader);
         } else if ("hist".equals(fieldName)) {
             return hista.tokenStream(fieldName, reader);
         }
-
-        if (RuntimeEnvironment.getInstance().isVerbose()) {
-            OpenGrokLogger.getLogger().info("Have no analyzer for: " + fieldName);
-        }
+        OpenGrokLogger.getLogger().log(Level.WARNING, "Have no analyzer for: {0}", fieldName);        
         return null;
     }
 
