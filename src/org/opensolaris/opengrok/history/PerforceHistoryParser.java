@@ -17,6 +17,10 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
@@ -25,7 +29,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -116,8 +120,7 @@ public class PerforceHistoryParser {
                 int year = Integer.parseInt(matcher.group(2));
                 int month = Integer.parseInt(matcher.group(3));
                 int day = Integer.parseInt(matcher.group(4));
-                Calendar calendar = new GregorianCalendar(year, month, day);
-                entry.setDate(calendar.getTime());
+                entry.setDate(newDate(year, month, day));
                 entry.setAuthor(matcher.group(5));
                 entry.setMessage(matcher.group(6).trim());
                 entry.setActive(true);
@@ -155,8 +158,7 @@ public class PerforceHistoryParser {
                 int year = Integer.parseInt(matcher.group(2));
                 int month = Integer.parseInt(matcher.group(3));
                 int day = Integer.parseInt(matcher.group(4));
-                Calendar calendar = new GregorianCalendar(year, month, day);
-                entry.setDate(calendar.getTime());
+                entry.setDate(newDate(year, month, day));
                 entry.setAuthor(matcher.group(5));
                 entry.setActive(true);
             } else {
@@ -180,5 +182,20 @@ public class PerforceHistoryParser {
         History history = new History();
         history.setHistoryEntries(entries);
         return history;
+    }
+
+    /**
+     * Create a Date object representing the specified date.
+     *
+     * @param year the year
+     * @param month the month (January is 1, February is 2, ...)
+     * @param day the day of the month
+     * @return a Date object representing the date
+     */
+    private static Date newDate(int year, int month, int day) {
+        Calendar cal = Calendar.getInstance();
+        // Convert 1-based month to 0-based, and set time of day to noon
+        cal.set(year, month - 1, day, 12, 0, 0);
+        return cal.getTime();
     }
 }
