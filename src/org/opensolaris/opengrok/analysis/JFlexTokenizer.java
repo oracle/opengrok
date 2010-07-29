@@ -18,11 +18,13 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.analysis;
 
+import java.io.CharArrayReader;
+import java.io.Reader;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
@@ -43,7 +45,18 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     // default jflex scanner methods and variables
     abstract public boolean yylex() throws java.io.IOException ;
-    
+    abstract public void yyreset(Reader reader);
+
+    /**
+     * Reinitialize the tokenizer with new contents.
+     *
+     * @param contents a char buffer with text to tokenize
+     * @param length the number of characters to use from the char buffer
+     */
+    public final void reInit(char[] contents, int length) {
+        yyreset(new CharArrayReader(contents, 0, length));
+    }
+
     protected TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
     protected OffsetAttribute offsetAtt=(OffsetAttribute) addAttribute(OffsetAttribute.class);    
     protected PositionIncrementAttribute posIncrAtt= (PositionIncrementAttribute) addAttribute(PositionIncrementAttribute.class);

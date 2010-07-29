@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.analysis.plain;
 import java.io.IOException;
 import java.io.Reader;
@@ -41,14 +41,6 @@ return false;
 %char
 
 %{
-    public void reInit(char[] buf, int len) {
-        yyreset((Reader) null);
-        zzBuffer = buf;
-        zzEndRead = len;
-        zzAtEOF = true;
-        zzStartRead = 0;
-    }
-
     @Override
     public void close() throws IOException {
         yyclose();
