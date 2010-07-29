@@ -37,12 +37,6 @@ return false;
 %eofval}
 %char
 
-%{
-    @Override
-    public void close() throws IOException {
-        yyclose();
-    }
-%}
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Label = [0-9]+
 

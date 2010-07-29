@@ -36,13 +36,6 @@ return false;
 %eofval}
 %char
 
-%{
-    @Override
-    public void close() throws IOException {
-        yyclose();
-    }
-%}
-
 %%
 //TODO decide if we should let one char symbols
 [a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(yytext(), yychar, yychar + yylength());

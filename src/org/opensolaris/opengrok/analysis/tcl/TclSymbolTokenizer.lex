@@ -41,13 +41,6 @@ return false;
 %eofval}
 %char
 
-%{
-    @Override
-    public void close() throws IOException {
-        yyclose();
-    }
-%}
-
 Identifier = [\:\=a-zA-Z0-9_]+
 
 %state STRING COMMENT SCOMMENT

@@ -24,6 +24,7 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.CharArrayReader;
+import java.io.IOException;
 import java.io.Reader;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
@@ -44,8 +45,9 @@ import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 public abstract class JFlexTokenizer extends Tokenizer {
 
     // default jflex scanner methods and variables
-    abstract public boolean yylex() throws java.io.IOException ;
+    abstract public boolean yylex() throws IOException;
     abstract public void yyreset(Reader reader);
+    abstract public void yyclose() throws IOException;
 
     /**
      * Reinitialize the tokenizer with new contents.
@@ -55,6 +57,11 @@ public abstract class JFlexTokenizer extends Tokenizer {
      */
     public final void reInit(char[] contents, int length) {
         yyreset(new CharArrayReader(contents, 0, length));
+    }
+
+    @Override
+    public final void close() throws IOException {
+        yyclose();
     }
 
     protected TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);

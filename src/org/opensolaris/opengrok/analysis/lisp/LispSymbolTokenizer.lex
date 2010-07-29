@@ -43,11 +43,6 @@ return false;
 
 %{
     private int nestedComment;
-
-    @Override
-    public void close() throws IOException {
-        yyclose();
-    }
 %}
 
 Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
