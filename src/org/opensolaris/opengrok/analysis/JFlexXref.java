@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
 
+import java.io.CharArrayReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Set;
@@ -67,6 +68,17 @@ public abstract class JFlexXref {
       }
   }
 
+  /**
+   * Reinitialize the xref with new contents.
+   *
+   * @param contents a char buffer with text to analyze
+   * @param length the number of characters to use from the char buffer
+   */
+  public void reInit(char[] contents, int length) {
+      yyreset(new CharArrayReader(contents, 0, length));
+      annotation = null;
+  }
+
   public void setDefs(Definitions defs) {
       this.defs = defs;
   }
@@ -84,6 +96,9 @@ public abstract class JFlexXref {
 
   /** Get the next token from the scanner. */
   public abstract int yylex() throws IOException;
+
+  /** Reset the scanner. */
+  public abstract void yyreset(Reader reader);
 
   /** Get the value of {@code yyline}. */
   protected abstract int getLineNumber();

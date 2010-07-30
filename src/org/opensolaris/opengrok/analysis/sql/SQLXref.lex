@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sql;
@@ -38,15 +37,6 @@ import org.opensolaris.opengrok.web.Util;
 %int
 %{
     private int commentLevel;
-
-    public void reInit(char[] buf, int len) {
-        yyreset((Reader) null);
-        zzBuffer = buf;
-        zzEndRead = len;
-        zzAtEOF = true;
-        zzStartRead = 0;
-        annotation = null;
-    }
 
   // TODO move this into an include file when bug #16053 is fixed
   @Override

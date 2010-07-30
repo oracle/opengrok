@@ -18,12 +18,11 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
- * Cross reference a C file
+ * Cross reference a C++ file
  */
 
 package org.opensolaris.opengrok.analysis.c;
@@ -41,15 +40,6 @@ import org.opensolaris.opengrok.web.Util;
 %ignorecase
 %int
 %{
-  public void reInit(char[] buf, int len) {
-        yyreset((Reader) null);
-        zzBuffer = buf;
-        zzEndRead = len;
-        zzAtEOF = true;
-        zzStartRead = 0;
-        annotation = null;
-  }
-
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }

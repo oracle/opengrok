@@ -40,15 +40,6 @@ import java.util.Stack;
   private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
 
-  public void reInit(char[] buf, int len) {
-        yyreset((Reader) null);
-        zzBuffer = buf;
-        zzEndRead = len;
-        zzAtEOF = true;
-        zzStartRead = 0;
-        annotation = null;
-  }
-
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }

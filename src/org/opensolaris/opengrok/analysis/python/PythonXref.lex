@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -41,18 +40,6 @@ import org.opensolaris.opengrok.web.Util;
 %ignorecase
 %int
 %{
-  /* Must match WhiteSpace regex */
-  private final static String WHITE_SPACE = "[ \t\f\r]+";
-
-  public void reInit(char[] buf, int len) {
-        yyreset((Reader) null);
-        zzBuffer = buf;
-        zzEndRead = len;
-        zzAtEOF = true;
-        zzStartRead = 0;
-        annotation = null;
-  }
-
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -60,7 +47,6 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-/* Must match WHITE_SPACE constant */
 WhiteSpace     = [ \t\f]+
 EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
