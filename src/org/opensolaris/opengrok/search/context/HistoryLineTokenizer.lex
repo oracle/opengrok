@@ -18,12 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- */
-
-/*
- * ident      "@(#)HistoryLineTokenizer.lex 1.3     06/02/22 SMI"
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -142,47 +137,40 @@ stopset.add( "1.0");
         matchStart = -1;
   }
 
-  private void printHTML(char[] buf, int start, int end) throws IOException {
+  private void printHTML(char[] buf, int start, int end, boolean bold)
+            throws IOException {
+
+        boolean toHitList = (hits != null);
+
+        Appendable output = toHitList ? sb : out;
+
+        if (bold) {
+            output.append("<b>");
+        }
+
         for(int i=start;i<end; i++) {
                 switch(buf[i]) {
                 case '\n':
-                        out.write("<br/>");
+                        output.append(toHitList ? " " : "<br/>");
                         break;
                 case '<':
-                        out.write("&lt;");
+                        output.append("&lt;");
                         break;
                 case '>':
-                        out.write("&gt;");
+                        output.append("&gt;");
                         break;
                 case '&':
-                        out.write("&amp;");
+                        output.append("&amp;");
                         break;
                 default:
-                        out.write(buf[i]);
+                        output.append(buf[i]);
                 }
+        }
+
+        if (bold) {
+            output.append("</b>");
         }
   }
-
-  private void formatHTML(char buf[], int start, int end) {
-        for(int i=start;i<end; i++) {
-                switch(buf[i]) {
-                case '\n':
-                        sb.append(" ");
-                        break;
-                case '<':
-                        sb.append("&lt;");
-                        break;
-                case '>':
-                        sb.append("&gt;");
-                        break;
-                case '&':
-                        sb.append("&amp;");
-                        break;
-                default:
-                        sb.append(buf[i]);
-                }
-        }
-  } 
 
   public void printContext() throws IOException {
         if (sb == null) {
@@ -193,19 +181,10 @@ stopset.add( "1.0");
         if (matchStart == -1) {
                 matchStart = zzStartRead;
         }
-      
-        if (out != null) {
-           //System.err.println("markedPos = " + markedPos + " matchStart= " + matchStart + " zzMarkedPos=" + zzMarkedPos);
-           printHTML(zzBuffer, markedPos, matchStart);
-           out.write("<b>");
-           printHTML(zzBuffer, matchStart, zzMarkedPos);
-           out.write("</b>");
-        } else {
-           formatHTML(zzBuffer, markedPos, matchStart);
-           sb.append("<b>");
-           formatHTML(zzBuffer, matchStart, zzMarkedPos);
-           sb.append("</b>");
-        }
+
+        printHTML(zzBuffer, markedPos, matchStart, false);
+        printHTML(zzBuffer, matchStart, zzMarkedPos, true);
+
         markedPos = zzMarkedPos;
         matchStart = -1;
         dumpRest = true;
@@ -215,10 +194,9 @@ stopset.add( "1.0");
   public void dumpRest() throws IOException {
         //System.err.println("dumpRest = " + dumpRest + " zzEndRead=" + zzEndRead + " zzMarkedPos=" + zzMarkedPos+ " rest = "+rest);
         if(dumpRest) {
-           if (out != null) {
-                printHTML(zzBuffer, rest, zzEndRead);
-           } else {
-                formatHTML(zzBuffer, rest, zzEndRead);
+           printHTML(zzBuffer, rest, zzEndRead, false);
+
+           if (hits != null) {
                 hits.add(new Hit(filename, sb.toString(), "", false, alt));
                 sb.setLength(0);
            }
