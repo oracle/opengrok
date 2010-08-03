@@ -16,8 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 
 --%><%@ page import = "javax.servlet.*,
 java.lang.Integer,
@@ -43,7 +42,6 @@ org.apache.lucene.search.TopScoreDocCollector,
 org.apache.lucene.store.FSDirectory,
 org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
-org.apache.lucene.index.*,
 org.apache.lucene.search.*,
 org.apache.lucene.queryParser.*"
 %><%@ page session="false" %><%@ page errorPage="error.jsp" %><%
@@ -104,7 +102,6 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
     Searcher searcher = null;		    //the searcher used to open/search the index
     TopScoreDocCollector collector=null;         // the collector used
     ScoreDoc[] hits = null;                 // list of documents which result from the query
-    IndexReader ireader = null; 	    //the reader used to open/search the index
     Query query = null;         //the Query created by the QueryBuilder
     boolean allCollected=false;
     int totalHits=0;
@@ -158,8 +155,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                     int ii = 0;
                     //TODO might need to rewrite to Project instead of String , need changes in projects.jspf too
                     for (String proj : project) {
-                        ireader = (IndexReader.open(FSDirectory.open(new File(droot, proj)),true));
-                        searchables[ii++] = new IndexSearcher(ireader);
+                        FSDirectory dir = FSDirectory.open(new File(droot, proj));
+                        searchables[ii++] = new IndexSearcher(dir);
                     }
                     if (Runtime.getRuntime().availableProcessors() > 1) {
                         searcher = new ParallelMultiSearcher(searchables);
@@ -168,13 +165,13 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                     }
                 } else { // just 1 project selected
                     root = new File(root, project.get(0));
-                    ireader = IndexReader.open(FSDirectory.open(root),true);
-                    searcher = new IndexSearcher(ireader);
+                    FSDirectory dir = FSDirectory.open(root);
+                    searcher = new IndexSearcher(dir);
                 }
             }
         } else { //no project setup
-            ireader = IndexReader.open(FSDirectory.open(root),true);
-            searcher = new IndexSearcher(ireader);
+            FSDirectory dir = FSDirectory.open(root);
+            searcher = new IndexSearcher(dir);
             }
 
         //TODO check if below is somehow reusing sessions so we don't requery again and again, I guess 2min timeout sessions could be usefull, since you click on the next page within 2mins, if not, then wait ;)
@@ -516,8 +513,9 @@ if( hits == null || errorMsg != null) {
             }
 	    %><br/></div><%@include file="foot.jspf"%><%
     }
-    if (ireader != null)
-        ireader.close();
+    if (searcher != null) {
+        searcher.close();
+    }
 } else { // Entry page show the map
     response.sendRedirect(context + "/index.jsp");
 }
