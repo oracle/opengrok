@@ -86,7 +86,19 @@ FNameChar = [a-zA-Z0-9_\-\.]
 File = {FNameChar}+ "." ([a-zA-Z]+)
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
-%state STRING SCOMMENT QSTRING SUBSHELL BACKQUOTE
+/*
+ * States:
+ * STRING - double-quoted string, ex: "hello, world!"
+ * SCOMMENT - single-line comment, ex: # this is a comment
+ * QSTRING - single-quoted string, ex: 'hello, world!'
+ * SUBSHELL - commands executed in a sub-shell,
+ *               example 1: (echo $header; cat file.txt)
+ *               example 2 (command substitution): $(cat file.txt)
+ * BACKQUOTE - command substitution using back-quotes, ex: `cat file.txt`
+ * BRACEGROUP - group of commands in braces, possibly ksh command substitution
+ *              extension, ex: ${ cat file.txt; }
+ */
+%state STRING SCOMMENT QSTRING SUBSHELL BACKQUOTE BRACEGROUP
 
 %%
 <STRING>{
@@ -111,7 +123,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
   }
 }
 
-<YYINITIAL, SUBSHELL, BACKQUOTE> {
+<YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
 \$ ? {Identifier} {
     String id = yytext();
     writeSymbol(id, Consts.shkwd, yyline);
@@ -130,6 +142,14 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  \\\\ | \\\" | \\\$ | \\` { out.write(yytext()); }
  \$\(   { pushstate(SUBSHELL, null); out.write(yytext()); }
  `      { pushstate(BACKQUOTE, null); out.write(yytext()); }
+
+ /* Bug #15661: Recognize ksh command substitution within strings. According
+  * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
+  * the opening brace must be followed by a blank.
+  */
+ "${" / {WhiteSpace} | {EOL} {
+   pushstate(BRACEGROUP, null); out.write(yytext());
+ }
 }
 
 <QSTRING> {
@@ -151,9 +171,19 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
   ` { out.write(yytext()); popstate(); }
 }
 
-<YYINITIAL, SUBSHELL, BACKQUOTE> {
+<BRACEGROUP> {
+ /* Bug #15661: Terminate a ksh brace group. According to ksh man page
+  * http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
+  * the closing brace must be on beginning of line, or it must be preceeded by
+  * a semi-colon and (optionally) whitespace.
+  */
+  ^ {WhiteSpace}* \}  { out.write(yytext()); popstate(); }
+  ; {WhiteSpace}* \}  { out.write(yytext()); popstate(); }
+}
+
+<YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
   /* Don't enter new state if special character is escaped. */
-  \\` | \\\( | \\\) | \\\\ { out.write(yytext()); }
+  \\` | \\\( | \\\) | \\\\ | \\\{ { out.write(yytext()); }
   \\\" | \\' | \\\$ | \\\# { out.write(yytext()); }
 
   /* $# should not start a comment. */
@@ -161,9 +191,19 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
   \$ ? \( { pushstate(SUBSHELL, null); out.write(yytext()); }
   ` { pushstate(BACKQUOTE, null); out.write(yytext()); }
+
+ /* Bug #15661: Recognize ksh command substitution within strings. According
+  * to ksh man page http://www2.research.att.com/~gsf/man/man1/ksh-man.html#Command%20Substitution
+  * the opening brace must be followed by a blank. Make the initial dollar sign
+  * optional so that we get the nesting right and don't terminate the brace
+  * group too early if the ${ cmd; } expression contains nested { cmd; } groups.
+  */
+  \$ ? \{ / {WhiteSpace} | {EOL} {
+    pushstate(BRACEGROUP, null); out.write(yytext());
+  }
 }
 
-<YYINITIAL, SUBSHELL, BACKQUOTE, STRING, SCOMMENT, QSTRING> {
+<YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP, STRING, SCOMMENT, QSTRING> {
 {File} {
     String path = yytext();
     out.write("<a href=\""+urlPrefix+"path=");
