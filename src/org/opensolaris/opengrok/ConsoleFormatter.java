@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok;
@@ -50,7 +49,7 @@ final public class ConsoleFormatter extends Formatter {
       sb.append("[#|");
       sb.append(ts(new Date(record.getMillis())));
       sb.append(" | ");
-      sb.append(record.getMessage());
+      sb.append(formatMessage(record));
       Throwable thrown = record.getThrown();
       if (null != thrown) {
          sb.append(lineSeparator);

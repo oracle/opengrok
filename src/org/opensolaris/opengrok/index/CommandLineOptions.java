@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -80,8 +79,8 @@ public class CommandLineOptions {
         options.add(new Option('Q', ON_OFF, "Turn on/off quick context scan. By default only the first 32k of a file is scanned, and a '[..all..]' link is inserted if the file is bigger. Activating this may slow the server down (Note: this is setting only affects the web application)"));
         options.add(new Option('N', "/path/to/symlink", "Allow this symlink to be followed. Option may be repeated."));
         options.add(new Option('n', null, "Do not generate indexes, but process all other command line options"));
-        options.add(new Option('H', null, "Generate history cache for all external repositories"));
-        options.add(new Option('h', "/path/to/repository", "Generate history cache for the specified repos (absolute path from source root)"));
+        options.add(new Option('H', null, "Generate history cache for all repositories"));
+        options.add(new Option('h', "/path/to/repository", "just generate history cache for the specified repos (absolute path from source root)"));
         options.add(new Option('D', null, "Store history cache in a database (needs the JDBC driver in the classpath, typically derbyclient.jar or derby.jar)"));
         options.add(new Option('j', "class", "Name of the JDBC driver class used by the history cache. Can use one of the shorthands \"client\" (org.apache.derby.jdbc.ClientDriver) or \"embedded\" (org.apache.derby.jdbc.EmbeddedDriver). Default: \"client\""));
         options.add(new Option('u', "url", "URL to the database that contains the history cache. Default: If -j specifies \"embedded\", \"jdbc:derby:$DATA_ROOT/cachedb;create=true\"; otherwise, \"jdbc:derby://localhost/cachedb;create=true\""));

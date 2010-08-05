@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok;
@@ -28,47 +28,30 @@ import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
 /**
- * Opengrok logfile formatter
- * Creates a logentry in the logfile on the following format
- * [#|YYYY-MM-DD HH:MM:ss.SSSZ |<loglevel>|<version>|OG|T=<threadnumber>|
- * <Class.method>: <logmessage> |#]
- * @author Jan S Berg
+ * Opengrok console formatter
+ * Creates a logentry on the console using the following format
+ * HH:MM:ss <loglevel>: <logmessage>
+ * @author Lubos Kosco
  */
-final public class FileLogFormatter extends Formatter {
+final public class SimpleConsoleFormatter extends Formatter {
    
    private final java.text.SimpleDateFormat formatter =
-      new java.text.SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss.SSSZ");
+      new java.text.SimpleDateFormat("HH:mm:ss");
    private final static String lineSeparator = System.
       getProperty("line.separator");
    
    private String ts(Date date) {
       return formatter.format(date);
    }
-   
-   private String classNameOnly(String name) {
-      int index = name.lastIndexOf('.') + 1;
-      return name.substring(index);
-   }
-   
+
+    @Override
    public String format(LogRecord record) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("[#|");
+      StringBuilder sb = new StringBuilder();      
       sb.append(ts(new Date(record.getMillis())));
-      sb.append(" |");
-      String loglevel = record.getLevel().getName();
-      sb.append(loglevel);
-      sb.append("|");
-      sb.append("V");
-      sb.append(Info.getVersion());
-      sb.append("|OG|");
-      sb.append("T=");          
-      sb.append(record.getThreadID());
-      sb.append("| ");  
-      sb.append(classNameOnly(record.getSourceClassName()));
-      sb.append('.');
-      sb.append(formatMessage(record));
+      sb.append(" ");
+      sb.append(record.getLevel().getName());
       sb.append(": ");
-      sb.append(record.getMessage());
+      sb.append(formatMessage(record));
       Throwable thrown = record.getThrown();
       if (null != thrown) {
          sb.append(lineSeparator);
@@ -76,7 +59,6 @@ final public class FileLogFormatter extends Formatter {
          thrown.printStackTrace(new java.io.PrintStream(ba, true));
          sb.append(ba.toString());
       }
-      sb.append(" |#]");
       sb.append(lineSeparator);
       return sb.toString();
    }

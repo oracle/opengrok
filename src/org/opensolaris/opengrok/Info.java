@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok;
 
@@ -61,14 +60,26 @@ public final class Info {
         }
     }
 
+    /**
+     * get major version
+     * @return major version
+     */
     public static String getVersion() {
         return VERSION;
     }
     
+    /**
+     * get full version (product vMajor revMinor)
+     * @return full version
+     */
     public static String getFullVersion() {
         return "OpenGrok v" + VERSION + " rev " + REVISION;
     }
     
+    /**
+     * get minor version
+     * @return minor version
+     */
     public static String getRevision() {
         return REVISION;        
     }

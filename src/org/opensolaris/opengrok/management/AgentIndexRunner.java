@@ -135,7 +135,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 log.info("Update source repositories");
                 HistoryGuru.getInstance().updateRepositories();
                 List<String> subFiles = Arrays.asList(sublist);
-                log.log(Level.INFO, "Starting index, update {0} noThreads {1} subfiles {2}", new Object[]{update, noThreads, subFiles.size()});
+                log.log(Level.INFO, "Starting index, update {0} noThreads {1} subfiles {2}", new Object[]{String.valueOf(update), String.valueOf(noThreads), String.valueOf(subFiles.size())});
                 index.doIndexerExecution(update, noThreads, subFiles, this);
                 log.info("Finished indexing");
                 lastIndexFinish = System.currentTimeMillis();

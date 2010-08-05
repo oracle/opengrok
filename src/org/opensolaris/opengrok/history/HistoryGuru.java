@@ -438,10 +438,10 @@ public final class HistoryGuru {
 
             if (verbose) {
                 long stop = System.currentTimeMillis();
-                log.log(Level.INFO, "Creating historycache for {0} took ({1}ms)", new Object[]{path, stop - start});
+                log.log(Level.INFO, "Creating historycache for {0} took ({1}ms)", new Object[]{path, String.valueOf(stop - start)});
             }
         } else {
-            log.warning(String.format("Skipping creation of historycache of %s repository in %s: Missing SCM dependencies?", type, path));
+            log.log(Level.WARNING,"Skipping creation of historycache of {0} repository in {1}: Missing SCM dependencies?", new Object[]{type, path});
         }
     }
 

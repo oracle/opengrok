@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -95,7 +96,7 @@ public final class Indexer {
             boolean listFiles = false;
             boolean createDict = false;
             int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
-
+            
             // Parse command line options:
             Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
 
@@ -133,6 +134,7 @@ public final class Indexer {
 
                         case 'q':
                             env.setVerbose(false);
+                            OpenGrokLogger.setOGConsoleLogLevel(Level.WARNING);
                             break;
                         case 'e':
                             env.setGenerateHtml(false);
@@ -229,6 +231,7 @@ public final class Indexer {
                             break;
                         case 'v':
                             env.setVerbose(true);
+                            OpenGrokLogger.setOGConsoleLogLevel(Level.INFO);
                             break;
 
                         case 's':
@@ -377,7 +380,13 @@ public final class Indexer {
                         ++optind;
                     }
                 }
-
+                
+                //logging starts here
+                if (env.isVerbose()) {
+                  String fn=LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
+                  if (fn!=null)System.out.println("Logging to file: "+fn);
+                }
+                
                 if (env.storeHistoryCacheInDB()) {
                     // The default database driver is Derby's client driver.
                     if (databaseDriver == null) {
@@ -469,7 +478,7 @@ public final class Indexer {
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
             long time = (System.currentTimeMillis() - start) / 1000;            
-            log.log(Level.INFO, "Done searching for repositories ({0}s)", time);
+            log.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
         }
 
         if (addProjects) {
@@ -521,9 +530,13 @@ public final class Indexer {
         }
 
         if (refreshHistory) {
+            log.log(Level.INFO, "Generating history cache for all repositories ...");
             HistoryGuru.getInstance().createCache();
+            log.info("Done...");
         } else if (repositories != null && !repositories.isEmpty()) {
+            log.log(Level.INFO, "Generating history cache for specified repositories ...");
             HistoryGuru.getInstance().createCache(repositories);
+            log.info("Done...");
         }
 
         if (listFiles) {
@@ -540,7 +553,7 @@ public final class Indexer {
             throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.register();
-        log.info("Starting indexExecution");
+        log.info("Starting indexing");
 
         ExecutorService executor = Executors.newFixedThreadPool(noThreads);
 

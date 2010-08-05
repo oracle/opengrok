@@ -162,7 +162,7 @@ public class BazaarRepository extends Repository {
         int status = exec.exec();
         
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get annotations for: \"{0}\" Exit code: {1}", new Object[]{file.getAbsolutePath(), status});
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get annotations for: \"{0}\" Exit code: {1}", new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
@@ -182,7 +182,7 @@ public class BazaarRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line {0}: [{1}]", new Object[]{lineno, line});
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line {0}: [{1}]", new Object[]{String.valueOf(lineno), line});
             }
         }
         return ret;

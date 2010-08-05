@@ -34,41 +34,24 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 @SuppressWarnings("PMD.SystemPrintln")
 class DefaultIndexChangedListener implements IndexChangedListener {
-
-    private final boolean verbose;
+    
     private static final Logger log = Logger.getLogger(DefaultIndexChangedListener.class.getName());
 
-    DefaultIndexChangedListener() {
-        verbose = RuntimeEnvironment.getInstance().isVerbose();
+    DefaultIndexChangedListener() {        
     }
     
     @Override
     public void fileAdd(String path, String analyzer) {        
-        if (verbose) {
-            synchronized (this) {                
-                System.out.println("Add: " + path + " (" + analyzer + ")");
-            }
-        }
         if (log.isLoggable(Level.INFO)) {
             log.log(Level.INFO, "Add: {0} ({1})", new Object[]{path, analyzer});}
     }
 
     @Override
-    public void fileRemove(String path) {
-        if (verbose) {
-            synchronized (this) {
-                System.out.println("Remove stale file: " + path);
-            }
-        }
+    public void fileRemove(String path) {        
         log.log(Level.INFO, "Remove file:{0}", path);
     }
     @Override
-    public void fileUpdate(String path) {
-        if (verbose) {
-            synchronized (this) {
-                System.out.println("Update: " + path);
-            }
-        }
+    public void fileUpdate(String path) {        
         log.log(Level.INFO, "Update: {0}", path);
     }
 

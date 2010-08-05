@@ -66,9 +66,31 @@ public final class OpenGrokLogger {
             }
         }
     }
-
+        
     public static Level getConsoleLogLevel() {
         return consoleLevel;
+    }
+
+    /**
+     *
+     * @param level new level for console
+     */
+    public static void setOGConsoleLogLevel(Level level) {
+        for (Enumeration e = LogManager.getLogManager().getLoggerNames();
+                e.hasMoreElements();) {
+            String loggerName = (String) e.nextElement();
+            Logger l = Logger.getLogger(loggerName);
+            Handler[] h = l.getHandlers();
+            if (!loggerName.startsWith("org.opensolaris.opengrok")) {
+                for (int i = 0; i < h.length; ++i) {
+                    Handler hi = h[i];
+                    if (hi instanceof ConsoleHandler) {
+                        hi.setLevel(level);
+                    }
+                }
+            }
+            h = l.getHandlers();
+        }
     }
 
     public static void setFileLogLevel(Level level) {
@@ -183,7 +205,7 @@ public final class OpenGrokLogger {
             h = l.getHandlers();
         }
     }
-
+    
     private OpenGrokLogger() {
     }
 }
