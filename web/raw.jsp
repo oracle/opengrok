@@ -22,17 +22,23 @@ Use is subject to license terms.
 java.io.InputStream,
 java.io.OutputStream,
 java.io.FileInputStream,
+java.io.FileNotFoundException,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment,
 org.opensolaris.opengrok.history.HistoryGuru"%><%
 String path = request.getPathInfo();
-String root = RuntimeEnvironment.getInstance().getSourceRootPath();
 if (path == null) {
   path = "";
 }
-File file = new File(root, path);
-path = file.getCanonicalPath();
+RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+File file = new File(env.getSourceRootPath(), path);
+try {
+  path = env.getPathRelativeToSourceRoot(file, 0);
+} catch (FileNotFoundException e) {
+  response.sendError(response.SC_NOT_FOUND);
+  return;
+}
 
-if (!path.startsWith(root) || !file.exists() || !file.canRead() || RuntimeEnvironment.getInstance().getIgnoredNames().ignore(file)) {
+if (!file.exists() || !file.canRead() || RuntimeEnvironment.getInstance().getIgnoredNames().ignore(file)) {
   response.sendError(response.SC_NOT_FOUND);
   return;
 } else if (file.isDirectory()) {
