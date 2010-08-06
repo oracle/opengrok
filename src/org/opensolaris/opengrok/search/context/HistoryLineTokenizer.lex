@@ -34,18 +34,9 @@ import java.util.*;
 %function next
 %type String 
 %ignorecase
+%char
 
 %{
-  int markedPos=0;
-  int matchStart=-1;
-  int rest=0;
-  boolean wait = false;
-  boolean dumpRest = false;
-  Writer out;
-  List<Hit> hits;
-  String filename;
-  StringBuilder sb;
-  boolean alt;
   public static final HashSet<String> stopset = new HashSet<String>();
   static {
   stopset.add(  "a");
@@ -91,116 +82,18 @@ stopset.add("0.0");
 stopset.add( "1.0");
   }
 
-  public void setWriter(Writer out) {
-        this.out = out;
-  }
-  
-  public void setHitList(List<Hit> hits) {
-        this.hits = hits;
+  public void reInit(String str) {
+      yyreset(new StringReader(str));
   }
 
-  /**
-   * Set the name of the file we are working on (needed if we would like to
-   * generate a list of hits instead of generating html)
-   * @param filename the name of the file
-   */
-  public void setFilename(String filename) {
-        this.filename = filename;
+  /** Return the position of the first character in the current token. */
+  int getMatchStart() {
+      return yychar;
   }
 
-    public void setAlt(boolean alt) {
-        this.alt = alt;
-    }
-
-  public void reInit(char[] buf) {
-        yyreset((Reader) null);
-        zzBuffer = buf;
-        zzEndRead = buf.length;
-        zzAtEOF = true;
-        zzStartRead = 0;
-        wait = false;
-        dumpRest = false;
-        rest = 0;
-        markedPos=0;
-        matchStart=-1;
-  }
-
-  public void holdOn() {
-     if(!wait) {
-        wait = true;
-        matchStart = zzStartRead;
-     }
-  }
-  
-  public void neverMind() {
-        wait = false;
-        matchStart = -1;
-  }
-
-  private void printHTML(char[] buf, int start, int end, boolean bold)
-            throws IOException {
-
-        boolean toHitList = (hits != null);
-
-        Appendable output = toHitList ? sb : out;
-
-        if (bold) {
-            output.append("<b>");
-        }
-
-        for(int i=start;i<end; i++) {
-                switch(buf[i]) {
-                case '\n':
-                        output.append(toHitList ? " " : "<br/>");
-                        break;
-                case '<':
-                        output.append("&lt;");
-                        break;
-                case '>':
-                        output.append("&gt;");
-                        break;
-                case '&':
-                        output.append("&amp;");
-                        break;
-                default:
-                        output.append(buf[i]);
-                }
-        }
-
-        if (bold) {
-            output.append("</b>");
-        }
-  }
-
-  public void printContext() throws IOException {
-        if (sb == null) {
-           sb = new StringBuilder();
-        } 
-
-        wait = false;
-        if (matchStart == -1) {
-                matchStart = zzStartRead;
-        }
-
-        printHTML(zzBuffer, markedPos, matchStart, false);
-        printHTML(zzBuffer, matchStart, zzMarkedPos, true);
-
-        markedPos = zzMarkedPos;
-        matchStart = -1;
-        dumpRest = true;
-        rest = zzMarkedPos;
-  }
-
-  public void dumpRest() throws IOException {
-        //System.err.println("dumpRest = " + dumpRest + " zzEndRead=" + zzEndRead + " zzMarkedPos=" + zzMarkedPos+ " rest = "+rest);
-        if(dumpRest) {
-           printHTML(zzBuffer, rest, zzEndRead, false);
-
-           if (hits != null) {
-                hits.add(new Hit(filename, sb.toString(), "", false, alt));
-                sb.setLength(0);
-           }
-        }
+  /** Return the position of the first character after the current token. */
+  int getMatchEnd() {
+      return yychar + yylength();
   }
 %}
 

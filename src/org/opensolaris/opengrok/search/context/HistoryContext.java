@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.search.context;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.HashSet;
@@ -93,33 +94,47 @@ public class HistoryContext {
      */
     private boolean getHistoryContext(
             History in, String path, Writer out, List<Hit> hits) {
+        if ((out == null) == (hits == null)) {
+            // There should be exactly one destination for the output. If
+            // none or both are specified, it's a bug.
+            throw new IllegalArgumentException(
+                    "Exactly one of out and hits should be non-null");
+        }
+
         if (m == null) {
             return false;
         }
-        tokens.setWriter(out);
-        tokens.setHitList(hits);
-        tokens.setFilename(path);
-        
+
         int matchedLines = 0;
         Iterator<HistoryEntry> it = in.getHistoryEntries().iterator();
         try {
             while(it.hasNext() && matchedLines < 10) {
-                char[] content = it.next().getLine().toCharArray();
-                tokens.reInit(content);
+                String line = it.next().getLine();
+                tokens.reInit(line);
                 String token;
-                int matchState = LineMatcher.NOT_MATCHED;
+                int matchState;
+                int start = -1;
                 while ((token = tokens.next()) != null) {
                     for (int i = 0; i< m.length; i++) {
                         matchState = m[i].match(token);
                         if (matchState == LineMatcher.MATCHED) {
-                            tokens.printContext();
-                            tokens.dumpRest();
+                            if (start < 0) {
+                                start = tokens.getMatchStart();
+                            }
+                            int end = tokens.getMatchEnd();
+                            if (out == null) {
+                                addHit(hits, line, path, start, end);
+                            } else {
+                                writeMatch(out, line, start, end, false);
+                            }
                             matchedLines++;
                             break;
                         } else if (matchState == LineMatcher.WAIT) {
-                            tokens.holdOn();
+                            if (start < 0) {
+                                start = tokens.getMatchStart();
+                            }
                         } else {
-                            tokens.neverMind();
+                            start = -1;
                         }
                     }
                 }
@@ -128,5 +143,76 @@ public class HistoryContext {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get history context for " + path, e);
         }
         return matchedLines > 0;
+    }
+
+    /**
+     * Add a matching log entry to the list of hits.
+     *
+     * @param hits the list of hits
+     * @param line the line with a match
+     * @param path the file in which the match is found
+     * @param start position of the start of the match
+     * @param end position of the first char after the match
+     */
+    private void addHit(List<Hit> hits, String line, String path,
+                        int start, int end) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        writeMatch(sb, line, start, end, true);
+        hits.add(new Hit(path, sb.toString(), "", false, false));
+    }
+
+    /**
+     * Write a match to a stream.
+     *
+     * @param out the receiving stream
+     * @param line the matching line
+     * @param start start position of the match
+     * @param end position of the first char after the match
+     * @param flatten should multi-line log entries be flattened to a single
+     * line? If {@code true}, replace newline with space.
+     */
+    private void writeMatch(Appendable out, String line,
+                            int start, int end, boolean flatten)
+            throws IOException {
+        String prefix = line.substring(0, start);
+        String match = line.substring(start, end);
+        String suffix = line.substring(end);
+
+        printHTML(out, prefix, flatten);
+        out.append("<b>");
+        printHTML(out, match, flatten);
+        out.append("</b>");
+        printHTML(out, suffix, flatten);
+    }
+
+    /**
+     * Output a string as HTML.
+     *
+     * @param out where to write the HTML
+     * @param str the string to print
+     * @param flatten should multi-line strings be flattened to a single
+     * line? If {@code true}, replace newline with space.
+     */
+    private void printHTML(Appendable out, String str, boolean flatten)
+            throws IOException {
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            switch (ch) {
+                case '\n':
+                    out.append(flatten ? " " : "<br/>");
+                    break;
+                case '<':
+                    out.append("&lt;");
+                    break;
+                case '>':
+                    out.append("&gt;");
+                    break;
+                case '&':
+                    out.append("&amp;");
+                    break;
+                default:
+                    out.append(ch);
+            }
+        }
     }
 }
