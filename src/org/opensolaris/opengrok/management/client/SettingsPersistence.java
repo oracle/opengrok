@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
-import org.opensolaris.opengrok.management.OGAgent;
 import org.opensolaris.opengrok.management.Constants;
+import org.opensolaris.opengrok.management.OGAgent;
 
 /**
  *

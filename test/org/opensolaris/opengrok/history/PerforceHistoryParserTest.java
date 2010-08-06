@@ -23,8 +23,8 @@
 
 package org.opensolaris.opengrok.history;
 
-import java.util.Calendar;
 import java.io.StringReader;
+import java.util.Calendar;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

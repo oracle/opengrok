@@ -69,6 +69,21 @@ public class SCCSgetTest {
             } catch (Exception e) {
                 
             }
+        }        
+        try {
+            p = Runtime.getRuntime().exec("sccs --version");
+            p.waitFor();
+            haveSccs = (p.exitValue() == 0);
+        } catch (Exception e) {
+            haveSccs = false;
+        } finally {
+            try {
+                if (p != null) {
+                    p.destroy();
+                }
+            } catch (Exception e) {
+
+            }
         }
     }
 

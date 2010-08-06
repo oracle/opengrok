@@ -430,6 +430,7 @@ Use is subject to license terms.
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
+<!--            <fileset dir="test" includes="**/*.java"/>-->
         </pmd>
         <echo message="PMD finished, found ${pmd.num.warnings} warnings, see pmd/pmd_report.html"/>
     </target>
@@ -444,6 +445,9 @@ Use is subject to license terms.
         <fileset dir="src">
             <include name="**/*.java"/>
         </fileset>
+        <fileset dir="test">
+            <include name="**/*.java"/>
+        </fileset>
       </cpd>
     </target>
 
@@ -455,6 +459,9 @@ Use is subject to license terms.
       <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="pmd.lib"/>
       <cpd minimumTokenCount="100" outputFile="pmd/cpd_report.txt">
         <fileset dir="src">
+            <include name="**/*.java"/>
+        </fileset>
+        <fileset dir="test">
             <include name="**/*.java"/>
         </fileset>
       </cpd>

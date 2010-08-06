@@ -24,7 +24,6 @@ package org.opensolaris.opengrok.index;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Print the index modifications to the standard output stream when running
@@ -36,10 +35,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 class DefaultIndexChangedListener implements IndexChangedListener {
     
     private static final Logger log = Logger.getLogger(DefaultIndexChangedListener.class.getName());
-
-    DefaultIndexChangedListener() {        
-    }
-    
+        
     @Override
     public void fileAdd(String path, String analyzer) {        
         if (log.isLoggable(Level.INFO)) {

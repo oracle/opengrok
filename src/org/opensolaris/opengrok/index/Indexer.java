@@ -384,7 +384,7 @@ public final class Indexer {
                 //logging starts here
                 if (env.isVerbose()) {
                   String fn=LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
-                  if (fn!=null)System.out.println("Logging to file: "+fn);
+                  if (fn!=null) {System.out.println("Logging to file: "+fn);}
                 }
                 
                 if (env.storeHistoryCacheInDB()) {
