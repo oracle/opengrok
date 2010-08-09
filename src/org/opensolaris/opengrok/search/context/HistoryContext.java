@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -47,11 +47,9 @@ import org.opensolaris.opengrok.search.Hit;
 public class HistoryContext {
     private final LineMatcher[] m;
     HistoryLineTokenizer tokens;
-    private static Set<String> tokenFields = new HashSet<String>(1);
-    static {
-        tokenFields.add("hist");
-    }
-        
+    private static final Set<String> tokenFields =
+            Collections.singleton("hist");
+
     public HistoryContext(Query query) {
         QueryMatchers qm = new QueryMatchers();
         m = qm.getMatchers(query, tokenFields);
