@@ -175,23 +175,18 @@ public final class RuntimeEnvironment {
      * @return Path relative to source root
      */
     public String getPathRelativeToSourceRoot(File file, int stripCount) throws IOException {
-        try {
-            String canonicalPath = file.getCanonicalPath();
-            String sourceRoot = getSourceRootPath();
-            if (canonicalPath.startsWith(sourceRoot)) {
-                return canonicalPath.substring(sourceRoot.length() + stripCount);
-            } 
-            for (String allowedSymlink : getAllowedSymlinks()) {
-                String allowedTarget = new File(allowedSymlink).getCanonicalPath();
-                if (canonicalPath.startsWith(allowedTarget)) {
-                    return canonicalPath.substring(allowedTarget.length() + stripCount);
-                }
+        String canonicalPath = file.getCanonicalPath();
+        String sourceRoot = getSourceRootPath();
+        if (canonicalPath.startsWith(sourceRoot)) {
+            return canonicalPath.substring(sourceRoot.length() + stripCount);
+        } 
+        for (String allowedSymlink : getAllowedSymlinks()) {
+            String allowedTarget = new File(allowedSymlink).getCanonicalPath();
+            if (canonicalPath.startsWith(allowedTarget)) {
+                return canonicalPath.substring(allowedTarget.length() + stripCount);
             }
-            throw new FileNotFoundException("Failed to resolve ["+canonicalPath+"] relative to source root ["+sourceRoot+"]");
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get canonical path", e);
-            throw e;
         }
+        throw new FileNotFoundException("Failed to resolve ["+canonicalPath+"] relative to source root ["+sourceRoot+"]");
     }
     
     /**

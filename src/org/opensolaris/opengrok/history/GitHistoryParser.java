@@ -66,6 +66,8 @@ class GitHistoryParser implements Executor.StreamHandler {
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
         
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         history = new History();
         HistoryEntry entry = null;
         ParseState state = ParseState.HEADER;
@@ -116,14 +118,12 @@ class GitHistoryParser implements Executor.StreamHandler {
                     continue; // Parse this line again - do not read a new line
                 } else {
                     if (entry != null) {
-                        File f = new File(myDir, s);
                         try {
-                            String name = RuntimeEnvironment.getInstance().getPathRelativeToSourceRoot(f, 0);
-                            entry.addFile(name);
+                            File f = new File(myDir, s);
+                            entry.addFile(env.getPathRelativeToSourceRoot(f, 0));
                         } catch (FileNotFoundException e) {
-                            // TODO: this was added to make the junit tests pass,
-                            // but I think the tests are broken
-                            entry.addFile(f.getAbsolutePath()); // add even if not under source root
+                            // If the file is not located under the source root,
+                            // ignore it (bug #11664).
                         }
                     }
                 }
@@ -172,7 +172,7 @@ class GitHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        myDir = File.separator;
+        myDir = RuntimeEnvironment.getInstance().getSourceRootPath();
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;
     }
