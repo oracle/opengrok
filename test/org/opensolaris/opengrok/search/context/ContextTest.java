@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -29,15 +28,123 @@ import java.io.CharArrayReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.lucene.queryParser.ParseException;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.w3c.dom.Document;
 import static org.junit.Assert.*;
 
 public class ContextTest {
+    /**
+     * The value returned by {@link RuntimeEnvironment#isQuickContextScan()}
+     * before the test is run. Will be used to restore the flag after each
+     * test case.
+     */
+    private boolean savedQuickContextScanFlag;
+
+    @Before
+    public void setUp() {
+        // Save initial value of the quick context scan flag.
+        savedQuickContextScanFlag =
+                RuntimeEnvironment.getInstance().isQuickContextScan();
+    }
+
+    @After
+    public void tearDown() {
+        // Restore the initial value of the quick context scan flag.
+        RuntimeEnvironment.getInstance().
+                setQuickContextScan(savedQuickContextScanFlag);
+    }
+
+    /**
+     * Tests for the isEmpty() method.
+     */
+    @Test
+    public void testIsEmpty() throws ParseException {
+        String term = "qwerty";
+
+        // Definition search should be used
+        QueryBuilder qb = new QueryBuilder().setDefs(term);
+        Context c = new Context(qb.build(), qb.getQueries());
+        assertFalse(c.isEmpty());
+
+        // Symbol search should be used
+        qb = new QueryBuilder().setRefs(term);
+        c = new Context(qb.build(), qb.getQueries());
+        assertFalse(c.isEmpty());
+
+        // Full search should be used
+        qb = new QueryBuilder().setFreetext(term);
+        c = new Context(qb.build(), qb.getQueries());
+        assertFalse(c.isEmpty());
+
+        // History search should not be used
+        qb = new QueryBuilder().setHist(term);
+        c = new Context(qb.build(), qb.getQueries());
+        assertTrue(c.isEmpty());
+
+        // Path search should not be used
+        qb = new QueryBuilder().setPath(term);
+        c = new Context(qb.build(), qb.getQueries());
+        assertTrue(c.isEmpty());
+
+        // Combined search should be fine
+        qb = new QueryBuilder().setHist(term).setFreetext(term);
+        c = new Context(qb.build(), qb.getQueries());
+        assertFalse(c.isEmpty());
+    }
+
+    /**
+     * Tests for the getContext() method.
+     */
+    @Test
+    public void testGetContext() throws ParseException {
+        testGetContext(true, true);   // limited scan, output to list
+        testGetContext(false, true);  // unlimited scan, output to list
+        testGetContext(true, false);  // limited scan, output to writer
+        testGetContext(false, false); // unlimited scan, output to writer
+    }
+
+    /**
+     * Helper method for testing various paths through the getContext() method.
+     *
+     * @param limit true if limited, quick context scan should be used
+     * @param hitList true if output should be written to a list instead of
+     * a writer
+     */
+    private void testGetContext(boolean limit, boolean hitList)
+            throws ParseException {
+        StringReader in = new StringReader("abc def ghi\n");
+        StringWriter out = hitList ? null : new StringWriter();
+        List<Hit> hits = hitList ? new ArrayList<Hit>() : null;
+
+        RuntimeEnvironment.getInstance().setQuickContextScan(limit);
+        QueryBuilder qb = new QueryBuilder().setFreetext("def");
+        Context c = new Context(qb.build(), qb.getQueries());
+        assertTrue(c.getContext(in, out, "", "", "", null, limit, hits));
+
+        if (hitList) {
+            assertEquals(1, hits.size());
+            assertEquals("1", hits.get(0).getLineno());
+        }
+
+        String expectedOutput = hitList ?
+            "abc <b>def</b> ghi" :
+            "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> " +
+                     "abc <b>def</b> ghi</a><br/>";
+
+        String actualOutput = hitList ? hits.get(0).getLine() : out.toString();
+
+        assertEquals(expectedOutput, actualOutput);
+    }
 
     /**
      * Test that we don't get an {@code ArrayIndexOutOfBoundsException} when
