@@ -36,6 +36,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -127,6 +128,8 @@ public class ContextTest {
         List<Hit> hits = hitList ? new ArrayList<Hit>() : null;
 
         RuntimeEnvironment.getInstance().setQuickContextScan(limit);
+
+        // Search freetext for the term "def"
         QueryBuilder qb = new QueryBuilder().setFreetext("def");
         Context c = new Context(qb.build(), qb.getQueries());
         assertTrue(c.getContext(in, out, "", "", "", null, limit, hits));
@@ -144,6 +147,74 @@ public class ContextTest {
         String actualOutput = hitList ? hits.get(0).getLine() : out.toString();
 
         assertEquals(expectedOutput, actualOutput);
+
+        // Search with definitions
+        Definitions defs = new Definitions();
+        defs.addTag(1, "def", "type", "text");
+        in = new StringReader("abc def ghi\n");
+        out = hitList ? null : new StringWriter();
+        hits = hitList ? new ArrayList<Hit>() : null;
+        qb = new QueryBuilder().setDefs("def");
+        c = new Context(qb.build(), qb.getQueries());
+        assertTrue(c.getContext(in, out, "", "", "", defs, limit, hits));
+
+        if (hitList) {
+            assertEquals(1, hits.size());
+            assertEquals("1", hits.get(0).getLineno());
+        }
+
+        expectedOutput = hitList ?
+            "abc <b>def</b> ghi" :
+            "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> " +
+                     "abc <b>def</b> ghi</a> <i> type</i> <br/>";
+        actualOutput = hitList ? hits.get(0).getLine() : out.toString();
+        assertEquals(expectedOutput, actualOutput);
+
+        // Search with no input (will search definitions)
+        in = null;
+        out = hitList ? null : new StringWriter();
+        hits = hitList ? new ArrayList<Hit>() : null;
+        qb = new QueryBuilder().setDefs("def");
+        c = new Context(qb.build(), qb.getQueries());
+        assertTrue(c.getContext(in, out, "", "", "", defs, limit, hits));
+
+        if (hitList) {
+            assertEquals(1, hits.size());
+            assertEquals("1", hits.get(0).getLineno());
+        }
+
+        expectedOutput = hitList ?
+            "text" :
+            "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> " +
+                     "text</a> <i> type </i><br/>";
+        actualOutput = hitList ? hits.get(0).getLine() : out.toString();
+        assertEquals(expectedOutput, actualOutput);
+
+        // Search with no results
+        in = new StringReader("abc def ghi\n");
+        out = hitList ? null : new StringWriter();
+        hits = hitList ? new ArrayList<Hit>() : null;
+        qb = new QueryBuilder().setFreetext("no_match");
+        c = new Context(qb.build(), qb.getQueries());
+        assertFalse(c.getContext(in, out, "", "", "", null, limit, hits));
+        if (hitList) {
+            assertEquals(0, hits.size());
+        } else {
+            assertEquals("", out.toString());
+        }
+
+        // History search (should not show source context)
+        in = new StringReader("abc def ghi\n");
+        out = hitList ? null : new StringWriter();
+        hits = hitList ? new ArrayList<Hit>() : null;
+        qb = new QueryBuilder().setHist("abc");
+        c = new Context(qb.build(), qb.getQueries());
+        assertFalse(c.getContext(in, out, "", "", "", null, limit, hits));
+        if (hitList) {
+            assertEquals(0, hits.size());
+        } else {
+            assertEquals("", out.toString());
+        }
     }
 
     /**

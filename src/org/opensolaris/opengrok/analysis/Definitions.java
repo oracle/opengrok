@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -43,7 +42,7 @@ public class Definitions implements Serializable {
     /** List of all the tags. */
     private final List<Tag> tags;
 
-    Definitions() {
+    public Definitions() {
         symbols = new HashMap<String, Set<Integer>>();
         tags = new ArrayList<Tag>();
     }
@@ -124,7 +123,7 @@ public class Definitions implements Serializable {
         }
     }
 
-    void addTag(int line, String symbol, String type, String text) {
+    public void addTag(int line, String symbol, String type, String text) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize

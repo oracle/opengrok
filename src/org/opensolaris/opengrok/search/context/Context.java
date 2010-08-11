@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 /**
@@ -102,7 +101,7 @@ public class Context {
 
     private boolean alt = true;
 
-        /**
+    /**
      *
      * @param in File to be matched
      * @param out to write the context
@@ -159,6 +158,7 @@ public class Context {
                                     out.write("</a> <i> ");
                                     out.write(desc[2]);
                                     out.write(" </i><br/>");
+                                    anything = true;
                                 }
                             } else {
                                 matchingTags.put(tag.line, desc);
