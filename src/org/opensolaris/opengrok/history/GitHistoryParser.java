@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -121,7 +120,7 @@ class GitHistoryParser implements Executor.StreamHandler {
                         try {
                             File f = new File(myDir, s);
                             entry.addFile(env.getPathRelativeToSourceRoot(f, 0));
-                        } catch (FileNotFoundException e) {
+                        } catch (FileNotFoundException e) { //NOPMD
                             // If the file is not located under the source root,
                             // ignore it (bug #11664).
                         }

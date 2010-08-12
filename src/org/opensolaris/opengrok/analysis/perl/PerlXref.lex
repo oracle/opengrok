@@ -22,10 +22,10 @@
  */
 
 /*
- * Cross reference a Python file
+ * Cross reference a Perl file
  */
 
-package org.opensolaris.opengrok.analysis.python;
+package org.opensolaris.opengrok.analysis.perl;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
 import java.io.Writer;
@@ -34,7 +34,7 @@ import org.opensolaris.opengrok.web.Util;
 
 %%
 %public
-%class PythonXref
+%class PerlXref
 %extends JFlexXref
 %unicode
 %ignorecase
@@ -53,12 +53,15 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
 
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]
-File = [a-zA-Z]{FNameChar}* "." ("py"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
+File = [a-zA-Z]{FNameChar}* "." ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([loxbLOXB]+)?
+Number = (0[xX][0-9a-fA-F]+|[0-9][0-9_]*|[0-9]+.[0-9]+)([E]+[0-9]+)?
 
-%state  STRING LSTRING SCOMMENT QSTRING LQSTRING
+Pods = "=back" | "=begin" | "=end" | "=for" | "=head1" | "=head2" | "=item" | "=over" | "=pod"
+PodEND = "=cut"
+
+%state  STRING SCOMMENT QSTRING POD
 
 %%
 <YYINITIAL>{
@@ -84,10 +87,17 @@ Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([loxbLOXB]+)?
 {Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \"\"\" { yybegin(LSTRING);out.write("<span class=\"s\">\"\"\"");}
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- \'\'\' { yybegin(LQSTRING);out.write("<span class=\"s\">\'\'\'");}
  "#"   { yybegin(SCOMMENT);out.write("<span class=\"c\">#");}
+^ {Pods}   { yybegin(POD);out.write("<span class=\"c\">"+yytext());}
+}
+
+<POD> {
+^ {PodEND} .* / {EOL} {
+    yybegin(YYINITIAL); out.write(yytext()+"</span>");
+    // without eol lookahead one could perhaps just use below and use yytext().trim() above ?
+    //startNewLine();
+  }
 }
 
 <STRING> {
@@ -111,20 +121,6 @@ Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([loxbLOXB]+)?
   }
 }
 
-<LSTRING> {
- \" {WhiteSpace} \"  { out.write(yytext());}
- \"\"\" { yybegin(YYINITIAL); out.write("\"\"\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
-}
-
-<LQSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'\'\'     { yybegin(YYINITIAL); out.write("'''</span>"); }
-}
-
 <SCOMMENT> {
   {WhiteSpace}*{EOL} {
     yybegin(YYINITIAL); out.write("</span>");
@@ -133,7 +129,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([loxbLOXB]+)?
 }
 
 
-<YYINITIAL, STRING, SCOMMENT, QSTRING , LSTRING, LQSTRING> {
+<YYINITIAL, STRING, SCOMMENT, QSTRING, POD> {
 "&"     {out.write( "&amp;");}
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
@@ -143,7 +139,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([loxbLOXB]+)?
  .      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, SCOMMENT, STRING, QSTRING , LSTRING, LQSTRING> {
+<STRING, SCOMMENT, STRING, QSTRING, POD> {
 {Path}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 

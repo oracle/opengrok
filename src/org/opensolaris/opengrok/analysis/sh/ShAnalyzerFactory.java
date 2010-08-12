@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.sh;
 
@@ -41,12 +40,9 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
         "SH",
         "KSH",
         "CSH",
-        "BASH",
-        "PERL",
-        "RUBY",
-        "PM",
+        "BASH",        
+        "RUBY",        
         "RB",        
-        "PL",
         "P5",
         "AWK",
         "GMK",

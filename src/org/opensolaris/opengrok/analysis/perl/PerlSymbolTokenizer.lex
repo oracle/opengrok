@@ -22,17 +22,17 @@
  */
 
 /*
- * Gets Python symbols - ignores comments, strings, keywords
+ * Gets Perl symbols - ignores comments, strings, keywords
  */
 
-package org.opensolaris.opengrok.analysis.python;
+package org.opensolaris.opengrok.analysis.perl;
 import java.io.IOException;
 import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 %%
 %public
-%class PythonSymbolTokenizer
+%class PerlSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
 %type boolean
@@ -43,7 +43,7 @@ return false;
 
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
-%state STRING LSTRING SCOMMENT QSTRING LQSTRING
+%state STRING SCOMMENT QSTRING
 
 %%
 
@@ -54,35 +54,27 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
                         return true; }
               }
  \"     { yybegin(STRING); }
- \"\"\" { yybegin(LSTRING); }
  \'     { yybegin(QSTRING); }
- \'\'\' { yybegin(LQSTRING); }
  "#"   { yybegin(SCOMMENT); }
  }
 
 <STRING> {
  \"     { yybegin(YYINITIAL); }
+ \\\"    {}
  \n     { yybegin(YYINITIAL); }
-}
-
-<LSTRING> {
- \"\"\" { yybegin(YYINITIAL); }
 }
 
 <QSTRING> {
  \'     { yybegin(YYINITIAL); }
+ \\\'   {}
  \n     { yybegin(YYINITIAL); }
-}
-
-<LQSTRING> {
- \'\'\' { yybegin(YYINITIAL); }
 }
 
 <SCOMMENT> {
  \n    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, LSTRING, SCOMMENT, QSTRING , LQSTRING> {
+<YYINITIAL, STRING, SCOMMENT, QSTRING> {
 <<EOF>>   { return false;}
 .|\n    {}
 }

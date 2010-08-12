@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -28,8 +27,6 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Getopt;
 
@@ -72,7 +69,7 @@ final class Search {
                         RuntimeEnvironment.getInstance().readConfiguration(new File(getopt.getOptarg()));
                     } catch (Exception e) {
                         System.err.println("Failed to read config file: ");
-                        e.printStackTrace();
+                        System.err.println(e.getMessage());
                         return false;
                     }
                     break;
@@ -142,8 +139,8 @@ final class Search {
                        return;
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
-                }                
+                    System.err.println(ex.getMessage());
+                }
               engine.results(nhits, totalResults, results);
               for (Hit hit : results) {
                 File file = new File(root, hit.getPath());

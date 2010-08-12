@@ -228,8 +228,7 @@ public class HistoryEntryTest {
      * Test of setFiles method, of class HistoryEntry.
      */
     @Test
-    public void setFiles() {
-        System.out.println("setFiles");
+    public void setFiles() {        
         TreeSet<String> files = new TreeSet<String>();
         files.add("file1.file");
         files.add("file2.file");

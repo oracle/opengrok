@@ -380,7 +380,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 
 %%
-{Identifier}|{Number}|{Printable}       {return yytext().toLowerCase(Locale.US);}
+{Identifier}|{Number}|{Printable}       {return yytext().toLowerCase(Locale.getDefault());}
 <<EOF>>   { return null;}
 
 \n      {

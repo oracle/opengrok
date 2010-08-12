@@ -21,7 +21,7 @@
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
-package org.opensolaris.opengrok.analysis.python;
+package org.opensolaris.opengrok.analysis.perl;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -37,29 +37,31 @@ import org.opensolaris.opengrok.history.Annotation;
  * @author Lubos Kosco
  */
 
-public class PythonAnalyzerFactory extends FileAnalyzerFactory {
+public class PerlAnalyzerFactory extends FileAnalyzerFactory {
+    //TODO note that .PM below is kind of wrong, since python already has this and is registered before perl analyzer
+    // unfortunately we miss code that would be able to share extensions between analyzers
     private static final String[] SUFFIXES = {
-        "PY",
-        "PM"
+        "PL",
+        "PERL"        
     };
-
+// "PM" ?
     private static final String[] MAGICS = {
-        "#!/usr/bin/env python",
-        "#!/usr/bin/python"
+        "#!/usr/bin/env perl",
+        "#!/usr/bin/perl"
     };
 
-    public PythonAnalyzerFactory() {
+    public PerlAnalyzerFactory() {
         super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new PythonAnalyzer(this);
+        return new PerlAnalyzer(this);
     }
 
     @Override
     public void writeXref(Reader in, Writer out, Annotation annotation, Project project)
         throws IOException {
-        PythonAnalyzer.writeXref(in, out, annotation, project);
+        PerlAnalyzer.writeXref(in, out, annotation, project);
     }
 }

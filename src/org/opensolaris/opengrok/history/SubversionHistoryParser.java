@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -203,7 +202,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        handler = new Handler("/", "", 0, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US));
+        handler = new Handler("/", "", 0, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()));
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return new History(handler.entries);
     }

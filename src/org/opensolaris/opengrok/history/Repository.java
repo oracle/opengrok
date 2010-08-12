@@ -251,6 +251,6 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     public DateFormat getDateFormat() {
-        return new SimpleDateFormat(datePattern, Locale.US);
+        return new SimpleDateFormat(datePattern, Locale.getDefault());
     }
 }

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -59,6 +58,7 @@ import org.opensolaris.opengrok.analysis.lisp.LispAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.python.PythonAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.perl.PerlAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sql.SQLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.tcl.TclAnalyzerFactory;
@@ -130,6 +130,7 @@ public class AnalyzerGuru {
             new GZIPAnalyzerFactory(),
             new JavaAnalyzerFactory(),
             new PythonAnalyzerFactory(),
+            new PerlAnalyzerFactory(),
             new LispAnalyzerFactory(),
             new TclAnalyzerFactory(),
             new SQLAnalyzerFactory(),
@@ -396,6 +397,10 @@ public class AnalyzerGuru {
         throws IOException
     {
         FileAnalyzerFactory factory = find(file);
+        //TODO above is not that great, since if 2 analyzers share one extension
+        //then only the first one registered will own it
+        //it would be cool if above could return more analyzers and below would
+        //then decide between them ...
         if (factory != null) {
             return factory;
         }
@@ -418,13 +423,13 @@ public class AnalyzerGuru {
         int dotpos = path.lastIndexOf('.');
         if (dotpos >= 0) {
             FileAnalyzerFactory factory =
-                ext.get(path.substring(dotpos + 1).toUpperCase(Locale.US));
+                ext.get(path.substring(dotpos + 1).toUpperCase(Locale.getDefault()));
             if (factory != null) {
                 return factory;
             }
         }
         // file doesn't have any of the extensions we know, try full match
-        return FILE_NAMES.get(path.toUpperCase(Locale.US));
+        return FILE_NAMES.get(path.toUpperCase(Locale.getDefault()));
     }
 
     /**

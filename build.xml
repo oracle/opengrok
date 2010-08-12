@@ -155,6 +155,8 @@ Use is subject to license terms.
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
@@ -430,7 +432,9 @@ Use is subject to license terms.
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
-<!--            <fileset dir="test" includes="**/*.java"/>-->
+<!--            <fileset dir="test" includes="**/*.java"/> -->
+<!--            <fileset dir="web" includes="**/*.jsp"/>
+                <fileset dir="web" includes="**/*.jspf"/> -->
         </pmd>
         <echo message="PMD finished, found ${pmd.num.warnings} warnings, see pmd/pmd_report.html"/>
     </target>

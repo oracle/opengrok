@@ -6,6 +6,7 @@
 class Main {
 
     private String[] argv;
+    private float test = 12.36;
 
     public Main(String[] argv) {
         this.argv = argv;
