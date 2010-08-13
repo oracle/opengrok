@@ -74,6 +74,7 @@ public class PerforceHistoryParser {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("p4");
         cmd.add("changes");
+        cmd.add("-t");
         cmd.add("...");
 
         Executor executor = new Executor(cmd, file.getCanonicalFile());
@@ -85,7 +86,7 @@ public class PerforceHistoryParser {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("p4");
         cmd.add("filelog");
-        cmd.add("-l");
+        cmd.add("-lt");
         cmd.add(file.getName() + ((rev == null) ? "" : "#"+rev));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
@@ -93,9 +94,9 @@ public class PerforceHistoryParser {
         return parseFileLog(executor.getOutputReader());
     }
 
-    private final static Pattern REVISION_PATTERN = Pattern.compile("#(\\d+) change \\d+ \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)");
-    private final static Pattern CHANGE_PATTERN = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
-    
+    private final static Pattern REVISION_PATTERN = Pattern.compile("#(\\d+) change \\d+ \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
+    private final static Pattern CHANGE_PATTERN = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
+
     /**
      * Parses the history in the given string. The given reader will be closed.
      * 
@@ -120,9 +121,12 @@ public class PerforceHistoryParser {
                 int year = Integer.parseInt(matcher.group(2));
                 int month = Integer.parseInt(matcher.group(3));
                 int day = Integer.parseInt(matcher.group(4));
-                entry.setDate(newDate(year, month, day));
-                entry.setAuthor(matcher.group(5));
-                entry.setMessage(matcher.group(6).trim());
+                int hour = Integer.parseInt(matcher.group(5));
+                int minute = Integer.parseInt(matcher.group(6));
+                int second = Integer.parseInt(matcher.group(7));
+                entry.setDate(newDate(year, month, day, hour, minute, second));
+                entry.setAuthor(matcher.group(8));
+                entry.setMessage(matcher.group(9).trim());
                 entry.setActive(true);
                 entries.add(entry);
             }
@@ -158,8 +162,11 @@ public class PerforceHistoryParser {
                 int year = Integer.parseInt(matcher.group(2));
                 int month = Integer.parseInt(matcher.group(3));
                 int day = Integer.parseInt(matcher.group(4));
-                entry.setDate(newDate(year, month, day));
-                entry.setAuthor(matcher.group(5));
+                int hour = Integer.parseInt(matcher.group(5));
+                int minute = Integer.parseInt(matcher.group(6));
+                int second = Integer.parseInt(matcher.group(7));
+                entry.setDate(newDate(year, month, day, hour, minute, second));
+                entry.setAuthor(matcher.group(8));
                 entry.setActive(true);
             } else {
                 if (entry != null) {
@@ -190,12 +197,15 @@ public class PerforceHistoryParser {
      * @param year the year
      * @param month the month (January is 1, February is 2, ...)
      * @param day the day of the month
+     * @param hour of the day
+     * @param minute of the day
+     * @param second of the day
      * @return a Date object representing the date
      */
-    private static Date newDate(int year, int month, int day) {
+    private static Date newDate(int year, int month, int day, int hour, int minute, int second) {
         Calendar cal = Calendar.getInstance();
         // Convert 1-based month to 0-based, and set time of day to noon
-        cal.set(year, month - 1, day, 12, 0, 0);
+        cal.set(year, month - 1, day, hour, minute, second);
         return cal.getTime();
     }
 }

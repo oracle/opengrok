@@ -62,10 +62,10 @@ public class PerforceHistoryParserTest {
      */
     @Test
     public void parseChanges() throws Exception {
-        String output = "Change 1234 on 2008/10/13 by ADMIN@UserWorkspaceName 'Comment given to changelist within single qoutes, this is change one'\n" +
-                "Change 6543 on 2008/10/08 by USER@USER_WS 'Comment given to changelist within single qoutes'\n" +
-                "Change 7654 on 2008/09/30 by USER@USER_WS 'Comment given to changelist within single qoutes'\n" +
-                "Change 2345 on 2008/09/30 by ADMIN@Workspace2 'Comment given to changelist within single qoutes'\n";
+        String output = "Change 1234 on 2008/10/13 11:30:00 by ADMIN@UserWorkspaceName 'Comment given to changelist within single qoutes, this is change one'\n" +
+                "Change 6543 on 2008/10/08 18:25:38 by USER@USER_WS 'Comment given to changelist within single qoutes'\n" +
+                "Change 7654 on 2008/09/30 01:00:01 by USER@USER_WS 'Comment given to changelist within single qoutes'\n" +
+                "Change 2345 on 2008/09/30 17:45:33 by ADMIN@Workspace2 'Comment given to changelist within single qoutes'\n";
         History result = PerforceHistoryParser.parseChanges(new StringReader(output));
 
         assertNotNull(result);
@@ -101,19 +101,19 @@ public class PerforceHistoryParserTest {
     public void parseFileLog() throws Exception {
         String output = "//Path/To/Folder/In/Workspace/Filename\n" +
                 "\n" +
-                "... #4 change 1234 edit on 2008/08/19 by User@UserWorkspaceName (text)\n" +
+                "... #4 change 1234 edit on 2008/08/19 11:30:00 by User@UserWorkspaceName (text)\n" +
                 "\n" +
                 "        Comment for the change number 4\n" +
                 "\n" +
-                "... #3 change 5678 edit on 2008/08/19 by ADMIN@UserWorkspaceName (text)\n" +
+                "... #3 change 5678 edit on 2008/08/19 18:25:38 by ADMIN@UserWorkspaceName (text)\n" +
                 "\n" +
                 "        Comment for the change\n" +
                 "\n" +
-                "... #2 change 8765 edit on 2008/08/01 by ADMIN@UserWorkspaceName (text)\n" +
+                "... #2 change 8765 edit on 2008/08/01 01:00:01 by ADMIN@UserWorkspaceName (text)\n" +
                 "\n" +
                 "        Comment for the change\n" +
                 "\n" +
-                "... #1 change 1 add on 2008/07/30 by ADMIN@UserWorkspaceName (text)\n" +
+                "... #1 change 1 add on 2008/07/30 17:45:33 by ADMIN@UserWorkspaceName (text)\n" +
                 "\n" +
                 "        Comment for the change";
 
