@@ -86,8 +86,8 @@
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/plain/XMLXref.lex</lexDefinition>
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex</lexDefinition>
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/python/PythonXref.lex</lexDefinition>
-                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/python/PerlSymbolTokenizer.lex</lexDefinition>
-                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/python/PerlXref.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex</lexDefinition>
+                                <lexDefinition>../src/org/opensolaris/opengrok/analysis/perl/PerlXref.lex</lexDefinition>
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex</lexDefinition>
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/sh/ShXref.lex</lexDefinition>
                                 <lexDefinition>../src/org/opensolaris/opengrok/analysis/sql/SQLXref.lex</lexDefinition>
