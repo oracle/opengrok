@@ -144,26 +144,40 @@ public class PerforceRepository extends Repository {
      * @return true if the given file is in the depot, false otherwise
      */
     public static boolean isInP4Depot(File file) {
+        boolean status = false;
         if (p4Binary.available) {
             ArrayList<String> cmd = new ArrayList<String>();
-            cmd.add(getCommand());
+            String name = file.getName();
+            File   dir  = file.getParentFile();
             if (file.isDirectory()) {
+                dir = file;
+                name = "*";
+                cmd.add(getCommand());
                 cmd.add("dirs");
-            } else {
-                cmd.add("files");
-            }
-            cmd.add(file.getName());
-            Executor executor = new Executor(cmd, file.getParentFile());
-            executor.exec();
-
+                cmd.add(name);
+                Executor executor = new Executor(cmd, dir);
+                executor.exec();
             /* OUTPUT:
             stdout: //depot_path/name
             stderr: name - no such file(s). 
              */
-            return (executor.getOutputString().indexOf("//") != -1);
-        } else {
-            return false;
+                status = (executor.getOutputString().indexOf("//") != -1);
+            }
+            if (!status) {
+                cmd.clear();
+                cmd.add(getCommand());
+                cmd.add("files");
+                cmd.add(name);
+                Executor executor = new Executor(cmd, dir);
+                executor.exec();
+            /* OUTPUT:
+            stdout: //depot_path/name
+            stderr: name - no such file(s). 
+             */
+                status = (executor.getOutputString().indexOf("//") != -1);
+            }
         }
+        return status;
     }
 
     @Override
