@@ -2,6 +2,7 @@
 #include <string>
 #include </path/to/header.h>
 #include <header.h>
+#include "myhead.hh"
 
 class MyClass {
 public:

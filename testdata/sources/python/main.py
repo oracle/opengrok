@@ -33,6 +33,10 @@ class MyClass:
     i = 12345
     x = 0xdeadbeef
     l= 456L
+    z=14*8
+    f=12.38
+    i=3.14e-10j
+    ef=14e-13
     def f(self):
         return 'hello world'
 

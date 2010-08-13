@@ -144,7 +144,7 @@ public abstract class JFlexXref {
    */
   protected void writeSymbol(String symbol, Set<String> keywords, int line)
           throws IOException {
-      if (keywords.contains(symbol)) {
+      if (keywords!=null && keywords.contains(symbol)) {
           // This is a keyword, so we don't create a link.
           out.append("<b>").append(symbol).append("</b>");
 

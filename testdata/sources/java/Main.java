@@ -6,7 +6,10 @@
 class Main {
 
     private String[] argv;
-    private float test = 12.36;
+    private double test = 12.36;
+    private double testen = 12.36e-10;
+    private double testep = 12.36e+10;
+    private double teste = 12.36e10;
 
     public Main(String[] argv) {
         this.argv = argv;
@@ -45,6 +48,7 @@ class Main {
             throw new Exception("Some \\ 'string'");
         }
         int result = 123 + 456;
+        int resultx = 14*456;
         System.exit(result);
     }
 }

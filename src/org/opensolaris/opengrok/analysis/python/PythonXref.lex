@@ -56,7 +56,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("py"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([loxbLOXB]+)?
+Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[loxbLOXBjJ]*)?
 
 %state  STRING LSTRING SCOMMENT QSTRING LQSTRING
 

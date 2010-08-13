@@ -56,7 +56,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("pl"|"perl"|"pm"|"conf"|"txt"|"htm"|"html"|"xml"|"ini"|"diff"|"patch")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = (0[xX][0-9a-fA-F]+|[0-9][0-9_]*|[0-9]+.[0-9]+)([E]+[0-9]+)?
+Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 
 Pods = "=back" | "=begin" | "=end" | "=for" | "=head1" | "=head2" | "=item" | "=over" | "=pod"
 PodEND = "=cut"
@@ -69,6 +69,13 @@ PodEND = "=cut"
 {Identifier} {
     String id = yytext();
     writeSymbol(id, Consts.kwd, yyline);
+}
+
+("$"|"@"|"%"|"&") {Identifier} {
+  //we ignore keywords if the identifier starts with one of variable chars ...
+    String id = yytext().substring(1);
+    out.write(yytext().substring(0,1));
+    writeSymbol(id, null, yyline);
 }
 
 "<" ({File}|{Path}) ">" {

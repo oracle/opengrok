@@ -11,7 +11,7 @@ OpenGrok is the tool used for the OpenSolaris Source Browser.
 Requirements
 ------------
     * Latest Java http://java.sun.com/ (At least 1.6)
-    * A servlet container like Tomcat (5.x or later)
+    * A servlet container like Tomcat (6.x or later)
       http://tomcat.apache.org/
       supporting Servlet 2.4 and JSP 2.0
     * Exuberant Ctags http://ctags.sourceforge.net/

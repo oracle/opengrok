@@ -60,7 +60,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("java"|"properties"|"props"|"xml"|"conf"|"txt"|"htm"|"html"|"ini"|"jnlp"|"jad"|"diff"|"patch")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = (0[xX][0-9a-fA-F]+|[0-9][0-9]*|[0-9]+.[0-9]+)([ufdlUFDL]+)?
+Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
 
 JavadocWithClassArg = "@throws" | "@exception"
 JavadocWithParamNameArg = "@param"

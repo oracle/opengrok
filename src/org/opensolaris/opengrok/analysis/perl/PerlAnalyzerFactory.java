@@ -38,16 +38,16 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 
 public class PerlAnalyzerFactory extends FileAnalyzerFactory {
-    //TODO note that .PM below is kind of wrong, since python already has this and is registered before perl analyzer
-    // unfortunately we miss code that would be able to share extensions between analyzers
+    
     private static final String[] SUFFIXES = {
         "PL",
-        "PERL"        
+        "PERL",
+        "PM"
     };
-// "PM" ?
     private static final String[] MAGICS = {
         "#!/usr/bin/env perl",
-        "#!/usr/bin/perl"
+        "#!/usr/bin/perl",
+        "#!/bin/perl"
     };
 
     public PerlAnalyzerFactory() {
