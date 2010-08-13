@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -35,6 +34,7 @@ import org.opensolaris.opengrok.analysis.document.TroffFullTokenizer;
 import org.opensolaris.opengrok.analysis.fortran.FortranSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.java.JavaSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.lisp.LispSymbolTokenizer;
+import org.opensolaris.opengrok.analysis.perl.PerlSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.sh.ShSymbolTokenizer;
@@ -55,6 +55,7 @@ public class JFlexTokenizerTest {
     public void testOffsetAttribute() throws Exception {
         testOffsetAttribute(ShSymbolTokenizer.class);
         testOffsetAttribute(TroffFullTokenizer.class);
+        testOffsetAttribute(PerlSymbolTokenizer.class);
         testOffsetAttribute(PlainSymbolTokenizer.class);
         testOffsetAttribute(PlainFullTokenizer.class);
         testOffsetAttribute(CSymbolTokenizer.class);
