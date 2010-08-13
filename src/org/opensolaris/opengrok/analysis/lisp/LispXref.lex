@@ -63,7 +63,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z] {FNameChar}+ "." ([a-zA-Z]+)
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = ([0-9][0-9]*|[0-9]+.[0-9]+|"#" [boxBOX] [0-9a-fA-F]+)
+Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"#" [boxBOX] [0-9a-fA-F]+)
 
 %state  STRING COMMENT SCOMMENT
 
