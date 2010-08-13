@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 /**
@@ -27,6 +26,7 @@
  */
 package org.opensolaris.opengrok.search.context;
 
+import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -44,8 +44,15 @@ import org.opensolaris.opengrok.web.Util;
 %type String 
 %ignorecase
 %switch
+%char
 
 %{
+  /**
+   * Buffer that holds all the text from the start of the current line, or,
+   * in the case of a match that spans multiple lines, from the start of the
+   * first line part of the matching region.
+   */
+  private final StringBuilder markedContents = new StringBuilder();
   int markedPos=0;
   int curLinePos=0;
   int matchStart=-1;
@@ -96,33 +103,13 @@ import org.opensolaris.opengrok.web.Util;
 
 
   public void reInit(char[] buf, int len, Writer out, String url, TreeMap<Integer, String[]> tags) {
-        yyreset((Reader) null);
-        zzBuffer = buf;
-        zzStartRead = 0;
-        zzEndRead = len;
-        zzAtEOF = true;
-
-        wait = false;
-        dumpRest = false;
-        rest = 0;
-        markedPos=0;
-        curLinePos=0;
-        matchStart=-1;
-        markedLine=0;
-        yyline = 1;
-        this.out = out;
-        this.url = url;
-        this.tags = tags;
-        if(this.tags == null) {
-                this.tags = new TreeMap<Integer, String[]>();
-        }
-        prevHi = false;
+        reInit(new CharArrayReader(buf, 0, len), out, url, tags);
   }
 
   public void reInit(Reader in, Writer out, String url, TreeMap<Integer, String[]> tags) {
         yyreset(in);
-        zzStartRead = 0;
 
+        markedContents.setLength(0);
         wait = false;
         dumpRest = false;
         rest = 0;
@@ -140,13 +127,15 @@ import org.opensolaris.opengrok.web.Util;
         prevHi = false;
   }
 
+  /** Current token could be part of a match. Hold on... */
   public void holdOn() {
      if(!wait) {
         wait = true;
-        matchStart = zzStartRead;
+        matchStart = markedContents.length() - yylength();
      }
   }
-  
+
+  /** Not a match after all. */
   public void neverMind() {
         wait = false;
         if(!dumpRest) {
@@ -157,14 +146,15 @@ import org.opensolaris.opengrok.web.Util;
   }
 
   
-  private int printWithNum(char[] buf, int start, int end, int lineNo,
+  private int printWithNum(int start, int end, int lineNo,
                            boolean bold) throws IOException {
         if (bold) {
             out.write("<b>");
         }
 
         for(int i=start;i<end; i++) {
-                switch(buf[i]) {
+                char ch = markedContents.charAt(i);
+                switch(ch) {
                 case '\n':
                         ++lineNo;
                         Integer ln = Integer.valueOf(lineNo);
@@ -207,7 +197,7 @@ import org.opensolaris.opengrok.web.Util;
                         out.write("&amp;");
                         break;
                 default:
-                        out.write(buf[i]);
+                        out.write(ch);
                 }
         }
 
@@ -218,9 +208,10 @@ import org.opensolaris.opengrok.web.Util;
         return lineNo;
   }
 
-  private int formatWithNum(char[] buf, int start, int end, int lineNo) {
+  private int formatWithNum(int start, int end, int lineNo) {
         for(int i=start;i<end; i++) {
-                switch(buf[i]) {
+                char ch = markedContents.charAt(i);
+                switch(ch) {
                 case '\n':
                         ++lineNo;
                         Integer ln = Integer.valueOf(lineNo);
@@ -243,7 +234,7 @@ import org.opensolaris.opengrok.web.Util;
                         sb.append("&amp;");
                         break;
                 default:
-                        sb.append(buf[i]);
+                        sb.append(ch);
                 }
         }
         return lineNo;
@@ -261,7 +252,7 @@ import org.opensolaris.opengrok.web.Util;
 
         wait = false;
         if (matchStart == -1) {
-                matchStart = zzStartRead;
+                matchStart = markedContents.length() - yylength();
         }
 
         if(curLinePos == markedPos) {
@@ -286,31 +277,37 @@ import org.opensolaris.opengrok.web.Util;
         if (out != null) {
            // print first part of line without normal font
            markedLine = printWithNum(
-                   zzBuffer, markedPos, matchStart, markedLine, false);
+                    markedPos, matchStart, markedLine, false);
            // use bold font for the match
            markedLine = printWithNum(
-                   zzBuffer, matchStart, zzMarkedPos, markedLine, true);
+                   matchStart, markedContents.length(), markedLine, true);
         } else {
-           markedLine = formatWithNum(zzBuffer, markedPos, matchStart, markedLine);
+           markedLine = formatWithNum(markedPos, matchStart, markedLine);
            hit.setLineno(String.valueOf(markedLine));
            sb.append("<b>");
-           markedLine = formatWithNum(zzBuffer, matchStart, zzMarkedPos, markedLine);
+           markedLine = formatWithNum(
+                    matchStart, markedContents.length(), markedLine);
            sb.append("</b>");
         }
-        markedPos = zzMarkedPos;
+
+        // Remove everything up to the start of the current line in the
+        // buffered contents.
+        markedContents.delete(0, curLinePos);
+        curLinePos = 0;
+        markedPos = markedContents.length();
         matchStart = -1;
         dumpRest = true;
-        rest = zzMarkedPos;
+        rest = markedPos;
   }
   public void dumpRest() throws IOException {
         if(dumpRest) {
         final int maxLooks = 100;
         for (int i=0; ; i++) {
-            final boolean endOfBuffer = (i >= zzEndRead - rest);
-            final boolean newline = !endOfBuffer && zzBuffer[rest+i] == '\n';
+            final boolean endOfBuffer = (i >= markedContents.length() - rest);
+            final boolean newline = !endOfBuffer && markedContents.charAt(rest+i) == '\n';
             if (endOfBuffer || newline || i >= maxLooks) {
                            if (out != null) {
-                                printWithNum(zzBuffer, rest, rest+i-1,
+                                printWithNum(rest, rest+i-1,
                                              markedLine, false);
 
                 // Assume that this line has been truncated if we don't find
@@ -320,7 +317,7 @@ import org.opensolaris.opengrok.web.Util;
                 // been truncated).
                 if (!newline &&
                       ((i >= maxLooks) ||
-                       (endOfBuffer && zzEndRead == Context.MAXFILEREAD))) {
+                       (endOfBuffer && (yychar + yylength()) == Context.MAXFILEREAD))) {
                     out.write(" (&hellip;)");
                 }
 
@@ -333,7 +330,7 @@ import org.opensolaris.opengrok.web.Util;
                                 }
                                 out.write("<br/>");
                            } else {
-                               formatWithNum(zzBuffer, rest, rest+i-1, markedLine);
+                               formatWithNum(rest, rest+i-1, markedLine);
                                hit.setLine(sb.toString());
                                if (prevHi) {
                                   String[] desc = tags.remove(prevLn);
@@ -380,20 +377,25 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 
 %%
-{Identifier}|{Number}|{Printable}       {return yytext().toLowerCase(Locale.getDefault());}
+{Identifier}|{Number}|{Printable}    {
+    String text = yytext().toLowerCase(Locale.getDefault());
+    markedContents.append(text);
+    return text;
+}
 <<EOF>>   { return null;}
 
 \n      {
+                markedContents.append(yycharat(0));
                 if(!wait) {
-                        markedPos = zzMarkedPos;
+                        markedPos = markedContents.length();
                         markedLine = yyline+1;
                         matchStart = -1;
-                        curLinePos=zzMarkedPos;
+                        curLinePos = markedPos;
                 }
                 if(dumpRest) {
+                        int endPos = markedContents.length() - yylength();
                         if (out != null) {
-                           printWithNum(zzBuffer, rest, zzMarkedPos-1,
-                                        markedLine, false);
+                           printWithNum(rest, endPos, markedLine, false);
                            out.write("</a>");
                            if(prevHi){
                                 out.write(" <i> ");
@@ -403,7 +405,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                            }
                            out.write("<br/>");
                         } else {
-                           formatWithNum(zzBuffer, rest, zzMarkedPos-1, markedLine);
+                           formatWithNum(rest, endPos, markedLine);
                            hit.setLine(sb.toString());
                            if(prevHi){
                                 String[] desc = tags.remove(prevLn);
@@ -416,6 +418,14 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                         dumpRest = false;
 
                 }
+                if (!wait) {
+                    // We have dumped the rest of the line, begun a new line,
+                    // and we're not inside a possible match, so it's safe to
+                    // forget the buffered contents.
+                    markedContents.setLength(0);
+                    markedPos = 0;
+                    curLinePos = 0;
+                }
         }
 
-.       {}
+.       { markedContents.append(yycharat(0)); }
