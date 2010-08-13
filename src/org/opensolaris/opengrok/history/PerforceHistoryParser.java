@@ -204,7 +204,7 @@ public class PerforceHistoryParser {
      */
     private static Date newDate(int year, int month, int day, int hour, int minute, int second) {
         Calendar cal = Calendar.getInstance();
-        // Convert 1-based month to 0-based, and set time of day to noon
+        // Convert 1-based month to 0-based
         cal.set(year, month - 1, day, hour, minute, second);
         return cal.getTime();
     }
