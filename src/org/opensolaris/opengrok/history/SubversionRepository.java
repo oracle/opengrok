@@ -88,7 +88,7 @@ public class SubversionRepository extends Repository {
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);
 
-        if (isWorking()) {
+        if (svnBinary.available) {
             boolean working = false; // set to true if we manage to find the
                                      // root directory
 

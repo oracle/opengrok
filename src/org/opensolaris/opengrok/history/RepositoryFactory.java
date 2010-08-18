@@ -18,11 +18,9 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- * 
- * @author Jorgen Austvik
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
@@ -65,13 +63,20 @@ public final class RepositoryFactory {
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
                 res = rep.getClass().newInstance();
-                if (!rep.isWorking()) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, res.getClass().getSimpleName() + " not working (missing binaries?): " + file.getPath());
-                }
                 try {
                     res.setDirectoryName(file.getCanonicalPath());
                 } catch (IOException e) {
                     OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get canonical path name for " + file.getAbsolutePath(), e);
+                }
+
+                if (!res.isWorking()) {
+                    OpenGrokLogger.getLogger().log(
+                            Level.WARNING,
+                            "{0} not working (missing binaries?): {1}",
+                            new Object[] {
+                                res.getClass().getSimpleName(),
+                                file.getPath()
+                            });
                 }
 
                 if (res.getType() == null || res.getType().length() == 0) {
