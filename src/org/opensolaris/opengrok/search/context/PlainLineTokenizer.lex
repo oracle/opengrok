@@ -378,9 +378,9 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 %%
 {Identifier}|{Number}|{Printable}    {
-    String text = yytext().toLowerCase(Locale.getDefault());
+    String text = yytext();
     markedContents.append(text);
-    return text;
+    return text.toLowerCase(Locale.getDefault());
 }
 <<EOF>>   { return null;}
 

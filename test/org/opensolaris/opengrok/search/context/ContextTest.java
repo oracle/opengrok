@@ -343,4 +343,20 @@ public class ContextTest {
         return DocumentBuilderFactory.newInstance().
                 newDocumentBuilder().parse(in);
     }
+
+    /**
+     * Verify that the matching lines are shown in their original form and
+     * not lower-cased (bug #16848).
+     */
+    @Test
+    public void bug16848() throws Exception {
+        StringReader in = new StringReader("Mixed case: abc AbC dEf\n");
+        StringWriter out = new StringWriter();
+        QueryBuilder qb = new QueryBuilder().setFreetext("mixed");
+        Context c = new Context(qb.build(), qb.getQueries());
+        assertTrue(c.getContext(in, out, "", "", "", null, false, null));
+        assertEquals("<a class=\"s\" href=\"#0\"><span class=\"l\">0</span> " +
+                        "<b>Mixed</b> case: abc AbC dEf</a><br/>",
+                     out.toString());
+    }
 }
