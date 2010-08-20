@@ -40,6 +40,13 @@ import java.util.Stack;
   private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
 
+  @Override
+  public void reInit(char[] contents, int length) {
+    super.reInit(contents, length);
+    stateStack.clear();
+    styleStack.clear();
+  }
+
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
@@ -239,4 +246,13 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
         {
           out.write(yytext().replace("@", " (at] "));
         }
+}
+
+<<EOF>> {
+    // If we reach EOF while being in a nested state, pop all the way up
+    // the initial state so that we close open HTML tags.
+    while (!stateStack.isEmpty()) {
+        popstate();
+    }
+    return YYEOF;
 }

@@ -57,6 +57,14 @@ public class JFlexXrefTest {
     private static Ctags ctags;
     private static TestRepository repository;
 
+    /**
+     * This is what we expect to find at the beginning of the first line
+     * returned by an xref.
+     */
+    private static final String FIRST_LINE_PREAMBLE =
+                "<a class=\"l\" name=\"1\" href=\"#1\">" +
+                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;</a>";
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
@@ -193,10 +201,35 @@ public class JFlexXrefTest {
         StringWriter output = new StringWriter();
         xref.write(output);
 
-        // This prefix is always prepended to the first line:
-        String prefix = "<a class=\"l\" name=\"1\" href=\"#1\">"
-                + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;</a>";
+        assertEquals(FIRST_LINE_PREAMBLE + expectedOutput, output.toString());
+    }
 
-        assertEquals(prefix + expectedOutput, output.toString());
+    /**
+     * Regression test case for bug #16883. Some of the state used to survive
+     * across invocations in ShXref, so that a syntax error in one file might
+     * cause broken highlighting in subsequent files. Test that the instance
+     * is properly reset now.
+     */
+    @Test
+    public void bug16883() throws Exception {
+        // Analyze a script with broken syntax (unterminated string literal)
+        ShXref xref = new ShXref(new StringReader("echo \"xyz"));
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        assertEquals(
+                FIRST_LINE_PREAMBLE +
+                    "<b>echo</b> <span class=\"s\">\"xyz</span>",
+                out.toString());
+
+        // Reuse the xref and verify that the broken syntax in the previous
+        // file doesn't cause broken highlighting in the next file
+        out = new StringWriter();
+        String contents = "echo \"hello\"";
+        xref.reInit(contents.toCharArray(), contents.length());
+        xref.write(out);
+        assertEquals(
+                FIRST_LINE_PREAMBLE +
+                    "<b>echo</b> <span class=\"s\">\"hello\"</span>",
+                out.toString());
     }
 }
