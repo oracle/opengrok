@@ -34,10 +34,10 @@
             <resource>
                 <targetPath>org/opensolaris/opengrok/management/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/management/</directory>
-                <excludes>
-                  <exclude>*.java</exclude>
-                  <exclude>*.html</exclude>
-                </excludes>
+                <includes>
+                  <include>*.properties</include>
+                  <include>**/*.gif</include>
+                </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
