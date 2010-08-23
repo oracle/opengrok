@@ -33,6 +33,7 @@
 #   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote) Repositories (*)
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)_
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go (by default 3 directories from SRC_ROOT)
+#   - OPENGROK_DERBY              if set, then indexer tries to use derby as historycache (see derby command of this script)
 #
 #   - READ_XML_CONFIGURATION      file with read only configuration - a temp workaround for bug # 327
 #
@@ -47,7 +48,7 @@
 Usage()
 {
     echo 1>&2
-    echo "Usage: ${0} <deploy|update|updateQuietly|usage>" 1>&2
+    echo "Usage: ${0} <deploy|derby|update|updateQuietly|usage>" 1>&2
     echo "       ${0} index [<directory>]" 1>&2
     echo 1>&2
     echo "  Optional environment variables:" 1>&2
@@ -171,7 +172,7 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
     SCAN_FOR_REPOSITORY="-S"
-    if [ ! -z "${OPENGROK_SCAN_REPOS}" ]
+    if [ -n "${OPENGROK_SCAN_REPOS}" ]
     then
         SCAN_FOR_REPOSITORY=""
     fi
@@ -179,13 +180,13 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Remote Repository Support (CVS or SVN)
     #           (Can be very time demanding, uncomment if needed)
     REMOTE_REPOSITORIES="-r on"
-    if [ ! -z "${OPENGROK_REMOTE_REPOS}" ]
+    if [ -n "${OPENGROK_REMOTE_REPOS}" ]
     then
         REMOTE_REPOSITORIES=""
     fi
 
     # OPTIONAL: override depth of scanning for repositories
-    if [ ! -z "${OPENGROK_SCAN_DEPTH}" ]
+    if [ -n "${OPENGROK_SCAN_DEPTH}" ]
     then
         SCAN_DEPTH="-z${OPENGROK_SCAN_DEPTH}"
     fi
@@ -246,7 +247,10 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     #   - derbyclient.jar      - See README.txt for more details
     #   - Running Derby Server - Defaults to localhost:1527
     #
-    #DERBY_HISTORY_CACHE=-D
+    if [ -n "${OPENGROK_DERBY}" ]
+    then
+        DERBY_HISTORY_CACHE="-D"
+    fi
 
     # DELIVERED: An update program for EftarFile
     # Usage: <class> inputFile [inputFile ...] outputFile
@@ -262,7 +266,7 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     # or alternatively, Be Verbose!
     #VERBOSE="-v"
 
-    if [ ! -z "${OPENGROK_VERBOSE}" ]
+    if [ -n "${OPENGROK_VERBOSE}" ]
     then 
         VERBOSE="-v"
         QUIET=""
@@ -549,30 +553,36 @@ ValidateConfiguration()
         QUIET=""
         VERBOSE="-v"
     fi
+
+    if [ -n "${OPENGROK_DERBY}" ]
+    then
+        Warning "CHECK: derbyclient.jar needs to be in where the rest of opengrok used jars are and in unpacked source.war in WEB-INF/lib !!!"
+    fi
+
 }
 
 CreateRuntimeRequirements()
 {
     if [ ! -d "${DATA_ROOT}" ]
     then
-        Warning  "OpenGrok Generated Data Path ${DATA_ROOT} doesn't exist"
+        Warning  "OpenGrok generated data path ${DATA_ROOT} doesn't exist"
         Progress "  Attempting to create generated data directory ... "
         ${DO} mkdir -p "${DATA_ROOT}"
     fi
     if [ ! -d "${DATA_ROOT}" ]
     then
-        FatalError "OpenGrok Data Path ${DATA_ROOT} doesn't exist"
+        FatalError "OpenGrok data path ${DATA_ROOT} doesn't exist"
     fi
 
     if [ ! -d "${OPENGROK_INSTANCE_BASE}/etc" ]
     then
-        Warning  "OpenGrok Generated Etc Path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
+        Warning  "OpenGrok generated etc path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
         Progress "  Attempting to create generated etc directory ... "
         ${DO} mkdir -p "${OPENGROK_INSTANCE_BASE}/etc"
     fi
     if [ ! -d "${OPENGROK_INSTANCE_BASE}/etc" ]
     then
-        FatalError "OpenGrok Etc Path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
+        FatalError "OpenGrok etc path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
     fi
 
     if [ -n "${LOGGER_CONFIG_PATH}" -a ! -f "${LOGGER_CONFIG_PATH}" ]
@@ -589,6 +599,17 @@ CreateRuntimeRequirements()
          ${DO} mkdir ${OPENGROK_INSTANCE_BASE}/log
         fi
     fi
+
+    if [ -n "${OPENGROK_DERBY}" ]
+    then
+      if [ ! -d "${OPENGROK_INSTANCE_BASE}/derby" ]
+       then
+        Warning  "OpenGrok generated derby path ${OPENGROK_INSTANCE_BASE}/derby doesn't exist"
+        Progress "  Attempting to create generated derby directory ... "
+        ${DO} mkdir -p ${OPENGROK_INSTANCE_BASE}/derby
+      fi
+    fi
+
 }
 
 StdInvocation()
@@ -678,6 +699,21 @@ DeployWar()
     Progress
 }
 
+DerbyServer()
+{
+    case "${OS_NAME}:${OS_VERSION}" in
+        SunOS:5.10) Error "unsupported OS" ;;
+        SunOS:5.11) 
+                    svcadm enable javadb
+                     ;;
+        Linux:*)    
+                    mkdir -p $DATA_ROOT/derby
+                    java -Dderby.system.home=$DATA_ROOT/derby -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
+                     ;;
+        *)          Error "unsupported OS" ;;
+    esac
+}
+
 #
 # Main Program
 #
@@ -696,7 +732,11 @@ case "${1}" in
     deploy)
         DeployWar
         ;;
-
+    derby)
+        ValidateConfiguration
+        CreateRuntimeRequirements
+        DerbyServer
+        ;;
     update)
         ValidateConfiguration
         CreateRuntimeRequirements
@@ -738,3 +778,4 @@ esac
 #
 # End of File
 #
+

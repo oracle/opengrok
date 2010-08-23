@@ -19,7 +19,7 @@ Requirements
       http://subversion.tigris.org/
     * Mercurial 0.9.3 or later if Mercurial support is needed
       http://www.selenic.com/mercurial/wiki/
-    * JFlex Ant task (If you want to build OpenGrok)
+    * JFlex Ant task (if you want to build OpenGrok)
       http://www.jflex.org/
 
 
@@ -266,7 +266,7 @@ You need Java DB 10.5.3 or later
 (OpenSolaris: # pkg install SUNWjavadb or SUNWj6dev ,
 Debian/Ubuntu: # apt-get install sun-java6-javadb).
 There are two modes, having Java DB embedded, or running a Java DB server.
-Java DB server is default option, I will not describe how to set up embedded
+Java DB server is default option, we will not describe how to set up embedded
 option.
 
 1) Start the server:
@@ -322,7 +322,7 @@ configuration file in the default location
 (/var/opengrok/etc/configuration.xml).
 
 To configure the webapp source.war, look into the parameters defined in
-WEB-INF/web.xml of source.war (use jar or zip/unzip or your preffered zip
+WEB-INF/web.xml of source.war (use jar or zip/unzip or your preferred zip
 tool to get into it - e.g. extract the web.xml file from source.war ($ unzip
 source.war WEB-INF/web.xml) file, edit web.xml and re-package the jar file
 (zip -u source.war WEB-INF/web.xml) ) file and change those web.xml
@@ -332,7 +332,7 @@ more options, refer to manual or read param comments).
     * CONFIGURATION - the absolute path to XML file containing project
     * configuration (e.g. /var/opengrok/etc/configuration.xml )
     * ConfigAddress - port for remote updates to configuration, optional,
-    * but advised(since there is no authentification) to be set to
+    * but advised(since there is no authentication) to be set to
     * localhost:<some_port> (e.g. localhost:2424), if you choose some_port
     * below 1024 you have to have root privileges
 
@@ -352,7 +352,7 @@ it to your source.war webarchive
 
     * Option 2: Copy the source.war file to
     * GLASSFISH/domains/YOURDOMAIN/autodeploy directory, glassfish will try
-    * to deploy it "automagically".
+    * to deploy it "auto magically".
     * Option 3: Use cli from GLASSFISH directory:
 
 # ./bin/asadmin deploy /path/to/source.war
@@ -436,7 +436,7 @@ If you are not using netbeans, you have to edit the file
 nbproject/project.properties, and add "lib/emma.jar" and 
 "lib/emma_ant.jar" to the javac.classpath inside it.
 
-Now you can put the classes into jars and generate distributables:
+Now you can put the classes into jars and generate distributable:
 
    ant dist
 
@@ -449,7 +449,7 @@ the run time analysis, use these properties:
    emma.coverage.out.merge=true
 
 The coverage.ec file should be placed in the opengrok/trunk/coverage
-directory for easy analyzation.
+directory for easy analyze.
 
 If you want to test the coverage of the unit tests, you can
 run the tests:
