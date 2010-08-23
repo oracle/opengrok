@@ -22,7 +22,9 @@
             <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
-                <excludes><exclude>*.java</exclude></excludes>
+                <includes>
+                  <include>*.dat</include>
+                </includes>
             </resource>
             <resource>
                 <targetPath>org/opensolaris/opengrok/index/</targetPath>
