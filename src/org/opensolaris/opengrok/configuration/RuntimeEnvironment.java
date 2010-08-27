@@ -680,8 +680,8 @@ public final class RuntimeEnvironment {
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
-        HistoryGuru.getInstance().invalidateRepositories(configuration.getRepositories());
         register();
+        HistoryGuru.getInstance().invalidateRepositories(configuration.getRepositories());
     }
 
     public Configuration getConfiguration() {

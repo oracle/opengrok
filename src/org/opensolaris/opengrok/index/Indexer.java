@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
+import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -74,7 +75,6 @@ public final class Indexer {
      */
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public static void main(String argv[]) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         boolean runIndex = true;
         boolean update = true;
         boolean optimizedChanged = false;
@@ -109,19 +109,24 @@ public final class Indexer {
             }
 
             try {
+                Configuration cfg = null;
                 int cmd;
 
                 // We need to read the configuration file first, since we
                 // will try to overwrite options..
                 while ((cmd = getopt.getOpt()) != -1) {
                     if (cmd == 'R') {
-                        env.readConfiguration(new File(getopt.getOptarg()));
+                        cfg = Configuration.read(new File(getopt.getOptarg()));
                         break;
                     }
                 }
 
-                String databaseDriver = env.getDatabaseDriver();
-                String databaseURL = env.getDatabaseUrl();
+                if (cfg == null) {
+                    cfg = new Configuration();
+                }
+
+                String databaseDriver = cfg.getDatabaseDriver();
+                String databaseURL = cfg.getDatabaseUrl();
 
                 // Now we can handle all the other options..
                 getopt.reset();
@@ -133,11 +138,11 @@ public final class Indexer {
                             break;
 
                         case 'q':
-                            env.setVerbose(false);
+                            cfg.setVerbose(false);
                             OpenGrokLogger.setOGConsoleLogLevel(Level.WARNING);
                             break;
                         case 'e':
-                            env.setGenerateHtml(false);
+                            cfg.setGenerateHtml(false);
                             break;
                         case 'P':
                             addProjects = true;
@@ -146,7 +151,7 @@ public final class Indexer {
                             defaultProject = getopt.getOptarg();
                             break;
                         case 'c':
-                            env.setCtags(getopt.getOptarg());
+                            cfg.setCtags(getopt.getOptarg());
                             break;
                         case 'w':
                              {
@@ -155,9 +160,9 @@ public final class Indexer {
                                     webapp = "/" + webapp;
                                 }
                                 if (webapp.endsWith("/")) {
-                                    env.setUrlPrefix(webapp + "s?");
+                                    cfg.setUrlPrefix(webapp + "s?");
                                 } else {
-                                    env.setUrlPrefix(webapp + "/s?");
+                                    cfg.setUrlPrefix(webapp + "/s?");
                                 }
                             }
                             break;
@@ -183,7 +188,7 @@ public final class Indexer {
                             repositories.add(getopt.getOptarg());
                             break;
                         case 'D':
-                            env.setStoreHistoryCacheInDB(true);
+                            cfg.setHistoryCacheInDB(true);
                             break;
                         case 'j':
                             databaseDriver = getopt.getOptarg();
@@ -202,9 +207,9 @@ public final class Indexer {
                         case 'r':
                              {
                                 if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                    env.setRemoteScmSupported(true);
+                                    cfg.setRemoteScmSupported(true);
                                 } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                    env.setRemoteScmSupported(false);
+                                    cfg.setRemoteScmSupported(false);
                                 } else {
                                     System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
                                     System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
@@ -214,30 +219,30 @@ public final class Indexer {
                             break;
                         case 'O':
                              {
-                                boolean oldval = env.isOptimizeDatabase();
+                                boolean oldval = cfg.isOptimizeDatabase();
                                 if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                    env.setOptimizeDatabase(true);
+                                    cfg.setOptimizeDatabase(true);
                                 } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                    env.setOptimizeDatabase(false);
+                                    cfg.setOptimizeDatabase(false);
                                 } else {
                                     System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -O");
                                     System.err.println("       Ex: \"-O on\" will optimize the database as part of the index generation");
                                     System.err.println("           \"-O off\" disable optimization of the index database");
                                 }
-                                if (oldval != env.isOptimizeDatabase()) {
+                                if (oldval != cfg.isOptimizeDatabase()) {
                                     optimizedChanged = true;
                                 }
                             }
                             break;
                         case 'v':
-                            env.setVerbose(true);
+                            cfg.setVerbose(true);
                             OpenGrokLogger.setOGConsoleLogLevel(Level.INFO);
                             break;
 
                         case 's':
                              {
-                                env.setSourceRoot(getopt.getOptarg());
-                                File file = env.getSourceRootFile();
+                                cfg.setSourceRoot(getopt.getOptarg());
+                                File file = new File(cfg.getSourceRoot());
                                 if (!file.isDirectory()) {
                                     System.err.println("ERROR: source root must be a directory: " + file.toString());
                                     System.exit(1);
@@ -246,8 +251,8 @@ public final class Indexer {
                             break;
                         case 'd':
                              {
-                                env.setDataRoot(getopt.getOptarg());
-                                File file = env.getDataRootFile();
+                                cfg.setDataRoot(getopt.getOptarg());
+                                File file = new File(cfg.getDataRoot());
                                 if (!file.isDirectory()) {
                                     System.err.println("ERROR: data root must be a directory: " + file.toString());
                                     System.exit(1);
@@ -255,19 +260,19 @@ public final class Indexer {
                             }
                             break;
                         case 'i':
-                            env.getIgnoredNames().add(getopt.getOptarg());
+                            cfg.getIgnoredNames().add(getopt.getOptarg());
                             break;
                         case 'I':
-                            env.getIncludedNames().add(getopt.getOptarg());
+                            cfg.getIncludedNames().add(getopt.getOptarg());
                             break;
                         case 'S':
                             searchRepositories = true;
                             break;
                         case 'Q':
                             if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                env.setQuickContextScan(true);
+                                cfg.setQuickContextScan(true);
                             } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                env.setQuickContextScan(false);
+                                cfg.setQuickContextScan(false);
                             } else {
                                 System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -Q");
                                 System.err.println("       Ex: \"-Q on\" will just scan a \"chunk\" of the file and insert \"[..all..]\"");
@@ -277,7 +282,7 @@ public final class Indexer {
                             break;
                         case 'm': {
                             try {
-                                env.setIndexWordLimit(Integer.parseInt(getopt.getOptarg()));
+                                cfg.setIndexWordLimit(Integer.parseInt(getopt.getOptarg()));
                             } catch (NumberFormatException exp) {
                                 System.err.println("ERROR: Failed to parse argument to \"-m\": " + exp.getMessage());
                                 System.exit(1);
@@ -286,9 +291,9 @@ public final class Indexer {
                         }
                         case 'a':
                             if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                env.setAllowLeadingWildcard(true);
+                                cfg.setAllowLeadingWildcard(true);
                             } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                env.setAllowLeadingWildcard(false);
+                                cfg.setAllowLeadingWildcard(false);
                             } else {
                                 System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -a");
                                 System.err.println("       Ex: \"-a on\" will allow a search to start with a wildcard");
@@ -328,7 +333,7 @@ public final class Indexer {
                             }
                             break;
                         case 'L':
-                            env.setWebappLAF(getopt.getOptarg());
+                            cfg.setWebappLAF(getopt.getOptarg());
                             break;
                         case 'T':
                             try {
@@ -340,7 +345,7 @@ public final class Indexer {
                             break;
                         case 'z':
                             try {
-                                env.setScanningDepth(Integer.parseInt(getopt.getOptarg()));
+                                cfg.setScanningDepth(Integer.parseInt(getopt.getOptarg()));
                             } catch (NumberFormatException exp) {
                                 System.err.println("ERROR: Failed to parse argument to \"-z\": " + exp.getMessage());
                                 System.exit(1);
@@ -348,9 +353,9 @@ public final class Indexer {
                             break;
                         case 'l':
                             if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                env.setUsingLuceneLocking(true);
+                                cfg.setUsingLuceneLocking(true);
                             } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                env.setUsingLuceneLocking(false);
+                                cfg.setUsingLuceneLocking(false);
                             } else {
                                 System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -l");
                                 System.err.println("       Ex: \"-l on\" will enable locks in Lucene");
@@ -382,12 +387,12 @@ public final class Indexer {
                 }
                 
                 //logging starts here
-                if (env.isVerbose()) {
+                if (cfg.isVerbose()) {
                   String fn=LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
                   if (fn!=null) {System.out.println("Logging to file: "+fn);}
                 }
                 
-                if (env.storeHistoryCacheInDB()) {
+                if (cfg.isHistoryCacheInDB()) {
                     // The default database driver is Derby's client driver.
                     if (databaseDriver == null) {
                         databaseDriver = DERBY_CLIENT_DRIVER;
@@ -398,8 +403,7 @@ public final class Indexer {
                         StringBuilder defaultURL = new StringBuilder();
                         defaultURL.append("jdbc:derby:");
                         if (databaseDriver.equals(DERBY_EMBEDDED_DRIVER)) {
-                            defaultURL
-                                    .append(env.getDataRootPath())
+                            defaultURL.append(cfg.getDataRoot())
                                     .append(File.separator);
                         } else {
                             defaultURL.append("//localhost/");
@@ -409,11 +413,12 @@ public final class Indexer {
                     }
                 }
 
-                env.setDatabaseDriver(databaseDriver);
-                env.setDatabaseUrl(databaseURL);
+                cfg.setDatabaseDriver(databaseDriver);
+                cfg.setDatabaseUrl(databaseURL);
 
                 // automatically allow symlinks that are directly in source root
-                File sourceRootFile = env.getSourceRootFile();
+                String file = cfg.getSourceRoot();
+                File sourceRootFile = file != null ? new File(file) : null;
                 if (sourceRootFile != null) {
                     File[] projectDirs = sourceRootFile.listFiles();
                     if (projectDirs != null) {
@@ -425,8 +430,12 @@ public final class Indexer {
                     }
                 }
                 
-                allowedSymlinks.addAll(env.getAllowedSymlinks());
-                env.setAllowedSymlinks(allowedSymlinks);
+                allowedSymlinks.addAll(cfg.getAllowedSymlinks());
+                cfg.setAllowedSymlinks(allowedSymlinks);
+
+                //Set updated configuration in RuntimeEnvironment
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+                env.setConfiguration(cfg);
 
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,
