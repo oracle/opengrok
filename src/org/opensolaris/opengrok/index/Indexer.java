@@ -418,8 +418,8 @@ public final class Indexer {
 
                 // automatically allow symlinks that are directly in source root
                 String file = cfg.getSourceRoot();
-                File sourceRootFile = file != null ? new File(file) : null;
-                if (sourceRootFile != null) {
+                if (file != null) {
+                    File sourceRootFile = new File(file);
                     File[] projectDirs = sourceRootFile.listFiles();
                     if (projectDirs != null) {
                         for (File projectDir : projectDirs) {
