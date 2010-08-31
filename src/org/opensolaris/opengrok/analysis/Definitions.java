@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class Definitions implements Serializable {
+    private final static long serialVersionUID = 1191703801007779489L;
+
     /** Map from symbol to the line numbers on which the symbol is defined. */
     private final Map<String, Set<Integer>> symbols;
     /** List of all the tags. */
@@ -106,6 +108,8 @@ public class Definitions implements Serializable {
      * Class that represents a single tag.
      */
     public static class Tag implements Serializable {
+        private final static long serialVersionUID = 1217869075425651464L;
+
         /** Line number of the tag. */
         public final int line;
         /** The symbol used in the definition. */

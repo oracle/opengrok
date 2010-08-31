@@ -37,5 +37,6 @@
     </properties> -->
   </rule>
   <rule ref="rulesets/unusedcode.xml"/>
+  <rule ref="rulesets/javabeans.xml/MissingSerialVersionUID"/>
   
 </ruleset>
