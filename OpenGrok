@@ -242,7 +242,7 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
 
     # OPTIONAL: Store The History Cache in Java DB (derby),
     #           instead of file system (in gzipped xml files).
-    # 
+    #
     # Requirements:
     #   - derbyclient.jar      - See README.txt for more details
     #   - Running Derby Server - Defaults to localhost:1527
@@ -267,7 +267,7 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     #VERBOSE="-v"
 
     if [ -n "${OPENGROK_VERBOSE}" ]
-    then 
+    then
         VERBOSE="-v"
         QUIET=""
     fi
@@ -346,13 +346,31 @@ FindExuberantCTags()
 
 FindJavaHome()
 {
+    javaHome=""
     case "${OS_NAME}:${OS_VERSION}" in
         SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.6.0" ;;
         SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
-        Linux:*)    javaHome="/usr/lib/jvm/java-6-sun" ;;
-        *)          javaHome=""                            ;;
+        Linux:*)
+            if [ -f /etc/alternatives/java ]
+            then
+               javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
+               javaHome=`dirname $javaHome`
+               javaHome=`dirname $javaHome`
+            else
+               for dir in /usr/lib/jvm/sun-jdk-1.6 \
+                          /usr/lib/jvm/sun-jre-1.6 \
+                          /usr/lib/jvm/java-6-sun
+               do
+                  if [ -f ${dir}/bin/java ]
+                  then
+                     javaHome=$dir
+                     break;
+                  fi
+               done
+            fi
+            ;;
     esac
-        
+
     if [ -z "${javaHome}" ]
     then
         Error "Unable to determine Java 6 Home" \
@@ -703,10 +721,10 @@ DerbyServer()
 {
     case "${OS_NAME}:${OS_VERSION}" in
         SunOS:5.10) Error "unsupported OS" ;;
-        SunOS:5.11) 
+        SunOS:5.11)
                     svcadm enable javadb
                      ;;
-        Linux:*)    
+        Linux:*)
                     mkdir -p $DATA_ROOT/derby
                     java -Dderby.system.home=$DATA_ROOT/derby -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
                      ;;
