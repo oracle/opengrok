@@ -461,6 +461,9 @@ public final class Indexer {
 
     }
 
+    // PMD wants us to use length() > 0 && charAt(0) instead of startsWith()
+    // for performance. We prefer clarity over performance here, so silence it.
+    @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
             boolean searchRepositories,
             boolean addProjects,
