@@ -97,6 +97,70 @@ public class IndexerTest {
     }
 
     /**
+     * Test that rescanning for projects does not erase customization of
+     * existing projects. Bug #16006.
+     */
+    @Test
+    public void testRescanProjects() throws Exception {
+        // Generate one project that will be found in source.zip, and set
+        // some properties that we can verify after the rescan.
+        Project p1 = new Project();
+        p1.setPath("/java");
+        p1.setDescription("Project 1");
+        p1.setTabSize(3);
+
+        // Generate one project that will not be found in source.zip, and that
+        // should not be in the list of projects after the rescan.
+        Project p2 = new Project();
+        p2.setPath("/this_path_does_not_exist");
+        p2.setDescription("Project 2");
+
+        // Make the runtime environment aware of these two projects.
+        List<Project> projects = new ArrayList<Project>();
+        projects.add(p1);
+        projects.add(p2);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjects(projects);
+
+        // Do a rescan of the projects, and only that (we don't care about
+        // the other aspects of indexing in this test case).
+        Indexer.getInstance().prepareIndexer(
+                env,
+                false, // don't search for repositories
+                true,  // scan and add projects
+                null,  // no default project
+                null,  // don't write config file
+                false, // don't refresh history
+                false, // don't list files
+                false, // don't create dictionary
+                null,  // subFiles - not needed since we don't list files
+                null); // repositories - not needed when not refreshing history
+
+        List<Project> newProjects = env.getProjects();
+
+        // p2 should not be in the project list anymore
+        for (Project p : newProjects) {
+            assertFalse("p2 not removed", p.getPath().equals(p2.getPath()));
+        }
+
+        // p1 should be there
+        Project newP1 = null;
+        for (Project p : newProjects) {
+            if (p.getPath().equals(p1.getPath())) {
+                newP1 = p;
+                break;
+            }
+        }
+        assertNotNull("p1 not in list", newP1);
+
+        // The properties of p1 should be preserved
+        assertEquals("project path", p1.getPath(), newP1.getPath());
+        assertEquals("project description",
+                     p1.getDescription(), newP1.getDescription());
+        assertEquals("project tabsize", p1.getTabSize(), newP1.getTabSize());
+    }
+
+    /**
      * Test of doIndexerExecution method, of class Indexer.
      */
     @Test

@@ -29,8 +29,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -493,13 +495,31 @@ public final class Indexer {
         if (addProjects) {
             File files[] = env.getSourceRootFile().listFiles();
             List<Project> projects = env.getProjects();
+
+            // Keep a copy of the old project list so that we can preserve
+            // the customization of existing projects.
+            Map<String, Project> oldProjects = new HashMap<String, Project>();
+            for (Project p : projects) {
+                oldProjects.put(p.getPath(), p);
+            }
+
             projects.clear();
+
+            // Add a project for each top-level directory in source root.
             for (File file : files) {
-                if (!file.getName().startsWith(".") && file.isDirectory()) {
+                String name = file.getName();
+                String path = "/" + name;
+                if (oldProjects.containsKey(path)) {
+                    // This is an existing object. Reuse the old project,
+                    // possibly with customizations, instead of creating a
+                    // new with default values.
+                    projects.add(oldProjects.get(path));
+                } else if (!name.startsWith(".") && file.isDirectory()) {
+                    // Found a new directory with no matching project, so
+                    // create a new project with default properties.
                     Project p = new Project();
-                    String name = file.getName();
                     p.setDescription(name);
-                    p.setPath("/" + name);
+                    p.setPath(path);
                     projects.add(p);
                 }
             }
