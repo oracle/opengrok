@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
@@ -54,12 +54,20 @@ public class IgnoredNamesTest {
         
         assertTrue(instance.ignore("foo.o"));
         assertFalse(instance.ignore("foo"));
+        assertTrue(instance.ignore(".o"));
+        assertFalse(instance.ignore("foo.oo"));
         
         instance.add("Makefile");
         names = instance.getItems();
         assertEquals(2, names.size());
         assertTrue(instance.ignore(new File("Makefile")));
         assertFalse(instance.ignore("main.c"));
+
+        instance.add("o*o?.a?c*");
+        assertTrue(instance.ignore("opengrok.abc"));
+        assertTrue(instance.ignore("opengrok.abcd"));
+        assertFalse(instance.ignore("opengrok.ac"));
+        assertFalse(instance.ignore("grok.abcd"));
 
         instance.clear();
         names = instance.getItems();

@@ -17,25 +17,28 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ */
 
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.oro.io.GlobFilenameFilter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Filter implements Serializable {
-    static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
     /** The list of exact filenames */
     private final Set<String> filename;
     /** The list of filenames with wildcards */
-    private final List<FileFilter> patterns;
+    private final List<Pattern> patterns;
     /** The list of paths */
     private final List<String> path;
     /**
@@ -46,7 +49,7 @@ public class Filter implements Serializable {
 
     public Filter() {
         filename = new HashSet<String>();
-        patterns = new ArrayList<FileFilter>();
+        patterns = new ArrayList<Pattern>();
         path = new ArrayList<String>();
         items = new PatternList(this);
     }
@@ -104,11 +107,14 @@ public class Filter implements Serializable {
     public boolean match(File file) {
         boolean ret = false;
 
-        if (filename.contains(file.getName())) {
+        String fileName = file.getName();
+
+        if (filename.contains(fileName)) {
             ret = true;
         } else {
-            for (FileFilter fe : patterns) {
-                if (fe.accept(file)) {
+            for (Pattern p : patterns) {
+                Matcher m = p.matcher(fileName);
+                if (m.matches()) {
                     ret = true;
                     break;
                 }
@@ -145,7 +151,7 @@ public class Filter implements Serializable {
     @SuppressWarnings("PMD.ConfusingTernary")
     private void addPattern(String pattern) {
         if (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1) {
-            patterns.add(new GlobFilenameFilter(pattern));
+            patterns.add(compilePattern(pattern));
         } else if (pattern.indexOf(File.separatorChar) != -1) {
             if (pattern.charAt(0) == File.separatorChar) {
                 path.add(pattern);
@@ -155,6 +161,41 @@ public class Filter implements Serializable {
         } else {
             filename.add(pattern);
         }
+    }
+
+    /**
+     * Convert the glob pattern (examples: *.c, *.?xx) to a regular expression
+     * and compile it.
+     *
+     * @param pattern a pattern to match file names against
+     * @return a compiled regular expression representing the pattern
+     */
+    private Pattern compilePattern(String pattern) {
+        // Build the regex by replacing "*" with ".*" and "?" with ".". All
+        // other characters should be quoted to ensure exact match.
+        StringBuilder regex = new StringBuilder();
+        int pos = 0;
+        String[] components = pattern.split("[*?]");
+        for (String str : components) {
+            if (str.length() > 0) {
+                // Quote the characters up to next wildcard or end of string.
+                regex.append(Pattern.quote(str));
+                pos += str.length();
+            }
+            if (pos < pattern.length()) {
+                // Replace wildcard with equivalent regular expression.
+                if (pattern.charAt(pos) == '*') {
+                    regex.append(".*");
+                } else {
+                    assert pattern.charAt(pos) == '?';
+                    regex.append('.');
+                }
+                pos++;
+            }
+        }
+
+        // Compile the regex.
+        return Pattern.compile(regex.toString());
     }
 
     public static class PatternList extends ArrayList<String> {
