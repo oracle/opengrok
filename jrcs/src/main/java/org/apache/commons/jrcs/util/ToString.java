@@ -125,7 +125,7 @@ public class ToString
 
     public static String[] stringToArray(String value)
     {
-    	List<String> l = new LinkedList<String>();
+    	List l = new LinkedList();
 	int p = 0; int i = 0;
     	while( (i = value.indexOf('\n', p)) >= 0 && p < value.length()) {
 		l.add(value.substring(p, i));

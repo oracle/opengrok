@@ -117,11 +117,10 @@ class Lines
     public Node[] nodesToArray()
     {
         Node[] result = new Node[this.size()];
-        int x = 0;
 
-        for (Object o : this)
+        for (int x = 0; x < result.length; x++)
         {
-            result[x++] = ((Line)o).revision;
+            result[x] = ((Line)get(x)).revision;
         }
 
         return result;

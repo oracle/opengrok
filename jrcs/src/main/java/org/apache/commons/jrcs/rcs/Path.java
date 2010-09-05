@@ -79,7 +79,7 @@ import org.apache.commons.jrcs.diff.PatchFailedException;
  */
 class Path
 {
-    private List<Node> path = new LinkedList();
+    private List path = new LinkedList();
 
     /**
      * Creates an empty Path
@@ -208,13 +208,13 @@ class Path
         return lines;
     }
 
-    public List newpatch(List<Line> lines, boolean annotate)
+    public List newpatch(List lines, boolean annotate)
             throws InvalidFileFormatException,
             PatchFailedException
     {
         if (!annotate)
         {
-            Iterator<Node> p = path.iterator();
+            Iterator p = path.iterator();
 
             TrunkNode head = (TrunkNode) p.next();
             head.patch0(lines, false);
@@ -227,8 +227,8 @@ class Path
         }
         else // annotate
         {
-            ListIterator<Node>  p = path.listIterator();
-            Node  n    = p.next();
+            ListIterator p = path.listIterator();
+            Node  n    = (Node) p.next();
             Node  root = n.root();
 
             ((TrunkNode)n).newpatch0(lines, root);
@@ -236,7 +236,7 @@ class Path
             // Construct revision (but only to branchpoint if we're annotating a branchrev)
             while (p.hasNext())
             {
-                Node pn = p.next();
+                Node pn = (Node) p.next();
 
                 if (pn.version.isBranch())
                 {
@@ -257,8 +257,9 @@ class Path
 
                     LinkedList annoList = new LinkedList(lines); // We need to annotate on a copy
 
-                    for (Node tn : ap.path)
+                    for (Iterator it = ap.path.iterator(); it.hasNext(); )
                     {
+                        Node tn = (Node) it.next();
                         tn.newpatch(annoList, true, root); 
                     }
                 }
@@ -269,7 +270,7 @@ class Path
             // Annotate+construct branch lines
             while (p.hasNext())
             {
-                n = p.next();
+                n = (Node) p.next();
                 n.newpatch(lines, false, n);
             }
         }

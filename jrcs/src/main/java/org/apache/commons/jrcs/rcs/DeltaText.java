@@ -9,7 +9,7 @@ import java.util.Iterator;
  */
 class DeltaText
 {
-    private Stack<DeltaTextLine> deltaStack = new Stack();
+    private Stack deltaStack = new Stack();
     private Node     root;
     private Node     prev;
     private boolean  annotate;
@@ -35,17 +35,17 @@ class DeltaText
         deltaStack.push(delta);
     }
 
-    void patch(List<Line> lines)
+    void patch(List lines)
     {
         if (!annotate)
         {
             while (!deltaStack.empty())
-                { deltaStack.pop().patch(root, prev, lines); }
+                { ((DeltaTextLine)deltaStack.pop()).patch(root, prev, lines); }
         }
         else
         {
             while (!deltaStack.empty())
-                { deltaStack.pop().patchAnnotate(root, prev, lines); }
+                { ((DeltaTextLine)deltaStack.pop()).patchAnnotate(root, prev, lines); }
         }
     }
 }

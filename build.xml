@@ -636,7 +636,8 @@ Use is subject to license terms.
 
     <!-- Build our patched JRCS library. -->
     <target name="jrcs" depends="-pre-pre-compile">
-      <javac srcdir="jrcs/src" destdir="${build.classes.dir}">
+      <javac srcdir="jrcs/src" destdir="${build.classes.dir}"
+             nowarn="on" source="1.4">
         <classpath>
           <pathelement location="${file.reference.jakarta-oro-2.0.8.jar}"/>
         </classpath>

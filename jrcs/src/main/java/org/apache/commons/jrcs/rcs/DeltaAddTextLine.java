@@ -18,7 +18,7 @@ class DeltaAddTextLine implements DeltaTextLine
 	}
 
     /* This builds up a revision */
-	public void patch(Node root, Node prev, List<Line> lines)
+	public void patch(Node root, Node prev, List lines)
 	{
         for ( int i = 0; i < noLines ; i++ )
         {
@@ -27,7 +27,7 @@ class DeltaAddTextLine implements DeltaTextLine
 	}
 
     /* This annotates a revision, you have to do this on a *copy* of what you want annotated.. */
-    public void patchAnnotate(Node root, Node prev, List<Line> lines)
+    public void patchAnnotate(Node root, Node prev, List lines)
     {
         for (int i = 0; i < noLines ; i++)
             { lines.add(atLine, null); }
