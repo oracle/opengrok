@@ -638,11 +638,7 @@ Use is subject to license terms.
     <target name="jrcs" depends="-pre-pre-compile">
       <mkdir dir="${build.dir}/jrcs"/>
       <javac srcdir="jrcs/src" destdir="${build.dir}/jrcs"
-             nowarn="on" source="1.4">
-        <classpath>
-          <pathelement location="${file.reference.jakarta-oro-2.0.8.jar}"/>
-        </classpath>
-      </javac>
+             nowarn="on" source="1.4"/>
       <jar destfile="${file.reference.jrcs.jar}">
         <fileset dir="${build.dir}/jrcs" includes="**/*.class"/>
       </jar>

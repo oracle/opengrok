@@ -129,10 +129,6 @@
             <artifactId>servlet-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>oro</groupId>
-            <artifactId>oro</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.opensolaris.opengrok</groupId>
             <artifactId>jrcs</artifactId>
             <version>${project.version}</version>
