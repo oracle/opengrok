@@ -24,5 +24,6 @@ pmd/cpd_report.xml
 jdepend/report.txt
 jdepend/report.xml
 lib/derby.jar
+lib/jrcs.jar
 derby.log
 nbproject/genfiles.properties
