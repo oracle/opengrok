@@ -55,12 +55,14 @@
  *
  */
 
+/*
+ * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.apache.commons.jrcs.rcs;
 
 import java.text.Format;
 import java.text.MessageFormat;
-
-import org.apache.oro.text.regex.*;
 
 /**
  * Formatter for the RCS keywords. It is intended as an helper class to
@@ -70,63 +72,34 @@ import org.apache.oro.text.regex.*;
  */
 final class KeywordsFormat
 {
-    //WARNING: Do not remove the string concatenations
-    //         or CVS will mangle the strings on check in/out.
     final Format Header_FORMAT =
-            new MessageFormat("$" + "Header: {1} {2} {3, date,yyyy/MM/dd HH:mm:ss} {4} {5} " + "$");
+            new MessageFormat("\\$Header: {1} {2} {3, date,yyyy/MM/dd HH:mm:ss} {4} {5} \\$");
     final Format Id_FORMAT =
-            new MessageFormat("$" + "Id: {1} {2} {3, date,yyyy/MM/dd HH:mm:ss} {4} {5} " + "$");
+            new MessageFormat("\\$Id: {1} {2} {3, date,yyyy/MM/dd HH:mm:ss} {4} {5} \\$");
     final Format RCSFile_FORMAT =
-            new MessageFormat("$" + "RCSfile: {1} " + "$");
+            new MessageFormat("\\$RCSfile: {1} \\$");
     final Format Revision_FORMAT =
-            new MessageFormat("$" + "Revision: {2} " + "$");
+            new MessageFormat("\\$Revision: {2} \\$");
     final Format Date_FORMAT =
-            new MessageFormat("$" + "Date: {3, date,yyyy/MM/dd HH:mm:ss} " + "$");
+            new MessageFormat("\\$Date: {3, date,yyyy/MM/dd HH:mm:ss} \\$");
     final Format Author_FORMAT =
-            new MessageFormat("$" + "Author: {4} " + "$");
+            new MessageFormat("\\$Author: {4} \\$");
     final Format State_FORMAT =
-            new MessageFormat("$" + "State: {5} " + "$");
+            new MessageFormat("\\$State: {5} \\$");
     final Format Locker_FORMAT =
-            new MessageFormat("$" + "Locker: {6} " + "$");
+            new MessageFormat("\\$Locker: {6} \\$");
     final Format Source_FORMAT =
-            new MessageFormat("$" + "Source: {0} " + "$");
+            new MessageFormat("\\$Source: {0} \\$");
 
-    private final Pattern ID_RE;
-    private final Pattern HEADER_RE;
-    private final Pattern SOURCE_RE;
-    private final Pattern RCSFILE_RE;
-    private final Pattern REVISION_RE;
-    private final Pattern DATE_RE;
-    private final Pattern AUTHOR_RE;
-    private final Pattern STATE_RE;
-    private final Pattern LOCKER_RE;
-
-    /** the substitution instance to be reused */
-    private final StringSubstitution subst = new StringSubstitution();
-
-    KeywordsFormat()
-    {
-        try
-        {
-            Perl5Compiler compiler = new Perl5Compiler();
-            ID_RE = compiler.compile("\\$Id(:[^\\$]*)?\\$");
-            HEADER_RE = compiler.compile("\\$Header(:[^\\$]*)?\\$");
-            SOURCE_RE = compiler.compile("\\$Source(:[^\\$]*)?\\$");
-            RCSFILE_RE = compiler.compile("\\$RCSfile(:[^\\$]*)?\\$");
-            REVISION_RE = compiler.compile("\\$Revision(:[^\\$]*)?\\$");
-            DATE_RE = compiler.compile("\\$Date(:[^\\$]*)?\\$");
-            AUTHOR_RE = compiler.compile("\\$Author(:[^\\$]*)?\\$");
-            STATE_RE = compiler.compile("\\$State(:[^\\$]*)?\\$");
-            LOCKER_RE = compiler.compile("\\$Locker(:[^\\$]*)?\\$");
-        }
-        catch (MalformedPatternException e)
-        {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    /**  the matcher used for replacement */
-    private final Perl5Matcher matcher = new Perl5Matcher();
+    private final static String ID_RE = "\\$Id(:[^\\$]*)?\\$";
+    private final static String HEADER_RE = "\\$Header(:[^\\$]*)?\\$";
+    private final static String SOURCE_RE = "\\$Source(:[^\\$]*)?\\$";
+    private final static String RCSFILE_RE = "\\$RCSfile(:[^\\$]*)?\\$";
+    private final static String REVISION_RE = "\\$Revision(:[^\\$]*)?\\$";
+    private final static String DATE_RE = "\\$Date(:[^\\$]*)?\\$";
+    private final static String AUTHOR_RE = "\\$Author(:[^\\$]*)?\\$";
+    private final static String STATE_RE = "\\$State(:[^\\$]*)?\\$";
+    private final static String LOCKER_RE = "\\$Locker(:[^\\$]*)?\\$";
 
     /**
      * update the given text made of RCS keywords with the appropriate
@@ -137,16 +110,16 @@ final class KeywordsFormat
      */
     String update(String text, Object[] revisionInfo)
     {
-        String data = text;
-        data = substitute(data, ID_RE, Id_FORMAT.format(revisionInfo));
-        data = substitute(data, HEADER_RE, Header_FORMAT.format(revisionInfo));
-        data = substitute(data, SOURCE_RE, Source_FORMAT.format(revisionInfo));
-        data = substitute(data, RCSFILE_RE, RCSFile_FORMAT.format(revisionInfo));
-        data = substitute(data, REVISION_RE, Revision_FORMAT.format(revisionInfo));
-        data = substitute(data, DATE_RE, Date_FORMAT.format(revisionInfo));
-        data = substitute(data, AUTHOR_RE, Author_FORMAT.format(revisionInfo));
-        data = substitute(data, STATE_RE, State_FORMAT.format(revisionInfo));
-        data = substitute(data, LOCKER_RE, Locker_FORMAT.format(revisionInfo));
+        String data = text
+                .replaceAll(ID_RE, Id_FORMAT.format(revisionInfo))
+                .replaceAll(HEADER_RE, Header_FORMAT.format(revisionInfo))
+                .replaceAll(SOURCE_RE, Source_FORMAT.format(revisionInfo))
+                .replaceAll(RCSFILE_RE, RCSFile_FORMAT.format(revisionInfo))
+                .replaceAll(REVISION_RE, Revision_FORMAT.format(revisionInfo))
+                .replaceAll(DATE_RE, Date_FORMAT.format(revisionInfo))
+                .replaceAll(AUTHOR_RE, Author_FORMAT.format(revisionInfo))
+                .replaceAll(STATE_RE, State_FORMAT.format(revisionInfo))
+                .replaceAll(LOCKER_RE, Locker_FORMAT.format(revisionInfo));
         //@TODO: should do something about Name and Log
         return data;
     }
@@ -158,38 +131,17 @@ final class KeywordsFormat
      */
     String reset(String text)
     {
-        //WARNING: Do not remove the string concatenations
-        //         or CVS will mangle the strings on check in/out.
-        String data = text;
-        data = substitute(data, ID_RE, '$' + "Id$");
-        data = substitute(data, HEADER_RE, '$' + "Header$");
-        data = substitute(data, SOURCE_RE, '$' + "Source$");
-        data = substitute(data, RCSFILE_RE, '$' + "RCSfile$");
-        data = substitute(data, REVISION_RE, '$' + "Revision$");
-        data = substitute(data, DATE_RE, '$' + "Date$");
-        data = substitute(data, AUTHOR_RE, '$' + "Author$");
-        data = substitute(data, STATE_RE, '$' + "State$");
-        data = substitute(data, LOCKER_RE, '$' + "Locker$");
+        String data = text
+                .replaceAll(ID_RE, "\\$Id\\$")
+                .replaceAll(HEADER_RE, "\\$Header\\$")
+                .replaceAll(SOURCE_RE, "\\$Source\\$")
+                .replaceAll(RCSFILE_RE, "\\$RCSfile\\$")
+                .replaceAll(REVISION_RE, "\\$Revision\\$")
+                .replaceAll(DATE_RE, "\\$Date\\$")
+                .replaceAll(AUTHOR_RE, "\\$Author\\$")
+                .replaceAll(STATE_RE, "\\$State\\$")
+                .replaceAll(LOCKER_RE, "\\$Locker\\$");
         //@TODO: should do something about Name and Log
         return data;
     }
-
-
-    /**
-     * Helper method for substitution that will substitute all matches of
-     * a given pattern.
-     * @param input the text to look for substitutions.
-     * @param pattern the pattern to replace in the input text.
-     * @param substitution the string to use as a replacement for the pattern.
-     * @return the text with the subsituted value.
-     */
-    private final String substitute(String input, Pattern pattern, String substitution)
-    {
-        subst.setSubstitution(substitution);
-        final String output = Util.substitute(matcher, pattern, subst, input, Util.SUBSTITUTE_ALL);
-        // no need to keep a reference to the last substitution string
-        subst.setSubstitution("");
-        return output;
-    }
-
 }
