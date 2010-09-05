@@ -222,7 +222,7 @@ Use is subject to license terms.
     </target>
         
     <property name="coverage.dir" value="${basedir}/coverage"/>
-    <target name="-pre-compile" depends="jflex"/>
+    <target name="-pre-compile" depends="jrcs,jflex"/>
     <target name="-post-clean">
         <delete dir="${src.generatedsrc.dir}"/>
         <delete file="${manifest.file}"/>
@@ -632,6 +632,15 @@ Use is subject to license terms.
             </fileset>
             <report todir="${build.test.results.dir}"/>
         </junitreport>
+    </target>
+
+    <!-- Build our patched JRCS library. -->
+    <target name="jrcs" depends="-pre-pre-compile">
+      <javac srcdir="jrcs/src" destdir="${build.classes.dir}">
+        <classpath>
+          <pathelement location="${file.reference.jakarta-oro-2.0.8.jar}"/>
+        </classpath>
+      </javac>
     </target>
 
 </project>
