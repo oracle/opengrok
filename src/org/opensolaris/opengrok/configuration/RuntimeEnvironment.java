@@ -506,6 +506,22 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Returns the user page suffix for the history listing
+     * @return the URL string fragment following the username
+     */
+    public String getUserPageSuffix() {
+        return threadConfig.get().getUserPageSuffix();
+    }
+
+    /**
+     * Sets the user page suffix for the history listing
+     * @param userPageSuffix the URL fragment following the username from history
+     */
+    public void setUserPageSuffix(String userPageSuffix) {
+        threadConfig.get().setUserPageSuffix(userPageSuffix);
+    }
+
+    /**
      * Returns the bug page for the history listing
      * @return the URL string fragment preceeding the bug ID
      */

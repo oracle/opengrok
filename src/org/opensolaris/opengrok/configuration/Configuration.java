@@ -78,6 +78,7 @@ public final class Configuration {
     private IgnoredNames ignoredNames;
     private Filter includedNames;
     private String userPage;
+    private String userPageSuffix;
     private String bugPage;
     private String bugPattern;
     private String reviewPage;
@@ -336,6 +337,14 @@ public final class Configuration {
 
     public String getUserPage() {
         return userPage;
+    }
+
+    public void setUserPageSuffix(String userPageSuffix) {
+        this.userPageSuffix = userPageSuffix;
+    }
+
+    public String getUserPageSuffix() {
+        return userPageSuffix;
     }
 
     public void setBugPage(String bugPage) {

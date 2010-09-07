@@ -390,10 +390,14 @@ public final class Util {
                 out.write(" ");
             }
             String link = RuntimeEnvironment.getInstance().getUserPage();
+            String suffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
             if (link != null && link.length() > 0) {
                 out.write(anchorLinkStart);
                 out.write(link);
                 out.write(URIEncode(a));
+                if (suffix != null && 0 < suffix.length()) {
+                    out.write(suffix);
+                }
                 out.write(closeQuotedTag);
                 htmlize(a, out);
                 out.write(anchorEnd);

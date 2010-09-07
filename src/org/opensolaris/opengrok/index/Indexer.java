@@ -364,6 +364,12 @@ public final class Indexer {
                                 System.err.println("           \"-l off\" will disable locks in Lucene");
                             }
                             break;
+                        case 'B':
+                            cfg.setUserPage(getopt.getOptarg());
+                            break;
+                        case 'X':
+                            cfg.setUserPageSuffix(getopt.getOptarg());
+                            break;
                         case 'V':
                             System.out.println(Info.getFullVersion());
                             System.exit(0);

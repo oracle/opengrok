@@ -99,6 +99,8 @@ public class CommandLineOptions {
         options.add(new Option('s', "/path/to/source/root", "The root directory of the source tree"));
         options.add(new Option('d', "/path/to/data/root", "The directory where OpenGrok stores the generated data"));
         options.add(new Option('T', "number", "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));        
+        options.add(new Option('B', "url", "Base URL of the user Information provider. Default: \"http://www.opensolaris.org/viewProfile.jspa?username=\""));
+        options.add(new Option('X', "url:suffix", "URL Suffix for the user Information provider. Default: \"\""));
         options.add(new Option('?', null, "Help"));
         options.add(new Option('V', null, "Print version and quit"));
     }
