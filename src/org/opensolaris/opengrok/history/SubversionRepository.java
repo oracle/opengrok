@@ -163,7 +163,7 @@ public class SubversionRepository extends Repository {
             // fetch the unneeded revision and remove it later.
             cmd.add("BASE:" + sinceRevision);
         }
-        cmd.add(filename);
+        cmd.add(escapeFileName(filename));
 
         return new Executor(cmd, new File(directoryName));
     }
@@ -181,7 +181,7 @@ public class SubversionRepository extends Repository {
         cmd.add("cat");
         cmd.add("-r");
         cmd.add(rev);
-        cmd.add(filename);
+        cmd.add(escapeFileName(filename));
 
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() == 0) {
@@ -205,6 +205,10 @@ public class SubversionRepository extends Repository {
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
         return new SubversionHistoryParser().parse(file, this, sinceRevision);
+    }
+
+    private String escapeFileName(String name) {
+        return name + "@";
     }
 
     private static class AnnotateHandler extends DefaultHandler2 {
@@ -264,7 +268,7 @@ public class SubversionRepository extends Repository {
             argv.add("-r");
             argv.add(revision);
         }
-        argv.add(file.getName());
+        argv.add(escapeFileName(file.getName()));
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getParentFile());
         Process process = null;

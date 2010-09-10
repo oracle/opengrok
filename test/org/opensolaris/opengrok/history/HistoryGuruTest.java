@@ -121,6 +121,17 @@ public class HistoryGuruTest {
     }
 
     @Test
+    public void bug16465() throws HistoryException, IOException {
+        HistoryGuru instance = HistoryGuru.getInstance();
+        for (File f : files) {
+            if (f.getName().equals("bugreport16465@")) {
+                assertNotNull(instance.getHistory(f));
+                assertNotNull(instance.annotate(f, null));
+            }
+        }
+    }
+
+    @Test
     public void annotation() throws Exception {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
