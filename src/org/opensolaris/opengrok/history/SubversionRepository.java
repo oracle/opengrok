@@ -89,7 +89,7 @@ public class SubversionRepository extends Repository {
         super.setDirectoryName(directoryName);
 
         if (svnBinary.available) {
-            boolean working = false; // set to true if we manage to find the
+            boolean rootFound = false; // set to true if we manage to find the
                                      // root directory
 
             List<String> cmd = new ArrayList<String>();
@@ -117,7 +117,7 @@ public class SubversionRepository extends Repository {
                     String root = getValue(document.getElementsByTagName("root").item(0));
                     if (url != null && root != null) {
                         reposPath = url.substring(root.length());
-                        working = true;
+                        rootFound = true;
                     } 
                 } catch (SAXException saxe) {
                     OpenGrokLogger.getLogger().log(Level.WARNING, "Parser error parsing svn output", saxe);
@@ -130,7 +130,7 @@ public class SubversionRepository extends Repository {
                 OpenGrokLogger.getLogger().warning("Failed to execute svn info for ["+ directoryName + "]. Repository disabled.");
             }
 
-            setWorking(working);
+            setWorking(rootFound);
         }
     }
 
