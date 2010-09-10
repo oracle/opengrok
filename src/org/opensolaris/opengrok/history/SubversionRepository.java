@@ -251,15 +251,10 @@ public class SubversionRepository extends Repository {
         SAXParser saxParser = null;
         try {
             saxParser = factory.newSAXParser();
-        } catch (ParserConfigurationException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, null, ex);
-        } catch (SAXException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            IOException err = new IOException("Failed to create SAX parser", ex);
+            throw err;
         }
-        if (saxParser == null) {
-            return null;
-        }
-
 
         ArrayList<String> argv = new ArrayList<String>();
         argv.add(getCommand());

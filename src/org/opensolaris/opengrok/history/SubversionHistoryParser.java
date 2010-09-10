@@ -126,15 +126,13 @@ class SubversionHistoryParser implements Executor.StreamHandler {
     /**
      * Initialize the SAX parser instance.
      */
-    private void initSaxParser() {
+    private void initSaxParser() throws HistoryException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         saxParser = null;
         try {
             saxParser = factory.newSAXParser();
-        } catch (ParserConfigurationException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to create SAX parser", ex);
-        } catch (SAXException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to create SAX parser", ex);
+        } catch (Exception ex) {
+            throw new HistoryException("Failed to create SAX parser", ex);
         }
     }
 
@@ -154,10 +152,6 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 RuntimeEnvironment.getInstance().getSourceRootPath().length(),
                 repos.getDateFormat());
         
-        if (saxParser == null) {
-            throw new HistoryException("Failed to create SAX parser");
-        }
-
         Executor executor = repos.getHistoryLogExecutor(file, sinceRevision);
         int status = executor.exec(true, this);
 
