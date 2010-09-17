@@ -43,6 +43,7 @@ public class Ctags {
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
     private static final Logger log = Logger.getLogger(Ctags.class.getName());
+    private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
     private String binary;
     private ProcessBuilder processBuilder;
 
@@ -71,7 +72,7 @@ public class Ctags {
             command.add("--file-scope=yes");
             command.add("-u");
             command.add("--filter=yes");
-            command.add("--filter-terminator=__ctags_done_with_file__\n");
+            command.add("--filter-terminator=" + CTAGS_FILTER_TERMINATOR + "\n");
             command.add("--fields=-anf+iKnS");
             command.add("--excmd=pattern");
             command.add("--regex-Asm=/^[ \\t]*(ENTRY|ENTRY2|ALTENTRY)[ \\t]*\\(([a-zA-Z0-9_]+)/\\2/f,function/");  // for assmebly definitions
@@ -158,9 +159,16 @@ public class Ctags {
                     return;
                 }
 
-                if ("__ctags_done_with_file__".equals(tagLine)) {
+                if (CTAGS_FILTER_TERMINATOR.equals(tagLine)) {
                     return;
                 }
+
+                //fix for bug #16334
+                if (tagLine.endsWith(CTAGS_FILTER_TERMINATOR)) {
+                    log.log(Level.WARNING, "ctags encountered a problem while generating tags for the file. The index will be incomplete.");
+                    return;
+                }
+
                 int p = tagLine.indexOf('\t');
                 if (p <= 0) {
                     //log.fine("SKIPPING LINE - NO TAB");
@@ -203,7 +211,7 @@ public class Ctags {
 
                 final String type =
                         inher == null ? kind : kind + " in " + inher;
-                defs.addTag(Integer.parseInt(lnum), def, type, match);
+                defs.addTag(Integer.parseInt(lnum), def.trim(), type.trim(), match.trim());
                 if (signature != null) {                  
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
                     String[] args = signature.split(",");
@@ -214,11 +222,11 @@ public class Ctags {
                             String afters=arg.substring(space+1);
                             //FIXME this will not work for typeless languages such as python or assignments inside signature ... but since ctags doesn't provide signatures for python yet and assigning stuff in signature is not the case for c or java, we don't care ...
                             String[] names=afters.split("[\\W]"); //this should just parse out variables, we assume first non empty text is the argument name
-                            for (String string : names) {
-                             if (string.length()>0) {
+                            for (String name : names) {
+                             if (name.length()>0) {
                               //log.fine("Param Def = "+ string);
-                              defs.addTag(Integer.valueOf(lnum), string,
-                                    "argument", def + signature);
+                              defs.addTag(Integer.valueOf(lnum), name.trim(),
+                                    "argument", def.trim() + signature.trim());
                               break;
                              }
                             }
