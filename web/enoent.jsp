@@ -16,10 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
-
-ident	"@(#)enoent.jsp 1.3     05/12/02 SMI"
+Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 
 --%><%@ page import = "javax.servlet.*,
 javax.servlet.http.*,
@@ -49,7 +46,7 @@ String pageTitle = "File not found";
         <%@ include file="pageheader.jspf" %>
     </div>
 <div id="Masthead"></div>
-<div id="bar"><a id="home" href="<%=context%>">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
+<div id="bar"><a id="home" href="<%=context%>/">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
 <h3 class="error">Error 404: File not found!</h3>
 The requested resource is not available. <%=configError%>
 <div style="display:block;height:10em">&nbsp;</div><%@include file="foot.jspf"%>

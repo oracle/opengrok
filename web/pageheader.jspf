@@ -16,10 +16,9 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 
 --%>
-<% String home = request.getContextPath();
+<% String home = request.getContextPath() + "/";
 %>
 <a href="<%=home%>"><span id="MastheadLogo"></span></a>

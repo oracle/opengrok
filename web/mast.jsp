@@ -16,8 +16,8 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+
 --%><%@ page import = "javax.servlet.*,
              java.lang.*,
              javax.servlet.http.*,
@@ -167,7 +167,7 @@ $().ready(function() {
         <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><% if (dtag!=null & dtag!="") { %><br/><%=dtag%><% } %></div>
     </div>
     <div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>
-    <div id="bar"><a href="<%=context%>" id="home">Home</a> |
+    <div id="bar"><a href="<%=context%>/" id="home">Home</a> |
         <%
         
         if (noHistory || servlet.startsWith("/hi")) {

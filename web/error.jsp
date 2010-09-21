@@ -16,8 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 
 --%><%@ page import = "javax.servlet.*,
 javax.servlet.http.*,
@@ -45,7 +44,7 @@ String pageTitle = "Error!";
       <%@ include file="pageheader.jspf" %>
     </div>
 <div id="Masthead"></div>
-<div id="bar"><a id="home" href="<%=context%>">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
+<div id="bar"><a id="home" href="<%=context%>/">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
 <h3 class="error">There was an error!</h3>
 <p><%=configError%>
 </p><pre><%
