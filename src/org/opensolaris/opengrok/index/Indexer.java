@@ -242,25 +242,29 @@ public final class Indexer {
                             break;
 
                         case 's':
-                             {
-                                cfg.setSourceRoot(getopt.getOptarg());
-                                File file = new File(cfg.getSourceRoot());
-                                if (!file.isDirectory()) {
-                                    System.err.println("ERROR: source root must be a directory: " + file.toString());
-                                    System.exit(1);
-                                }
+                        {
+                            File sourceRoot = new File(getopt.getOptarg());
+                            if (!sourceRoot.isDirectory()) {
+                                System.err.println("ERROR: Source root must be a directory");
+                                System.exit(1);
                             }
+                            cfg.setSourceRoot(sourceRoot.getCanonicalPath());
                             break;
+                        }
                         case 'd':
-                             {
-                                cfg.setDataRoot(getopt.getOptarg());
-                                File file = new File(cfg.getDataRoot());
-                                if (!file.isDirectory()) {
-                                    System.err.println("ERROR: data root must be a directory: " + file.toString());
-                                    System.exit(1);
-                                }
+                        {
+                            File dataRoot = new File(getopt.getOptarg());
+                            if (!dataRoot.exists() && !dataRoot.mkdirs()) {
+                                System.err.println("ERROR: Cannot create data root");
+                                System.exit(1);
                             }
+                            if (!dataRoot.isDirectory()) {
+                                System.err.println("ERROR: Data root must be a directory");
+                                System.exit(1);
+                            }
+                            cfg.setDataRoot(dataRoot.getCanonicalPath());
                             break;
+                        }
                         case 'i':
                             cfg.getIgnoredNames().add(getopt.getOptarg());
                             break;

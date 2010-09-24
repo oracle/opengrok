@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -83,8 +82,12 @@ public class RuntimeEnvironmentTest {
         File f = File.createTempFile("dataroot", null);
         String path = f.getCanonicalPath();
         assertTrue(f.delete());
+        assertFalse(f.exists());
         instance.setDataRoot(path);
-        assertTrue(f.delete());
+        // setDataRoot() used to create path if it didn't exist, but that
+        // logic has been moved. Verify that it is so.
+        assertFalse(f.exists());
+        assertTrue(f.mkdirs());
         assertEquals(path, instance.getDataRootPath());
         assertEquals(path, instance.getDataRootFile().getCanonicalPath());
     }
@@ -383,7 +386,9 @@ public class RuntimeEnvironmentTest {
         assertTrue(file.delete());
         assertFalse(file.exists());
         instance.setDataRoot(file.getAbsolutePath());
-        assertTrue(file.exists());
-        assertTrue(file.delete());
+        // The point of this test was to verify that setDataRoot() created
+        // the directory, but that logic has been moved as of bug 16986, so
+        // expect that the file does not exist.
+        assertFalse(file.exists());
     }
 }
