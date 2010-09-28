@@ -399,6 +399,7 @@ if( hits == null || errorMsg != null) {
                             %></p><%                          
                         }
                         spellDirectory.close();
+                        checker.close();
                  }
 
                 }
