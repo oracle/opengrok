@@ -33,6 +33,7 @@
 #   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote) Repositories (*)
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)_
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go (by default 3 directories from SRC_ROOT)
+#   - OPENGROK_WPREFIX            Disable wildcard prefix search query support (*)
 #   - OPENGROK_DERBY              if set, then indexer tries to use derby as historycache (see derby command of this script)
 #
 #   - READ_XML_CONFIGURATION      file with read only configuration - a temp workaround for bug # 327
@@ -63,9 +64,14 @@ Usage()
 #
 # Runtime Configuration
 #
-
+if [ -f "/bin/uname" ]
+then
 OS_NAME="`/bin/uname -s`"
 OS_VERSION="`/bin/uname -r`"
+else
+OS_NAME="`/usr/bin/uname -s`"
+OS_VERSION="`/usr/bin/uname -r`"
+fi
 
 # TODO: Handle symlinks correctly (especially in ${0})
 SCRIPT_DIRECTORY="`dirname ${0}`"
@@ -192,8 +198,12 @@ DefaultInstanceConfiguration()
     fi
 
     # OPTIONAL: Allow Leading Wildcard Searches
-    #           (default: off)
-    #LEADING_WILDCARD="-a on"
+    #           (default: on)
+    LEADING_WILDCARD="-a on"
+    if [ -n "${OPENGROK_WPREFIX}" ]
+    then
+        LEADING_WILDCARD=""
+    fi
 
     # OPTIONAL: Web Site Look & Feel
     #           (Options: default, offwhite and polished.
