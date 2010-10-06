@@ -209,7 +209,7 @@ $().ready(function() {
     }    
             if (!isDir) {
                 if ( servlet.startsWith("/xr") ) {
-               %> | <a href="#" onclick="javascript:lntoggle();return false;" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a><%
+               %> | <a href="#" onclick="javascript:lntoggle();return false;" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a> | <a href="#" onclick="javascript:lsttoggle();return false;" title="Show or hide symbol list.">List</a><%
                 }
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {
@@ -220,7 +220,8 @@ $().ready(function() {
      }
 
      Project proj = Project.getProject(resourceFile);
-     if  (proj != null || !environment.hasProjects()) {
+     //if (proj != null || !environment.hasProjects())
+     {
         %> | <input id="search" name="q" class="q"/>
         <input type="submit" value="Search" class="submit"/>
         <%

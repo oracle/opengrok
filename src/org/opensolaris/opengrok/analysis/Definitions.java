@@ -35,9 +35,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 public class Definitions implements Serializable {
     private final static long serialVersionUID = 1191703801007779489L;
+
+    // Per line sym -> tags mapping
+    public static class LineTagMap implements Serializable {
+        private final Map<String, Set<Tag>> sym_tags;
+
+        protected LineTagMap() {
+            this.sym_tags = new HashMap<String, Set<Tag>>();
+        }
+    };
+    // line -> tag_map
+    private final Map<Integer, LineTagMap> line_maps;
 
     /** Map from symbol to the line numbers on which the symbol is defined. */
     private final Map<String, Set<Integer>> symbols;
@@ -46,6 +58,7 @@ public class Definitions implements Serializable {
 
     public Definitions() {
         symbols = new HashMap<String, Set<Integer>>();
+        line_maps = new HashMap<Integer, LineTagMap>();
         tags = new ArrayList<Tag>();
     }
 
@@ -70,11 +83,34 @@ public class Definitions implements Serializable {
      * Check whether the specified symbol is defined on the given line.
      * @param symbol the symbol to look for
      * @param lineNumber the line to check
+     * @param strs type of definition(to be passed back to caller)
      * @return {@code true} iff {@code symbol} is defined on the specified line
      */
-    public boolean hasDefinitionAt(String symbol, int lineNumber) {
+    public boolean hasDefinitionAt(String symbol, int lineNumber, String[] strs) {
         Set<Integer> lines = symbols.get(symbol);
-        return lines != null && lines.contains(lineNumber);
+        if (strs.length > 0) {
+            strs[0] = "none";
+        }
+
+        // Get tag info
+        if (lines != null && lines.contains(lineNumber)) {
+            LineTagMap line_map = line_maps.get(lineNumber);
+            if (line_map != null) {
+                Set<Tag> tags = line_map.sym_tags.get(symbol);
+                Iterator it = tags.iterator();
+                while (it.hasNext()) {
+                    Tag tag = (Tag)it.next();
+                    if (strs.length > 0) {
+                        strs[0] = tag.type;
+                    }
+                    // Assume the first one
+                    break;
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -135,13 +171,29 @@ public class Definitions implements Serializable {
         final String internedSymbol = symbol.intern();
         final String internedType = type.intern();
         final String internedText = text.intern();
-        tags.add(new Tag(line, internedSymbol, internedType, internedText));
+        Tag new_tag = new Tag(line, internedSymbol, internedType, internedText);
+        tags.add(new_tag);
         Set<Integer> lines = symbols.get(internedSymbol);
         if (lines == null) {
             lines = new HashSet<Integer>();
             symbols.put(internedSymbol, lines);
         }
         lines.add(line);
+
+        // Get per line map
+        LineTagMap line_map = line_maps.get(line);
+        if (line_map == null) {
+            line_map = new LineTagMap();
+            line_maps.put(line, line_map);
+        }
+
+        // Insert sym->tag map for this line
+        Set<Tag> tags = line_map.sym_tags.get(internedSymbol);
+        if (tags == null) {
+            tags = new HashSet<Tag>();
+            line_map.sym_tags.put(internedSymbol, tags);
+        }
+        tags.add(new_tag);
     }
 
     /**

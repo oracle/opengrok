@@ -31,5 +31,13 @@ String fservlet = request.getServletPath();
 if ( fservlet.startsWith("/xr") || fservlet.startsWith("/hi") || fservlet.startsWith("/di") || fservlet.startsWith("/mo") ) { %>
 </div><% } // just for content from xref / lister / history / diff / more pages %>
 </div><% // from page %>
+<%-- comment out below to disable default lsttoggle of symbols
+<script type="text/javascript">/* <![CDATA[ */
+if (typeof lsttoggle == 'function')
+{
+    lsttoggle();
+}
+/* ]]> */</script>
+--%>
 </body>
 </html>

@@ -33,7 +33,33 @@ org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*
 "
-%><%@include file="mast.jsp"%><script type="text/javascript">/* <![CDATA[ */
+%><%@include file="mast.jsp"%>
+<% if (!isDir) { %>
+<style type="text/css">
+    .sym_list_style {
+        position:absolute;
+        top:100px;
+        left:100px;
+        width:100px;
+        height:100px;
+        overflow:auto;
+        z-index: 10;
+        border:solid 1px #c0c0c0;
+        background-color:#ffffcc;
+        color:#000;
+        font-size:12px;
+        font-family:monospace;
+        padding:5px;
+        opacity:0.9;
+        filter:alpha(opacity=90)
+    }
+
+    .sym_list_style_hide {
+        display: none;
+    }
+}
+</style>
+<script type="text/javascript">/* <![CDATA[ */
 function lntoggle() {
    $("a").each(function() {
       if (this.className == 'l' || this.className == 'hl') {
@@ -48,7 +74,224 @@ function lntoggle() {
      }
     );
 }
-/* ]]> */</script><%
+
+function get_sym_list_contents()
+{
+    var contents = "";
+
+    contents += "<input id=\"input_highlight\" name=\"input_highlight\" class=\"q\"/>";
+    contents += "&nbsp;&nbsp;";
+    contents += "<b><a href=\"#\" onclick=\"javascript:add_highlight();return false;\" title=\"Add highlight\">Highlight</a></b><br>";
+
+    var class_names=[
+        "xm",
+        "xe",
+        "xs",
+        "xt",
+        "xv",
+        "xi",
+        "xc",
+        "xf",
+        "xmt"];
+    var type_names=[
+        "Macro",
+        "Enum",
+        "Struct",
+        "Typedef",
+        "Variable",
+        "Interface",
+        "Class",
+        "Function",
+        "Method"];
+    var class_contents=[
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""];
+
+    $("a").each(
+        function()
+        {
+            for (var i = 0; i < class_names.length; i++)
+            {
+                if (this.className == class_names[i])
+                {
+                    var fname = this.innerHTML;
+                    if (fname != "")
+                    {
+                        // Use line number as accurate anchor
+                        var line = this.getAttribute("ln");
+
+                        class_contents[i] += "<a href=\"#" +
+                            line + "\" class=\"" + class_names[i] + "\">" +
+                            this.innerHTML + "</a><br>";
+
+                    }
+
+                    break;
+                }
+            }
+        }
+    );
+
+    var count = 0;
+    for (var i = 0; i < class_names.length; i++)
+    {
+        if (class_contents[i] != "")
+        {
+            if (count > 0)
+            {
+                contents += "<br>"
+            }
+            contents += "<b>" + type_names[i] + "</b><br>"
+            contents += class_contents[i];
+
+            count++;
+        }
+    }
+
+    return contents;
+}
+
+// Initial value
+document.sym_div_width = 240;
+document.sym_div_height_max = 480;
+document.sym_div_top = 100;
+document.sym_div_left_margin = 40;
+document.sym_div_height_margin = 40;
+
+function get_sym_div_left()
+{
+    document.sym_div_left = $(window).width() - (document.sym_div_width + document.sym_div_left_margin);
+    return document.sym_div_left;
+}
+
+function get_sym_div_height()
+{
+    document.sym_div_height = $(window).height() - document.sym_div_top - document.sym_div_height_margin;
+
+    if (document.sym_div_height > document.sym_div_height_max)
+        document.sym_div_height = document.sym_div_height_max;
+
+    return document.sym_div_height;
+}
+
+function get_sym_div_top()
+{
+    return document.sym_div_top;
+}
+
+function get_sym_div_width()
+{
+    return document.sym_div_width;
+}
+
+function lsttoggle()
+{
+    if (document.sym_div == null)
+    {
+        document.sym_div = document.createElement("div");
+        document.sym_div.id = "sym_div";
+
+        document.sym_div.className = "sym_list_style";
+        document.sym_div.style.margin = "0px auto";
+        document.sym_div.style.width = get_sym_div_width() + "px";
+        document.sym_div.style.height = get_sym_div_height() + "px";
+        document.sym_div.style.top = get_sym_div_top() + "px";
+        document.sym_div.style.left = get_sym_div_left() + "px";
+
+        document.sym_div.innerHTML = get_sym_list_contents();
+
+        document.body.appendChild(document.sym_div);
+        document.sym_div_shown = 1;
+    }
+    else
+    {
+        if (document.sym_div_shown == 1)
+        {
+            document.sym_div.className = "sym_list_style_hide";
+            document.sym_div_shown = 0;
+        }
+        else
+        {
+            document.sym_div.style.height = get_sym_div_height() + "px";
+            document.sym_div.style.width = get_sym_div_width() + "px";
+            document.sym_div.style.top = get_sym_div_top() + "px";
+            document.sym_div.style.left = get_sym_div_left() + "px";
+            document.sym_div.className = "sym_list_style";
+            document.sym_div_shown = 1;
+        }
+    }
+}
+
+$(window).resize(
+    function()
+    {
+        if (document.sym_div_shown == 1)
+        {
+            document.sym_div.style.left = get_sym_div_left() + "px";
+            document.sym_div.style.height = get_sym_div_height() + "px";
+        }
+    }
+);
+
+// Highlighting
+/*
+// This will replace link's href contents as well, be careful
+function HighlightKeywordsFullText(keywords)
+{
+    var el = $("body");
+
+    $(keywords).each(
+        function()
+        {
+            var pattern = new RegExp("("+this+")", ["gi"]);
+            var rs = "<span style='background-color:#FFFF00;font-weight: bold;'>$1</span>";
+            el.html(el.html().replace(pattern, rs)); 
+        }
+    );
+}
+//HighlightKeywordsFullText(["nfstcpsock"]);
+*/
+
+document.highlight_count = 0;
+// This only changes matching tag's style
+function HighlightKeyword(keyword)
+{
+    var high_colors=[
+        "#ffff66",
+        "#ffcccc",
+        "#ccccff",
+        "#99ff99",
+        "#cc66ff"];
+
+    var pattern = "a:contains('" + keyword + "')";
+    $(pattern).css({
+        'text-decoration' : 'underline',
+        'background-color' : high_colors[document.highlight_count % high_colors.length],
+        'font-weight' : 'bold'
+    });
+
+    document.highlight_count++;
+}
+
+//HighlightKeyword('timeval');
+
+function add_highlight()
+{
+    var tbox = document.getElementById('input_highlight');
+    HighlightKeyword(tbox.value);
+}
+
+/* ]]> */
+</script>
+<% } %>
+<%
 String rev = null;
 if(!isDir && ef != null) {
     try {

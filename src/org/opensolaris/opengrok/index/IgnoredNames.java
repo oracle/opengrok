@@ -51,6 +51,7 @@ public final class IgnoredNames extends Filter {
         "tags",
         ".svn",
         ".git",
+        ".repo",
         ".hg",
         ".hgtags",
         ".bzr",

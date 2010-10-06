@@ -144,30 +144,95 @@ public abstract class JFlexXref {
    */
   protected void writeSymbol(String symbol, Set<String> keywords, int line)
           throws IOException {
+      String[] strs = new String[1];
+      strs[0] = "";
+
       if (keywords!=null && keywords.contains(symbol)) {
           // This is a keyword, so we don't create a link.
           out.append("<b>").append(symbol).append("</b>");
 
-      } else if (defs != null && defs.hasDefinitionAt(symbol, line)) {
+      } else if (defs != null && defs.hasDefinitionAt(symbol, line, strs)) {
           // This is the definition of the symbol.
+          String type = strs[0];
+          String style_class = "d";
+
+          if (type.startsWith("macro")) {
+              style_class = "xm";
+          }
+          else if (type.startsWith("argument")) {
+              style_class = "xa";
+          }
+          else if (type.startsWith("local")) {
+              style_class = "xl";
+          }
+          else if (type.startsWith("variable")) {
+              style_class = "xv";
+          }
+          else if (type.startsWith("class")) {
+              style_class = "xc";
+          }
+          else if (type.startsWith("interface")) {
+              style_class = "xi";
+          }
+          else if (type.startsWith("namespace")) {
+              style_class = "xn";
+          }
+          else if (type.startsWith("enum")) {
+              style_class = "xe";
+          }
+          else if (type.startsWith("enumerator")) {
+              style_class = "xer";
+          }
+          else if (type.startsWith("struct")) {
+              style_class = "xs";
+          }
+          else if (type.startsWith("typedef")) {
+              style_class = "xt";
+          }
+          else if (type.startsWith("typedefs")) {
+              style_class = "xts";
+          }
+          else if (type.startsWith("union")) {
+              style_class = "xu";
+          }
+          else if (type.startsWith("field")) {
+              style_class = "xfld";
+          }
+          else if (type.startsWith("member")) {
+              style_class = "xmb";
+          }
+          else if (type.startsWith("function")) {
+              style_class = "xf";
+          }
+          else if (type.startsWith("method")) {
+              style_class = "xmt";
+          }
+          else if (type.startsWith("subroutine")) {
+              style_class = "xsr";
+          }
 
           // 1) Create an anchor for direct links. (Perhaps, we should only
           //    do this when there's exactly one definition of the symbol in
           //    this file? Otherwise, we may end up with multiple anchors with
           //    the same name.)
-          out.append("<a class=\"d\" name=\"").append(symbol).append("\"/>");
+          out.append("<a class=\"").append(style_class).append("\" name=\"").append(symbol).append("\"/>");
 
           // 2) Create a link that searches for all references to this symbol.
           out.append("<a href=\"").append(urlPrefix).append("refs=");
           out.append(symbol);
           appendProject();
-          out.append("\" class=\"d\">").append(symbol).append("</a>");
+          out.append("\" class=\"").append(style_class).append("\" ")
+              // May have multiple anchors with the same function name,
+              // store line number for accurate location used in list.jsp.
+              .append("ln=\"").append(Integer.toString(line)).append("\">")
+              .append(symbol).append("</a>");
 
       } else if (defs != null && defs.occurrences(symbol) == 1) {
           // This is a reference to a symbol defined exactly once in this file.
+          String style_class = "d";
 
           // Generate a direct link to the symbol definition.
-          out.append("<a class=\"f\" href=\"#").append(symbol).append("\">")
+          out.append("<a class=\"").append(style_class).append("\" href=\"#").append(symbol).append("\">")
                   .append(symbol).append("</a>");
 
       } else {

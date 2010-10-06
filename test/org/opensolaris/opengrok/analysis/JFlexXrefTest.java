@@ -156,9 +156,10 @@ public class JFlexXrefTest {
 
         StringWriter out = new StringWriter();
         xref.write(out);
+        //TODO improve below to reflect all possible classes of a definition
         assertTrue(
                 "No anchor found",
-                out.toString().contains("<a class=\"d\" name=\"bug15890\"/>"));
+                out.toString().contains("\" name=\"bug15890\"/><a href="));
     }
 
     /**

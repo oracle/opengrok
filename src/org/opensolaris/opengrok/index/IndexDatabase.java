@@ -334,7 +334,11 @@ public class IndexDatabase {
                 try {
                     uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
 
-                    indexDown(sourceRoot, dir);
+                    int file_cnt = 0;
+                    file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
+                    System.out.print("[XXXLC] Total files: " + file_cnt + "\n");
+
+                    indexDown(sourceRoot, dir, false, 0, file_cnt);
 
                     while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
                         removeFile();
@@ -708,19 +712,20 @@ public class IndexDatabase {
      * @param dir the root indexDirectory to generate indexes for
      * @param path the path
      */
-    private void indexDown(File dir, String parent) throws IOException {
+    private int indexDown(File dir, String parent, boolean count_only, int cur_count, int est_total) throws IOException {
+
         if (isInterrupted()) {
-            return;
+            return cur_count;
         }
 
         if (!accept(dir)) {
-            return;
+            return cur_count;
         }
 
         File[] files = dir.listFiles();
         if (files == null) {
             log.log(Level.SEVERE, "Failed to get file listing for: {0}", dir.getAbsolutePath());
-            return;
+            return cur_count;
         }
         Arrays.sort(files, new Comparator<File>() {
             @Override
@@ -732,9 +737,19 @@ public class IndexDatabase {
         for (File file : files) {
             if (accept(file)) {
                 String path = parent + '/' + file.getName();
+
                 if (file.isDirectory()) {
-                    indexDown(file, path);
+                    cur_count = indexDown(file, path, count_only, cur_count, est_total);
                 } else {
+                    cur_count++;
+                    if (count_only)
+                        continue;
+
+                    if (est_total > 0)
+                    {
+                        System.out.print("[IDX] " + cur_count + " (" + cur_count * 100.0f / est_total + "%) : " + path + "\n");
+                    }
+
                     if (uidIter != null) {
                         String uid = Util.uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         while (uidIter.term() != null && uidIter.term().field().equals("u") &&
@@ -759,6 +774,8 @@ public class IndexDatabase {
                 }
             }
         }
+
+        return cur_count;
     }
 
     /**
