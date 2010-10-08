@@ -208,6 +208,9 @@ public class SubversionRepository extends Repository {
     }
 
     private String escapeFileName(String name) {
+        if (name.length() == 0) {
+            return name;
+        }
         return name + "@";
     }
 
