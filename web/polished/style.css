@@ -252,6 +252,7 @@ a.h {font-size:small; margin-left:2em;}
 	background-repeat: no-repeat;
 	background-position:left;
 }
+#results td.q {white-space: nowrap;font-size: xx-small;}
 #results td.f{
 	min-width:5em;
 	width:5em;

@@ -254,8 +254,8 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
 
     // @TODO fix me. I should try to figure out where the exact hit is instead
     // of returning a page with just _one_ entry in....
-    if (uniqueDefinition && request.getServletPath().equals("/s")) {
-        String preFragmentPath = Util.URIEncodePath(context + "/xref" + searcher.doc(hits[0].doc).get("path"));
+    if (uniqueDefinition && request.getServletPath().equals(Constants.searchR)) {
+        String preFragmentPath = Util.URIEncodePath(context + Constants.xrefP + searcher.doc(hits[0].doc).get("path"));
         String fragment = Util.URIEncode(((TermQuery)query).getTerm().text());
         
         StringBuilder url = new StringBuilder(preFragmentPath);
@@ -496,8 +496,7 @@ if( hits == null || errorMsg != null) {
                 Results.prettyPrintHTML(searcher,hits, start, start+thispage,
                         out,
                         sourceContext, historyContext, summer,
-                        context + "/xref",
-                        context + "/more",
+                        context,
                         env.getSourceRootPath(),
                         env.getDataRootPath(),
                         ef);

@@ -158,6 +158,7 @@ div.a{color:#000}
 #results .m {background-color:#ffb;}
 #results i {color: #000; font-weight:bold;}
 #results tr.dir{background-color:#fff;border-top:3px solid #000;}
+#results td.q {visibility: hidden;}
 #results td.f{width:3em;padding-left:2em;padding-right:.5em;}
 
 #more { line-height:1.25em;}

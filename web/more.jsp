@@ -59,7 +59,7 @@ if (valid) {
         if (tquery != null) {
             Context sourceContext = new Context(tquery, qbuilder.getQueries());
             %><p><span class="pagetitle">Lines Matching <b><%=tquery%></b></span></p><div id="more" style="line-height:1.5em;"><pre><%
-            sourceContext.getContext(new FileReader(resourceFile), out, context+"/xref", null, path, null, false, null);
+            sourceContext.getContext(new FileReader(resourceFile), out, context+Constants.xrefP, null, path, null, false, null);
             %></pre></div><%
         }
     } catch (Exception e) {

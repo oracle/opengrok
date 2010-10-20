@@ -364,7 +364,7 @@ if (valid) {
             Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
             List<String> readMes = dl.listTo(resourceFile, out, path, files);
             if(readMes != null && readMes.size() > 0) {
-                File xdir = new File(environment.getDataRootPath() + "/xref" + path);
+                File xdir = new File(environment.getDataRootPath() + Constants.xrefP + path);
                 if (xdir.exists() && xdir.isDirectory()) {
                     char[] buf = new char[8192];
                     for (String readme : readMes) {
@@ -434,7 +434,7 @@ if (valid) {
                                 Reader r = new InputStreamReader(in);
                                 AnalyzerGuru.writeXref(a, r, out, annotation, Project.getProject(resourceFile));
                             } else if (g == Genre.IMAGE) {
-			       %><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/><%
+			       %><img src="<%=context+Constants.rawP+path%>?r=<%=rev%>"/><%
                             } else if (g == Genre.HTML) {
                                char[] buf = new char[8192];
                                Reader br = new InputStreamReader(in);
@@ -443,7 +443,7 @@ if (valid) {
                                    out.write(buf, 0, len);
                                }
                             } else {
-		               %> Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">download <%=basename%></a><%
+		               %> Click <a href="<%=context+Constants.rawP+path%>?r=<%=rev%>">download <%=basename%></a><%
                             }
                         }
                     } catch (IOException e) {
@@ -455,14 +455,14 @@ if (valid) {
     	            %> <h3 class="error">Error reading file</h3> <%
                 }
             } else if(g == Genre.IMAGE) {
-	        %><div id="src"><img src="<%=context%>/raw<%=path%>?r=<%=rev%>"/></div><%
+	        %><div id="src"><img src="<%=context+Constants.rawP+path%>?r=<%=rev%>"/></div><%
             } else {
-                %><div id="src"> Binary file [Click <a href="<%=context%>/raw<%=path%>?r=<%=rev%>">here</a> to download] </div><%
+                %><div id="src"> Binary file [Click <a href="<%=context+Constants.rawP+path%>?r=<%=rev%>">here</a> to download] </div><%
             }
         }
     } else {
         // requesting cross referenced file -------------
-        File xrefSource = new File(environment.getDataRootFile(), "/xref");
+        File xrefSource = new File(environment.getDataRootFile(), Constants.xrefP);
         File xrefFile = new File(xrefSource, path + ".gz");
         Reader fileReader = null;
 
@@ -496,7 +496,7 @@ if (valid) {
                 g = AnalyzerGuru.getGenre(a);
             }
             if (g == Genre.IMAGE) {
-        	%><div id="src"><img src="<%=context%>/raw<%=path%>"/></div><%
+        	%><div id="src"><img src="<%=context+Constants.rawP+path%>"/></div><%
             } else if( g == Genre.HTML) {
                 char[] buf = new char[8192];
                 Reader br = new InputStreamReader(bin);
@@ -511,7 +511,7 @@ if (valid) {
                 AnalyzerGuru.writeXref(a, r, out, annotation, Project.getProject(resourceFile));
                 %></pre></div><%
             } else {
-	        %> Click <a href="<%=context%>/raw<%=path%>">download <%=basename%></a><%
+	        %> Click <a href="<%=context+Constants.rawP+path%>">download <%=basename%></a><%
             }
         }
     }

@@ -44,7 +44,7 @@ String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if(path == null) path = "";
 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-env.setUrlPrefix(context + "/s?");
+env.setUrlPrefix(context + Constants.searchR+"?");
 env.register();
 String rawSource = env.getSourceRootPath();
 String resourcePath = rawSource + path;

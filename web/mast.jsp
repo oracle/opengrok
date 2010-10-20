@@ -18,7 +18,8 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 
---%><%@ page import = "javax.servlet.*,
+--%><%@page import="org.opensolaris.opengrok.web.Constants"%>
+<%@ page import = "javax.servlet.*,
              java.lang.*,
              javax.servlet.http.*,
              java.util.*,
@@ -27,8 +28,7 @@ Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
              org.opensolaris.opengrok.configuration.*,
              org.opensolaris.opengrok.web.EftarFileReader,
              org.opensolaris.opengrok.web.Util,
-             org.opensolaris.opengrok.history.HistoryGuru
-             "
+             org.opensolaris.opengrok.history.HistoryGuru"
              %><%@ page session="false" %><%@ page errorPage="error.jsp"%><%
 String context = request.getContextPath();
 String servlet = request.getServletPath();
@@ -36,7 +36,7 @@ String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if (path == null) path = "";
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-environment.setUrlPrefix(context + "/s?");
+environment.setUrlPrefix(context + Constants.searchR + "?");
 environment.register();
 String rawSource = environment.getSourceRootPath();
 String resourcePath = rawSource + path;
@@ -65,7 +65,7 @@ if(resourcePath.length() < rawSource.length()
     String newPath = rawSource + "/on/" + path; //TODO do we still use "on" ???
     File newFile = new File(newPath);
     if(newFile.canRead()) {
-        if(newFile.isDirectory() && servlet.startsWith("/xref") && !path.endsWith("/")) {
+        if(newFile.isDirectory() && servlet.startsWith(Constants.xrefP) && !path.endsWith("/")) {
             response.sendRedirect(context + servlet + "/on" + path + "/");
         } else {
             response.sendRedirect(context + servlet + "/on" + path);
@@ -84,11 +84,11 @@ if(resourcePath.length() < rawSource.length()
         path = path.replace('\\','/');
     }
     isDir = resourceFile.isDirectory();
-    if (isDir && !servlet.startsWith("/xref") && !servlet.startsWith("/hist")) {	//if it is an existing directory perhaps people wanted directory xref
+    if (isDir && !servlet.startsWith(Constants.xrefP) && !servlet.startsWith(Constants.histP)) {	//if it is an existing directory perhaps people wanted directory xref
         if(!reqURI.endsWith("/")) {
-            response.sendRedirect(context + "/xref" + path + "/");
+            response.sendRedirect(context + Constants.xrefP + path + "/");
         } else {
-            response.sendRedirect(context + "/xref" + path);
+            response.sendRedirect(context + Constants.xrefP + path);
         }
     } if (isDir && !reqURI.endsWith("/")) {
         response.sendRedirect(context + servlet + path +"/");
@@ -115,7 +115,7 @@ if(resourcePath.length() < rawSource.length()
             try{
                 ef = new EftarFileReader(environment.getDataRootPath() + "/index/dtags.eftar");
                 dtag = ef.get(path);
-                if(servlet.startsWith("/xr")) {
+                if(servlet.startsWith(Constants.xrefS)) {
                 } else {
                     if(ef != null) {
                         try {
@@ -162,18 +162,18 @@ $().ready(function() {
 <% } %>
 <div id="page">
 <div id="whole_header" >
-<form action="<%=context%>/search">    
+<form action="<%=context+Constants.searchP%>">
     <div id="header"><%@ include file="pageheader.jspf" %>
         <div id="pagetitle"><b id="filename">Cross Reference: <%=basename%></b><% if (dtag!=null & dtag!="") { %><br/><%=dtag%><% } %></div>
     </div>
-    <div id="Masthead"><tt><a href="<%=context%>/xref/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + "/xref", path)%></tt></div>
+    <div id="Masthead"><tt><a href="<%=context+Constants.xrefP%>/">xref</a>: <%=org.opensolaris.opengrok.web.Util.breadcrumbPath(context + Constants.xrefP, path)%></tt></div>
     <div id="bar"><a href="<%=context%>/" id="home">Home</a> |
         <%
         
-        if (noHistory || servlet.startsWith("/hi")) {
+        if (noHistory || servlet.startsWith(Constants.histS)) {
         %> <span class="c" id="history">History</span><%
         } else {
-        %><a id="history" href="<%=context%>/history<%=path%>">History</a><%
+        %><a id="history" href="<%=context+Constants.histL+path%>">History</a><%
         }
         if (noAnnotation) {
         %> | <span class="c" id="annotate">Annotate</span><%
@@ -190,7 +190,7 @@ $().ready(function() {
             <a href="#" onclick="javascript:toggle_annotations(); return false;" title="Show or hide line annotation(commit revisions,authors)." >Annotate</a>
         </span>
         <span id="toggle-annotate">
-            <a href="<%=context%>/xref<%=path%><% 
+            <a href="<%=context+Constants.xrefP+path%><%
                if (rev.length() > 0) { 
                %>?<%=rev%><% 
            } %>">Annotate</a></span>
@@ -204,18 +204,18 @@ $().ready(function() {
             // -->
         </script> <%
         } else {
-        %> | <a href="<%=context%>/xref<%=path%>?a=true<%=rev%>">Annotate</a><%
+        %> | <a href="<%=context+Constants.xrefP+path%>?a=true<%=rev%>">Annotate</a><%
         }
     }    
             if (!isDir) {
-                if ( servlet.startsWith("/xr") ) {
+                if ( servlet.startsWith(Constants.xrefS) ) {
                %> | <a href="#" onclick="javascript:lntoggle();return false;" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a> | <a href="#" onclick="javascript:lsttoggle();return false;" title="Show or hide symbol list.">List</a><%
                 }
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {
-        %> | <a id="download" href="<%=context%>/raw<%=path%>">Download</a><%
+        %> | <a id="download" href="<%=context+Constants.rawP+path%>">Download</a><%
         } else {
-        %> | <a id="download" href="<%=context%>/raw<%=path%>?r=<%=rev%>">Download</a><%
+        %> | <a id="download" href="<%=context+Constants.rawP+path%>?r=<%=rev%>">Download</a><%
         }
      }
 

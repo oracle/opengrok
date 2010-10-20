@@ -25,7 +25,7 @@ org.opensolaris.opengrok.configuration.*"
 %><%@ page session="false" %><%@ page isErrorPage="true" %><%
 String context = request.getContextPath();
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-environment.setUrlPrefix(context + "/s?");
+environment.setUrlPrefix(context + Constants.searchR+"?");
 environment.register();
 String rawSource = environment.getSourceRootPath();
 String configError = "";

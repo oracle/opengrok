@@ -19,7 +19,8 @@ CDDL HEADER END
 Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%><%@ page import="org.opensolaris.opengrok.configuration.Project,
+--%><%@page import="org.opensolaris.opengrok.web.Constants"%>
+<%@ page import="org.opensolaris.opengrok.configuration.Project,
 org.opensolaris.opengrok.web.Util,java.util.Iterator"%>
 <% if (hasProjects) { String hcontext = request.getContextPath();
 %>
@@ -78,7 +79,7 @@ function invertAllProjects() {
     );
 }
 function goFirstProject() {
-    var selected=$.map($('#project :selected'), function(e) { return $(e).text(); });window.location='xref/'+selected[0];
+    var selected=$.map($('#project :selected'), function(e) { return $(e).text(); });window.location=window.location+'<%=Constants.xrefP%>/'+selected[0];
 }
 function checkEnter(event) {
     if(event.keyCode=='13' && sbox.q.value=='' && sbox.defs.value==''

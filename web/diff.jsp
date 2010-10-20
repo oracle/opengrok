@@ -77,7 +77,7 @@ if (valid) {
 
     if (r1 == null || r2 == null || r1.equals("") || r2.equals("") || r1.equals(r2)) {
 %><div class="src"><h3 class="error">Error:</h3>
-    Please pick two revisions to compare the changed from the <a href="<%=context%>/history<%=path%>">history</a>
+    Please pick two revisions to compare the changed from the <a href="<%=context+Constants.histL+path%>">history</a>
 </div><%
 // Error message ask to choose two versions from History log page with link to it
     } else {
@@ -100,7 +100,7 @@ if (valid) {
                     if (g == Genre.IMAGE) {
 				%> <div id="difftable">
 				<table rules="cols" cellpadding="5"><tr><th><%=basename%> (revision <%=r1%>)</th><th><%=basename%> (revision <%=r2%>)</th></tr>
-				<tr><td><img src="<%=context%>/raw<%=path%>?r=<%=r1%>"/></td><td><img src="<%=context%>/raw<%=path%>?r=<%=r2%>"/></td></tr></table></div><%
+				<tr><td><img src="<%=context+Constants.rawP+path%>?r=<%=r1%>"/></td><td><img src="<%=context+Constants.rawP+path%>?r=<%=r2%>"/></td></tr></table></div><%
                     } else if (g == Genre.PLAIN || g == Genre.HTML) {
 //--------Do THE DIFFS------------
                         ArrayList<String> l1 = new ArrayList<String>();
@@ -426,8 +426,8 @@ if(format.equals("s")) {
 %></pre></div><%
                         }
                     } else {
-				%> <div id="src">Diffs for binary files cannot be displayed! Files are <a href="<%=context%>/raw<%=path%>?r=<%=r1%>"><%=basename%>(revision <%=r1%>)</a> and
-                                    <a href="<%=context%>/raw<%=path%>?r=<%=r2%>"><%=basename%>(revision <%=r2%>)</a>.  
+				%> <div id="src">Diffs for binary files cannot be displayed! Files are <a href="<%=context+Constants.rawP+path%>?r=<%=r1%>"><%=basename%>(revision <%=r1%>)</a> and
+                                    <a href="<%=context+Constants.rawP+path%>?r=<%=r2%>"><%=basename%>(revision <%=r2%>)</a>.
 				</div><%
                     }
                 }
@@ -441,11 +441,11 @@ if(format.equals("s")) {
         } else if (g == Genre.IMAGE) {
 				%> <div class="src">
 				<table rules="cols" cellpadding="5"><tr><th><%=basename%> (revision <%=r1%>)</th><th><%=basename%> (revision <%=r2%>)</th></tr>
-				<tr><td><img src="<%=context%>/raw<%=path%>?r=<%=r1%>"/></td><td><img src="<%=context%>/raw<%=path%>?r=<%=r2%>"/></td></tr></table></div><%
+				<tr><td><img src="<%=context+Constants.rawP+path%>?r=<%=r1%>"/></td><td><img src="<%=context+Constants.rawP+path%>?r=<%=r2%>"/></td></tr></table></div><%
                                 
         } else {
-				%> <div class="src">Diffs for binary files cannot be displayed. Files are <a href="<%=context%>/raw<%=path%>?r=<%=r1%>"><%=basename%>(revision <%=r1%>)</a> and
-                                    <a href="<%=context%>/raw<%=path%>?r=<%=r2%>"><%=basename%>(revision <%=r2%>)</a>.  
+				%> <div class="src">Diffs for binary files cannot be displayed. Files are <a href="<%=context+Constants.rawP+path%>?r=<%=r1%>"><%=basename%>(revision <%=r1%>)</a> and
+                                    <a href="<%=context+Constants.rawP+path%>?r=<%=r2%>"><%=basename%>(revision <%=r2%>)</a>.
 				</div><%
         }
     }

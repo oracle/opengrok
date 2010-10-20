@@ -183,6 +183,7 @@ a.xsr {color:#00f; font-weight:bold; text-decoration:none;} /* subroutine */
 #results .m {background-color:#ffb;}
 #results i {color: green; font-weight:bold;}
 #results tr.dir{background-color:#C5D5A9;}
+#results td.q {white-space: nowrap;font-size: xx-small;}
 #results td.f{width:3em;padding-left:2em;padding-right:.5em;}
 
 #more { line-height:1.25em;}

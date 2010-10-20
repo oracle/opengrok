@@ -27,7 +27,7 @@ org.opensolaris.opengrok.configuration.*"
 
 String context = request.getContextPath();
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-environment.setUrlPrefix(context + "/s?");
+environment.setUrlPrefix(context + Constants.searchR+"?");
 environment.register();
 String rawSource = environment.getSourceRootPath();
 String configError = "";
@@ -41,7 +41,7 @@ if (rawSource.equals("")) {
 String pageTitle = "File not found";
 %><%@ include file="httpheader.jspf" %>
 <body><div id="page">
-<form action="<%=context%>/search">
+<form action="<%=context+Constants.searchP%>">
     <div id="header">
         <%@ include file="pageheader.jspf" %>
     </div>

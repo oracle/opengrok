@@ -25,7 +25,7 @@ pageEncoding="UTF-8"
 %><%
 String laf = environment.getWebappLAF();
 %><%-- String server="http://"+request.getServerName()+":"+request.getServerPort();
- <base href="<%=server%><%=httpHeaderContext%>/"/>
+ <base href="<%=server+httpHeaderContext%>/"/>
  --%><%
 String httpHeaderContext = request.getContextPath();
 %><?xml version="1.0" encoding="UTF-8"?>

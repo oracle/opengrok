@@ -20,6 +20,7 @@ Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 --%>
+<%@page import="org.opensolaris.opengrok.web.Constants"%>
 <div id="Footer">
     <p class="Center">
         <a href="http://www.opensolaris.org/os/project/opengrok/"><img src="<%=request.getContextPath()%>/<%=environment.getWebappLAF()%>/img/servedby.png" alt="Served by OpenGrok" title="Served by OpenGrok"/></a>
@@ -28,7 +29,7 @@ Use is subject to license terms.
     </p>
 </div><%
 String fservlet = request.getServletPath();
-if ( fservlet.startsWith("/xr") || fservlet.startsWith("/hi") || fservlet.startsWith("/di") || fservlet.startsWith("/mo") ) { %>
+if ( fservlet.startsWith(Constants.xrefS) || fservlet.startsWith(Constants.histS) || fservlet.startsWith(Constants.diffS) || fservlet.startsWith(Constants.moreS) ) { %>
 </div><% } // just for content from xref / lister / history / diff / more pages %>
 </div><% // from page %>
 <%-- comment out below to disable default lsttoggle of symbols

@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.search;
 
 import java.io.BufferedReader;
@@ -46,25 +46,50 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.web.Constants;
 import org.opensolaris.opengrok.web.EftarFileReader;
 import org.opensolaris.opengrok.web.Util;
 
+/**
+ *
+ * @author Chandan
+ * slightly rewritten by Lubos Kosco
+ */
 public final class Results {
     
     private Results() {
         // Util class, should not be constructed
     }
     
+    /**
+     * Prints out results in html form
+     * @param searcher
+     * @param hits
+     * @param start
+     * @param end
+     * @param out
+     * @param sourceContext
+     * @param historyContext
+     * @param summer
+     * @param context url context (webapp link/name)
+     * @param srcRoot
+     * @param dataRoot
+     * @param desc
+     * @throws HistoryException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public static void prettyPrintHTML(Searcher searcher,ScoreDoc[] hits, int start, int end, Writer out,
             Context sourceContext, HistoryContext historyContext,
-            Summarizer summer, String urlPrefix,
-            String morePrefix,
+            Summarizer summer, String context,
             String srcRoot,
             String dataRoot,
             EftarFileReader desc)
             throws HistoryException, IOException, ClassNotFoundException
     {
         char[] content = new char[1024*8];
+        String xrefPrefix=context+Constants.xrefP;
+        String morePrefix=context+Constants.moreP;
         LinkedHashMap<String, ArrayList<Document>> dirHash = new LinkedHashMap<String, ArrayList<Document>>();
         for (int i = start; i < end; i++) {
             int docId = hits[i].doc;            
@@ -83,21 +108,24 @@ public final class Results {
             String parent = entry.getKey();
             String tag = (desc == null) ? "" : " - <i>" + desc.get(parent) + "</i>";
 
-            out.write("<tr class=\"dir\"><td colspan=\"2\">&nbsp;&nbsp;<a href=\"");
-            out.write(Util.URIEncodePath(urlPrefix + parent));
+            out.write("<tr class=\"dir\"><td colspan=\"3\">&nbsp;&nbsp;<a href=\"");
+            out.write(Util.URIEncodePath(xrefPrefix + parent));
             out.write("/\">" + parent + "/</a>" + tag + "</td></tr>");
 
             boolean alt = false;
             for (Document doc: entry.getValue()) {
                 String rpath = doc.get("path");
                 String self = rpath.substring(rpath.lastIndexOf('/')+1, rpath.length());
-                String selfUrl = Util.URIEncodePath(urlPrefix + rpath);
+                String selfUrl = Util.URIEncodePath(xrefPrefix + rpath);
                 out.write("<tr ");
                 if(alt) {
                     out.write(" class=\"alt\"");
                 }
                 alt ^= true;
-                out.write("><td class=\"f\"><a href=\"" +
+                out.write(">");
+                out.write("<td class=\"q\"><a id=\"history\" href=\""+context+Constants.histL+rpath+"\">H</a> <a href=\""+context+Constants.xrefP+rpath+"?a=true\">A</a> <a id=\"download\" href=\""+context+Constants.rawP+rpath+"\">D</a>");
+                out.write("</td>");
+                out.write("<td class=\"f\"><a href=\"" +
                         selfUrl + "\">"+self+"</a>&nbsp;</td><td><tt class=\"con\">");
                 if (sourceContext != null) {
                     String genre = doc.get("t");
@@ -108,14 +136,14 @@ public final class Results {
                     }
                     try {
                         if ("p".equals(genre) && srcRoot != null) {
-                            sourceContext.getContext(new FileReader(srcRoot + rpath), out, urlPrefix, morePrefix, rpath,
+                            sourceContext.getContext(new FileReader(srcRoot + rpath), out, xrefPrefix, morePrefix, rpath,
                                     tags, true, null);
                         } else if("x".equals(genre) && dataRoot != null && summer != null){
                             Reader r = null;
                             if ( RuntimeEnvironment.getInstance().isCompressXref() ) {
-                                    r = new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(dataRoot + "/xref" + rpath+".gz"))))); }
+                                    r = new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(dataRoot + Constants.xrefP + rpath+".gz"))))); }
                             else {
-                                    r = new TagFilter(new BufferedReader(new FileReader(dataRoot + "/xref" + rpath))); }                            
+                                    r = new TagFilter(new BufferedReader(new FileReader(dataRoot + Constants.xrefP + rpath))); }
                             int len = r.read(content);
                             //FIXME use Highlighter from lucene contrib here, instead of summarizer, we'd also get rid of apache lucene in whole source ...
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
@@ -126,7 +154,7 @@ public final class Results {
                             out.write(summer.getSummary(new String(content, 0, len)).toString());
                             r.close();
                         } else {
-                            sourceContext.getContext(null, out, urlPrefix, morePrefix, rpath, tags, true, null);
+                            sourceContext.getContext(null, out, xrefPrefix, morePrefix, rpath, tags, true, null);
                         }
                     } catch (IOException e) {
                         OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary of "+rpath, e);
