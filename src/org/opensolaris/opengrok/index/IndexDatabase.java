@@ -334,9 +334,13 @@ public class IndexDatabase {
                 try {
                     uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
 
+                    //TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;
+                    log.log(Level.INFO, "Counting files in {0} ...", dir);
                     file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
-                    System.out.print("[XXXLC] Total files: " + file_cnt + "\n");
+                    if (log.isLoggable(Level.INFO)) {
+                    log.log(Level.INFO, "Need to process: {0} files for {1}", new Object[]{file_cnt,dir});
+                    }
 
                     indexDown(sourceRoot, dir, false, 0, file_cnt);
 
@@ -711,21 +715,25 @@ public class IndexDatabase {
      * Generate indexes recursively
      * @param dir the root indexDirectory to generate indexes for
      * @param path the path
+     * @param count_only if true will just traverse the source root and count files
+     * @param cur_count current count during the traversal of the tree
+     * @param est_total estimate total files to process
+     *
      */
     private int indexDown(File dir, String parent, boolean count_only, int cur_count, int est_total) throws IOException {
-
+        int lcur_count=cur_count;
         if (isInterrupted()) {
-            return cur_count;
+            return lcur_count;
         }
 
         if (!accept(dir)) {
-            return cur_count;
+            return lcur_count;
         }
 
         File[] files = dir.listFiles();
         if (files == null) {
             log.log(Level.SEVERE, "Failed to get file listing for: {0}", dir.getAbsolutePath());
-            return cur_count;
+            return lcur_count;
         }
         Arrays.sort(files, new Comparator<File>() {
             @Override
@@ -739,15 +747,18 @@ public class IndexDatabase {
                 String path = parent + '/' + file.getName();
 
                 if (file.isDirectory()) {
-                    cur_count = indexDown(file, path, count_only, cur_count, est_total);
+                    lcur_count = indexDown(file, path, count_only, lcur_count, est_total);
                 } else {
-                    cur_count++;
-                    if (count_only)
+                    lcur_count++;
+                    if (count_only) {
                         continue;
+                    }
 
                     if (est_total > 0)
                     {
-                        System.out.print("[IDX] " + cur_count + " (" + cur_count * 100.0f / est_total + "%) : " + path + "\n");
+                        if (log.isLoggable(Level.INFO)) {
+                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total) });
+                        }
                     }
 
                     if (uidIter != null) {
@@ -775,7 +786,7 @@ public class IndexDatabase {
             }
         }
 
-        return cur_count;
+        return lcur_count;
     }
 
     /**
@@ -866,7 +877,7 @@ public class IndexDatabase {
             ireader = IndexReader.open(indexDirectory,false); // open existing index
             iter = ireader.terms(new Term("u", "")); // init uid iterator
             while (iter.term() != null) {
-                log.info(Util.uid2url(iter.term().text()));
+                log.fine(Util.uid2url(iter.term().text()));
                 iter.next();
             }
         } finally {

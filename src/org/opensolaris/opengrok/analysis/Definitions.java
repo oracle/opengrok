@@ -32,17 +32,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Iterator;
 
 public class Definitions implements Serializable {
     private final static long serialVersionUID = 1191703801007779489L;
 
     // Per line sym -> tags mapping
     public static class LineTagMap implements Serializable {
-        private final Map<String, Set<Tag>> sym_tags;
+        private final static long serialVersionUID = 1191703801007779481L;
+        private final Map<String, Set<Tag>> sym_tags; //NOPMD
 
         protected LineTagMap() {
             this.sym_tags = new HashMap<String, Set<Tag>>();
@@ -96,11 +97,11 @@ public class Definitions implements Serializable {
         if (lines != null && lines.contains(lineNumber)) {
             LineTagMap line_map = line_maps.get(lineNumber);
             if (line_map != null) {
-                Set<Tag> tags = line_map.sym_tags.get(symbol);
-                Iterator it = tags.iterator();
+                Set<Tag> ltags = line_map.sym_tags.get(symbol);
+                Iterator it = ltags.iterator();
                 while (it.hasNext()) {
                     Tag tag = (Tag)it.next();
-                    if (strs.length > 0) {
+                    if (strs.length > 0) { //NOPMD
                         strs[0] = tag.type;
                     }
                     // Assume the first one

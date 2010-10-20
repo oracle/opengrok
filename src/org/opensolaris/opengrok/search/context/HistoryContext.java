@@ -110,15 +110,15 @@ public class HistoryContext {
             HistoryEntry nhe=null;
             String nrev=null;
             while(( it.hasNext()||(nhe!=null) ) && matchedLines < 10) {
-                if (nhe!=null) { he=nhe; } //nhe is the lookahead revision
-                else { he=it.next(); }
+                if (nhe==null) { he=it.next(); }
+                else { he=nhe; } //nhe is the lookahead revision
                 String line = he.getLine();
                 String rev = he.getRevision();
                 if (it.hasNext()) { nhe=it.next();  } //this prefetch mechanism is here because of the diff link generation
                                     // we currently generate the diff to previous revision
                 else {nhe=null;}
-                if (nhe!=null) {nrev=nhe.getRevision(); }
-                else {nrev=null;}
+                if (nhe==null) { nrev=null; }
+                else { nrev=nhe.getRevision(); }
                 tokens.reInit(line);
                 String token;
                 int matchState;

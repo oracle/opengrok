@@ -10,7 +10,9 @@
     <module name="FileLength"/>
     <module name="FileTabCharacter"/>
     <module name="TreeWalker">
-        <module name="AvoidStarImport"/>
+        <module name="AvoidStarImport">
+	      <property name="allowStaticMemberImports" value="true"/>
+        </module>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <module name="ImportOrder"/>
