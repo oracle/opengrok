@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.history.HistoryEntry;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.Hit;
+import org.opensolaris.opengrok.web.Constants;
 
 /**
  * it is supposed to get the matching lines from history log files.
@@ -69,12 +70,12 @@ public class HistoryContext {
         }
         File f = new File(filename);
         return getHistoryContext(HistoryGuru.getInstance().getHistory(f),
-                                 path, null, hits);
+                                 path, null, hits,null);
         
     }
     
     public boolean getContext(
-            String parent, String basename, String path, Writer out)
+            String parent, String basename, String path, Writer out, String context)
             throws HistoryException
     {
         if (m == null) {
@@ -82,16 +83,19 @@ public class HistoryContext {
         }
         History hist = HistoryGuru.getInstance().getHistory(
                              new File(parent, basename));
-        return getHistoryContext(hist, path, out, null);
+        return getHistoryContext(hist, path, out, null,context);
     }
     
     /**
-     * Writes matching History log entries from 'in' to 'out'
+     * Writes matching History log entries from 'in' to 'out' or to 'hits'
      * @param in the history to fetch entries from
      * @param out to write matched context
+     * @param path path to the file
+     * @param hits list of hits
+     * @param wcontext web context - beginning of url
      */
     private boolean getHistoryContext(
-            History in, String path, Writer out, List<Hit> hits) {
+            History in, String path, Writer out, List<Hit> hits, String wcontext) {
         if ((out == null) == (hits == null)) {
             // There should be exactly one destination for the output. If
             // none or both are specified, it's a bug.
@@ -132,12 +136,11 @@ public class HistoryContext {
                             }
                             int end = tokens.getMatchEnd();
                             if (out == null) {
-                                addHit(hits, line, path, start, end);
+                                StringBuilder sb = new StringBuilder();
+                                writeMatch(sb, line, start, end, true,path,wcontext,nrev,rev);
+                                hits.add(new Hit(path, sb.toString(), "", false, false));
                             } else {
-                                //print the diff a href
-                                //rev has one and nrev second revision
-                                //TODO
-                                writeMatch(out, line, start, end, false);
+                                writeMatch(out, line, start, end, false,path,wcontext,nrev,rev);
                             }
                             matchedLines++;
                             break;
@@ -158,22 +161,6 @@ public class HistoryContext {
     }
 
     /**
-     * Add a matching log entry to the list of hits.
-     *
-     * @param hits the list of hits
-     * @param line the line with a match
-     * @param path the file in which the match is found
-     * @param start position of the start of the match
-     * @param end position of the first char after the match
-     */
-    private void addHit(List<Hit> hits, String line, String path,
-                        int start, int end) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        writeMatch(sb, line, start, end, true);
-        hits.add(new Hit(path, sb.toString(), "", false, false));
-    }
-
-    /**
      * Write a match to a stream.
      *
      * @param out the receiving stream
@@ -181,14 +168,23 @@ public class HistoryContext {
      * @param start start position of the match
      * @param end position of the first char after the match
      * @param flatten should multi-line log entries be flattened to a single
+     * @param path path to the file
+     * @param wcontext web context (begin of url)
+     * @param nrev old revision
+     * @param rev current revision
      * line? If {@code true}, replace newline with space.
      */
     private void writeMatch(Appendable out, String line,
-                            int start, int end, boolean flatten)
+                            int start, int end, boolean flatten, String path, String wcontext, String nrev, String rev)
             throws IOException {
         String prefix = line.substring(0, start);
         String match = line.substring(start, end);
         String suffix = line.substring(end);
+
+        if (wcontext!=null && nrev!=null && !wcontext.isEmpty() ) {
+            //does below need to be encoded? see bug 16985
+            out.append("<a href="+wcontext+Constants.diffP+path+"?r2="+path+"@"+rev+"&r1="+path+"@"+nrev+">diff</a> ");
+        }
 
         printHTML(out, prefix, flatten);
         out.append("<b>");

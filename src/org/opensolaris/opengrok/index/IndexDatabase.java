@@ -754,11 +754,9 @@ public class IndexDatabase {
                         continue;
                     }
 
-                    if (est_total > 0)
-                    {
-                        if (log.isLoggable(Level.INFO)) {
-                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total) });
-                        }
+                    if (est_total > 0 && log.isLoggable(Level.INFO) )
+                    {                        
+                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total) });                        
                     }
 
                     if (uidIter != null) {

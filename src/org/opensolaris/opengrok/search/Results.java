@@ -162,7 +162,7 @@ public final class Results {
                     //out.write("Genre = " + genre);
                 }
                 if(historyContext != null) {
-                    historyContext.getContext(srcRoot + parent, self, rpath, out);
+                    historyContext.getContext(srcRoot + parent, self, rpath, out,context);
                 }
                 out.write("</tt></td></tr>\n");
             }

@@ -132,7 +132,7 @@ public class HistoryContextTest {
         // Construct a query equivalent to hist:dummy
         TermQuery q1 = new TermQuery(new Term("hist", "dummy"));
         StringWriter sw = new StringWriter();
-        assertTrue(new HistoryContext(q1).getContext(parent, base, path, sw));
+        assertTrue(new HistoryContext(q1).getContext(parent, base, path, sw, null));
         assertTrue(sw.toString().contains(
                 "Created a small <b>dummy</b> program"));
 
@@ -141,14 +141,14 @@ public class HistoryContextTest {
         q2.add(new Term("hist", "dummy"));
         q2.add(new Term("hist", "program"));
         sw = new StringWriter();
-        assertTrue(new HistoryContext(q2).getContext(parent, base, path, sw));
+        assertTrue(new HistoryContext(q2).getContext(parent, base, path, sw, null));
         assertTrue(sw.toString().contains(
                 "Created a small <b>dummy program</b>"));
 
         // Search for a term that doesn't exist
         TermQuery q3 = new TermQuery(new Term("hist", "term_does_not_exist"));
         sw = new StringWriter();
-        assertFalse(new HistoryContext(q3).getContext(parent, base, path, sw));
+        assertFalse(new HistoryContext(q3).getContext(parent, base, path, sw, null));
         assertEquals("", sw.toString());
 
         // Search for term with multiple hits - hist:small OR hist:target
@@ -156,7 +156,7 @@ public class HistoryContextTest {
         q4.add(new TermQuery(new Term("hist", "small")), Occur.SHOULD);
         q4.add(new TermQuery(new Term("hist", "target")), Occur.SHOULD);
         sw = new StringWriter();
-        assertTrue(new HistoryContext(q4).getContext(parent, base, path, sw));
+        assertTrue(new HistoryContext(q4).getContext(parent, base, path, sw, null));
         String result = sw.toString();
         assertTrue(result.contains(
                 "Add lint make <b>target</b> and fix lint warnings"));
