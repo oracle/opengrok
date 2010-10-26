@@ -336,10 +336,12 @@ public class IndexDatabase {
 
                     //TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;
-                    log.log(Level.INFO, "Counting files in {0} ...", dir);
-                    file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
-                    if (log.isLoggable(Level.INFO)) {
-                    log.log(Level.INFO, "Need to process: {0} files for {1}", new Object[]{file_cnt,dir});
+                    if (RuntimeEnvironment.getInstance().isPrintProgress()) {
+                     log.log(Level.INFO, "Counting files in {0} ...", dir);
+                     file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
+                     if (log.isLoggable(Level.INFO)) {
+                      log.log(Level.INFO, "Need to process: {0} files for {1}", new Object[]{file_cnt,dir});
+                     }
                     }
 
                     indexDown(sourceRoot, dir, false, 0, file_cnt);
@@ -754,7 +756,7 @@ public class IndexDatabase {
                         continue;
                     }
 
-                    if (est_total > 0 && log.isLoggable(Level.INFO) )
+                    if (RuntimeEnvironment.getInstance().isPrintProgress() && est_total > 0 && log.isLoggable(Level.INFO) )
                     {                        
                         log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total) });                        
                     }

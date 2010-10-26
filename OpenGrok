@@ -30,6 +30,7 @@
 #   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
+#   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working through project, it's good to have Verbose Mode enabled too, cost of this is one more traversal of the project before indexing it (*)
 #   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote) Repositories (*)
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)_
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go (by default 3 directories from SRC_ROOT)
@@ -280,6 +281,11 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     then
         VERBOSE="-v"
         QUIET=""
+    fi
+        
+    if [ -n "${OPENGROK_PROGRESS}" ]
+    then
+        PROGRESS="-C"
     fi
 }
 
@@ -651,6 +657,7 @@ StdInvocation()
         ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOSITORIES}           \
         ${SCAN_DEPTH}                                           \
         ${VERBOSE} ${QUIET}                                     \
+        ${PROGRESS}                                             \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
         ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
         ${READ_XML_CONF}                                        \
