@@ -183,7 +183,7 @@ public class HistoryContext {
 
         if (wcontext!=null && nrev!=null && !wcontext.isEmpty() ) {
             //does below need to be encoded? see bug 16985
-            out.append("<a href="+wcontext+Constants.diffP+path+"?r2="+path+"@"+rev+"&r1="+path+"@"+nrev+">diff</a> ");
+            out.append("<a href="+wcontext+Constants.diffP+path+"?r2="+path+"@"+rev+"&r1="+path+"@"+nrev+" title=\"diff to previous version\">diff</a> ");
         }
 
         printHTML(out, prefix, flatten);
