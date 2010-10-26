@@ -450,6 +450,22 @@ public final class RuntimeEnvironment {
         threadConfig.get().setVerbose(verbose);
     }
 
+        /**
+     * Is the progress print flag turned on?
+     * @return true if we can print per project progress %
+     */
+    public boolean isPrintProgress() {
+        return threadConfig.get().isPrintProgress();
+    }
+
+    /**
+     * Set the printing of progress % flag (user convenience)
+     * @param printP new value
+     */
+    public void setPrintProgress(boolean printP) {
+        threadConfig.get().setPrintProgress(printP);
+    }
+
     /**
      * Specify if a search may start with a wildcard. Note that queries
      * that start with a wildcard will give a significant impact on the

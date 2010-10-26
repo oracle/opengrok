@@ -240,6 +240,9 @@ public final class Indexer {
                             cfg.setVerbose(true);
                             OpenGrokLogger.setOGConsoleLogLevel(Level.INFO);
                             break;
+                        case 'C':
+                            cfg.setPrintProgress(true);
+                            break;
 
                         case 's':
                         {

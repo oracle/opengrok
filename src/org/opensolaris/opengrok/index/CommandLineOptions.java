@@ -69,6 +69,7 @@ public class CommandLineOptions {
         options = new ArrayList<Option>();
         options.add(new Option('q', null, "Run as quietly as possible"));
         options.add(new Option('v', null, "Print progress information as we go along"));
+        options.add(new Option('C', null, "Print per project percentage progress information(I/O extensive, since one read through dir structure is made before indexing, needs -v, otherwise it just goes to the log)"));
         options.add(new Option('e', null, "Economical - consumes less disk space. It does not generate hyper text cross reference files offline, but will do so on demand - which could be sightly slow."));
         options.add(new Option('c', "/path/to/ctags", "Path to Exuberant Ctags from http://ctags.sf.net by default takes the Exuberant Ctags in PATH."));
         options.add(new Option('R', "/path/to/configuration", "Read configuration from the specified file"));

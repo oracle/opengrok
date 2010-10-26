@@ -74,6 +74,8 @@ public final class Configuration {
     private Project defaultProject;
     private int indexWordLimit;
     private boolean verbose;
+    //if below is set, then we count how many files per project we need to process and print percentage of completion per project
+    private boolean printProgress;
     private boolean allowLeadingWildcard;
     private IgnoredNames ignoredNames;
     private Filter includedNames;
@@ -118,6 +120,7 @@ public final class Configuration {
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
         setIndexWordLimit(Integer.MAX_VALUE);
         setVerbose(false);
+        setPrintProgress(false);
         setGenerateHtml(true);
         setQuickContextScan(true);
         setIgnoredNames(new IgnoredNames());
@@ -295,6 +298,14 @@ public final class Configuration {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public boolean isPrintProgress() {
+        return printProgress;
+    }
+
+    public void setPrintProgress(boolean printProgress) {
+        this.printProgress = printProgress;
     }
 
     public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
