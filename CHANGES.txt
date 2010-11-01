@@ -102,7 +102,7 @@ FEATURES
           o Parse C# files with the C analyzer
     * Search through multiple projects at the same time
     * Possibility to register an opengrok search as a search
-    * engine(provider) in Firefox(Internet Explorer)
+      engine(provider) in Firefox(Internet Explorer)
     * History cache stored in Java DB
     * Simplified installation & setup. Improved user interface.
 
@@ -113,28 +113,26 @@ BUG FIXES
     * Bug #3401: C analyzer recognizes C++ keywords
     * Bug #3624: History cache should be stored in Java DB
     * Bug #4154: History cache should be created automatically for new
-    * repositories
-    * Bug #4505: resource leakage of ctags processes if started from the
-    * agent
-    * Bug #4580: The agent tries to create the repositories on the client
-    * side
+      repositories
+    * Bug #4505: resource leakage of ctags processes if started from the agent
+    * Bug #4580: The agent tries to create the repositories on the client side
     * Bug #5826: "remote" subversion repositories no longer detected
     * Bug #6658: rss.jsp generates ill-formed XML
     * Bug #9468: history of renamed files is lost (mercurial) - use -f only
-    * for files
+      for files
     * Bug #10440: Skip files with no sections or empty section name string
-    * table
+      table
     * Bug #10442: zip analyzer fails to parse odps
     * Bug #11661: Invalid author link when revision has no author
     * Bug #11662: No author not handled by JDBCHistoryCache
     * Bug #11663: Failure when commit message exceeds ~32K
     * Bug #11664: StringIndexOutOfBoundsException in MercurialHistoryParser
     * Bug #11886: set no word limit for indexing of files (can result in out
-    * of memory errors!)
+      of memory errors!)
     * Bug #11896: indexer chokes on fifos
     * Bug #12029: Check the first 1MB of the file
     * Bug #12081: History not returned for uncached repositories when using
-    * JDBCHistoryCache
+      JDBCHistoryCache
     * Bug #12324: history view should not contain lists of files
 
 THE ROAD AHEAD

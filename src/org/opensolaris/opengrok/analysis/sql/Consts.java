@@ -36,7 +36,8 @@ public final class Consts {
     static {
         HashSet<String> kwds = new HashSet<String>();
         try {
-            populateKeywordSet(kwds, "sql2003reserved.dat");
+            //populateKeywordSet(kwds, "sql2003reserved.dat");
+            populateKeywordSet(kwds, "sql2008reserved.dat");
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
@@ -50,15 +51,17 @@ public final class Consts {
     private static void populateKeywordSet(Set<String> set, String file)
             throws IOException
     {
-        String line;
+        String line,lline;
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
                     Consts.class.getResourceAsStream(file), "US-ASCII"));
         try {
             while ((line = reader.readLine()) != null) {
-                line = line.trim().toLowerCase(Locale.getDefault());
+                line=line.trim();
+                lline = line.toLowerCase(Locale.US);
                 if (line.charAt(0) != '#') {
                     set.add(line);
+                    set.add(lline);
                 }
             }
         } finally {
