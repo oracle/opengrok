@@ -44,6 +44,7 @@ public class Ctags {
     private BufferedReader ctagsOut;
     private static final Logger log = Logger.getLogger(Ctags.class.getName());
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
+    //default: setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
     private String binary;
     private ProcessBuilder processBuilder;
 

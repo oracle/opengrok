@@ -116,7 +116,7 @@ public final class Configuration {
         setRepositories(new ArrayList<RepositoryInfo>());
         setUrlPrefix("/source/s?");
         //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
-        setCtags("ctags");
+        setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
         setIndexWordLimit(Integer.MAX_VALUE);
         setVerbose(false);

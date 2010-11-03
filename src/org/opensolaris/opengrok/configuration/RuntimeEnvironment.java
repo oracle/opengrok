@@ -279,7 +279,8 @@ public final class RuntimeEnvironment {
         if (output == null || output.indexOf("Exuberant Ctags") == -1) {
             log.log(Level.SEVERE,"Error: No Exuberant Ctags found in PATH!\n" +
                     "(tried running " + "{0}" + ")\n" +
-                    "Please use option -c to specify path to a good Exuberant Ctags program", getCtags());
+                    "Please use option -c to specify path to a good Exuberant Ctags program\n"+
+                    "Or set it in java property org.opensolaris.opengrok.analysis.Ctags", getCtags());
             ret =  false;
         }
 
