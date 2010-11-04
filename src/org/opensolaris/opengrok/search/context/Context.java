@@ -146,8 +146,8 @@ public class Context {
                                     anything = true;
                                 } else {
                                     out.write("<a class=\"s\" href=\"");
-                                    out.write(urlPrefix);
-                                    out.write(path);
+                                    out.write(Util.URIEncodePath(urlPrefix));
+                                    out.write(Util.URIEncodePath(path));
                                     out.write("#");
                                     out.write(desc[1]);
                                     out.write("\"><span class=\"l\">");
@@ -213,9 +213,9 @@ public class Context {
                 return anything;
             }
 
-            tokens.reInit(buffer, charsRead, out, urlPrefix + path + "#", matchingTags);
+            tokens.reInit(buffer, charsRead, out, Util.URIEncodePath(urlPrefix + path) + "#", matchingTags);
         } else {
-            tokens.reInit(in, out, urlPrefix + path + "#", matchingTags);
+            tokens.reInit(in, out, Util.URIEncodePath(urlPrefix + path) + "#", matchingTags);
         }
 
         if (hits != null) {
@@ -246,7 +246,7 @@ public class Context {
             anything = matchedLines > 0;
             tokens.dumpRest();
             if (lim && (truncated || matchedLines == 10) && out != null) {
-                out.write("&nbsp; &nbsp; [<a href=\"" + morePrefix + path + "?" + queryAsURI + "\">all</a>...]");
+                out.write("&nbsp; &nbsp; [<a href=\"" + Util.URIEncodePath(morePrefix + path) + "?" + queryAsURI + "\">all</a>...]");
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
