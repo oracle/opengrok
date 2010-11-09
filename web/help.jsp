@@ -68,9 +68,15 @@ String pageTitle = "OpenGrok Help";
                 </ul>
                     
                 <a name="escaping"><u>Escaping special characters:</u></a>
-                <p>Opengrok supports escaping special characters that are part of the query syntax. The current list special characters are:<br/>
+                <p>Opengrok supports escaping special characters that are part of the query syntax. Current special characters are:<br/>
                     <b>+ - &amp;&amp; || ! ( ) { } [ ] ^ " ~ * ? : \ </b><br/>
-                To escape these character use the \ before the character. For example to search for (1+1):2 use the query: \(1\+1\)\:2</p> 
+                To escape these character use the \ before the character. For example to search for <b>(1+1):2</b> use the query: <b>\(1\+1\)\:2</b></p> 
+                <p>NOTE on analyzers: Indexed words are made up of Alpha-Numeric and Underscore characters. One letter words are usually not indexed as symbols!<br>
+Most other characters(including single and double quotes) are treated as "spaces/whitespace"(so even if you escape them, they will not be found, since most analyzers ignore them). <br>
+The exceptions are: <b>@ $ % ^ &amp; = ? . :</b> which are mostly indexed as separate words.<br>
+Because some of them are part of the query syntax, they must be escaped with a reverse slash as noted above.<br>
+So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</b>.
+                </p>
                     
                 valid <u>FIELDs</u> are
                 <pre>
