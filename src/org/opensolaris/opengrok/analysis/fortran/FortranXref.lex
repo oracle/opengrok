@@ -155,6 +155,6 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          out.write(yytext().replace("@", " (at) "));
+          writeEMailAddress(yytext());
         }
 }

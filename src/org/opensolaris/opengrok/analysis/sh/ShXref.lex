@@ -244,7 +244,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          out.write(yytext().replace("@", " (at] "));
+          writeEMailAddress(yytext());
         }
 }
 

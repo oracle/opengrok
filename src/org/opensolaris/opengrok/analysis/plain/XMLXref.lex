@@ -118,7 +118,7 @@ NameChar = {FileChar}|"."
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+
         {
-          out.write(yytext().replace("@", " (a] "));
+          writeEMailAddress(yytext());
         }
 
 "&"     {out.write( "&amp;");}

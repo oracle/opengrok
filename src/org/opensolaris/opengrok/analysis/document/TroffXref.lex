@@ -126,7 +126,7 @@ T[\{\}] {}
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
         {
-          out.write(yytext().replace("@", " (at] "));
+          writeEMailAddress(yytext());
         }
 
 {File} {

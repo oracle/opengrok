@@ -261,4 +261,14 @@ public abstract class JFlexXref {
             out.append("&#").append(Integer.toString((int) c)).append(';');
         }
     }
+
+    /**
+     * Write an e-mail address.
+     *
+     * @param address the address to write
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected void writeEMailAddress(String address) throws IOException {
+        out.write(address.replace("@", " (at) "));
+    }
 }
