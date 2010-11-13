@@ -24,6 +24,8 @@ package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import static org.junit.Assert.*;
 
@@ -390,5 +393,40 @@ public class RuntimeEnvironmentTest {
         // the directory, but that logic has been moved as of bug 16986, so
         // expect that the file does not exist.
         assertFalse(file.exists());
+    }
+
+    @Test
+    public void testObfuscateEMail() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // By default, don't obfuscate.
+        assertObfuscated(false, env);
+
+        env.setObfuscatingEMailAddresses(true);
+        assertObfuscated(true, env);
+
+        env.setObfuscatingEMailAddresses(false);
+        assertObfuscated(false, env);
+    }
+
+    private void assertObfuscated(boolean expected, RuntimeEnvironment env)
+            throws IOException {
+        assertEquals(expected, env.isObfuscatingEMailAddresses());
+
+        String address = "opengrok-discuss@opensolaris.org";
+
+        PlainXref xref = new PlainXref(new StringReader(address));
+        StringWriter out = new StringWriter();
+        xref.write(out);
+
+        String expectedAddress = expected ?
+            address.replace("@", " (at) ") : address;
+
+        String expectedOutput =
+                "<a class=\"l\" name=\"1\" href=\"#1\">"
+                + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;</a>"
+                + expectedAddress;
+
+        assertEquals(expectedOutput, out.toString());
     }
 }

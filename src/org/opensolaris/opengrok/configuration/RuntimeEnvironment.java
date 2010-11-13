@@ -665,7 +665,21 @@ public final class RuntimeEnvironment {
     public void setAllowedSymlinks(Set<String> allowedSymlinks) {
         threadConfig.get().setAllowedSymlinks(allowedSymlinks);
     }
-    
+
+    /**
+     * Return whether e-mail addresses should be obfuscated in the xref.
+     */
+    public boolean isObfuscatingEMailAddresses() {
+        return threadConfig.get().isObfuscatingEMailAddresses();
+    }
+
+    /**
+     * Set whether e-mail addresses should be obfuscated in the xref.
+     */
+    public void setObfuscatingEMailAddresses(boolean obfuscate) {
+        threadConfig.get().setObfuscatingEMailAddresses(obfuscate);
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read

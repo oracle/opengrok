@@ -263,12 +263,18 @@ public abstract class JFlexXref {
     }
 
     /**
-     * Write an e-mail address.
+     * Write an e-mail address. The address will be obfuscated if
+     * {@link RuntimeEnvironment#isObfuscatingEMailAddresses()} returns
+     * {@code true}.
      *
      * @param address the address to write
      * @throws IOException if an error occurs while writing to the stream
      */
     protected void writeEMailAddress(String address) throws IOException {
-        out.write(address.replace("@", " (at) "));
+        if (RuntimeEnvironment.getInstance().isObfuscatingEMailAddresses()) {
+            out.write(address.replace("@", " (at) "));
+        } else {
+            out.write(address);
+        }
     }
 }

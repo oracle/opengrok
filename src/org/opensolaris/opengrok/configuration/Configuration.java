@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -97,6 +96,7 @@ public final class Configuration {
     private String databaseUrl;
     private Integer scanningDepth;
     private Set<String> allowedSymlinks;
+    private boolean obfuscatingEMailAddresses;
 
     public Integer getScanningDepth() {
         return scanningDepth;
@@ -465,6 +465,14 @@ public final class Configuration {
 
     public void setAllowedSymlinks(Set<String> allowedSymlinks) {
         this.allowedSymlinks = allowedSymlinks;
+    }
+
+    public boolean isObfuscatingEMailAddresses() {
+        return obfuscatingEMailAddresses;
+    }
+
+    public void setObfuscatingEMailAddresses(boolean obfuscate) {
+        this.obfuscatingEMailAddresses = obfuscate;
     }
 
     /**
