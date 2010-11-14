@@ -39,6 +39,14 @@ String pageTitle = "Status";
         This page is only used for testing purposes to dump some of the
         internal settings on your OpenGrok server.
     </p>
-    <%Util.dumpConfiguration(out);%>
+    <%
+    if (environment.isChattyStatusPage()) {
+        Util.dumpConfiguration(out);
+    } else {%>
+    <p>
+        For security reasons, printing of internal settings is not enabled by
+        default. To enable, set the property <tt>chattyStatusPage</tt> to
+        <tt>true</tt> in <tt>configuration.xml</tt>.
+    </p><%}%>
 </div>
 <%@include file="foot.jspf"%>

@@ -97,6 +97,7 @@ public final class Configuration {
     private Integer scanningDepth;
     private Set<String> allowedSymlinks;
     private boolean obfuscatingEMailAddresses;
+    private boolean chattyStatusPage;
 
     public Integer getScanningDepth() {
         return scanningDepth;
@@ -473,6 +474,14 @@ public final class Configuration {
 
     public void setObfuscatingEMailAddresses(boolean obfuscate) {
         this.obfuscatingEMailAddresses = obfuscate;
+    }
+
+    public boolean isChattyStatusPage() {
+        return chattyStatusPage;
+    }
+
+    public void setChattyStatusPage(boolean chattyStatusPage) {
+        this.chattyStatusPage = chattyStatusPage;
     }
 
     /**

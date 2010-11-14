@@ -681,6 +681,27 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Should status.jsp print internal settings, like paths and database
+     * URLs?
+     *
+     * @return {@code true} if status.jsp should show the configuration,
+     * {@code false} otherwise
+     */
+    public boolean isChattyStatusPage() {
+        return threadConfig.get().isChattyStatusPage();
+    }
+
+    /**
+     * Set whether status.jsp should print internal settings.
+     *
+     * @param chatty {@code true} if internal settings should be printed,
+     * {@code false} otherwise
+     */
+    public void setChattyStatusPage(boolean chatty) {
+        threadConfig.get().setChattyStatusPage(chatty);
+    }
+
+    /**
      * Read an configuration file and set it as the current configuration.
      * @param file the file to read
      * @throws IOException if an error occurs
