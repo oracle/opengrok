@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
+import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.util.Locale;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -187,6 +188,21 @@ public class UtilTest {
         strings=Util.diffline("* An error occured or there is non-numeric stuff at the end","* An error occurred or there is non-numeric stuff at the end");
         assertEquals(strings[0],"* An error occured or there is non-numeric stuff at the end");
         assertEquals(strings[1],"* An error occur<span class=\"a\">r</span>ed or there is non-numeric stuff at the end");
+    }
+
+    @Test
+    public void dumpConfiguration() throws Exception {
+        StringBuilder out = new StringBuilder();
+        Util.dumpConfiguration(out);
+        String s = out.toString();
+
+        // Verify that we got a table.
+        assertTrue(s.startsWith("<table"));
+
+        // Verify that the output is well-formed.
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + s;
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new ByteArrayInputStream(xml.getBytes("UTF-8")));
     }
 }
 

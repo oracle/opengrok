@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -32,10 +31,13 @@ import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.history.HistoryGuru;
 
 /**
  * File for useful functions
@@ -502,5 +504,78 @@ public final class Util {
     return ret;
 
     }
-}
 
+    /**
+     * Dump the configuration as an HTML table.
+     *
+     * @param out destination for the HTML output
+     * @throws IOException if an error happens while writing to {@code out}
+     * @throws HistoryException if the history guru cannot be accesses
+     */
+    public static void dumpConfiguration(Appendable out)
+            throws IOException, HistoryException {
+        out.append("<table border=\"1\" width=\"100%\">");
+        out.append("<tr><th>Variable</th><th>Value</th></tr>");
+
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        printTableRow(out, "Source root", env.getSourceRootPath());
+        printTableRow(out, "Data root", env.getDataRootPath());
+        printTableRow(out, "CTags", env.getCtags());
+        printTableRow(out, "Bug page", env.getBugPage());
+        printTableRow(out, "Bug pattern", env.getBugPattern());
+        printTableRow(out, "User page", env.getUserPage());
+        printTableRow(out, "Review page", env.getReviewPage());
+        printTableRow(out, "Review pattern", env.getReviewPattern());
+        printTableRow(out, "Using projects", env.hasProjects());
+
+        out.append("<tr><td>Ignored files</td><td>");
+        printUnorderedList(out, env.getIgnoredNames().getItems());
+        out.append("</td></tr>");
+
+        printTableRow(out, "Index word limit", env.getIndexWordLimit());
+        printTableRow(out, "Allow leading wildcard in search",
+                      env.isAllowLeadingWildcard());
+        printTableRow(out, "History cache",
+                      HistoryGuru.getInstance().getCacheInfo());
+
+        out.append("</table>");
+    }
+
+    /**
+     * Print a row in an HTML table.
+     *
+     * @param out destination for the HTML output
+     * @param cells the values to print in the cells of the row
+     * @throws IOException if an error happens while writing to {@code out}
+     */
+    private static void printTableRow(Appendable out, Object... cells)
+            throws IOException {
+        out.append("<tr>");
+        for (Object cell : cells) {
+            out.append("<td>");
+            String str = (cell == null) ? "null" : cell.toString();
+            htmlize(str, out);
+            out.append("</td>");
+        }
+        out.append("</tr>");
+    }
+
+    /**
+     * Print an unordered list (HTML).
+     *
+     * @param out destination for the HTML output
+     * @param items the list items
+     * @throws IOException if an error happens while writing to {@code out}
+     */
+    private static void printUnorderedList(
+            Appendable out, Collection<String> items) throws IOException {
+        out.append("<ul>");
+        for (String item : items) {
+            out.append("<li>");
+            htmlize(item, out);
+            out.append("</li>");
+        }
+        out.append("</ul>");
+    }
+}
