@@ -249,10 +249,10 @@ public final class Util {
                         elements.remove(elements.size() - 1);
                     }
                 } else if (!"".equals(path[i])) {
-                    elements.add(path[i]);
+                    elements.add(URIEncodePath(path[i]));
                 }
             } else {
-                elements.add(path[i]);
+                elements.add(URIEncodePath(path[i]));
             }
         }
 

@@ -77,7 +77,7 @@ if (valid) {
 
     if (r1 == null || r2 == null || r1.equals("") || r2.equals("") || r1.equals(r2)) {
 %><div class="src"><h3 class="error">Error:</h3>
-    Please pick two revisions to compare the changed from the <a href="<%=context+Constants.histL+path%>">history</a>
+    Please pick two revisions to compare the changed from the <a href="<%=context+Constants.histL+uriEncodedName%>">history</a>
 </div><%
 // Error message ask to choose two versions from History log page with link to it
     } else {

@@ -105,10 +105,10 @@ if (path.length() > 0 && valid) {
         return;
     }
     
-%><form action="<%=context +Constants.diffP+ path%>">
+%><form action="<%=context +Constants.diffP+ uriEncodedName%>">
 <table cellspacing="0" cellpadding="2" border="0" width="100%" class="src" id="revisions">
 <tr>
-    <td colspan="5"><span class="pagetitle">History log of <a href="<%= context +Constants.xrefP+ path %>"><%=path%></a></span></td>
+    <td colspan="5"><span class="pagetitle">History log of <a href="<%= context +Constants.xrefP+ uriEncodedName %>"><%=path%></a></span></td>
 </tr>
 <tr class="thead">
     <td>Revision</td><%
@@ -140,7 +140,7 @@ for (HistoryEntry entry : hist.getHistoryEntries()) {
     %><td>&nbsp;<%=rev%>&nbsp;</td><%
     } else {
         if (entry.isActive()) {
-            String rp = Util.URIEncodePath(path);
+            String rp = uriEncodedName;
 %><td>&nbsp;<a name="<%=rev%>" href="<%= context +Constants.xrefP + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center">
     <input type="radio" <% if (count==0) {%>disabled<% } else if (count==1) {%>checked<%} %> name="r1" value="<%=rp%>@<%=rev%>"/>
     <input type="radio" name="r2" <% if (count==0) {%>checked<% } %> value="<%=rp%>@<%=rev%>"/></td><%
@@ -200,6 +200,6 @@ count++;
         if(striked) {
             %><p><b>Note:</b> No associated file changes are available for revisions with strike-through numbers (eg. <strike>1.45</strike>)</p><%
         }
-        %><p class="rssbadge"><a href="<%=context+Constants.rssP+Util.URIEncodePath(path)%>"><img src="<%=context%>/<%=environment.getWebappLAF()%>/img/rss.png" width="80" height="15" alt="RSS XML Feed" title="RSS XML Feed of latest changes"/></a></p><%
+        %><p class="rssbadge"><a href="<%=context+Constants.rssP+uriEncodedName%>"><img src="<%=context%>/<%=environment.getWebappLAF()%>/img/rss.png" width="80" height="15" alt="RSS XML Feed" title="RSS XML Feed of latest changes"/></a></p><%
 }
 %><%@include file="foot.jspf"%>

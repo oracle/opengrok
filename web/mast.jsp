@@ -66,9 +66,9 @@ if(resourcePath.length() < rawSource.length()
     File newFile = new File(newPath);
     if(newFile.canRead()) {
         if(newFile.isDirectory() && servlet.startsWith(Constants.xrefP) && !path.endsWith("/")) {
-            response.sendRedirect(context + servlet + "/on" + path + "/");
+            response.sendRedirect(context + servlet + "/on" + uriEncodedName + "/");
         } else {
-            response.sendRedirect(context + servlet + "/on" + path);
+            response.sendRedirect(context + servlet + "/on" + uriEncodedName);
         }
     }
     valid = false;
@@ -83,15 +83,16 @@ if(resourcePath.length() < rawSource.length()
     if (File.separatorChar == '\\') {
         path = path.replace('\\','/');
     }
+    uriEncodedName = Util.URIEncodePath(path);
     isDir = resourceFile.isDirectory();
     if (isDir && !servlet.startsWith(Constants.xrefP) && !servlet.startsWith(Constants.histP)) {	//if it is an existing directory perhaps people wanted directory xref
         if(!reqURI.endsWith("/")) {
-            response.sendRedirect(context + Constants.xrefP + path + "/");
+            response.sendRedirect(context + Constants.xrefP + uriEncodedName + "/");
         } else {
-            response.sendRedirect(context + Constants.xrefP + path);
+            response.sendRedirect(context + Constants.xrefP + uriEncodedName);
         }
     } if (isDir && !reqURI.endsWith("/")) {
-        response.sendRedirect(context + servlet + path +"/");
+        response.sendRedirect(context + servlet + uriEncodedName +"/");
     } else {
         
         long flast = resourceFile.lastModified();
@@ -173,7 +174,7 @@ $().ready(function() {
         if (noHistory || servlet.startsWith(Constants.histS)) {
         %> <span class="c" id="history">History</span><%
         } else {
-        %><a id="history" href="<%=context+Constants.histL+path%>">History</a><%
+        %><a id="history" href="<%=context+Constants.histL+uriEncodedName%>">History</a><%
         }
         if (noAnnotation) {
         %> | <span class="c" id="annotate">Annotate</span><%
@@ -190,7 +191,7 @@ $().ready(function() {
             <a href="#" onclick="javascript:toggle_annotations(); return false;" title="Show or hide line annotation(commit revisions,authors)." >Annotate</a>
         </span>
         <span id="toggle-annotate">
-            <a href="<%=context+Constants.xrefP+path%><%
+            <a href="<%=context+Constants.xrefP+uriEncodedName%><%
                if (rev.length() > 0) { 
                %>?<%=rev%><% 
            } %>">Annotate</a></span>
@@ -204,7 +205,7 @@ $().ready(function() {
             // -->
         </script> <%
         } else {
-        %> | <a href="<%=context+Constants.xrefP+path%>?a=true<%=rev%>">Annotate</a><%
+        %> | <a href="<%=context+Constants.xrefP+uriEncodedName%>?a=true<%=rev%>">Annotate</a><%
         }
     }    
             if (!isDir) {
@@ -213,9 +214,9 @@ $().ready(function() {
                 }
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {
-        %> | <a id="download" href="<%=context+Constants.rawP+path%>">Download</a><%
+        %> | <a id="download" href="<%=context+Constants.rawP+uriEncodedName%>">Download</a><%
         } else {
-        %> | <a id="download" href="<%=context+Constants.rawP+path%>?r=<%=rev%>">Download</a><%
+        %> | <a id="download" href="<%=context+Constants.rawP+uriEncodedName%>?r=<%=rev%>">Download</a><%
         }
      }
 
