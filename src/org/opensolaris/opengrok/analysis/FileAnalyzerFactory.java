@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -215,11 +214,12 @@ public class FileAnalyzerFactory {
      * Write a cross referenced HTML file. Reads the source from {@code in}.
      * @param in input source
      * @param out output xref writer
+     * @param defs definitions for the file (could be {@code null})
      * @param annotation annotation for the file (could be {@code null})
      * @param project project the file belongs to (could be {@code null})
      * @throws java.io.IOException if an error occurs 
      */
-    public void writeXref(Reader in, Writer out, Annotation annotation, Project project)
+    public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
             throws IOException {
         throw new UnsupportedOperationException("Not yet implemented");
     }

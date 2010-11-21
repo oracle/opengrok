@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.fortran;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -49,8 +49,8 @@ public class FortranAnalyzerFactory extends FileAnalyzerFactory {
     }
 
     @Override
-    public void writeXref(Reader in, Writer out, Annotation annotation, Project project)
+    public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
             throws IOException {
-        FortranAnalyzer.writeXref(in, out, annotation, project);
+        FortranAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }

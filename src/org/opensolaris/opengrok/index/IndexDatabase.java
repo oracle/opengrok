@@ -38,10 +38,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
@@ -50,12 +55,14 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Ctags;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -996,6 +1003,59 @@ public class IndexDatabase {
                 log.log(Level.FINE,"Stack Trace: ",ex);
             }
         return ret;
+    }
+
+    /**
+     * Get the latest definitions for a file from the index.
+     *
+     * @param file the file whose definitions to find
+     * @return definitions for the file, or {@code null} if they could not
+     * be found
+     * @throws IOException if an error happens when accessing the index
+     * @throws ParseException if an error happens when building the Lucene query
+     * @throws ClassNotFoundException if the class for the stored definitions
+     * instance cannot be found
+     */
+    public static Definitions getDefinitions(File file)
+            throws IOException, ParseException, ClassNotFoundException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        String path = env.getPathRelativeToSourceRoot(file, 0);
+
+        IndexReader ireader = getIndexReader(path);
+
+        if (ireader == null) {
+            // No index, no definitions...
+            return null;
+        }
+
+        try {
+            Query q = new QueryBuilder().setPath(path).build();
+            IndexSearcher searcher = new IndexSearcher(ireader);
+            try {
+                TopDocs top = searcher.search(q, 1);
+                if (top.totalHits == 0) {
+                    // No hits, no definitions...
+                    return null;
+                }
+                Document doc = searcher.doc(top.scoreDocs[0].doc);
+                String foundPath = doc.get("path");
+
+                // Only use the definitions if we found an exact match.
+                if (path.equals(foundPath)) {
+                    Fieldable tags = doc.getFieldable("tags");
+                    if (tags != null) {
+                        return Definitions.deserialize(tags.getBinaryValue());
+                    }
+                }
+            } finally {
+                searcher.close();
+            }
+        } finally {
+            ireader.close();
+        }
+
+        // Didn't find any definitions.
+        return null;
     }
 
     @Override

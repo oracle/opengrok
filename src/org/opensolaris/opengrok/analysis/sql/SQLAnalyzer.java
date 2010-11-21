@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sql;
@@ -27,6 +26,7 @@ package org.opensolaris.opengrok.analysis.sql;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -57,12 +57,14 @@ public class SQLAnalyzer extends PlainAnalyzer {
      *
      * @param in input source
      * @param out output xref writer
+     * @param defs definitions for the file (could be null)
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(Reader in, Writer out, Annotation annotation, Project project) throws IOException {
+    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
         SQLXref xref = new SQLXref(in);
         xref.annotation = annotation;
         xref.project = project;
+        xref.setDefs(defs);
         xref.write(out);
     }
 }

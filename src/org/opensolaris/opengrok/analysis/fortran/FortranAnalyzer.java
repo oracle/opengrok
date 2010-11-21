@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.fortran;
 
@@ -31,6 +30,7 @@ import java.io.Writer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -81,12 +81,14 @@ public class FortranAnalyzer extends PlainAnalyzer {
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
      * @param out Output xref writer
+     * @param defs definitions for the file (could be null)
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(Reader in, Writer out, Annotation annotation, Project project) throws IOException {
+    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
         FortranXref xref = new FortranXref(in);
         xref.annotation = annotation;
         xref.project = project;
+        xref.setDefs(defs);
         xref.write(out);
     }
 }

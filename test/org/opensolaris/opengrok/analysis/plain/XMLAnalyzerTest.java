@@ -41,7 +41,7 @@ public class XMLAnalyzerTest {
                 "</foo>";
         StringReader sr = new StringReader(xmlText);
         StringWriter sw = new StringWriter();
-        XMLAnalyzer.writeXref(sr, sw, null, null);
+        XMLAnalyzer.writeXref(sr, sw, null, null, null);
         String[] xref = sw.toString().split("\n");
         // Reference to a Java class should have / instead of . in the path
         assertTrue(xref[2].contains("path=com/foo/bar/MyClass"));
@@ -58,12 +58,12 @@ public class XMLAnalyzerTest {
         StringReader input =
                 new StringReader("<foo xyz='<betweensinglequotes>'> </foo>");
         StringWriter output = new StringWriter();
-        XMLAnalyzer.writeXref(input, output, null, null);
+        XMLAnalyzer.writeXref(input, output, null, null, null);
         assertTrue(output.toString().contains("&lt;betweensinglequotes&gt;"));
 
         input = new StringReader("<foo xyz=\"<betweendoublequotes>\"> </foo>");
         output = new StringWriter();
-        XMLAnalyzer.writeXref(input, output, null, null);
+        XMLAnalyzer.writeXref(input, output, null, null, null);
         assertTrue(output.toString().contains("&lt;betweendoublequotes&gt;"));
     }
 }

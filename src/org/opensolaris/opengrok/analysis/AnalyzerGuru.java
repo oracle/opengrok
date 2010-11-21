@@ -283,13 +283,15 @@ public class AnalyzerGuru {
      * @param factory The analyzer factory for this filetype
      * @param in The input stream containing the data
      * @param out Where to write the result
+     * @param defs definitions for the source file, if available
      * @param annotation Annotation information for the file
      * @param project Project the file belongs to
      * @throws java.io.IOException If an error occurs while creating the
      *                             output
      */
     public static void writeXref(FileAnalyzerFactory factory, Reader in,
-                                 Writer out, Annotation annotation, Project project)
+                                 Writer out, Definitions defs,
+                                 Annotation annotation, Project project)
         throws IOException
     {
         Reader input = in;
@@ -298,7 +300,7 @@ public class AnalyzerGuru {
             // spaces to match the project's tab settings.
             input = ExpandTabsReader.wrap(in, project);
         }
-        factory.writeXref(input, out, annotation, project);
+        factory.writeXref(input, out, defs, annotation, project);
     }
 
     /**

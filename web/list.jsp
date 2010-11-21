@@ -16,8 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 --%><%@ page import = "javax.servlet.*,
 java.lang.*,
 javax.servlet.http.*,
@@ -29,6 +28,7 @@ org.opensolaris.opengrok.OpenGrokLogger,
 org.opensolaris.opengrok.analysis.*,
 org.opensolaris.opengrok.configuration.Project,
 org.opensolaris.opengrok.index.*,
+org.opensolaris.opengrok.analysis.Definitions,
 org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
 org.opensolaris.opengrok.web.*,
 org.opensolaris.opengrok.history.*
@@ -429,10 +429,13 @@ if (valid) {
                         } else {
 		            %><div id="src"><span class="pagetitle"><%=basename%> revision <%=rev%> </span><pre><%
                             if (g == Genre.PLAIN) {
+                                // We don't have any way to get definitions
+                                // for old revisions currently.
+                                Definitions defs = null;
                                 Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;
                                 //annotation.writeTooltipMap(out); //not needed yet
                                 Reader r = new InputStreamReader(in);
-                                AnalyzerGuru.writeXref(a, r, out, annotation, Project.getProject(resourceFile));
+                                AnalyzerGuru.writeXref(a, r, out, defs, annotation, Project.getProject(resourceFile));
                             } else if (g == Genre.IMAGE) {
 			       %><img src="<%=context+Constants.rawP+path%>?r=<%=rev%>"/><%
                             } else if (g == Genre.HTML) {
@@ -506,9 +509,12 @@ if (valid) {
                 }
             } else if(g == Genre.PLAIN) {
                 %><div id="src"><pre><%
+                // We're generating xref for the latest revision, so we can
+                // find the definitions in the index.
+                Definitions defs = IndexDatabase.getDefinitions(resourceFile);
                 Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;                
                 Reader r = new InputStreamReader(bin);
-                AnalyzerGuru.writeXref(a, r, out, annotation, Project.getProject(resourceFile));
+                AnalyzerGuru.writeXref(a, r, out, defs, annotation, Project.getProject(resourceFile));
                 %></pre></div><%
             } else {
 	        %> Click <a href="<%=context+Constants.rawP+path%>">download <%=basename%></a><%

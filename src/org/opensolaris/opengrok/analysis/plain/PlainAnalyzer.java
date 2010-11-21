@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -124,12 +123,14 @@ public class PlainAnalyzer extends TextAnalyzer {
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
      * @param out Output xref writer
+     * @param defs definitions for the file (could be null)
      * @param annotation annotation for the file (could be null)
      */
-    static void writeXref(Reader in, Writer out, Annotation annotation, Project project) throws IOException {
+    static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
         PlainXref xref = new PlainXref(in);
         xref.annotation = annotation;
         xref.project = project;
+        xref.setDefs(defs);
         xref.write(out);
     }
 }
