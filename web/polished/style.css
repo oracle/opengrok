@@ -217,11 +217,38 @@ td.a{color:#000}
 .c  {color:#666;} /* comments */
 .b  {color:#000; font-weight:bold;} /* comments */
 .k  {color:#000; font-family:monospace;} /* comments */
-a.d {color:#909; font-weight:bold; font-style:italic;text-decoration:none;} /* definitions */
+
 a.s {color:#000;}  /* matched lines */
 a.f {color:#909;} /* file locals */
 div.a {color:#000}
 a.h {font-size:small; margin-left:2em;}
+
+
+a.d {color:#909; font-weight:bold; text-decoration:none;} /* definitions */
+
+a.xm {color:#c66; font-weight:bold; text-decoration:none;} /* macro */
+
+a.xa {color:#60c; font-weight:bold; text-decoration:none;} /* argument */
+a.xl {color:#963; font-weight:bold; text-decoration:none;} /* local */
+a.xv {color:#c30; font-weight:bold; text-decoration:none;} /* variable */
+
+a.xc {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* class */
+a.xi {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* interface */
+a.xn {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* namespace */
+
+a.xe {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* enum */
+a.xer {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* enumerator */
+a.xs {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* struct */
+a.xt {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* typedef */
+a.xts {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* typedefs */
+a.xu {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* union */
+
+a.xfld {color:#090; font-weight:bold; text-decoration:none;} /* field */
+a.xmb {color:#090; font-weight:bold; text-decoration:none;} /* member */
+
+a.xf {color:#00f; font-weight:bold; text-decoration:none;} /* function */
+a.xmt {color:#00f; font-weight:bold; text-decoration:none;} /* method */
+a.xsr {color:#00f; font-weight:bold; text-decoration:none;} /* subroutine */
 
 #results {margin-top:.5em; padding-top:0.5em;}
 #results .con{font-size:small;color:#000;}

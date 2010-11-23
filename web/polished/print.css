@@ -148,10 +148,36 @@ td.a{color:#000}
 .n  {color:#000;}
 .s  {color:#000;}
 .c  {color:#000; font-style:italic;}
-a.d {color:#000; font-weight:bold; font-style:italic;text-decoration:none;}
+
 a.s {color:#000;}  /* matched lines */
 a.f {color:#000;}
 div.a{color:#000}
+
+a.d {color:#000; font-weight:bold; text-decoration:none;} /* definitions */
+
+a.xm {color:#c66; font-weight:bold; text-decoration:none;} /* macro */
+
+a.xa {color:#60c; font-weight:bold; text-decoration:none;} /* argument */
+a.xl {color:#963; font-weight:bold; text-decoration:none;} /* local */
+a.xv {color:#c30; font-weight:bold; text-decoration:none;} /* variable */
+
+a.xc {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* class */
+a.xi {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* interface */
+a.xn {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* namespace */
+
+a.xe {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* enum */
+a.xer {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* enumerator */
+a.xs {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* struct */
+a.xt {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* typedef */
+a.xts {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* typedefs */
+a.xu {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* union */
+
+a.xfld {color:#090; font-weight:bold; text-decoration:none;} /* field */
+a.xmb {color:#090; font-weight:bold; text-decoration:none;} /* member */
+
+a.xf {color:#00f; font-weight:bold; text-decoration:none;} /* function */
+a.xmt {color:#00f; font-weight:bold; text-decoration:none;} /* method */
+a.xsr {color:#00f; font-weight:bold; text-decoration:none;} /* subroutine */
 
 #results .con{font-size:small;color:#000;}
 #more .l, #results .l { color:#888; }
