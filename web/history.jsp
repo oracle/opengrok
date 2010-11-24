@@ -142,8 +142,8 @@ for (HistoryEntry entry : hist.getHistoryEntries()) {
         if (entry.isActive()) {
             String rp = uriEncodedName;
 %><td>&nbsp;<a name="<%=rev%>" href="<%= context +Constants.xrefP + rp + "?r=" + Util.URIEncode(rev) %>"><%=rev%></a>&nbsp;</td><td align="center">
-    <input type="radio" <% if (count==0) {%>disabled<% } else if (count==1) {%>checked<%} %> name="r1" value="<%=rp%>@<%=rev%>"/>
-    <input type="radio" name="r2" <% if (count==0) {%>checked<% } %> value="<%=rp%>@<%=rev%>"/></td><%
+    <input type="radio" <% if (count==0) {%>disabled="disabled"<% } else if (count==1) {%>checked="checked"<%} %> name="r1" value="<%=rp%>@<%=rev%>"/>
+    <input type="radio" name="r2" <% if (count==0) {%>checked="checked"<% } %> value="<%=rp%>@<%=rev%>"/></td><%
         } else {
             striked = true;
   %><td><strike>&nbsp;<%=rev%>&nbsp; </strike></td><td>&nbsp;</td><%

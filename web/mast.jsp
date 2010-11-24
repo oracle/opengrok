@@ -18,8 +18,7 @@ CDDL HEADER END
 
 Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 
---%><%@page import="org.opensolaris.opengrok.web.Constants"%>
-<%@ page import = "javax.servlet.*,
+--%><%@ page import = "javax.servlet.*,
              java.lang.*,
              javax.servlet.http.*,
              java.util.*,
@@ -28,6 +27,7 @@ Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
              org.opensolaris.opengrok.configuration.*,
              org.opensolaris.opengrok.web.EftarFileReader,
              org.opensolaris.opengrok.web.Util,
+             org.opensolaris.opengrok.web.Constants,
              org.opensolaris.opengrok.history.HistoryGuru"
              %><%@ page session="false" %><%@ page errorPage="error.jsp"%><%
 String context = request.getContextPath();
@@ -154,7 +154,7 @@ function toggle_annotations() {
     );   
 }
 $().ready(function() {
-    $('a[id=r]').tooltip({
+    $('a[name=r]').tooltip({
         left: 5,
 	showURL: false
        });    
@@ -210,7 +210,7 @@ $().ready(function() {
     }    
             if (!isDir) {
                 if ( servlet.startsWith(Constants.xrefS) ) {
-               %> | <a href="#" onclick="javascript:lntoggle();return false;" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a> | <a href="#" onclick="javascript:lsttoggle();return false;" title="Show or hide symbol list.">List</a><%
+               %> | <a href="#" onclick="javascript:lntoggle();return false;" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a> | <a href="#" onclick="javascript:lsttoggle();return false;" title="Show or hide symbol list.">Navigate</a><%
                 }
                String rev = request.getParameter("r");
                if (rev == null || rev.equals("")) {

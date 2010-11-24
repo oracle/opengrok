@@ -123,7 +123,7 @@ public final class Results {
                 }
                 alt ^= true;
                 out.write(">");
-                out.write("<td class=\"q\"><a id=\"history\" href=\""+context+Constants.histL+rpath+"\" title=\"History\">H</a> <a href=\""+context+Constants.xrefP+rpath+"?a=true\" title=\"Annotate\">A</a> <a id=\"download\" href=\""+context+Constants.rawP+rpath+"\" title=\"Download\">D</a>");
+                out.write("<td class=\"q\"><a href=\""+context+Constants.histL+rpath+"\" title=\"History\">H</a> <a href=\""+context+Constants.xrefP+rpath+"?a=true\" title=\"Annotate\">A</a> <a href=\""+context+Constants.rawP+rpath+"\" title=\"Download\">D</a>");
                 out.write("</td>");
                 out.write("<td class=\"f\"><a href=\"" +
                         selfUrl + "\">"+self+"</a>&nbsp;</td><td><tt class=\"con\">");

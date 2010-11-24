@@ -79,9 +79,10 @@ function get_sym_list_contents()
 {
     var contents = "";
 
-    contents += "<input id=\"input_highlight\" name=\"input_highlight\" class=\"q\"/>";
-    contents += "&nbsp;&nbsp;";
-    contents += "<b><a href=\"#\" onclick=\"javascript:add_highlight();return false;\" title=\"Add highlight\">Highlight</a></b><br>";
+    //contents += "<input id=\"input_highlight\" name=\"input_highlight\" class=\"q\"/>";
+    //contents += "&nbsp;&nbsp;";
+    //contents += "<b><a href=\"#\" onclick=\"javascript:add_highlight();return false;\" title=\"Add highlight\">Highlight</a></b><br>";
+    contents += "<a href=\"#\" onclick=\"javascript:lsttoggle();\">[Close]</a><br>"
 
     var class_names=[
         "xm",

@@ -373,7 +373,7 @@ public final class Util {
                 out.write(URIEncode(r));
                 String msg=annotation.getDesc(r);
                 if (msg!=null) {
-                 out.write("\" id=\"r\" title=\""+msg+"\"");
+                 out.write("\" name=\"r\" title=\""+msg+"\"");
                 }
                 out.write(closeQuotedTag);
             }

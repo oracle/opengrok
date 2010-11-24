@@ -19,8 +19,6 @@ CDDL HEADER END
 Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
-ident	"%Z%%M% %I%     %E% SMI"
-
 --%><%@ page import = "java.util.List,
 javax.servlet.*,
 javax.servlet.http.*,
