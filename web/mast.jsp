@@ -131,13 +131,28 @@ if(resourcePath.length() < rawSource.length()
                 dtag = "";
             }
     String pageTitle="Cross Reference: " + path;
-
+    String rev = request.getParameter("r");
+            if (rev == null) {
+                rev = "";
+            } else if (rev.length() > 0) {
+                rev = "&r=" + rev;
+            }
+    String h = request.getParameter("h");
 %><%@ include file="httpheader.jspf" %><%//below style is for the fancy always on top search bar%>
 <body style="overflow:hidden;">
 <script type="text/javascript" src="<%=context%>/jquery-1.4.2.min.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
+function get_annotations() {
+    link="<%=context+Constants.xrefP+uriEncodedName%>?a=true<%=rev%>";
+    hash="&h="+window.location.hash.substring(1,window.location.hash.length);
+    window.location=link+hash;
+}
     $().ready(function() {
-    if (!window.location.hash) {$('#content').focus();}
+     h="<%=h%>";
+     if (!window.location.hash) {
+         if (h!=null && h!="null")  { window.location.hash=h; }
+             else { $('#content').focus(); }
+      }
 } );
 /* ]]> */</script>
 <% if (annotate) { %>
@@ -178,14 +193,7 @@ $().ready(function() {
         }
         if (noAnnotation) {
         %> | <span class="c" id="annotate">Annotate</span><%
-        } else {
-           String rev = request.getParameter("r");
-            if (rev == null) {
-                rev = "";
-            } else if (rev.length() > 0) {
-                rev = "&r=" + rev;
-            }
-        
+        } else {       
             if (Boolean.parseBoolean(request.getParameter("a"))) {
         %> | <span id="toggle-annotate-by-javascript" style="display: none">
             <a href="#" onclick="javascript:toggle_annotations(); return false;" title="Show or hide line annotation(commit revisions,authors)." >Annotate</a>
@@ -205,18 +213,18 @@ $().ready(function() {
             // -->
         </script> <%
         } else {
-        %> | <a href="<%=context+Constants.xrefP+uriEncodedName%>?a=true<%=rev%>">Annotate</a><%
+        %> | <a href="#" onclick="javascript:get_annotations(); return false;">Annotate</a><%
         }
     }    
             if (!isDir) {
                 if ( servlet.startsWith(Constants.xrefS) ) {
                %> | <a href="#" onclick="javascript:lntoggle();return false;" title="Show or hide line numbers (might be slower if file has more than 10 000 lines).">Line #</a> | <a href="#" onclick="javascript:lsttoggle();return false;" title="Show or hide symbol list.">Navigate</a><%
                 }
-               String rev = request.getParameter("r");
-               if (rev == null || rev.equals("")) {
+               String lrev = request.getParameter("r");
+               if (lrev == null || lrev.equals("")) {
         %> | <a id="download" href="<%=context+Constants.rawP+uriEncodedName%>">Download</a><%
         } else {
-        %> | <a id="download" href="<%=context+Constants.rawP+uriEncodedName%>?r=<%=rev%>">Download</a><%
+        %> | <a id="download" href="<%=context+Constants.rawP+uriEncodedName%>?r=<%=lrev%>">Download</a><%
         }
      }
 
