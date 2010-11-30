@@ -279,7 +279,7 @@ a.xsr {color:#00f; font-weight:bold; text-decoration:none;} /* subroutine */
 	background-repeat: no-repeat;
 	background-position:left;
 }
-#results td.q {white-space: nowrap;font-size: xx-small;}
+#results td.q {white-space: nowrap;font-size: xx-small;width:3em;}
 #results td.f{
 	min-width:5em;
 	width:5em;
