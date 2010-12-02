@@ -43,24 +43,24 @@ import org.opensolaris.opengrok.util.Executor;
  *
  */
 public class GitRepository extends Repository {
-    private static final long serialVersionUID = 1L;
 
-    private static ScmChecker gitBinary = new ScmChecker(new String[] {
-        getCommand(), "--help" });
+    private static final long serialVersionUID = 1L;
+    private static ScmChecker gitBinary = new ScmChecker(new String[]{
+                getCommand(), "--help"});
 
     public GitRepository() {
         type = "git";
         datePattern = "EEE MMM dd hh:mm:ss yyyy ZZZZ";
     }
 
-   /**
+    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
      *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-   Executor getHistoryLogExecutor(final File file, String sinceRevision) throws IOException {
+    Executor getHistoryLogExecutor(final File file, String sinceRevision) throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -74,11 +74,11 @@ public class GitRepository extends Repository {
         cmd.add("--pretty=fuller");
 
         if (sinceRevision != null) {
-           cmd.add(sinceRevision + "..");
+            cmd.add(sinceRevision + "..");
         }
 
         if (filename.length() > 0) {
-           cmd.add(filename);
+            cmd.add(filename);
         }
         return new Executor(cmd, new File(getDirectoryName()));
     }
@@ -102,7 +102,7 @@ public class GitRepository extends Repository {
 
         Process process = null;
         try {
-            String filename =  (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
+            String filename = (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
             String argv[] = {getCommand(), "show", rev + ":" + filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
@@ -132,10 +132,9 @@ public class GitRepository extends Repository {
 
         return ret;
     }
-
     /** Pattern used to extract author/revision from git blame. */
     private final static Pattern BLAME_PATTERN =
-        Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
+            Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
 
     /**
      * Annotate the specified file/revision.
@@ -226,11 +225,12 @@ public class GitRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
-       if (file.isDirectory()) {
-        File f = new File(file, ".git");
-        return f.exists() && f.isDirectory();
-       } else {
-        return false; }
+        if (file.isDirectory()) {
+            File f = new File(file, ".git");
+            return f.exists() && f.isDirectory();
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -245,13 +245,13 @@ public class GitRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-       return getHistory(file, null);
+        return getHistory(file, null);
     }
 
     @Override
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
-       return new GitHistoryParser().parse(file, this, sinceRevision);
+        return new GitHistoryParser().parse(file, this, sinceRevision);
     }
 }
 

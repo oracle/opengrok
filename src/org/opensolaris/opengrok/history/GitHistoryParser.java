@@ -44,14 +44,14 @@ import org.opensolaris.opengrok.util.StringUtils;
 class GitHistoryParser implements Executor.StreamHandler {
 
     private enum ParseState {
+
         HEADER, MESSAGE, FILES
     };
-
     private String myDir;
     private History history;
-    private GitRepository repository=new GitRepository();
+    private GitRepository repository = new GitRepository();
 
-   /**
+    /**
      * Process the output from the log command and insert the HistoryEntries
      * into the history field.
      *
@@ -144,20 +144,20 @@ class GitHistoryParser implements Executor.StreamHandler {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-   History parse(File file, Repository repos, String sinceRevision) throws HistoryException {
-        myDir = repos.getDirectoryName()+ File.separator;
+    History parse(File file, Repository repos, String sinceRevision) throws HistoryException {
+        myDir = repos.getDirectoryName() + File.separator;
         repository = (GitRepository) repos;
         try {
-           Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
+            Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
             int status = executor.exec(true, this);
 
             if (status != 0) {
                 throw new HistoryException("Failed to get history for: \"" +
-                                           file.getAbsolutePath() + "\" Exit code: " + status);
+                        file.getAbsolutePath() + "\" Exit code: " + status);
             }
         } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
-                                       file.getAbsolutePath() + "\"", e);
+                    file.getAbsolutePath() + "\"", e);
         }
 
         return history;
