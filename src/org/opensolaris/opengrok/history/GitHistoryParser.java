@@ -45,12 +45,12 @@ class GitHistoryParser implements Executor.StreamHandler {
 
     private enum ParseState {
         HEADER, MESSAGE, FILES
-    };      
+    };
 
     private String myDir;
     private History history;
     private GitRepository repository=new GitRepository();
-    
+
    /**
      * Process the output from the log command and insert the HistoryEntries
      * into the history field.
@@ -64,7 +64,7 @@ class GitHistoryParser implements Executor.StreamHandler {
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        
+
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         history = new History();
@@ -95,7 +95,7 @@ class GitHistoryParser implements Executor.StreamHandler {
                 } else if (StringUtils.isOnlyWhitespace(s)) {
                     // We are done reading the heading, start to read the message
                     state = ParseState.MESSAGE;
-                    
+
                     // The current line is empty - the message starts on the next line (to be parsed below).
                     s = in.readLine();
                 }
@@ -144,13 +144,13 @@ class GitHistoryParser implements Executor.StreamHandler {
      * @param repos Pointer to the SubversionReporitory
      * @return object representing the file's history
      */
-    History parse(File file, Repository repos) throws HistoryException {
+   History parse(File file, Repository repos, String sinceRevision) throws HistoryException {
         myDir = repos.getDirectoryName()+ File.separator;
         repository = (GitRepository) repos;
         try {
-            Executor executor = repository.getHistoryLogExecutor(file);
+           Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
             int status = executor.exec(true, this);
-            
+
             if (status != 0) {
                 throw new HistoryException("Failed to get history for: \"" +
                                            file.getAbsolutePath() + "\" Exit code: " + status);
@@ -162,10 +162,10 @@ class GitHistoryParser implements Executor.StreamHandler {
 
         return history;
     }
-    
+
     /**
      * Parse the given string.
-     * 
+     *
      * @param buffer The string to be parsed
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer

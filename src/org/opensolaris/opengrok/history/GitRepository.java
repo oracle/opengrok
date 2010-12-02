@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved. 
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Git repository.
- * 
+ *
  */
 public class GitRepository extends Repository {
     private static final long serialVersionUID = 1L;
@@ -56,29 +56,33 @@ public class GitRepository extends Repository {
    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
-     * 
+     *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file) throws IOException {
+   Executor getHistoryLogExecutor(final File file, String sinceRevision) throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
-        
+
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("log");
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
 
+        if (sinceRevision != null) {
+           cmd.add(sinceRevision + "..");
+        }
+
         if (filename.length() > 0) {
            cmd.add(filename);
-       }
+        }
         return new Executor(cmd, new File(getDirectoryName()));
-    }    
-    
+    }
+
     /**
      * Get the name of the Git command that should be used
      * @return the name of the hg command in use
@@ -95,22 +99,22 @@ public class GitRepository extends Repository {
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         byte[] buffer = new byte[8192];
-        
+
         Process process = null;
         try {
             String filename =  (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
             String argv[] = {getCommand(), "show", rev + ":" + filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
-            
+
             InputStream in = process.getInputStream();
             int len;
-            
+
             while ((len = in.read(buffer)) != -1) {
                 if (len > 0) {
                     output.write(buffer, 0, len);
                 }
             }
-            
+
             ret = new BufferedInputStream(new ByteArrayInputStream(output.toByteArray()));
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
@@ -125,7 +129,7 @@ public class GitRepository extends Repository {
                 }
             }
         }
-        
+
         return ret;
     }
 
@@ -153,7 +157,7 @@ public class GitRepository extends Repository {
 
         Executor exec = new Executor(cmd, file.getParentFile());
         int status = exec.exec();
-        
+
         if (status != 0) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get annotations for: \"{0}\" Exit code: {1}", new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
@@ -185,7 +189,7 @@ public class GitRepository extends Repository {
     public boolean fileHasAnnotation(File file) {
         return true;
     }
-    
+
     @Override
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
@@ -241,7 +245,13 @@ public class GitRepository extends Repository {
 
     @Override
     History getHistory(File file) throws HistoryException {
-        return new GitHistoryParser().parse(file, this);
+       return getHistory(file, null);
+    }
+
+    @Override
+    History getHistory(File file, String sinceRevision)
+            throws HistoryException {
+       return new GitHistoryParser().parse(file, this, sinceRevision);
     }
 }
 
