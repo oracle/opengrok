@@ -192,6 +192,7 @@ a.xa {color:#60c; font-weight:bold; text-decoration:none;} /* argument */
 a.xl {color:#963; font-weight:bold; text-decoration:none;} /* local */
 a.xv {color:#c30; font-weight:bold; text-decoration:none;} /* variable */
 
+a.xp {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* package */
 a.xc {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* class */
 a.xi {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* interface */
 a.xn {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* namespace */

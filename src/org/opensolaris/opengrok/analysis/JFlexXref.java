@@ -165,6 +165,8 @@ public abstract class JFlexXref {
                 style_class = "xv";
             } else if (type.startsWith("class")) {
                 style_class = "xc";
+            } else if (type.startsWith("package")) {
+                style_class = "xp";
             } else if (type.startsWith("interface")) {
                 style_class = "xi";
             } else if (type.startsWith("namespace")) {

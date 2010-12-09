@@ -125,6 +125,8 @@ public class Context {
             try {
                 for (Definitions.Tag tag : tags.getTags()) {
                     for (int i = 0; i < m.length; i++) {
+                        //TODO symbol.toLowerCase makes below check work for all searches and shows the proper tag, hence QueryMatchers or someone from the matchers incorrectly lowercases search for index which IS case sensitive !!!
+                        // please fix bug 17582
                         if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
                             /*
                              * desc[1] is line number

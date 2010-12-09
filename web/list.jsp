@@ -92,8 +92,11 @@ function get_sym_list_contents()
         "xv",
         "xi",
         "xc",
+        "xn",
+        "xp",
         "xf",
-        "xmt"];
+        "xmt",
+        "xsr"];
     var type_names=[
         "Macro",
         "Enum",
@@ -102,9 +105,15 @@ function get_sym_list_contents()
         "Variable",
         "Interface",
         "Class",
+        "Namespace",
+        "Package",
         "Function",
-        "Method"];
+        "Method",
+        "Subroutine"];
     var class_contents=[
+        "",
+        "",
+        "",
         "",
         "",
         "",
