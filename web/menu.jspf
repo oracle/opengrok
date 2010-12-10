@@ -79,7 +79,7 @@ function invertAllProjects() {
     );
 }
 function goFirstProject() {
-    var selected=$.map($('#project :selected'), function(e) { return $(e).text(); });window.location=window.location+'<%=Constants.xrefP%>/'+selected[0];
+    var selected=$.map($('#project :selected'), function(e) { return $(e).text(); });window.location='<%=hcontext%>'+'<%=Constants.xrefP%>/'+selected[0];
 }
 function checkEnter(event) {
     if(event.keyCode=='13' && sbox.q.value=='' && sbox.defs.value==''
@@ -105,11 +105,13 @@ function checkEnter(event) {
                                         <td>in project(s): <span style="padding-left:60px;font-size:small"><a tabindex="6" href="#" onclick="javascript:selectAllProjects();return false;">select all</a>&nbsp;|&nbsp;<a href="#" tabindex="7" onclick="javascript:invertAllProjects();return false;">invert selection</a></span></td>
                                     </tr>
                                     <tr><td>
-                                            <select tabindex="8" onkeyup="javascript:checkEnter(event);" class="q" style="width: 300px" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
+                                            <select tabindex="8" ondblclick="javascript:goFirstProject();" onkeyup="javascript:checkEnter(event);" class="q" style="width: 300px" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
                                 <%
                                 for (Project p : env.getProjects()) {
                                     //TODO below "selected" has no effect if one refreshes the page with F5
-                                %><option ondblclick="javascript:goFirstProject();" value="<%=Util.formQuoteEscape(p.getDescription())%>"<%
+                                    //also below ondblclick doesn't work in IE ...
+                                    // ondblclick="javascript:goFirstProject();"
+                                %><option value="<%=Util.formQuoteEscape(p.getDescription())%>"<%
                                           if (project != null) {
                                               String projectPath = p.getDescription();
                                               for (Iterator it = project.iterator(); it.hasNext();) {
