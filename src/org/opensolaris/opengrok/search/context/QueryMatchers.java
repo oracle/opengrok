@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.search.context;
 
 import java.util.ArrayList;
@@ -45,7 +45,6 @@ import org.apache.lucene.search.WildcardQuery;
  */
 public final class QueryMatchers {
     private Set<String> terms;
-    private String term;
     private List<LineMatcher> matchers;
     private Set fields;
     /**
@@ -60,10 +59,7 @@ public final class QueryMatchers {
         matchers = new ArrayList<LineMatcher>();
         this.fields = fields;
         getTerms(query);
-        if(terms.size() == 1) {
-            //System.out.println("found SingleTokenMatcher" + term);
-            matchers.add(0, new SingleTokenMatcher(term));
-        } else if (terms.size() > 1) {
+        if (!terms.isEmpty()) {
             matchers.add(0, new TokenSetMatcher(terms));
         }
         if (matchers.isEmpty()) {
@@ -109,7 +105,7 @@ public final class QueryMatchers {
     
     private void getTerm(TermQuery query) {
         if(fields.contains(query.getTerm().field())) {
-            terms.add(term = query.getTerm().text().toLowerCase());
+            terms.add(query.getTerm().text().toLowerCase());
         }
     }
     
