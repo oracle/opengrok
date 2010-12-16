@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.search.context;
 
 /**
@@ -31,13 +31,14 @@ class PhraseMatcher extends LineMatcher {
     private final String[] phraseTerms;
     private int cur;
     
-    public PhraseMatcher(String[] phraseTerms) {
+    PhraseMatcher(String[] phraseTerms, boolean caseInsensitive) {
+        super(caseInsensitive);
         this.phraseTerms  = (String[]) phraseTerms.clone();
         cur = 0;
     }
     
     public int match(String token) {
-        if (token.equals(phraseTerms[cur])) {
+        if (equal(token, phraseTerms[cur])) {
             //System.out.println(" PhraseMatcher matched " + token);
             if ( cur < phraseTerms.length-1) {
                 cur ++;
@@ -49,7 +50,7 @@ class PhraseMatcher extends LineMatcher {
             }
         } else if (cur > 0) {
             cur = 0;
-            if (token.equals(phraseTerms[cur])) {
+            if (equal(token, phraseTerms[cur])) {
                 cur ++;
                 return WAIT; //matching.
             }

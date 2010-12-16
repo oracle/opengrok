@@ -359,4 +359,63 @@ public class ContextTest {
                         "<b>Mixed</b> case: abc AbC dEf</a><br/>",
                      out.toString());
     }
+
+    /**
+     * The results from mixed-case symbol search should contain tags.
+     */
+    @Test
+    public void bug17582() throws Exception {
+        // Freetext search should match regardless of case
+        bug17582(new QueryBuilder().setFreetext("Bug17582"),
+                new int[] {2, 3}, new String[] {"type1", "type2"});
+
+        // Defs search should only match if case matches
+        bug17582(new QueryBuilder().setDefs("Bug17582"),
+                new int[] {3}, new String[] {"type2"});
+
+        // Refs search should only match if case matches
+        bug17582(new QueryBuilder().setRefs("Bug17582"),
+                new int[] {3}, new String[] {"type2"});
+
+        // Path search shouldn't match anything in source
+        bug17582(new QueryBuilder().setPath("Bug17582"),
+                new int[0], new String[0]);
+
+        // Refs should only match if case matches, but freetext will match
+        // regardless of case
+        bug17582(new QueryBuilder().setRefs("Bug17582").setFreetext("Bug17582"),
+                new int[] {2, 3}, new String[] {"type1", "type2"});
+
+        // Refs should only match if case matches, hist shouldn't match
+        // anything in source
+        bug17582(new QueryBuilder().setRefs("Bug17582").setHist("bug17582"),
+                new int[] {3}, new String[] {"type2"});
+    }
+
+    /**
+     * Helper method which does the work for {@link #bug17582()}.
+     *
+     * @param builder builder for the query we want to test
+     * @param lines the expected line numbers in the hit list
+     * @param tags the expected tags in the hit list
+     */
+    private void bug17582(QueryBuilder builder, int[] lines, String[] tags)
+            throws Exception {
+        assertEquals(lines.length, tags.length);
+
+        StringReader in = new StringReader("abc\nbug17582\nBug17582\n");
+        Definitions defs = new Definitions();
+        defs.addTag(2, "bug17582", "type1", "text1");
+        defs.addTag(3, "Bug17582", "type2", "text2");
+
+        Context context = new Context(builder.build(), builder.getQueries());
+        ArrayList<Hit> hits = new ArrayList<Hit>();
+        assertEquals(lines.length != 0,
+                context.getContext(in, null, "", "", "", defs, false, hits));
+        assertEquals("Unexpected number of hits", lines.length, hits.size());
+        for (int i = 0; i < lines.length; i++) {
+            assertEquals(Integer.toString(lines[i]), hits.get(i).getLineno());
+            assertEquals(tags[i], hits.get(i).getTag());
+        }
+    }
 }

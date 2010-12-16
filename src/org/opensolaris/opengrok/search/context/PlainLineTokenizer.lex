@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
-import java.util.Locale;
 import java.util.TreeMap;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.web.Util;
@@ -380,7 +379,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 {Identifier}|{Number}|{Printable}    {
     String text = yytext();
     markedContents.append(text);
-    return text.toLowerCase(Locale.getDefault());
+    return text;
 }
 <<EOF>>   { return null;}
 

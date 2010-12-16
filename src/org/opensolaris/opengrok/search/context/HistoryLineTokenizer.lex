@@ -104,7 +104,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 %%
 
 
-{Identifier}|{Number}|{Printable}       {String m = yytext().toLowerCase();
+{Identifier}|{Number}|{Printable}       {String m = yytext();
                                         if(stopset.contains(m)) { } else { return(m);}}
 <<EOF>>   { return null;}
 .|\n    {}

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -37,7 +36,7 @@ public class WildCardMatcherTest {
      */
     @Test
     public void testMatch() {
-        WildCardMatcher m = new WildCardMatcher("wild?ard"); // bug #15644
+        WildCardMatcher m = new WildCardMatcher("wild?ard", true); // bug #15644
         assertEquals(LineMatcher.MATCHED, m.match("wildcard"));
         assertEquals(LineMatcher.MATCHED, m.match("wildward"));
         assertEquals(LineMatcher.MATCHED, m.match("wilddard"));
@@ -49,7 +48,7 @@ public class WildCardMatcherTest {
         assertEquals(LineMatcher.NOT_MATCHED, m.match("mildcard"));
         assertEquals(LineMatcher.NOT_MATCHED, m.match("wildc?rd"));
 
-        m = new WildCardMatcher("wild*ard");
+        m = new WildCardMatcher("wild*ard", true);
         assertEquals(LineMatcher.MATCHED, m.match("wildcard"));
         assertEquals(LineMatcher.MATCHED, m.match("wildward"));
         assertEquals(LineMatcher.MATCHED, m.match("wilddard"));

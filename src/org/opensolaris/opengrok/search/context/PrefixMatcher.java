@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.search.context;
 
 /**
@@ -28,12 +28,15 @@ package org.opensolaris.opengrok.search.context;
  */
 public class PrefixMatcher extends LineMatcher {
     private final String prefix;
-    public PrefixMatcher(String prefix) {
-        this.prefix  = prefix;
+
+    public PrefixMatcher(String prefix, boolean caseInsensitive) {
+        super(caseInsensitive);
+        this.prefix = normalizeString(prefix);
     }
-    
+
     public int match(String token) {
-        if (token.startsWith(prefix)) {
+        String tokenToMatch = normalizeString(token);
+        if (tokenToMatch.startsWith(prefix)) {
             return MATCHED;
         }
         return NOT_MATCHED;

@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.search.context;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -44,23 +45,31 @@ import org.apache.lucene.search.WildcardQuery;
  *
  */
 public final class QueryMatchers {
-    private Set<String> terms;
+    private Set<String> caseSensitiveTerms;
+    private Set<String> caseInsensitiveTerms;
     private List<LineMatcher> matchers;
-    private Set fields;
+    private Map<String, Boolean> fields;
     /**
      * Get the terms from a query and returs a list of DFAs which match
      * a stream of tokens
      *
-     * @param query
+     * @param query the query to generate matchers for
+     * @param fields a map whose keys tell which fields to create matchers for,
+     * and whose values tell if the field is case insensitive (true) or
+     * case sensitive (false)
      * @return list of LineMatching DFAs
      */
-    public LineMatcher[] getMatchers(Query query, Set fields) {
-        terms = new HashSet<String>();
+    public LineMatcher[] getMatchers(Query query, Map<String, Boolean> fields) {
+        caseSensitiveTerms = new HashSet<String>();
+        caseInsensitiveTerms = new HashSet<String>();
         matchers = new ArrayList<LineMatcher>();
         this.fields = fields;
         getTerms(query);
-        if (!terms.isEmpty()) {
-            matchers.add(0, new TokenSetMatcher(terms));
+        if (!caseSensitiveTerms.isEmpty()) {
+            matchers.add(0, new TokenSetMatcher(caseSensitiveTerms, false));
+        }
+        if (!caseInsensitiveTerms.isEmpty()) {
+            matchers.add(0, new TokenSetMatcher(caseInsensitiveTerms, true));
         }
         if (matchers.isEmpty()) {
             return null;
@@ -94,29 +103,56 @@ public final class QueryMatchers {
     
     private void getPhrases(PhraseQuery query) {
         Term[] queryTerms = query.getTerms();
-        if(queryTerms.length > 0 && fields.contains(queryTerms[0].field())){
+        if (queryTerms.length > 0 && useTerm(queryTerms[0])) {
+            boolean caseInsensitive = isCaseInsensitive(queryTerms[0]);
             String[] termsArray = new String[queryTerms.length];
             for (int i = 0; i < queryTerms.length; i++) {
-                termsArray[i] = queryTerms[i].text().toLowerCase();
+                termsArray[i] = queryTerms[i].text();
             }
-            matchers.add(new PhraseMatcher(termsArray));
+            matchers.add(new PhraseMatcher(termsArray, caseInsensitive));
         }
     }
     
     private void getTerm(TermQuery query) {
-        if(fields.contains(query.getTerm().field())) {
-            terms.add(query.getTerm().text().toLowerCase());
+        Term term = query.getTerm();
+        if (useTerm(term)) {
+            String text = term.text();
+            if (isCaseInsensitive(term)) {
+                caseInsensitiveTerms.add(text);
+            } else {
+                caseSensitiveTerms.add(text);
+            }
         }
     }
     
     private void getWildTerm(WildcardQuery query) {
-        if(fields.contains(query.getTerm().field())) {
-            matchers.add(new WildCardMatcher(query.getTerm().text().toLowerCase()));
+        Term term = query.getTerm();
+        if (useTerm(term)) {
+            matchers.add(
+                    new WildCardMatcher(term.text(), isCaseInsensitive(term)));
         }
     }
+
     private void getPrefix(PrefixQuery query) {
-        if(fields.contains(query.getPrefix().field())) {
-            matchers.add(new PrefixMatcher(query.getPrefix().text().toLowerCase()));
+        Term term = query.getPrefix();
+        if (useTerm(term)) {
+            matchers.add(
+                    new PrefixMatcher(term.text(), isCaseInsensitive(term)));
         }
+    }
+
+    /**
+     * Check whether a matcher should be created for a term.
+     */
+    private boolean useTerm(Term term) {
+        return fields.keySet().contains(term.field());
+    }
+
+    /**
+     * Check if a term should be matched in a case-insensitive manner. Should
+     * only be called on terms for which {@link #useTerm(Term)} returns true.
+     */
+    private boolean isCaseInsensitive(Term term) {
+        return fields.get(term.field());
     }
 }

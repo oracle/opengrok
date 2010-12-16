@@ -30,7 +30,7 @@ import java.io.Writer;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.logging.Level;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -48,8 +48,14 @@ import org.opensolaris.opengrok.web.Constants;
 public class HistoryContext {
     private final LineMatcher[] m;
     HistoryLineTokenizer tokens;
-    private static final Set<String> tokenFields =
-            Collections.singleton("hist");
+
+    /**
+     * Map whose keys tell which fields to look for in the history, and
+     * whose values tell if the field is case insensitive (true for
+     * insensitivity, false for sensitivity).
+     */
+    private static final Map<String, Boolean> tokenFields =
+            Collections.singletonMap("hist", true);
 
     public HistoryContext(Query query) {
         QueryMatchers qm = new QueryMatchers();

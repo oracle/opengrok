@@ -30,10 +30,9 @@ package org.opensolaris.opengrok.search.context;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import org.apache.lucene.search.Query;
@@ -50,12 +49,18 @@ public class Context {
     private char[] buffer;
     PlainLineTokenizer tokens;
     String queryAsURI;
-    private static Set<String> tokenFields = new HashSet<String>(3);
 
+    /**
+     * Map whose keys tell which fields to look for in the source file, and
+     * whose values tell if the field is case insensitive (true for
+     * insensitivity, false for sensitivity).
+     */
+    private static final Map<String, Boolean> tokenFields =
+            new HashMap<String, Boolean>();
     static {
-        tokenFields.add("full");
-        tokenFields.add("refs");
-        tokenFields.add("defs");
+        tokenFields.put("full", true);
+        tokenFields.put("refs", false);
+        tokenFields.put("defs", false);
     }
 
     /**
