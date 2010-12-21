@@ -323,7 +323,7 @@ if (valid) {
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
              for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("OpenGrok/project")) {
+                if (cookie.getName().equals("OpenGrokProject")) {
                     for (String proj : cookie.getValue().split(",")) {
                         if (proj != "") {
                             if (Project.getByDescription(proj) != null) {
@@ -361,7 +361,7 @@ if (valid) {
                 }
              }
              // update the cookie
-             Cookie cookie = new Cookie("OpenGrok/project", sproject.toString());
+             Cookie cookie = new Cookie("OpenGrokProject", sproject.toString());
              cookie.setPath(context + "/");
              response.addCookie(cookie);
             }

@@ -53,7 +53,7 @@ if (env.hasProjects()) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("OpenGrok/project")) {                    
+                if (cookie.getName().equals("OpenGrokProject")) {
                     for (String proj : cookie.getValue().split(",")) {
                         if (proj != "") {
                             if (Project.getByDescription(proj) != null) {
@@ -77,7 +77,7 @@ if (env.hasProjects()) {
         sproject.append((String) it.next() + ",");
     }
     // update the cookie
-    Cookie cookie = new Cookie("OpenGrok/project", sproject.toString());
+    Cookie cookie = new Cookie("OpenGrokProject", sproject.toString());
     response.addCookie(cookie);
 }
 %>
