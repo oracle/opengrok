@@ -63,7 +63,7 @@ final SortField S_BY_PATH = new SortField(BY_PATH,SortField.STRING);
 Cookie[] cookies = request.getCookies();
 if (cookies != null) {
     for (Cookie cookie : cookies) {
-        if (cookie.getName().equals("OpenGrok/sorting")) {
+        if (cookie.getName().equals("OpenGrokSorting")) {
             sort = cookie.getValue();
             if (!LASTMODTIME.equals(sort) && !RELEVANCY.equals(sort) && !BY_PATH.equals(sort)) {
                 sort = RELEVANCY;
@@ -83,7 +83,7 @@ if (sortParam != null) {
         sort = BY_PATH;
     }
     if (sort != null) {
-        Cookie cookie = new Cookie("OpenGrok/sorting", sort);
+        Cookie cookie = new Cookie("OpenGrokSorting", sort);
         response.addCookie(cookie);
     }
 } else { sort = RELEVANCY; }
