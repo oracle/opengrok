@@ -318,7 +318,7 @@ if (valid) {
         Project activeProject = Project.getProject(resourceFile);
 //TODO: somehow integrate below with projects.jspf
         if (activeProject != null) {
-            List<String> project = new ArrayList<String>();
+            final List<String> project = new ArrayList<String>();
 
             Cookie[] cookies = request.getCookies();
             if (cookies != null) {
@@ -335,24 +335,15 @@ if (valid) {
              }
             }
 
-            boolean set = false;
-            if (project != null) {
-               boolean found = false;               
-               for (Iterator it = project.iterator(); it.hasNext();) {
-
-                   if (activeProject.getDescription().equalsIgnoreCase( (String)it.next() ) ) {
-                        found = true;
-                        break;
-                    }           
-               }               
-               if (!found) {
-                   set = true;
-               }
-            } else {
-                set = true;
+            boolean found = false;
+            for (String proj : project) {
+                if (activeProject.getDescription().equalsIgnoreCase(proj)) {
+                    found = true;
+                    break;
+                }
             }
 // set this in case there is no project selected or current cookie doesn't contain current project from the link, so the rest of search works 100% :)
-            if (set) {
+            if (!found) {
              StringBuffer sproject=new StringBuffer(activeProject.getDescription()+",");
              if (project!=null) {
                 //only save found projects into cookies
