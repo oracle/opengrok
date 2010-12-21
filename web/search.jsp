@@ -44,7 +44,8 @@ org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
 org.apache.lucene.search.*,
 org.apache.lucene.queryParser.*"
-%><%@ page session="false" %><%@ page errorPage="error.jsp" %><%
+%><%@ page session="false" %><%@ page errorPage="error.jsp" %><%--
+--%><%@ include file="projects.jspf" %><%
 Date starttime = new Date();
 String q    = request.getParameter("q");
 String defs = request.getParameter("defs");
@@ -52,7 +53,6 @@ String refs = request.getParameter("refs");
 String hist = request.getParameter("hist");
 String path = request.getParameter("path");
 
-%><%@ include file="projects.jspf" %><%
 String sort = null;
 
 final String LASTMODTIME = "lastmodtime";

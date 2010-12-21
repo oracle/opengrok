@@ -30,6 +30,12 @@ Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
              org.opensolaris.opengrok.web.Constants,
              org.opensolaris.opengrok.history.HistoryGuru"
              %><%@ page session="false" %><%@ page errorPage="error.jsp"%><%
+
+// Use UTF-8 if no encoding is specified in the request
+if (request.getCharacterEncoding() == null) {
+    request.setCharacterEncoding("UTF-8");
+}
+
 String context = request.getContextPath();
 String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
