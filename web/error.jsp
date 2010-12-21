@@ -21,7 +21,8 @@ Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
 --%><%@ page import = "javax.servlet.*,
 javax.servlet.http.*,
 java.io.*,
-org.opensolaris.opengrok.configuration.*"
+org.opensolaris.opengrok.configuration.*,
+org.opensolaris.opengrok.web.Util"
 %><%@ page session="false" %><%@ page isErrorPage="true" %><%
 String context = request.getContextPath();
 RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
@@ -52,7 +53,7 @@ String pageTitle = "Error!";
    PrintWriter prt = new PrintWriter(wrt);
    exception.printStackTrace(prt);
    prt.flush();
-   out.write(wrt.toString());
+   Util.htmlize(wrt.toString(), out);
    prt.close();
 %>
 </pre>
