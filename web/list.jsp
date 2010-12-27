@@ -35,30 +35,6 @@ org.opensolaris.opengrok.history.*
 "
 %><%@include file="mast.jsp"%>
 <% if (!isDir) { %>
-<style type="text/css">
-    .sym_list_style {
-        position:absolute;
-        top:100px;
-        left:100px;
-        width:100px;
-        height:100px;
-        overflow:auto;
-        z-index: 10;
-        border:solid 1px #c0c0c0;
-        background-color:#ffffcc;
-        color:#000;
-        font-size:12px;
-        font-family:monospace;
-        padding:5px;
-        opacity:0.9;
-        filter:alpha(opacity=90)
-    }
-
-    .sym_list_style_hide {
-        display: none;
-    }
-}
-</style>
 <script type="text/javascript">/* <![CDATA[ */
 function lntoggle() {
    $("a").each(function() {
