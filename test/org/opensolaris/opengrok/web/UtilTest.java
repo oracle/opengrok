@@ -204,5 +204,11 @@ public class UtilTest {
         DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                 new ByteArrayInputStream(xml.getBytes("UTF-8")));
     }
+
+    @Test
+    public void jsStringLiteral() {
+        assertEquals("\"abc\\n\\r\\\"\\\\\"",
+                     Util.jsStringLiteral("abc\n\r\"\\"));
+    }
 }
 

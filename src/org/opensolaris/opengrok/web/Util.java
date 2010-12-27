@@ -578,4 +578,35 @@ public final class Util {
         }
         out.append("</ul>");
     }
+
+    /**
+     * Create a string literal for use in JavaScript functions.
+     * @param str the string to be represented by the literal
+     * @return a JavaScript string literal
+     */
+    public static String jsStringLiteral(String str) {
+        StringBuilder sb = new StringBuilder();
+        sb.append('"');
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            switch (c) {
+                case '"':
+                    sb.append("\\\"");
+                    break;
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        sb.append('"');
+        return sb.toString();
+    }
 }

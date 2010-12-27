@@ -28,7 +28,13 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import org.opensolaris.opengrok.analysis.Definitions.Tag;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -47,6 +53,37 @@ public abstract class JFlexXref {
     protected Definitions defs;
     /** EOF value returned by yylex(). */
     private final int yyeof;
+
+    /**
+     * Description of styles to use for different types of definitions. Each
+     * element in the array contains a three-element string array with the
+     * following values: (0) the name of the style definition type given by
+     * CTags, (1) the class name used by the style sheets when rendering the
+     * xref, and (2) the title of the section listing symbols of this type
+     * in the xref's navigation panel, or {@code null} if this type should not
+     * be included in the navigation panel.
+     */
+    private static final String[][] DEFINITION_STYLES = {
+        {"macro",      "xm",   "Macro"},
+        {"argument",   "xa",   null},
+        {"local",      "xl",   null},
+        {"variable",   "xv",   "Variable"},
+        {"class",      "xc",   "Class"},
+        {"package",    "xp",   "Package"},
+        {"interface",  "xi",   "Interface"},
+        {"namespace",  "xn",   "Namespace"},
+        {"enum",       "xe",   "Enum"},
+        {"enumerator", "xer",  null},
+        {"struct",     "xs",   "Struct"},
+        {"typedef",    "xt",   "Typedef"},
+        {"typedefs",   "xts",  null},
+        {"union",      "xu",   null},
+        {"field",      "xfld", null},
+        {"member",     "xmb",  null},
+        {"function",   "xf",   "Function"},
+        {"method",     "xmt",  "Method"},
+        {"subroutine", "xsr",  "Subroutine"},
+    };
 
     protected JFlexXref() {
         try {
@@ -113,11 +150,109 @@ public abstract class JFlexXref {
      */
     public void write(Writer out) throws IOException {
         this.out = out;
+        writeSymbolTable();
         setLineNumber(0);
         startNewLine();
         while (yylex() != yyeof) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
         }
+    }
+
+    /**
+     * Write a JavaScript function that returns an array with the definitions
+     * to list in the navigation panel. Each element of the array is itself an
+     * array containing the name of the definition type, the CSS class name for
+     * the type, and an array of (symbol, line) pairs for the definitions of
+     * that type.
+     */
+    private void writeSymbolTable() throws IOException {
+        if (defs == null) {
+            // No definitions, no symbol table to write
+            return;
+        }
+
+        // We want the symbol table to be sorted
+        Comparator<Tag> cmp = new Comparator<Tag>() {
+            @Override
+            public int compare(Tag tag1, Tag tag2) {
+                // Order by symbol name, and then by line number if multiple
+                // definitions use the same symbol name
+                int ret = tag1.symbol.compareTo(tag2.symbol);
+                if (ret == 0) {
+                    ret = tag1.line - tag2.line;
+                }
+                return ret;
+            }
+        };
+
+        Map<String, SortedSet<Tag>> symbols =
+                new HashMap<String, SortedSet<Tag>>();
+
+        for (Tag tag : defs.getTags()) {
+            String[] style = getStyle(tag.type);
+            if (style != null && style[2] != null) {
+                SortedSet<Tag> tags = symbols.get(style[0]);
+                if (tags == null) {
+                    tags = new TreeSet<Tag>(cmp);
+                    symbols.put(style[0], tags);
+                }
+                tags.add(tag);
+            }
+        }
+
+        out.append("<script type=\"text/javascript\">/* <![CDATA[ */\n");
+        out.append("function get_sym_list(){return [");
+
+        boolean first = true;
+        for (String[] style : DEFINITION_STYLES) {
+            SortedSet<Tag> tags = symbols.get(style[0]);
+            if (tags != null) {
+                if (!first) {
+                    out.append(',');
+                }
+                out.append("[\"");
+                out.append(style[2]);
+                out.append("\",\"");
+                out.append(style[1]);
+                out.append("\",[");
+
+                boolean firstTag = true;
+                for (Tag tag : tags) {
+                    if (!firstTag) {
+                        out.append(',');
+                    }
+                    out.append('[');
+                    out.append(Util.jsStringLiteral(tag.symbol));
+                    out.append(',');
+                    out.append(Integer.toString(tag.line));
+                    out.append(']');
+                    firstTag = false;
+                }
+                out.append("]]");
+                first = false;
+            }
+        }
+
+        out.append("];}");
+        out.append("/* ]]> */</script>\n");
+    }
+
+    /**
+     * Get the style description for a definition type.
+     *
+     * @param type the definition type
+     * @return a three element string array that describes the style of a
+     * definition type (name of type, CSS style class, title in the navigation
+     * panel)
+     * @see #DEFINITION_STYLES
+     */
+    private String[] getStyle(String type) {
+        for (String[] style : DEFINITION_STYLES) {
+            if (type.startsWith(style[0])) {
+                return style;
+            }
+        }
+        return null;
     }
 
     /**
@@ -155,44 +290,9 @@ public abstract class JFlexXref {
             String type = strs[0];
             String style_class = "d";
 
-            if (type.startsWith("macro")) {
-                style_class = "xm";
-            } else if (type.startsWith("argument")) {
-                style_class = "xa";
-            } else if (type.startsWith("local")) {
-                style_class = "xl";
-            } else if (type.startsWith("variable")) {
-                style_class = "xv";
-            } else if (type.startsWith("class")) {
-                style_class = "xc";
-            } else if (type.startsWith("package")) {
-                style_class = "xp";
-            } else if (type.startsWith("interface")) {
-                style_class = "xi";
-            } else if (type.startsWith("namespace")) {
-                style_class = "xn";
-            } else if (type.startsWith("enum")) {
-                style_class = "xe";
-            } else if (type.startsWith("enumerator")) {
-                style_class = "xer";
-            } else if (type.startsWith("struct")) {
-                style_class = "xs";
-            } else if (type.startsWith("typedef")) {
-                style_class = "xt";
-            } else if (type.startsWith("typedefs")) {
-                style_class = "xts";
-            } else if (type.startsWith("union")) {
-                style_class = "xu";
-            } else if (type.startsWith("field")) {
-                style_class = "xfld";
-            } else if (type.startsWith("member")) {
-                style_class = "xmb";
-            } else if (type.startsWith("function")) {
-                style_class = "xf";
-            } else if (type.startsWith("method")) {
-                style_class = "xmt";
-            } else if (type.startsWith("subroutine")) {
-                style_class = "xsr";
+            String[] style = getStyle(type);
+            if (style != null) {
+                style_class = style[1];
             }
 
             // 1) Create an anchor for direct links. (Perhaps we should only
@@ -213,11 +313,6 @@ public abstract class JFlexXref {
             appendProject();
             out.append("\" class=\"");
             out.append(style_class);
-            out.append("\" ");
-            // May have multiple anchors with the same function name,
-            // store line number for accurate location used in list.jsp.
-            out.append("ln=\"");
-            out.append(Integer.toString(line));
             out.append("\">");
             out.append(symbol);
             out.append("</a>");

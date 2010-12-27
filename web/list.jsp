@@ -84,88 +84,35 @@ function get_sym_list_contents()
     //contents += "<b><a href=\"#\" onclick=\"javascript:add_highlight();return false;\" title=\"Add highlight\">Highlight</a></b><br>";
     contents += "<a href=\"#\" onclick=\"javascript:lsttoggle();\">[Close]</a><br>"
 
-    var class_names=[
-        "xm",
-        "xe",
-        "xs",
-        "xt",
-        "xv",
-        "xi",
-        "xc",
-        "xn",
-        "xp",
-        "xf",
-        "xmt",
-        "xsr"];
-    var type_names=[
-        "Macro",
-        "Enum",
-        "Struct",
-        "Typedef",
-        "Variable",
-        "Interface",
-        "Class",
-        "Namespace",
-        "Package",
-        "Function",
-        "Method",
-        "Subroutine"];
-    var class_contents=[
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""];
-
-    $("a").each(
-        function()
-        {
-            for (var i = 0; i < class_names.length; i++)
-            {
-                if (this.className == class_names[i])
-                {
-                    var fname = this.innerHTML;
-                    if (fname != "")
-                    {
-                        // Use line number as accurate anchor
-                        var line = this.getAttribute("ln");
-
-                        class_contents[i] += "<a href=\"#" +
-                            line + "\" class=\"" + class_names[i] + "\">" +
-                            this.innerHTML + "</a><br>";
-
-                    }
-
-                    break;
-                }
-            }
+    var symbol_classes = get_sym_list();
+    for (var i = 0; i < symbol_classes.length; i++) {
+        if (i > 0) {
+            contents += "<br/>";
         }
-    );
+        var symbol_class = symbol_classes[i];
+        contents += "<b>" + symbol_class[0] + "</b><br/>";
 
-    var count = 0;
-    for (var i = 0; i < class_names.length; i++)
-    {
-        if (class_contents[i] != "")
-        {
-            if (count > 0)
-            {
-                contents += "<br>"
-            }
-            contents += "<b>" + type_names[i] + "</b><br>"
-            contents += class_contents[i];
+        var class_name = symbol_class[1];
 
-            count++;
+        var symbols = symbol_class[2];
+
+        for (var j = 0; j < symbols.length; j++) {
+            var symbol = symbols[j][0];
+            var line = symbols[j][1];
+            contents +=
+                "<a href=\"#" + line + "\" class=\"" + class_name + "\">" +
+                escape_html(symbol) + "</a><br/>";
         }
     }
 
     return contents;
+}
+
+function escape_html(string) {
+    return string
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;");
 }
 
 // Initial value
