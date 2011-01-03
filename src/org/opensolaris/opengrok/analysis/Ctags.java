@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedReader;
@@ -66,7 +66,10 @@ public class Ctags {
             List<String> command = new ArrayList<String>();
             command.add(binary);
             command.add("--c-kinds=+l");
-            command.add("--java-kinds=+l");
+            // Workaround for bug #14924: Don't get local variables in Java
+            // code since that creates many false positives. Uncomment the next
+            // line when the bug has been fixed.
+            // command.add("--java-kinds=+l");
             command.add("--sql-kinds=+l");
             command.add("--Fortran-kinds=+L");
             command.add("--C++-kinds=+l");

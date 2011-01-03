@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.search;
 
 import java.io.File;
@@ -244,6 +244,6 @@ public class SearchEngineTest {
         // file name search is case insensitive
         instance = new SearchEngine();
         instance.setFile("JaVa"); // should match java
-        assertEquals(5, instance.search());
+        assertEquals(6, instance.search());
     }
 }

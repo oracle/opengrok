@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.search;
 
 import java.io.ByteArrayOutputStream;
@@ -166,11 +166,11 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "opengrok && something || else"}));
         assertTrue(instance.search());
-        assertEquals(4, instance.results.size());
+        assertEquals(6, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "op*ng?ok"}));
         assertTrue(instance.search());
-        assertEquals(3, instance.results.size());
+        assertEquals(5, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "\"op*n g?ok\""}));
         assertTrue(instance.search());

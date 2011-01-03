@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -73,13 +72,46 @@ public class CtagsTest {
     }
 
     /**
+     * Helper method that gets the definitions for a file in the repository.
+     * @param file file name relative to source root
+     * @return the definitions found in the file
+     */
+    private static Definitions getDefs(String fileName) throws Exception {
+        String path = repository.getSourceRoot() + File.separator
+                + fileName.replace('/', File.separatorChar);
+        return ctags.doCtags(new File(path).getAbsolutePath() + "\n");
+    }
+
+    /**
      * Test of doCtags method, of class Ctags.
      */
     @Test
-    public void testDoCtags() throws Exception {                
-     File file = new File(repository.getSourceRoot()+File.separator+"bug16070"+File.separator+"arguments.c");
-     Definitions result = ctags.doCtags(file.getAbsolutePath()+"\n");
+    public void testDoCtags() throws Exception {
+     Definitions result = getDefs("bug16070/arguments.c");
      assertEquals(13, result.numberOfSymbols());     
     }
 
+    /**
+     * Test that we don't get many false positives in the list of method
+     * definitions for Java files. Bug #14924.
+     */
+    @Test
+    public void bug14924() throws Exception {
+        // Expected method names found in the file
+        String[] names = {"ts", "classNameOnly", "format"};
+        // Expected line numbers for the methods
+        int[] lines = {44, 48, 53};
+
+        Definitions result = getDefs("bug14924/FileLogFormatter.java");
+        int count = 0;
+        for (Definitions.Tag tag : result.getTags()) {
+            if (tag.type.startsWith("method")) {
+                assertTrue("too many methods", count < names.length);
+                assertEquals("method name", names[count], tag.symbol);
+                assertEquals("method name", lines[count], tag.line);
+                count++;
+            }
+        }
+        assertEquals("method count", names.length, count);
+    }
 }
