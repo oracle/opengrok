@@ -46,7 +46,9 @@ public final class RepositoryFactory {
         new ClearCaseRepository(),
         new PerforceRepository(),
         new RCSRepository(),
-        new CVSRepository(),};
+        new CVSRepository(),
+        new RepoRepository(),
+    };
 
     private RepositoryFactory() {
         // Factory class, should not be constructed
