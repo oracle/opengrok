@@ -1,3 +1,114 @@
+January 2011 update 0.10
+-------------------------------------------------
+
+This is a major update. It is advised that you cleanup your old
+DATA_ROOT and run indexing from fresh. Also the web application should
+be replaced, since the new indexes are not compatible with the old web
+application.
+
+New features:
+
+* python analyzer, perl analyzer
+* listing of variables/methods for quicker navigation
+* sh analyzer xrefs improved
+* SQL analyzer updated to SQL:2008
+* UI usability improvements
+* updated Lucene to 3.0.2
+* introduced Maven as alternative build system to Ant
+
+Bugs fixed:
+
+Bug #5590: Unhighlighted difference in compare list
+Bug #11264: Add a python specific language analyzer.
+Bug #13184: provide quick links to annotate,history and download from search results view: diff link for history search
+Bug #13184: provide quick links to annotate,history and download from search results view
+Bug #13777: Indexer should print "Adding: ..." before it adds a file
+Bug #14545: clicking on annotate doesn't preserve line number
+Bug #14663: broken syntax highlight in ksh script when ` is used (and when " is escaped)
+Bug #14924: Java method calls incorrectly classified as definitions
+Bug #15468: Log useful info from indexer regardless of -v
+Bug #15661: OpenGrok should support new ksh command substitution x=${ cmd ; }
+Bug #15890: Missing anchor in xref
+Bug #15938: Analyzers should only use JFlex's public API
+Bug #15947: Detect GNU CSSC in addition to SCCS
+Bug #15948: Fail if svnadmin is missing: tests depend on it
+Bug #15954: teamware repository not detected anymore
+Bug #15956: indexer fails on indexing
+Bug #15961: Allow certain symlinks to be followed to help with using clearcase dynamic views
+bug #15961: and to files in other directories in the same project.
+Bug #16006: Indexer's -P option removes customization of existing projects
+Bug #16070: our ctags parser fails to parse a c signature
+Bug #16076: problem of ELFAnalyzer in opengrok 0.9
+Bug #16334: Indexer hangs when files contain 0x1A characters
+Bug #16370: build.xml: Check for JFlex.jar and taskdef for jflex-task use different classpath
+Bug #16451: Tray app doesn't work with other protocols than jmxmp
+Bug #16454: Trayapp shuts down when a window is closed
+Bug #16465: SVN history of filenames containing @ cannot be retrieved
+Bug #16481: NumberFormatException when opening Connection Settings the second time
+Bug #16611: svn repository with svn:// protocol as urn results in NPE when reading history
+Bug #16660: Perforce repositories return months 1-12, not 0-11
+Bug #16677: revamp option -v
+Bug #16692: Index files left open after multiple project search
+Bug #16760: Generating incorrect links for C/C++ "#include" statements if extension of a header file is not on the lexer's list
+Bug #16761: Perforce history reader would not use per-project clients (defined by P4CONFIG files)
+Bug #16764: Perforce source annotation: the date is one month ahead, time information is not available
+Bug #16772: status.jsp should be less chatty in production environments
+Bug #16783: more.jsp garbles matches on lines crossing internal JFlex buffer boundary
+Bug #16786: Control for User Information Provider URL (userPage)
+Bug #16833: Subversion repositories disabled by default
+Bug #16848: Search context is displayed in lower case
+Bug #16883: ShXref should reset stack on reuse
+Bug #16891: Unneeded files included in opengrok.jar
+Bug #16892: Maven build includes management client source in jar
+Bug #16893: Maven build includes SQLXref.lex
+Bug #16909: Move JFlex generated sources to default location (Maven)
+Bug #16913: OpenGrok fails to use JDBC cache if -R option is specified
+Bug #16961: Definitions should have serialVersionUID
+Bug #16986: Relative path for data root and source root has stopped working
+Bug #17074: Home link no longer works
+Bug #17127: OpenGrok leaving too many open files
+Bug #17128: add more syntax highlighting styles and list all definitions/functions
+Bug #17169: enable wildcard prefix search in OpenGrok script by default
+Bug #17294: show progress on demand
+Bug #17349: path needs to be percent encoded
+Bug #17373: breadcrumb path needs to be URI encoded
+Bug #17374: history links need percent encoding
+Bug #17375: annotate link needs percent encoding
+Bug #17376: download link needs percent encoding
+Bug #17378: Please remove email obfuscation
+Bug #17550: Malformed search for query with national chars
+Bug #17551: Double-click on some project in project list doesn't work in Internet Explorer
+Bug #17554: Empty "Navigate" window in Perl code
+Bug #17582: context shown in hits doesn't show symbol type for non lowercased symbols
+Bug #17631: Cookie name "OpenGrok/project" is a reserved token
+
+For bug details refer to:
+http://defect.opensolaris.org/bz/buglist.cgi?bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&target_milestone=0.10&product=opengrok
+
+Contributors:
+
+We'd like to thank all the people who report bugs, send us ideas for
+improvements or contribute code. Below are just the people who sent
+patches or pushed code, but that doesn't mean that we don't appreciate
+your work. Reports and feedback from the users of OpenGrok is
+essential to make the developers able to continue improving the
+product. Note that this is just a summary of how many changes each
+person made, which doesn't necessarily reflect how significant each
+change was. Inspect the history log with "hg log -v -r 0.9:0.10" to
+get all details.
+
+ 68 Knut Anders Hatlen <knut.hatlen@oracle.com>, <Knut.Hatlen@Sun.COM>
+ 39 Lubos Kosco <Lubos.Kosco@Sun.COM>, <Lubos.Kosco@Oracle.COM>
+ 10 Jorgen Austvik <jaustvik@acm.org>
+  9 Trond Norbye <trond.norbye@gmail.com>
+  5 Patrick Higgins <patrick.allen.higgins@gmail.com>
+  3 Yuriy Vasylchenko <yuriy.av@gmail.com>
+  2 Leo Davis <ldavis@fonix.com>
+  1 cicicici <cicicici@gmail.com>
+  1 Martin Walsh <martin.walsh@oracle.com>
+  1 seadog <seadog1234567890@gmail.com>
+
+
 May 2010 update 0.9
 -------------------------------------------------
 This is a major update. It's advised you cleanup your old DATA_ROOT and run
