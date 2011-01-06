@@ -153,6 +153,8 @@ public class SubversionRepository extends Repository {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("log");
+        cmd.add("--trust-server-cert");
+        cmd.add("--non-interactive");
         cmd.add("--xml");
         cmd.add("-v");
         if (sinceRevision != null) {
@@ -266,6 +268,8 @@ public class SubversionRepository extends Repository {
         ArrayList<String> argv = new ArrayList<String>();
         argv.add(getCommand());
         argv.add("annotate");
+        argv.add("--trust-server-cert");
+        argv.add("--non-interactive");
         argv.add("--xml");
         if (revision != null) {
             argv.add("-r");
@@ -328,6 +332,8 @@ public class SubversionRepository extends Repository {
         List<String> cmd = new ArrayList<String>();
         cmd.add(getCommand());
         cmd.add("update");
+        cmd.add("--trust-server-cert");
+        cmd.add("--non-interactive");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
             throw new IOException(executor.getErrorString());
