@@ -375,9 +375,11 @@ if (valid) {
                         }
                     } catch (IOException e) {
                         %> <h3 class="error">IO Error</h3> <p> <%=e.getMessage() %> </p> <%
+                    } finally {
+                    	in.close();
                     }
                     %></pre></div><%
-                    in.close();
+                    
                 } else {
     	            %> <h3 class="error">Error reading file</h3> <%
                 }
@@ -416,32 +418,36 @@ if (valid) {
             br.close();
         } else {
             BufferedInputStream bin = new BufferedInputStream(new FileInputStream(resourceFile));
-            FileAnalyzerFactory a = AnalyzerGuru.find(basename);
-            Genre g = AnalyzerGuru.getGenre(a);
-            if(g == null) {
-                a = AnalyzerGuru.find(bin);
-                g = AnalyzerGuru.getGenre(a);
-            }
-            if (g == Genre.IMAGE) {
+            try {
+	            FileAnalyzerFactory a = AnalyzerGuru.find(basename);
+	            Genre g = AnalyzerGuru.getGenre(a);
+	            if(g == null) {
+	                a = AnalyzerGuru.find(bin);
+	                g = AnalyzerGuru.getGenre(a);
+	            }
+	            if (g == Genre.IMAGE) {
         	%><div id="src"><img src="<%=context+Constants.rawP+path%>"/></div><%
-            } else if( g == Genre.HTML) {
-                char[] buf = new char[8192];
-                Reader br = new InputStreamReader(bin);
-                int len = 0;
-                while((len = br.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-            } else if(g == Genre.PLAIN) {
-                %><div id="src"><pre><%
+	            } else if( g == Genre.HTML) {
+	                char[] buf = new char[8192];
+	                Reader br = new InputStreamReader(bin);
+	                int len = 0;
+	                while((len = br.read(buf)) > 0) {
+	                    out.write(buf, 0, len);
+	                }
+	            } else if(g == Genre.PLAIN) {
+	                %><div id="src"><pre><%
                 // We're generating xref for the latest revision, so we can
                 // find the definitions in the index.
                 Definitions defs = IndexDatabase.getDefinitions(resourceFile);
                 Annotation annotation = annotate ? HistoryGuru.getInstance().annotate(resourceFile, rev) : null;                
                 Reader r = new InputStreamReader(bin);
                 AnalyzerGuru.writeXref(a, r, out, defs, annotation, Project.getProject(resourceFile));
-                %></pre></div><%
-            } else {
+	                %></pre></div><%
+	            } else {
 	        %> Click <a href="<%=context+Constants.rawP+path%>">download <%=basename%></a><%
+	            }
+            } finally {
+            	bin.close();
             }
         }
     }

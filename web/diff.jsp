@@ -433,11 +433,18 @@ if(format.equals("s")) {
                 }
             } catch (FileNotFoundException e) {
 		 %><div class="src"><h3 class="error">Error Opening files! <%=Util.htmlize(e.getMessage())%></h3></div><%
+            } finally {
+                if(in1 != null)
+                    try {
+                        in1.close();
+                    } catch (IOException ignore) {
+                    }
+                if(in2 != null)
+                    try {
+                        in2.close();
+                    } catch (IOException ignore) {
+                }
             }
-            if(in1 != null)
-                in1.close();
-            if(in2 != null)
-                in2.close();
         } else if (g == Genre.IMAGE) {
 				%> <div class="src">
 				<table rules="cols" cellpadding="5"><tr><th><%=basename%> (revision <%=r1%>)</th><th><%=basename%> (revision <%=r2%>)</th></tr>

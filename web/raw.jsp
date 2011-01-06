@@ -64,18 +64,23 @@ if (revision != null) {
     return ;
   }
 } else {
-  in = new FileInputStream(file);
   response.setContentLength((int)file.length());
   response.setDateHeader("Last-Modified", file.lastModified());
+  in = new FileInputStream(file);
 }
-response.setHeader("content-disposition", "attachment; filename=" + file.getName());
 
-OutputStream o = response.getOutputStream();
-byte[] buffer = new byte[8192];
-int nr;
-while ((nr = in.read(buffer)) > 0) {
-  o.write(buffer, 0, nr);
+try {
+  response.setHeader("content-disposition", "attachment; filename=" + file.getName());
+
+  OutputStream o = response.getOutputStream();
+  byte[] buffer = new byte[8192];
+  int nr;
+  while ((nr = in.read(buffer)) > 0) {
+    o.write(buffer, 0, nr);
+  }
+  o.flush();
+  o.close();
+} finally {
+  in.close();
 }
-o.flush();
-o.close();
 %>
