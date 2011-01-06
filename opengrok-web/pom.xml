@@ -17,6 +17,7 @@
     <build>
         <!-- Unstandard paths inherited by old directory structure -->
         <sourceDirectory>../web</sourceDirectory>
+        <finalName>source</finalName>
 
         <plugins>
             <plugin>
