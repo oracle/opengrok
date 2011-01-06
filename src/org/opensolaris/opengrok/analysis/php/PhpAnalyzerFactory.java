@@ -17,11 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
- */
-
-package org.opensolaris.opengrok.analysis.c;
+package org.opensolaris.opengrok.analysis.php;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -33,34 +29,33 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class CAnalyzerFactory extends FileAnalyzerFactory {
+public class PhpAnalyzerFactory extends FileAnalyzerFactory {
+
     private static final String[] SUFFIXES = {
-        "C",
-        "H",
-        "I",
-        "L",
-        "Y",
-        "LEX",
-        "YACC",
-        "D",
-        "S",
-        "XS",                   // Mainly found in perl directories
-        "X",                    // rpcgen input files
-        "CS",                   // C#
+        "PHP",
+        "PHP3",
+        "PHP4",
+        "PHPS",
+        "PHTML"
+    };
+    private static final String[] MAGICS = {
+        "#!/usr/bin/env php",
+        "#!/usr/bin/php",
+        "#!/bin/php"
     };
 
-    public CAnalyzerFactory() {
-        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+    public PhpAnalyzerFactory() {
+        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new CAnalyzer(this);
+        return new PhpAnalyzer(this);
     }
 
     @Override
     public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
         throws IOException {
-        CAnalyzer.writeXref(in, out, defs, annotation, project);
+        PhpAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }

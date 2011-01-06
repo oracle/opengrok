@@ -156,6 +156,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlXref.lex" destdir="${src.generatedsrc.dir}"/>
+	<jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+	<jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>

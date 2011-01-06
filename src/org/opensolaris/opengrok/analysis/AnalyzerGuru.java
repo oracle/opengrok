@@ -56,6 +56,7 @@ import org.opensolaris.opengrok.analysis.fortran.FortranAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.java.JavaAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.lisp.LispAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.perl.PerlAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.php.PhpAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.XMLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.python.PythonAnalyzerFactory;
@@ -131,6 +132,7 @@ public class AnalyzerGuru {
             new JavaAnalyzerFactory(),
             new PythonAnalyzerFactory(),
             new PerlAnalyzerFactory(),
+            new PhpAnalyzerFactory(),
             new LispAnalyzerFactory(),
             new TclAnalyzerFactory(),
             new SQLAnalyzerFactory(),
