@@ -396,12 +396,12 @@ if (valid) {
         Reader fileReader = null;
 
         if (environment.isCompressXref() ) {
-            if  (xrefFile.exists()) {
-            fileReader = new InputStreamReader(new GZIPInputStream(new FileInputStream(xrefFile)));
+            if  (xrefFile.exists() && (resourceFile.lastModified() <= xrefFile.lastModified())) {
+                fileReader = new InputStreamReader(new GZIPInputStream(new FileInputStream(xrefFile)));
             }
         } else {            
             xrefFile = new File(xrefSource, path);
-            if (xrefFile.exists()) {
+            if (xrefFile.exists() && (resourceFile.lastModified() <= xrefFile.lastModified())) {
                 fileReader = new FileReader(xrefFile);
             }
         }
