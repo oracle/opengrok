@@ -282,7 +282,7 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
         VERBOSE="-v"
         QUIET=""
     fi
-        
+
     if [ -n "${OPENGROK_PROGRESS}" ]
     then
         PROGRESS="-C"
@@ -341,23 +341,41 @@ Which()
     fi
 }
 
+LocateBinary() {
+    for f in $@
+    do
+	file=`which $f 2>/dev/null | grep -v '^no '`
+	if test -n "$file" -a -x "$file"
+	then
+	    echo $file
+	    return 0
+	fi
+    done
+
+    echo ""
+    return 1
+}
+
 FindExuberantCTags()
 {
-    case "${OS_NAME}:${OS_VERSION}" in
-        SunOS:5.10) commandName=""                ;;
-        SunOS:5.11) commandName="exctags"         ;;
-        Linux:*)    commandName="ctags-exuberant" ;;
-        *)          commandName=""                ;;
-    esac
-
-    if [ -z "${commandName}" ]
+    binary=`LocateBinary ctags-exuberant exctags ctags`
+    if test $? -eq 1
     then
         Error "Unable to determine Exuberant CTags command name" \
             "for ${OS_NAME} ${OS_VERSION}"
         return
     fi
 
-    Which "${commandName}"
+    # Verify that this really is Exuberant Ctags
+    $binary --version 2>&1 | grep "Exuberant Ctags" > /dev/null
+    if test $? -ne 0
+    then
+        Error "Unable to determine Exuberant CTags command name" \
+            "for ${OS_NAME} ${OS_VERSION}\n(${binary} is not Exuberant CTags)"
+        return
+    fi
+
+    echo ${binary}
 }
 
 FindJavaHome()
@@ -429,6 +447,7 @@ FindApplicationServerType()
 
     if [    -d "/var/tomcat6/webapps"     \
          -o -d "/var/lib/tomcat6/webapps" \
+         -o -d "/var/lib/tomcat5/webapps" \
          -o -d "/var/lib/tomcat5.5/webapps" \
        ]
     then
@@ -462,6 +481,7 @@ DetermineWarDirectoryTomcat()
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
         /var/lib/tomcat6        \
+        /var/lib/tomcat5        \
         /var/lib/tomcat5.5      \
 
     do
