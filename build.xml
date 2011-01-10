@@ -315,9 +315,6 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
           <include name="NOTICE.txt"/>
 	  <include name="paths.tsv"/>
 	  <include name="logging.properties"/>
-          <include name="run.sh"/>
-          <include name="run-quiet.sh"/>
-          <include name="run.bat"/>
         </tarfileset>
         <tarfileset dir="." prefix="${distname}-${version}/bin" mode="755">
           <include name="OpenGrok"/>
