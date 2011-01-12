@@ -146,7 +146,7 @@ if(resourcePath.length() < rawSource.length()
     String h = request.getParameter("h");
 %><%@ include file="httpheader.jspf" %><%//below style is for the fancy always on top search bar%>
 <body style="overflow:hidden;">
-<script type="text/javascript" src="<%=context%>/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="<%=context%>/jquery-1.4.4.min.js"></script>
 <script type="text/javascript">/* <![CDATA[ */
 function get_annotations() {
     link="<%=context+Constants.xrefP+uriEncodedName%>?a=true<%=rev%>";
