@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +82,22 @@ public class GitRepository extends Repository {
             cmd.add(filename);
         }
         return new Executor(cmd, new File(getDirectoryName()));
+    }
+
+    /**
+     * Create a {@code Reader} that reads an {@code InputStream} using the
+     * correct character encoding.
+     *
+     * @param input a stream with the output from a log or blame command
+     * @return a reader that reads the input
+     * @throws IOException if the reader cannot be created
+     */
+    Reader newLogReader(InputStream input) throws IOException {
+        // Bug #17731: Git always encodes the log output using UTF-8 (unless
+        // overridden by i18n.logoutputencoding, but let's assume that hasn't
+        // been done for now). Create a reader that uses UTF-8 instead of the
+        // platform's default encoding.
+        return new InputStreamReader(input, "UTF-8");
     }
 
     /**
@@ -161,7 +178,8 @@ public class GitRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get annotations for: \"{0}\" Exit code: {1}", new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
-        return parseAnnotation(exec.getOutputReader(), file.getName());
+        return parseAnnotation(
+                newLogReader(exec.getOutputStream()), file.getName());
     }
 
     protected Annotation parseAnnotation(Reader input, String fileName) throws IOException {
