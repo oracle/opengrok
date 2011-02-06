@@ -235,21 +235,38 @@ public class JFlexXrefTest {
     }
 
     /**
-     * Verify that we use breadcrumb path for both #include <x/y.h> and
-     * #include "x/y.h" in C and C++.
+     * <p>
+     * Test the handling of #include in C and C++. In particular, these issues
+     * are tested:
+     * </p>
+     *
+     * <ul>
+     *
+     * <li>
+     * Verify that we use breadcrumb path for both #include &lt;x/y.h&gt; and
+     * #include "x/y.h" in C and C++ (bug #17817)
+     * </li>
+     *
+     * <li>
+     * Verify that the link generated for #include &lt;vector&gt; performs a
+     * path search (bug #17816)
+     * </li>
+     *
+     * </ul>
      */
     @Test
-    public void bug17817() throws Exception {
-        bug17817(CXref.class);
-        bug17817(CxxXref.class);
+    public void testCXrefInclude() throws Exception {
+        testCXrefInclude(CXref.class);
+        testCXrefInclude(CxxXref.class);
     }
 
-    private void bug17817(Class<? extends JFlexXref> klass) throws Exception {
+    private void testCXrefInclude(Class<? extends JFlexXref> klass) throws Exception {
         String[][] testData = {
             { "#include <abc.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc.h\">abc.h</a>&gt;" },
             { "#include <abc/def.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&gt;" },
             { "#include \"abc.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc.h\">abc.h</a>\"</span>" },
             { "#include \"abc/def.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>\"</span>" },
+            { "#include <vector>", "#<b>include</b> &lt;<a href=\"/source/s?path=vector\">vector</a>&gt;" },
         };
 
         for (String[] s : testData) {

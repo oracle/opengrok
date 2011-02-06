@@ -68,7 +68,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
     writeSymbol(id, Consts.kwd, yyline);
 }
 
-"<" ({File}|{Path}) ">" {
+"<" ({File}|{Path}|{Identifier}) ">" {
         out.write("&lt;");
         String path = yytext().substring(1, yylength() - 1);
         out.write(Util.breadcrumbPath(urlPrefix + "path=", path));
