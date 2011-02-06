@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -232,5 +232,32 @@ public class JFlexXrefTest {
                 FIRST_LINE_PREAMBLE +
                     "<b>echo</b> <span class=\"s\">\"hello\"</span>",
                 out.toString());
+    }
+
+    /**
+     * Verify that we use breadcrumb path for both #include <x/y.h> and
+     * #include "x/y.h" in C and C++.
+     */
+    @Test
+    public void bug17817() throws Exception {
+        bug17817(CXref.class);
+        bug17817(CxxXref.class);
+    }
+
+    private void bug17817(Class<? extends JFlexXref> klass) throws Exception {
+        String[][] testData = {
+            { "#include <abc.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc.h\">abc.h</a>&gt;" },
+            { "#include <abc/def.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&gt;" },
+            { "#include \"abc.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc.h\">abc.h</a>\"</span>" },
+            { "#include \"abc/def.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>\"</span>" },
+        };
+
+        for (String[] s : testData) {
+            StringReader in = new StringReader(s[0]);
+            StringWriter out = new StringWriter();
+            JFlexXref xref = klass.getConstructor(Reader.class).newInstance(in);
+            xref.write(out);
+            assertEquals(FIRST_LINE_PREAMBLE + s[1], out.toString());
+        }
     }
 }

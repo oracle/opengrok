@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -70,14 +70,8 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 
 "<" ({File}|{Path}) ">" {
         out.write("&lt;");
-        String path = yytext();
-        path = path.substring(1, path.length() - 1);
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
+        String path = yytext().substring(1, yylength() - 1);
+        out.write(Util.breadcrumbPath(urlPrefix + "path=", path));
         out.write("&gt;");
 }
 
