@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
 --%><%@ page import = "javax.servlet.*,
 java.lang.Integer,
@@ -38,7 +38,6 @@ org.opensolaris.opengrok.configuration.*,
 org.apache.lucene.search.spell.LuceneDictionary,
 org.apache.lucene.search.spell.SpellChecker,
 org.apache.lucene.search.SortField,
-org.apache.lucene.search.TopScoreDocCollector,
 org.apache.lucene.store.FSDirectory,
 org.apache.lucene.analysis.*,
 org.apache.lucene.document.*,
@@ -100,20 +99,14 @@ if (project != null && project.size()<1) project = null;
 
 if (q != null || defs != null || refs != null || hist != null || path != null) {
     Searcher searcher = null;		    //the searcher used to open/search the index
-    TopScoreDocCollector collector=null;         // the collector used
     ScoreDoc[] hits = null;                 // list of documents which result from the query
     Query query = null;         //the Query created by the QueryBuilder
-    boolean allCollected=false;
     int totalHits=0;
     
     int start = 0;		       //the first index displayed on this page
     //TODO deprecate max this and merge with paging and param n - TEST needed
     //int max    = 25;			//the maximum items displayed on this page
     int max=RuntimeEnvironment.getInstance().getHitsPerPage();
-
-    int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
-    int cachePages= RuntimeEnvironment.getInstance().getCachePages();
-    final boolean docsScoredInOrder=false;
 
     int thispage = 0;			    //used for the for/next either max or
 
@@ -133,7 +126,6 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
         }
         //String date = request.getParameter("date");
         try {
-            //TODO merge paging hitsPerPage with parameter n (has to reflect the search if changed so proper number is cached first time)
             start = Integer.parseInt(request.getParameter("start"));	//parse the max results first
             max = Integer.parseInt(request.getParameter("n"));      //then the start index
             if(max < 0 || (max % 10 != 0) || max > 50) max = 25;
@@ -175,43 +167,19 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
             }
 
         //TODO check if below is somehow reusing sessions so we don't requery again and again, I guess 2min timeout sessions could be usefull, since you click on the next page within 2mins, if not, then wait ;)
-        if (errorMsg == null) {                        
-            collector = TopScoreDocCollector.create(hitsPerPage*cachePages,docsScoredInOrder);
+        if (errorMsg == null) {
+            Sort sortf;
             if (LASTMODTIME.equals(sort)) {
-                Sort sortf = new Sort(new SortField("date",SortField.STRING,true));
-                TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sortf);
-                totalHits=fdocs.totalHits;
-                if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
-                 fdocs=searcher.search(query, null, totalHits, sortf);
-                 allCollected=true;
-                }
-                hits = fdocs.scoreDocs; 
+                sortf = new Sort(new SortField("date", SortField.STRING, true));
             } else if (BY_PATH.equals(sort)) {
-                Sort sortf = new Sort(S_BY_PATH);
-                TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sortf);
-                totalHits=fdocs.totalHits;
-                if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
-                 fdocs=searcher.search(query, null,totalHits, sortf);
-                 allCollected=true;
-                }
-                hits = fdocs.scoreDocs;
+                sortf = new Sort(S_BY_PATH);
             } else {
-                searcher.search(query,collector);
-                totalHits=collector.getTotalHits();
-                if (start>=hitsPerPage*cachePages && !allCollected) { //fetch ALL results only if above cachePages
-                 collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
-                 searcher.search(query,collector);
-                 allCollected=true;
-                }
-                hits=collector.topDocs().scoreDocs;
+                sortf = Sort.RELEVANCE;
             }
 
-            //below will get all the documents
-//            for (int i = 0; i < hits.length; i++) {
-//              int docId = hits[i].doc;
-//              Document d = searcher.doc(docId);
-//              docs.add(d);
-//            }
+            TopFieldDocs fdocs = searcher.search(query, null, start + max, sortf);
+            totalHits = fdocs.totalHits;
+            hits = fdocs.scoreDocs;
 
         }
         thispage = max;
