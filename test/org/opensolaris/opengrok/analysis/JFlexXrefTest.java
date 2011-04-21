@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -276,5 +277,30 @@ public class JFlexXrefTest {
             xref.write(out);
             assertEquals(FIRST_LINE_PREAMBLE + s[1], out.toString());
         }
+    }
+
+    /**
+     * Verify that ShXref handles here-documents. Bug #18198.
+     */
+    @Test
+    public void testShXrefHeredoc() throws IOException {
+        StringReader in = new StringReader(
+                "cat<<EOF\n" +
+                "This shouldn't cause any problem.\n" +
+                "EOF\n" +
+                "var='some string'\n");
+
+        ShXref xref = new ShXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+
+        String[] result = out.toString().split("\n");
+
+        // The single-quote on line 2 shouldn't start a string literal.
+        assertTrue(result[1].endsWith("This shouldn't cause any problem."));
+
+        // The string literal on line 4 should be recognized as one.
+        assertTrue(
+            result[3].endsWith("=<span class=\"s\">'some string'</span>"));
     }
 }

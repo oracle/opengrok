@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
@@ -39,6 +39,12 @@ import java.util.Stack;
 %{
   private final Stack<Integer> stateStack = new Stack<Integer>();
   private final Stack<String> styleStack = new Stack<String>();
+
+  // State variables for the HEREDOC state. They tell what the stop word is,
+  // and whether leading tabs should be removed from the input lines before
+  // comparing with the stop word.
+  private String heredocStopWord;
+  private boolean heredocStripLeadingTabs;
 
   @Override
   public void reInit(char[] contents, int length) {
@@ -81,6 +87,25 @@ import java.util.Stack;
     }
   }
 
+  /**
+   * Check the contents of a line to see if it matches the stop word for a
+   * here-document.
+   *
+   * @param line a line in the input file
+   * @return true if the line terminates a here-document, false otherwise
+   */
+  private boolean isHeredocStopWord(String line) {
+    // Skip leading tabs if heredocStripLeadingTabs is true.
+    int i = 0;
+    while (heredocStripLeadingTabs &&
+              i < line.length() && line.charAt(i) == '\t') {
+      i++;
+    }
+
+    // Compare remaining characters on the line with the stop word.
+    return line.substring(i).equals(heredocStopWord);
+  }
+
 %}
 
 WhiteSpace     = [ \t\f]
@@ -104,8 +129,9 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  * BACKQUOTE - command substitution using back-quotes, ex: `cat file.txt`
  * BRACEGROUP - group of commands in braces, possibly ksh command substitution
  *              extension, ex: ${ cat file.txt; }
+ * HEREDOC - here-document, example: cat<<EOF ... EOF
  */
-%state STRING SCOMMENT QSTRING SUBSHELL BACKQUOTE BRACEGROUP
+%state STRING SCOMMENT QSTRING SUBSHELL BACKQUOTE BRACEGROUP HEREDOC
 
 %%
 <STRING>{
@@ -141,6 +167,23 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  \$ ? \" { pushstate(STRING, "s"); out.write(yytext()); }
  \$ ? \' { pushstate(QSTRING, "s"); out.write(yytext()); }
  "#"     { pushstate(SCOMMENT, "c"); out.write(yytext()); }
+
+ // Recognize here-documents. At least a subset of them.
+ "<<" "-"? {WhiteSpace}* {Identifier} {WhiteSpace}* {
+   String text = yytext();
+   Util.htmlize(text, out);
+
+   heredocStripLeadingTabs = (text.charAt(2) == '-');
+   heredocStopWord = text.substring(heredocStripLeadingTabs ? 3 : 2).trim();
+   pushstate(HEREDOC, "s");
+ }
+
+ // Any sequence of more than two < characters should not start HEREDOC. Use
+ // this rule to catch them before the HEREDOC rule.
+ "<<" "<" + {
+   Util.htmlize(yytext(), out);
+ }
+
 }
 
 <STRING> {
@@ -186,6 +229,18 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
   */
   ^ {WhiteSpace}* \}  { out.write(yytext()); popstate(); }
   ; {WhiteSpace}* \}  { out.write(yytext()); popstate(); }
+}
+
+<HEREDOC> {
+  .* {
+    String line = yytext();
+    if (isHeredocStopWord(line)) {
+      popstate();
+    }
+    Util.htmlize(line, out);
+  }
+
+  {EOL} { startNewLine(); }
 }
 
 <YYINITIAL, SUBSHELL, BACKQUOTE, BRACEGROUP> {
