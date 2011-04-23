@@ -98,7 +98,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "/**"  { yybegin(JAVADOC);out.write("<span class=\"c\">/**");}
+ "/**" / [^/] { yybegin(JAVADOC);out.write("<span class=\"c\">/**");}
  "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
  "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
 }

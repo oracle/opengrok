@@ -303,4 +303,17 @@ public class JFlexXrefTest {
         assertTrue(
             result[3].endsWith("=<span class=\"s\">'some string'</span>"));
     }
+
+    /**
+     * Test that JavaXref handles empty Java comments. Bug #17885.
+     */
+    @Test
+    public void testEmptyJavaComment() throws IOException {
+        StringReader in = new StringReader("/**/\nclass xyz { }\n");
+        JavaXref xref = new JavaXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        // Verify that the comment's <span> block is terminated.
+        assertTrue(out.toString().contains("<span class=\"c\">/**/</span>"));
+    }
 }
