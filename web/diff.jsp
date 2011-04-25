@@ -201,21 +201,15 @@ if(format.equals("s")) {
                                             file1[i1] = ss[0];
                                             file2[i2] = ss[1];
                                         }
-                                        if(i1 <= cl1) {
-                                            for(int h=i1; h<= cl1; h++) {
-                                                file1[h] = Util.htmlize((String)file1[h]);
-                                            }
-                                            file1[i1] = "<span class=\"d\">" + file1[i1];
-                                            file1[cl1] = file1[cl1] + "</span>";
+
+                                        for (; i1 <= cl1; i1++) {
+                                            file1[i1] = "<span class=\"d\">" + Util.htmlize((String)file1[i1]) + "</span>";
                                         }
-                                        if(i2 <= cl2) {
-                                            for(int h=i2; h<= cl2; h++) {
-                                                file2[h] = Util.htmlize((String)file2[h]);
-                                            }
-                                            file2[i2] = "<span class=\"a\">" + file2[i2];
-                                            file2[cl2] = file2[cl2] + "</span>";
+
+                                        for(; i2 <= cl2; i2++) {
+                                            file2[i2] = "<span class=\"a\">" + Util.htmlize((String)file2[i2]) + "</span>";
                                         }
-                                        
+
                                         if (format.equals("u")) {
 // UDIFF
                                             if (cn1 > ln1 || cn2 > ln2) {
