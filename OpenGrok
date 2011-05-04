@@ -650,7 +650,10 @@ CreateRuntimeRequirements()
         else
          ${DO} grep -v java.util.logging.FileHandler.pattern "${LOGGER_CONF_SOURCE}" > "${LOGGER_CONFIG_PATH}"
          ${DO} grep java.util.logging.FileHandler.pattern "${LOGGER_CONF_SOURCE}" | sed "s|opengrok%g.%u.log|${OPENGROK_INSTANCE_BASE}/log/opengrok%g.%u.log|g" >> "${LOGGER_CONFIG_PATH}"
-         ${DO} mkdir ${OPENGROK_INSTANCE_BASE}/log
+	 if [ ! -d ${OPENGROK_INSTANCE_BASE}/log ]
+         then
+             ${DO} mkdir ${OPENGROK_INSTANCE_BASE}/log
+         fi
         fi
     fi
 
