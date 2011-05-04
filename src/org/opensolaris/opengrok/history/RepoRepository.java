@@ -110,7 +110,7 @@ public class RepoRepository extends Repository {
 
     @Override
     boolean fileHasAnnotation(File file) {
-        throw new UnsupportedOperationException("Should never be called!");
+        return false;
     }
 
     @Override
