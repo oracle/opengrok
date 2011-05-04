@@ -1,0 +1,137 @@
+#!/bin/sh
+# Startup script for Apache Derby
+#
+# Software License Agreement (BSD License)
+#
+# Copyright (c) 2010, Trond Norbye
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#
+#     * The names of the contributors may be used to endorse or promote
+# products derived from this software without specific prior written
+# permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+### BEGIN INIT INFO
+# Provides:          derby
+# Required-Start:    $network $local_fs
+# Required-Stop:     $network $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: start Apache Derby
+### END INIT INFO
+
+#
+# You may install the links by installing the file in /etc/init.d and
+# execute:
+# update-rc.d derby default
+#
+
+# Defaults
+DERBY_USER=opengrok
+DERBY_GROUP=opengrok
+DERBY_JVM_OPTIONS=
+DERBY_DATA_DIR=/var/opengrok/derby
+DERBY_JAR_DIR=/usr/lib/jvm/java-6-sun/db/lib
+DERBY_JAR=${DERBY_JAR_DIR}/derbynet.jar
+
+# Reads config file (will override defaults above)
+[ -r /etc/default/derby ] && . /etc/default/derby
+
+PIDFILE=/var/run/derby.pid
+
+. /lib/lsb/init-functions
+
+case "$1" in
+    start)
+        log_daemon_msg "Starting Derby"
+        # exit unless we've got the jar file
+        test -f ${DERBY_JAR}
+        if [ $? -ne 0 ]
+        then
+            log_failure_msg "Missing file: ${DERBY_JAR}"
+            exit 1
+        fi
+
+        start-stop-daemon \
+                    --start \
+                    --chuid ${DERBY_USER}:${DERBY_GROUP} \
+                    --background \
+                    --make-pidfile \
+                    --pidfile $PIDFILE \
+                    --quiet \
+                    --exec /usr/bin/java \
+                    -- \
+                    ${DERBY_JVM_OPTIONS} \
+                    -Dderby.system.home=${DERBY_DATA_DIR} \
+                    -jar ${DERBY_JAR_DIR}/derbynet.jar \
+                    start
+
+        if [ $? -ne 0 ]
+        then
+            log_end_msg 1
+            exit 1
+        fi
+
+        log_end_msg 0
+        ;;
+
+    stop)
+        log_daemon_msg "Stopping Derby"
+        start-stop-daemon --stop --quiet --pidfile $PIDFILE
+        log_end_msg 0
+        ;;
+
+    restart)
+        $0 stop
+        if [ $? -eq 0 ]
+        then
+           sleep 1
+           $0 start
+        fi
+        ;;
+
+    try-restart)
+        status_of_proc -p $PIDFILE /usr/bin/java Derby > /dev/null 2>&1
+        if [ $? -eq 0 ]
+        then
+	    $0 restart
+        fi
+        ;;
+
+    reload|force-reload)
+        ;;
+
+    status)
+        status_of_proc -p $PIDFILE /usr/bin/java Derby
+        exit $?
+        ;;
+    *)
+        echo "Usage: /etc/init.d/derby {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0
