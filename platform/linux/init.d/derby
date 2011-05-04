@@ -3,7 +3,7 @@
 #
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2010, Trond Norbye
+# Copyright (c) 2011, Trond Norbye
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -129,7 +129,7 @@ case "$1" in
         exit $?
         ;;
     *)
-        echo "Usage: /etc/init.d/derby {start|stop|restart|status}"
+        echo "Usage: /etc/init.d/derby {start|stop|restart|try-restart|reload|force-reload|status}"
         exit 1
         ;;
 esac
