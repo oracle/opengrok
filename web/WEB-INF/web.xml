@@ -14,7 +14,13 @@
     <param-value>localhost:2424</param-value>
     <description>An address where OpenGrok can receive new configuration</description>
   </context-param>
-  
+
+  <!-- context-param>
+      <param-name>org.opensolaris.opengrok.auth.AccessControl</param-name>
+      <param-value></param-value>
+      <description>The class to use to control access to the resources returned from the servlet</description>
+  </context-param -->
+
   <listener>
    <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
   </listener>

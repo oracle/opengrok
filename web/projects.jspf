@@ -49,8 +49,12 @@ if (env.hasProjects()) {
         //NOTE this means project name CANNOT have a "," char in it !!!
         String p[] = pr[midx].split(",");
         for (int idx = 0; idx < p.length; idx++) {
-            if (Project.getByDescription(p[idx]) != null) {
-                project.add(p[idx]);
+            Project theProject = Project.getByDescription(p[idx]);
+            if (theProject != null) {
+               int errorCode = RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, theProject);
+               if (errorCode == response.SC_OK) {
+                  project.add(p[idx]);
+               }
             }
         }
        }
@@ -61,8 +65,12 @@ if (env.hasProjects()) {
                 if (cookie.getName().equals("OpenGrokProject")) {
                     for (String proj : cookie.getValue().split(",")) {
                         if (proj != "") {
-                            if (Project.getByDescription(proj) != null) {
-                            project.add(proj);
+                            Project theProject = Project.getByDescription(proj);
+                            if (theProject != null) {
+                                int errorCode = RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, theProject);
+                                if (errorCode == response.SC_OK) {
+                                    project.add(proj);
+                                }
                             }
                         }
                     }
@@ -73,8 +81,9 @@ if (env.hasProjects()) {
 
     //default project is only shown when no other project there (no cookie, empty project list)
     Project defaultProject = env.getDefaultProject();
-    if (defaultProject != null && project.isEmpty()) {
-       project.add(defaultProject.getDescription());
+    if (defaultProject != null && project.isEmpty() &&
+        RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, defaultProject) == response.SC_OK) {
+           project.add(defaultProject.getDescription());
     }
 
     //only save found projects into cookies

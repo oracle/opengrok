@@ -147,24 +147,37 @@ if (q != null || defs != null || refs != null || hist != null || path != null) {
                     int ii = 0;
                     //TODO might need to rewrite to Project instead of String , need changes in projects.jspf too
                     for (String proj : project) {
-                        FSDirectory dir = FSDirectory.open(new File(droot, proj));
-                        searchables[ii++] = new IndexSearcher(dir);
+                        Project theProject = Project.getByDescription(proj);
+                        if (theProject != null && RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, theProject) == response.SC_OK) {
+                            FSDirectory dir = FSDirectory.open(new File(droot, proj));
+                            searchables[ii++] = new IndexSearcher(dir);
+                        }
                     }
-                    if (Runtime.getRuntime().availableProcessors() > 1) {
-                        searcher = new ParallelMultiSearcher(searchables);
-                    } else {
-                        searcher = new MultiSearcher(searchables);
+                    if (searchables[0] != null) {
+                        if (Runtime.getRuntime().availableProcessors() > 1) {
+                            searcher = new ParallelMultiSearcher(searchables);
+                        } else {
+                            searcher = new MultiSearcher(searchables);
+                        }
                     }
                 } else { // just 1 project selected
-                    root = new File(root, project.get(0));
-                    FSDirectory dir = FSDirectory.open(root);
-                    searcher = new IndexSearcher(dir);
+                    Project theProject = Project.getByDescription(project.get(0));
+                    if (theProject != null && RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, theProject) == response.SC_OK) {
+                        root = new File(root, project.get(0));
+                        FSDirectory dir = FSDirectory.open(root);
+                        searcher = new IndexSearcher(dir);
+                    }
                 }
             }
         } else { //no project setup
             FSDirectory dir = FSDirectory.open(root);
             searcher = new IndexSearcher(dir);
-            }
+        }
+
+        if (searcher == null) {
+           // We might not have access to any of the projects ;-)
+           errorMsg = "<b>Error:</b> You must select a project!";
+        }
 
         //TODO check if below is somehow reusing sessions so we don't requery again and again, I guess 2min timeout sessions could be usefull, since you click on the next page within 2mins, if not, then wait ;)
         if (errorMsg == null) {
@@ -289,8 +302,11 @@ if( hits == null || errorMsg != null) {
                     spellIndexes = new File[project.size()];                    
                     int ii = 0;
                     //TODO might need to rewrite to Project instead of String , need changes in projects.jspf too
-                    for (String proj : project) {                        
-                        spellIndexes[ii++] = new File(spellIndex,proj);
+                    for (String proj : project) {        
+                        Project theProject = Project.getByDescription(proj);
+                        if (theProject != null && RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, theProject) == response.SC_OK) {
+                            spellIndexes[ii++] = new File(spellIndex,proj);
+                        }
                     }
                  } else { // just 1 project selected
                     spellIndex = new File(spellIndex, project.get(0));                    

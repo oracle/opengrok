@@ -23,6 +23,13 @@ Use is subject to license terms.
 contentType="text/html; charset=UTF-8"
 pageEncoding="UTF-8"
 %><%
+{
+  int errorCode = RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request);
+  if (errorCode != response.SC_OK) {
+    response.sendError(errorCode);
+    return;
+  }
+}
 String laf = environment.getWebappLAF();
 %><%-- String server="http://"+request.getServerName()+":"+request.getServerPort();
  <base href="<%=server+httpHeaderContext%>/"/>

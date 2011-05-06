@@ -39,6 +39,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.auth.AccessControl;
+import org.opensolaris.opengrok.auth.NoAccessControl;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
@@ -51,6 +53,7 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public final class RuntimeEnvironment {
     private Configuration configuration;
+    private AccessControl accessController;
     private final ThreadLocal<Configuration> threadConfig;
     
     private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
@@ -70,6 +73,7 @@ public final class RuntimeEnvironment {
      * singleton pattern.
      */
     private RuntimeEnvironment() {
+        accessController = new NoAccessControl();
         configuration = new Configuration();
         threadConfig = new ThreadLocal<Configuration>() {
             @Override protected Configuration initialValue() {
@@ -699,6 +703,14 @@ public final class RuntimeEnvironment {
      */
     public void setChattyStatusPage(boolean chatty) {
         threadConfig.get().setChattyStatusPage(chatty);
+    }
+
+    public AccessControl getServletAccessController() {
+        return accessController;
+    }
+
+    public void setServletAccessController(AccessControl accessController) {
+        this.accessController = accessController;
     }
 
     /**
