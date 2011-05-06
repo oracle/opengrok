@@ -108,9 +108,6 @@ function checkEnter(event) {
                                             <select tabindex="8" ondblclick="javascript:goFirstProject();" onkeyup="javascript:checkEnter(event);" class="q" style="width: 300px" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
                                 <%
                                 for (Project p : env.getProjects()) {
-                                    if (env.getServletAccessController().canAccess(request, p) != response.SC_OK) {
-                                        continue;
-                                    }
                                     //TODO below "selected" has no effect if one refreshes the page with F5
                                     //also below ondblclick doesn't work in IE ...
                                     // ondblclick="javascript:goFirstProject();"

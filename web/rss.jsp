@@ -38,27 +38,11 @@ org.apache.lucene.search.*,
 org.apache.lucene.queryParser.*,
 java.text.*"
 %><%@ page session="false" %><%@ page errorPage="error.jsp"%><%
-{
-  int errorCode = RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request);
-  if (errorCode != response.SC_OK) {
-    response.sendError(errorCode);
-    return;
-  }
-}
 String context = request.getContextPath();
 String servlet = request.getServletPath();
 String reqURI = request.getRequestURI();
 String path = request.getPathInfo();
 if(path == null) path = "";
-
-{
-  int errorCode = RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, path);
-  if (errorCode != response.SC_OK) {
-    response.sendError(errorCode);
-    return;
-  }
-}
-
 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 env.setUrlPrefix(context + Constants.searchR+"?");
 env.register();

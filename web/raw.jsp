@@ -25,15 +25,6 @@ java.io.FileInputStream,
 java.io.FileNotFoundException,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment,
 org.opensolaris.opengrok.history.HistoryGuru"%><%
-
-{
-  int errorCode = RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request);
-  if (errorCode != response.SC_OK) {
-    response.sendError(errorCode);
-    return;
-  }
-}
-
 String path = request.getPathInfo();
 if (path == null) {
   path = "";
@@ -45,14 +36,6 @@ try {
 } catch (FileNotFoundException e) {
   response.sendError(response.SC_NOT_FOUND);
   return;
-}
-
-{
-  int errorCode = RuntimeEnvironment.getInstance().getServletAccessController().canAccess(request, path);
-  if (errorCode != response.SC_OK) {
-    response.sendError(errorCode);
-    return;
-  }
 }
 
 if (!file.exists() || !file.canRead() || RuntimeEnvironment.getInstance().getIgnoredNames().ignore(file)) {

@@ -33,8 +33,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.auth.AccessControl;
-import org.opensolaris.opengrok.auth.DenyAccessControl;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -79,18 +77,6 @@ public final class WebappListener implements ServletContextListener {
                 for (int i = 0; i < cfg.length; ++i) {
                     OpenGrokLogger.getLogger().log(Level.SEVERE, "[{0}]", cfg[i]);
                 }
-            }
-        }
-
-        String accessController = context.getInitParameter("org.opensolaris.opengrok.auth.AccessControl");
-        if (accessController != null && accessController.length() > 0) {
-            try {
-                ClassLoader loader = AccessControl.class.getClassLoader();
-                Class<?> clazz = loader.loadClass(accessController);
-                env.setServletAccessController((AccessControl)clazz.newInstance());
-            } catch (Throwable t) {
-                env.setServletAccessController(new DenyAccessControl());
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "OpenGrok: Failed instanciate Servlet Access Controller:", t);
             }
         }
     }
