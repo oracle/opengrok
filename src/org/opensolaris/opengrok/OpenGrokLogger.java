@@ -75,9 +75,9 @@ public final class OpenGrokLogger {
      * @param level new level for console
      */
     public static void setOGConsoleLogLevel(Level level) {
-        for (Enumeration e = LogManager.getLogManager().getLoggerNames();
+        for (Enumeration<String> e = LogManager.getLogManager().getLoggerNames();
                 e.hasMoreElements();) {
-            String loggerName = (String) e.nextElement();
+            String loggerName = e.nextElement();
             Logger l = Logger.getLogger(loggerName);
             Handler[] h = l.getHandlers();
             if (!loggerName.startsWith("org.opensolaris.opengrok")) {
@@ -191,9 +191,9 @@ public final class OpenGrokLogger {
     }
 
     private static void clearForeignHandlers() {
-        for (Enumeration e = LogManager.getLogManager().getLoggerNames();
+        for (Enumeration<String> e = LogManager.getLogManager().getLoggerNames();
                 e.hasMoreElements();) {
-            String loggerName = (String) e.nextElement();
+            String loggerName = e.nextElement();
             Logger l = Logger.getLogger(loggerName);
             Handler[] h = l.getHandlers();
             if (!loggerName.startsWith("org.opensolaris.opengrok")) {

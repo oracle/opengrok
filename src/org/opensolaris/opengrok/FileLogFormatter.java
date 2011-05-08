@@ -25,6 +25,7 @@ package org.opensolaris.opengrok;
 
 import java.util.Date;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -70,7 +71,7 @@ final public class FileLogFormatter extends Formatter {
       sb.append(": ");
       sb.append(record.getMessage());
       Throwable thrown = record.getThrown();
-      if (null != thrown) {
+      if (null != thrown && record.getLevel().intValue() < Level.CONFIG.intValue()) {
          sb.append(lineSeparator);
          java.io.ByteArrayOutputStream ba=new java.io.ByteArrayOutputStream();
          thrown.printStackTrace(new java.io.PrintStream(ba, true));
