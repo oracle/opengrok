@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<eclipse-userlibraries version="2">
+    <library name="Jasper GF3" systemlibrary="false">
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/javax.servlet.jar"/>
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/javax.servlet.jsp.jar"/>
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/javax.servlet.jsp.jstl.jar"/>
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/el-impl.jar"/>
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/jstl-impl.jar"/>
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/jsf-api.jar"/>
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/jsf-impl.jar"/>
+        <archive path="/opt/glassfish/v3.1/glassfish/modules/jsp-impl.jar"/>
+    </library>
+</eclipse-userlibraries>
