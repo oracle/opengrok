@@ -23,6 +23,11 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 -->
 <project name="OpenGrok" default="jar" basedir=".">
     <description>Builds, tests, and runs the project opengrok.</description>
+	<property name="build.sysclasspath" value="ignore"/>
+	<property file="${user.home}/config/ant/${ant.project.name}.properties" />
+	<property file="${user.home}/config/ant/global.properties" />
+	<property file="/local/share/javax/global.properties" />
+
     <import file="nbproject/build-impl.xml"/>
 
     <import file="nbproject/profiler-build-impl.xml"/>    <!--
@@ -89,6 +94,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     <property name="version" value="0.11-dev"/>
     <property name="distname" value="opengrok"/>
+    <property name="src.dir" location="src"/>
+    <property name="src.generatedsrc.dir" location="generatedsrc"/>
     
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
     <property name="checkstyle.home" value="${user.home}/.ant/lib/checkstyle"/>
@@ -641,5 +648,113 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <fileset dir="${build.dir}/jrcs" includes="**/*.class"/>
       </jar>
     </target>
+
+
+	<!-- compile jsp - just to test -->
+	<property name="debug" value="on" />
+	<property name="jsdebug" value="off" />
+	<property name="compress" value=".gz" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="optimize" value="on" />
+	<property name="deprecation" value="on" />
+	<property name="listfiles" value="true" />
+
+	<property name="codebase"   	value="org/opensolaris/opengrok"/>
+	<property name="codebase.dot"   value="org.opensolaris.opengrok"/>
+	<property name="web.src.dir" location="web" />
+	
+	<patternset id="libs">
+		<include name="*.jar" />
+	</patternset>
+	<path id="classpath.base">
+		<fileset dir="lib">
+			<patternset refid="libs" />
+		</fileset>
+	</path>
+	<property name="AS_HOME" value="/opt/glassfish/v3.1/glassfish"/>
+	<path id="classpath.j2ee">
+		<fileset dir="${AS_HOME}/modules">
+			<include name="javaee.jar" />
+			<!-- for the **/auth/* stuff, only -->
+			<include name="appserv-rt.jar" />
+			<include name="appserv-deployment-client.jar" />
+		</fileset>
+	</path>
+	<path id="classpath.jspc">
+		<fileset dir="${AS_HOME}/modules">
+			<include name="javax.servlet.jar"/>
+			<include name="javax.servlet.jsp.jar"/>
+			<include name="jsp-impl.jar"/>
+			<include name="el-impl.jar"/>
+			<include name="javax.servlet.jsp.jstl.jar"/>
+			<include name="jstl-impl.jar"/>
+			<include name="jsf-api.jar"/>
+			<include name="jsf-impl.jar"/>
+			<include name="tools.jar"/>
+		</fileset>
+	</path>
+
+	<path id="classpath.web">
+		<path refid="classpath.j2ee"/>
+		<path refid="classpath.base"/>
+	</path>
+
+	<path id="classpath.jsp">
+		<path refid="classpath.jspc"/>
+		<path refid="classpath.web"/>
+	</path>
+
+	<target name="-jsp.check" depends="init">
+		<mkdir dir="${build.dir}/src/jsp/${codebase}/jsp" />
+		<uptodate property="jsp.not.changed">
+			<srcfiles dir="${web.src.dir}" includes="**/*.jsp,**/*.jspf"/>
+			<mapper type="glob" from="*.jsp" 
+				to="${build.dir}/src/jsp/${codebase}/jsp/*_jsp.java"/>
+		</uptodate>
+	</target>
+	
+	<target name="-jsp.generate" depends="-jsp.check" unless="jsp.not.changed">
+		<taskdef name="jasper" classname="org.apache.jasper.JspC"
+			classpathref="classpath.jsp" />
+		<mkdir dir="${build.dir}/src/web"/>
+		<copy todir="${build.dir}/src/web">			
+			<fileset dir="${web.src.dir}">
+				<include name="**/*.jsp"/>
+				<include name="**/*.jspf"/>
+				<include name="**/index_body.html"/>
+			</fileset>
+		</copy>
+		<jasper validateXml="false" 
+			outputdir="${build.dir}/src/jsp" 
+			javaencoding="UTF-8"
+			uriroot="${build.dir}/src/web"
+			package="${codebase.dot}.jsp"
+			compilersourcevm="1.6"
+			compilertargetvm="1.6"
+			smapsuppressed="false"
+			webxmlfragment="${build.dir}/src/servlets_web.xml"
+			/>
+		<loadfile property="wdd" srcfile="${build.dir}/src/servlets_web.xml"/>
+		<copy file="${web.src.dir}/WEB-INF/web.xml" todir="${build.dir}"
+			overwrite="true">
+			<filterset>
+				<filter token="generated servlet mappings" 
+					value=" generated start -->${wdd}&lt;!-- generated end " />
+			</filterset>
+		</copy>
+	</target>
+
+	<target name="compile.jsp" depends="compile,-jsp.generate"
+		description="--> compile java source code and jsp pages"
+	>
+		<javac srcdir="${build.dir}/src/jsp" destdir="${build.dir}/classes"
+			includes="**/*.java"
+			optimize="${optimize}" debug="${debug}" debuglevel="${debuglevel}"
+			deprecation="${deprecation}" classpathref="classpath.jsp"
+			encoding="UTF-8" listfiles="${listfiles}"
+			includeantruntime="false">
+			<compilerarg value="-Xlint:unchecked" compiler="javac1.6"/>
+		</javac>
+	</target>
 
 </project>
