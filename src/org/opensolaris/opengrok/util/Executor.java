@@ -106,6 +106,7 @@ public class Executor {
      */
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
+        String error = null;
 
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         if (workingDirectory != null) {
@@ -154,11 +155,15 @@ public class Executor {
             if (reportExceptions) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
                         "Failed to read from process: " + cmdList.get(0), e);
+            } else {
+                error = e.getLocalizedMessage();
             }
         } catch (InterruptedException e) {
             if (reportExceptions) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
                         "Waiting for process interrupted: " + cmdList.get(0), e);
+            } else {
+                error = e.getLocalizedMessage();
             }
         } finally {
             try {
@@ -171,12 +176,30 @@ public class Executor {
         }
 
         if (ret != 0) {
-            OpenGrokLogger.getLogger().log(
-                reportExceptions ? Level.SEVERE : Level.FINE,
-                "Non-zero exit status {0} from command {1} in directory {2}",
-                new Object[] {
-                    ret, processBuilder.command(), processBuilder.directory()
-                });
+                if (error != null) {
+                        OpenGrokLogger.getLogger().log(Level.WARNING, error);
+                } else {
+                        int MAX_MSG_SZ = 512; /* limit to avoid floodding the logs */
+                        StringBuilder msg = new StringBuilder("Non-zero exit status ")
+                                .append(ret).append(" from command ")
+                                .append(processBuilder.command().toString())
+                                .append(" in directory ");
+                        File cwd = processBuilder.directory();
+                        if (cwd != null) {
+                                msg.append(cwd.toString());
+                        } else {
+                                msg.append(System.getProperty("user.dir"));
+                        }
+                        if (stderr != null && stderr.length > 0) {
+                                msg.append(": ");
+                                if (stderr.length > MAX_MSG_SZ) {
+                                        msg.append(new String(stderr, 0, MAX_MSG_SZ)).append("...");
+                                } else {
+                                        msg.append(new String(stderr));
+                                }
+                        }
+                        OpenGrokLogger.getLogger().log(Level.WARNING, msg.toString());
+                }
         }
 
         return ret;
