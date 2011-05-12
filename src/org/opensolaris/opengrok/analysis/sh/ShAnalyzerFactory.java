@@ -40,6 +40,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "SH",
         "KSH",
+        "KSHLIB",   // RFE #17849
         "CSH",
         "BASH",        
         "RUBY",        

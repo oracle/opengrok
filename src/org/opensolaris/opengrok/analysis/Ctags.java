@@ -79,6 +79,7 @@ public class Ctags {
             command.add("--filter-terminator=" + CTAGS_FILTER_TERMINATOR + "\n");
             command.add("--fields=-anf+iKnS");
             command.add("--excmd=pattern");
+            command.add("--langmap=sh:+.kshlib"); // RFE #17849
             command.add("--regex-Asm=/^[ \\t]*(ENTRY|ENTRY2|ALTENTRY)[ \\t]*\\(([a-zA-Z0-9_]+)/\\2/f,function/");  // for assmebly definitions
             processBuilder = new ProcessBuilder(command);
         }
