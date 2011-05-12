@@ -223,8 +223,8 @@ final public class OGAgent {
         // If the protocol is RMI we need to have an RMI registry running.
         // Start an embedded registry if so requested.
         if (url.getProtocol().equals(RMI_PROTOCOL) &&
-                Boolean.valueOf(props.getProperty(RMI_START))) {
-            int rmiport = Integer.valueOf(props.getProperty(RMI_PORT));
+                Boolean.parseBoolean(props.getProperty(RMI_START))) {
+            int rmiport = Integer.parseInt(props.getProperty(RMI_PORT));
             log.log(Level.FINE, "Starting RMI registry on port {0}", rmiport);
             LocateRegistry.createRegistry(rmiport);
         }

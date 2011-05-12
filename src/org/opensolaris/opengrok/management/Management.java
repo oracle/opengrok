@@ -57,8 +57,8 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     }
 
     private void updateProperties() {
-        update = Boolean.parseBoolean(ogaProperties.getProperty("org.opensolaris.opengrok.indexer.updatedatabase"));
-        noThreads = Integer.parseInt(ogaProperties.getProperty("org.opensolaris.opengrok.indexer.numberofthreads"));
+        update = Boolean.valueOf(ogaProperties.getProperty("org.opensolaris.opengrok.indexer.updatedatabase"));
+        noThreads = Integer.valueOf(ogaProperties.getProperty("org.opensolaris.opengrok.indexer.numberofthreads"));
         configurationFile = ogaProperties.getProperty("org.opensolaris.opengrok.configuration.file");
         String subfiles = ogaProperties.getProperty("org.opensolaris.opengrok.indexer.subfiles");
         if (subfiles != null) {

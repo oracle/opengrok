@@ -230,7 +230,7 @@ public class Ctags {
                             for (String name : names) {
                              if (name.length()>0) {
                               //log.fine("Param Def = "+ string);
-                              defs.addTag(Integer.valueOf(lnum), name.trim(),
+                              defs.addTag(Integer.parseInt(lnum), name.trim(),
                                     "argument", def.trim() + signature.trim());
                               break;
                              }

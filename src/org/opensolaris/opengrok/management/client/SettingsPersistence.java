@@ -105,9 +105,9 @@ public class SettingsPersistence {
         String url = ogcProperties.getProperty(JMXURL);
         if (url == null) {
             String host = ogcProperties.getProperty(HOST, "localhost");
-            int jmxport = Integer.valueOf(
+            int jmxport = Integer.parseInt(
                     ogcProperties.getProperty(JMXPORT, "9292"));
-            int rmiport = Integer.valueOf(ogcProperties.getProperty(
+            int rmiport = Integer.parseInt(ogcProperties.getProperty(
                     RMIPORT, String.valueOf(jmxport + 1)));
             url = "service:jmx:rmi://" + host + ":" + jmxport +
                     "/jndi/rmi://" + host + ":" + rmiport + "/opengrok";
