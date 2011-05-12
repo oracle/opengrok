@@ -1,4 +1,6 @@
 <%-- 
+$Id$
+
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -19,53 +21,56 @@ CDDL HEADER END
 Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
-ident	"%Z%%M% %I%     %E% SMI"
+Portions Copyright 2011 Jens Elkner.
 
---%><%@ page import = "java.util.List,
-javax.servlet.*,
-javax.servlet.http.*,java.util.Iterator,
-org.opensolaris.opengrok.configuration.RuntimeEnvironment,
-org.opensolaris.opengrok.configuration.Project,
-org.opensolaris.opengrok.web.*"
- session="false" errorPage="error.jsp" %><%@ include file="projects.jspf" %><% 
-String q    = request.getParameter("q");
-String defs = request.getParameter("defs");
-String refs = request.getParameter("refs");
-String hist = request.getParameter("hist");
-String path = request.getParameter("path");
-RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-String Context = request.getContextPath();
-String laf = environment.getWebappLAF();
-StringBuffer url = request.getRequestURL();
-url=url.delete(url.lastIndexOf("/"),url.length());
-/* TODO  Bug 11749
-String proj="project=";
- */
-String proj="";
-StringBuilder text = new StringBuilder();
-boolean firstIteration = true;
-if (project != null) {
-for (String tproj : project) {
-  if (!firstIteration) {
-    text.append(',');
-  }
-  text.append(tproj);
-/* TODO  Bug 11749
-   proj=proj + Util.URIEncode(tproj)+ ",";
- */
-  proj = proj + "project=" + Util.URIEncode(tproj)+ "&amp;";
-  firstIteration = false;
- }
-}
+--%><%@page  session="false" errorPage="error.jsp" import="
+java.util.Set,
 
-String projtext = text.toString();
+org.opensolaris.opengrok.web.Util"
+%><%@
 
+include file="pageconfig.jspf"
+
+%><%@
+
+include file="projects.jspf"
+
+%><%
+	/* ---------------------- opensearch.jsp start --------------------- */
+{
+	cfg = PageConfig.get(request);
+
+	StringBuilder url = new StringBuilder(128);
+	url.append("http://").append(request.getServerName());
+	int port = request.getServerPort();
+	if (port != 80) {
+		url.append(':').append(request.getServerPort());
+	}
+	port = url.length();	// mark
+	String img = url.append(cfg.getCssDir()).append("/img/icon.png").toString();
+	url.setLength(port);	// rewind
+
+	/* TODO  Bug 11749 ??? */
+	StringBuilder text = new StringBuilder();
+	url.append(request.getContextPath()).append(Prefix.SEARCH_P).append('?');
+	Set<String> projects = cfg.getRequestedProjects();
+	for (String name : projects) {
+		text.append(name).append(',');
+		Util.appendQuery(url, "project", name);
+	}
+	if (text.length() != 0) {
+		text.setLength(text.length()-1);
+	}
 %><?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-<ShortName>OpenGrok <%=projtext%></ShortName>
-<Description>Search in OpenGrok <%=projtext%></Description>
-<InputEncoding>UTF-8</InputEncoding>
-<Image height="16" width="16" type="image/png"><%=url%>/<%=laf%>/img/icon.png</Image><%-- 
-<Url type="application/x-suggestions+json" template="suggestionURL"/>
---%><Url template="<%=url+Constants.searchP%>?<%=proj%>q={searchTerms}" type="text/html"/>
+	<ShortName>OpenGrok <%= text.toString() %></ShortName>
+	<Description>Search in OpenGrok <%= text.toString() %></Description>
+	<InputEncoding>UTF-8</InputEncoding>
+	<Image height="16" width="16" type="image/png"><%= img %></Image>
+<%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
+	<Url template="<%= url.toString() %>q={searchTerms}" type="text/html"/>
 </OpenSearchDescription>
+<%
+}
+/* ---------------------- opensearch.jsp end --------------------- */
+%>

@@ -19,26 +19,38 @@ CDDL HEADER END
 Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%>
-<%@page import="org.opensolaris.opengrok.web.Constants"%>
-<div id="Footer">
-    <p class="Center">
-        <a href="http://www.opensolaris.org/os/project/opengrok/"><img src="<%=request.getContextPath()%>/<%=environment.getWebappLAF()%>/img/servedby.png" alt="Served by OpenGrok" title="Served by OpenGrok"/></a>
-    </p>
-    <p class="Center">Indexes created <%=org.opensolaris.opengrok.configuration.RuntimeEnvironment.getInstance().getDateForLastIndexRun()%>
-    </p>
-</div><%
-String fservlet = request.getServletPath();
-if ( fservlet.startsWith(Constants.xrefS) || fservlet.startsWith(Constants.histS) || fservlet.startsWith(Constants.diffS) || fservlet.startsWith(Constants.moreS) ) { %>
-</div><% } // just for content from xref / lister / history / diff / more pages %>
-</div><% // from page %>
-<%-- comment out below to disable default lsttoggle of symbols
-<script type="text/javascript">/* <![CDATA[ */
-if (typeof lsttoggle == 'function')
+Portions Copyright 2011 Jens Elkner.
+--%><%@page import="
+java.util.EnumSet,
+
+org.opensolaris.opengrok.web.PageConfig,
+org.opensolaris.opengrok.web.Prefix"
+%><%!
+/* ---------------------- foot.jspf members start --------------------- */
+	private static EnumSet<Prefix> needAddDiv = EnumSet.of(
+		Prefix.HIST_L, Prefix.XREF_P, Prefix.DIFF_P, Prefix.MORE_P, 
+		// could NOT find any mapping/reference to those ones:
+		Prefix.HIST_S, Prefix.XREF_S, Prefix.DIFF_S, Prefix.MORE_S);
+/* ---------------------- foot.jspf members end --------------------- */
+%><%
+/* ---------------------- foot.jspf start --------------------- */
 {
-    lsttoggle();
-}
-/* ]]> */</script>
---%>
+	cfg = PageConfig.get(request);
+
+		%>
+	<div id="footer">
+<p><a href="http://www.opensolaris.org/os/project/opengrok/" 
+ title="Served by OpenGrok"><span id="fti"></span></a></p>
+<p>Indexes created <%= cfg.getEnv().getDateForLastIndexRun() %></p><%
+	if (needAddDiv.contains(cfg.getPrefix())) {
+		%></div><% // #content
+	}
+	// #footer, #page:
+	%></div>
+</div>
 </body>
 </html>
+<%
+}
+/* ---------------------- foot.jspf end --------------------- */
+%>

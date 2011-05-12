@@ -17,36 +17,53 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright 2011 Jens Elkner.
 
---%><%@ page import = "javax.servlet.*,
-javax.servlet.http.*,
-java.lang.*,
-java.io.*,
-org.opensolaris.opengrok.configuration.*"
- session="false" %><%@ page isErrorPage="true" %><%
+--%><%@page session="false" isErrorPage="true" import="
+org.opensolaris.opengrok.web.Prefix,
+org.opensolaris.opengrok.configuration.RuntimeEnvironment"
+ %><%
+/* ---------------------- enoent.jsp start --------------------- */
+{
+	cfg = PageConfig.get(request);
+	cfg.setTitle("File not found");
 
-String context = request.getContextPath();
-RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-environment.setUrlPrefix(context + Constants.searchR+"?");
-environment.register();
-String rawSource = environment.getSourceRootPath();
-String configError = "";
-if (rawSource.equals("")) {
-    configError = "CONFIGURATION parameter has not been configured in web.xml! Please configure your webapp.";
-} else {
-    if (!environment.getSourceRootFile().isDirectory()) {
-        configError = "The source root specified in your configuration does not point to a valid directory! Please configure your webapp.";
-    }
+	String context = request.getContextPath();
+	cfg.getEnv().setUrlPrefix(context + Prefix.SEARCH_R + "?");
+	String configError = "";
+	if (cfg.getSourceRootPath().isEmpty()) {
+		configError = "CONFIGURATION parameter has not been configured in "
+			+ "web.xml! Please configure your webapp.";
+	} else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
+		configError = "The source root specified in your configuration does "
+			+ "not point to a valid directory! Please configure your webapp.";
+	}
+%><%@
+
+include file="httpheader.jspf"
+
+%><body>
+<div id="page">
+	<div id="whole_header">
+		<div id="header"><%@ 
+
+include file="pageheader.jspf"
+
+		%></div>
+		<div id="Masthead"></div>
+		<div id="sbar"><%@
+
+include file="menu.jspf"
+
+		%></div>
+	</div>
+	<h3 class="error">Error: File not found!</h3>
+	<p>The requested resource is not available. <%= configError %></p>
+<%
 }
-String pageTitle = "File not found";
-%><%@ include file="httpheader.jspf" %>
-<body><div id="page">
-<form action="<%=context+Constants.searchP%>">
-    <div id="header">
-        <%@ include file="pageheader.jspf" %>
-    </div>
-<div id="Masthead"></div>
-<div id="bar"><a id="home" href="<%=context%>/">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
-<h3 class="error">Error 404: File not found!</h3>
-The requested resource is not available. <%=configError%>
-<div style="display:block;height:10em">&nbsp;</div><%@include file="foot.jspf"%>
+/* ---------------------- enoent.jsp end --------------------- */
+%><%@
+		
+include file="foot.jspf"
+
+%>

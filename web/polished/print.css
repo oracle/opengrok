@@ -1,248 +1,484 @@
+/* common stuff */
 body {
-	background: none;
-	color: black;
-	font-family: arial, sans-serif;
-/*	padding: 1em;
-	margin: 0em;*/
-}
-#page {
-	background: none;
-	border: none;
-	/*margin:0;*/
+	font-family: "Liberation Sans", sans-serif;
+	margin: 1ex 1ex 0 1ex;
 }
 
-#Masthead {
-	background: none;
-	display:block;
-	border: none;
-	color:#000;
-	border-bottom: 1px solid #000;
-/*	padding-bottom:3px;
-	margin-bottom: 3px; */
-}
-#Masthead a{
-	color:#000;
-}
-#Masthead tt {
-	color:#000;
-}
-#header {
-	background:none;
-	min-height:40px;
-	height:40px;
-}
-
-#content {
-  position:absolute;
-  bottom:0px;
-  left:0px;
-  right:0px;
-  padding-left: 1em;  
-  padding-top:6px;
-  overflow:auto;
-  top:6em;
-  }
-
-#whole_header {
-  height:6em;
-  padding-left: 1em;  
-  position:absolute;
-  top:0;
-  right:0px;
-  left:0px;
-  /*width:98%;*/
-  overflow:auto;
-  }
-
-#MastheadLogo h1 {
-	display:inline;
-	font-size:medium;
-}
-
-#MastheadLogo {
-	background-color: white;
-	background-image: none;
-	float: left;
-	height: 48px;
-	width: 270px;
-	border: none;
+a {
 	text-decoration: none;
 }
 
-#pagetitle {
-	float: right;
-	font-size: medium;
-	text-align:right;
-	color:#000;
+a:link {
+	color: #2030A2;
 }
 
-#filename {
-	font-size: large;
-	text-align:right;
-	color:#000;
-	border: none;
+a:visited, a:active, a:hover {
+	color: #202062;
 }
 
-#bar {
-	padding-left: 0.5em;
-	margin-bottom:1em;
+a:active, a:hover {
+	text-decoration: underline;
+}
+
+img, tt, form, pre {
+	border: 0;
+}
+
+del {
+	text-decoration: line-through;
+}
+
+caption {
+	caption-side:top;
+	margin: 1ex 0;
+	text-align: left;
+}
+
+thead {
+	color: white;
+	background-color: #616ca7;
+}
+
+tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
+	background-color: #e5e5e5;
+}
+
+input, button {
+	border: 1px solid #755;
+	border-radius: 0.75ex;
+	-moz-border-radius: 0.75ex;
+	background-color: #e5e5e5;
+}
+
+label {
+	font-weight: bold;
+}
+
+.pre { /* the diff content */
+	white-space: pre-wrap;
+	font-family: "Liberation Mono", monospace;
+	margin: 0;
+}
+
+#page { }
+
+.error { /* error messages */
+	color: #a52a2a;
+}
+
+/* ############### start of header ############## */
+#whole_header {
 	display: none;
 }
 
-input.q {
-	color: #000;
-	border: 1px solid #000;
-	font-weight: normal;
-	padding:2px;
+#pagetitle { /* short verbal summary/description of the shown content */
 }
 
-input.submit {
-	background-color: #ccc;
-	color: #000;
-	border: 1px solid #000;
-	padding: 0px;
+/* required for help page, only */
+#sbar { /* full search navbar */
+	border-bottom: 1px solid #bba;
+	border-top: 1px solid #bba;
+	background-color: #FFFFE5;
+	margin: 0;
+	clear: both;
+}
+
+/* *** full search navbar *** */
+#qtbl, #ptbl {
+	display: inline-block;
+	vertical-align: top;
+} 
+
+#qtbl tr {
+	background: none; /* remove alternating colors */
+}
+
+#ptbl > p {
+	text-align: center;
+	white-space: nowrap;
+	margin: 0.5ex 1ex;
+}
+
+#qtbl td:first-child {
+    width: 10ex;
+    text-align: right;
+}
+
+#qtbl td:nth-child(2) {
+	width: 45ex;
+}
+
+#qtbl input.q {
+	width: 100%;
+}
+
+#ptbl {
+	margin-left: 2em;
+}
+
+#ptbl button {
+	font-size: small;
+}	
+
+#ptbl button:first-of-type {
+	margin-left: 1em;
+}
+
+#ptbl select {
+	width: 100%;
+}
+
+#ptbl option {
+	padding: 0 1ex;
+}
+
+#sbox > p:last-of-type {
+	white-space: nowrap;
+	/* 11ex = width(#qtbl td:first-child) + margin-left(body) */
+	margin: 1ex 0 0.5ex 11ex;
+}
+
+#sbox > p:last-of-type > :nth-child(n+2) {
+	margin-left: 1ex;
+}
+
+input.q { /* text input fields */
+	background-color: #ffffff;
+}
+
+input.submit { /* start search button */
 	font-weight: bold;
-	min-width:4em;
-	text-align:center;
+}
+/* ############### end of header ############## */
+
+
+/* ############### start of content ############## */
+#content {
 }
 
-input.submit:hover, input.submit:active {
-	background-color: #ddd;
-	color: #000;
-	border: 1px solid #000;
-	padding: 0px;
+
+/* *** help page *** */
+#help dfn { /* definitions */
+	text-decoration: underline;
+}
+
+#help .fields, #help .example {
+	margin-left: 3em;
+}
+
+#help dt {
 	font-weight: bold;
-	min-width:4em;
-	text-align:center;
 }
 
-.thead {
-	background-image:none;
-	color:#000;
-	background-color:#ddd;
-	border-bottom:1px solid #000;
-	font-weight:bold;
+
+/* *** more page ***/
+#more {
+	line-height: 1.25em;
 }
 
-.alt {
-	background:none;
+#more b { /* highlight matches */ 
+	background-color: #e5e5e5;
 }
 
-a:link			{color:#000;text-decoration:none;}
-a:visited		{color:#000;text-decoration:none;}
-a:active, a:hover	{color:#000;text-decoration:underline;}
-img {border:0;}
 
-tt {margin:0;}
+/* *** history page *** */
+table#revisions {
+	/* width: 100%; */ /* table with the history info for a file */
+	/* border-collapse: collapse; */ /* looks better with a small divider */
+}
+
+#revisions a.h	{ /* modified file list content */
+	font-size: small;
+	margin-left: 2em;
+}
+
+#revisions .filelist { /* "Show modified files" */
+	display: inline;
+}
+
+#revisions .filelist-hidden { /* "Hide modified files" */
+	display: none;
+}
+
+#revisions tbody td:first-child {
+	/* rev number - git/mercurial revs numbers look bad with prop. fonts */
+	font-family: "Liberation Mono", monospace;
+	text-align: right;
+}
+
+#revisions tbody td:nth-child(2), #revisions tbody td:nth-child(3) {
+	/* Compare and Date column */
+	text-align: center;
+}
+
+#revisions tbody td:nth-child(4) { /* author column */
+	padding: 0 1ex;
+	text-align: center;
+}
+
+.rssbadge { /* RSS/XML Feed on history page */
+	text-align: right;
+	margin: 1ex 0;
+}
 
 
-form, pre {padding:0px;margin:0px;}
-#src {font-size:75%;}
-#src .l  {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;}
-#src .hl {color:#000;border-right: 1px solid #000;background-color:#fff;margin-right:.5em;padding-right:.5em;text-decoration:none;font-weight:bold;}
-#src .l-hide  {display: none}
-#src .hl-hide {display: none}
-#src tt{padding-left:1em; padding-right:1em;}
-.sl {color:#999;text-decoration:underline;}
-td.a{color:#000}
-.n  {color:#000;}
-.s  {color:#000;}
-.c  {color:#000; font-style:italic;}
+/* *** diff page *** */
+#diffbar { /* diff navbar: contains the tabs to select diff format */
+	display: none;
+}
 
-a.s {color:#000;}  /* matched lines */
-a.f {color:#000;}
-div.a{color:#000}
+#difftable {
+	font-size: small;
+}
 
-a.d {color:#000; font-weight:bold; text-decoration:none;} /* definitions */
+#difftable .d {
+	/* "Deleted" heading + highlight of deleted text in diff lines */
+	background-color: #ffcc40;
+}
 
-a.xm {color:#c66; font-weight:bold; text-decoration:none;} /* macro */
+#difftable .a {
+	/* "Added" heading + highlight of added text in diff lines */
+	background-color: #8bd98b;
+}
 
-a.xa {color:#60c; font-weight:bold; text-decoration:none;} /* argument */
-a.xl {color:#963; font-weight:bold; text-decoration:none;} /* local */
-a.xv {color:#c30; font-weight:bold; text-decoration:none;} /* variable */
+#difftable table { /* left side == prev. rev; right side "current" rev */
+	table-layout: fixed;
+	border-collapse: collapse;
+}
 
-a.xp {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* package */
-a.xc {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* class */
-a.xi {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* interface */
-a.xn {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* namespace */
+#difftable table th { /* usually both rev. have changes: eq. space for both */
+	padding-top: 1ex;
+	width: 50%;
+}
 
-a.xe {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* enum */
-a.xer {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* enumerator */
-a.xs {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* struct */
-a.xt {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* typedef */
-a.xts {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* typedefs */
-a.xu {color:#909; font-weight:bold; font-style:italic; text-decoration:none;} /* union */
+#difftable th:last-child, #difftable td:last-child {
+	border-left: 1px solid black;
+}
 
-a.xfld {color:#090; font-weight:bold; text-decoration:none;} /* field */
-a.xmb {color:#090; font-weight:bold; text-decoration:none;} /* member */
+#difftable .plain td {
+	padding: 2px;
+}
 
-a.xf {color:#00f; font-weight:bold; text-decoration:none;} /* function */
-a.xmt {color:#00f; font-weight:bold; text-decoration:none;} /* method */
-a.xsr {color:#00f; font-weight:bold; text-decoration:none;} /* subroutine */
+#difftable .image td {
+	padding: 5px;
+}
 
-#results .con{font-size:small;color:#000;}
-#more .l, #results .l { color:#888; }
-#results .m {background-color:#ffb;}
-#results i {color: #000; font-weight:bold;}
-#results tr.dir{background-color:#fff;border-top:3px solid #000;}
-#results td.q {visibility: hidden;}
-#results td.f{width:3em;padding-left:2em;padding-right:.5em;}
+#difftable .k { /* border between the context and real diff lines */
+	border-bottom: 1px dashed #ccc;
+}
 
-#more { line-height:1.25em;}
-#more b { background-color:transparent;}
 
-#diffbar {border-bottom: 1px solid #000; padding-left:2em;font-size:medium; margin-top:1em;}
-#difftable {border:#000; border-collapse:collapse;font-size:small;}
-span.tab    { padding: 5px; padding-top:3px; padding-bottom: 0px; margin-left: 2px; margin-right: 2px; margin-bottom:0px ;background-color:#eee; border:1px solid #000;border-bottom:1px none;}
-span.tabsel { padding: 6px; padding-top:5px; padding-bottom: 1px; margin-left: 2px; margin-right: 2px; background-color:#fff; border:1px solid #000; border-bottom:2px solid #fff;}
-#difftable .d { background-color:#FFCC40;font-weight:bold;}
-#difftable .a { background-color:#8BD98B;font-weight:bold;}
-tr.k {border-bottom:1px dashed #000;}
-#difftable i  {color:#666;background-color:#ddd;margin-right:.2em;padding-left:1em;padding-right:.5em;text-decoration:none;}
-#difftable i.a  {background-color:#FFDD80;color:#666; font-weight:bold;}
-strike.d{background-color:#bbddbb; margin-right:.2em;padding-left:1em;padding-right:.5em;}
-#difftable td.d { background-color:#eeeeee;}
-.grey{background-color:#eee;}
+/* *** list aka xref stuff *** */
 
-#badge img { display:none; }
+/* directory listing */
+table#dirlist { /* the "Name" column */
+	font-family:	"Liberation Mono", monospace;
+	border-style: none;
+	border-collapse: collapse;
+}
 
-#Footer {
-	background: none;
+#dirlist .r, #dirlist .p {
+	background-image: url(./img/combined.png);
+	background-repeat: no-repeat;
+	width: 15px;
+	height: 15px;
+	padding: 0;
+	vertical-align: middle;
+	margin: 0 1ex 0 1em;
+}
+
+#dirlist .r { /* directory name, d.gif */
+	background-position: -54px 0;
+}
+
+#dirlist .p { /* file name, p.gif */
+	background-position: -69px 0;
+}
+
+#dirlist td:nth-child(n+2) { /* all but the first column */
+	padding-right: 1em;
+}
+
+#dirlist tbody td:nth-child(4) {
+	text-align: right; /* CSS3 may allow " " (single space char) */
+}
+
+
+/* file display */
+#src {
+}
+
+#src pre {
+	margin: 0;
+	font-size: small;
+}
+
+#src .l-hide, #src .hl-hide, .blame-hidden { /* hidden line number/annotation block */
+	display: none
+}
+
+#src .l, #src .hl, .blame .r, .blame .a,
+#results .l, #more .l,
+#difftable i, del.d { /* line number/annotation block */
+	display: inline-block;
+	width: 6ex;
+	text-align: right;
+	padding: 0 1ex;
+	margin-right: .5ex;
+	background-color: #ffffcc;
+	border-right: 1px solid #ddd;
+	color: #888;
+}
+
+#src .hl { /* highlighted line number */
 	color: #000;
-	font-size: 75%;
-	margin-top: 1em;
 }
-#Footer p {
-	margin: 0.6em 0 1em 0;
-	text-align:center;
+
+.blame .r { /* revision number "column" (annotation) */
+	text-align: right;
 }
-#Footer a {
+
+.blame .a { /* author name "column" (annotation) */
+	text-align: center;
+}
+
+/* source code highlighting - see org/opengrok/analysis/$lang/*Xref.lex */
+#src .n		{ /* numbers/label */	color: #a52a2a; } 
+#src .s		{ /* strings */			color: green; } 
+#src .c		{ /* comment */			color: #666; }
+#src .b		{ /* heading/title/bold */	color: #000; font-weight: bold; }
+#src .k		{ /* block display */ 	color: #000; font-family: "Liberation Mono", monospace; }
+#src a.d	{ /* symbol definition */	color: #909; font-weight: bold; }
+
+a.xm	{ /* macro */			color: #c66; font-weight: bold; }
+a.xa	{ /* argument */		color: #60c; font-weight: bold; }
+a.xl	{ /* local */			color: #963; font-weight: bold; }
+a.xv	{ /* variable */		color: #c30; font-weight: bold; }
+a.xc	{ /* class */			color: #909; font-weight: bold; font-style: italic; }
+a.xp	{ /* package */			color: #909; font-weight: bold; font-style: italic; }
+a.xi	{ /* interface */		color: #909; font-weight: bold; font-style: italic; }
+a.xn	{ /* namespace */		color: #909; font-weight: bold; font-style: italic; }
+a.xe	{ /* enum */			color: #909; font-weight: bold; font-style: italic; }
+a.xer	{ /* enumerator */		color: #909; font-weight: bold; font-style: italic; }
+a.xs	{ /* struct */			color: #909; font-weight: bold; font-style: italic; }
+a.xt	{ /* typedef */			color: #909; font-weight: bold; font-style: italic; }
+a.xts	{ /* typedefs */		color: #909; font-weight: bold; font-style: italic; }
+a.xu	{ /* union */			color: #909; font-weight: bold; font-style: italic; }
+a.xfld	{ /* field */			color: #090; font-weight: bold; }
+a.xmb	{ /* member */			color: #090; font-weight: bold; }
+a.xf	{ /* function */		color: #00f; font-weight: bold; }
+a.xmt	{ /* method */			color: #00f; font-weight: bold; }
+a.xsr	{ /* subroutine */		color: #00f; font-weight: bold; }
+
+#man table, #man td  { /* #man == troff src */
+	background-color: #e5e5e5;
+	border: 1px;
+	padding: 2px;
+}
+
+#man p { /* a troff paragraph */
+	margin-top: 0.5em;
+	margin-bottom: 0;
+}
+
+#man div.b { /* man section headings etc. */
+	margin-top: 2em;
+}
+
+#man div.rs { /* a right-shifted block */
+	margin-left: 3em;
+	margin-bottom: 1em;
+}
+
+/* "Navigate" Popup */
+.sym_list_style_hide, .sym_list_style {
+	display: none;
+}
+
+/* search result page */
+#results {
+}
+
+#results p { /* pagetitle and slider */
+	padding: 0.5em;
+}
+
+#results .dir { /* directory row above matched files */
+	background-color: #cccccc;
+}
+
+#results .dir td { /* directory link */
+	padding-left: 1em;
+}
+
+#results td.q { /* 1st column: H A D */
+	white-space: nowrap;
+	font-size: xx-small;
+	padding: 0 1ex;
+}
+
+#results td.f { /* 2nd column: filename */
+	min-width: 5em;
+	margin-left: 1em;
+	padding: 0 1ex;
+}
+
+#results .con { /* 3rd column: line number + matched line contents */
+	font-size: small;
+}
+
+#results .s, #more .s { /* matched line contents */
 	color: #000;
 }
 
-.more {background-color:transparent;border: 1px #ccc solid;padding:.3em;margin:1px;}
-.sel {background-color:#ddd;border: 1px #000 solid;padding:.5em;margin:1px;}
-
-span.blame { }
-span.blame-hidden { display: none }
-
-.sym_list_style {
-    position:absolute;
-    top:100px;
-    left:100px;
-    width:100px;
-    height:100px;
-    overflow:auto;
-    z-index: 10;
-    border:solid 1px #c0c0c0;
-    background-color:#ffffcc;
-    color:#000;
-    font-size:12px;
-    font-family:monospace;
-    padding:5px;
-    opacity:0.9;
-    filter:alpha(opacity=90)
+#results i { /* match type description (method, interface etc.) */ 
+	color: green;
+	font-weight: bold;
 }
-.sym_list_style_hide {
-    display: none;
+
+#results .sel { /* slider item for the shown search result page */
+	background-color: #e5e5e5;
+	border: 1px #998 solid;
+	padding: .5em;
+	margin: 1px;
 }
+
+#results .more { /* slider item for the n-th search result page */
+	border: 1px #bba solid;
+	padding: .3em;
+	margin: 1px;
+}
+
+/* ############### start of footer ############## */
+#footer {
+	color: #755;
+	font-size: small;
+	margin: 1ex 0;
+	border-top: 1px solid #bba;
+}
+
+#footer p { /* footer text */
+	padding: 0;
+	margin: 0.2em;
+	text-align: center;
+}
+
+#fti { /* servedby.png */
+	display: inline-block;
+	width: 177px;
+	height: 37px;
+	vertical-align: middle;
+	background-image: url(./img/combined.png);
+	background-repeat: no-repeat;
+	background-position: -255px 0;
+}
+#rssi { /* rss.png */
+	display: inline-block;
+	width: 80px;
+	height: 15px;
+	vertical-align: middle;
+	background-image: url(./img/combined.png);
+	background-repeat: no-repeat;
+	background-position: -432px 0;
+}
+/* ############### end of footer ############## */

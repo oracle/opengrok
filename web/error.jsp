@@ -17,47 +17,69 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Portions Copyright 2011 Jens Elkner.
 
---%><%@ page import = "javax.servlet.*,
-javax.servlet.http.*,
-java.io.*,
-org.opensolaris.opengrok.configuration.*,
+--%><%@ page session="false" isErrorPage="true" import="
+java.io.PrintWriter,
+java.io.StringWriter,
+
 org.opensolaris.opengrok.web.Util"
-%><%@ page session="false" %><%@ page isErrorPage="true" %><%
-String context = request.getContextPath();
-RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-environment.setUrlPrefix(context + Constants.searchR+"?");
-environment.register();
-String rawSource = environment.getSourceRootPath();
-String configError = "";
-if ("".equals(rawSource)) {
-    configError = "CONFIGURATION parameter has not been configured in web.xml! Please configure your webapp.";
-} else {
-    if (environment.getSourceRootFile() == null || !environment.getSourceRootFile().isDirectory()) {
-        configError = "The source root specified in your configuration does not point to a valid directory! Please configure your webapp.";
-    }
-}
-String pageTitle = "Error!";
-%><%@ include file="httpheader.jspf" %>
+%><%
+/* ---------------------- error.jsp start --------------------- */
+{
+	cfg = PageConfig.get(request);
+	cfg.setTitle("Error!");
+
+	String context = request.getContextPath();
+	String configError = "";
+	if (cfg.getSourceRootPath().isEmpty()) {
+		configError = "CONFIGURATION parameter has not been configured in "
+			+ "web.xml! Please configure your webapp.";
+	} else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
+		configError = "The source root specified in your configuration does "
+			+ "not point to a valid directory! Please configure your webapp.";
+	}
+%><%@ 
+
+include file="httpheader.jspf" 
+
+%>
 <body>
 <div id="page">
-    <div id="header">
-      <%@ include file="pageheader.jspf" %>
-    </div>
-<div id="Masthead"></div>
-<div id="bar"><a id="home" href="<%=context%>/">Home</a> | <input id="search" name="q" class="q"/> <input type="submit" value="Search" class="submit"/> </div>
-<h3 class="error">There was an error!</h3>
-<p><%=configError%>
-</p><pre><%
-   StringWriter wrt = new StringWriter();
-   PrintWriter prt = new PrintWriter(wrt);
-   exception.printStackTrace(prt);
-   prt.flush();
-   Util.htmlize(wrt.toString(), out);
-   prt.close();
+	<div id="whole_header">
+ 	   <div id="header">
+<%@
+    
+include file="pageheader.jspf"
+
 %>
-</pre>
-<p>
-<%=exception.getMessage()%>
-</p>
-<%@include file="foot.jspf"%>
+    	</div>
+		<div id="Masthead"></div>
+		<div id="sbar"><%@
+
+include file="menu.jspf"
+
+		%></div>
+	</div>
+	<h3 class="error">There was an error!</h3>
+	<p class="error"><%= configError %></p><%
+	if (exception != null) {
+%>
+		<p class="error"><%= exception.getMessage() %></p>
+		<pre><%
+		StringWriter wrt = new StringWriter();
+		PrintWriter prt = new PrintWriter(wrt);
+		exception.printStackTrace(prt);
+		prt.close();
+		out.write(Util.htmlize(wrt.toString()));
+		%></pre><%
+	} else {
+		%><p class="error">Unknown Error</p><%
+	}
+}
+/* ---------------------- error.jsp end --------------------- */
+%><%@
+
+include file="foot.jspf"
+
+%>

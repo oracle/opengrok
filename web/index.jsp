@@ -19,30 +19,45 @@ CDDL HEADER END
 Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%><%@ page import = "java.util.List,
-javax.servlet.*,
-javax.servlet.http.*,
-org.opensolaris.opengrok.configuration.RuntimeEnvironment,
-org.opensolaris.opengrok.configuration.Project,
-org.opensolaris.opengrok.web.*"
- session="false" errorPage="error.jsp" %><%@ include file="projects.jspf" %><%
-String q = null;
-String defs = null;
-String refs = null;
-String hist = null;
-String path = null;
-String sort = null;
-RuntimeEnvironment environment = RuntimeEnvironment.getInstance();
-String pageTitle = "Search";
- %><%@ include file="httpheader.jspf" %>
-<body>
-<div id="page">
-<div id="header"><%@ include file="pageheader.jspf" %></div>
-<div id="Masthead"></div>
-<div id="bar">
-<%@ include file="menu.jspf" %>
-</div>
-<div id="results" style="font-size:100%">
-<%@ include file="index_body.html" %>
-</div>
-<%@include file="foot.jspf"%>
+Portions Copyright 2011 Jens Elkner.
+--%><%@ page session="false" errorPage="error.jsp" %><%@ 
+
+include file="projects.jspf"
+
+%><%
+/* ---------------------- index.jsp start --------------------- */
+{
+	cfg = PageConfig.get(request);
+	cfg.setTitle("Search");
+%><%@
+
+include file="httpheader.jspf"
+
+%><body>
+	<div id="page">
+		<div id="whole_header">
+			<div id="header"><%@
+
+include file="pageheader.jspf"
+
+			%></div>
+			<div id="Masthead"></div>
+			<div id="sbar"><%@
+
+include file="menu.jspf"
+
+			%></div>
+		</div>
+		<div id="results"><%@
+
+include file="index_body.html"
+
+		%></div>
+<%
+}
+/* ---------------------- index.jsp end --------------------- */
+%><%@
+
+include file="foot.jspf"
+
+%>

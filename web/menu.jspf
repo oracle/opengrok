@@ -1,4 +1,6 @@
 <%-- 
+$Id$
+
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -19,146 +21,162 @@ CDDL HEADER END
 Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%><%@page import="org.opensolaris.opengrok.web.Constants"%>
-<%@ page import="org.opensolaris.opengrok.configuration.Project,
-org.opensolaris.opengrok.web.Util,java.util.Iterator"%>
-<% if (hasProjects) { String hcontext = request.getContextPath();
-%>
-<script type="text/javascript" src="<%=hcontext%>/jquery-1.4.4.min.js"></script>
-<%-- TODO  Bug 11749  
-<script type="text/javascript" src="jquery.autocomplete-1.1.pack.js"></script>
+Portions Copyright 2011 Jens Elkner.
 
-<script type="text/javascript">/* <![CDATA[ */
-    var projects = [
-<%
-for (Project p : env.getProjects()) { 
-   %>"<%=Util.formQuoteEscape(p.getDescription())%>",<%
-}
+--%><%@page import="
+java.util.TreeSet,
+java.util.TreeMap,
+java.util.Map.Entry,
+java.util.List,
+java.util.HashMap,
+java.util.ArrayList,
+
+org.opensolaris.opengrok.configuration.Project,
+org.opensolaris.opengrok.search.QueryBuilder,
+org.opensolaris.opengrok.web.PageConfig,
+org.opensolaris.opengrok.web.Prefix,
+org.opensolaris.opengrok.web.Util"
+%><%
+/* ---------------------- menu.jspf start --------------------- */
+{
+	// PageConfig cfg = PageConfig.get(request);
+
+	List<Project> projects = cfg.getEnv().getProjects();
+	if (projects == null) {
+		projects = new ArrayList<Project>(0);
+	}
+	TreeMap<String, String> pMap = new TreeMap<String, String>();
+	QueryBuilder queryParams = cfg.getQueryBuilder();
+	if (projects.size() != 0) {
+		for (Project p : projects) {
+			String name = p.getDescription();
+			String esc = Util.formQuoteEscape(p.getDescription());
+			pMap.put(name, esc);
+		}
+		StringBuilder jsProjects = new StringBuilder(64);
+		jsProjects.append('\'');
+		for (String name : cfg.getRequestedProjects()) {
+			jsProjects.append(name).append("','");
+		}
+		if (jsProjects.length() > 1) {
+			jsProjects.setLength(jsProjects.length()-2);
+		} else {
+			jsProjects.setLength(0);
+		}
 %>
-  ];
-$().ready(function() {
-    $("#project").autocomplete(projects, {
-                minChars: 0,
-		multiple: true,
-                multipleSeparator: ",",
-		//mustMatch: true,
-                matchContains: "word",
-                max: 200,
-                cacheLength:20,
-		//autoFill: false,
-                formatItem: function(row, i, max) {
-                    if (row!=null)
-			return i + "/" + max + ": " + row[0];
-                    else return "";
-		},
-		formatMatch: function(row, i, max) {
-                    if (row!=null)
-			return row[0]
-                    else return "";
-		},
-		formatResult: function(row) {
-                    if (row!=null)
-			return row[0];
-                    else return "";
-		},
-                width: "300px"                
-	});
-   });
-/* ]]> */
-</script>
---%>
 <script type="text/javascript">/* <![CDATA[ */
-function selectAllProjects() {     
-     $("#project *").attr("selected","selected");
-}
-function invertAllProjects() {    
-     $("#project *").each( function(){
-         if ( $(this).attr("selected") ) { $(this).removeAttr("selected") }
-         else { $(this).attr("selected","true"); }
-     }
-    );
-}
-function goFirstProject() {
-    var selected=$.map($('#project :selected'), function(e) { return $(e).text(); });window.location='<%=hcontext%>'+'<%=Constants.xrefP%>/'+selected[0];
-}
-function checkEnter(event) {
-    if(event.keyCode=='13' && sbox.q.value=='' && sbox.defs.value==''
-        && sbox.refs.value=='' && sbox.path.value=='' && sbox.hist.value=='') { goFirstProject(); }
-    else if(event.keyCode=='13') {sbox.submit();}
-}
+	document.projects = [ <%= jsProjects.toString() 
+	%> ];document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P 
+	%>';document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
-</script>
-<%}%>
-<table cellpadding="0" cellspacing="0" border="0" width="100%">
-    <tr>
-        <td valign="top"><br /> &nbsp;</td>
-        <td align="left" valign="middle">
-            <br/><form action="search" id="sbox">
-                <table cellpadding="2" border="0" cellspacing="0">
-                    <tr><td align="right"> Full&nbsp;Search </td><td><input tabindex="1" class="q" name="q" size="45" style="width: 300px" value="<%=Util.formQuoteEscape(q)%>"/></td>
- <% if (hasProjects) { %>
-                        <td rowspan="5" style="border-left:gray;border-left-width:thin;border-left-color:gray">
-                            <!--<td align="right" valign="top"> -->
-                            <table border="0">
-                                <tbody>
-                                    <tr>
-                                        <td>in project(s): <span style="padding-left:60px;font-size:small"><a tabindex="6" href="#" onclick="javascript:selectAllProjects();return false;">select all</a>&nbsp;|&nbsp;<a href="#" tabindex="7" onclick="javascript:invertAllProjects();return false;">invert selection</a></span></td>
-                                    </tr>
-                                    <tr><td>
-                                            <select tabindex="8" ondblclick="javascript:goFirstProject();" onkeyup="javascript:checkEnter(event);" class="q" style="width: 300px" id="project" name="project" multiple="multiple" size="<%=Math.min(6, env.getProjects().size())%>">
-                                <%
-                                for (Project p : env.getProjects()) {
-                                    //TODO below "selected" has no effect if one refreshes the page with F5
-                                    //also below ondblclick doesn't work in IE ...
-                                    // ondblclick="javascript:goFirstProject();"
-                                %><option value="<%=Util.formQuoteEscape(p.getDescription())%>"<%
-                                          if (project != null) {
-                                              String projectPath = p.getDescription();
-                                              for (Iterator it = project.iterator(); it.hasNext();) {
-                                                  if (it.next().equals(projectPath)) {
-                                                      %> selected="selected"<%
-                                                  }
-                                              }
-                                           }
-                                          %>><%=Util.formQuoteEscape(p.getDescription())%></option>
-                                <%
-                                }
-                                %></select></td>
-                                    </tr>
-                                </tbody>
-                            </table></td><%
-                    }%>
-                    </tr>
-                    <tr><td align="right"> Definition </td><td><input class="q" tabindex="2" name="defs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(defs)%>"/></td></tr>
-                    <tr><td align="right"> Symbol </td><td><input class="q" tabindex="3" name="refs" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(refs)%>"/></td></tr>
-                    <tr><td align="right"> File&nbsp;Path </td><td><input class="q" tabindex="4" name="path" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(path)%>"/></td></tr>
-                    <tr><td align="right"> History </td><td><input class="q" tabindex="5" name="hist" size="25" style="width: 300px" value="<%=Util.formQuoteEscape(hist)%>"/></td></tr>
+</script><%
+	}
+%>
+<form action="search" id="sbox">
+
+<div id="qtbl">
+<table>
+	<tr>
+		<td><label for="s1">Full&nbsp;Search</label></td>
+		<td><input tabindex="1" class="q" name="q" id="s1" value="<%= 
+				Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
+	</tr>
+	<tr>
+		<td><label for="s2">Definition</label></td>
+		<td><input class="q" tabindex="2" name="defs" id="s2" value="<%= 
+			Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
+	</tr>
+	<tr>
+		<td><label for="s3">Symbol</label></td>
+		<td><input class="q" tabindex="3" name="refs" id="s3" value="<%= 
+			Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
+	</tr>
+	<tr>
+		<td><label for="s4">File&nbsp;Path</label></td>
+		<td><input class="q" tabindex="4" name="path" id="s4" value="<%= 
+			Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
+	</tr>
+	<tr>
+		<td><label for="s5">History</label></td>
+		<td><input class="q" tabindex="5" name="hist" id="s5" value="<%= 
+			Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
+	</tr>
 <%-- TODO  Bug 11749
-                    <% if (hasProjects) { %>
-                    <tr><td align="right"> Project(s) </td><td>
-                <table cellspacing="0" cellpadding="0" border="0" class="combo_table" id="combotable">
-                <tbody><tr><td class="combo_td1">
-                <div class="combo_div4" style="background: transparent url(<%=httpHeaderContext%>/<%=laf%>/img/transparent_pixel.gif) repeat scroll 0% 0%;">
-                    <input class="combo_input1 combo_input" id="project" name="project" size="25" value="<%=Util.formQuoteEscape(sproject.toString())%>"/>
-                </div></td><td valign="top" align="left" class="combo_td2" id="combotable_button">
-                    <a onclick='javascript:$("#project").click();$("#project").click();'/>
-                    <img style="display: none;" alt="" src="<%=httpHeaderContext%>/<%=laf%>/img/button2.png"/>
-                </td></tr></tbody></table>
-                    </td></tr>
-                    <%}%>
+<%
+	if (projects.size() != 0) {
+		String imgDir = cfg.getCssDir() + "/img/";
+	%>
+	<tr>
+		<td>Project(s)</td>
+		<td>
+			<table class="combo_table" id="combotable">
+				<tbody>
+					<tr>
+						<td class="combo_td1"><div class="combo_div4" 
+							style="background: transparent url(<%=
+								imgDir %>transparent_pixel.gif) 
+								repeat scroll 0% 0%;"><input 
+								class="combo_input1 combo_input" id="project" 
+								name="project" size="25" 
+								value="<%= cfg.getRequestedProjectsAsString() 
+								%>"/></div>
+						</td>
+						<td valign="top" align="left" class="combo_td2" 
+							id="combotable_button"><a 
+							onclick='javascript: $("#project").click();
+							$("#project").click();'/><img style="display: none;" 
+							alt="" src="<%= imgDir %>button2.png"/>
+						</td>
+					</tr>
+				</tbody>
+			</table></td>
+	</tr><%
+	}
+%>
 --%>
-                    <tr><td colspan="2" align="center">  &nbsp; <input tabindex="9" class="submit" type="submit" value="Search"/> |
-                            <input tabindex="10" class="submit" onclick="javascript:sbox.q.value='';sbox.defs.value='';sbox.refs.value='';sbox.path.value='';sbox.hist.value='';sbox.project.value='';" type="button" value=" Clear "/>
-                    | <a tabindex="11" href="help.jsp">Help</a></td></tr>
-                </table>
-            </form>
-        </td>
-    <td valign="top" align="right"></td></tr>
 </table>
-<script type="text/javascript">/* <![CDATA[ */
-//below is needed for menu functions
-var sbox=document.getElementById('sbox');
-//TODO  Bug 11749 var p=document.getElementById('project');
-//p.setAttribute("autocomplete", "off");
-/* ]]> */
-</script>
+</div><%
+
+	if (projects.size() != 0) {
+%>
+<div id="ptbl">
+	<p><label for="project">In Project(s)</label> <button tabindex="6" type="button"
+		onclick="javascript: selectAllProjects(); return false;"
+		>select all</button>&nbsp;<button tabindex="7" type="button"
+		onclick="javascript: invertAllProjects(); return false;"
+		>invert selection</button> </p>
+	<select tabindex="8" ondblclick="javascript: goFirstProject();" 
+		onkeyup="javascript: checkEnter(event);" class="q" id="project" 
+		name="project" multiple="multiple" size="<%= 
+		Math.min(6, projects.size()) %>"><%
+		TreeSet<String> pRequested = cfg.getRequestedProjects();
+		for (Entry<String,String> e : pMap.entrySet()) {
+			// TODO below "selected" has no effect if one refreshes the page 
+			// with F5 also below ondblclick doesn't work in IE ...
+			// ondblclick="javascript:goFirstProject();"
+		%>
+		<option value="<%= e.getValue() %>"<%
+			if (pRequested.contains(e.getKey())) {
+			%> selected="selected"<%
+			}
+			%>><%= e.getValue() %></option><%
+		}
+		%>
+	</select>
+</div><%
+	}
+	%>
+
+<p><input 
+	tabindex="9" class="submit" type="submit" value="Search"/> <input 
+	tabindex="10" class="submit" onclick="javascript: sbox.q.value=''; 
+	sbox.defs.value = ''; sbox.refs.value = ''; sbox.path.value = ''; 
+	sbox.hist.value = ''; sbox.project.value ='';" type="button" 
+	value=" Clear "/> <button class="help" 
+	tabindex="11" onclick="window.open('help.jsp')">Help</button>
+</p>
+</form>
+<%
+}
+/* ---------------------- menu.jspf end --------------------- */
+%>

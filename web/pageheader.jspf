@@ -18,7 +18,12 @@ CDDL HEADER END
 
 Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 
---%>
-<% String home = request.getContextPath() + "/";
+--%><% 
+/* ---------------------- pageheader.jspf start --------------------- */
+{
 %>
-<a href="<%=home%>"><span id="MastheadLogo"></span></a>
+<a href="<%= request.getContextPath() %>/"><span id="MastheadLogo"></span></a>
+<% 
+}
+/* ---------------------- pageheader.jspf start --------------------- */
+%>

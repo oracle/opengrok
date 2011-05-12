@@ -1,4 +1,6 @@
 <%-- 
+$Id$
+
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -19,52 +21,46 @@ CDDL HEADER END
 Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
---%><%@ page import = "javax.servlet.*,
-java.lang.*,
-javax.servlet.http.*,
-java.util.*,
-java.io.*,
-java.text.*,  
-org.opensolaris.opengrok.analysis.*,
-org.opensolaris.opengrok.history.*,
-org.opensolaris.opengrok.web.*,
-org.opensolaris.opengrok.search.context.*,
+Portions Copyright 2011 Jens Elkner.
+
+--%><%@page import="
+java.io.FileReader,
+java.util.logging.Level,
+
+org.opensolaris.opengrok.OpenGrokLogger,
+org.apache.lucene.search.Query,
 org.opensolaris.opengrok.search.QueryBuilder,
-org.opensolaris.opengrok.search.SearchEngine,
-java.util.regex.*,
-org.apache.lucene.queryParser.*,
-org.apache.lucene.search.*"
-%><%@include file="mast.jsp"%><%
+org.opensolaris.opengrok.search.context.Context"
+%><%@include 
 
-if (valid) {
-    QueryBuilder qbuilder = new QueryBuilder()
-            .setFreetext(request.getParameter("full"))
-            .setDefs(request.getParameter("defs"))
-            .setRefs(request.getParameter("refs"))
-            .setPath(request.getParameter("path"))
-            .setHist(request.getParameter("hist"));
+file="mast.jsp"
 
-    // This is for backward compatibility with links created by OpenGrok 0.8.x
-    // and earlier. We used to concatenate the entire query into a single
-    // string and send it in the t parameter. If we get such a link, just add
-    // it to the freetext field, and we'll get the old behaviour. We can
-    // probably remove this code in the first feature release after 0.9.
-    String t = request.getParameter("t");
-    if (t != null) {
-        qbuilder.setFreetext(t);
-    }
+%><%
+/* ---------------------- more.jsp start --------------------- */
+{
+	cfg = PageConfig.get(request);
+	QueryBuilder qbuilder = cfg.getQueryBuilder();
 
-    try {
-        Query tquery = qbuilder.build();
-        if (tquery != null) {
-            Context sourceContext = new Context(tquery, qbuilder.getQueries());
-            %><p><span class="pagetitle">Lines Matching <b><%=tquery%></b></span></p><div id="more" style="line-height:1.5em;"><pre><%
-            sourceContext.getContext(new FileReader(resourceFile), out, context+Constants.xrefP, null, path, null, false, null);
-            %></pre></div><%
-        }
-    } catch (Exception e) {
-	
-    }
+	try {
+		Query tquery = qbuilder.build();
+		if (tquery != null) {
+			Context sourceContext = new Context(tquery, qbuilder.getQueries());
+%><p><span class="pagetitle">Lines Matching <b><%= tquery %></b></span></p>
+<div id="more" style="line-height:1.5em;">
+	<pre><%
+			sourceContext.getContext(new FileReader(cfg.getResourceFile()), out, 
+				request.getContextPath() + Prefix.XREF_P, null, cfg.getPath(), 
+				null, false, null);
+	%></pre>
+</div><%
+		}
+	} catch (Exception e) {
+		OpenGrokLogger.getLogger().log(Level.WARNING, e.getMessage());
+	}
 }
+/* ---------------------- more.jsp end --------------------- */
+%><%@
 
-%><%@include file="foot.jspf"%>
+include file="foot.jspf"
+
+%>

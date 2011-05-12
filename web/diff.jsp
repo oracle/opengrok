@@ -1,4 +1,6 @@
 <%-- 
+$Id$
+
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
@@ -19,437 +21,471 @@ CDDL HEADER END
 Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
-ident	"@(#)diff.jsp 1.2     05/12/01 SMI"
-
---%><%@ page import = "javax.servlet.*,
-java.lang.*,
-javax.servlet.http.*,
-java.util.*,
-java.io.*,
-java.text.*,
+Portions Copyright 2011 Jens Elkner.
+--%><%@page import="
+java.io.BufferedReader,
+java.io.FileNotFoundException,
+java.io.InputStream,
+java.io.InputStreamReader,
+java.io.UnsupportedEncodingException,
 java.net.URLDecoder,
-org.opensolaris.opengrok.analysis.*,
-org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
-org.opensolaris.opengrok.web.*,
-org.opensolaris.opengrok.history.*,
-org.apache.commons.jrcs.diff.*"
-%><%@include file="mast.jsp"%><%!
+java.util.ArrayList,
 
-String readableLine(int n) {
-    if (n < 10) {
-        return " " + n;
-    } else {
-        return String.valueOf(n);
-    }
+org.apache.commons.jrcs.diff.Chunk,
+org.apache.commons.jrcs.diff.Delta,
+org.apache.commons.jrcs.diff.Diff,
+org.apache.commons.jrcs.diff.Revision,
+org.opensolaris.opengrok.analysis.AnalyzerGuru,
+org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,
+org.opensolaris.opengrok.web.DiffData,
+org.opensolaris.opengrok.web.DiffType"
+%><%!
+private String getAnnotateRevision(DiffData data) {
+	if (data.type == DiffType.OLD || data.type == DiffType.NEW) {
+		return "<script type=\"text/javascript\">/* <![CDATA[ */ "
+			+ "document.rev = 'r=" + data.rev[data.type == DiffType.NEW ? 1 : 0] 
+			+ "'; /* ]]> */</script>";
+	}
+	return "";
 }
+%><%@
+
+include file="mast.jsp"
 
 %><%
+/* ---------------------- diff.jsp start --------------------- */
+{
+	cfg = PageConfig.get(request);
+	DiffData data = cfg.getDiffData();
+	
+	if (data.errorMsg != null)  {
 
-if (valid) {
-    final String rp1 = request.getParameter("r1");
-    final String rp2 = request.getParameter("r2");
-    String srcRoot = environment.getSourceRootFile().getAbsolutePath();
-
-    String r1 = null;
-    String r2 = null;
-    File rpath1 = null;
-    File rpath2 = null;
-    String[] tmp=null;
-    try {
-        if (rp1!=null) tmp = rp1.split("@");
-        if (tmp != null && tmp.length == 2) {
-	    rpath1 = new File(srcRoot+URLDecoder.decode(tmp[0], "UTF-8"));
-	    r1 = URLDecoder.decode(tmp[1], "UTF-8");
-	}
-    } catch (UnsupportedEncodingException e) {
-    }
-
-    try {
-        if (rp2!=null) tmp = rp2.split("@");
-        if (tmp != null && tmp.length == 2) {
-	    if (tmp != null && tmp.length == 2) {
-		rpath2 = new File(srcRoot+URLDecoder.decode(tmp[0], "UTF-8"));
-		r2 = URLDecoder.decode(tmp[1], "UTF-8");
-	    }
-	}
-    } catch (UnsupportedEncodingException e) {
-    }
-
-    if (r1 == null || r2 == null || r1.equals("") || r2.equals("") || r1.equals(r2)) {
-%><div class="src"><h3 class="error">Error:</h3>
-    Please pick two revisions to compare the changed from the <a href="<%=context+Constants.histL+uriEncodedName%>">history</a>
+%>
+<div class="src">
+	<h3 class="error">Error:</h3>
+	<p><%= data.errorMsg %></p>
 </div><%
-// Error message ask to choose two versions from History log page with link to it
-    } else {
-        Genre g = AnalyzerGuru.getGenre(basename);
-        if (g == Genre.PLAIN || g == null || g == Genre.DATA || g == Genre.HTML) {
-            InputStream in1 = null;
-            InputStream in2 = null;
-            try{
-                in1 = HistoryGuru.getInstance().getRevision(rpath1.getParent(), rpath1.getName(), r1);
-                in2 = HistoryGuru.getInstance().getRevision(rpath2.getParent(), rpath2.getName(), r2);
-            } catch (Exception e) {
-		%> <h3 class="error">Error opening revisions!</h3> <%
-            }
-            try {
-                if (in1 != null && in2 != null) {
-                    g = AnalyzerGuru.getGenre(basename);
-                    if (g == null) {
-                        g = AnalyzerGuru.getGenre(in1);
-                    }
-                    if (g == Genre.IMAGE) {
-				%> <div id="difftable">
-				<table rules="cols" cellpadding="5"><tr><th><%=basename%> (revision <%=r1%>)</th><th><%=basename%> (revision <%=r2%>)</th></tr>
-				<tr><td><img src="<%=context+Constants.rawP+path%>?r=<%=r1%>"/></td><td><img src="<%=context+Constants.rawP+path%>?r=<%=r2%>"/></td></tr></table></div><%
-                    } else if (g == Genre.PLAIN || g == Genre.HTML) {
-//--------Do THE DIFFS------------
-                        ArrayList<String> l1 = new ArrayList<String>();
-                        String line;
-                        BufferedReader reader1 = new BufferedReader(new InputStreamReader(in1));
-                        BufferedReader reader2 = new BufferedReader(new InputStreamReader(in2));
-                        
-                        while ((line = reader1.readLine()) != null) {
-                            l1.add(line);
-                        }
-                        
-                        ArrayList<String> l2 = new ArrayList<String>();
-                        while ((line = reader2.readLine()) != null) {
-                            l2.add(line);
-                        }
-                        Object[] file1 = l1.toArray();
-                        Object[] file2 = l2.toArray();
-                        
-                        Revision rev = Diff.diff(file1, file2);
-                        
-                        if(rev.size() == 0) {
-	%><b>No differences found!</b><%
-                        } else {
-                            
-                            int ln1 = 0;
-                            int ln2 = 0;
-                            
-                            String format = request.getParameter("format");
-                            if(format == null || (!format.equals("o") && !format.equals("n") && !format.equals("u") && !format.equals("t")))
-                                format = "s";
-                            String pfull = request.getParameter("full");
-                            boolean full = pfull != null && pfull.equals("1");
-                            pfull = full ? "1" : "0";
-                            
 
-%><div id="difftable"><div id="diffbar"><span class="tabsel">&nbsp;<span class="d"> Deleted </span>&nbsp;<span class="a">&nbsp;Added&nbsp;</span>&nbsp;</span> | <%
+	} else if (data.genre == Genre.IMAGE) {
 
-if(format.equals("s")) {
-	%><span class="tabsel"><b>sdiff</b></span> <%
-} else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=s&full=<%=pfull%>">sdiff</a></span> <%
-}
-                            
-                            if(format.equals("u")) {
-	%><span class="tabsel"><b>udiff</b></span> <%
-                                } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=u&full=<%=pfull%>">udiff</a></span> <%
-                                }
-                            
-                            if(format.equals("t")) {
-	%><span class="tabsel"><b>text</b></span> <%
-                                } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=t&full=<%=pfull%>">text</a></span> <%
-                                }
-                            
-                            if(format.equals("o")) {
-	%><span class="tabsel"><b>old (<%=r1%>)</b></span> <%
-                                } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=o&full=<%=pfull%>">old (<%=r1%>)</a></span> <%
-                                }
-                            
-                            if(format.equals("n")) {
-	%><span class="tabsel"><b>new (<%=r2%>)</b></span>&nbsp;|&nbsp;<%
-                                } else {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=n&full=<%=pfull%>">new (<%=r2%>)</a></span>&nbsp;|&nbsp;<%
-                                }
-                            
-                            if(!full) {
-	%><span class="tab"><a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1">&nbsp; &nbsp; full &nbsp; &nbsp;</a></span> <span class="tabsel"><b>compact</b></span><%
-                                } else {
-	%><span class="tabsel"><b>&nbsp; &nbsp; full &nbsp; &nbsp;</b> </span> <span class="tab"> <a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=0">compact</a></span><%
-                                }
-                            
-                            if(format.equals("s") || format.equals("u")) {
-	%></div><pre wrap><table cellpadding="2" cellspacing="1" border="0"  rules="cols"><%
-        if(format.equals("s")) {
-		%><tr><th><%=basename%> (<%=r1%>)</th><th><%=basename%> (<%=r2%>)</th></tr><%
-        }
-                                } else {
-	%></div><pre wrap><%
-                                }
-                            
-                            for (int i=0; i < rev.size(); i++) {
-                                Delta d = rev.getDelta(i);
-                                if(format.equals("t")) {
-	%><%=Util.htmlize(d.toString())%><%
-                                    } else {
-                                        Chunk c1 = d.getOriginal();
-                                        Chunk c2 = d.getRevised();
-                                        int cn1 = c1.first();
-                                        int cl1 = c1.last();
-                                        int cn2 = c2.first();
-                                        int cl2 = c2.last();
-                                        
-                                        int i1 = cn1, i2 = cn2;
-                                        for (; i1 <= cl1 && i2 <= cl2; i1++, i2++) {
-                                            String[] ss = Util.diffline(Util.htmlize((String)file1[i1]), Util.htmlize((String)file2[i2]));
-                                            file1[i1] = ss[0];
-                                            file2[i2] = ss[1];
-                                        }
+		String link = request.getContextPath() + Prefix.RAW_P 
+			+ Util.htmlize(cfg.getPath());
+%>
+<div id="difftable">
+	<table class="image">
+		<thead>
+		<tr><th><%= data.filename %> (revision <%= data.rev[0] %>)</th>
+			<th><%= data.filename %> (revision <%= data.rev[1] %>)</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr><td><img src="<%= link %>?r=<%= data.rev[0] %>"/></td>
+			<td><img src="<%= link %>?r=<%= data.rev[1] %>"/></td>
+		</tr>
+		</tbody>
+	</table>
+</div><%
 
-                                        for (; i1 <= cl1; i1++) {
-                                            file1[i1] = "<span class=\"d\">" + Util.htmlize((String)file1[i1]) + "</span>";
-                                        }
+	} else if (data.genre != Genre.PLAIN && data.genre != Genre.HTML) {
 
-                                        for(; i2 <= cl2; i2++) {
-                                            file2[i2] = "<span class=\"a\">" + Util.htmlize((String)file2[i2]) + "</span>";
-                                        }
+		String link = request.getContextPath() + Prefix.RAW_P 
+			+ Util.htmlize(cfg.getPath());
+%>
+<div id="src">Diffs for binary files cannot be displayed! Files are <a 
+	href="<%= link %>?r=<%= data.rev[0] %>"><%= 
+		data.filename %>(revision <%= data.rev[0] %>)</a> and <a 
+	href="<%= link %>?r=<%= data.rev[1] %>"><%=
+		data.filename %>(revision <%= data.rev[1] %>)</a>.
+</div><%
 
-                                        if (format.equals("u")) {
+	} else if (data.revision.size() == 0) {
+		%>
+		<%= getAnnotateRevision(data) %>
+		<b>No differences found!</b><%
+	
+	} else {
+		//-------- Do THE DIFFS ------------
+		int ln1 = 0;
+		int ln2 = 0;
+		String rp1 = data.param[0];
+		String rp2 = data.param[1];
+		String reqURI = request.getRequestURI();
+		String[] file1 = data.file[0];
+		String[] file2 = data.file[1];
+		
+		DiffType type = data.type;
+		boolean full = data.full;
+%>
+<%= getAnnotateRevision(data) %>
+<div id="diffbar">
+	<div class="legend">
+		<span class="d">Deleted</span>
+		<span class="a">Added</span>
+	</div>
+	<div class="tabs"><%
+		for (DiffType t : DiffType.values()) {
+			if (type == t) {
+		%> <span class="active"><%= t.toString() %><%
+				if (t == DiffType.OLD) {
+			%>  ( <%= data.rev[0] %> )<%
+				} else if (t == DiffType.NEW) {
+			%>  ( <%= data.rev[1] %> )<%
+				}
+			%></span><%
+			} else {
+		%> <span><a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2
+			%>&amp;format=<%= t.getAbbrev() %>&amp;full=<%= full ? '1' : '0' 
+			%>"><%= t.toString() %><%
+				if (t == DiffType.OLD) {
+			%>  ( <%= data.rev[0] %> )<%
+				} else if (t == DiffType.NEW) {
+			%>  ( <%= data.rev[1] %> )<%
+				}
+			%></a></span><%
+			}
+		}
+	%></div>
+	<div class="ctype"><%
+		if (!full) {
+		%>
+		<span><a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2 
+			%>&amp;format=<%= type.getAbbrev() %>&amp;full=1">full</a></span>
+		<span class="active">compact</span><%
+		} else {
+		%>
+		<span class="active">full</span>
+		<span> <a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2 
+			%>&amp;format=<%= type.getAbbrev() %>&amp;full=0">compact</a></span><%
+		}
+	%></div>
+</div>
+
+<div id="difftable">
+	<div class="pre"><%
+		if (type == DiffType.SIDEBYSIDE || type == DiffType.UNIFIED) {
+		%><table class="plain"><%
+			if (type == DiffType.SIDEBYSIDE) {
+			%>
+			<thead><tr>
+				<th><%= data.filename %> (<%= data.rev[0] %>)</th>
+				<th><%= data.filename %> (<%= data.rev[1] %>)</th>
+			</tr></thead><%
+			}
+		 	%>
+		 	<tbody><%
+		}
+
+		for (int i=0; i < data.revision.size(); i++) {
+			Delta d = data.revision.getDelta(i);
+			if (type == DiffType.TEXT) {
+		%><%= Util.htmlize(d.toString()) %><%
+			} else {
+				Chunk c1 = d.getOriginal();
+				Chunk c2 = d.getRevised();
+				int cn1 = c1.first();
+				int cl1 = c1.last();
+				int cn2 = c2.first();
+				int cl2 = c2.last();
+				
+				int i1 = cn1, i2 = cn2;
+				StringBuilder bl1 = new StringBuilder(80);
+				StringBuilder bl2 = new StringBuilder(80);
+				for (; i1 <= cl1 && i2 <= cl2; i1++, i2++) {
+					Util.htmlize(file1[i1], bl1);
+					Util.htmlize(file2[i2], bl2);
+					String[] ss = Util.diffline(bl1, bl2);
+					file1[i1] = ss[0];
+					file2[i2] = ss[1];
+					bl1.setLength(0);
+					bl2.setLength(0);
+				}
+				// deleted
+				for (; i1 <= cl1; i1++) {
+					bl1.setLength(0);
+					bl1.append("<span class=\"d\">");
+					Util.htmlize(file1[i1], bl1);
+					file1[i1] = bl1.append("</span>").toString();
+				}
+				// added
+				for (; i2 <= cl2; i2++) {
+					bl2.setLength(0);
+					bl2.append("<span class=\"a\">");
+					Util.htmlize(file2[i2], bl2);
+					file2[i2] = bl2.append("</span>").toString();
+				}
+				
+				if (type == DiffType.UNIFIED) {
 // UDIFF
-                                            if (cn1 > ln1 || cn2 > ln2) {
-	  %><tr class="k"><td><%
-          if (full || (cn2 - ln2 < 20)) {
-              for (int j = ln2; j < cn2; j++) {
-		 	%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-              }
-          } else {
-              for (int j = ln2; j < ln2+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-              }
-		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
-                ln2 = cn2-8;
-                for (int j = cn2 - 8; j < cn2; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                }
-          }
-	  %></td></tr><%
-          ln1 = cn1;
-                                            }
-                                            if(cn1 <= cl1) {
-		%><tr><td class="d"><%
-                for(int j = cn1; j  <= cl1 ; j++) {
-			%><strike class="d"><%=readableLine(++ln1)%></strike><%=file1[j]%><br/><%
-                }
-		%></td></tr><%
-                                            }
-                                            if(cn2 <= cl2) {
-		%><tr class="k"><td><%
-                for(int j = cn2; j  < cl2; j++) {
-			%><i class="a"><%=readableLine(++ln2)%></i><%=file2[j]%><br/><%
-                }
-		%><i class="a"><%=readableLine(++ln2)%></i><%=file2[cl2]%><%
-                if(full) {
-			%><a name="<%=ln2%>" /><%
-                }
-		%></td></tr><%
-                                            }
-// SDIFF by default
-                                        } else if(format.equals("s")) {
-                                            
-                                            if (cn1 > ln1 || cn2 > ln2) {
-	    %><tr class="k"><td><%
-            if(full || cn2 - ln2 < 20) {
-                for(int j = ln1; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                }
-		%></td><td><%
-                for(int j = ln2; j  < cn2 ; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                }
-            } else {
-                for(int j = ln1; j < ln1+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                }
-		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
-                ln1 = cn1-8;
-                for (int j = cn1 - 8; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                }
-	     %></td><td><%
-             for (int j = ln2; j < ln2+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-             }
-		%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
-                ln2 = cn2-8;
-                for (int j = cn2 - 8; j < cn2; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                }
-            }
-	    %></td></tr><%    
-                                            }
+					if (cn1 > ln1 || cn2 > ln2) {
+			%>
+			<tr class="k"><td><%
+						if (full || (cn2 - ln2 < 20)) {
+							for (int j = ln2; j < cn2; j++) {
+				%><i><%= ++ln2 %></i><%= 
+					Util.htmlize(file2[j]) %><br/><%
+							}
+						} else {
+							for (int j = ln2; j < ln2 + 8; j++) {
+				%><i><%= j+1 %></i><%=
+					Util.htmlize(file2[j]) %><br/><%
+							}
+				%><br/>--- <b><%= cn2 - ln2 - 16 
+					%> unchanged lines hidden</b> (<a href="<%= reqURI 
+					%>?r1=<%= rp1 %>&amp;r2=<%= rp2 
+					%>&amp;format=<%= type.getAbbrev() 
+					%>&amp;full=1#<%= ln2 %>">view full</a>) --- <br/><br/><%
+							ln2 = cn2 - 8;
+							for (int j = ln2; j < cn2; j++) {
+				%><i><%= ++ln2 %></i><%= Util.htmlize(file2[j]) %><br/><%
+							}
+						}
+				%></td>
+			</tr><%
+						ln1 = cn1;
+					}
+					if (cn1 <= cl1) {
+			%>
+			<tr><td><%
+						for (int j = cn1; j  <= cl1 ; j++) {
+				%><del class="d"><%= ++ln1 %></del><%= file1[j]
+				%><br/><%
+						}
+				%></td>
+			</tr><%
+					}
+					if (cn2 <= cl2) {
+			%>
+			<tr class="k"><td><%
+						for (int j = cn2; j  < cl2; j++) {
+				%><i class="a"><%= ++ln2 %></i><%= file2[j]
+				%><br/><%
+						}
+				%><i class="a"><%= ++ln2 %></i><%= file2[cl2] %><%
+						if(full) {
+				%><a name="<%= ln2 %>" /><%
+						}
+				%></td>
+			</tr><%
+					}
+				} else if (type == DiffType.SIDEBYSIDE) {
+// SDIFF
+					if (cn1 > ln1 || cn2 > ln2) {
+			%>
+			<tr class="k"><td><%
+						if (full || cn2 - ln2 < 20) {
+							for (int j = ln1; j < cn1; j++) {
+				%><i><%= ++ln1 %></i><%= 
+					Util.htmlize(file1[j]) %><br/><%
+							}
+				%></td><td><%
+							for (int j = ln2; j  < cn2 ; j++) {
+				%><i><%= ++ln2 %></i><%=
+					Util.htmlize(file2[j]) %><br/><%
+							}
+						} else {
+							for (int j = ln1; j < ln1 + 8; j++) {
+				%><i><%= j+1 %></i><%=
+					Util.htmlize(file1[j]) %><br/><%
+							}
+				%><br/>--- <b><%= cn1 - ln1 - 16 
+					%> unchanged lines hidden</b> (<a href="<%= reqURI 
+					%>?r1=<%= rp1 %>&amp;r2=<%= rp2 
+					%>&amp;format=<%= type.getAbbrev()
+					%>&amp;full=1#<%= ln2 %>">view full</a>) --- <br/><br/><%
+							ln1 = cn1 - 8;
+							for (int j = ln1; j < cn1; j++) {
+				%><i><%= ++ln1 %></i><%=
+					Util.htmlize(file1[j]) %><br/><%
+							}
+				%></td><td><%
+							for (int j = ln2; j < ln2 + 8; j++) {
+				%><i><%= j+1 %></i><%=
+					Util.htmlize(file2[j]) %><br/><%
+							}
+				%><br/>--- <b><%= cn2 - ln2 - 16 
+					%> unchanged lines hidden</b> (<a href="<%= reqURI
+					%>?r1=<%= rp1 %>&amp;r2=<%= rp2 
+					%>&amp;format=<%= type.getAbbrev()
+					%>&amp;full=1#<%= ln2 %>">view full</a>) --- <br/><br/><%
+							ln2 = cn2 - 8;
+							for (int j = ln2; j < cn2; j++) {
+				%><i><%= ++ln2 %></i><%= 
+					Util.htmlize(file2[j]) %><br/><%
+							}
+						}
+				%></td>
+			</tr><%
+					}
+			%>
+			<tr class="k"><td><%
+					for (int j = cn1; j  <= cl1; j++) {
+				%><i><%= ++ln1 %></i><%= file1[j] %><br/><%
+					}
+				%></td><td><%
+					for (int j = cn2; j  <= cl2; j++) {
+				%><i><%= ++ln2 %></i><a name="<%= ln2 %>"></a><%=
+					file2[j] %><br/><%
+					}
+				%></td>
+			</tr><%
+// OLD
+				} else if (type == DiffType.OLD) {
+					// OLD
+					if (cn1 > ln1) {
+						if (full || cn1 - ln1 < 20) {
+							for (int j = ln1; j < cn1; j++) {
+		%><i><%= ++ln1 %></i><%= 
+			Util.htmlize(file1[j]) %><br/><%
+							}
+						} else {
+							for (int j = ln1; j < ln1 + 8; j++) {
+		%><i><%= j+1 %></i><%=
+			Util.htmlize(file1[j]) %><br/><%
+							}
+		%><br/>--- <b><%= cn1 - ln1 - 16
+			%> unchanged lines hidden</b> (<a href="<%= reqURI 
+			%>?r1=<%= rp1 %>&amp;r2=<%= rp2 
+			%>&amp;format=<%= type.getAbbrev()
+			%>&amp;full=1#<%=ln1%>">view full</a>) --- <br/><br/><%
+							ln1 = cn1 - 8;
+							for (int j = ln1; j < cn1; j++) {
+		%><i><%= ++ln1 %></i><%=
+			Util.htmlize(file1[j]) %><br/><%
+							}
+						}
+					}
+					for (int j = cn1; j  <= cl1 ; j++) {
+		%><i><%= ++ln1 %></i><%= file1[j] %><br/><%
+					}
+					if (full) {
+		%><a name="<%=ln1%>" ></a><%
+					}
+// NEW
+				} else if (type == DiffType.NEW) {
+					if (cn2 > ln2) {
+						if (full || cn2 - ln2 < 20) {
+							for (int j = ln2; j  < cn2 ; j++) {
+		%><i><%= ++ln2 %></i><%= 
+			Util.htmlize(file2[j]) %><br/><%
+							}
+						} else {
+							for (int j = ln2; j < ln2 + 8; j++) {
+		%><i><%= j+1 %></i><%=
+			Util.htmlize(file2[j]) %><br/><%
+							}
+		%><br/>--- <b><%= cn2 - ln2 - 16
+			%> unchanged lines hidden</b> (<a href="<%= reqURI 
+			%>?r1=<%= rp1 %>&amp;r2=<%= rp2 
+			%>&amp;format=<%= type.getAbbrev()
+			%>&amp;full=1#<%= ln2 %>">view full</a>) --- <br/><br/><%
+							ln2 = cn2 - 8;
+							for (int j = ln2; j < cn2; j++) {
+			%><i><%= ++ln2 %></i><%=
+				Util.htmlize(file2[j]) %><br/><%
+							}
+						}
+					}
+					for (int j = cn2; j  <= cl2 ; j++) {
+		%><i><%= ++ln2 %></i><%= file2[j] %><br/><%
+					}
+					if (full) {
+		%><a name="<%= ln2 %>"></a><%
+					}
+				}
+			} // else
+		} // for
+// deltas done, dump the remaining
+		if (file1.length >= ln1) {
+			if (type == DiffType.SIDEBYSIDE) {
+				if (full || file1.length - ln1 < 20) {
+			%>
+			<tr><td><%
+					for (int j = ln1; j < file1.length ; j++) {
+				%><i><%= j+1 %></i><%= Util.htmlize(file1[j]) %><br/><%
+					}
+				%></td><td><%
+					for (int j = ln2; j < file2.length ; j++) {
+				%><i><%= j+1 %></i><%= Util.htmlize(file2[j]) %><br/><%
+					}
+				%></td>
+			</tr>
+			</tbody>
+		</table><%
+				} else {
+			%>
+			<tr><td><%
+					for (int j = ln1; j < ln1 + 8 ; j++) {
+				%><i><%= j+1 %></i><%= Util.htmlize(file1[j]) %><br/><%
+					}
+				%><br/> --- <b><%= file1.length - ln1 - 8
+				%> unchanged lines hidden</b> --- </td><td><%
+					for (int j = ln2; j < ln2 + 8 ; j++) {
+				%><i><%= j+1 %></i><%= Util.htmlize(file2[j]) %><br/><%
+					}
+				%><br/>--- <b><%= file1.length - ln1 - 8 
+				%> unchanged lines hidden</b> ---</td>
+			</tr>
+			</tbody>
+		</table><%
+				}
+			} else if (type == DiffType.UNIFIED) {
+				if (full || file2.length - ln2 < 20) {
+			%>
+			<tr><td><%
+					for (int j = ln2; j < file2.length ; j++) {
+				%><i><%= j+1 %></i><%= Util.htmlize(file2[j]) %><br/><%
+					}
+				%></td>
+			</tr>
+			</tbody>
+		</table><%
+				} else {
+			%>
+			<tr><td><%
+					for (int j = ln2; j < ln2 + 8 ; j++) {
+				%><i><%= j+1 %></i><%= Util.htmlize(file2[j]) %><br/><%
+					}
+				%><br/>--- <b><%= file2.length - ln2 - 8
+				%> unchanged lines hidden</b> ---</td>
+			</tr>
+			</tbody>
+		</table><%
+				}
+			} else if (type == DiffType.OLD) {
+				if (full || file1.length - ln1 < 20) {
+					for (int j = ln1; j < file1.length ; j++) {
+		%><i><%= j+1 %></i><%= Util.htmlize(file1[j]) %><br/><%
+					}
+				} else {
+					for (int j = ln1; j < ln1 + 8 ; j++) {
+		%><i><%= j+1 %></i><%= Util.htmlize(file1[j]) %><br/><%
+					}
+		%><br/> --- <b><%= file1.length - ln1 - 8
+		%> unchanged lines hidden</b> ---<br/><%
+				}
+			} else if (type == DiffType.NEW) {
+				if (full || file2.length - ln2 < 20) {
+					for (int j = ln2; j < file2.length ; j++) {
+		%><i><%= j+1 %></i><%=Util.htmlize(file2[j])%><br/><%
+					}
+				} else {
+					for (int j = ln2; j < ln2 + 8 ; j++) {
+		%><i><%= j+1 %></i><%= Util.htmlize(file2[j]) %><br/><%
+					}
+		%><br/> --- <b><%= file2.length - ln2 - 8
+		%> unchanged lines hidden</b> ---<br/><%
+				}
+			}
+		}
 
-	%><tr  valign="top" class="k"><td><%
-        for(int j = cn1; j  <= cl1; j++) {
-		%><i><%=readableLine(++ln1)%></i><%=file1[j]%><br/><%
-        }
-	%></td><td><%
-        for(int j = cn2; j  <= cl2; j++) {
-		%><i><%=readableLine(++ln2)%></i><a name="<%=ln2%>"></a><%=file2[j]%><br/><%
-        }
-	%></td></tr><%
-        
-// OLD -----
-                                        } else if ( format.equals("o")) {
-                                            if (cn1 > ln1) {
-                                                if(full || cn1 - ln1 < 20) {
-                                                    for(int j = ln1; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                                                    }
-                                                } else {
-                                                    for(int j = ln1; j < ln1+8; j++) {
-			%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                                                    }
-		%><br/>--- <b><%=cn1 - ln1 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln1%>">view full</a>) --- <br/><br/><%
-                ln1 = cn1-8;
-                for (int j = cn1 - 8; j < cn1; j++) {
-			%><i><%=readableLine(++ln1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                }
-                                                }
-                                            }
-                                            for(int j = cn1; j  <= cl1 ; j++) {
-		%><i><%=readableLine(++ln1)%></i><%=file1[j]%><br/><%
-                                            }
-                                            if(full) {
-			%><a name="<%=ln1%>" ></a><%
-                                            }
-                                            
-// NEW -----------
-                                        } else if ( format.equals("n")) {
-                                            
-                                            if (cn2 > ln2) {
-                                                if(full || cn2 - ln2 < 20) {
-                                                    for(int j = ln2; j  < cn2 ; j++) {
-			%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                                                    }
-                                                } else {
-                                                    for (int j = ln2; j < ln2+8; j++) {
-				%><i><%=readableLine(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                                                    }
-			%><br/>--- <b><%=cn2 - ln2 - 16%> unchanged lines hidden</b> (<a href="<%=reqURI%>?r1=<%=rp1%>&r2=<%=rp2%>&format=<%=format%>&full=1#<%=ln2%>">view full</a>) --- <br/><br/><%
-                        ln2 = cn2-8;
-                        for (int j = cn2 - 8; j < cn2; j++) {
-				%><i><%=readableLine(++ln2)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                        }
-                                                }
-                                            }
-                                            for(int j = cn2; j  <= cl2 ; j++) {
-		%><i><%=readableLine(++ln2)%></i><%=file2[j]%><br/><%
-                                            }
-                                            if(full) {
-			%><a name="<%=ln2%>"></a><%
-                                            }
-                                            
-            }
-                                    }
-                            }
-                            
-                            
-                            if (file1.length >= ln1) {
-// dump the remaining
-                                if (format.equals("s")) {
-                                    if (full || file1.length - ln1 < 20) {
-		%><tr><td><%
-                for (int j = ln1; j < file1.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                }
-		%></td><td><%
-                for (int j = ln2; j < file2.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                }
-		%></td></tr></table><%
-                                        } else {
-		%><tr><td><%
-                for (int j = ln1; j < ln1 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                }
-
-		%><br/> --- <b><%=file1.length - ln1 - 8%> unchanged lines hidden</b> --- </td><td><%
-                for (int j = ln2; j < ln2 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                }
-		%><br/>--- <b><%=file1.length - ln1 - 8%> unchanged lines hidden</b> ---</td></tr></table><%
-                                        }
-                                    } else if (format.equals("u")) {
-                                        if (full || file2.length - ln2 < 20) {
-		%><tr><td><%
-                for (int j = ln2; j < file2.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                }
-		%></td></tr></table><%
-                                        } else {
-		%><tr><td><%
-                for (int j = ln2; j < ln2 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                }
-		%><br/>--- <b><%=file2.length - ln2 - 8%> unchanged lines hidden</b> ---</td></tr></table><%
-                                        }
-                                    } else if (format.equals("o")) {
-                                    if (full || file1.length - ln1 < 20) {
-                                        for (int j = ln1; j < file1.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                                            }
-                                        } else {
-                                            for (int j = ln1; j < ln1 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file1[j])%><br/><%
-                                            }
-
-		%><br/> --- <b><%=file1.length - ln1 - 8%> unchanged lines hidden</b> ---<br/><%
-                                        }
-                                    } else if (format.equals("n")) {
-                                    if (full || file2.length - ln2 < 20) {
-                                        for (int j = ln2; j < file2.length ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                                            }
-                                        } else {
-                                            for (int j = ln2; j < ln2 + 8 ; j++) {
-		 	%><i><%=(j+1)%></i><%=Util.htmlize((String)file2[j])%><br/><%
-                                            }
-		%><br/> --- <b><%=file2.length - ln2 - 8%> unchanged lines hidden</b> ---<br/><%
-                                        }
-                                    }
-                                
-                            }
-                            
 //----DIFFS Done--------
-%></pre></div><%
-                        }
-                    } else {
-				%> <div id="src">Diffs for binary files cannot be displayed! Files are <a href="<%=context+Constants.rawP+path%>?r=<%=r1%>"><%=basename%>(revision <%=r1%>)</a> and
-                                    <a href="<%=context+Constants.rawP+path%>?r=<%=r2%>"><%=basename%>(revision <%=r2%>)</a>.
-				</div><%
-                    }
-                }
-            } catch (FileNotFoundException e) {
-		 %><div class="src"><h3 class="error">Error Opening files! <%=Util.htmlize(e.getMessage())%></h3></div><%
-            } finally {
-                if(in1 != null)
-                    try {
-                        in1.close();
-                    } catch (IOException ignore) {
-                    }
-                if(in2 != null)
-                    try {
-                        in2.close();
-                    } catch (IOException ignore) {
-                }
-            }
-        } else if (g == Genre.IMAGE) {
-				%> <div class="src">
-				<table rules="cols" cellpadding="5"><tr><th><%=basename%> (revision <%=r1%>)</th><th><%=basename%> (revision <%=r2%>)</th></tr>
-				<tr><td><img src="<%=context+Constants.rawP+path%>?r=<%=r1%>"/></td><td><img src="<%=context+Constants.rawP+path%>?r=<%=r2%>"/></td></tr></table></div><%
-                                
-        } else {
-				%> <div class="src">Diffs for binary files cannot be displayed. Files are <a href="<%=context+Constants.rawP+path%>?r=<%=r1%>"><%=basename%>(revision <%=r1%>)</a> and
-                                    <a href="<%=context+Constants.rawP+path%>?r=<%=r2%>"><%=basename%>(revision <%=r2%>)</a>.
-				</div><%
-        }
-    }
-%><%@include file="foot.jspf"%><%
+	%></div>
+</div><%
+	}
 }
+/* ---------------------- diff.jsp end --------------------- */
+%><%@
+
+include file="foot.jspf"
+
 %>
