@@ -62,7 +62,9 @@ public class BazaarRepository extends Repository {
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file, final String sinceRevision) throws IOException {
+    Executor getHistoryLogExecutor(final File file, final String sinceRevision) 
+        throws IOException 
+    {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -88,7 +90,8 @@ public class BazaarRepository extends Repository {
     }    
     
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev) 
+    {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -114,7 +117,8 @@ public class BazaarRepository extends Repository {
             
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -159,13 +163,17 @@ public class BazaarRepository extends Repository {
         int status = exec.exec();
         
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get annotations for: \"{0}\" Exit code: {1}", new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+            OpenGrokLogger.getLogger().log(Level.WARNING, 
+                "Failed to get annotations for: \"{0}\" Exit code: {1}", 
+                new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
     }
 
-    protected Annotation parseAnnotation(Reader input, String fileName) throws IOException {
+    protected Annotation parseAnnotation(Reader input, String fileName) 
+        throws IOException 
+    {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
         String line = "";
@@ -179,7 +187,9 @@ public class BazaarRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line {0}: [{1}]", new Object[]{String.valueOf(lineno), line});
+                OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    "Error: did not find annotation in line {0}: [{1}]", 
+                    new Object[]{String.valueOf(lineno), line});
             }
         }
         return ret;
@@ -228,8 +238,8 @@ public class BazaarRepository extends Repository {
        if (file.isDirectory()) {
         File f = new File(file, ".bzr");
         return f.exists() && f.isDirectory();
-       } else {
-        return false; }
+       }
+       return false;
     }
     
     @Override

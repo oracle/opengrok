@@ -23,7 +23,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
@@ -59,7 +59,10 @@ public class MercurialRepository extends Repository {
         "org.opensolaris.opengrok.history.mercurial.disableForest";
 
     /** Template for formatting hg log output for files. */
-    private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}\\nuser: {author}\\ndate: {date|isodate}\\ndescription: {desc|strip|obfuscate}\\n";
+    private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n"
+        + "{branches}{tags}{parents}\\n"
+        + "user: {author}\\ndate: {date|isodate}\\n"
+        + "description: {desc|strip|obfuscate}\\n";
 
     /** Template for formatting hg log output for directories. */
     private static final String DIR_TEMPLATE = TEMPLATE 
@@ -114,7 +117,8 @@ public class MercurialRepository extends Repository {
     }    
     
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev)
+    {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -146,13 +150,15 @@ public class MercurialRepository extends Repository {
             
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString());
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                "Failed to get history: " + exp.getClass().toString());
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream", e);
                 }
             }
             // Clean up zombie-processes...
@@ -218,8 +224,9 @@ public class MercurialRepository extends Repository {
                     String rev = matcher.group(2);                    
                     ret.addLine(rev, author, true);                    
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line " + 
-                            lineno + ": [" + line + "]");
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                        "Error: did not find annotation in line " 
+                        + lineno + ": [" + line + "]");
                 }
             }                    
         } finally {
@@ -227,7 +234,8 @@ public class MercurialRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream", e);
                 }
             }
             if (process != null) {
@@ -286,15 +294,16 @@ public class MercurialRepository extends Repository {
       if (file.isDirectory()) {
         File f = new File(file, ".hg");
         return f.exists() && f.isDirectory();
-      } else {
-        return false; }
+      }
+      return false;
     }
 
     @Override
     boolean supportsSubRepositories() {
-        // The forest-extension in Mercurial adds repositories inside the
-        // repositories.
-        return !Boolean.getBoolean("org.opensolaris.opengrok.history.mercurial.disableForest");
+        String val = System.getenv(NOFOREST_PROPERTY_KEY);
+        return ! (val == null
+            ? Boolean.getBoolean(NOFOREST_PROPERTY_KEY)
+            : Boolean.parseBoolean(val));
     }
 
     @Override

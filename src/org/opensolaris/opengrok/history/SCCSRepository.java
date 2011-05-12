@@ -65,7 +65,8 @@ public class SCCSRepository extends Repository {
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting revision", ex);
+            OpenGrokLogger.getLogger().log(Level.WARNING, 
+                "An error occured while getting revision", ex);
             return null;
         }
     }
@@ -104,7 +105,9 @@ public class SCCSRepository extends Repository {
                     String auth = matcher.group(2);
                     authors_cache.put(rev, auth);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find authors in line {0}: [{1}]", new Object[]{lineno, line});
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                        "Error: did not find authors in line {0}: [{1}]", 
+                        new Object[]{lineno, line});
                 }
             }
         } finally {
@@ -176,7 +179,9 @@ public class SCCSRepository extends Repository {
                     
                     a.addLine(rev, author, true);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotations in line {0}: [{1}]", new Object[]{lineno, line});
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                        "Error: did not find annotations in line {0}: [{1}]", 
+                        new Object[]{lineno, line});
                 }
             }
             return a;
@@ -185,7 +190,8 @@ public class SCCSRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream", e);
                 }
             }
             if (process != null) {

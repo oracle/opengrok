@@ -150,8 +150,10 @@ public class RazorRepository extends Repository {
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);
         File opengrokBaseDirectory = new File(directoryName);
-        opengrokSourceRootDirectoryPath = opengrokBaseDirectory.getParentFile().getAbsolutePath();
-        razorGroupBaseDirectoryPath = new File(directoryName, ".razor").getAbsolutePath();
+        opengrokSourceRootDirectoryPath = 
+            opengrokBaseDirectory.getParentFile().getAbsolutePath();
+        razorGroupBaseDirectoryPath = 
+            new File(directoryName, ".razor").getAbsolutePath();
     }
 
     public String getOpengrokSourceRootDirectoryPath() {
@@ -171,7 +173,8 @@ public class RazorRepository extends Repository {
     }
 
     String getOpenGrokFileNameFor(File file) {
-        return file.getAbsolutePath().substring(opengrokSourceRootDirectoryPath.length());
+        return file.getAbsolutePath()
+            .substring(opengrokSourceRootDirectoryPath.length());
     }
 
     File getSourceNameForOpenGrokName(String path) {
@@ -211,7 +214,8 @@ public class RazorRepository extends Repository {
     InputStream getHistoryGet( String parent, String basename, String rev) {
         // @TODO : Rename & Delete Support
         try {
-            File binaryFile = getRazorArchiveBinaryFileFor(new File(parent, basename), rev);
+            File binaryFile = 
+                getRazorArchiveBinaryFileFor(new File(parent, basename), rev);
             if (binaryFile != null && binaryFile.exists()) {
                 // @TODO : Implement a UNIX Compress decompression input stream
                 // The standard Razor implementation uses UNIX Compress, so we
@@ -230,11 +234,13 @@ public class RazorRepository extends Repository {
 
             File sccsFile = getRazorArchiveSCCSFileFor(new File(parent, basename));
             if (sccsFile != null && sccsFile.exists()) {
-                String SCCS_COMMAND = System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
-                return SCCSget.getRevision(SCCS_COMMAND, sccsFile, rev);
+                ensureCommand(SCCSRepository.CMD_PROPERTY_KEY, 
+                    SCCSRepository.CMD_FALLBACK);
+                return SCCSget.getRevision(cmd, sccsFile, rev);
             }
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "getHistoryGet( " + parent + ", " + basename + ", " + rev + ")", e);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "getHistoryGet( " 
+                + parent + ", " + basename + ", " + rev + ")", e);
         }
         return null;
     }
@@ -284,12 +290,16 @@ public class RazorRepository extends Repository {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private File pathTranslation(File file, String intermediateElements, String filePrefix, String fileSuffix) throws IOException {
+    private File pathTranslation(File file, String intermediateElements, 
+        String filePrefix, String fileSuffix) throws IOException 
+    {
         
         File f = file;
 
         if (!f.getAbsolutePath().startsWith(opengrokSourceRootDirectoryPath)) {
-            throw new IOException("Invalid Path for Translation '" + f.getPath() + "', '" + intermediateElements + "', '" + filePrefix + "', '" + fileSuffix + "'");
+            throw new IOException("Invalid Path for Translation '" + f.getPath()
+                + "', '" + intermediateElements + "', '" + filePrefix + "', '" 
+                + fileSuffix + "'");
         }
 
         if (filePrefix.length() != 0) {
@@ -300,7 +310,8 @@ public class RazorRepository extends Repository {
         path.append(intermediateElements);
 
         if (f.getAbsolutePath().length() > opengrokSourceRootDirectoryPath.length()) {
-            path.append(f.getAbsolutePath().substring(opengrokSourceRootDirectoryPath.length() + 1));
+            path.append(f.getAbsolutePath()
+                .substring(opengrokSourceRootDirectoryPath.length() + 1));
         }
 
         if (fileSuffix.length() != 0) {

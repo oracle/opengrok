@@ -58,7 +58,8 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev) 
+    {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -87,13 +88,15 @@ public class MonotoneRepository extends Repository {
 
             ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString());
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                "Failed to get history: " + exp.getClass().toString());
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream", e);
                 }
             }
             // Clean up zombie-processes...
@@ -189,7 +192,8 @@ public class MonotoneRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream", e);
                 }
             }
         }

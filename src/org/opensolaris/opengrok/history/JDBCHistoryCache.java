@@ -1075,11 +1075,7 @@ class JDBCHistoryCache implements HistoryCache {
     private Integer getGeneratedIntKey(Statement stmt) throws SQLException {
         ResultSet keys = stmt.getGeneratedKeys();
         try {
-            if (keys.next()) {
-                return keys.getInt(1);
-            } else {
-                return null;
-            }
+            return keys.next() ? keys.getInt(1) : null;
         } finally {
             keys.close();
         }

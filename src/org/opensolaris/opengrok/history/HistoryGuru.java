@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,8 +56,9 @@ public final class HistoryGuru {
     /** The history cache to use */
     private final HistoryCache historyCache;
     
-    private Map<String, Repository> repositories = new HashMap<String, Repository>();
-    private final Integer scanningDepth;
+    private Map<String, Repository> repositories = 
+        new HashMap<String, Repository>();
+    private final int scanningDepth;
 
     /**
      * Creates a new instance of HistoryGuru, and try to set the default
@@ -120,6 +120,7 @@ public final class HistoryGuru {
      * @param rev the revision to annotate (<code>null</code> means BASE)
      * @return file annotation, or <code>null</code> if the
      * <code>HistoryParser</code> does not support annotation
+     * @throws IOException 
      */
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation ret = null;
@@ -161,11 +162,13 @@ public final class HistoryGuru {
     }
 
     /**
-     * Get the appropriate history reader for the file specified by parent and basename.
+     * Get the appropriate history reader for the file specified by parent and 
+     * basename.
      *
      * @param file The file to get the history reader for
      * @throws HistoryException If an error occurs while getting the history
-     * @return A HistorReader that may be used to read out history data for a named file
+     * @return A HistorReader that may be used to read out history data for a
+     *  named file
      */
     public HistoryReader getHistoryReader(File file) throws HistoryException {
         History history = getHistory(file, false);
@@ -200,9 +203,10 @@ public final class HistoryGuru {
 
         History history = null;
 
-        if (repos != null && repos.isWorking() && repos.fileHasHistory(file) &&
-                (!repos.isRemote() ||
-                RuntimeEnvironment.getInstance().isRemoteScmSupported())) {
+        if (repos != null && repos.isWorking() && repos.fileHasHistory(file)
+            && (!repos.isRemote() || RuntimeEnvironment.getInstance()
+                .isRemoteScmSupported())) 
+        {
             if (useCache() && historyCache.supportsRepository(repos)) {
                 history = historyCache.get(file, repos, withFiles);
             } else {
@@ -218,10 +222,10 @@ public final class HistoryGuru {
      * @param parent The directory containing the file
      * @param basename The name of the file
      * @param rev The revision to get
-     * @throws java.io.IOException If an error occurs while reading out the version
      * @return An InputStream containing the named revision of the file.
      */
-    public InputStream getRevision(String parent, String basename, String rev) throws IOException {
+    public InputStream getRevision(String parent, String basename, String rev) 
+    {
         InputStream ret = null;
 
         Repository rep = getRepository(new File(parent));
@@ -234,20 +238,17 @@ public final class HistoryGuru {
     /**
      * Does this directory contain files with source control information?
      * @param file The name of the directory
-     * @return true if the files in this directory have associated revision history
+     * @return true if the files in this directory have associated revision 
+     * history
      */
     public boolean hasHistory(File file) {
         Repository repos = getRepository(file);
 
-        boolean ret = false;
-
-        if (repos != null) {
-            ret = repos.isWorking() && repos.fileHasHistory(file);
-            if (!RuntimeEnvironment.getInstance().isRemoteScmSupported() && repos.isRemote()) {
-                ret = false;
-            }
-        }
-        return ret;
+        return repos == null
+            ? false
+            : repos.isWorking() && repos.fileHasHistory(file)
+                && (RuntimeEnvironment.getInstance().isRemoteScmSupported() 
+                    || !repos.isRemote());
     }
 
     /**
@@ -268,8 +269,9 @@ public final class HistoryGuru {
         return false;
     }
 
-    private void addRepositories(File[] files, List<RepositoryInfo> repos,
-            IgnoredNames ignoredNames, Integer depth) {
+    private void addRepositories(File[] files, Collection<RepositoryInfo> repos,
+            IgnoredNames ignoredNames, int depth) 
+    {
         addRepositories(files, repos, ignoredNames, true, depth);
     }
 
@@ -279,26 +281,30 @@ public final class HistoryGuru {
      * @param repos list of found repos
      * @param ignoredNames what files to ignore
      * @param recursiveSearch whether to use recursive search
-     * @param depth current depth - using global scanningDepth - one can limit this to improve scanning performance
+     * @param depth current depth - using global scanningDepth - one can limit 
+     *  this to improve scanning performance
      */
     @SuppressWarnings("PMD.ConfusingTernary")
-    private void addRepositories(File[] files, List<RepositoryInfo> repos,
-            IgnoredNames ignoredNames, boolean recursiveSearch, Integer depth) {
+    private void addRepositories(File[] files, Collection<RepositoryInfo> repos,
+            IgnoredNames ignoredNames, boolean recursiveSearch, int depth) {
         for (File file : files) {
             Repository repository = null;
             try {
                 repository = RepositoryFactory.getRepository(file);
             } catch (InstantiationException ie) {
-                log.log(Level.WARNING, "Could not create repoitory for '" + file + "', could not instantiate the repository.", ie);
+                log.log(Level.WARNING, "Could not create repoitory for '" 
+                    + file + "', could not instantiate the repository.", ie);
             } catch (IllegalAccessException iae) {
-                log.log(Level.WARNING, "Could not create repoitory for '" + file + "', missing access rights.", iae);
+                log.log(Level.WARNING, "Could not create repoitory for '" 
+                    + file + "', missing access rights.", iae);
             }
             if (repository != null) {
                 try {
                     String path = file.getCanonicalPath();
                     repository.setDirectoryName(path);
                     if (RuntimeEnvironment.getInstance().isVerbose()) {
-                        log.log(Level.CONFIG, "Adding <{0}> repository: <{1}>", new Object[]{repository.getClass().getName(), path});
+                        log.log(Level.CONFIG, "Adding <{0}> repository: <{1}>",
+                            new Object[]{repository.getClass().getName(), path});
                     }
                     
                     repos.add(new RepositoryInfo(repository));
@@ -320,7 +326,8 @@ public final class HistoryGuru {
                     }
                     
                 } catch (IOException exp) {
-                    log.log(Level.WARNING, "Failed to get canonical path for {0}: {1}", new Object[]{file.getAbsolutePath(), exp.getMessage()});
+                    log.log(Level.WARNING, "Failed to get canonical path for "
+                        + file.getAbsolutePath() + ": " + exp.getMessage());
                     log.log(Level.WARNING, "Repository will be ignored...", exp);
                 }
             } else {
@@ -328,11 +335,12 @@ public final class HistoryGuru {
                 if (file.isDirectory() && !ignoredNames.ignore(file)) {
                     File subFiles[] = file.listFiles();
                     if (subFiles == null) {
-                        log.log(Level.WARNING, "Failed to get sub directories for ''{0}'', check access permissions.", file.getAbsolutePath());
-                    } else {
-                        if (depth<=scanningDepth) {
-                           addRepositories(subFiles, repos, ignoredNames, depth+1);
-                        }
+                        log.log(Level.WARNING, 
+                            "Failed to get sub directories for '" 
+                            + file.getAbsolutePath()
+                            + "', check access permissions.");
+                    } else if (depth<=scanningDepth) {
+                        addRepositories(subFiles, repos, ignoredNames, depth+1);
                     }
                 }
             }
@@ -367,18 +375,22 @@ public final class HistoryGuru {
 
             if (repository.isWorking()) {
                 if (verbose) {
-                    log.info(String.format("Update %s repository in %s", type, path));
+                    log.info(String.format("Update %s repository in %s", 
+                        type, path));
                 }
 
                 try {
                     repository.update();
                 } catch (UnsupportedOperationException e) {
-                    log.warning(String.format("Skipping update of %s repository in %s: Not implemented", type, path));
+                    log.warning(String.format("Skipping update of %s repository"
+                        + " in %s: Not implemented", type, path));
                 } catch (Exception e) {
-                    log.log(Level.WARNING, "An error occured while updating " + path + " (" + type + ")", e);
+                    log.log(Level.WARNING, "An error occured while updating " 
+                        + path + " (" + type + ")", e);
                 }
             } else {
-                log.warning(String.format("Skipping update of %s repository in %s: Missing SCM dependencies?", type, path));
+                log.warning(String.format("Skipping update of %s repository in "
+                    + "%s: Missing SCM dependencies?", type, path));
             }
         }
     }
@@ -397,18 +409,24 @@ public final class HistoryGuru {
 
             if (repository.isWorking()) {
                 if (verbose) {
-                    log.info(String.format("Update %s repository in %s", type, repository.getDirectoryName()));
+                    log.info(String.format("Update %s repository in %s", type, 
+                        repository.getDirectoryName()));
                 }
 
                 try {
                     repository.update();
                 } catch (UnsupportedOperationException e) {
-                    log.warning(String.format("Skipping update of %s repository in %s: Not implemented", type, repository.getDirectoryName()));
+                    log.warning(String.format("Skipping update of %s repository"
+                        + " in %s: Not implemented", type, 
+                        repository.getDirectoryName()));
                 } catch (Exception e) {
-                    log.log(Level.WARNING, "An error occured while updating " + repository.getDirectoryName() + " (" + type + ")", e);
+                    log.log(Level.WARNING, "An error occured while updating " 
+                        + repository.getDirectoryName() + " (" + type + ")", e);
                 }
             } else {
-                log.warning(String.format("Skipping update of %s repository in %s: Missing SCM dependencies?", type, repository.getDirectoryName()));
+                log.warning(String.format("Skipping update of %s repository in"
+                    + " %s: Missing SCM dependencies?", type, 
+                    repository.getDirectoryName()));
             }
         }
     }
@@ -426,26 +444,32 @@ public final class HistoryGuru {
             long start = System.currentTimeMillis();
 
             if (verbose) {
-                log.log(Level.INFO, "Create historycache for {0} ({1})", new Object[]{path, type});
+                log.log(Level.INFO, "Create historycache for {0} ({1})", 
+                    new Object[]{path, type});
             }
 
             try {
                 repository.createCache(historyCache, sinceRevision);
             } catch (Exception e) {
-                log.log(Level.WARNING, "An error occured while creating cache for " + path + " (" + type + ")", e);
+                log.log(Level.WARNING, 
+                    "An error occured while creating cache for " + path + " (" 
+                    + type + ")", e);
             }
 
             if (verbose) {
                 long stop = System.currentTimeMillis();
-                log.log(Level.INFO, "Creating historycache for {0} took ({1}ms)", new Object[]{path, String.valueOf(stop - start)});
+                log.log(Level.INFO, "Creating historycache for {0} took ({1}ms)",
+                    new Object[]{path, String.valueOf(stop - start)});
             }
         } else {
-            log.log(Level.WARNING,"Skipping creation of historycache of {0} repository in {1}: Missing SCM dependencies?", new Object[]{type, path});
+            log.log(Level.WARNING, "Skipping creation of historycache of " 
+                + type + " repository in " + path + ": Missing SCM dependencies?");
         }
     }
 
     private void createCacheReal(Collection<Repository> repositories) {
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+        ExecutorService executor = Executors
+            .newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
         for (final Repository repos : repositories) {
             final String latestRev;
@@ -471,7 +495,8 @@ public final class HistoryGuru {
                 // Wait forever                
                 executor.awaitTermination(999,TimeUnit.DAYS);
             } catch (InterruptedException exp) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
+                OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    "Received interrupt while waiting for executor to finish", exp);
             }
         }
 
@@ -611,20 +636,26 @@ public final class HistoryGuru {
         if (repos == null || repos.isEmpty()) {
             repositories.clear();
         } else {
-            Map<String, Repository> nrep = new HashMap<String, Repository>(repos.size());
-
+            Map<String, Repository> nrep = 
+                new HashMap<String, Repository>(repos.size());
             for (RepositoryInfo i : repos) {
                 try {
                     Repository r = RepositoryFactory.getRepository(i);
                     if (r == null) {
-                        log.log(Level.WARNING, "Failed to instanciate internal repository data for {0} in {1}", new Object[]{i.getType(), i.getDirectoryName()});
+                        log.log(Level.WARNING, 
+                            "Failed to instanciate internal repository data for "
+                            + i.getType() + " in " + i.getDirectoryName());
                     } else {
                         nrep.put(r.getDirectoryName(), r);
                     }
                 } catch (InstantiationException ex) {
-                    log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', could not instantiate the repository.", ex);
+                    log.log(Level.WARNING, "Could not create " + i.getType() 
+                        + " for '" + i.getDirectoryName() 
+                        + "', could not instantiate the repository.", ex);
                 } catch (IllegalAccessException iae) {
-                    log.log(Level.WARNING, "Could not create " + i.getType() + " for '" + i.getDirectoryName() + "', missing access rights.", iae);
+                    log.log(Level.WARNING, "Could not create " + i.getType() 
+                        + " for '" + i.getDirectoryName() 
+                        + "', missing access rights.", iae);
                 }
             }
             repositories = nrep;

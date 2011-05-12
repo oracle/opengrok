@@ -22,7 +22,6 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
@@ -64,7 +64,9 @@ public class GitRepository extends Repository {
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file, String sinceRevision) throws IOException {
+    Executor getHistoryLogExecutor(final File file, String sinceRevision) 
+        throws IOException 
+    {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -105,7 +107,8 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev)
+    {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -132,7 +135,8 @@ public class GitRepository extends Repository {
 
             ret = new ByteArrayInputStream(output.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -174,14 +178,18 @@ public class GitRepository extends Repository {
         int status = exec.exec();
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to get annotations for: \"{0}\" Exit code: {1}", new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+            OpenGrokLogger.getLogger().log(Level.WARNING, 
+                "Failed to get annotations for: \"{0}\" Exit code: {1}", 
+                new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
         return parseAnnotation(
                 newLogReader(exec.getOutputStream()), file.getName());
     }
 
-    protected Annotation parseAnnotation(Reader input, String fileName) throws IOException {
+    protected Annotation parseAnnotation(Reader input, String fileName) 
+        throws IOException 
+    {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
         String line = "";
@@ -195,7 +203,9 @@ public class GitRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Error: did not find annotation in line {0}: [{1}] of {2}", new Object[]{String.valueOf(lineno), line, fileName});
+                OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    "Error: did not find annotation in line {0}: [{1}] of {2}",
+                    new Object[]{String.valueOf(lineno), line, fileName});
             }
         }
         return ret;

@@ -114,15 +114,14 @@ class GitHistoryParser implements Executor.StreamHandler {
                 if (StringUtils.isOnlyWhitespace(s) || s.startsWith("commit")) {
                     state = ParseState.HEADER;
                     continue; // Parse this line again - do not read a new line
-                } else {
-                    if (entry != null) {
-                        try {
-                            File f = new File(myDir, s);
-                            entry.addFile(env.getPathRelativeToSourceRoot(f, 0));
-                        } catch (FileNotFoundException e) { //NOPMD
-                            // If the file is not located under the source root,
-                            // ignore it (bug #11664).
-                        }
+                }
+                if (entry != null) {
+                    try {
+                        File f = new File(myDir, s);
+                        entry.addFile(env.getPathRelativeToSourceRoot(f, 0));
+                    } catch (FileNotFoundException e) { //NOPMD
+                        // If the file is not located under the source root,
+                        // ignore it (bug #11664).
                     }
                 }
             }

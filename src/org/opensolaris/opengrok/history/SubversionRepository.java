@@ -104,29 +104,39 @@ public class SubversionRepository extends Repository {
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     Document document = builder.parse(executor.getOutputStream());
 
-                    String url = getValue(document.getElementsByTagName("url").item(0));
+                    String url = 
+                        getValue(document.getElementsByTagName("url").item(0));
                     if (url == null) {
-                        OpenGrokLogger.getLogger().warning("svn info did not contain an URL for ["+ directoryName + "]. Assuming remote repository.");
+                        OpenGrokLogger.getLogger()
+                            .warning("svn info did not contain an URL for ["
+                                + directoryName 
+                                + "]. Assuming remote repository.");
                         setRemote(true);
                     } else {
                         if (!url.startsWith("file")) {
                             setRemote(true);
                         }
                     }
-                    String root = getValue(document.getElementsByTagName("root").item(0));
+                    String root = 
+                        getValue(document.getElementsByTagName("root").item(0));
                     if (url != null && root != null) {
                         reposPath = url.substring(root.length());
-                        rootFound = true;
+                        rootFound = Boolean.TRUE;
                     } 
                 } catch (SAXException saxe) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Parser error parsing svn output", saxe);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "Parser error parsing svn output", saxe);
                 } catch (ParserConfigurationException pce) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Parser configuration error parsing svn output", pce);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "Parser configuration error parsing svn output", pce);
                 } catch (IOException ioe) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "IOException reading from svn process", ioe);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "IOException reading from svn process", ioe);
                 }
             } else {
-                OpenGrokLogger.getLogger().warning("Failed to execute svn info for ["+ directoryName + "]. Repository disabled.");
+                OpenGrokLogger.getLogger()
+                        .warning("Failed to execute svn info for ["
+                            + directoryName + "]. Repository disabled.");
             }
 
             setWorking(rootFound);
@@ -171,12 +181,14 @@ public class SubversionRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev)
+    {
         InputStream ret = null;
 
         File directory = new File(directoryName);
 
-        String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
+        String filename = (new File(parent, basename)).getAbsolutePath()
+            .substring(directoryName.length() + 1);
 
         List<String> cmd = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -230,7 +242,9 @@ public class SubversionRepository extends Repository {
         }
 
         @Override
-        public void startElement(String uri, String localName, String qname, Attributes attr) throws SAXException {
+        public void startElement(String uri, String localName, String qname, 
+            Attributes attr)
+        {
             sb.setLength(0);
             if ("entry".equals(qname)) {
                 rev = null;
@@ -292,14 +306,16 @@ public class SubversionRepository extends Repository {
                 saxParser.parse(in, handler);
                 ret = handler.annotation;
             } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "An error occurred while parsing the xml output", e);
+                OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    "An error occurred while parsing the xml output", e);
             }
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream", e);
                 }
             }
             if (process != null) {

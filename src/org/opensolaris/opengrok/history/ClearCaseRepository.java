@@ -98,20 +98,23 @@ public class ClearCaseRepository extends Repository {
     }    
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) {
+    public InputStream getHistoryGet(String parent, String basename, String rev)
+    {
         InputStream ret = null;
 
         File directory = new File(directoryName);
 
         Process process = null;
         try {
-            String filename = (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
+            String filename = (new File(parent, basename)).getCanonicalPath()
+                .substring(directoryName.length() + 1);
             final File tmp = File.createTempFile("opengrok", "tmp");
             String tmpName = tmp.getCanonicalPath();
 
             // cleartool can't get to a previously existing file
             if (tmp.exists() && !tmp.delete()) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to remove temporary file used by history cache");
+                OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    "Failed to remove temporary file used by history cache");
             }
 
             String decorated = filename + "@@" + rev;
@@ -139,7 +142,8 @@ public class ClearCaseRepository extends Repository {
                 }
             };
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -166,8 +170,10 @@ public class ClearCaseRepository extends Repository {
             try  {
                 skipped = in.skip(32768L);
             } catch (IOException ioe) {
-                // ignored - stream isn't seekable, but skipped variable still has correct value.
-                OpenGrokLogger.getLogger().log(Level.FINEST, "Stream not seekable", ioe);
+                // ignored - stream isn't seekable, but skipped variable still 
+                // has correct value.
+                OpenGrokLogger.getLogger().log(Level.FINEST, 
+                    "Stream not seekable", ioe);
             }
             if (skipped == 0 && in.read() == -1) {
                 // No bytes skipped, checked that we've reached EOF with read()
@@ -227,7 +233,8 @@ public Annotation annotate(File file, String revision) throws IOException {
                 try {
                     in.close();
                 } catch (IOException exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream.", exp);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream.", exp);
                 }
             }
 
@@ -299,7 +306,8 @@ public Annotation annotate(File file, String revision) throws IOException {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream.", e);
+                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                        "An error occured while closing stream.", e);
                 }
             }
             if (process != null) {
@@ -349,7 +357,8 @@ public Annotation annotate(File file, String revision) throws IOException {
                     }
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get canonical path for \""+file+"\"", e);
+                OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    "Could not get canonical path for \""+file+"\"", e);
             }
         }
         return false;
