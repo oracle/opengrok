@@ -67,8 +67,8 @@ import org.opensolaris.opengrok.web.Util;
 
 /**
  * This class is used to create / update the index databases. Currently we use
- * one index database per project. 
- * 
+ * one index database per project.
+ *
  * @author Trond Norbye
  * @author Lubos Kosco , update for lucene 3.0.0
  */
@@ -97,11 +97,11 @@ public class IndexDatabase {
     /**
      * Create a new instance of the Index Database. Use this constructor if
      * you don't use any projects
-     * 
+     *
      * @throws java.io.IOException if an error occurs while creating directories
      */
     public IndexDatabase() throws IOException {
-        this(null);        
+        this(null);
     }
 
     /**
@@ -109,7 +109,7 @@ public class IndexDatabase {
      * @param project the project to create the database for
      * @throws java.io.IOException if an errror occurs while creating directories
      */
-    public IndexDatabase(Project project) throws IOException {        
+    public IndexDatabase(Project project) throws IOException {
         this.project = project;
         lockfact = new SimpleFSLockFactory();
         initialize();
@@ -134,7 +134,7 @@ public class IndexDatabase {
     static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
-        
+
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
                 dbs.add(new IndexDatabase(project));
@@ -142,13 +142,13 @@ public class IndexDatabase {
         } else {
             dbs.add(new IndexDatabase());
         }
-        
+
         for (IndexDatabase d : dbs) {
             final IndexDatabase db = d;
             if (listener != null) {
                 db.addIndexChangedListener(listener);
             }
-            
+
             executor.submit(new Runnable() {
 
                 @Override
@@ -246,7 +246,7 @@ public class IndexDatabase {
                     throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
                 }
             }
-            
+
             if (!env.isUsingLuceneLocking()) {
                  lockfact = NoLockFactory.getNoLockFactory();
             }
@@ -269,7 +269,7 @@ public class IndexDatabase {
      * By default the indexer will traverse all directories in the project.
      * If you add directories with this function update will just process
      * the specified directories.
-     * 
+     *
      * @param dir The directory to scan
      * @return <code>true</code> if the file is added, false oth
      */
@@ -288,7 +288,7 @@ public class IndexDatabase {
         }
         return false;
     }
-    
+
     /**
      * Update the content of this index database
      * @throws IOException if an error occurs
@@ -332,7 +332,7 @@ public class IndexDatabase {
                 } else {
                     sourceRoot = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), dir);
                 }
-                
+
                 HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
 
                 String startuid = Util.path2uid(dir, "");
@@ -365,7 +365,7 @@ public class IndexDatabase {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing writer", e);                    
+                    log.log(Level.WARNING, "An error occured while closing writer", e);
                 }
             }
 
@@ -407,7 +407,7 @@ public class IndexDatabase {
      * @throws IOException if an error occurs
      */
     static void optimizeAll(ExecutorService executor) throws IOException {
-        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();        
+        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
@@ -434,7 +434,7 @@ public class IndexDatabase {
             }
         }
     }
-    
+
     /**
      * Optimize the index database
      */
@@ -447,11 +447,11 @@ public class IndexDatabase {
             running = true;
         }
         IndexWriter wrt = null;
-        try {            
-            log.info("Optimizing the index ... ");            
+        try {
+            log.info("Optimizing the index ... ");
             wrt = new IndexWriter(indexDirectory, null, false,IndexWriter.MaxFieldLength.UNLIMITED);
-            wrt.optimize();            
-            log.info("done");            
+            wrt.optimize();
+            log.info("done");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
                     log.log(Level.FINE, "Failed to remove \"dirty-file\": {0}", dirtyFile.getAbsolutePath());
@@ -481,13 +481,13 @@ public class IndexDatabase {
         IndexReader indexReader = null;
         SpellChecker checker = null;
 
-        try {            
-            log.info("Generating spelling suggestion index ... ");            
+        try {
+            log.info("Generating spelling suggestion index ... ");
             indexReader = IndexReader.open(indexDirectory,false);
             checker = new SpellChecker(spellDirectory);
             //TODO below seems only to index "defs" , possible bug ?
-            checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));            
-            log.info("done");            
+            checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));
+            log.info("done");
         } catch (IOException e) {
             log.log(Level.SEVERE, "ERROR: Generating spelling: {0}", e);
         } finally {
@@ -527,7 +527,7 @@ public class IndexDatabase {
         }
     }
     /**
-     * Remove a stale file (uidIter.term().text()) from the index database 
+     * Remove a stale file (uidIter.term().text()) from the index database
      * (and the xref file)
      * @throws java.io.IOException if an error occurs
      */
@@ -558,7 +558,7 @@ public class IndexDatabase {
         setDirty();
         for (IndexChangedListener listener : listeners) {
             listener.fileRemoved(path);
-        }        
+        }
     }
 
     /**
@@ -571,7 +571,7 @@ public class IndexDatabase {
         final InputStream in =
                 new BufferedInputStream(new FileInputStream(file));
         try {
-            FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);            
+            FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
             for (IndexChangedListener listener : listeners) {
                 listener.fileAdd(path, fa.getClass().getSimpleName());
             }
@@ -648,7 +648,7 @@ public class IndexDatabase {
             }
         } catch (IOException exp) {
             log.log(Level.WARNING, "Warning: Failed to resolve name: {0}", absolutePath);
-            log.log(Level.FINE,"Stack Trace: ",exp);       
+            log.log(Level.FINE,"Stack Trace: ",exp);
         }
 
         if (file.isDirectory()) {
@@ -763,8 +763,8 @@ public class IndexDatabase {
                     }
 
                     if (RuntimeEnvironment.getInstance().isPrintProgress() && est_total > 0 && log.isLoggable(Level.INFO) )
-                    {                        
-                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total) });                        
+                    {
+                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total) });
                     }
 
                     if (uidIter != null) {
@@ -808,13 +808,13 @@ public class IndexDatabase {
     private boolean isInterrupted() {
         synchronized (lock) {
             return interrupted;
-        }        
+        }
     }
 
     /**
      * Register an object to receive events when modifications is done to the
      * index database.
-     * 
+     *
      * @param listener the object to receive the events
      */
     public void addIndexChangedListener(IndexChangedListener listener) {
@@ -824,7 +824,7 @@ public class IndexDatabase {
     /**
      * Remove an object from the lists of objects to receive events when
      * modifications is done to the index database
-     * 
+     *
      * @param listener the object to remove
      */
     public void removeIndexChangedListener(IndexChangedListener listener) {
@@ -872,7 +872,7 @@ public class IndexDatabase {
 
     /**
      * List all of the files in this index database
-     * 
+     *
      * @throws IOException If an IO error occurs while reading from the database
      */
     public void listFiles() throws IOException {
@@ -952,7 +952,7 @@ public class IndexDatabase {
                 } else {
                     break;
                 }
-            }            
+            }
         } finally {
             if (iter != null) {
                 try {
@@ -971,7 +971,7 @@ public class IndexDatabase {
             }
         }
     }
-    
+
     /**
      * Get an indexReader for the Index database where a given file
      * @param path the file to get the database for
@@ -1077,5 +1077,5 @@ public class IndexDatabase {
         hash = 41 * hash + (this.project == null ? 0 : this.project.hashCode());
         return hash;
     }
-    
+
 }

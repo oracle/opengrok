@@ -29,10 +29,10 @@ import java.io.IOException;
 
 /**
  * Placeholder for the information that builds up a project
- */ 
+ */
 public class Project {
     private String path;
-    // this variable is very important, since it's used as the project identifier 
+    // this variable is very important, since it's used as the project identifier
     // all over xrefs and webapp
     // jel: and yes - awefully misleading. It should be called 'name'!
     private String description;
@@ -42,7 +42,7 @@ public class Project {
      * projects with non-standard tab size.
      */
     private int tabSize;
-    
+
     /**
      * Get a textual description of this project
      * @return a textual description of the project
@@ -50,7 +50,7 @@ public class Project {
     public String getDescription() {
         return description;
     }
-    
+
     /**
      * Get the path (relative from source root) where this project is located
      * @return the relative path
@@ -84,14 +84,14 @@ public class Project {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     /**
      * Set the path (relative from source root) this project is located
      * It seems that you should ALWAYS prefix the path with current file.separator , current environment should always have it set up
      * @param path the relative path from source sroot where this project is
      *             located.
      */
-    public void setPath(String path) {        
+    public void setPath(String path) {
         this.path = path;
     }
 
@@ -114,11 +114,11 @@ public class Project {
     public boolean hasTabSizeSetting() {
         return tabSize > 0;
     }
-    
+
     /**
      * Get the project for a specific file
      * @param path the file to lookup (relative from source root)
-     * @return the project that this file belongs to (or null if the file 
+     * @return the project that this file belongs to (or null if the file
      *         doesn't belong to a project)
      */
     public static Project getProject(String path) {
@@ -129,7 +129,7 @@ public class Project {
         }
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project proj : env.getProjects()) {                
+            for (Project proj : env.getProjects()) {
                 if (lpath.indexOf(proj.getPath()) == 0) {
                     ret = proj;
                 }
@@ -141,7 +141,7 @@ public class Project {
     /**
      * Get the project for a specific file
      * @param file the file to lookup
-     * @return the project that this file belongs to (or null if the file 
+     * @return the project that this file belongs to (or null if the file
      *         doesn't belong to a project)
      */
     public static Project getProject(File file) {
@@ -165,12 +165,12 @@ public class Project {
         Project ret = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project proj : env.getProjects()) {                
+            for (Project proj : env.getProjects()) {
                 if (desc.indexOf(proj.getDescription()) == 0) {
                     ret = proj;
                 }
             }
         }
         return ret;
-    }    
+    }
 }

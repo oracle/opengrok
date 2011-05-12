@@ -27,7 +27,7 @@ import org.apache.lucene.search.WildcardTermEnum;
 
 public class WildCardMatcher extends LineMatcher {
     final String pattern;
-    
+
     public WildCardMatcher(String pattern, boolean caseInsensitive) {
         super(caseInsensitive);
         this.pattern = normalizeString(pattern);

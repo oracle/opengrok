@@ -43,13 +43,13 @@ import org.opensolaris.opengrok.history.Annotation;
  * @author Chandan
  */
 public class XMLAnalyzer extends TextAnalyzer {
-    
+
     private char[] content;
     private int len;
     private final PlainFullTokenizer plainfull;
     private final XMLXref xref;
     private static final Reader dummy = new StringReader("");
-    
+
     /**
      * Creates a new instance of XMLAnalyzer
      */
@@ -60,7 +60,7 @@ public class XMLAnalyzer extends TextAnalyzer {
         plainfull = new PlainFullTokenizer(dummy);
         xref = new XMLXref(dummy);
     }
-    
+
     @Override
     public void analyze(Document doc, Reader in) throws IOException {
         len = 0;
@@ -80,7 +80,7 @@ public class XMLAnalyzer extends TextAnalyzer {
 
         doc.add(new Field("full", dummy));
     }
-    
+
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
             plainfull.reInit(content, len);
@@ -88,7 +88,7 @@ public class XMLAnalyzer extends TextAnalyzer {
         }
         return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
@@ -98,7 +98,7 @@ public class XMLAnalyzer extends TextAnalyzer {
         xref.project = project;
         xref.write(out);
     }
-    
+
     /**
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source

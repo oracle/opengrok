@@ -58,13 +58,13 @@ public final class List2TokenStream extends TokenStream {
                 subTokens = tok.split("[^a-z0-9A-Z_]+");
             } else {
                 subTokens = null;
-                termAtt.setTermBuffer(tok);                    
+                termAtt.setTermBuffer(tok);
                 return true;
             }
             si = 0;
         }
         if (si < subTokens.length) {
-            termAtt.setTermBuffer(subTokens[si++]);            
+            termAtt.setTermBuffer(subTokens[si++]);
             return true;
         }
         return false;

@@ -123,10 +123,10 @@ public class OpenGrokTrayApp {
 
         return exitListener;
     }
-    
+
     private ActionListener getConfigurationListener() {
         ActionListener configListener = new ActionListener() {
-            
+
             public void actionPerformed(ActionEvent e) {
                 log.finer("Config...");
                 ConfigurationsFrame sf;
@@ -137,7 +137,7 @@ public class OpenGrokTrayApp {
                     Logger.getLogger(OpenGrokTrayApp.class.getName()).log(Level.SEVERE, null, ex);
 
                 }
-                
+
                 log.finer("Done config");
             }
         };

@@ -33,7 +33,7 @@ public class PathTokenizer extends Tokenizer {
     private static final char dirSep = '/';
     private boolean dot = false;
     private final static char ADOT[]={'.'};
-    private final TermAttribute termAtt = addAttribute(TermAttribute.class);    
+    private final TermAttribute termAtt = addAttribute(TermAttribute.class);
 
     public PathTokenizer(Reader input) {
         super(input);
@@ -69,7 +69,7 @@ public class PathTokenizer extends Tokenizer {
         if (c == '.') {
             dot = true;
         }
-        termAtt.setTermBuffer(buf, 0, i);       
+        termAtt.setTermBuffer(buf, 0, i);
         return true;
     }
 }

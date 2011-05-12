@@ -57,9 +57,9 @@ public class GZIPAnalyzer extends FileAnalyzer {
     protected GZIPAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
-    
+
     private FileAnalyzer fa;
-    
+
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
         BufferedInputStream gzis = new BufferedInputStream(new GZIPInputStream(in));
@@ -82,7 +82,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
                 if (doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
-                        doc.add(new Field("t", g.typeName(), Field.Store.YES, 
+                        doc.add(new Field("t", g.typeName(), Field.Store.YES,
                             Field.Index.NOT_ANALYZED));
                     }
                 }
@@ -90,7 +90,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
             }
         }
     }
-    
+
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if (fa != null) {

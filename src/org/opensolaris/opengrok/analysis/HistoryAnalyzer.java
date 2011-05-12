@@ -32,7 +32,7 @@ import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 public final class HistoryAnalyzer extends Analyzer {
     private final Set<Object> stopWords;
-    
+
     /** An array containing some common English words that are not usually useful
     for searching. */
     private static final String[] ENGLISH_STOP_WORDS = {
@@ -43,17 +43,17 @@ public final class HistoryAnalyzer extends Analyzer {
         "they", "this", "to", "was", "will", "with",
         "/", "\\", ":",".","0.0", "1.0"
     };
-    
+
     /** Builds an analyzer which removes words in ENGLISH_STOP_WORDS. */
     public HistoryAnalyzer() {
         stopWords = StopFilter.makeStopSet(ENGLISH_STOP_WORDS);
     }
-    
+
     /** Builds an analyzer which removes words in the provided array. */
     public HistoryAnalyzer(String[] stopWords) {
         this.stopWords = StopFilter.makeStopSet(stopWords);
     }
-    
+
     /** Filters LowerCaseTokenizer with StopFilter. */
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {

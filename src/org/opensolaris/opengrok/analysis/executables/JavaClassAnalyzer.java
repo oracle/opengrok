@@ -150,7 +150,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     protected String tagDef(String def) {
         return "<a class=\"d\" name=\"" + def + "\" href=\"" + urlPrefix + "defs=" + def + "\">" + def + "</a>";
     }
-    
+
 //TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
     private void getContent(Writer out) throws IOException {
         String t;
@@ -295,7 +295,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 }
             }
         }
-    }    
+    }
 
     /**
      * Write a cross referenced HTML file.

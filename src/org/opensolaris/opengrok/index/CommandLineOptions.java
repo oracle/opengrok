@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
- * 
+ *
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.index;
@@ -40,7 +40,7 @@ public class CommandLineOptions {
     private final static String ON_OFF = "on/off";
 
     static class Option {
-        
+
         char option;
         String argument;
         String description;
@@ -99,7 +99,7 @@ public class CommandLineOptions {
         options.add(new Option('r', ON_OFF, "Turn on/off support for remote SCM systems"));
         options.add(new Option('S', null, "Search for \"external\" source repositories and add them"));
         options.add(new Option('s', "/path/to/source/root", "The root directory of the source tree"));
-        options.add(new Option('T', "number", "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));        
+        options.add(new Option('T', "number", "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));
         options.add(new Option('t', "number", "Default tabsize to use (number of spaces per tab character)"));
         options.add(new Option('U', "host:port", "Send the current configuration to the specified address (This is most likely the web-app configured with ConfigAddress)"));
         options.add(new Option('u', "url", "URL to the database that contains the history cache. Default: If -j specifies \"embedded\", \"jdbc:derby:$DATA_ROOT/cachedb;create=true\"; otherwise, \"jdbc:derby://localhost/cachedb;create=true\""));
@@ -200,16 +200,16 @@ public class CommandLineOptions {
     /**
      * Not intended for normal use, but for the JUnit test suite to validate
      * that all options contains a description :-)
-     * 
+     *
      * @return an iterator to iterate through all of the command line options
      */
     Iterator<Option> getOptionsIterator() {
         return options.iterator();
     }
-    
+
    /**
     * Print out a manual page on standard out. Used for building manual page.
-    * 
+    *
     * @param argv argument vector. not used.
     */
    @SuppressWarnings("PMD.SystemPrintln")

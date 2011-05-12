@@ -35,22 +35,22 @@ import java.util.logging.LogRecord;
  * @author Lubos Kosco
  */
 final public class SimpleFileLogFormatter extends Formatter {
-   
+
    private final java.text.SimpleDateFormat formatter =
       new java.text.SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss.SSSZ");
    private final static String lineSeparator = System.
       getProperty("line.separator");
    Date dat = new Date();
-   
+
    private String ts(Date date) {
       return formatter.format(date);
    }
-   
+
    private String classNameOnly(String name) {
       int index = name.lastIndexOf('.') + 1;
       return name.substring(index);
    }
-   
+
     @Override
    public String format(LogRecord record) {
       StringBuilder sb = new StringBuilder();
@@ -74,7 +74,7 @@ final public class SimpleFileLogFormatter extends Formatter {
          java.io.ByteArrayOutputStream ba=new java.io.ByteArrayOutputStream();
          thrown.printStackTrace(new java.io.PrintStream(ba, true));
          sb.append(ba.toString());
-      }      
+      }
       sb.append(lineSeparator);
       return sb.toString();
    }

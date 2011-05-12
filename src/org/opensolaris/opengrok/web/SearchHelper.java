@@ -54,9 +54,9 @@ import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
 
 /**
- * Working set for a search basically to factor out/separate search related 
+ * Working set for a search basically to factor out/separate search related
  * complexity from UI design.
- * 
+ *
  * @author  Jens Elkner
  * @version $Revision$
  */
@@ -64,10 +64,10 @@ public class SearchHelper {
 
     /** opengrok's data root: used to find the search index file */
     public File dataRoot;
-    /** context path, i.e. the applications context path (usually /source) to 
+    /** context path, i.e. the applications context path (usually /source) to
      * use when generating a redirect URL */
     public String contextPath;
-    /** piggyback: if {@code true}, files in opengrok's data directory are 
+    /** piggyback: if {@code true}, files in opengrok's data directory are
      * gzipped compressed. */
     public boolean compressed;
     /** piggyback: the source root directory. */
@@ -89,12 +89,12 @@ public class SearchHelper {
      * {@link #executeQuery()} sets {@link #redirect} if certain conditions are
      * met. */
     public boolean isCrossRefSearch;
-    /** if not {@code null}, the consumer should redirect the client to a 
+    /** if not {@code null}, the consumer should redirect the client to a
      * separate result page denoted by the value of this field. Automatically
      * set via {@link #prepareExec(TreeSet)} and {@link #executeQuery()}. */
     public String redirect;
     /** if not {@code null}, the UI should show this error message and stop
-     * processing the search. Automatically set via {@link #prepareExec(TreeSet)} 
+     * processing the search. Automatically set via {@link #prepareExec(TreeSet)}
      * and {@link #executeQuery()}.*/
     public String errorMsg;
     /** the searcher used to open/search the index. Automatically set via
@@ -104,13 +104,13 @@ public class SearchHelper {
     public ScoreDoc[] hits;
     /** total number of hits */
     public int totalHits;
-    /** the query created by the used {@link QueryBuilder} via 
+    /** the query created by the used {@link QueryBuilder} via
      * {@link #prepareExec(TreeSet)}. */
     public Query query;
-    /** the lucene sort instruction based on {@link #order} created via 
+    /** the lucene sort instruction based on {@link #order} created via
      * {@link #prepareExec(TreeSet)}. */
     protected Sort sort;
-    /** projects to use to setup indexer searchers. Usually setup via 
+    /** projects to use to setup indexer searchers. Usually setup via
      * {@link #prepareExec(TreeSet)}. */
     public TreeSet<String> projects;
     /** opengrok summary context. Usually created via {@link #prepareSummary()}. */
@@ -124,7 +124,7 @@ public class SearchHelper {
 
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
-     * projects. Does not produce any {@link #redirect} link. It also does 
+     * projects. Does not produce any {@link #redirect} link. It also does
      * nothing if {@link #redirect} or {@link #errorMsg} have a none-{@code null}
      * value.
      * <p>
@@ -143,7 +143,7 @@ public class SearchHelper {
      * <li>{@link #projects}</li>
      * <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
-     * 
+     *
      * @param projects  project to use query. If empty, a none-project opengrok
      *  setup is assumed (i.e. DATA_ROOT/index will be used instead of possible
      *  multiple DATA_ROOT/$project/index).
@@ -175,7 +175,7 @@ public class SearchHelper {
                 //more projects
                 IndexSearcher[] searchables = new IndexSearcher[projects.size()];
                 int ii = 0;
-                //TODO might need to rewrite to Project instead of 
+                //TODO might need to rewrite to Project instead of
                 // String , need changes in projects.jspf too
                 for (String proj : projects) {
                     FSDirectory dir = FSDirectory.open(new File(indexDir, proj));
@@ -185,9 +185,9 @@ public class SearchHelper {
                         ? new ParallelMultiSearcher(searchables)
                         : new MultiSearcher(searchables);
             }
-            // TODO check if below is somehow reusing sessions so we don't 
-            // requery again and again, I guess 2min timeout sessions could be 
-            // usefull, since you click on the next page within 2mins, if not, 
+            // TODO check if below is somehow reusing sessions so we don't
+            // requery again and again, I guess 2min timeout sessions could be
+            // usefull, since you click on the next page within 2mins, if not,
             // then wait ;)
             switch (order) {
                 case LASTMODIFIED:
@@ -213,7 +213,7 @@ public class SearchHelper {
 
     /**
      * Start the search prepared by {@link #prepareExec(TreeSet)}.
-     * It does nothing if {@link #redirect} or {@link #errorMsg} have a 
+     * It does nothing if {@link #redirect} or {@link #errorMsg} have a
      * none-{@code null} value.
      * <p>
      * Parameters which should be populated/set at this time:
@@ -241,14 +241,14 @@ public class SearchHelper {
             TopFieldDocs fdocs = searcher.search(query, null, start + maxItems, sort);
             totalHits = fdocs.totalHits;
             hits = fdocs.scoreDocs;
-            // Bug #3900: Check if this is a search for a single term, and that 
+            // Bug #3900: Check if this is a search for a single term, and that
             // term is a definition. If that's the case, and we only have one match,
             // we'll generate a direct link instead of a listing.
             boolean isSingleDefinitionSearch =
                     (query instanceof TermQuery) && (builder.getDefs() != null);
 
-            // Attempt to create a direct link to the definition if we search for 
-            // one single definition term AND we have exactly one match AND there 
+            // Attempt to create a direct link to the definition if we search for
+            // one single definition term AND we have exactly one match AND there
             // is only one definition of that symbol in the document that matches.
             boolean uniqueDefinition = false;
             if (isSingleDefinitionSearch && hits != null && hits.length == 1) {
@@ -262,7 +262,7 @@ public class SearchHelper {
                     }
                 }
             }
-            // @TODO fix me. I should try to figure out where the exact hit is 
+            // @TODO fix me. I should try to figure out where the exact hit is
             // instead of returning a page with just _one_ entry in....
             if (uniqueDefinition && searcher != null && hits != null
                     && hits.length > 0 && isCrossRefSearch) {
@@ -298,7 +298,7 @@ public class SearchHelper {
     /**
      * If a search did not return a hit, one may use this method to obtain
      * suggestions for a new search.
-     *  
+     *
      * <p>
      * Parameters which should be populated/set at this time:
      * <ul>
@@ -345,8 +345,8 @@ public class SearchHelper {
                 getSuggestion(builder.getRefs(), checker, dummy);
                 s.refs = dummy.toArray(new String[dummy.size()]);
                 dummy.clear();
-                // TODO it seems the only true spellchecker is for 
-                // below field, see IndexDatabase 
+                // TODO it seems the only true spellchecker is for
+                // below field, see IndexDatabase
                 // createspellingsuggestions ...
                 getSuggestion(builder.getDefs(), checker, dummy);
                 s.defs = dummy.toArray(new String[dummy.size()]);
@@ -373,7 +373,7 @@ public class SearchHelper {
     /**
      * Prepare the fields to support printing a fullblown summary. Does nothing
      * if {@link #redirect} or {@link #errorMsg} have a none-{@code null} value.
-     * 
+     *
      * <p>
      * Parameters which should be populated/set at this time:
      * <ul>
@@ -387,7 +387,7 @@ public class SearchHelper {
      * <li>{@link #summerizer}</li>
      * <li>{@link #historyContext}</li>
      * </ul>
-     * 
+     *
      * @return this instance.
      */
     public SearchHelper prepareSummary() {
@@ -411,7 +411,7 @@ public class SearchHelper {
     }
 
     /**
-     * Free any resources associated with this helper (that includes closing 
+     * Free any resources associated with this helper (that includes closing
      * the used {@link #searcher}).
      */
     public void destroy() {

@@ -146,10 +146,10 @@ class SubversionHistoryParser implements Executor.StreamHandler {
     History parse(File file, SubversionRepository repos, String sinceRevision)
             throws HistoryException {
         initSaxParser();
-        handler = new Handler(repos.getDirectoryName(), repos.reposPath, 
+        handler = new Handler(repos.getDirectoryName(), repos.reposPath,
                 RuntimeEnvironment.getInstance().getSourceRootPath().length(),
                 repos.getDateFormat());
-        
+
         Executor executor = repos.getHistoryLogExecutor(file, sinceRevision);
         int status = executor.exec(true, this);
 
@@ -187,7 +187,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
 
     /**
      * Parse the given string.
-     * 
+     *
      * @param buffer The string to be parsed
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer

@@ -172,10 +172,10 @@ class BazaarHistoryParser implements Executor.StreamHandler {
             entries.add(entry);
         }
     }
-    
+
    /**
      * Parse the given string.
-     * 
+     *
      * @param buffer The string to be parsed
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer

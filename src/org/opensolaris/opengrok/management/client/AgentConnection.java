@@ -115,7 +115,7 @@ public class AgentConnection implements NotificationListener {
         agenturl = property;
     }
 
-    public void handleNotification(Notification notification, java.lang.Object handback) {        
+    public void handleNotification(Notification notification, java.lang.Object handback) {
         StringBuilder sb = new StringBuilder();
         sb.append("Notification type: '");
         sb.append(notification.getType());
@@ -129,8 +129,8 @@ public class AgentConnection implements NotificationListener {
 
         String notif = "Notification: '" + notification + "'";
         String source = "Notification: source: '" + notification.getSource() + "'";
- 
-        
+
+
         if (notification.getType().equals("ogaaction")) {
             if (handback instanceof String) {
                 logger.fine(sb.toString());
@@ -205,7 +205,7 @@ public class AgentConnection implements NotificationListener {
                 }
             }
             try {
-                connect(); 
+                connect();
                 notconnected = false;
             } catch (MalformedURLException ex) {
                 logger.log(Level.SEVERE, null, ex);

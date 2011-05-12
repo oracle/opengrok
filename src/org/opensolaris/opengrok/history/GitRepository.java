@@ -47,7 +47,7 @@ public class GitRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.git";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "git";
@@ -64,8 +64,8 @@ public class GitRepository extends Repository {
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file, String sinceRevision) 
-        throws IOException 
+    Executor getHistoryLogExecutor(final File file, String sinceRevision)
+        throws IOException
     {
         String abs = file.getCanonicalPath();
         String filename = "";
@@ -135,7 +135,7 @@ public class GitRepository extends Repository {
 
             ret = new ByteArrayInputStream(output.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
@@ -178,8 +178,8 @@ public class GitRepository extends Repository {
         int status = exec.exec();
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, 
-                "Failed to get annotations for: \"{0}\" Exit code: {1}", 
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+                "Failed to get annotations for: \"{0}\" Exit code: {1}",
                 new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
@@ -187,8 +187,8 @@ public class GitRepository extends Repository {
                 newLogReader(exec.getOutputStream()), file.getName());
     }
 
-    protected Annotation parseAnnotation(Reader input, String fileName) 
-        throws IOException 
+    protected Annotation parseAnnotation(Reader input, String fileName)
+        throws IOException
     {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
@@ -203,7 +203,7 @@ public class GitRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "Error: did not find annotation in line {0}: [{1}] of {2}",
                     new Object[]{String.valueOf(lineno), line, fileName});
             }

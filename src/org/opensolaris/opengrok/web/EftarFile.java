@@ -250,7 +250,7 @@ public class EftarFile {
     /**
      * Main method is used to generate eftar file from the path description
      * file in the run scripts.
-     * 
+     *
      * @param args Input files and output file
      */
     @SuppressWarnings("PMD.SystemPrintln")

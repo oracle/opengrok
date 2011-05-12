@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * 
+ *
  * Portions Copyright 2011 Jens Elkner.
  */
 
@@ -115,7 +115,7 @@ public class Context {
     /**
      * ???.
      * Closes the given <var>in</var> reader on return.
-     * 
+     *
      * @param in File to be matched
      * @param out to write the context
      * @param morePrefix to link to more... page

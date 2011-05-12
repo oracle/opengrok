@@ -295,5 +295,5 @@ public class Consts{
         kwd.add("given"); //Perl 5.10
         kwd.add("break");
     }
-    
+
 }

@@ -49,14 +49,14 @@ public class HistoryEntry {
     private boolean active;
     private SortedSet<String> files;
     private List<String> changeRequests;
-    
+
     /** Creates a new instance of HistoryEntry */
     public HistoryEntry() {
         message = new StringBuffer();
         files = new TreeSet<String>();
         changeRequests = new ArrayList<String>();
     }
-    
+
     public HistoryEntry(String revision, Date date, String author,
             String message, boolean active) {
         this.revision = revision;
@@ -67,7 +67,7 @@ public class HistoryEntry {
         this.files = new TreeSet<String>();
         this.changeRequests = new ArrayList<String>();
     }
-    
+
     public String getLine() {
         return revision + " " + date + " " + author + " " + message + "\n";
     }
@@ -100,23 +100,23 @@ public class HistoryEntry {
     public String getAuthor() {
         return author;
     }
-    
+
     public Date getDate() {
         return (date == null) ? null : (Date) date.clone();
     }
-    
+
     public String getMessage() {
         return message.toString().trim();
     }
-    
+
     public String getRevision() {
         return revision;
     }
-    
+
     public void setAuthor(String author) {
         this.author = author;
     }
-    
+
     public final void setDate(Date date) {
         if (date == null) {
             this.date = null;
@@ -124,56 +124,56 @@ public class HistoryEntry {
             this.date = (Date) date.clone();
         }
     }
-    
+
     public boolean isActive() {
         return active;
     }
-    
+
     public void setActive(boolean active) {
         this.active = active;
     }
-    
+
     public void setMessage(String message) {
         this.message.setLength(0);
         this.message.append(message);
     }
-    
+
     public void setRevision(String revision) {
         this.revision = revision;
     }
-    
+
     public void appendMessage(String message) {
         this.message.append(message);
         this.message.append("\n");
     }
-    
+
     public void addFile(String file) {
         files.add(file);
     }
-    
+
     public SortedSet<String> getFiles() {
         return files;
     }
-    
+
     public void setFiles(SortedSet<String> files) {
         this.files = files;
     }
-    
+
     @Override
     public String toString() {
         return getLine();
     }
-    
+
     public void addChangeRequest(String changeRequest) {
         if (!changeRequests.contains(changeRequest)) {
             changeRequests.add(changeRequest);
         }
     }
-    
+
     public List<String> getChangeRequests() {
         return changeRequests;
     }
-    
+
     public void setChangeRequests(List<String> changeRequests) {
         this.changeRequests = changeRequests;
     }

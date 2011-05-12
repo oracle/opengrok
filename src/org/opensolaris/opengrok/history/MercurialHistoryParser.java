@@ -71,7 +71,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
         try {
             Executor executor = repository.getHistoryLogExecutor(file, changeset);
             int status = executor.exec(true, this);
-            
+
             if (status != 0) {
                 throw new HistoryException("Failed to get history for: \"" +
                                            file.getAbsolutePath() + "\" Exit code: " + status);

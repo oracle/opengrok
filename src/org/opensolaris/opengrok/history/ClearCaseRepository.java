@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.util.Executor;
 public class ClearCaseRepository extends Repository {
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.ClearCase";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "cleartool";
@@ -72,7 +72,7 @@ public class ClearCaseRepository extends Repository {
    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
-     * 
+     *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
@@ -82,7 +82,7 @@ public class ClearCaseRepository extends Repository {
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
-        
+
         List<String> cmd = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
@@ -95,7 +95,7 @@ public class ClearCaseRepository extends Repository {
         cmd.add(filename);
 
         return new Executor(cmd, new File(getDirectoryName()));
-    }    
+    }
 
     @Override
     public InputStream getHistoryGet(String parent, String basename, String rev)
@@ -113,7 +113,7 @@ public class ClearCaseRepository extends Repository {
 
             // cleartool can't get to a previously existing file
             if (tmp.exists() && !tmp.delete()) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, 
+                OpenGrokLogger.getLogger().log(Level.WARNING,
                     "Failed to remove temporary file used by history cache");
             }
 
@@ -142,7 +142,7 @@ public class ClearCaseRepository extends Repository {
                 }
             };
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
@@ -170,9 +170,9 @@ public class ClearCaseRepository extends Repository {
             try  {
                 skipped = in.skip(32768L);
             } catch (IOException ioe) {
-                // ignored - stream isn't seekable, but skipped variable still 
+                // ignored - stream isn't seekable, but skipped variable still
                 // has correct value.
-                OpenGrokLogger.getLogger().log(Level.FINEST, 
+                OpenGrokLogger.getLogger().log(Level.FINEST,
                     "Stream not seekable", ioe);
             }
             if (skipped == 0 && in.read() == -1) {
@@ -233,7 +233,7 @@ public Annotation annotate(File file, String revision) throws IOException {
                 try {
                     in.close();
                 } catch (IOException exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream.", exp);
                 }
             }
@@ -306,7 +306,7 @@ public Annotation annotate(File file, String revision) throws IOException {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream.", e);
                 }
             }
@@ -357,7 +357,7 @@ public Annotation annotate(File file, String revision) throws IOException {
                     }
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, 
+                OpenGrokLogger.getLogger().log(Level.WARNING,
                     "Could not get canonical path for \""+file+"\"", e);
             }
         }
@@ -383,9 +383,9 @@ public Annotation annotate(File file, String revision) throws IOException {
             int rc;
             if ((rc = exec.exec(true)) == 0) {
                 String output = exec.getOutputString();
-    
+
                 if (output == null) {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
                         "\"cleartool lsvob -s\" output was null");
                     return new String[0];
                 }
@@ -395,7 +395,7 @@ public Annotation annotate(File file, String revision) throws IOException {
                     Arrays.asList(vobs));
                 return vobs;
             }
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "\"cleartool lsvob -s\" returned non-zero status: " + rc);
         }
         return new String[0];

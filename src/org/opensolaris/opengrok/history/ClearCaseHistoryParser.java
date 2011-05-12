@@ -51,7 +51,7 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
                 throw new HistoryException("Failed to get history for: \"" +
                                            file.getAbsolutePath() + "\" Exit code: " + status);
             }
-            
+
             return history;
         } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
@@ -122,7 +122,7 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
 
     /**
      * Parse the given string.
-     * 
+     *
      * @param buffer The string to be parsed
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer

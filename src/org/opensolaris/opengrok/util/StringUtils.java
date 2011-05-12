@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 /**
  * Various String utility methods.
- * 
+ *
  * @author austvik
  */
 public final class StringUtils {
@@ -31,10 +31,10 @@ public final class StringUtils {
     private StringUtils() {
         // Only static utility methods
     }
-    
+
     /**
      * Returns true if the string is empty or only includes whitespace characters.
-     * 
+     *
      * @param str the string to be checked
      * @return true if string is empty or only contains whitespace charadcters
      */
@@ -47,7 +47,7 @@ public final class StringUtils {
         return true;
     }
 
-    static final Pattern javaClassPattern = 
+    static final Pattern javaClassPattern =
         Pattern.compile("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
     /**
      * Returns true if the string is possibly a full java class name
@@ -63,5 +63,5 @@ public final class StringUtils {
     //    - class name must be in CamelCase, starting with upper case
     return javaClassPattern.matcher(s).matches();
   }
-    
+
 }

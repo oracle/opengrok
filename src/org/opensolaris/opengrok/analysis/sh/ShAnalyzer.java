@@ -58,7 +58,7 @@ public class ShAnalyzer extends PlainAnalyzer {
     public void analyze(Document doc, Reader in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
-    }    
+    }
 
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
@@ -67,7 +67,7 @@ public class ShAnalyzer extends PlainAnalyzer {
         }
         return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
@@ -78,7 +78,7 @@ public class ShAnalyzer extends PlainAnalyzer {
         xref.setDefs(super.defs);
         xref.write(out);
     }
-    
+
     /**
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source

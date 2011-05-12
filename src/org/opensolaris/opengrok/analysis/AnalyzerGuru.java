@@ -195,7 +195,7 @@ public class AnalyzerGuru {
     /**
      * Get an analyzer suited to analyze a file. This function will reuse
      * analyzers since they are costly.
-     * 
+     *
      * @param in Input stream containing data to be analyzed
      * @param file Name of the file to be analyzed
      * @return An analyzer suited for that file content
@@ -222,11 +222,11 @@ public class AnalyzerGuru {
     public Document getDocument(File file, InputStream in, String path,
                                 FileAnalyzer fa) throws IOException {
         Document doc = new Document();
-        String date = DateTools.timeToString(file.lastModified(), 
+        String date = DateTools.timeToString(file.lastModified(),
             DateTools.Resolution.MILLISECOND);
-        doc.add(new Field("u", Util.path2uid(path, date), 
+        doc.add(new Field("u", Util.path2uid(path, date),
             Field.Store.YES, Field.Index.NOT_ANALYZED));
-        doc.add(new Field("fullpath", file.getAbsolutePath(), 
+        doc.add(new Field("fullpath", file.getAbsolutePath(),
             Field.Store.NO, Field.Index.NOT_ANALYZED));
 
         try {
@@ -250,7 +250,7 @@ public class AnalyzerGuru {
         if (fa != null) {
             Genre g = fa.getGenre();
             if (g == Genre.PLAIN || g == Genre.XREFABLE || g == Genre.HTML) {
-                doc.add(new Field("t", g.typeName(), Field.Store.YES, 
+                doc.add(new Field("t", g.typeName(), Field.Store.YES,
                     Field.Index.NOT_ANALYZED));
             }
             fa.analyze(doc, in);
@@ -420,7 +420,7 @@ public class AnalyzerGuru {
     public static FileAnalyzerFactory find(String file) {
         String path = file;
         int i = 0;
-        if (((i = path.lastIndexOf('/')) > 0 || (i = path.lastIndexOf('\\')) > 0) 
+        if (((i = path.lastIndexOf('/')) > 0 || (i = path.lastIndexOf('\\')) > 0)
             && (i + 1 < path.length())) {
             path = path.substring(i + 1);
         }

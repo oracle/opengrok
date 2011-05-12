@@ -35,19 +35,19 @@ import java.util.logging.LogRecord;
  * @author Lubos Kosco
  */
 final public class SimpleConsoleFormatter extends Formatter {
-   
+
    private final java.text.SimpleDateFormat formatter =
       new java.text.SimpleDateFormat("HH:mm:ss");
    private final static String lineSeparator = System.
       getProperty("line.separator");
-   
+
    private String ts(Date date) {
       return formatter.format(date);
    }
 
     @Override
    public String format(LogRecord record) {
-      StringBuilder sb = new StringBuilder();      
+      StringBuilder sb = new StringBuilder();
       sb.append(ts(new Date(record.getMillis())));
       sb.append(" ");
       sb.append(record.getLevel().getName());

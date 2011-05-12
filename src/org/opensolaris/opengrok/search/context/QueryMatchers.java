@@ -77,7 +77,7 @@ public final class QueryMatchers {
         LineMatcher[] m = matchers.toArray(new LineMatcher[matchers.size()]);
         return (m);
     }
-    
+
     private void getTerms(Query query) {
         if (query instanceof BooleanQuery) {
             getBooleans((BooleanQuery) query);
@@ -91,7 +91,7 @@ public final class QueryMatchers {
             getPrefix((PrefixQuery) query);
         }
     }
-    
+
     private void getBooleans(BooleanQuery query) {
         BooleanClause[] queryClauses = query.getClauses();
         for (int i = 0; i < queryClauses.length; i++) {
@@ -100,7 +100,7 @@ public final class QueryMatchers {
             }
         }
     }
-    
+
     private void getPhrases(PhraseQuery query) {
         Term[] queryTerms = query.getTerms();
         if (queryTerms.length > 0 && useTerm(queryTerms[0])) {
@@ -112,7 +112,7 @@ public final class QueryMatchers {
             matchers.add(new PhraseMatcher(termsArray, caseInsensitive));
         }
     }
-    
+
     private void getTerm(TermQuery query) {
         Term term = query.getTerm();
         if (useTerm(term)) {
@@ -124,7 +124,7 @@ public final class QueryMatchers {
             }
         }
     }
-    
+
     private void getWildTerm(WildcardQuery query) {
         Term term = query.getTerm();
         if (useTerm(term)) {

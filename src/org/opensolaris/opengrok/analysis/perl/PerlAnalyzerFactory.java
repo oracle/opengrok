@@ -39,7 +39,7 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 
 public class PerlAnalyzerFactory extends FileAnalyzerFactory {
-    
+
     private static final String[] SUFFIXES = {
         "PL",
         "PERL",

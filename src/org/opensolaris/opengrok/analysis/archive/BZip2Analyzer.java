@@ -86,7 +86,7 @@ public class BZip2Analyzer extends FileAnalyzer {
                 if(doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
-                        doc.add(new Field("t", g.typeName(), Field.Store.YES, 
+                        doc.add(new Field("t", g.typeName(), Field.Store.YES,
                             Field.Index.NOT_ANALYZED));
                     }
                 }
@@ -96,7 +96,7 @@ public class BZip2Analyzer extends FileAnalyzer {
             }
         }
     }
-    
+
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if (fa != null) {

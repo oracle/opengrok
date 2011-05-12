@@ -47,7 +47,7 @@ public class MercurialRepository extends Repository {
     private static final long serialVersionUID = 1L;
 
     /** The property name used to obtain the client command for thisrepository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Mercurial";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "hg";
@@ -65,7 +65,7 @@ public class MercurialRepository extends Repository {
         + "description: {desc|strip|obfuscate}\\n";
 
     /** Template for formatting hg log output for directories. */
-    private static final String DIR_TEMPLATE = TEMPLATE 
+    private static final String DIR_TEMPLATE = TEMPLATE
         + "files: {files}{file_copies}\\n";
 
     public MercurialRepository() {
@@ -76,7 +76,7 @@ public class MercurialRepository extends Repository {
     /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
-     * 
+     *
      * @param file The file to retrieve history for
      * @param changeset the oldest changeset to return from the executor,
      * or {@code null} if all changesets should be returned
@@ -90,7 +90,7 @@ public class MercurialRepository extends Repository {
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
-        
+
         List<String> cmd = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
@@ -107,15 +107,15 @@ public class MercurialRepository extends Repository {
                         "Don't know how to parse changeset identifier: " +
                         changeset);
             }
-        }        
+        }
 
         cmd.add("--template");
         cmd.add(file.isDirectory() ? DIR_TEMPLATE : TEMPLATE);
         cmd.add(filename);
-        
+
         return new Executor(cmd, new File(directoryName));
-    }    
-    
+    }
+
     @Override
     public InputStream getHistoryGet(String parent, String basename, String rev)
     {
@@ -136,28 +136,28 @@ public class MercurialRepository extends Repository {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {cmd, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
-            
+
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
             in = process.getInputStream();
             int len;
-            
+
             while ((len = in.read(buffer)) != -1) {
                 if (len > 0) {
                     out.write(buffer, 0, len);
                 }
             }
-            
+
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream", e);
                 }
             }
@@ -171,7 +171,7 @@ public class MercurialRepository extends Repository {
                 }
             }
         }
-        
+
         return ret;
     }
 
@@ -221,20 +221,20 @@ public class MercurialRepository extends Repository {
                 matcher.reset(line);
                 if (matcher.find()) {
                     String author = matcher.group(1);
-                    String rev = matcher.group(2);                    
-                    ret.addLine(rev, author, true);                    
+                    String rev = matcher.group(2);
+                    ret.addLine(rev, author, true);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                        "Error: did not find annotation in line " 
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        "Error: did not find annotation in line "
                         + lineno + ": [" + line + "]");
                 }
-            }                    
+            }
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream", e);
                 }
             }
@@ -288,7 +288,7 @@ public class MercurialRepository extends Repository {
         // print nothing if there is no history.
         return true;
     }
-    
+
     @Override
     boolean isRepositoryFor(File file) {
       if (file.isDirectory()) {

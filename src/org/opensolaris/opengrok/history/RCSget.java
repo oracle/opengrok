@@ -39,7 +39,7 @@ import org.apache.commons.jrcs.rcs.ParseException;
  */
 public class RCSget extends InputStream {
     private InputStream stream;
-        
+
     /**
      * Pass null in version to get current revision
      */
@@ -47,13 +47,13 @@ public class RCSget extends InputStream {
         try {
             Archive archive = new Archive(file);
             Object[] lines;
-            
+
             if (version == null) {
                 lines = archive.getRevision(false);
             } else {
                 lines = archive.getRevision(version, false);
             }
-            
+
             StringBuilder sb = new StringBuilder();
             for (int ii = 0; ii < lines.length; ++ii) {
                 sb.append((String)lines[ii]);
@@ -71,29 +71,29 @@ public class RCSget extends InputStream {
                     "Revision " + version + " not found", e);
         }
     }
-    
+
     @Override
     public void reset() throws IOException {
         stream.reset();
     }
-    
+
     @Override
     public void close() throws IOException {
         if (stream != null) {
             stream.close();
         }
     }
-    
+
     @Override
     public void mark(int readlimit) {
         stream.mark(readlimit);
     }
-    
+
     @Override
     public int read(byte[] buffer, int pos, int len) throws IOException {
         return stream.read(buffer, pos, len);
     }
-    
+
     @Override
     public int read() throws IOException {
         throw new IOException("use a BufferedInputStream. just read() is not supported!");

@@ -59,6 +59,6 @@ public abstract class TextAnalyzer extends FileAnalyzer {
 
         analyze(doc, new InputStreamReader(in, charset));
     }
-    
+
     protected abstract void analyze(Document doc, Reader reader) throws IOException;
 }

@@ -64,7 +64,7 @@ interface HistoryCache {
 
     /**
      * Store the history for a repository.
-     * 
+     *
      * @param history The history to store
      * @param repository The repository whose history to store
      * @throws HistoryException if the history cannot be stored

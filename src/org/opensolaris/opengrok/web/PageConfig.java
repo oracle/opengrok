@@ -51,21 +51,21 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
- * A simple container to lazy initialize common vars wrt. a single request. 
- * It MUST NOT be shared between several requests and {@link #cleanup()} should 
+ * A simple container to lazy initialize common vars wrt. a single request.
+ * It MUST NOT be shared between several requests and {@link #cleanup()} should
  * be called before the page context gets destroyed (e.g. by overwriting
- * {@code jspDestroy()} or when leaving the {@code service} method. 
+ * {@code jspDestroy()} or when leaving the {@code service} method.
  * <p>
- * Purpose is to decouple implementation details from web design, so that the 
- * JSP developer does not need to know every implementation detail and normally 
- * has to deal with this class/wrapper, only (so some people may like to call 
+ * Purpose is to decouple implementation details from web design, so that the
+ * JSP developer does not need to know every implementation detail and normally
+ * has to deal with this class/wrapper, only (so some people may like to call
  * this class a bean with request scope ;-)). Furthermore it helps to keep the
- * pages (how content gets generated) consistent and to document the request 
+ * pages (how content gets generated) consistent and to document the request
  * parameters used.
  * <p>
  * General contract for this class (i.e. if not explicitly documented):
  * no method of this class changes neither the request nor the response.
- * 
+ *
  * @author Jens Elkner
  * @version $Revision$
  */
@@ -100,9 +100,9 @@ public class PageConfig {
     private StringBuilder headLines;
 
     /**
-     * Add the given data to the &lt;head&gt; section of the html page to 
+     * Add the given data to the &lt;head&gt; section of the html page to
      * generate.
-     * @param data  data to add. It is copied as is, so remember to escape 
+     * @param data  data to add. It is copied as is, so remember to escape
      *  special characters ...
      */
     public void addHeaderData(String data) {
@@ -116,7 +116,7 @@ public class PageConfig {
     }
 
     /**
-     * Get addition data, which should be added as is to the &lt;head&gt; 
+     * Get addition data, which should be added as is to the &lt;head&gt;
      * section of the html page.
      * @return an empty string if nothing to add, the data otherwise.
      */
@@ -127,9 +127,9 @@ public class PageConfig {
     /**
      * Get all data required to create a diff view wrt. to this request in one go.
      * @return an instance with just enough information to render a sufficient
-     *  view. If not all required parameters were given either they are 
-     *  supplemented with reasonable defaults if possible, otherwise the 
-     *  related field(s) are {@code null}. {@link DiffData#errorMsg} 
+     *  view. If not all required parameters were given either they are
+     *  supplemented with reasonable defaults if possible, otherwise the
+     *  related field(s) are {@code null}. {@link DiffData#errorMsg}
      *  {@code != null} indicates, that an error occured and one should not
      *  try to render a view.
      */
@@ -262,9 +262,9 @@ public class PageConfig {
     }
 
     /**
-     * Check, whether a full diff should be displayed. 
-     * @return {@code true} if a request parameter {@code full} with the 
-     *  literal value {@code 1} was found. 
+     * Check, whether a full diff should be displayed.
+     * @return {@code true} if a request parameter {@code full} with the
+     *  literal value {@code 1} was found.
      */
     public boolean fullDiff() {
         String val = req.getParameter("full");
@@ -274,12 +274,12 @@ public class PageConfig {
     /**
      * Check, whether the request contains minial information required to
      * produce a valid page. If this method returns an empty string, the
-     * referred file or directory actually exists below the source root 
+     * referred file or directory actually exists below the source root
      * directory and is readable.
-     * 
-     * @return {@code null} if the referred src file, directory or history is not 
+     *
+     * @return {@code null} if the referred src file, directory or history is not
      *  available, an empty String if further processing is ok and a none-empty
-     *  string which contains the URI encoded redirect path if the request 
+     *  string which contains the URI encoded redirect path if the request
      *  should be redirected.
      * @see #resourceNotAvailable()
      * @see #getOnRedirect()
@@ -312,7 +312,7 @@ public class PageConfig {
 
     /**
      * Get a list of filenames in the requested path.
-     * @return an empty array, if the resource does not exist, is not a 
+     * @return an empty array, if the resource does not exist, is not a
      *  directory or an error occured when reading it, otherwise a list of
      *  filenames in that directory.
      * @see #getResourceFile()
@@ -340,7 +340,7 @@ public class PageConfig {
     }
 
     /**
-     * Get all RSS related directories from the request using its {@code also} 
+     * Get all RSS related directories from the request using its {@code also}
      * parameter.
      * @return an empty string if the requested resource is not a directory, a
      *  space (' ') separated list of unchecked directory names otherwise.
@@ -393,10 +393,10 @@ public class PageConfig {
     }
 
     /**
-     * Get the number of search results to max. return by looking up the 
+     * Get the number of search results to max. return by looking up the
      * {@code n} request parameter.
-     * 
-     * @return the default number of hits if the corresponding start parameter 
+     *
+     * @return the default number of hits if the corresponding start parameter
      *  is not set or not a number, the number found otherwise.
      */
     public int getSearchMaxItems() {
@@ -406,7 +406,7 @@ public class PageConfig {
     /**
      * Get sort orders from the request parameter {@code sort} and if this list
      * would be empty from the cookie {@code OpenGrokorting}.
-     * @return a possible empty list which contains the sort order values in 
+     * @return a possible empty list which contains the sort order values in
      *  the same order supplied by the request parameter or cookie(s).
      */
     public List<SortOrder> getSortOrder() {
@@ -431,7 +431,7 @@ public class PageConfig {
     }
 
     /**
-     * Get a reference to the {@code QueryBuilder} wrt. to the current request 
+     * Get a reference to the {@code QueryBuilder} wrt. to the current request
      * parameters:
      * <dl>
      *      <dt>q</dt>
@@ -450,9 +450,9 @@ public class PageConfig {
             queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q")).setDefs(req.getParameter("defs")).setRefs(req.getParameter("refs")).setPath(req.getParameter("path")).setHist(req.getParameter("hist"));
 
             // This is for backward compatibility with links created by OpenGrok
-            // 0.8.x and earlier. We used to concatenate the entire query into a 
-            // single string and send it in the t parameter. If we get such a 
-            // link, just add it to the freetext field, and we'll get the old 
+            // 0.8.x and earlier. We used to concatenate the entire query into a
+            // single string and send it in the t parameter. If we get such a
+            // link, just add it to the freetext field, and we'll get the old
             // behaviour. We can probably remove this code in the first feature
             // release after 0.9.
             String t = req.getParameter("t");
@@ -467,8 +467,8 @@ public class PageConfig {
      * Get the eftar reader for the opengrok data directory. If it has been
      * already opened and not closed, this instance gets returned. One should
      * not close it once used: {@link #cleanup()} takes care to close it.
-     * 
-     * @return {@code null} if a reader can't be established, the reader 
+     *
+     * @return {@code null} if a reader can't be established, the reader
      *  otherwise.
      */
     public EftarFileReader getEftarReader() {
@@ -484,7 +484,7 @@ public class PageConfig {
     }
 
     /**
-     * Get the definition tag for the request related file or directory. 
+     * Get the definition tag for the request related file or directory.
      * @return an empty string if not found, the tag otherwise.
      */
     public String getDefineTagsIndex() {
@@ -555,8 +555,8 @@ public class PageConfig {
     }
 
     /**
-     * Get the annotation for the reqested resource. 
-     * @return {@code null} if not available or annotation was not requested, 
+     * Get the annotation for the reqested resource.
+     * @return {@code null} if not available or annotation was not requested,
      *  the cached annotation otherwise.
      */
     public Annotation getAnnotation() {
@@ -585,11 +585,11 @@ public class PageConfig {
 
     /**
      * Get the {@code path} parameter and display value for "Search only in"
-     * option. 
+     * option.
      * @return always an array of 3 fields, whereby field[0] contains the
-     *  path value to use (starts and ends always with a '/'). Field[1] the 
-     *  contains string to show in the UI. field[2] is set to 
-     *  {@code disabled=""} if the current path is the "/" directory, 
+     *  path value to use (starts and ends always with a '/'). Field[1] the
+     *  contains string to show in the UI. field[2] is set to
+     *  {@code disabled=""} if the current path is the "/" directory,
      *  otherwise set to an empty string.
      */
     public String[] getSearchOnlyIn() {
@@ -637,7 +637,7 @@ public class PageConfig {
 
     /**
      * Get the document hash provided by the request parameter {@code h}.
-     * @return {@code null} if the request does not contain such a parameter, 
+     * @return {@code null} if the request does not contain such a parameter,
      *  its value otherwise.
      */
     public String getDocumentHash() {
@@ -645,25 +645,25 @@ public class PageConfig {
     }
 
     /**
-     * Get a reference to a set of requested projects via request parameter 
+     * Get a reference to a set of requested projects via request parameter
      * {@code project} or cookies or defaults.
      * <p>
      * NOTE: This method assumes, that project names do <b>not</b> contain
      *  a comma (','), since this character is used as name separator!
-     * 
-     * @return a possible empty set of project names aka descriptions but never 
-     *  {@code null}. It is determined as 
+     *
+     * @return a possible empty set of project names aka descriptions but never
+     *  {@code null}. It is determined as
      * follows:
      * <ol>
      *  <li>If there is no project in the runtime environment (RTE) an empty
      *      set is returned. Otherwise:</li>
-     *  <li>If there is only one project in the RTE, this one gets returned (no 
-     *      matter, what the request actually says). Otherwise</li> 
+     *  <li>If there is only one project in the RTE, this one gets returned (no
+     *      matter, what the request actually says). Otherwise</li>
      *  <li>If the request parameter {@code project} contains any available
      *      project, the set with invalid projects removed gets returned.
      *      Otherwise:</li>
-     *  <li>If the request has a cookie with the name {@code OpenGrokProject} 
-     *      and it contains any available project, the set with invalid 
+     *  <li>If the request has a cookie with the name {@code OpenGrokProject}
+     *      and it contains any available project, the set with invalid
      *      projects removed gets returned. Otherwise:</li>
      *  <li>If a default project is set in the RTE, this project gets returned.
      *      Otherwise:</li>
@@ -711,7 +711,7 @@ public class PageConfig {
     }
 
     /**
-     * Get the parameter values for the given name. Splits comma separated 
+     * Get the parameter values for the given name. Splits comma separated
      * values automatically into a list of Strings.
      * @param name  name of the parameter.
      * @return a possible empty list.
@@ -731,9 +731,9 @@ public class PageConfig {
      * Same as {@link #getRequestedProjects()}, but with a variable cookieName
      * and parameter name. This way it is trivial to implement a project filter
      * ...
-     * @param paramName the name of the request parameter, which possibly 
+     * @param paramName the name of the request parameter, which possibly
      *  contains the project list in question.
-     * @param cookieName    name of the cookie which possible contains project 
+     * @param cookieName    name of the cookie which possible contains project
      *  lists used as fallback
      * @return a possible empty set but never {@code null}.
      */
@@ -788,10 +788,10 @@ public class PageConfig {
     }
 
     /**
-     * Get the base path to use to refer to CSS stylesheets and related 
+     * Get the base path to use to refer to CSS stylesheets and related
      * resources. Usually used to create links.
-     * 
-     * @return  the appropriate application directory prefixed with the 
+     *
+     * @return  the appropriate application directory prefixed with the
      *  application's context path (e.g. "/source/default").
      * @see HttpServletRequest#getContextPath()
      * @see RuntimeEnvironment#getWebappLAF()
@@ -802,7 +802,7 @@ public class PageConfig {
 
     /**
      * Get the current runtime environment.
-     * 
+     *
      * @return the runtime env.
      * @see RuntimeEnvironment#getInstance()
      * @see RuntimeEnvironment#register()
@@ -817,7 +817,7 @@ public class PageConfig {
     /**
      * Get the name patterns used to determine, whether a file should be
      * ignored.
-     * 
+     *
      * @return the corresponding value from the current runtime config..
      */
     public IgnoredNames getIgnoredNames() {
@@ -830,7 +830,7 @@ public class PageConfig {
     /**
      * Get the canonical path to root of the source tree. File separators are
      * replaced with a '/'.
-     * 
+     *
      * @return The on disk source root directory.
      * @see RuntimeEnvironment#getSourceRootPath()
      */
@@ -856,12 +856,12 @@ public class PageConfig {
     }
 
     /**
-     * Get the canonical path of the related resource relative to the 
+     * Get the canonical path of the related resource relative to the
      * source root directory (used file separators are all '/'). No check is
-     * made, whether the obtained path is really an accessable resource on disk. 
-     * 
+     * made, whether the obtained path is really an accessable resource on disk.
+     *
      * @see HttpServletRequest#getPathInfo()
-     * @return a possible empty String (denotes the source root directory) but 
+     * @return a possible empty String (denotes the source root directory) but
      *  not {@code null}.
      */
     public String getPath() {
@@ -877,7 +877,7 @@ public class PageConfig {
     /**
      * If a requested resource is not available, append "/on/" to
      * the source root directory and try again to resolve it.
-     * 
+     *
      * @return on success a none-{@code null} gets returned, which should be
      *         used to redirect the client to the propper path.
      */
@@ -895,12 +895,12 @@ public class PageConfig {
 
     /**
      * Get the on disk file to the request related file or directory.
-     * 
+     *
      * NOTE: If a repository contains hard or symbolic links, the returned
-     * file may finally point to a file outside of the source root directory. 
-     * 
+     * file may finally point to a file outside of the source root directory.
+     *
      * @return {@code new File("/")} if the related file or directory is not
-     *         available (can not be find below the source root directory), 
+     *         available (can not be find below the source root directory),
      *         the readable file or directory otherwise.
      * @see #getSourceRootPath()
      * @see #getPath()
@@ -918,7 +918,7 @@ public class PageConfig {
     /**
      * Get the canonical on disk path to the request related file or directory
      * with all file separators replaced by a '/'.
-     * 
+     *
      * @return "/" if the evaluated path is invalid or outside the source root
      *         directory), otherwise the path to the readable file or directory.
      * @see #getResourceFile()
@@ -936,7 +936,7 @@ public class PageConfig {
      * Check, whether the related request resource matches a valid file or
      * directory below the source root directory and wether it matches an
      * ignored pattern.
-     * 
+     *
      * @return {@code true} if the related resource does not exists or should be
      *         ignored.
      * @see #getIgnoredNames()
@@ -950,7 +950,7 @@ public class PageConfig {
 
     /**
      * Check, whether the request related path represents a directory.
-     * 
+     *
      * @return {@code true} if directory related request
      */
     public boolean isDir() {
@@ -989,11 +989,11 @@ public class PageConfig {
      * is tried to find the compressed file first by appending the file extension
      * ".gz" to the filename. If that fails or an uncompressed version of the
      * file is younger than its compressed version, the uncompressed file gets
-     * used. 
-     * 
+     * used.
+     *
      * @param filenames filenames to lookup.
      * @return an empty array if the related directory does not exist or the
-     *  given list is {@code null} or empty, otherwise an array, which may 
+     *  given list is {@code null} or empty, otherwise an array, which may
      *  contain {@code null} entries (when the related file could not be found)
      *  having the same order as the given list.
      */
@@ -1014,11 +1014,11 @@ public class PageConfig {
     }
 
     /**
-     * Lookup the file {@link #getPath()} relative to the crossfile directory 
-     * of the opengrok data directory. It is tried to find the compressed file 
-     * first by appending the file extension ".gz" to the filename. If that 
-     * fails or an uncompressed version of the file is younger than its 
-     * compressed version, the uncompressed file gets used. 
+     * Lookup the file {@link #getPath()} relative to the crossfile directory
+     * of the opengrok data directory. It is tried to find the compressed file
+     * first by appending the file extension ".gz" to the filename. If that
+     * fails or an uncompressed version of the file is younger than its
+     * compressed version, the uncompressed file gets used.
      * @return {@code null} if not found, the file otherwise.
      */
     public File findDataFile() {
@@ -1028,7 +1028,7 @@ public class PageConfig {
 
     /**
      * Get the path the request should be redirected (if any).
-     *  
+     *
      * @return {@code null} if there is no reason to redirect, the URI encoded
      *  redirect path to use otherwise.
      */
@@ -1053,9 +1053,9 @@ public class PageConfig {
     }
 
     /**
-     * Get the URI encoded canonical path to the related file or directory 
-     * (the URI part between the servlet path and the start of the query string). 
-     * @return an URI encoded path which might be an empty string but not 
+     * Get the URI encoded canonical path to the related file or directory
+     * (the URI part between the servlet path and the start of the query string).
+     * @return an URI encoded path which might be an empty string but not
      *  {@code null}.
      * @see #getPath()
      */
@@ -1094,12 +1094,12 @@ public class PageConfig {
      * Prepare a search helper with all required information, ready to execute
      * the query implied by the related request parameters and cookies.
      * <p>
-     * NOTE: One should check the {@link SearchHelper#errorMsg} as well as 
-     * {@link SearchHelper#redirect} and take the appropriate action before 
+     * NOTE: One should check the {@link SearchHelper#errorMsg} as well as
+     * {@link SearchHelper#redirect} and take the appropriate action before
      * executing the prepared query or continue processing.
      * <p>
      * This method stops populating fields as soon as an error occurs.
-     * 
+     *
      * @return a search helper.
      */
     public SearchHelper prepareSearch() {
@@ -1133,7 +1133,7 @@ public class PageConfig {
      * Get the config wrt. the given request. If there is none yet, a new config
      * gets created, attached to the request and returned.
      * <p>
-     * 
+     *
      * @param request   the request to use to initialize the config parameters.
      * @return always the same none-{@code null} config for a given request.
      * @throws NullPointerException

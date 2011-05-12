@@ -209,11 +209,11 @@ public class EftarFileReader {
 
     public void close() throws IOException {
         if (f != null && isOpen) {
-            try { 
-                f.close(); 
+            try {
+                f.close();
                 isOpen = false;
-            } catch (Exception e) { 
-                /** ignore */ 
+            } catch (Exception e) {
+                /** ignore */
             }
         }
     }

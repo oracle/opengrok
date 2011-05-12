@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 
 /**
  * Util class to set up Logging using the Console and FileLog formatter classes
- * 
+ *
  * @author Jan S Berg
  */
 @SuppressWarnings({"PMD.MoreThanOneLogger", "PMD.SystemPrintln", "PMD.AvoidThrowingRawExceptionTypes"})
@@ -50,7 +50,7 @@ public final class OpenGrokLogger {
     public static String getFileLogPath() {
         return filepath;
     }
-    
+
     public static Logger getLogger() {
         return log;
     }
@@ -65,7 +65,7 @@ public final class OpenGrokLogger {
             }
         }
     }
-        
+
     public static Level getConsoleLogLevel() {
         return consoleLevel;
     }
@@ -142,7 +142,7 @@ public final class OpenGrokLogger {
             }
         }
     }
-    
+
     public static String setupLogger(String logpath, Level filelevel, Level consolelevel) throws IOException {
         System.out.println("Logging to " + logpath);
         if (logpath != null) {

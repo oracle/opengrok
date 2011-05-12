@@ -41,7 +41,7 @@ import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Class used to parse the history log from Monotone
- * 
+ *
  * @author Trond Norbye
  */
 class MonotoneHistoryParser implements Executor.StreamHandler {
@@ -70,7 +70,7 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
         try {
             Executor executor = repository.getHistoryLogExecutor(file, changeset);
             int status = executor.exec(true, this);
-            
+
             if (status != 0) {
                 throw new HistoryException("Failed to get history for: \"" +
                                            file.getAbsolutePath() + "\" Exit code: " + status);

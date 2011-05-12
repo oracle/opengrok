@@ -46,7 +46,7 @@ import org.opensolaris.opengrok.util.Executor;
 public class CVSRepository extends RCSRepository {
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for repository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.cvs";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "cvs";
@@ -55,7 +55,7 @@ public class CVSRepository extends RCSRepository {
         type = "CVS";
         datePattern = "yyyy-MM-dd hh:mm:ss";
     }
-    
+
     @Override
     public boolean isWorking() {
         if (working == null) {
@@ -83,7 +83,7 @@ public class CVSRepository extends RCSRepository {
        }
        return false;
     }
-    
+
     @Override
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
@@ -126,20 +126,20 @@ public class CVSRepository extends RCSRepository {
                 isBranch=Boolean.TRUE;
                 try {
                  BufferedReader br=new BufferedReader(new FileReader(tagFile));
-                 try {                  
-                  String line=br.readLine();                  
+                 try {
+                  String line=br.readLine();
                   if (line!=null) {
                          branch=line.substring(1); }
                  } catch (Exception exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
-                        "Failed to get revision tag of {0}", 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                        "Failed to get revision tag of {0}",
                         getDirectoryName() + ": "+exp.getClass().toString() );
                  } finally {
                     br.close();
                    }
                 } catch (IOException ex){
-                 OpenGrokLogger.getLogger().log(Level.WARNING, 
-                     "Failed to work with CVS/Tag file of {0}", 
+                 OpenGrokLogger.getLogger().log(Level.WARNING,
+                     "Failed to work with CVS/Tag file of {0}",
                      getDirectoryName() + ": "+ex.getClass().toString() );
                 }
 
@@ -147,13 +147,13 @@ public class CVSRepository extends RCSRepository {
             }
             else { isBranch=Boolean.FALSE; }
         }
-        if (isBranch.equals(Boolean.TRUE) && branch!=null && !branch.isEmpty()) 
+        if (isBranch.equals(Boolean.TRUE) && branch!=null && !branch.isEmpty())
         {
-            //just generate THIS branch history, we don't care about the other 
+            //just generate THIS branch history, we don't care about the other
             // branches which are not checked out
             cmd.add("-r"+branch);
         }
-        
+
         if (filename.length() > 0) {
            cmd.add(filename);
         }
@@ -190,14 +190,14 @@ public class CVSRepository extends RCSRepository {
 
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: {0}", exp.getClass().toString());
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream", e);
                 }
             }
@@ -249,7 +249,7 @@ public class CVSRepository extends RCSRepository {
         int status = exec.exec();
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, 
+            OpenGrokLogger.getLogger().log(Level.WARNING,
                 "Failed to get annotations for: \"{0}\" Exit code: {1}",
                 new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
@@ -261,8 +261,8 @@ public class CVSRepository extends RCSRepository {
     private final static Pattern ANNOTATE_PATTERN =
         Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
-    protected Annotation parseAnnotation(Reader input, String fileName) 
-        throws IOException 
+    protected Annotation parseAnnotation(Reader input, String fileName)
+        throws IOException
     {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
@@ -272,13 +272,13 @@ public class CVSRepository extends RCSRepository {
         Matcher matcher = ANNOTATE_PATTERN.matcher(line);
         while ((line = in.readLine()) != null) {
             // Skip header
-            if (!hasStarted && (line.length() == 0 
-                || !Character.isDigit(line.charAt(0)))) 
+            if (!hasStarted && (line.length() == 0
+                || !Character.isDigit(line.charAt(0))))
             {
                 continue;
             }
             hasStarted = true;
-    
+
             // Start parsing
             ++lineno;
             matcher.reset(line);
@@ -287,8 +287,8 @@ public class CVSRepository extends RCSRepository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                    "Error: did not find annotation in line {0}: [{1}]", 
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                    "Error: did not find annotation in line {0}: [{1}]",
                     new Object[]{String.valueOf(lineno), line});
             }
         }

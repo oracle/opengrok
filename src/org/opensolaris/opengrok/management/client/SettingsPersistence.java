@@ -87,7 +87,7 @@ public class SettingsPersistence {
                   is.close();
               }
               } catch (IOException ioe) { //NOPMD
-                throw ioe; 
+                throw ioe;
               } finally {
               existingSettings = true;
               }

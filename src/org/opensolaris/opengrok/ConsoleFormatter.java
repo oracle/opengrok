@@ -35,12 +35,12 @@ import java.util.logging.LogRecord;
  * @author Jan S Berg
  */
 final public class ConsoleFormatter extends Formatter {
-   
+
    private final java.text.SimpleDateFormat formatter =
       new java.text.SimpleDateFormat("HH:mm:ss.SSS");
    private final static String lineSeparator = System.
       getProperty("line.separator");
-   
+
    private String ts(Date date) {
       return formatter.format(date);
    }

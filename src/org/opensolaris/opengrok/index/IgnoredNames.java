@@ -63,12 +63,12 @@ public final class IgnoredNames extends Filter {
         ".del-*",
         "_MTN"
     };
-    
+
     public IgnoredNames() {
         super();
         addDefaultPatterns();
     }
-        
+
     /**
      * Should the file be ignored or not?
      * @param file the file to check
@@ -77,7 +77,7 @@ public final class IgnoredNames extends Filter {
     public boolean ignore(File file) {
         return match(file);
     }
-    
+
     /**
      * Should the file be ignored or not?
      * @param name the name of the file to check
@@ -91,5 +91,5 @@ public final class IgnoredNames extends Filter {
         for (String s : defaultPatterns) {
             add(s);
         }
-    }    
+    }
 }

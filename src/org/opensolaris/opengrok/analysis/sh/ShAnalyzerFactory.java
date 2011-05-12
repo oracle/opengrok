@@ -42,9 +42,9 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
         "KSH",
         "KSHLIB",   // RFE #17849
         "CSH",
-        "BASH",        
-        "RUBY",        
-        "RB",        
+        "BASH",
+        "RUBY",
+        "RB",
         "P5",
         "AWK",
         "GMK",

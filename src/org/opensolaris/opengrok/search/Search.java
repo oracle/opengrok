@@ -131,9 +131,9 @@ final class Search {
             if (nhits<totalResults) {
                 System.out.println("Printed results 1 - " + nhits +" of " + totalResults + " total matching documents collected.");
                 System.out.println("Collect the rest (y/n) ?");
-                BufferedReader in=null;                
+                BufferedReader in=null;
                 try {
-                    in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));                                              
+                    in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
                     String line = in.readLine();
                     if (null == line || line.length() == 0 || line.charAt(0) == 'n') {
                        return;

@@ -70,7 +70,7 @@ class SCCSHistoryParser {
         if (f == null) {
             return null;
         }
-        
+
         in = new BufferedReader(new FileReader(getSCCSFile(file)));
         pass = sep = false;
         passRecord = true;

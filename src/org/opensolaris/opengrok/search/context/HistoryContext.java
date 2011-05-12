@@ -77,9 +77,9 @@ public class HistoryContext {
         File f = new File(filename);
         return getHistoryContext(HistoryGuru.getInstance().getHistory(f),
                                  path, null, hits,null);
-        
+
     }
-    
+
     public boolean getContext(
             String parent, String basename, String path, Writer out, String context)
             throws HistoryException
@@ -90,12 +90,12 @@ public class HistoryContext {
     /**
      * Obtain the history for the source file <var>src</var> and write out
      * matching History log entries.
-     * 
+     *
      * @param src       the source file represented by <var>path</var>
      *                  (SOURCE_ROOT + path)
      * @param path      the path of the file (rooted at SOURCE_ROOT)
      * @param out       write destination
-     * @param context   the servlet context path of the application (the path 
+     * @param context   the servlet context path of the application (the path
      *  prefix for URLs)
      * @return {@code true} if at least one line has been written out.
      * @throws HistoryException

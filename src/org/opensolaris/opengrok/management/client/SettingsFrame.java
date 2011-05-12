@@ -43,8 +43,8 @@ public class SettingsFrame extends javax.swing.JFrame {
     private static final long serialVersionUID = -5229330170574558105L;
     private final SettingsPersistence properties;
 
-    /** 
-     * Creates new form SettingsFrame 
+    /**
+     * Creates new form SettingsFrame
      * @param sp settings to start and save with
      */
     public SettingsFrame(SettingsPersistence sp) {
@@ -76,7 +76,7 @@ public class SettingsFrame extends javax.swing.JFrame {
 
     private void saveSettings() {
         //properties.setProperty(SettingsPersistence.USERNAMEKEY, userTextField.getText());
-        //properties.setProperty(properties.PASSWORDKEY, 
+        //properties.setProperty(properties.PASSWORDKEY,
         //        String.copyValueOf(passwordField.getPassword()));
         //properties.setPassword(passwordField.getPassword());
         properties.setProperty(SettingsPersistence.JMXURL, agentURLField.getText());

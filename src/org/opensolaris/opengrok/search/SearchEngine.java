@@ -81,22 +81,22 @@ public class SearchEngine {
      * Holds value of property definition.
      */
     private String definition;
-    
+
     /**
      * Holds value of property file.
      */
     private String file;
-    
+
     /**
      * Holds value of property freetext.
      */
     private String freetext;
-    
+
     /**
      * Holds value of property history.
      */
     private String history;
-    
+
     /**
      * Holds value of property symbol.
      */
@@ -120,7 +120,7 @@ public class SearchEngine {
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages= RuntimeEnvironment.getInstance().getCachePages();
     int totalHits=0;
-    
+
     private ScoreDoc[] hits;
     private TopScoreDocCollector collector;
     private Searcher searcher;
@@ -163,7 +163,7 @@ public class SearchEngine {
     /**
      *
      * @param paging whether to use paging (if yes, first X pages will load faster)
-     * @param root which db to search     
+     * @param root which db to search
      * @throws IOException
      */
     private void searchSingleDatabase(File root,boolean paging) throws IOException {
@@ -175,7 +175,7 @@ public class SearchEngine {
         if (!paging) {
                collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
                searcher.search(query,collector);
-        } 
+        }
         hits = collector.topDocs().scoreDocs;
         for (int i = 0; i < hits.length; i++) {
             int docId = hits[i].doc;
@@ -238,7 +238,7 @@ public class SearchEngine {
             query = queryBuilder.build();
             if (query != null) {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-                File root = new File(env.getDataRootFile(), "index");            
+                File root = new File(env.getDataRootFile(), "index");
 
                 if (env.hasProjects()) {
                     // search all projects
@@ -267,7 +267,7 @@ public class SearchEngine {
             } catch (Exception e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary", e);
             }
-            
+
             historyContext = null;
             try {
                 historyContext = new HistoryContext(query);
@@ -336,12 +336,12 @@ public class SearchEngine {
 
                 Genre genre = Genre.get(doc.get("t"));
                 Definitions tags = null;
-                Fieldable tagsField = doc.getFieldable("tags");                
+                Fieldable tagsField = doc.getFieldable("tags");
                 if (tagsField != null) {
                     tags = Definitions.deserialize(tagsField.getBinaryValue());
                 }
                 int nhits = docs.size();
-                
+
                 if(sourceContext != null) {
                     try {
                         if (Genre.PLAIN == genre && (source != null)) {
@@ -350,13 +350,13 @@ public class SearchEngine {
                                     tags, nhits > 100, ret);
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null){
                             int l = 0;
-                            Reader r=null;                          
+                            Reader r=null;
                             if ( RuntimeEnvironment.getInstance().isCompressXref() ) {
                                     r = new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + "/xref" + filename+".gz"))))); }
                             else {
                                     r = new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename))); }
                             try {
-                                l = r.read(content);                                                            
+                                l = r.read(content);
                             } finally {
                                 r.close();
                             }
@@ -399,9 +399,9 @@ public class SearchEngine {
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
         }
-        
+
     }
-    
+
     /**
      * Getter for property definition.
      *
@@ -410,7 +410,7 @@ public class SearchEngine {
     public String getDefinition() {
         return this.definition;
     }
-    
+
     /**
      * Setter for property definition.
      *
@@ -419,7 +419,7 @@ public class SearchEngine {
     public void setDefinition(String definition) {
         this.definition = definition;
     }
-    
+
     /**
      * Getter for property file.
      *
@@ -428,7 +428,7 @@ public class SearchEngine {
     public String getFile() {
         return this.file;
     }
-    
+
     /**
      * Setter for property file.
      *
@@ -437,7 +437,7 @@ public class SearchEngine {
     public void setFile(String file) {
         this.file = file;
     }
-    
+
     /**
      * Getter for property freetext.
      *
@@ -446,7 +446,7 @@ public class SearchEngine {
     public String getFreetext() {
         return this.freetext;
     }
-    
+
     /**
      * Setter for property freetext.
      *
@@ -455,7 +455,7 @@ public class SearchEngine {
     public void setFreetext(String freetext) {
         this.freetext = freetext;
     }
-    
+
     /**
      * Getter for property history.
      *
@@ -464,7 +464,7 @@ public class SearchEngine {
     public String getHistory() {
         return this.history;
     }
-    
+
     /**
      * Setter for property history.
      *
@@ -473,7 +473,7 @@ public class SearchEngine {
     public void setHistory(String history) {
         this.history = history;
     }
-    
+
     /**
      * Getter for property symbol.
      *
@@ -482,7 +482,7 @@ public class SearchEngine {
     public String getSymbol() {
         return this.symbol;
     }
-    
+
     /**
      * Setter for property symbol.
      *

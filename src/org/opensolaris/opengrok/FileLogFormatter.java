@@ -36,21 +36,21 @@ import java.util.logging.LogRecord;
  * @author Jan S Berg
  */
 final public class FileLogFormatter extends Formatter {
-   
+
    private final java.text.SimpleDateFormat formatter =
       new java.text.SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss.SSSZ");
    private final static String lineSeparator = System.
       getProperty("line.separator");
-   
+
    private String ts(Date date) {
       return formatter.format(date);
    }
-   
+
    private String classNameOnly(String name) {
       int index = name.lastIndexOf('.') + 1;
       return name.substring(index);
    }
-   
+
    public String format(LogRecord record) {
       StringBuilder sb = new StringBuilder();
       sb.append("[#|");
@@ -62,9 +62,9 @@ final public class FileLogFormatter extends Formatter {
       sb.append("V");
       sb.append(Info.getVersion());
       sb.append("|OG|");
-      sb.append("T=");          
+      sb.append("T=");
       sb.append(record.getThreadID());
-      sb.append("| ");  
+      sb.append("| ");
       sb.append(classNameOnly(record.getSourceClassName()));
       sb.append('.');
       sb.append(formatMessage(record));

@@ -32,12 +32,12 @@ import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 public class CompatibleAnalyser extends Analyzer {
     PathAnalyzer pather;
     HistoryAnalyzer historer;
-    
+
     public CompatibleAnalyser() {
         historer = new HistoryAnalyzer();
         pather  = new PathAnalyzer();
     }
-    
+
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
             return new PlainFullTokenizer(reader);
@@ -49,7 +49,7 @@ public class CompatibleAnalyser extends Analyzer {
             return pather.tokenStream(fieldName, reader);
         } else if ("hist".equals(fieldName)) {
             return historer.tokenStream(fieldName, reader);
-        } 
+        }
         return new PlainFullTokenizer(reader);
     }
 }

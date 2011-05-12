@@ -33,7 +33,7 @@ public final class Constants {
     //full name of cross reference prefix
     public static final String xrefP="/xref";
     //short cut for easier recognition of servlets in jsp pages, TODO redesign to be more intuitive
-    public static final String xrefS="/xr"; 
+    public static final String xrefS="/xr";
     public static final String moreP="/more";
     public static final String moreS="/mo";
     public static final String diffP="/diff";
@@ -46,5 +46,5 @@ public final class Constants {
     //full blown search from main page or top bar
     public static final String searchP="/search";
     //search from cross reference, can lead to direct match(which opens directly)
-    public static final String searchR="/s"; 
+    public static final String searchR="/s";
 }

@@ -81,7 +81,7 @@ public class FileAnalyzer extends Analyzer {
         private Genre(String typename) {
             this.typeName = typename;
         }
-        
+
         /**
          * Get the type name value used to tag lucence documents.
          * @return a none-null string.
@@ -89,7 +89,7 @@ public class FileAnalyzer extends Analyzer {
         public String typeName() {
             return typeName;
         }
-        
+
         /**
          * Get the Genre for the given type name.
          * @param typeName name to check
@@ -148,7 +148,7 @@ public class FileAnalyzer extends Analyzer {
         } else if ("hist".equals(fieldName)) {
             return hista.tokenStream(fieldName, reader);
         }
-        OpenGrokLogger.getLogger().log(Level.WARNING, "Have no analyzer for: {0}", fieldName);        
+        OpenGrokLogger.getLogger().log(Level.WARNING, "Have no analyzer for: {0}", fieldName);
         return null;
     }
 

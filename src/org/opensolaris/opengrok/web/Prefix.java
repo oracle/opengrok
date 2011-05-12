@@ -20,7 +20,7 @@ import java.util.TreeMap;
 
 /**
  * URL Prefixes usually tied to a certain servlet.
- * 
+ *
  * @author  Jens Elkner
  * @version $Revision$
  */
@@ -34,7 +34,7 @@ public enum Prefix {
     XREF_S("/xr"),
     /** show more lines. If a search result set for a file matches more lines
      * than a given limit (default: 10), only the first <i>limit</i> lines gets
-     * shown as an "[all ...]" link, which can be used to show all matching 
+     * shown as an "[all ...]" link, which can be used to show all matching
      * lines. The servlet path of this link starts with this prefix. */
     MORE_P("/more"),
     /** reserved (not used) */
@@ -55,7 +55,7 @@ public enum Prefix {
     RAW_P("/raw"),
     /** full blown search from main page or top bar (link prefix) */
     SEARCH_P("/search"),
-    /** search from cross reference, can lead to direct match (which opens 
+    /** search from cross reference, can lead to direct match (which opens
      * directly) or to a matches Summary page */
     SEARCH_R("/s"),
     /** opensearch description page */
@@ -69,7 +69,7 @@ public enum Prefix {
     private Prefix(String prefix) {
         this.prefix = prefix;
     }
-    
+
     /**
      * Get the string used as prefix.
      * @return the prefix
@@ -78,7 +78,7 @@ public enum Prefix {
     public String toString() {
         return prefix;
     }
-    
+
     // should be sufficient for now
     private static TreeMap<String, Prefix> lookupTable;
     static {
@@ -97,7 +97,7 @@ public enum Prefix {
      */
     public static Prefix get(String servletPath) {
         if (servletPath == null || servletPath.length() < 3
-            || servletPath.charAt(0) != '/') 
+            || servletPath.charAt(0) != '/')
         {
             return UNKNOWN;
         }

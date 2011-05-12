@@ -149,7 +149,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         sb.trimToSize();
         content = sb;
     }
-    
+
     private boolean isReadable(int c) {
         if (c > ' ' && c <= 127) {
             return true;

@@ -20,7 +20,7 @@
 /*
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
- * 
+ *
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -61,13 +61,13 @@ public class DirectoryListing {
      *
      * @param dir the directory to list
      * @param out write destination
-     * @param path virtual path of the directory (usually the path name of 
-     *  <var>dir</var> with the opengrok source directory stripped off). 
-     * @param files basenames of potential children of the directory to list. 
+     * @param path virtual path of the directory (usually the path name of
+     *  <var>dir</var> with the opengrok source directory stripped off).
+     * @param files basenames of potential children of the directory to list.
      *  Gets filtered by {@link IgnoredNames}.
-     * @return a possible empty list of README files included in the written 
+     * @return a possible empty list of README files included in the written
      *  listing.
-     * 
+     *
      * @throws java.io.IOException
      * @throws NullPointerException if a parameter except <var>files</var>
      *  is {@code null}
@@ -104,7 +104,7 @@ public class DirectoryListing {
                 continue;
             }
             File child = new File(dir, file);
-            if (file.startsWith("README") || file.endsWith("README") 
+            if (file.startsWith("README") || file.endsWith("README")
                 || file.startsWith("readme"))
             {
                 readMes.add(file);

@@ -28,7 +28,7 @@ import java.util.Properties;
 
 /**
  * Utility class to get information of the OpenGrok version.
- * 
+ *
  * @author Trond Norbye
  */
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
@@ -37,7 +37,7 @@ public final class Info {
 
     private static final String VERSION;
     private static final String REVISION;
-    
+
     static {
         InputStream in = null;
         try {
@@ -67,7 +67,7 @@ public final class Info {
     public static String getVersion() {
         return VERSION;
     }
-    
+
     /**
      * get full version (product vMajor revMinor)
      * @return full version
@@ -75,15 +75,15 @@ public final class Info {
     public static String getFullVersion() {
         return "OpenGrok v" + VERSION + " rev " + REVISION;
     }
-    
+
     /**
      * get minor version
      * @return minor version
      */
     public static String getRevision() {
-        return REVISION;        
+        return REVISION;
     }
-    
+
     private Info() {
     }
 }

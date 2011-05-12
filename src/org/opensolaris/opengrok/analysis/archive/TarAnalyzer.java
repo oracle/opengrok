@@ -48,9 +48,9 @@ import org.opensolaris.opengrok.web.Util;
 public class TarAnalyzer extends FileAnalyzer {
     private StringBuilder content;
     private int len;
-    
+
     private static final Reader dummy = new StringReader("");
-    
+
     private final PlainFullTokenizer plainfull;
 
     protected TarAnalyzer(FileAnalyzerFactory factory) {
@@ -71,7 +71,7 @@ public class TarAnalyzer extends FileAnalyzer {
         content.trimToSize();
         doc.add(new Field("full",dummy));
     }
-    
+
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if("full".equals(fieldName)) {
@@ -82,7 +82,7 @@ public class TarAnalyzer extends FileAnalyzer {
         }
         return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to store HTML cross-reference

@@ -80,7 +80,7 @@ class FileHistoryCache implements HistoryCache {
      */
     private static File getCachedFile(File file) throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append(env.getDataRootPath());
         sb.append(File.separatorChar);
@@ -96,10 +96,10 @@ class FileHistoryCache implements HistoryCache {
         } catch (IOException e) {
             throw new HistoryException("Failed to get path relative to source root for " + file, e);
         }
-        
+
         return new File(sb.toString());
     }
-        
+
     /**
      * Read history from a file.
      */
@@ -115,9 +115,9 @@ class FileHistoryCache implements HistoryCache {
             in.close();
         }
     }
-    
+
     private void storeFile(History history, File file) throws HistoryException {
-        
+
         File cache = getCachedFile(file);
 
         File dir = cache.getParentFile();
@@ -211,7 +211,7 @@ class FileHistoryCache implements HistoryCache {
             try {
                 return readCache(cache);
             } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, 
+                OpenGrokLogger.getLogger().log(Level.WARNING,
                         "Error when reading cache file '" + cache, e);
             }
         }
@@ -230,11 +230,11 @@ class FileHistoryCache implements HistoryCache {
         }
 
         if (!file.isDirectory()) {
-            // Don't cache history-information for directories, since the 
+            // Don't cache history-information for directories, since the
             // history information on the directory may change if a file in
             // a sub-directory change. This will cause us to present a stale
-            // history log until a the current directory is updated and 
-            // invalidates the cache entry.           
+            // history log until a the current directory is updated and
+            // invalidates the cache entry.
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             if ((cache != null) &&
                         (cache.exists() ||

@@ -33,7 +33,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * This is a factory class for the different repositories.
- * 
+ *
  * @author austvik
  */
 public final class RepositoryFactory {
@@ -62,17 +62,17 @@ public final class RepositoryFactory {
      * @return a list which contains none-{@code null} values, only.
      */
     public static List<Class<? extends Repository>> getRepositoryClasses() {
-        ArrayList<Class<? extends Repository>> list = 
+        ArrayList<Class<? extends Repository>> list =
             new ArrayList<Class<? extends Repository>>(repositories.length);
         for (int i=repositories.length-1; i >= 0; i--) {
             list.add(repositories[i].getClass());
         }
         return list;
     }
-    
+
     /**
      * Returns a repository for the given file, or null if no repository was found.
-     * 
+     *
      * @param file File that might contain a repository
      * @return Correct repository for the given file
      */

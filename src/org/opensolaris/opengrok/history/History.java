@@ -45,7 +45,7 @@ public class History {
     /**
      * Set the list of log entries for the file. The first entry is the most
      * recent one.
-     * 
+     *
      * @param entries The entries to add to the list
      */
     public void setHistoryEntries(List<HistoryEntry> entries) {
@@ -54,7 +54,7 @@ public class History {
 
     /**
      * Get the list of log entries, most recent first.
-     * 
+     *
      * @return The list of entries in this history
      */
     public List<HistoryEntry> getHistoryEntries() {

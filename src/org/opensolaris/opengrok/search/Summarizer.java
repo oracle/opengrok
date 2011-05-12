@@ -46,23 +46,23 @@ import org.apache.lucene.search.WildcardQuery;
 
 /** Implements hit summarization. */
 public class Summarizer {
-    
+
     /** The number of context terms to display preceding and following matches.*/
     private static final int SUM_CONTEXT = 10;
-    
+
     /** The total number of terms to display in a summary.*/
     private static final int SUM_LENGTH = 20;
-    
+
     /** Converts text to tokens. */
     private final Analyzer analyzer;
-    
+
     private final Set<String> highlight = new HashSet<String>();            // put query terms in table
-    
+
     public Summarizer(Query query, Analyzer a) {
         analyzer = a;
         getTerms(query);
     }
-    
+
     /**
      * Class Excerpt represents a single passage found in the
      * document, with some appropriate regions highlit.
@@ -71,42 +71,42 @@ public class Summarizer {
         List<Summary.Fragment> passages = new ArrayList<Summary.Fragment>();
         Set<String> tokenSet = new TreeSet<String>();
         int numTerms = 0;
-        
+
         /**
          */
         public void addToken(String token) {
             tokenSet.add(token);
         }
-        
+
         /**
          * Return how many unique toks we have
          */
         public int numUniqueTokens() {
             return tokenSet.size();
         }
-        
+
         /**
          * How many fragments we have.
          */
         public int numFragments() {
             return passages.size();
         }
-        
+
         public void setNumTerms(int numTerms) {
             this.numTerms = numTerms;
         }
-        
+
         public int getNumTerms() {
             return numTerms;
         }
-        
+
         /**
          * Add a frag to the list.
          */
         public void add(Summary.Fragment fragment) {
             passages.add(fragment);
         }
-        
+
         /**
          * Return an Enum for all the fragments
          */
@@ -114,7 +114,7 @@ public class Summarizer {
             return passages;
         }
     }
-    
+
     /** Returns a summary for the given pre-tokenized text. */
     public Summary getSummary(String text) throws IOException {
         if (text == null) {
@@ -124,14 +124,14 @@ public class Summarizer {
         // containing any query terms.
         //
         // @TODO: check that phrases in the query are matched in the fragment
-        
+
         Token[] tokens = getTokens(text);             // parse text to token array
-        
+
         if (tokens.length == 0) {
             return new Summary();
         }
-        
-        
+
+
         //
         // Create a SortedSet that ranks excerpts according to
         // how many query terms are present.  An excerpt is
@@ -159,15 +159,15 @@ public class Summarizer {
                 } else {
                     return 0;
                 }
-                } 
+                }
             }
         );
-        
+
         //
         // Iterate through all terms in the document
         //
         int lastExcerptPos = 0;
-        for (int i = 0; i < tokens.length; i++) {        
+        for (int i = 0; i < tokens.length; i++) {
             //
             // If we find a term that's in the query...
             //
@@ -180,7 +180,7 @@ public class Summarizer {
                 int endToken = Math.min(i+SUM_CONTEXT, tokens.length);
                 int offset = tokens[startToken].startOffset();
                 int j = startToken;
-                
+
                 //
                 // Iterate from the start point to the finish, adding
                 // terms all the way.  The end of the passage is always
@@ -190,7 +190,7 @@ public class Summarizer {
                 if (i != 0) {
                     excerpt.add(new Summary.Ellipsis());
                 }
-                
+
                 //
                 // Iterate through as long as we're before the end of
                 // the document and we haven't hit the max-number-of-items
@@ -208,12 +208,12 @@ public class Summarizer {
                         offset = t.endOffset();
                         endToken = Math.min(j+SUM_CONTEXT, tokens.length);
                     }
-                    
+
                     j++;
                 }
-                
+
                 lastExcerptPos = endToken;
-                
+
                 //
                 // We found the series of search-term hits and added
                 // them (with intervening text) to the excerpt.  Now
@@ -226,17 +226,17 @@ public class Summarizer {
                 if (j < tokens.length) {
                     excerpt.add(new Summary.Fragment(text.substring(offset,tokens[j].endOffset())));
                 }
-                
+
                 //
                 // Remember how many terms are in this excerpt
                 //
                 excerpt.setNumTerms(j - startToken);
-                
+
                 //
                 // Store the excerpt for later sorting
                 //
                 excerptSet.add(excerpt);
-                
+
                 //
                 // Start SUM_CONTEXT places away.  The next
                 // search for relevant excerpts begins at i-SUM_CONTEXT
@@ -244,7 +244,7 @@ public class Summarizer {
                 i = j+SUM_CONTEXT;
             }
         }
-        
+
         //
         // If the target text doesn't appear, then we just
         // excerpt the first SUM_LENGTH words from the document.
@@ -253,12 +253,12 @@ public class Summarizer {
             Excerpt excerpt = new Excerpt();
             int excerptLen = Math.min(SUM_LENGTH, tokens.length);
             lastExcerptPos = excerptLen;
-            
+
             excerpt.add(new Summary.Fragment(text.substring(tokens[0].startOffset(), tokens[excerptLen-1].startOffset())));
             excerpt.setNumTerms(excerptLen);
             excerptSet.add(excerpt);
         }
-        
+
         //
         // Now choose the best items from the excerpt set.
         // Stop when our Summary grows too large.
@@ -268,7 +268,7 @@ public class Summarizer {
         while (tokenCount <= SUM_LENGTH && excerptSet.size() > 0) {
             Excerpt excerpt = excerptSet.last();
             excerptSet.remove(excerpt);
-            
+
             double tokenFraction = (1.0 * excerpt.getNumTerms()) / excerpt.numFragments();
             for (Summary.Fragment f: excerpt.elements()) {
                 // Don't add fragments if it takes us over the max-limit
@@ -278,13 +278,13 @@ public class Summarizer {
                 tokenCount += tokenFraction;
             }
         }
-        
+
         if (tokenCount > 0 && lastExcerptPos < tokens.length) {
             s.add(new Summary.Ellipsis());
         }
         return s;
     }
-    
+
     private Token[] getTokens(String text) throws IOException {
         //FIXME somehow integrate below cycle to getSummary to save the cloning and memory,
         //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
@@ -295,18 +295,18 @@ public class Summarizer {
         while(ts.incrementToken()) {
             Token t=new Token(term.termBuffer(),0,term.termLength(),offset.startOffset(),offset.endOffset());
             result.add(t);
-        }        
+        }
         return result.toArray(new Token[result.size()]);
     }
-    
-    
+
+
     /**
      * Get the terms from a query and adds them to hightlite
      * a stream of tokens
      *
      * @param query
      */
-    
+
     private void getTerms(Query query) {
         if (query instanceof BooleanQuery) {
             getBooleans((BooleanQuery) query);
@@ -320,7 +320,7 @@ public class Summarizer {
             getPrefix((PrefixQuery) query);
         }
     }
-    
+
     private void getBooleans(BooleanQuery query) {
         BooleanClause[] queryClauses = query.getClauses();
         for (int i = 0; i < queryClauses.length; i++) {
@@ -329,18 +329,18 @@ public class Summarizer {
             }
         }
     }
-    
+
     private void getPhrases(PhraseQuery query) {
-        Term[] queryTerms = query.getTerms();        
+        Term[] queryTerms = query.getTerms();
         for (int i = 0; i < queryTerms.length; i++) {
             highlight.add(queryTerms[i].text());
         }
     }
-    
+
     private void getTerm(TermQuery query) {
         highlight.add(query.getTerm().text());
     }
-    
+
     private void getWildTerm(WildcardQuery query) {
         highlight.add(query.getTerm().text());
     }

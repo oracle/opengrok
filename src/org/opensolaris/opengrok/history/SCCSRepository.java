@@ -44,7 +44,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 public class SCCSRepository extends Repository {
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.SCCS";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "sccs";
@@ -65,16 +65,16 @@ public class SCCSRepository extends Repository {
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, 
+            OpenGrokLogger.getLogger().log(Level.WARNING,
                 "An error occured while getting revision", ex);
             return null;
         }
     }
-    
+
      /** Pattern used to extract revision from sccs get */
     private final static Pattern AUTHOR_PATTERN =
         Pattern.compile("^([\\d.]+)\\s+(\\S+)");
-    
+
     private void getAuthors(File file) throws IOException {
         //System.out.println("Alloc Authors cache");
         authors_cache = new HashMap<String, String>();
@@ -105,8 +105,8 @@ public class SCCSRepository extends Repository {
                     String auth = matcher.group(2);
                     authors_cache.put(rev, auth);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                        "Error: did not find authors in line {0}: [{1}]", 
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        "Error: did not find authors in line {0}: [{1}]",
                         new Object[]{lineno, line});
                 }
             }
@@ -143,10 +143,10 @@ public class SCCSRepository extends Repository {
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        
+
         //System.out.println("annotating " + file.getCanonicalPath());
         getAuthors(file);
-        
+
         ArrayList<String> argv = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(cmd);
@@ -176,11 +176,11 @@ public class SCCSRepository extends Repository {
                     if (author == null) {
                         author = "unknown";
                     }
-                    
+
                     a.addLine(rev, author, true);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                        "Error: did not find annotations in line {0}: [{1}]", 
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        "Error: did not find annotations in line {0}: [{1}]",
                         new Object[]{lineno, line});
                 }
             }
@@ -190,7 +190,7 @@ public class SCCSRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream", e);
                 }
             }

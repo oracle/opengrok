@@ -86,7 +86,7 @@ public class Executor {
 
     /**
      * Execute the command and collect the output
-     * 
+     *
      * @param reportExceptions Should exceptions be added to the log or not
      * @return The exit code of the process
      */
@@ -99,7 +99,7 @@ public class Executor {
 
     /**
      * Execute the command and collect the output
-     * 
+     *
      * @param reportExceptions Should exceptions be added to the log or not
      * @param handler The handler to handle data from standard output
      * @return The exit code of the process
@@ -207,7 +207,7 @@ public class Executor {
 
     /**
      * Get the output from the process as a string.
-     * 
+     *
      * @return The output from the process
      */
     public String getOutputString() {
@@ -221,7 +221,7 @@ public class Executor {
 
     /**
      * Get a reader to read the output from the process
-     * 
+     *
      * @return A reader reading the process output
      */
     public Reader getOutputReader() {
@@ -230,7 +230,7 @@ public class Executor {
 
     /**
      * Get an input stream read the output from the process
-     * 
+     *
      * @return A reader reading the process output
      */
     public InputStream getOutputStream() {
@@ -239,7 +239,7 @@ public class Executor {
 
     /**
      * Get the output from the process written to the error stream as a string.
-     * 
+     *
      * @return The error output from the process
      */
     public String getErrorString() {
@@ -253,7 +253,7 @@ public class Executor {
 
     /**
      * Get a reader to read the output the process wrote to the error stream.
-     * 
+     *
      * @return A reader reading the process error stream
      */
     public Reader getErrorReader() {
@@ -262,7 +262,7 @@ public class Executor {
 
     /**
      * Get an inputstreamto read the output the process wrote to the error stream.
-     * 
+     *
      * @return An inputstream for reading the process error stream
      */
     public InputStream getErrorStream() {
@@ -279,7 +279,7 @@ public class Executor {
          * Process the data in the stream. The processStream function is
          * called _once_ during the lifetime of the process, and you should
          * process all of the input you want before returning from the function.
-         * 
+         *
          * @param in The InputStream containing the data
          * @throws java.io.IOException
          */

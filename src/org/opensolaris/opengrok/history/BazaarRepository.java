@@ -40,12 +40,12 @@ import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Bazaar repository.
- * 
+ *
  */
 public class BazaarRepository extends Repository {
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for thisrepository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Bazaar";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "bzr";
@@ -58,19 +58,19 @@ public class BazaarRepository extends Repository {
    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
-     * 
+     *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(final File file, final String sinceRevision) 
-        throws IOException 
+    Executor getHistoryLogExecutor(final File file, final String sinceRevision)
+        throws IOException
     {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
-        
+
         List<String> cmd = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
@@ -87,10 +87,10 @@ public class BazaarRepository extends Repository {
        }
 
        return new Executor(cmd, new File(getDirectoryName()));
-    }    
-    
+    }
+
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) 
+    public InputStream getHistoryGet(String parent, String basename, String rev)
     {
         InputStream ret = null;
 
@@ -108,16 +108,16 @@ public class BazaarRepository extends Repository {
             byte[] buffer = new byte[32 * 1024];
             InputStream in = process.getInputStream();
             int len;
-            
+
             while ((len = in.read(buffer)) != -1) {
                 if (len > 0) {
                     out.write(buffer, 0, len);
                 }
             }
-            
+
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
@@ -130,7 +130,7 @@ public class BazaarRepository extends Repository {
                 }
             }
         }
-        
+
         return ret;
     }
 
@@ -161,18 +161,18 @@ public class BazaarRepository extends Repository {
 
         Executor exec = new Executor(cmd, file.getParentFile());
         int status = exec.exec();
-        
+
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, 
-                "Failed to get annotations for: \"{0}\" Exit code: {1}", 
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+                "Failed to get annotations for: \"{0}\" Exit code: {1}",
                 new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
     }
 
-    protected Annotation parseAnnotation(Reader input, String fileName) 
-        throws IOException 
+    protected Annotation parseAnnotation(Reader input, String fileName)
+        throws IOException
     {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
@@ -187,8 +187,8 @@ public class BazaarRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                    "Error: did not find annotation in line {0}: [{1}]", 
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                    "Error: did not find annotation in line {0}: [{1}]",
                     new Object[]{String.valueOf(lineno), line});
             }
         }
@@ -241,7 +241,7 @@ public class BazaarRepository extends Repository {
        }
        return false;
     }
-    
+
     @Override
     public boolean isWorking() {
         if (working == null) {

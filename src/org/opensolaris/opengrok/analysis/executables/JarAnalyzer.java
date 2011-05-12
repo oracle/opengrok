@@ -64,7 +64,7 @@ public class JarAnalyzer extends FileAnalyzer {
         super(factory);
         content = new byte[16 * 1024];
     }
-    
+
     public void analyze(Document doc, InputStream in) throws IOException {
         defs = new LinkedList<String>();
         refs = new LinkedList<String>();
@@ -115,7 +115,7 @@ public class JarAnalyzer extends FileAnalyzer {
             doc.add(new Field("refs",dummy));
         }
     }
-    
+
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("defs".equals(fieldName)) {
             return new List2TokenStream(defs);
@@ -126,7 +126,7 @@ public class JarAnalyzer extends FileAnalyzer {
         }
         return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference

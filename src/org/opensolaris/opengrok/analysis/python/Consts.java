@@ -58,11 +58,11 @@ public class Consts{
         kwd.add( "pass" );
         kwd.add( "print" );
         kwd.add( "raise" );
-        kwd.add( "return" );        
-        kwd.add( "try" );        
+        kwd.add( "return" );
+        kwd.add( "try" );
         kwd.add( "while" );
         kwd.add( "with" ); //2.5 , 2.6
-        kwd.add( "yield" );        
+        kwd.add( "yield" );
         kwd.add( "None" );  //2.4
     }
 }

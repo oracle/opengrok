@@ -65,17 +65,17 @@ public abstract class JFlexTokenizer extends Tokenizer {
     }
 
     protected TermAttribute termAtt= addAttribute(TermAttribute.class);
-    protected OffsetAttribute offsetAtt= addAttribute(OffsetAttribute.class);    
+    protected OffsetAttribute offsetAtt= addAttribute(OffsetAttribute.class);
     protected PositionIncrementAttribute posIncrAtt= addAttribute(PositionIncrementAttribute.class);
 
     /**
      * This will reinitalize internal AttributeImpls, or it returns false if end of input Reader ...
      * @return false if no more tokens, otherwise true
      * @throws java.io.IOException
-     */    
+     */
     @Override
     public boolean incrementToken() throws java.io.IOException {
-        return this.yylex();        
+        return this.yylex();
     }
 
     protected void setAttribs(String str, int start, int end) {

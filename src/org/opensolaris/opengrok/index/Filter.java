@@ -145,7 +145,7 @@ public class Filter implements Serializable {
 
     /**
      * Add a pattern to the correct list of internal filters to match
-     * 
+     *
      * @param pattern the pattern to add
      */
     @SuppressWarnings("PMD.ConfusingTernary")

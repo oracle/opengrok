@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  */
 public class RepositoryInfo implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     protected String directoryName;
     protected Boolean working;
     protected String type;
@@ -79,7 +79,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Returns true if this repository is usable in this context (for SCM
      * systems that use external binaries, the binary must be availabe etc)
-     * 
+     *
      * @return true if the HistoryGuru may use the repository
      */
     public boolean isWorking() {
@@ -98,7 +98,7 @@ public class RepositoryInfo implements Serializable {
     /**
      * Is the history and version information for this repository stored on
      * a remote server?
-     * 
+     *
      * @return true if the history is stored on a remote server.
      */
     public boolean isRemote() {
@@ -136,13 +136,13 @@ public class RepositoryInfo implements Serializable {
     public String getDatePattern() {
         return datePattern;
     }
-    
+
     /**
-     * Set the name of the external client command that should be used to 
+     * Set the name of the external client command that should be used to
      * access the repository wrt. the given parameters. Does nothing, if this
-     * repository's <var>cmd</var> has been already set (i.e. has a 
+     * repository's <var>cmd</var> has been already set (i.e. has a
      * none-{@code null} value).
-     * 
+     *
      * @param propertyKey property key to lookup the corresponding system property.
      * @param fallbackCommand the command to use, if lookup fails.
      * @return the command to use.

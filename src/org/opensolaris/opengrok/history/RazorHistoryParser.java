@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * A History Parser for Razor
- * 
+ *
  * @author Peter Bray <Peter.Darren.Bray@gmail.com>
  */
 class RazorHistoryParser {
@@ -194,11 +194,11 @@ class RazorHistoryParser {
         history.setHistoryEntries(entries);
         return history;
     }
-    
+
     private void dumpEntry(HistoryEntry entry) {
         if (DUMP_HISTORY_ENTRY_ADDITIONS) {
             entry.dump();
-        }        
+        }
     }
 
     private void parseDebug(String message) {

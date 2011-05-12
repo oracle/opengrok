@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
- * An interface for an external repository. 
+ * An interface for an external repository.
  *
  * @author Trond Norbye
  */
@@ -85,7 +85,7 @@ public abstract class Repository extends RepositoryInfo {
         // If we want an incremental history update and get here, warn that
         // it may be slow.
         if (sinceRevision != null) {
-            Logger logger = OpenGrokLogger.getLogger();            
+            Logger logger = OpenGrokLogger.getLogger();
             logger.log(Level.WARNING,
                     "Incremental history retrieval is not implemented for {0}.",
                     getClass().getSimpleName());
@@ -225,25 +225,25 @@ public abstract class Repository extends RepositoryInfo {
             cache.store(history, this);
         }
     }
-    
+
     /**
      * Update the content in this repository by pulling the changes from the
      * upstream repository..
      * @throws Exception if an error occurs.
      */
     abstract void update() throws IOException;
-    
+
     /**
      * Check if this it the right repository type for the given file.
-     * 
+     *
      * @param file File to check if this is a repository for.
      * @return true if this is the correct repository for this file/directory.
      */
     abstract boolean isRepositoryFor(File file);
-    
+
     /**
      * Returns true if this repository supports sub reporitories (a.k.a. forests).
-     * 
+     *
      * @return true if this repository supports sub repositories
      */
     @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
@@ -254,7 +254,7 @@ public abstract class Repository extends RepositoryInfo {
     public DateFormat getDateFormat() {
         return new SimpleDateFormat(datePattern, Locale.US);
     }
-    
+
     static Boolean checkCmd(final String[] args) {
         Executor exec = new Executor(args);
         return Boolean.valueOf(exec.exec(false) == 0);

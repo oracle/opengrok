@@ -43,7 +43,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
 
     private enum ParseState {
         REVISION, METADATA, COMMENT
-    }    
+    }
 
     private History history;
     private CVSRepository repository=new CVSRepository();
@@ -61,7 +61,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        
+
         history = new History();
         HistoryEntry entry = null;
         ParseState state = ParseState.REVISION;
@@ -142,10 +142,10 @@ class CVSHistoryParser implements Executor.StreamHandler {
 
         return history;
     }
-    
+
     /**
      * Parse the given string.
-     * 
+     *
      * @param buffer The string to be parsed
      * @return The parsed history
      * @throws IOException if we fail to parse the buffer

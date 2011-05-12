@@ -86,9 +86,9 @@ public class DirectoryHistoryReader {
             }
             searcher = new IndexSearcher(ireader);
             SortField sfield=new SortField("date",SortField.STRING, true);
-            Sort sort = new Sort(sfield);            
+            Sort sort = new Sort(sfield);
             QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION,"path", new CompatibleAnalyser());
-            Query query = null;            
+            Query query = null;
             ScoreDoc[] hits = null;
             try {
                 query = qparser.parse(path);

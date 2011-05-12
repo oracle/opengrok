@@ -110,7 +110,7 @@ public final class Configuration {
 
     /**
      * Get the default tab size (number of space characters per tab character)
-     * to use for each project. If {@code <= 0} tabs are read/write as is. 
+     * to use for each project. If {@code <= 0} tabs are read/write as is.
      * @return current tab size set.
      * @see Project#getTabSize()
      * @see ExpandTabsReader
@@ -179,7 +179,7 @@ public final class Configuration {
     public String getRepoCmd(String clazzName) {
         return cmds.get(clazzName);
     }
-    
+
     public String setRepoCmd(String clazzName, String cmd) {
         if (clazzName == null) {
             return null;
@@ -194,12 +194,12 @@ public final class Configuration {
     public Map<String, String> getCmds() {
         return Collections.unmodifiableMap(cmds);
     }
-    
+
     public void setCmds(Map<String, String> cmds) {
         this.cmds.clear();
         this.cmds.putAll(cmds);
     }
-    
+
     public String getCtags() {
         return ctags;
     }
@@ -324,7 +324,7 @@ public final class Configuration {
 
     /**
      * Set the URL prefix to be used by the {@link JavaClassAnalyzer} as well
-     * as lexers (see {@link JFlexXref}) when they create output with html links. 
+     * as lexers (see {@link JFlexXref}) when they create output with html links.
      * @param urlPrefix prefix to use.
      */
     public void setUrlPrefix(String urlPrefix) {

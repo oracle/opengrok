@@ -197,7 +197,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
     }
 
     /**
-     * The index method starts a thread that will 
+     * The index method starts a thread that will
      * start indexing part of the opengrok agent.
      * @param waitForFinished if false the command returns immediately, if true
      * it will return when the indexing is done.
@@ -236,12 +236,12 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
 
     @Override
     public void fileAdd(String path, String analyzer) {
-        log.log(Level.INFO, "Add {0} analyzer {1}", new Object[]{path, analyzer});        
+        log.log(Level.INFO, "Add {0} analyzer {1}", new Object[]{path, analyzer});
     }
 
     @Override
     public void fileRemove(String path) {
-        log.log(Level.INFO, "File remove {0}", path);        
+        log.log(Level.INFO, "File remove {0}", path);
     }
 
     @Override
@@ -337,8 +337,8 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
             Iterator<NotificationHolder> it = notifListeners.iterator();
             while (it.hasNext()) {
                 NotificationHolder mnf = it.next();
-                if (mnf.getNL().equals(notiflistener) 
-                       && ((mnf.getFilter() == null) || mnf.getFilter().equals(filt)) 
+                if (mnf.getNL().equals(notiflistener)
+                       && ((mnf.getFilter() == null) || mnf.getFilter().equals(filt))
                        && ((mnf.getFilter() == null) || mnf.getObj().equals(obj))) {
                             it.remove();
                             removed = true;
@@ -392,4 +392,4 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                     ex);
         }
     }
-} 
+}

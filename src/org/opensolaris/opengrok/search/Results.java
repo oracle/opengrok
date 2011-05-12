@@ -18,7 +18,7 @@
  */
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * 
+ *
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.search;
@@ -69,11 +69,11 @@ public final class Results {
      * @throws CorruptIndexException
      * @throws IOException
      */
-    private static LinkedHashMap<String, ArrayList<Document>> 
-        createMap(Searcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx) 
-    throws CorruptIndexException, IOException 
+    private static LinkedHashMap<String, ArrayList<Document>>
+        createMap(Searcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
+    throws CorruptIndexException, IOException
     {
-        LinkedHashMap<String, ArrayList<Document>> dirHash = 
+        LinkedHashMap<String, ArrayList<Document>> dirHash =
             new LinkedHashMap<String, ArrayList<Document>>();
         for (int i = startIdx; i < stopIdx; i++ ) {
             int docId = hits[i].doc;
@@ -89,7 +89,7 @@ public final class Results {
         }
         return dirHash;
     }
-    
+
     private static String getTags(File basedir, String path, boolean compressed) {
         char[] content = new char[1024 * 8];
         FileInputStream fis = null;
@@ -132,7 +132,7 @@ public final class Results {
             } else if (fr != null) {
                 try { fr .close(); } catch (Exception e) { /** ignore */ }
             }
-            
+
         }
         return "";
     }
@@ -149,19 +149,19 @@ public final class Results {
      * <li>{@link SearchHelper#sourceContext} (ignored if {@code null})</li>
      * <li>{@link SearchHelper#summerizer} (if sourceContext is not {@code null})</li>
      * <li>{@link SearchHelper#compressed} (if sourceContext is not {@code null})</li>
-     * <li>{@link SearchHelper#sourceRoot} (if sourceContext or historyContext 
+     * <li>{@link SearchHelper#sourceRoot} (if sourceContext or historyContext
      *  is not {@code null})</li>
      * </ul>
-     * 
+     *
      * @param out write destination
      * @param sh search helper which has all required fields set
      * @param start index of the first hit to print
      * @param end index of the last hit to print
-     * @throws HistoryException 
-     * @throws IOException 
-     * @throws ClassNotFoundException 
+     * @throws HistoryException
+     * @throws IOException
+     * @throws ClassNotFoundException
      */
-    public static void prettyPrint(Writer out, SearchHelper sh, int start, 
+    public static void prettyPrint(Writer out, SearchHelper sh, int start,
         int end)
     throws HistoryException, IOException, ClassNotFoundException
     {
@@ -173,9 +173,9 @@ public final class Results {
         String rawPrefixE = ctxE + Prefix.RAW_P;
         File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
 
-        LinkedHashMap<String, ArrayList<Document>> dirHash = 
+        LinkedHashMap<String, ArrayList<Document>> dirHash =
             createMap(sh.searcher, sh.hits, start, end);
-        for (Map.Entry<String, ArrayList<Document>> entry : dirHash.entrySet()) 
+        for (Map.Entry<String, ArrayList<Document>> entry : dirHash.entrySet())
         {
             String parent = entry.getKey();
             out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");
@@ -227,15 +227,15 @@ public final class Results {
                         String htags = getTags(sh.sourceRoot, rpath, false);
                         out.write(sh.summerizer.getSummary(htags).toString());
                     } else {
-                        FileReader r = genre == Genre.PLAIN 
+                        FileReader r = genre == Genre.PLAIN
                             ? new FileReader(new File(sh.sourceRoot, rpath))
-                            : null; 
-                        sh.sourceContext.getContext(r, out, xrefPrefix, 
+                            : null;
+                        sh.sourceContext.getContext(r, out, xrefPrefix,
                             morePrefix, rpath, tags, true, null);
                     }
                 }
                 if (sh.historyContext != null) {
-                    sh.historyContext.getContext(new File(sh.sourceRoot, rpath), 
+                    sh.historyContext.getContext(new File(sh.sourceRoot, rpath),
                         rpath, out, sh.contextPath);
                 }
                 out.write("</tt></td></tr>\n");

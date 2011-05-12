@@ -19,7 +19,7 @@
 /*
  * Copyright 2010 Sun Micosystems.  All rights reserved.
  * Use is subject to license terms.
- * 
+ *
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.search;
@@ -69,7 +69,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "defs" field. 
+     * Set search string for the "defs" field.
      * @param defs query string to set
      * @return this instance
      */
@@ -85,7 +85,7 @@ public class QueryBuilder {
     }
 
     /**
-     * Set search string for the "refs" field. 
+     * Set search string for the "refs" field.
      * @param refs query string to set
      * @return this instance
      */
@@ -100,7 +100,7 @@ public class QueryBuilder {
         return getQueryText(REFS);
     }
 
-    /** Set search string for the "path" field. 
+    /** Set search string for the "path" field.
      * @param path query string to set
      * @return this instance
      */
@@ -132,14 +132,14 @@ public class QueryBuilder {
     }
 
     /**
-     * Get a map containing the query text for each of the fields that have 
+     * Get a map containing the query text for each of the fields that have
      * been set.
      * @return a possible empty map.
      */
     public Map<String, String> getQueries() {
         return Collections.unmodifiableMap(queries);
     }
-    
+
     /**
      * Get the number of query fields set.
      * @return the current number of fields with a none-empty query string.
@@ -151,7 +151,7 @@ public class QueryBuilder {
     /**
      * Build a new query based on the query text that has been passed in to this
      * builder.
-     * 
+     *
      * @return a query, or {@code null} if no query text is available.
      * @throws ParseException  if the query text cannot be parsed
      */
@@ -206,7 +206,7 @@ public class QueryBuilder {
 
     /**
      * Add query text for the specified field.
-     * 
+     *
      * @param field the field to add query text for
      * @param query the query text to set
      * @return this object
@@ -226,7 +226,7 @@ public class QueryBuilder {
 
     /**
      * Escape special characters in a query string.
-     * 
+     *
      * @param field the field for which the query string is provided
      * @param query the query string to escape
      * @return the escaped query string
@@ -243,7 +243,7 @@ public class QueryBuilder {
 
     /**
      * Build a subquery against one of the fields.
-     * 
+     *
      * @param field the field to build the query against
      * @param queryText the query text
      * @return a parsed query
@@ -257,7 +257,7 @@ public class QueryBuilder {
 
     /**
      * Check if a BooleanQuery contains a clause of a given occur type.
-     * 
+     *
      * @param query the query to check
      * @param occur the occur type to check for
      * @return whether or not the query contains a clause of the specified type

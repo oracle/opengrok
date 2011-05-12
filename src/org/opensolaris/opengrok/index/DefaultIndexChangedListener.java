@@ -28,26 +28,26 @@ import java.util.logging.Logger;
 /**
  * Print the index modifications to the standard output stream when running
  * in verbose mode. In the quiet mode all events are just silently ignored.
- * 
+ *
  * @author Trond Norbye
  */
 @SuppressWarnings("PMD.SystemPrintln")
 class DefaultIndexChangedListener implements IndexChangedListener {
-    
+
     private static final Logger log = Logger.getLogger(DefaultIndexChangedListener.class.getName());
-        
+
     @Override
-    public void fileAdd(String path, String analyzer) {        
+    public void fileAdd(String path, String analyzer) {
         if (log.isLoggable(Level.INFO)) {
             log.log(Level.INFO, "Add: {0} ({1})", new Object[]{path, analyzer});}
     }
 
     @Override
-    public void fileRemove(String path) {        
+    public void fileRemove(String path) {
         log.log(Level.INFO, "Remove file:{0}", path);
     }
     @Override
-    public void fileUpdate(String path) {        
+    public void fileUpdate(String path) {
         log.log(Level.INFO, "Update: {0}", path);
     }
 

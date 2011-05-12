@@ -47,7 +47,7 @@ public class HistoryReader extends Reader {
         }
         return input.read(cbuf, off, len);
     }
-    
+
     @Override
     public void close() throws IOException {
         if (input != null) {

@@ -59,7 +59,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
     Level.SEVERE, Level.WARNING};
     private ObjectName managementObjectName;
     private ObjectName configObjectName;
-  
+
     /* config variables from agent */
     private Level consoleLevel = Level.OFF;
     private Level fileLevel = Level.OFF;
@@ -124,7 +124,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                this.publishHostField.setText(publishURL);
                configurationFile = (String)con.getMBeanServerConnection().getAttribute(this.managementObjectName, "ConfigurationFile");
                this.configFileField.setText(configurationFile);
-               
+
                /* Get Configuration MBean attributes */
                String xmlconfig = (String)con.getMBeanServerConnection().getAttribute(this.configObjectName, "Configuration");
                config = Configuration.makeXMLStringAsConfiguration(xmlconfig);
@@ -142,7 +142,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             }
         }
     }
-    
+
     private void updateConfigFieldsFromConfig() {
         this.dataRootField.setText(config.getDataRoot());
         this.sourceRootField.setText(config.getSourceRoot());
@@ -166,7 +166,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
 
         List<Project> projects =  config.getProjects();
         DefaultTableModel model = new DefaultTableModel(projectTableHeaders,projects.size());
-        
+
         Project defaultproj = config.getDefaultProject();
         int row = 0;
         for (Project proj:projects) {
@@ -210,7 +210,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
          * is this necessary with new logging?:
        config.setVerbose(rootPaneCheckingEnabled);
        */
-        
+
     }
 
     /** This method is called from within the constructor to
@@ -756,7 +756,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 fileLevel = (Level)this.fileLevelCombo.getSelectedItem();
             }
             if (!consoleLevel.equals((Level)this.consoleLevelCombo.getSelectedItem())) {
-                Attribute attribute = new Attribute("ConsoleLogLevel", this.consoleLevelCombo.getSelectedItem());         
+                Attribute attribute = new Attribute("ConsoleLogLevel", this.consoleLevelCombo.getSelectedItem());
                 con.getMBeanServerConnection().setAttribute(managementObjectName, attribute);
                 consoleLevel = (Level)this.consoleLevelCombo.getSelectedItem();
             }
@@ -778,7 +778,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
 
             Attribute attribute = new Attribute("Configuration", config.getXMLRepresentationAsString());
             con.getMBeanServerConnection().setAttribute(configObjectName, attribute);
-            
+
         } catch (InstanceNotFoundException ex) {
             Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
             this.showError(ex);

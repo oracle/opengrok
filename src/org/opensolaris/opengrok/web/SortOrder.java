@@ -23,7 +23,7 @@ package org.opensolaris.opengrok.web;
 
 /**
  * Sort orders recognized in the web UI.
- * 
+ *
  * @author  Jens Elkner
  * @version $Revision$
  */
@@ -45,8 +45,8 @@ public enum SortOrder {
 
     /**
      * Get the Sort order wrt. the given name.
-     * @param name the query parameter name of the order to find. 
-     * @return {@code null} if there is no SortOrder with the given name, 
+     * @param name the query parameter name of the order to find.
+     * @return {@code null} if there is no SortOrder with the given name,
      *  the corresponding SortOrder otherwise.
      * @see #toString()
      */

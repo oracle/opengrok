@@ -39,13 +39,13 @@ public class Getopt {
         char option;
         String argument;
     }
-    
+
     private final List<Option> options;
     private int current;
     private int optind;
     private final String[] argv;
     private final String opts;
-    
+
     /**
      * Creates a new instance of Getopt
      * @param argv argument vector
@@ -59,31 +59,31 @@ public class Getopt {
         System.arraycopy(argv, 0, this.argv, 0, argv.length);
         this.opts = opts;
     }
-    
+
     /**
      * Parse the command lineoptions
      * @throws ParseException if an illegal argument is passed
      */
     public void parse() throws ParseException {
-        
+
         int ii = 0;
         while (ii < argv.length) {
             char[] chars = argv[ii].toCharArray();
             if (chars.length > 0) {
-                
+
                 if (chars[0] == '-') {
                     if (argv[ii].equals("--")) {
                         // End of command line options ;)
                         optind = ii + 1;
                         break;
                     }
-                    
+
                     for (int jj = 1; jj < chars.length; ++jj) {
                         int idx = opts.indexOf(chars[jj]);
                         if (idx == -1) {
                             throw new ParseException("Unknown argument: " + argv[ii].substring(jj), ii);
                         }
-                        
+
                         Option option = new Option();
                         option.option = chars[jj];
                         options.add(option);
@@ -113,42 +113,42 @@ public class Getopt {
             }
         }
     }
-    
+
     /**
      * Get the next option in the options string.
      * @return the next valid option, or -1 if all options are processed
      */
     public int getOpt() {
         int ret = -1;
-        
+
         ++current;
         if (current < options.size()) {
             ret = options.get(current).option;
         }
-        
+
         return ret;
     }
-    
+
     /**
      * Reset the current pointer so we may traverse all the options again..
      */
     public void reset() {
         current = -1;
     }
-    
+
     /**
      * Get the argument to the current option
      * @return the argument or null if none present (or allowed)
      */
     public String getOptarg() {
         String ret = null;
-        
+
         if (current < options.size()) {
             ret = options.get(current).argument;
         }
         return ret;
     }
-    
+
     /**
      * Get the index of the first argument
      * @return the index of the first argument in the original array

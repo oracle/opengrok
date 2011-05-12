@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * 
+ *
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.index;
@@ -107,7 +107,7 @@ public final class Indexer {
             boolean listRepos = false;
             boolean createDict = false;
             int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
-            
+
             // Parse command line options:
             Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
 
@@ -408,21 +408,21 @@ public final class Indexer {
                                 System.err.println("ERROR: Failed to parse argument to \"-t\": " + exp.getMessage());
                                 System.exit(1);
                             }
-                            break;                          
+                            break;
                         default:
                             System.err.println("Internal Error - Unimplemented cmdline option: " + (char) cmd);
                             System.exit(1);
                     }
                 }
 
-                List<Class<? extends Repository>> repositoryClasses = 
+                List<Class<? extends Repository>> repositoryClasses =
                     RepositoryFactory.getRepositoryClasses();
                 for (Class<? extends Repository> clazz : repositoryClasses) {
                     try {
                         Field f = clazz.getDeclaredField("CMD_PROPERTY_KEY");
                         Object key = f.get(null);
                         if (key != null) {
-                            cfg.setRepoCmd(clazz.getCanonicalName(), 
+                            cfg.setRepoCmd(clazz.getCanonicalName(),
                                 System.getProperty(key.toString()));
                         }
                     } catch (Exception e) {
@@ -436,13 +436,13 @@ public final class Indexer {
                         ++optind;
                     }
                 }
-                
+
                 //logging starts here
                 if (cfg.isVerbose()) {
                   String fn=LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
                   if (fn!=null) {System.out.println("Logging filehandler pattern: "+fn);}
                 }
-                
+
                 if (cfg.isHistoryCacheInDB()) {
                     // The default database driver is Derby's client driver.
                     if (databaseDriver == null) {
@@ -480,7 +480,7 @@ public final class Indexer {
                         }
                     }
                 }
-                
+
                 allowedSymlinks.addAll(cfg.getAllowedSymlinks());
                 cfg.setAllowedSymlinks(allowedSymlinks);
 
@@ -545,11 +545,11 @@ public final class Indexer {
             zapCache = new ArrayList<String>(0);
         }
 
-        if (searchRepositories || listRepoPathes || !zapCache.isEmpty()) {            
+        if (searchRepositories || listRepoPathes || !zapCache.isEmpty()) {
             log.log(Level.INFO,"Scanning for repositories...");
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
-            long time = (System.currentTimeMillis() - start) / 1000;            
+            long time = (System.currentTimeMillis() - start) / 1000;
             log.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
             if (listRepoPathes || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
@@ -582,8 +582,8 @@ public final class Indexer {
                         toZap.clear();
                         for (RepositoryInfo info : env.getRepositories()) {
                             toZap.add(info.getDirectoryName()
-                                .substring(prefix.length()));                           
-                        }                       
+                                .substring(prefix.length()));
+                        }
                     }
                     try {
                         HistoryGuru.getInstance().removeCache(toZap);
@@ -657,9 +657,9 @@ public final class Indexer {
             }
         }
 
-        if (configFilename != null) {            
+        if (configFilename != null) {
             log.log(Level.INFO, "Writing configuration to {0}", configFilename);
-            env.writeConfiguration(new File(configFilename));            
+            env.writeConfiguration(new File(configFilename));
             log.info("Done...");
         }
 
@@ -754,7 +754,7 @@ public final class Indexer {
         executor.shutdown();
         while (!executor.isTerminated()) {
             try {
-                // Wait forever                
+                // Wait forever
                 executor.awaitTermination(999,TimeUnit.DAYS);
             } catch (InterruptedException exp) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
@@ -765,7 +765,7 @@ public final class Indexer {
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
         if (configHost != null) {
             String[] cfg = configHost.split(":");
-            log.log(Level.INFO, "Send configuration to: {0}", configHost);            
+            log.log(Level.INFO, "Send configuration to: {0}", configHost);
             if (cfg.length == 2) {
                 try {
                     InetAddress host = InetAddress.getByName(cfg[0]);
@@ -777,9 +777,9 @@ public final class Indexer {
                 log.severe("Syntax error: ");
                 for (String s : cfg) {
                     log.log(Level.SEVERE, "[{0}]", s);
-                }                
+                }
             }
-            log.info("Configuration update routine done, check log output for errors.");            
+            log.info("Configuration update routine done, check log output for errors.");
         }
     }
 

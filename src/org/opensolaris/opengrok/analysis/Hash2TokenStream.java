@@ -38,7 +38,7 @@ public final class Hash2TokenStream extends TokenStream {
     public Hash2TokenStream(Set<String> symbols){
         keys = symbols.iterator();
     }
-    
+
     @Override
     public boolean incrementToken() throws java.io.IOException {
         while (true) {
@@ -65,5 +65,5 @@ public final class Hash2TokenStream extends TokenStream {
     @Override
     public void close() {
         // Nothing to close
-    }    
+    }
 }

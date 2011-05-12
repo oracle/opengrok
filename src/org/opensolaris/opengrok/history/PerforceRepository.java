@@ -36,19 +36,19 @@ import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a Perforce repository
- * 
+ *
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class PerforceRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Perforce";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "p4";
 
-    private final static Pattern annotation_pattern = 
+    private final static Pattern annotation_pattern =
         Pattern.compile("^(\\d+): .*");
 
     public PerforceRepository() {
@@ -59,7 +59,7 @@ public class PerforceRepository extends Repository {
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation a = new Annotation(file.getName());
 
-        List<HistoryEntry> revisions = 
+        List<HistoryEntry> revisions =
             PerforceHistoryParser.getRevisions(file, rev).getHistoryEntries();
         HashMap<String, String> revAuthor = new HashMap<String, String>();
         for (HistoryEntry entry : revisions) {
@@ -89,8 +89,8 @@ public class PerforceRepository extends Repository {
                     String author = revAuthor.get(revision);
                     a.addLine(revision, author, true);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
-                        "Error: did not find annotation in line " 
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        "Error: did not find annotation in line "
                         + lineno + ": [" + line + "]");
                 }
             }
@@ -143,7 +143,7 @@ public class PerforceRepository extends Repository {
 
     /**
      * Check if a given file is in the depot
-     * 
+     *
      * @param file The file to test
      * @return true if the given file is in the depot, false otherwise
      */
@@ -166,7 +166,7 @@ public class PerforceRepository extends Repository {
                 executor.exec();
             /* OUTPUT:
             stdout: //depot_path/name
-            stderr: name - no such file(s). 
+            stderr: name - no such file(s).
              */
                 status = (executor.getOutputString().indexOf("//") != -1);
             }
@@ -179,7 +179,7 @@ public class PerforceRepository extends Repository {
                 executor.exec();
             /* OUTPUT:
             stdout: //depot_path/name
-            stderr: name - no such file(s). 
+            stderr: name - no such file(s).
              */
                 status = (executor.getOutputString().indexOf("//") != -1);
             }

@@ -47,7 +47,7 @@ public final class Consts {
     private Consts() {
         // Util class, can not be constructed.
     }
-    
+
     private static void populateKeywordSet(Set<String> set, String file)
             throws IOException
     {

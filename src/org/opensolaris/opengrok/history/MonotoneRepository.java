@@ -47,7 +47,7 @@ public class MonotoneRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Monotone";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "mnt";
@@ -58,7 +58,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev) 
+    public InputStream getHistoryGet(String parent, String basename, String rev)
     {
         InputStream ret = null;
 
@@ -88,14 +88,14 @@ public class MonotoneRepository extends Repository {
 
             ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream", e);
                 }
             }
@@ -192,7 +192,7 @@ public class MonotoneRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream", e);
                 }
             }

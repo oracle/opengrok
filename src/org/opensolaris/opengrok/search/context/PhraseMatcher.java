@@ -30,13 +30,13 @@ package org.opensolaris.opengrok.search.context;
 class PhraseMatcher extends LineMatcher {
     private final String[] phraseTerms;
     private int cur;
-    
+
     PhraseMatcher(String[] phraseTerms, boolean caseInsensitive) {
         super(caseInsensitive);
         this.phraseTerms  = phraseTerms.clone();
         cur = 0;
     }
-    
+
     public int match(String token) {
         if (equal(token, phraseTerms[cur])) {
             //System.out.println(" PhraseMatcher matched " + token);

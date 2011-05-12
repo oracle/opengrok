@@ -101,7 +101,7 @@ public class Ctags {
                         sb.append('\n');
                     }
                 } catch (IOException exp) {
-                     log.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);                
+                     log.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
                 } finally {
                     try {
                         error.close();
@@ -217,7 +217,7 @@ public class Ctags {
                 final String type =
                         inher == null ? kind : kind + " in " + inher;
                 defs.addTag(Integer.parseInt(lnum), def.trim(), type.trim(), match.trim());
-                if (signature != null) {                  
+                if (signature != null) {
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
                     String[] args = signature.split(",");
                     for (String arg : args) {

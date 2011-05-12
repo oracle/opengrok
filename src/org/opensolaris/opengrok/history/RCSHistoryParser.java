@@ -142,7 +142,7 @@ class RCSHistoryParser {
                 }
             }
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, 
+            OpenGrokLogger.getLogger().log(Level.WARNING,
                     "Failed to retrieve CVS file of parent: " + parent + ", name: " + name, e);
         }
         return null;

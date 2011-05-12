@@ -33,7 +33,7 @@ public abstract class LineMatcher {
     public static String tagBegin, tagEnd;
     public static final int NOT_MATCHED = 0;
     public static final int MATCHED = 1;
-    public static final int WAIT = 2;    
+    public static final int WAIT = 2;
 
     /**
      * Tells whether the matching should be done in a case insensitive manner.

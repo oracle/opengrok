@@ -32,39 +32,39 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
  * Adds access to to a Razor Repository
- * 
+ *
  * http://www.visible.com/Products/Razor/index.htm
- * 
+ *
  * A brief and simplistic overview of Razor
- * 
- * Razor uses the term 'Group' for what might traditionally be called a 
+ *
+ * Razor uses the term 'Group' for what might traditionally be called a
  * repository, that is a collection of files and folders. A collection of
  * Groups is called a 'Universe' in Razor. Razor supports multiple Universes,
  * and these are the units which can be independently started and stopped.
- * 
+ *
  * A universe usually consists of on issue tracking data set called "Issues",
  * this is managed from a user perspective by a GUI called 'issues' or a web
  * interface called 'issue weaver'. Each group has a file repository, managed
  * by a GUI called 'versions', and an associated GUI called 'threads' is used
- * to collect together related versions of files into a "Thread", which can 
+ * to collect together related versions of files into a "Thread", which can
  * be thought of as a like a tag against the repository, but is managed outside
  * of the file repository itself.
- * 
+ *
  * From the point of view of the user, they raise an issue to document a unit
  * of work, make changes to a collection of files against that issue, and then
  * combine one or more issues into a thread to represent a releasable product.
  * Of course, there is more to the product then this brief outline can do
  * justice to but these general concepts should assist in understanding the
  * concepts presented in the OpenGrok Razor Repository interface.
- * 
+ *
  * At an implementation level, a Universe consists of it Issues database,
  * and one or more Groups each consisting of file repository and thread
  * repository. Each of these repositories is implemented with a series of
  * directories (Archive, History, Info, Scripts and Tables). When file revision
- * control is needed on a file (both committed files and some internal 
+ * control is needed on a file (both committed files and some internal
  * implementation files), Razor supports the use of either SCCS or RCS
  * for non-binary files and numbered compressed instances of binary files.
- * Each file is given a unique (per universe) numerical identifier in the 
+ * Each file is given a unique (per universe) numerical identifier in the
  * file .../razor_db/<universe>/RAZOR_UNIVERSE/Mapping, this is used by Razor
  * to track files over time, as they renamed or deleted.
  *
@@ -74,8 +74,8 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * it will not be possible to implement this module from a copy or check-out
  * of the repository, we will have to access (in a read-only manner) the actual
  * repository itself, extracting the information directly or via SCCS/RCS
- * interfaces. 
- * 
+ * interfaces.
+ *
  * IMPLEMENTATION NOTES:
  *
  * The Razor implementation used for development and testing of this code
@@ -93,7 +93,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  *     files was deemed too complex for the first implementation attempt
  *   - The Razor implementation was on a single Sun Solaris SPARC Server
  *   - The code development/testing used NetBeans-6.1 and Sun JDK 6 Update 6
- * 
+ *
  * The initial implementation was to create symbolic links in the SRC_ROOT
  * directory to the Razor Group directories you wished OpenGrok to process.
  * The Razor implementation of HistoryParser and DirectoryHistoryParser were
@@ -105,7 +105,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * their contents. I would have had to implement a VirtualFile and possibly
  * VirtualFilesystem classes, recode the file analysis framework and develop
  * Standard and Razor implementations. THIS APPROACH HAS BEEN ABORTED!!!
- * 
+ *
  * The implementation now requires that you checkout a read-only copy of
  * the directories you wish OpenGrok to process, and place in the top-level
  * directory of each, a symlink called ".razor" to the Razor Group directory
@@ -116,18 +116,18 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * $SRC_ROOT/Implementation/.razor which points to a directory of the form
  * <prefix>/razor_db/<Universe>/RAZOR_UNIVERSE/DOMAIN_01/<GroupName>, so that
  * might be /repository/razor/razor_db/MyUniverse/RAZOR_UNIVERSE/DOMAIN_01/MyGroup
- *  
+ *
  * Because of the distributed nature of information storage in Razor (by this
- * I mean, that each file in the repository is represented by files of the 
+ * I mean, that each file in the repository is represented by files of the
  * same name (and path) under multiple directories (Archive, History & Info)),
  * I'm continuously mapping SRC_ROOT based names into the appropriate
- * subdirectory of the actual repository. 
- * 
+ * subdirectory of the actual repository.
+ *
  * The current implementation assumes the use of a UNIX platform, but I will
  * try not to hard-code too much in relation to these assumptions. Also I have
  * not worked Java for almost 8 years now, so please forgive any oversights
  * in this regard.
- *  
+ *
  * @author Peter Bray <Peter.Darren.Bray@gmail.com>
  */
 public class RazorRepository extends Repository {
@@ -150,9 +150,9 @@ public class RazorRepository extends Repository {
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);
         File opengrokBaseDirectory = new File(directoryName);
-        opengrokSourceRootDirectoryPath = 
+        opengrokSourceRootDirectoryPath =
             opengrokBaseDirectory.getParentFile().getAbsolutePath();
-        razorGroupBaseDirectoryPath = 
+        razorGroupBaseDirectoryPath =
             new File(directoryName, ".razor").getAbsolutePath();
     }
 
@@ -214,13 +214,13 @@ public class RazorRepository extends Repository {
     InputStream getHistoryGet( String parent, String basename, String rev) {
         // @TODO : Rename & Delete Support
         try {
-            File binaryFile = 
+            File binaryFile =
                 getRazorArchiveBinaryFileFor(new File(parent, basename), rev);
             if (binaryFile != null && binaryFile.exists()) {
                 // @TODO : Implement a UNIX Compress decompression input stream
                 // The standard Razor implementation uses UNIX Compress, so we
                 // need to be able to decompress these files. This GZIP based
-                // implementation will be useful to sites using GZIP as a 
+                // implementation will be useful to sites using GZIP as a
                 // UNIX Compress replacement (A supported configuration
                 // according to to the Razor 4.x/5.x manuals)
                 return new GZIPInputStream(new FileInputStream(binaryFile));
@@ -234,12 +234,12 @@ public class RazorRepository extends Repository {
 
             File sccsFile = getRazorArchiveSCCSFileFor(new File(parent, basename));
             if (sccsFile != null && sccsFile.exists()) {
-                ensureCommand(SCCSRepository.CMD_PROPERTY_KEY, 
+                ensureCommand(SCCSRepository.CMD_PROPERTY_KEY,
                     SCCSRepository.CMD_FALLBACK);
                 return SCCSget.getRevision(cmd, sccsFile, rev);
             }
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "getHistoryGet( " 
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "getHistoryGet( "
                 + parent + ", " + basename + ", " + rev + ")", e);
         }
         return null;
@@ -290,15 +290,15 @@ public class RazorRepository extends Repository {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    private File pathTranslation(File file, String intermediateElements, 
-        String filePrefix, String fileSuffix) throws IOException 
+    private File pathTranslation(File file, String intermediateElements,
+        String filePrefix, String fileSuffix) throws IOException
     {
-        
+
         File f = file;
 
         if (!f.getAbsolutePath().startsWith(opengrokSourceRootDirectoryPath)) {
             throw new IOException("Invalid Path for Translation '" + f.getPath()
-                + "', '" + intermediateElements + "', '" + filePrefix + "', '" 
+                + "', '" + intermediateElements + "', '" + filePrefix + "', '"
                 + fileSuffix + "'");
         }
 

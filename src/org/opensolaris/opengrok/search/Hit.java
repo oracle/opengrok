@@ -35,44 +35,44 @@ public class Hit implements Comparable<Hit> {
      * Holds value of property filename.
      */
     private String filename;
-    
+
     /**
      * Holds value of property directory
      */
     private String directory;
-    
+
     /**
      * Holds value of property line.
      */
     private String line;
-    
+
     /**
      * Holds value of property lineno.
      */
     private String lineno;
-    
+
     /**
      * Holds value of property binary.
      */
     private boolean binary;
-    
+
     /**
      * Holds value of property alt used to hightlight alternating files.
      */
     private boolean alt;
-    
+
     /**
      * path relative to source root.
      */
     private String path;
-    
+
     /**
      * Creates a new instance of Hit
      */
     public Hit() {
         this(null, null, null, false, false);
     }
-    
+
     /**
      * Creates a new instance of Hit
      *
@@ -97,7 +97,7 @@ public class Hit implements Comparable<Hit> {
         this.binary = binary;
         this.alt = alt;
     }
-    
+
     /**
      * Getter for property filename.
      *
@@ -106,7 +106,7 @@ public class Hit implements Comparable<Hit> {
     public String getFilename() {
         return this.filename;
     }
-    
+
     /**
      * Getter for property path.
      *
@@ -115,7 +115,7 @@ public class Hit implements Comparable<Hit> {
     public String getPath() {
         return this.path;
     }
-    
+
     /**
      * Getter for property directory
      *
@@ -124,7 +124,7 @@ public class Hit implements Comparable<Hit> {
     public String getDirectory() {
         return this.directory;
     }
-    
+
     /**
      * Setter for property filename.
      *
@@ -133,7 +133,7 @@ public class Hit implements Comparable<Hit> {
     public void setFilename(String filename) {
         this.filename = filename;
     }
-    
+
     /**
      * Getter for property line.
      *
@@ -142,7 +142,7 @@ public class Hit implements Comparable<Hit> {
     public String getLine() {
         return this.line;
     }
-    
+
     /**
      * Setter for property line.
      *
@@ -151,7 +151,7 @@ public class Hit implements Comparable<Hit> {
     public void setLine(String line) {
         this.line = line;
     }
-    
+
     /**
      * Getter for property lineno.
      *
@@ -160,7 +160,7 @@ public class Hit implements Comparable<Hit> {
     public String getLineno() {
         return this.lineno;
     }
-    
+
     /**
      * Setter for property lineno.
      *
@@ -169,7 +169,7 @@ public class Hit implements Comparable<Hit> {
     public void setLineno(String lineno) {
         this.lineno = lineno;
     }
-    
+
     /**
      * Compare this object to another hit (in order to implement the comparable
      * interface)
@@ -191,7 +191,7 @@ public class Hit implements Comparable<Hit> {
     public boolean isBinary() {
         return this.binary;
     }
-    
+
     /**
      * Setter for property binary.
      *
@@ -200,30 +200,30 @@ public class Hit implements Comparable<Hit> {
     public void setBinary(boolean binary) {
         this.binary = binary;
     }
-    
+
     /**
      * Holds value of property tag.
      */
     private String tag;
-    
+
     /**
      * Getter for property tag.
      * @return Value of property tag.
      */
     public String getTag() {
-        
+
         return this.tag;
     }
-    
+
     /**
      * Setter for property tag.
      * @param tag New value of property tag.
      */
     public void setTag(String tag) {
-        
+
         this.tag = tag;
     }
-    
+
     /**
      * Should this be alternate file?
      * @return true if this is the "alternate" file

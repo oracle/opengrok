@@ -27,7 +27,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 /**
  * A simple container to store the data required to generated a view of diffs
  * for a certain versioned file.
- * 
+ *
  * @author  Jens Elkner
  * @version $Revision$
  */
@@ -42,12 +42,12 @@ public class DiffData {
     public Genre genre;
     /** the orignal and new revision container */
     public Revision revision;
-    /** the URI encoded parameter values of the request. {@code param[0]} 
+    /** the URI encoded parameter values of the request. {@code param[0]}
      * belongs to {@code r1}, {@code param[1]} to {@code r2}. */
     public String param[];
     /** the revision names extracted from {@link #param} */
     public String rev[];
-    /** the content of the original and new file line-by-line corresponding 
+    /** the content of the original and new file line-by-line corresponding
      * with {@link #rev} */
     public String[][] file;
     /** error message to show, if diffs are not available */

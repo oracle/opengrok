@@ -31,7 +31,7 @@ import org.opensolaris.opengrok.util.Executor;
 
 
 public final class SCCSget {
-           
+
     public static InputStream getRevision(String command, File file, String revision) throws IOException {
         InputStream ret = null;
         ArrayList<String> argv = new ArrayList<String>();

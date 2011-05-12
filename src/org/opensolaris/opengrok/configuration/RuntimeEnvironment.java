@@ -55,11 +55,11 @@ import org.opensolaris.opengrok.util.Executor;
 public final class RuntimeEnvironment {
     private Configuration configuration;
     private final ThreadLocal<Configuration> threadConfig;
-    
+
     private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
-    
+
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
-    
+
     /**
      * Get the one and only instance of the RuntimeEnvironment
      * @return the one and only instance of the RuntimeEnvironment
@@ -67,7 +67,7 @@ public final class RuntimeEnvironment {
     public static RuntimeEnvironment getInstance() {
         return instance;
     }
-    
+
     /**
      * Creates a new instance of RuntimeEnvironment. Private to ensure a
      * singleton pattern.
@@ -77,7 +77,7 @@ public final class RuntimeEnvironment {
         threadConfig = new ThreadLocal<Configuration>() {
             @Override protected Configuration initialValue() {
                 return configuration;
-            }            
+            }
         };
     }
 
@@ -109,7 +109,7 @@ public final class RuntimeEnvironment {
     public String getDataRootPath() {
         return threadConfig.get().getDataRoot();
     }
-    
+
     /**
      * Get a file representing the index database
      * @return the index database
@@ -120,10 +120,10 @@ public final class RuntimeEnvironment {
         if (file != null) {
             ret = new File(file);
         }
-        
+
         return ret;
     }
-    
+
     /**
      * Set the path to where the index database is stored
      * @param dataRoot the index database
@@ -131,7 +131,7 @@ public final class RuntimeEnvironment {
     public void setDataRoot(String dataRoot) {
         threadConfig.get().setDataRoot(getCanonicalPath(dataRoot));
     }
-    
+
     /**
      * Get the path to where the sources are located
      * @return path to where the sources are located
@@ -139,7 +139,7 @@ public final class RuntimeEnvironment {
     public String getSourceRootPath() {
         return threadConfig.get().getSourceRoot();
     }
-    
+
     /**
      * Get a file representing the directory where the sources are located
      * @return A file representing the directory where the sources are located
@@ -150,10 +150,10 @@ public final class RuntimeEnvironment {
         if (file != null) {
             ret = new File(file);
         }
-        
+
         return ret;
     }
-    
+
     /**
      * Specify the source root
      * @param sourceRoot the location of the sources
@@ -177,7 +177,7 @@ public final class RuntimeEnvironment {
         String sourceRoot = getSourceRootPath();
         if (canonicalPath.startsWith(sourceRoot)) {
             return canonicalPath.substring(sourceRoot.length() + stripCount);
-        } 
+        }
         for (String allowedSymlink : getAllowedSymlinks()) {
             String allowedTarget = new File(allowedSymlink).getCanonicalPath();
             if (canonicalPath.startsWith(allowedTarget)) {
@@ -186,7 +186,7 @@ public final class RuntimeEnvironment {
         }
         throw new FileNotFoundException("Failed to resolve ["+canonicalPath+"] relative to source root ["+sourceRoot+"]");
     }
-    
+
     /**
      * Do we have projects?
      * @return true if we have projects
@@ -195,7 +195,7 @@ public final class RuntimeEnvironment {
         List<Project> proj = getProjects();
         return (proj != null && !proj.isEmpty());
     }
-    
+
     /**
      * Get all of the projects
      * @return a list containing all of the projects (may be null)
@@ -203,7 +203,7 @@ public final class RuntimeEnvironment {
     public List<Project> getProjects() {
         return threadConfig.get().getProjects();
     }
-    
+
     /**
      * Set the list of the projects
      * @param projects the list of projects to use
@@ -211,7 +211,7 @@ public final class RuntimeEnvironment {
     public void setProjects(List<Project> projects) {
         threadConfig.get().setProjects(projects);
     }
-    
+
     /**
      * Register this thread in the thread/configuration map (so that all
      * subsequent calls to the RuntimeEnvironment from this thread will use
@@ -222,7 +222,7 @@ public final class RuntimeEnvironment {
         threadConfig.set(configuration);
         return this;
     }
-    
+
     /**
      * Get the context name of the web application
      * @return the web applications context name
@@ -230,7 +230,7 @@ public final class RuntimeEnvironment {
     public String getUrlPrefix() {
         return threadConfig.get().getUrlPrefix();
     }
-    
+
     /**
      * Set the web context name
      * @param urlPrefix the web applications context name
@@ -238,7 +238,7 @@ public final class RuntimeEnvironment {
     public void setUrlPrefix(String urlPrefix) {
         threadConfig.get().setUrlPrefix(urlPrefix);
     }
-    
+
     /**
      * Get the name of the ctags program in use
      * @return the name of the ctags program in use
@@ -246,7 +246,7 @@ public final class RuntimeEnvironment {
     public String getCtags() {
         return threadConfig.get().getCtags();
     }
-    
+
     /**
      * Specify the CTags program to use
      * @param ctags the ctags program to use
@@ -278,7 +278,7 @@ public final class RuntimeEnvironment {
     public boolean validateExuberantCtags() {
         boolean ret = true;
         Executor executor = new Executor(new String[] {getCtags(), "--version"});
-        
+
         executor.exec(false);
         String output = executor.getOutputString();
         if (output == null || output.indexOf("Exuberant Ctags") == -1) {
@@ -291,7 +291,7 @@ public final class RuntimeEnvironment {
 
         return ret;
     }
-        
+
     /**
      * Get the max time a SMC operation may use to avoid beeing cached
      * @return the max time
@@ -299,7 +299,7 @@ public final class RuntimeEnvironment {
     public int getHistoryReaderTimeLimit() {
         return threadConfig.get().getHistoryCacheTime();
     }
-    
+
     /**
      * Specify the maximum time a SCM operation should take before it will
      * be cached (in ms)
@@ -308,7 +308,7 @@ public final class RuntimeEnvironment {
     public void setHistoryReaderTimeLimit(int historyReaderTimeLimit) {
         threadConfig.get().setHistoryCacheTime(historyReaderTimeLimit);
     }
-    
+
     /**
      * Is history cache currently enabled?
      * @return true if history cache is enabled
@@ -316,7 +316,7 @@ public final class RuntimeEnvironment {
     public boolean useHistoryCache() {
         return threadConfig.get().isHistoryCache();
     }
-    
+
     /**
      * Specify if we should use history cache or not
      * @param useHistoryCache set false if you do not want to use history cache
@@ -342,7 +342,7 @@ public final class RuntimeEnvironment {
     public void setStoreHistoryCacheInDB(boolean store) {
         threadConfig.get().setHistoryCacheInDB(store);
     }
-    
+
     /**
      * Should we generate HTML or not during the indexing phase
      * @return true if HTML should be generated during the indexing phase
@@ -350,7 +350,7 @@ public final class RuntimeEnvironment {
     public boolean isGenerateHtml() {
         return threadConfig.get().isGenerateHtml();
     }
-    
+
     /**
      * Specify if we should generate HTML or not during the indexing phase
      * @param generateHtml set this to true to pregenerate HTML
@@ -358,7 +358,7 @@ public final class RuntimeEnvironment {
     public void setGenerateHtml(boolean generateHtml) {
         threadConfig.get().setGenerateHtml(generateHtml);
     }
-    
+
     /**
      * Set if we should compress the xref files or not
      * @param compressXref set to true if the generated html files should be
@@ -395,7 +395,7 @@ public final class RuntimeEnvironment {
     public void setRepositories(List<RepositoryInfo> repositories) {
         threadConfig.get().setRepositories(repositories);
     }
-    
+
     /**
      * Set the project that is specified to be the default project to use. The
      * default project is the project you will search (from the web application)
@@ -405,7 +405,7 @@ public final class RuntimeEnvironment {
     public void setDefaultProject(Project defaultProject) {
         threadConfig.get().setDefaultProject(defaultProject);
     }
-    
+
     /**
      * Get the project that is specified to be the default project to use. The
      * default project is the project you will search (from the web application)
@@ -415,12 +415,12 @@ public final class RuntimeEnvironment {
     public Project getDefaultProject() {
         return threadConfig.get().getDefaultProject();
     }
-    
+
     /**
      * Chandan wrote the following answer on the opengrok-discuss list:
      * "Traditionally search engines (specially spiders) think that large files
      * are junk. Large files tend to be multimedia files etc., which text
-     * search spiders do not want to chew. So they ignore the contents of 
+     * search spiders do not want to chew. So they ignore the contents of
      * the file after a cutoff length. Lucene does this by number of words,
      * which is by default is 10,000."
      * By default OpenGrok will increase this limit to 60000, but it may be
@@ -439,7 +439,7 @@ public final class RuntimeEnvironment {
     public void setIndexWordLimit(int indexWordLimit) {
         threadConfig.get().setIndexWordLimit(indexWordLimit);
     }
-    
+
     /**
      * Is the verbosity flag turned on?
      * @return true if we can print extra information
@@ -447,7 +447,7 @@ public final class RuntimeEnvironment {
     public boolean isVerbose() {
         return threadConfig.get().isVerbose();
     }
-    
+
     /**
      * Set the verbosity flag (to add extra debug information in output)
      * @param verbose new value
@@ -481,7 +481,7 @@ public final class RuntimeEnvironment {
     public void setAllowLeadingWildcard(boolean allowLeadingWildcard) {
         threadConfig.get().setAllowLeadingWildcard(allowLeadingWildcard);
     }
-    
+
     /**
      * Is leading wildcards allowed?
      * @return true if a search may start with a wildcard
@@ -523,20 +523,20 @@ public final class RuntimeEnvironment {
     public String getRepoCmd(String clazzName) {
         return threadConfig.get().getRepoCmd(clazzName);
     }
-    
+
     /**
      * Set the client command to use to access the repository for the given
      * fully quallified classname.
      * @param clazzName name of the targeting class. If {@code null} this method
      *  does nothing.
-     * @param cmd the client command to use. If {@code null} the corresponding 
+     * @param cmd the client command to use. If {@code null} the corresponding
      *  entry for the given clazzName get removed.
      * @return the client command previously set, which might be {@code null}.
      */
     public String setRepoCmd(String clazzName, String cmd) {
         return threadConfig.get().setRepoCmd(clazzName, cmd);
     }
-    
+
     /**
      * Sets the user page for the history listing
      * @param userPage the URL fragment preceeding the username from history
@@ -592,7 +592,7 @@ public final class RuntimeEnvironment {
     public void setBugPattern(String bugPattern) {
         threadConfig.get().setBugPattern(bugPattern);
     }
-    
+
 
     /**
      * Returns the review(ARC) page for the history listing
@@ -625,11 +625,11 @@ public final class RuntimeEnvironment {
     public void setReviewPattern(String reviewPattern) {
         threadConfig.get().setReviewPattern(reviewPattern);
     }
-    
+
     public String getWebappLAF() {
         return threadConfig.get().getWebappLAF();
     }
-    
+
     public void setWebappLAF(String laf) {
         threadConfig.get().setWebappLAF(laf);
     }
@@ -637,11 +637,11 @@ public final class RuntimeEnvironment {
     public boolean isRemoteScmSupported() {
         return threadConfig.get().isRemoteScmSupported();
     }
-    
+
     public void setRemoteScmSupported(boolean supported) {
         threadConfig.get().setRemoteScmSupported(supported);
     }
-    
+
     public boolean isOptimizeDatabase() {
         return threadConfig.get().isOptimizeDatabase();
     }
@@ -737,7 +737,7 @@ public final class RuntimeEnvironment {
     public void readConfiguration(File file) throws IOException {
         setConfiguration(Configuration.read(file));
     }
-    
+
     /**
      * Write the current configuration to a file
      * @param file the file to write the configuration into
@@ -746,7 +746,7 @@ public final class RuntimeEnvironment {
     public void writeConfiguration(File file) throws IOException {
         threadConfig.get().write(file);
     }
-    
+
     /**
      * Write the current configuration to a socket
      * @param host the host address to receive the configuration
@@ -778,9 +778,9 @@ public final class RuntimeEnvironment {
     public Configuration getConfiguration() {
        return this.threadConfig.get();
     }
-    
+
     private ServerSocket configServerSocket;
-    
+
     /**
      * Try to stop the configuration listener thread
      */
@@ -789,7 +789,7 @@ public final class RuntimeEnvironment {
             configServerSocket.close();
         } catch (Exception e) { log.log(Level.FINE, "Stopping config listener thread: ", e); }
     }
-    
+
     /**
      * Start a thread to listen on a socket to receive new configurations
      * to use.
@@ -798,7 +798,7 @@ public final class RuntimeEnvironment {
      */
     public boolean startConfigurationListenerThread(SocketAddress endpoint) {
         boolean ret = false;
-        
+
         try {
             configServerSocket = new ServerSocket();
             configServerSocket.bind(endpoint);
@@ -829,7 +829,7 @@ public final class RuntimeEnvironment {
                             XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf));
                             Object obj = d.readObject();
                             d.close();
-                            
+
                             if (obj instanceof Configuration) {
                                 setConfiguration((Configuration)obj);
                                 log.log(Level.INFO, "Configuration updated: {0}", configuration.getSourceRoot());
@@ -855,7 +855,7 @@ public final class RuntimeEnvironment {
         } catch (IOException ex) {
             log.log(Level.FINE,"I/O error when waiting for config: ",ex);
         }
-        
+
         if (!ret && configServerSocket != null) {
             try {
                 configServerSocket.close();
@@ -863,7 +863,7 @@ public final class RuntimeEnvironment {
                 log.log(Level.FINE,"I/O problem closing reader config socket: ",ex);
             }
         }
-        
+
         return ret;
     }
 }

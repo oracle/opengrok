@@ -29,7 +29,7 @@ import java.io.IOException;
 
 /**
  * MBean for doing settings and get on the OpenGrok RuntimeEnvironment
- * 
+ *
  * @author Jan Berg
  */
 public interface JMXConfigurationMBean {

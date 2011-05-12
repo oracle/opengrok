@@ -51,11 +51,11 @@ public class Annotation {
     private int widestAuthor;
     private final String filename;
     static final Logger log = Logger.getLogger(Annotation.class.getName());
-    
+
     public Annotation(String filename) {
         this.filename = filename;
     }
-    
+
     /**
      * Gets the revision for the last change to the specified line.
      *
@@ -73,15 +73,15 @@ public class Annotation {
 
     /**
      * Gets all revisions that are in use, first is the lowest one (sorted using natural order)
-     *     
+     *
      * @return list of all revisions the file has
      */
     public Set<String> getRevisions() {
         Set<String> ret=new HashSet<String>();
         for (Iterator<Line> it = this.lines.iterator(); it.hasNext();) {
             Line ln = it.next();
-            ret.add(ln.revision);            
-        }        
+            ret.add(ln.revision);
+        }
         return ret;
     }
 
@@ -155,11 +155,11 @@ public class Annotation {
         widestAuthor = Math.max(widestAuthor, line.author.length());
     }
 
-    void addDesc(String revision, String description) {        
+    void addDesc(String revision, String description) {
         desc.put(revision, Util.encode(description));
     }
 
-    public String getDesc(String revision) {        
+    public String getDesc(String revision) {
         return desc.get(revision);
     }
 

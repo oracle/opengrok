@@ -46,7 +46,7 @@ import org.opensolaris.opengrok.history.Annotation;
 public class TroffAnalyzer extends FileAnalyzer {
     private char[] content;
     private int len;
-    
+
     private final TroffFullTokenizer troffull;
     private final TroffXref xref;
     Reader dummy = new StringReader("");
@@ -59,7 +59,7 @@ public class TroffAnalyzer extends FileAnalyzer {
         xref = new TroffXref(dummy);
         content = new char[12 * 1024];
     }
-    
+
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
         len = 0;
@@ -80,7 +80,7 @@ public class TroffAnalyzer extends FileAnalyzer {
 
         doc.add(new Field("full", new StringReader("")));
     }
-    
+
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
@@ -89,7 +89,7 @@ public class TroffAnalyzer extends FileAnalyzer {
         }
         return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
@@ -102,7 +102,7 @@ public class TroffAnalyzer extends FileAnalyzer {
         xref.write(out);
         out.write("</div><pre>");
     }
-    
+
     /**
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source

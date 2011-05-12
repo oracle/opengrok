@@ -81,7 +81,7 @@ public class PerforceHistoryParser {
         executor.exec();
         return parseChanges(executor.getOutputReader());
     }
-    
+
     public static History getRevisions(File file, String rev) throws IOException {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("p4");
@@ -90,7 +90,7 @@ public class PerforceHistoryParser {
         cmd.add(file.getName() + ((rev == null) ? "" : "#"+rev));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
-        
+
         return parseFileLog(executor.getOutputReader());
     }
 
@@ -99,7 +99,7 @@ public class PerforceHistoryParser {
 
     /**
      * Parses the history in the given string. The given reader will be closed.
-     * 
+     *
      * @param fileHistory String with history to parse
      * @return History object with all the history entries
      * @throws java.io.IOException if it fails to read from the supplied reader
@@ -139,7 +139,7 @@ public class PerforceHistoryParser {
 
     /**
      * Parse file log. Te supplied reader will be closed.
-     * 
+     *
      * @param fileLog reader to the information to parse
      * @return A history object containing history entries
      * @throws java.io.IOException If it fails to read from the supplied reader.

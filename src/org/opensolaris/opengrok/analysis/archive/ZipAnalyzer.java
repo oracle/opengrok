@@ -48,7 +48,7 @@ public class ZipAnalyzer extends FileAnalyzer {
     private StringBuilder content;
 
     private static final Reader dummy = new StringReader("");
-    
+
     private final PlainFullTokenizer plainfull;
 
     protected ZipAnalyzer(FileAnalyzerFactory factory) {
@@ -68,7 +68,7 @@ public class ZipAnalyzer extends FileAnalyzer {
         content.trimToSize();
         doc.add(new Field("full",dummy));
     }
-    
+
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if("full".equals(fieldName)) {
@@ -79,7 +79,7 @@ public class ZipAnalyzer extends FileAnalyzer {
         }
         return super.tokenStream(fieldName, reader);
     }
-    
+
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to store HTML cross-reference

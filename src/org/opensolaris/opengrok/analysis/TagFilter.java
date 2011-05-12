@@ -51,7 +51,7 @@ public class TagFilter extends FilterReader {
         escs.put("&lt",  Character.valueOf('<'));
         escs.put("&amp",  Character.valueOf('&'));
     }
-    
+
     public final int read(char[] buf, int start, int len) throws java.io.IOException {
         int n=0;
         int pos = start;
@@ -65,7 +65,7 @@ public class TagFilter extends FilterReader {
         }
         return n;
     }
-    
+
     @Override
     public final int read() throws java.io.IOException {
         int c;
@@ -105,7 +105,7 @@ public class TagFilter extends FilterReader {
         }
         return -1;
     }
-    
+
     public static boolean isSpace(int ch) {
         return (ch <= 0x0020) &&
                 (((((1L << 0x0009) |

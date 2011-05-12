@@ -24,7 +24,7 @@ package org.opensolaris.opengrok.index;
 
 /**
  * The changes in an index database may be monitored through this interface.
- * 
+ *
  * @author Trond Norbye
  */
 public interface IndexChangedListener {

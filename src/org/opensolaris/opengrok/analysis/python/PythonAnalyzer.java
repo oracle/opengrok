@@ -58,8 +58,8 @@ public class PythonAnalyzer extends PlainAnalyzer {
     public void analyze(Document doc, Reader in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
-    }    
-    
+    }
+
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
@@ -80,7 +80,7 @@ public class PythonAnalyzer extends PlainAnalyzer {
         xref.project = project;
         xref.write(out);
     }
-    
+
     /**
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source

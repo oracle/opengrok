@@ -55,7 +55,7 @@ import org.xml.sax.ext.DefaultHandler2;
 public class SubversionRepository extends Repository {
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY = 
+    public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Subversion";
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "svn";
@@ -104,12 +104,12 @@ public class SubversionRepository extends Repository {
                     DocumentBuilder builder = factory.newDocumentBuilder();
                     Document document = builder.parse(executor.getOutputStream());
 
-                    String url = 
+                    String url =
                         getValue(document.getElementsByTagName("url").item(0));
                     if (url == null) {
                         OpenGrokLogger.getLogger()
                             .warning("svn info did not contain an URL for ["
-                                + directoryName 
+                                + directoryName
                                 + "]. Assuming remote repository.");
                         setRemote(true);
                     } else {
@@ -117,20 +117,20 @@ public class SubversionRepository extends Repository {
                             setRemote(true);
                         }
                     }
-                    String root = 
+                    String root =
                         getValue(document.getElementsByTagName("root").item(0));
                     if (url != null && root != null) {
                         reposPath = url.substring(root.length());
                         rootFound = Boolean.TRUE;
-                    } 
+                    }
                 } catch (SAXException saxe) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "Parser error parsing svn output", saxe);
                 } catch (ParserConfigurationException pce) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "Parser configuration error parsing svn output", pce);
                 } catch (IOException ioe) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "IOException reading from svn process", ioe);
                 }
             } else {
@@ -146,7 +146,7 @@ public class SubversionRepository extends Repository {
     /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
-     * 
+     *
      * @param file The file to retrieve history for
      * @param sinceRevision the revision number immediately preceding the first
      * revision we want, or {@code null} to fetch the entire history
@@ -242,7 +242,7 @@ public class SubversionRepository extends Repository {
         }
 
         @Override
-        public void startElement(String uri, String localName, String qname, 
+        public void startElement(String uri, String localName, String qname,
             Attributes attr)
         {
             sb.setLength(0);
@@ -306,7 +306,7 @@ public class SubversionRepository extends Repository {
                 saxParser.parse(in, handler);
                 ret = handler.annotation;
             } catch (Exception e) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "An error occurred while parsing the xml output", e);
             }
         } finally {
@@ -314,7 +314,7 @@ public class SubversionRepository extends Repository {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, 
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
                         "An error occured while closing stream", e);
                 }
             }

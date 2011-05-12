@@ -23,7 +23,7 @@ package org.opensolaris.opengrok.web;
 
 /**
  * Known diff display types.
- * 
+ *
  * @author  Jens Elkner
  * @version $Revision$
  */

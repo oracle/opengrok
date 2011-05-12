@@ -217,7 +217,7 @@ public class FileAnalyzerFactory {
      * @param defs definitions for the file (could be {@code null})
      * @param annotation annotation for the file (could be {@code null})
      * @param project project the file belongs to (could be {@code null})
-     * @throws java.io.IOException if an error occurs 
+     * @throws java.io.IOException if an error occurs
      */
     public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
             throws IOException {

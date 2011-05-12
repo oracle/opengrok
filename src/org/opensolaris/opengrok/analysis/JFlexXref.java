@@ -55,12 +55,12 @@ public abstract class JFlexXref {
     /** EOF value returned by yylex(). */
     private final int yyeof;
     /** See {@link RuntimeEnvironment#getUserPage()}. Per default initialized
-     * in the constructor and here to be consistent and avoid lot of 
+     * in the constructor and here to be consistent and avoid lot of
      * unnecessary lookups.
      * @see #startNewLine() */
     protected String userPageLink;
-    /** See {@link RuntimeEnvironment#getUserPageSuffix()}. Per default 
-     * initialized in the constructor and here to be consistent and avoid lot of 
+    /** See {@link RuntimeEnvironment#getUserPageSuffix()}. Per default
+     * initialized in the constructor and here to be consistent and avoid lot of
      * unnecessary lookups.
      * @see #startNewLine() */
     protected String userPageSuffix;
@@ -252,7 +252,7 @@ public abstract class JFlexXref {
             }
         }
         /* no LF intentionally - xml is whitespace aware ... */
-        out.append("];} /* ]]> */</script>"); 
+        out.append("];} /* ]]> */</script>");
     }
 
     /**

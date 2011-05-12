@@ -58,8 +58,8 @@ public class CAnalyzer extends PlainAnalyzer {
     public void analyze(Document doc, Reader in) throws IOException {
         super.analyze(doc, in);
         doc.add(new Field("refs", dummy));
-    }    
-    
+    }
+
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
             cref.reInit(super.content, super.len);
@@ -78,7 +78,7 @@ public class CAnalyzer extends PlainAnalyzer {
         xref.setDefs(defs);
         xref.write(out);
     }
-    
+
     /**
      * Write a cross referenced HTML file reads the source from in
      * @param in Input source
