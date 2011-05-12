@@ -93,9 +93,8 @@ public class DirectoryListingTest {
 
                 // @todo verify all attributes!
                 return name.compareTo(fe.name);
-            } else {
-                return -1;
             }
+            return -1;
         }
     }
 
@@ -152,10 +151,7 @@ public class DirectoryListingTest {
      * @throws java.lang.Exception
      */
     private String getFilename(Node item) throws Exception {
-        Node node = item.getFirstChild(); // tt
-        assertNotNull(node);
-        assertEquals(Node.ELEMENT_NODE, node.getNodeType());
-        node = node.getFirstChild(); // a
+        Node node = item.getFirstChild(); // a
         assertNotNull(node);
         assertEquals(Node.ELEMENT_NODE, node.getNodeType());
         node = node.getFirstChild();
@@ -177,11 +173,9 @@ public class DirectoryListingTest {
         assertEquals(Node.TEXT_NODE, val.getNodeType());
 
         String value = val.getNodeValue();
-        if (value.equalsIgnoreCase("Today")) {
-            return Long.MAX_VALUE;
-        } else {
-            return dateFormatter.parse(value).getTime();
-        }
+        return value.equalsIgnoreCase("Today")
+            ? Long.MAX_VALUE
+            : dateFormatter.parse(value).getTime();
     }
 
     /**
@@ -191,12 +185,10 @@ public class DirectoryListingTest {
      * @throws java.lang.Exception if an error occurs
      */
     private int getSize(Node item) throws Exception {
-        Node child = item.getFirstChild();
-        assertNotNull(child);
-        Node val = child.getFirstChild();
+        Node val = item.getFirstChild();
         assertNotNull(val);
         assertEquals(Node.TEXT_NODE, val.getNodeType());
-        return Integer.parseInt(val.getNodeValue());
+        return Integer.parseInt(val.getNodeValue().trim());
     }
 
     /**
@@ -208,14 +200,15 @@ public class DirectoryListingTest {
         FileEntry entry = new FileEntry();
         NodeList nl = element.getElementsByTagName("td");
         int len = nl.getLength();
-        if (len < 3) {
+        if (len < 4) {
             return;
         }
-        assertEquals(3, len);
+        assertEquals(4, len);
 
-        entry.name = getFilename(nl.item(0));
-        entry.lastModified = getLastModified(nl.item(1));
-        entry.size = getSize(nl.item(2));
+        // item(0) is a decoration placeholder, i.e. no content
+        entry.name = getFilename(nl.item(1));
+        entry.lastModified = getLastModified(nl.item(2));
+        entry.size = getSize(nl.item(3));
 
         // Try to look it up in the list of files
         for (int ii = 0; ii < entries.length; ++ii) {
@@ -236,10 +229,10 @@ public class DirectoryListingTest {
     @Test
     public void directoryListing() throws Exception {
         StringWriter out = new StringWriter();
-        out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
         DirectoryListing instance = new DirectoryListing();
-        instance.listTo(directory, out);
+        instance.listTo(directory, out, directory.getPath(), directory.list());
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         assertNotNull("DocumentBuilderFactory is null", factory);
@@ -247,14 +240,16 @@ public class DirectoryListingTest {
         DocumentBuilder builder = factory.newDocumentBuilder();
         assertNotNull("DocumentBuilder is null", out);
 
+        out.append("</start>\n");
         String str = out.toString();
+        System.out.println(str);
         Document document = builder.parse(new ByteArrayInputStream(str.getBytes()));
 
         NodeList nl = document.getElementsByTagName("tr");
         int len = nl.getLength();
-        assertEquals(entries.length + 2, len);
-        // Skip the .. entry and the header
-        for (int i = 2; i < len; ++i) {
+        assertEquals(entries.length + 1, len);
+        // Skip the the header
+        for (int i = 1; i < len; ++i) {
             validateEntry((Element) nl.item(i));
         }
     }

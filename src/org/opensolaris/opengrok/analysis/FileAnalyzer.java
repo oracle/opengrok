@@ -66,12 +66,47 @@ public class FileAnalyzer extends Analyzer {
      * What kind of file is this?
      */
     public static enum Genre {
-
-        PLAIN, // xrefed - line numbered context
-        XREFABLE, // xrefed - summarizer context
-        IMAGE, // not xrefed - no context - used by diff/list
-        DATA, // not xrefed - no context
-        HTML    // not xrefed - summarizer context from original file
+        /** xrefed - line numbered context */
+        PLAIN("p"),
+        /** xrefed - summarizer context */
+        XREFABLE("x"),
+        /** not xrefed - no context - used by diff/list */
+        IMAGE("i"),
+        /** not xrefed - no context */
+        DATA("d"),
+        /** not xrefed - summarizer context from original file */
+        HTML("h")
+        ;
+        private String typeName;
+        private Genre(String typename) {
+            this.typeName = typename;
+        }
+        
+        /**
+         * Get the type name value used to tag lucence documents.
+         * @return a none-null string.
+         */
+        public String typeName() {
+            return typeName;
+        }
+        
+        /**
+         * Get the Genre for the given type name.
+         * @param typeName name to check
+         * @return {@code null} if it doesn't match any genre, the genre otherwise.
+         * @see #typeName()
+         */
+        public static Genre get(String typeName) {
+            if (typeName == null) {
+                return null;
+            }
+            for (Genre g : values()) {
+                if (g.typeName.equals(typeName)) {
+                    return g;
+                }
+            }
+            return null;
+        }
     }
     protected Ctags ctags;
 

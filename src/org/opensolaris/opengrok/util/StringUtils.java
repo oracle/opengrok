@@ -19,8 +19,10 @@
 
 package org.opensolaris.opengrok.util;
 
+import java.util.regex.Pattern;
+
 /**
- * Various String utility methoids.
+ * Various String utility methods.
  * 
  * @author austvik
  */
@@ -45,6 +47,8 @@ public final class StringUtils {
         return true;
     }
 
+    static final Pattern javaClassPattern = 
+        Pattern.compile("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
     /**
      * Returns true if the string is possibly a full java class name
      *
@@ -57,7 +61,7 @@ public final class StringUtils {
     //    - class must be qualified with a package name
     //    - only letters in package name, starting with lower case
     //    - class name must be in CamelCase, starting with upper case
-    return s.matches("([a-z][A-Za-z]*\\.)+[A-Z][A-Za-z0-9]*");
+    return javaClassPattern.matcher(s).matches();
   }
     
 }

@@ -63,7 +63,7 @@ public class SearchTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null);
+            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null, null, false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");

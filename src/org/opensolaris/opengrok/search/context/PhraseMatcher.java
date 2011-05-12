@@ -33,7 +33,7 @@ class PhraseMatcher extends LineMatcher {
     
     PhraseMatcher(String[] phraseTerms, boolean caseInsensitive) {
         super(caseInsensitive);
-        this.phraseTerms  = (String[]) phraseTerms.clone();
+        this.phraseTerms  = phraseTerms.clone();
         cur = 0;
     }
     
@@ -43,11 +43,10 @@ class PhraseMatcher extends LineMatcher {
             if ( cur < phraseTerms.length-1) {
                 cur ++;
                 return WAIT; //matching.
-            } else {
-                //System.out.println(" PhraseMatcher match complete with " + token);
-                cur = 0;
-                return MATCHED; //matched!
             }
+            //System.out.println(" PhraseMatcher match complete with " + token);
+            cur = 0;
+            return MATCHED; //matched!
         } else if (cur > 0) {
             cur = 0;
             if (equal(token, phraseTerms[cur])) {

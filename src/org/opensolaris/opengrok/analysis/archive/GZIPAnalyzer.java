@@ -82,7 +82,8 @@ public class GZIPAnalyzer extends FileAnalyzer {
                 if (doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
-                        doc.add(new Field("t", "x", Field.Store.YES, Field.Index.NOT_ANALYZED));
+                        doc.add(new Field("t", g.typeName(), Field.Store.YES, 
+                            Field.Index.NOT_ANALYZED));
                     }
                 }
                 return;

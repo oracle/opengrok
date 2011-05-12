@@ -214,9 +214,8 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
                 if (indexThread.isAlive()) {
                     log.warning("Previous indexer is still alive, will not start another.");
                     return;
-                } else {
-                    log.fine("Previous indexer is no longer alive, starting a new one.");
                 }
+                log.fine("Previous indexer is no longer alive, starting a new one.");
             }
             indexThread = new Thread(this);
             try {
@@ -316,9 +315,9 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         log.info("removes a notiflistener, no obj");
         boolean removed = false;
         synchronized (notifListeners) {
-            Iterator it = notifListeners.iterator();
+            Iterator<NotificationHolder> it = notifListeners.iterator();
             while (it.hasNext()) {
-                NotificationHolder mnf = (NotificationHolder) it.next();
+                NotificationHolder mnf = it.next();
                 if (mnf.getNL().equals(notiflistener)) {
                     it.remove();
                     removed = true;
@@ -335,9 +334,9 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         log.log(Level.CONFIG, "removes a notiflistener obj {0}", obj);
         boolean removed = false;
         synchronized (notifListeners) {
-            Iterator it = notifListeners.iterator();
+            Iterator<NotificationHolder> it = notifListeners.iterator();
             while (it.hasNext()) {
-                NotificationHolder mnf = (NotificationHolder) it.next();
+                NotificationHolder mnf = it.next();
                 if (mnf.getNL().equals(notiflistener) 
                        && ((mnf.getFilter() == null) || mnf.getFilter().equals(filt)) 
                        && ((mnf.getFilter() == null) || mnf.getObj().equals(obj))) {

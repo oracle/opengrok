@@ -32,7 +32,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -97,10 +96,7 @@ public class Definitions implements Serializable {
         if (lines != null && lines.contains(lineNumber)) {
             LineTagMap line_map = line_maps.get(lineNumber);
             if (line_map != null) {
-                Set<Tag> ltags = line_map.sym_tags.get(symbol);
-                Iterator it = ltags.iterator();
-                while (it.hasNext()) {
-                    Tag tag = (Tag)it.next();
+                for (Tag tag : line_map.sym_tags.get(symbol)) {
                     if (strs.length > 0) { //NOPMD
                         strs[0] = tag.type;
                     }
@@ -110,7 +106,6 @@ public class Definitions implements Serializable {
             }
             return true;
         }
-
         return false;
     }
 
@@ -179,13 +174,14 @@ public class Definitions implements Serializable {
             lines = new HashSet<Integer>();
             symbols.put(internedSymbol, lines);
         }
-        lines.add(line);
+        Integer aLine = new Integer(line);
+        lines.add(aLine);
 
         // Get per line map
-        LineTagMap line_map = line_maps.get(line);
+        LineTagMap line_map = line_maps.get(aLine);
         if (line_map == null) {
             line_map = new LineTagMap();
-            line_maps.put(line, line_map);
+            line_maps.put(aLine, line_map);
         }
 
         // Insert sym->tag map for this line

@@ -33,7 +33,7 @@ public final class Hash2TokenStream extends TokenStream {
     String term;
     String terms[];
     Iterator<String> keys;
-    private final TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
+    private final TermAttribute termAtt = addAttribute(TermAttribute.class);
 
     public Hash2TokenStream(Set<String> symbols){
         keys = symbols.iterator();
@@ -50,18 +50,15 @@ public final class Hash2TokenStream extends TokenStream {
                     if (i > 0) {
                         termAtt.setTermBuffer(terms[--i]);
                         return true;
-                    } else {
-                        // no tokens found in this key, try next
-                        continue;
                     }
-                } else {
-                    return false;
+                    // no tokens found in this key, try next
+                    continue;
                 }
-            } else {
-                //System.out.println("Returning " + term + h.get(term));
-                termAtt.setTermBuffer(terms[--i]);
-                return true;
+                return false;
             }
+            //System.out.println("Returning " + term + h.get(term));
+            termAtt.setTermBuffer(terms[--i]);
+            return true;
         }
     }
 

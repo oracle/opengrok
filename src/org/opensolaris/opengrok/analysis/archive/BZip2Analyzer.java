@@ -34,7 +34,6 @@ import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 /**
@@ -46,6 +45,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 public class BZip2Analyzer extends FileAnalyzer {
     private Genre g;
 
+    @Override
     public Genre getGenre() {
         if (g != null) {
             return g;
@@ -60,6 +60,7 @@ public class BZip2Analyzer extends FileAnalyzer {
     private FileAnalyzer fa;
 
     @SuppressWarnings("PMD.ConfusingTernary")
+    @Override
     public void analyze(Document doc, InputStream in) throws IOException {
         if (in.read() != 'B') {
             throw new IOException("Not BZIP2 format");
@@ -85,7 +86,8 @@ public class BZip2Analyzer extends FileAnalyzer {
                 if(doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
-                        doc.add(new Field("t", "x", Field.Store.YES, Field.Index.NOT_ANALYZED));
+                        doc.add(new Field("t", g.typeName(), Field.Store.YES, 
+                            Field.Index.NOT_ANALYZED));
                     }
                 }
             } else {
@@ -95,6 +97,7 @@ public class BZip2Analyzer extends FileAnalyzer {
         }
     }
     
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if (fa != null) {
             return fa.tokenStream(fieldName, reader);
@@ -106,6 +109,7 @@ public class BZip2Analyzer extends FileAnalyzer {
      * Write a cross referenced HTML file.
      * @param out Writer to store HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
         if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
             fa.writeXref(out);

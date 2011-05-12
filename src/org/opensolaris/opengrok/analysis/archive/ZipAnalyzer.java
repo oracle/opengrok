@@ -45,8 +45,7 @@ import org.opensolaris.opengrok.web.Util;
  * @author Chandan
  */
 public class ZipAnalyzer extends FileAnalyzer {
-    private char[] content;
-    private int len;
+    private StringBuilder content;
 
     private static final Reader dummy = new StringReader("");
     
@@ -54,33 +53,28 @@ public class ZipAnalyzer extends FileAnalyzer {
 
     protected ZipAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        content = new char[64*1024];
+        content = new StringBuilder(64*1024);
         plainfull = new PlainFullTokenizer(dummy);
     }
 
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
-        len = 0;
+        content.setLength(0);
         ZipInputStream zis = new ZipInputStream(in);
         ZipEntry entry;
         while ((entry = zis.getNextEntry()) != null) {
-            String ename = entry.getName();
-            if(len + ename.length() >= content.length) {
-                int max = content.length * 2;
-                char[] content2 = new char[max];
-                System.arraycopy(content, 0, content2, 0, len);
-                content = content2;
-            }
-            ename.getChars(0, ename.length(), content, len);
-            len += ename.length();
-            content[len++] = '\n';
+            content.append(entry.getName()).append('\n');
         }
+        content.trimToSize();
         doc.add(new Field("full",dummy));
     }
     
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if("full".equals(fieldName)) {
-            plainfull.reInit(content,len);
+            char[] cs = new char[content.length()];
+            content.getChars(0, cs.length, cs, 0);
+            plainfull.reInit(cs, cs.length);
             return plainfull;
         }
         return super.tokenStream(fieldName, reader);
@@ -90,7 +84,8 @@ public class ZipAnalyzer extends FileAnalyzer {
      * Write a cross referenced HTML file.
      * @param out Writer to store HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
-        Util.htmlize(content, len, out);
+        out.write(Util.htmlize(content));
     }
 }

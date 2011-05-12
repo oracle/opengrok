@@ -43,10 +43,10 @@ public class ConnectionManager {
 
     /**
      * Create a new {@code ConnectionManager} instance.
-     * @throws ClassNotFoundException if the JDBC driver class cannot be found
      *
      * @param driverClass the name of the JDBC driver class
      * @param url the JDBC connection URL to the database
+     * @throws ClassNotFoundException if the JDBC driver class cannot be found
      */
     public ConnectionManager(String driverClass, String url)
             throws ClassNotFoundException {

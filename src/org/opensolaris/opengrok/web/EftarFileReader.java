@@ -40,6 +40,7 @@ import java.util.StringTokenizer;
 public class EftarFileReader {
 
     private final RandomAccessFile f;
+    private boolean isOpen;
 
     class FNode {
 
@@ -102,7 +103,7 @@ public class EftarFileReader {
             if (tagOffset == 0) {
                 return null;
             }
-            f.seek(offset + (long) tagOffset);
+            f.seek(offset + tagOffset);
             byte[] tagString;
             if (childOffset == 0) {
                 tagString = new byte[numChildren];
@@ -122,7 +123,7 @@ public class EftarFileReader {
             try {
                 tagString = getTag();
             } catch (IOException e) {
-                tagString = null;
+                // ignore;
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }
@@ -130,6 +131,7 @@ public class EftarFileReader {
 
     public EftarFileReader(String file) throws FileNotFoundException {
         f = new RandomAccessFile(file, "r");
+        isOpen = true;
     }
 
     public FNode getNode(String path) throws IOException {
@@ -197,9 +199,22 @@ public class EftarFileReader {
         return "";
     }
 
+    /**
+     * Check, whether this instance has been already closed.
+     * @return {@code true} if closed.
+     */
+    public boolean isClosed() {
+        return !isOpen;
+    }
+
     public void close() throws IOException {
-        if (f != null) {
-            f.close();
+        if (f != null && isOpen) {
+            try { 
+                f.close(); 
+                isOpen = false;
+            } catch (Exception e) { 
+                /** ignore */ 
+            }
         }
     }
 }

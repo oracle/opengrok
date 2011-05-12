@@ -63,8 +63,7 @@ public class JFlexXrefTest {
      * returned by an xref.
      */
     private static final String FIRST_LINE_PREAMBLE =
-                "<a class=\"l\" name=\"1\" href=\"#1\">" +
-                "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;</a>";
+                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>";
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -264,9 +263,9 @@ public class JFlexXrefTest {
     private void testCXrefInclude(Class<? extends JFlexXref> klass) throws Exception {
         String[][] testData = {
             { "#include <abc.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc.h\">abc.h</a>&gt;" },
-            { "#include <abc/def.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&gt;" },
+            { "#include <abc/def.h>", "#<b>include</b> &lt;<a href=\"/source/s?path=abc/\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>&gt;" },
             { "#include \"abc.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc.h\">abc.h</a>\"</span>" },
-            { "#include \"abc/def.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>\"</span>" },
+            { "#include \"abc/def.h\"", "#<b>include</b> <span class=\"s\">\"<a href=\"/source/s?path=abc/\">abc</a>/<a href=\"/source/s?path=abc/def.h\">def.h</a>\"</span>" },
             { "#include <vector>", "#<b>include</b> &lt;<a href=\"/source/s?path=vector\">vector</a>&gt;" },
         };
 

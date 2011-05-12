@@ -55,7 +55,7 @@ public class HistoryContext {
      * insensitivity, false for sensitivity).
      */
     private static final Map<String, Boolean> tokenFields =
-            Collections.singletonMap("hist", true);
+            Collections.singletonMap("hist", Boolean.TRUE);
 
     public HistoryContext(Query query) {
         QueryMatchers qm = new QueryMatchers();
@@ -84,14 +84,32 @@ public class HistoryContext {
             String parent, String basename, String path, Writer out, String context)
             throws HistoryException
     {
+        return getContext(new File(parent, basename), path, out, context);
+    }
+
+    /**
+     * Obtain the history for the source file <var>src</var> and write out
+     * matching History log entries.
+     * 
+     * @param src       the source file represented by <var>path</var>
+     *                  (SOURCE_ROOT + path)
+     * @param path      the path of the file (rooted at SOURCE_ROOT)
+     * @param out       write destination
+     * @param context   the servlet context path of the application (the path 
+     *  prefix for URLs)
+     * @return {@code true} if at least one line has been written out.
+     * @throws HistoryException
+     */
+    public boolean getContext(File src, String path, Writer out, String context)
+        throws HistoryException
+    {
         if (m == null) {
             return false;
         }
-        History hist = HistoryGuru.getInstance().getHistory(
-                             new File(parent, basename));
+        History hist = HistoryGuru.getInstance().getHistory(src);
         return getHistoryContext(hist, path, out, null,context);
     }
-    
+
     /**
      * Writes matching History log entries from 'in' to 'out' or to 'hits'
      * @param in the history to fetch entries from

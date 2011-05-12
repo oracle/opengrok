@@ -194,12 +194,12 @@ final public class OGAgent {
                 " JMX Agent, with java version " + javaver);
         //create mbeanserver
 
-        ArrayList mbservs = MBeanServerFactory.findMBeanServer(null);
+        ArrayList<MBeanServer> mbservs = MBeanServerFactory.findMBeanServer(null);
         log.fine("Finding MBeanservers, size " + mbservs.size());
         if (mbservs.isEmpty()) {
             server = MBeanServerFactory.createMBeanServer();
         } else {
-            server = (MBeanServer) mbservs.get(0);
+            server = mbservs.get(0);
         }
 
         //instantiate and register OGAManagement
@@ -238,7 +238,7 @@ final public class OGAgent {
         log.info("OGA is ready and running...");
     }
 
-    private void createIndexTimer(Properties properties) throws IOException, JMException {
+    private void createIndexTimer(Properties properties) throws JMException {
 
         //instantiate, register and start the Timer service
         ObjectName timer = new ObjectName("service:name=timer");

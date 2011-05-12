@@ -222,9 +222,12 @@ public class AnalyzerGuru {
     public Document getDocument(File file, InputStream in, String path,
                                 FileAnalyzer fa) throws IOException {
         Document doc = new Document();
-        String date = DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND);
-        doc.add(new Field("u", Util.uid(path, date), Field.Store.YES, Field.Index.NOT_ANALYZED));
-        doc.add(new Field("fullpath", file.getAbsolutePath(), Field.Store.NO, Field.Index.NOT_ANALYZED));
+        String date = DateTools.timeToString(file.lastModified(), 
+            DateTools.Resolution.MILLISECOND);
+        doc.add(new Field("u", Util.path2uid(path, date), 
+            Field.Store.YES, Field.Index.NOT_ANALYZED));
+        doc.add(new Field("fullpath", file.getAbsolutePath(), 
+            Field.Store.NO, Field.Index.NOT_ANALYZED));
 
         try {
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
@@ -246,12 +249,9 @@ public class AnalyzerGuru {
 
         if (fa != null) {
             Genre g = fa.getGenre();
-            if (g == Genre.PLAIN) {
-                doc.add(new Field("t", "p", Field.Store.YES, Field.Index.NOT_ANALYZED));
-            } else if (g == Genre.XREFABLE) {
-                doc.add(new Field("t", "x", Field.Store.YES, Field.Index.NOT_ANALYZED));
-            } else if (g == Genre.HTML) {
-                doc.add(new Field("t", "h", Field.Store.YES, Field.Index.NOT_ANALYZED));
+            if (g == Genre.PLAIN || g == Genre.XREFABLE || g == Genre.HTML) {
+                doc.add(new Field("t", g.typeName(), Field.Store.YES, 
+                    Field.Index.NOT_ANALYZED));
             }
             fa.analyze(doc, in);
         }
@@ -370,7 +370,7 @@ public class AnalyzerGuru {
      * @throws IllegalAccessException if the constructor cannot be accessed
      * @throws InstantiationException if the class cannot be instantiated
      */
-    private static FileAnalyzerFactory findFactory(Class factoryClass)
+    private static FileAnalyzerFactory findFactory(Class<?> factoryClass)
         throws InstantiationException, IllegalAccessException
     {
         for (FileAnalyzerFactory f : factories) {

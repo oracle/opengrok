@@ -89,7 +89,7 @@ public class IndexerTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(true);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null);
+            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null, null, false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -134,7 +134,9 @@ public class IndexerTest {
                 false, // don't list files
                 false, // don't create dictionary
                 null,  // subFiles - not needed since we don't list files
-                null); // repositories - not needed when not refreshing history
+                null,   // repositories - not needed when not refreshing history
+                null,   // don't zap cache
+                false); // don't list repos
 
         List<Project> newProjects = env.getProjects();
 

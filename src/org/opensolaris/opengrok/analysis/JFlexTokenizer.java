@@ -64,9 +64,9 @@ public abstract class JFlexTokenizer extends Tokenizer {
         yyclose();
     }
 
-    protected TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
-    protected OffsetAttribute offsetAtt=(OffsetAttribute) addAttribute(OffsetAttribute.class);    
-    protected PositionIncrementAttribute posIncrAtt= (PositionIncrementAttribute) addAttribute(PositionIncrementAttribute.class);
+    protected TermAttribute termAtt= addAttribute(TermAttribute.class);
+    protected OffsetAttribute offsetAtt= addAttribute(OffsetAttribute.class);    
+    protected PositionIncrementAttribute posIncrAtt= addAttribute(PositionIncrementAttribute.class);
 
     /**
      * This will reinitalize internal AttributeImpls, or it returns false if end of input Reader ...

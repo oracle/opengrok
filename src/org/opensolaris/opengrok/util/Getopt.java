@@ -94,14 +94,13 @@ public class Getopt {
                                 // Rest of this is the argument
                                 option.argument = argv[ii].substring(jj + 1);
                                 break;
+                            }
+                            // next argument vector contains the argument
+                            ++ii;
+                            if (ii < argv.length) {
+                                option.argument = argv[ii];
                             } else {
-                                // next argument vector contains the argument
-                                ++ii;
-                                if (ii < argv.length) {
-                                    option.argument = argv[ii];
-                                } else {
-                                    throw new ParseException("Option " + chars[jj] + " requires an argument", ii);
-                                }
+                                throw new ParseException("Option " + chars[jj] + " requires an argument", ii);
                             }
                         }
                     }

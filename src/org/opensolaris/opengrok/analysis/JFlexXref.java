@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright 2011 Jens Elkner.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -53,6 +54,16 @@ public abstract class JFlexXref {
     protected Definitions defs;
     /** EOF value returned by yylex(). */
     private final int yyeof;
+    /** See {@link RuntimeEnvironment#getUserPage()}. Per default initialized
+     * in the constructor and here to be consistent and avoid lot of 
+     * unnecessary lookups.
+     * @see #startNewLine() */
+    protected String userPageLink;
+    /** See {@link RuntimeEnvironment#getUserPageSuffix()}. Per default 
+     * initialized in the constructor and here to be consistent and avoid lot of 
+     * unnecessary lookups.
+     * @see #startNewLine() */
+    protected String userPageSuffix;
 
     /**
      * Description of styles to use for different types of definitions. Each
@@ -92,6 +103,14 @@ public abstract class JFlexXref {
             // reflection.
             Field f = getClass().getField("YYEOF");
             yyeof = f.getInt(null);
+            userPageLink = RuntimeEnvironment.getInstance().getUserPage();
+            if (userPageLink != null && userPageLink.length() == 0) {
+                userPageLink = null;
+            }
+            userPageSuffix = RuntimeEnvironment.getInstance().getUserPageSuffix();
+            if (userPageSuffix != null && userPageSuffix.length() == 0) {
+                userPageSuffix = null;
+            }
         } catch (Exception e) {
             // The auto-generated constructors for the Xref classes don't
             // expect a checked exception, so wrap it in an AssertionError.
@@ -232,9 +251,8 @@ public abstract class JFlexXref {
                 first = false;
             }
         }
-
-        out.append("];}");
-        out.append("/* ]]> */</script>\n");
+        /* no LF intentionally - xml is whitespace aware ... */
+        out.append("];} /* ]]> */</script>"); 
     }
 
     /**
@@ -264,7 +282,7 @@ public abstract class JFlexXref {
     protected void startNewLine() throws IOException {
         int line = getLineNumber() + 1;
         setLineNumber(line);
-        Util.readableLine(line, out, annotation);
+        Util.readableLine(line, out, annotation, userPageLink, userPageSuffix);
     }
 
     /**
@@ -355,7 +373,7 @@ public abstract class JFlexXref {
      */
     protected void writeUnicodeChar(char c) throws IOException {
         if (!Character.isISOControl(c)) {
-            out.append("&#").append(Integer.toString((int) c)).append(';');
+            out.append("&#").append(Integer.toString(c)).append(';');
         }
     }
 

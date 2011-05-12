@@ -74,77 +74,78 @@ public class UtilTest {
     public void breadcrumbPath() {
         assertEquals(null, Util.breadcrumbPath("/root/", null));
 
-        // Are these two correct? Why don't we create links?
         assertEquals("", Util.breadcrumbPath("/root/", ""));
-        assertEquals("x", Util.breadcrumbPath("/root/", "x"));
 
+        assertEquals("<a href=\"/root/x\">x</a>", 
+            Util.breadcrumbPath("/root/", "x"));
         assertEquals("<a href=\"/root/xx\">xx</a>",
                 Util.breadcrumbPath("/root/", "xx"));
 
-        assertEquals("<a href=\"/r/a\">a</a>/<a href=\"/r/a/b\">b</a>",
+        // parent directories have a trailing slash in href
+        assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b\">b</a>",
                 Util.breadcrumbPath("/r/", "a/b"));
-
-        assertEquals("<a href=\"/r/a\">a</a>/<a href=\"/r/a/b\">b</a>/",
+        // if basename is a dir (ends with file seperator), href link also
+        // ends with a '/'
+        assertEquals("<a href=\"/r/a/\">a</a>/<a href=\"/r/a/b/\">b</a>/",
                 Util.breadcrumbPath("/r/", "a/b/"));
-
-        assertEquals("<a href=\"/r/java\">java</a>." +
-                "<a href=\"/r/java/lang\">lang</a>." +
+        // should work the same way with a '.' as file separator
+        assertEquals("<a href=\"/r/java/\">java</a>." +
+                "<a href=\"/r/java/lang/\">lang</a>." +
                 "<a href=\"/r/java/lang/String\">String</a>",
                 Util.breadcrumbPath("/r/", "java.lang.String", '.'));
-
+        // suffix added to the link?
         assertEquals("<a href=\"/root/xx&project=y\">xx</a>",
                 Util.breadcrumbPath("/root/", "xx", '/', "&project=y", false));
-
-        assertEquals("<a href=\"/root/xx&project=y\">xx</a>",
-                Util.breadcrumbPath("/root/", "xx", '/', "&project=y", true));
-
-        assertEquals("<a href=\"/r/\">..</a>/" +
-                "<a href=\"/r/a\">a</a>/" +
-                "<a href=\"/r/a/b\">b</a>/" +
-                "<a href=\"/r/a\">..</a>/" +
-                "<a href=\"/r/a/c\">c</a>/" +
-                "/" +
-                "<a href=\"/r/a/c/d\">d</a>",
+        // compact: path needs to be resolved to /xx and no link is added
+        // for the virtual root directory (parent) but emitted as plain text.
+        // Prefix gets just prefixed as is and not mangled wrt. path -> "//"
+        assertEquals("/<a href=\"/root//xx&project=y\">xx</a>",
+                Util.breadcrumbPath("/root/", "../xx", '/', "&project=y", true));
+        // relative pathes are resolved wrt. / , so path resolves to /a/c/d 
+        assertEquals("/<a href=\"/r//a/\">a</a>/" +
+                "<a href=\"/r//a/c/\">c</a>/" +
+                "<a href=\"/r//a/c/d\">d</a>",
                 Util.breadcrumbPath("/r/", "../a/b/../c//d", '/', "", true));
     }
 
     @Test
     public void redableSize() {
-        assertEquals("0", Util.redableSize(0));
-        assertEquals("1", Util.redableSize(1));
-        assertEquals("-1", Util.redableSize(-1));
-        assertEquals("1,000", Util.redableSize(1000));
-        assertEquals("1K", Util.redableSize(1024));
-        assertEquals("2.4K", Util.redableSize(2500));
-        assertEquals("<b>1.4M</b>", Util.redableSize(1474560));
-        assertEquals("<b>3,584.4M</b>", Util.redableSize(3758489600L));
-        assertEquals("<b>8,796,093,022,208M</b>",
-                     Util.redableSize(Long.MAX_VALUE));
+        assertEquals("0 ", Util.readableSize(0));
+        assertEquals("1 ", Util.readableSize(1));
+        assertEquals("-1 ", Util.readableSize(-1));
+        assertEquals("1,000 ", Util.readableSize(1000));
+        assertEquals("1 KiB", Util.readableSize(1024));
+        assertEquals("2.4 KiB", Util.readableSize(2500));
+        assertEquals("<b>1.4 MiB</b>", Util.readableSize(1474560));
+        assertEquals("<b>3,584.4 MiB</b>", Util.readableSize(3758489600L));
+        assertEquals("<b>8,796,093,022,208 MiB</b>",
+                     Util.readableSize(Long.MAX_VALUE));
     }
 
     @Test
     public void readableLine() throws Exception {
         StringWriter out = new StringWriter();
-        Util.readableLine(42, out, null);
-        assertEquals("\n<a class=\"l\" name=\"42\" href=\"#42\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42&nbsp;</a>",
+        // hmmm - where do meaningful test start?
+        Util.readableLine(42, out, null, null, null);
+        assertEquals("\n<a class=\"l\" name=\"42\" href=\"#42\">42</a>",
                      out.toString());
 
         out.getBuffer().setLength(0); // clear buffer
-        Util.readableLine(110, out, null);
-        assertEquals("\n<a class=\"hl\" name=\"110\" href=\"#110\">&nbsp;&nbsp;&nbsp;&nbsp;110&nbsp;</a>",
+        Util.readableLine(110, out, null, null, null);
+        assertEquals("\n<a class=\"hl\" name=\"110\" href=\"#110\">110</a>",
                      out.toString());
     }
 
     @Test
-    public void uid() {
+    public void path2uid() {
         assertEquals("\u0000etc\u0000passwd\u0000date",
-                     Util.uid("/etc/passwd", "date"));
+                     Util.path2uid("/etc/passwd", "date"));
     }
 
     @Test
     public void uid2url() {
         assertEquals("/etc/passwd", Util.uid2url(
-                Util.uid("/etc/passwd", "date")));
+                Util.path2uid("/etc/passwd", "date")));
     }
 
     @Test
@@ -176,18 +177,46 @@ public class UtilTest {
 
     @Test
     public void diffline() {
-        String[] strings=Util.diffline("\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"","\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, exp_url, d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"");        
-        assertEquals(strings[0],"\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"");
-        assertEquals(strings[1],"\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, cur, ps_id, ret_url, <span class=\"a\">exp_url, </span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) \"");
-        strings=Util.diffline("\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);","\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);");
-        assertEquals(strings[0],"\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);");
-        assertEquals(strings[1],"\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span class=\"a\">, ?</span>)\", values);");
-        strings=Util.diffline("char    *config_list = NULL;","char    **config_list = NULL;");
-        assertEquals(strings[0],"char    *config_list = NULL;");
-        assertEquals(strings[1],"char    *<span class=\"a\">*</span>config_list = NULL;");
-        strings=Util.diffline("* An error occured or there is non-numeric stuff at the end","* An error occurred or there is non-numeric stuff at the end");
-        assertEquals(strings[0],"* An error occured or there is non-numeric stuff at the end");
-        assertEquals(strings[1],"* An error occur<span class=\"a\">r</span>ed or there is non-numeric stuff at the end");
+        String[][] tests = {
+            {
+                "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
+                + "cur, ps_id, ret_url, d_req_time, d_req_mil, h_resp_time, "
+                + "h_resp_mil) \"",
+                "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
+                + "cur, ps_id, ret_url, exp_url, d_req_time, d_req_mil, "
+                + "h_resp_time, h_resp_mil) \"",
+
+                "\"(ses_id, mer_id, pass_id, \" + refCol +\" , mer_ref, amnt, "
+                + "cur, ps_id, ret_url, <span class=\"a\">exp_url, "
+                + "</span>d_req_time, d_req_mil, h_resp_time, h_resp_mil) \""
+            },
+            {   
+                "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
+                "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", values);",
+                
+                "\"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?<span "
+                + "class=\"a\">, ?</span>)\", values);"
+            },
+            {
+                "char    *config_list = NULL;",
+                "char    **config_list = NULL;",
+                
+                "char    *<span class=\"a\">*</span>config_list = NULL;"
+            },
+            {
+                "* An error occured or there is non-numeric stuff at the end",
+                "* An error occurred or there is non-numeric stuff at the end",
+                
+                "* An error occur<span class=\"a\">r</span>ed or there is "
+                + "non-numeric stuff at the end"
+            }
+        };
+        for (int i=0; i < tests.length; i++) {
+            String[] strings=Util.diffline(new StringBuilder(tests[i][0]),
+                new StringBuilder(tests[i][1]));
+            assertEquals(""+ i + "," + 0, strings[0], tests[i][0]);
+            assertEquals(""+ i + "," + 1, strings[1], tests[i][2]);
+        }
     }
 
     @Test

@@ -36,9 +36,6 @@ public class PrefixMatcher extends LineMatcher {
 
     public int match(String token) {
         String tokenToMatch = normalizeString(token);
-        if (tokenToMatch.startsWith(prefix)) {
-            return MATCHED;
-        }
-        return NOT_MATCHED;
+        return tokenToMatch.startsWith(prefix) ? MATCHED : NOT_MATCHED;
     }
 }

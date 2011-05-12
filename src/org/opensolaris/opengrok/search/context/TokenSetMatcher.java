@@ -47,9 +47,6 @@ public class TokenSetMatcher extends LineMatcher {
     }
 
     public int match(String token) {
-        if (tokenSet.contains(token)) {
-            return MATCHED;
-        }
-        return NOT_MATCHED;
+        return tokenSet.contains(token) ? MATCHED : NOT_MATCHED;
     }
 }

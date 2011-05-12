@@ -25,6 +25,8 @@ package org.opensolaris.opengrok.configuration;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
@@ -91,11 +94,11 @@ public final class RuntimeEnvironment {
         }
     }
 
-    public Integer getScanningDepth() {
+    public int getScanningDepth() {
         return threadConfig.get().getScanningDepth();
     }
 
-    public void setScanningDepth(Integer scanningDepth) {
+    public void setScanningDepth(int scanningDepth) {
         threadConfig.get().setScanningDepth(scanningDepth);
     }
 
@@ -213,9 +216,11 @@ public final class RuntimeEnvironment {
      * Register this thread in the thread/configuration map (so that all
      * subsequent calls to the RuntimeEnvironment from this thread will use
      * the same configuration
+     * @return this instance
      */
-    public void register() {
+    public RuntimeEnvironment register() {
         threadConfig.set(configuration);
+        return this;
     }
     
     /**
@@ -364,8 +369,8 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Are we using copressed HTML files?
-     * @return true if the html-files should be compressed. false otherwise
+     * Are we using compressed HTML files?
+     * @return {@code true} if the html-files should be compressed.
      */
     public boolean isCompressXref() {
         return threadConfig.get().isCompressXref();
@@ -509,6 +514,29 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getUserPage();
     }
 
+    /**
+     * Get the client command to use to access the repository for the given
+     * fully quallified classname.
+     * @param clazzName name of the targeting class
+     * @return {@code null} if not yet set, the client command otherwise.
+     */
+    public String getRepoCmd(String clazzName) {
+        return threadConfig.get().getRepoCmd(clazzName);
+    }
+    
+    /**
+     * Set the client command to use to access the repository for the given
+     * fully quallified classname.
+     * @param clazzName name of the targeting class. If {@code null} this method
+     *  does nothing.
+     * @param cmd the client command to use. If {@code null} the corresponding 
+     *  entry for the given clazzName get removed.
+     * @return the client command previously set, which might be {@code null}.
+     */
+    public String setRepoCmd(String clazzName, String cmd) {
+        return threadConfig.get().setRepoCmd(clazzName, cmd);
+    }
+    
     /**
      * Sets the user page for the history listing
      * @param userPage the URL fragment preceeding the username from history
@@ -779,14 +807,26 @@ public final class RuntimeEnvironment {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1<<13);
                     while (!sock.isClosed()) {
                         Socket s = null;
+                        BufferedInputStream in = null;
                         try {
                             s = sock.accept();
-                            log.log(Level.FINE, " OpenGrok: Got request from {0}", s.getInetAddress().getHostAddress());
-                            BufferedInputStream in = new BufferedInputStream(s.getInputStream());
-                            
-                            XMLDecoder d = new XMLDecoder(new BufferedInputStream(in));
+                            bos.reset();
+                            log.log(Level.FINE, "OpenGrok: Got request from {0}",
+                                s.getInetAddress().getHostAddress());
+                            in = new BufferedInputStream(s.getInputStream());
+                            byte[] buf = new byte[1024];
+                            int len;
+                            while ((len = in.read(buf)) != -1) {
+                                bos.write(buf, 0, len);
+                            }
+                            buf = bos.toByteArray();
+                            if (log.isLoggable(Level.FINE)) {
+                                log.log(Level.FINE, "new config:" + new String(buf));
+                            }
+                            XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf));
                             Object obj = d.readObject();
                             d.close();
                             
@@ -800,11 +840,10 @@ public final class RuntimeEnvironment {
                             log.log(Level.SEVERE, "Error parsing config file: ", e);
                         } finally {
                             if (s != null) {
-                                try {
-                                    s.close();
-                                } catch (IOException ex) {
-                                    log.log(Level.WARNING, "Interrupt closing config listener reader socket: ", ex);
-                                }
+                                try { s.close(); } catch (Exception ex) { /* ignore */ }
+                            }
+                            if (in != null) {
+                                try { in.close(); } catch (Exception x) { /* ignore */ }
                             }
                         }
                     }

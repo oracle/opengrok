@@ -285,9 +285,8 @@ public class IndexDatabase {
         if (file.exists()) {
             directories.add(directory);
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
     
     /**
@@ -336,7 +335,7 @@ public class IndexDatabase {
                 
                 HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
 
-                String startuid = Util.uid(dir, "");
+                String startuid = Util.path2uid(dir, "");
                 IndexReader reader = IndexReader.open(indexDirectory,false); // open existing index
                 try {
                     uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
@@ -769,7 +768,7 @@ public class IndexDatabase {
                     }
 
                     if (uidIter != null) {
-                        String uid = Util.uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
+                        String uid = Util.path2uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         while (uidIter.term() != null && uidIter.term().field().equals("u") &&
                                 uidIter.term().text().compareTo(uid) < 0) {
                             removeFile();
@@ -989,19 +988,18 @@ public class IndexDatabase {
             Project p = Project.getProject(path);
             if (p == null) {
                 return null;
-            } else {
-                indexDir = new File(indexDir, p.getPath());
             }
+            indexDir = new File(indexDir, p.getPath());
         }
-            try {
-                FSDirectory fdir=FSDirectory.open(indexDir,NoLockFactory.getNoLockFactory());
-                if (indexDir.exists() && IndexReader.indexExists(fdir)) {
-                    ret = IndexReader.open(fdir,false);
-                }
-            } catch (Exception ex) {
-                log.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());
-                log.log(Level.FINE,"Stack Trace: ",ex);
+        try {
+            FSDirectory fdir=FSDirectory.open(indexDir,NoLockFactory.getNoLockFactory());
+            if (indexDir.exists() && IndexReader.indexExists(fdir)) {
+                ret = IndexReader.open(fdir,false);
             }
+        } catch (Exception ex) {
+            log.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());
+            log.log(Level.FINE,"Stack Trace: ",ex);
+        }
         return ret;
     }
 

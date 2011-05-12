@@ -97,7 +97,7 @@ public class Summary {
     
     /** Returns an HTML representation of this fragment. */
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < fragments.size(); i++) {
             buffer.append(fragments.get(i));
         }

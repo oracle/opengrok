@@ -51,6 +51,7 @@ import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -114,16 +115,16 @@ public class SearchEngine {
     private final char[] content = new char[1024*8];
     private String source;
     private String data;
-    private final static boolean docsScoredInOrder=false;
+    private final static boolean docsScoredInOrder = false;
 
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages= RuntimeEnvironment.getInstance().getCachePages();
     int totalHits=0;
     
-    private ScoreDoc[] hits=null;
-    private TopScoreDocCollector collector=null;
-    private Searcher searcher=null;
-    boolean allCollected=false;
+    private ScoreDoc[] hits;
+    private TopScoreDocCollector collector;
+    private Searcher searcher;
+    boolean allCollected;
 
     /**
      * Creates a new instance of SearchEngine
@@ -243,7 +244,7 @@ public class SearchEngine {
                     // search all projects
                     //TODO support paging per project (in search.java)
                     //TODO optimize if only one project by falling back to SingleDatabase ?
-                        searchMultiDatabase(env.getProjects(),false);
+                    searchMultiDatabase(env.getProjects(),false);
                 } else {
                     // search the index database
                     searchSingleDatabase(root,true);
@@ -292,12 +293,15 @@ public class SearchEngine {
     public void results(int start, int end, List<Hit> ret) {
 
         //return if no start search() was done
-        if (hits==null || (end<start) ) {ret.clear();return;}
+        if (hits == null || (end<start) ) {
+            ret.clear();
+            return;
+        }
 
         ret.clear();
 
         //TODO check if below fits for if end=old hits.length, or it should include it
-        if (end>hits.length & !allCollected) {
+        if (end > hits.length & !allCollected) {
          //do the requery, we want more than 5 pages
          collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
          try {
@@ -311,7 +315,7 @@ public class SearchEngine {
          for (int i = start; i < hits.length; i++) {
              int docId = hits[i].doc;
              try {
-             d = searcher.doc(docId);
+                 d = searcher.doc(docId);
              }  catch (Exception e) {
                  OpenGrokLogger.getLogger().log(
                          Level.SEVERE, SEARCH_EXCEPTION_MSG, e);
@@ -330,7 +334,7 @@ public class SearchEngine {
                 Document doc = docs.get(ii);
                 String filename = doc.get("path");
 
-                String genre = doc.get("t");
+                Genre genre = Genre.get(doc.get("t"));
                 Definitions tags = null;
                 Fieldable tagsField = doc.getFieldable("tags");                
                 if (tagsField != null) {
@@ -340,11 +344,11 @@ public class SearchEngine {
                 
                 if(sourceContext != null) {
                     try {
-                        if ("p".equals(genre) && (source != null)) {
+                        if (Genre.PLAIN == genre && (source != null)) {
                             hasContext = sourceContext.getContext(new InputStreamReader(new FileInputStream(source +
                                     filename)), null, null, null, filename,
                                     tags, nhits > 100, ret);
-                        } else if("x".equals(genre) && data != null && summarizer != null){
+                        } else if (Genre.XREFABLE == genre && data != null && summarizer != null){
                             int l = 0;
                             Reader r=null;                          
                             if ( RuntimeEnvironment.getInstance().isCompressXref() ) {

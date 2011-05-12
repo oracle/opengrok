@@ -19,6 +19,8 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * 
+ * Portions Copyright 2011 Jens Elkner.
  */
 
 /**
@@ -58,9 +60,9 @@ public class Context {
     private static final Map<String, Boolean> tokenFields =
             new HashMap<String, Boolean>();
     static {
-        tokenFields.put("full", true);
-        tokenFields.put("refs", false);
-        tokenFields.put("defs", false);
+        tokenFields.put("full", Boolean.TRUE);
+        tokenFields.put("refs", Boolean.FALSE);
+        tokenFields.put("defs", Boolean.FALSE);
     }
 
     /**
@@ -90,24 +92,30 @@ public class Context {
      * @param subqueries a map containing the query text for each field
      */
     private void buildQueryAsURI(Map<String, String> subqueries) {
-        boolean first = true;
+        if (subqueries.isEmpty()) {
+            queryAsURI = "";
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : subqueries.entrySet()) {
             String field = entry.getKey();
             String queryText = entry.getValue();
-            if (!first) {
-                sb.append('&');
+            if (field.equals("full")) {
+                field = "q"; // bah - search query params should be consistent!
             }
-            sb.append(field).append("=").append(Util.URIEncode(queryText));
-            first = false;
+            sb.append(field).append("=").append(Util.URIEncode(queryText))
+                .append('&');
         }
+        sb.setLength(sb.length()-1);
         queryAsURI = sb.toString();
     }
 
     private boolean alt = true;
 
     /**
-     *
+     * ???.
+     * Closes the given <var>in</var> reader on return.
+     * 
      * @param in File to be matched
      * @param out to write the context
      * @param morePrefix to link to more... page
@@ -121,20 +129,25 @@ public class Context {
             boolean limit, List<Hit> hits) {
         alt = !alt;
         if (m == null) {
+            if (in != null) {
+                try { in.close(); } catch (Exception x) { /* ignore */ }
+            }
             return false;
         }
         boolean anything = false;
         TreeMap<Integer, String[]> matchingTags = null;
+        String urlPrefixE = Util.URIEncodePath(urlPrefix);
+        String pathE = Util.URIEncodePath(path);
         if (tags != null) {
             matchingTags = new TreeMap<Integer, String[]>();
             try {
                 for (Definitions.Tag tag : tags.getTags()) {
                     for (int i = 0; i < m.length; i++) {
                         if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
-                            /*
+                            /* desc[0] is matched symbol
                              * desc[1] is line number
                              * desc[2] is type
-                             * desc[3] is  matching line;
+                             * desc[3] is matching line;
                              */
                             String[] desc = {
                                 tag.symbol,
@@ -151,8 +164,8 @@ public class Context {
                                     anything = true;
                                 } else {
                                     out.write("<a class=\"s\" href=\"");
-                                    out.write(Util.URIEncodePath(urlPrefix));
-                                    out.write(Util.URIEncodePath(path));
+                                    out.write(urlPrefixE);
+                                    out.write(pathE);
                                     out.write("#");
                                     out.write(desc[1]);
                                     out.write("\"><span class=\"l\">");
@@ -160,9 +173,9 @@ public class Context {
                                     out.write("</span> ");
                                     out.write(Util.htmlize(desc[3]).replaceAll(
                                             desc[0], "<b>" + desc[0] + "</b>"));
-                                    out.write("</a> <i> ");
+                                    out.write("</a> <i>");
                                     out.write(desc[2]);
-                                    out.write(" </i><br/>");
+                                    out.write("</i><br/>");
                                     anything = true;
                                 }
                             } else {
@@ -172,7 +185,7 @@ public class Context {
                         }
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 if (hits != null) {
                     // @todo verify why we ignore all exceptions?
                     OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
@@ -218,9 +231,9 @@ public class Context {
                 return anything;
             }
 
-            tokens.reInit(buffer, charsRead, out, Util.URIEncodePath(urlPrefix + path) + "#", matchingTags);
+            tokens.reInit(buffer, charsRead, out, urlPrefixE + pathE + "#", matchingTags);
         } else {
-            tokens.reInit(in, out, Util.URIEncodePath(urlPrefix + path) + "#", matchingTags);
+            tokens.reInit(in, out, urlPrefixE + pathE + "#", matchingTags);
         }
 
         if (hits != null) {
@@ -251,23 +264,21 @@ public class Context {
             anything = matchedLines > 0;
             tokens.dumpRest();
             if (lim && (truncated || matchedLines == 10) && out != null) {
-                out.write("&nbsp; &nbsp; [<a href=\"" + Util.URIEncodePath(morePrefix + path) + "?" + queryAsURI + "\">all</a>...]");
+                out.write("<a href=\"" + Util.URIEncodePath(morePrefix) + pathE + "?" + queryAsURI + "\">[all...]</a>");
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing stream", e);
-                }
+            try {
+                in.close();
+            } catch (IOException e) {
+                // ignore
             }
             if (out != null) {
                 try {
                     out.flush();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while flushing stream", e);
+                    // ignore
                 }
             }
         }

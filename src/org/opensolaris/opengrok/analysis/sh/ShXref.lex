@@ -171,7 +171,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  // Recognize here-documents. At least a subset of them.
  "<<" "-"? {WhiteSpace}* {Identifier} {WhiteSpace}* {
    String text = yytext();
-   Util.htmlize(text, out);
+   out.write(Util.htmlize(text));
 
    heredocStripLeadingTabs = (text.charAt(2) == '-');
    heredocStopWord = text.substring(heredocStripLeadingTabs ? 3 : 2).trim();
@@ -181,7 +181,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  // Any sequence of more than two < characters should not start HEREDOC. Use
  // this rule to catch them before the HEREDOC rule.
  "<<" "<" + {
-   Util.htmlize(yytext(), out);
+   out.write(Util.htmlize(yytext()));
  }
 
 }
@@ -237,7 +237,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
     if (isHeredocStopWord(line)) {
       popstate();
     }
-    Util.htmlize(line, out);
+    out.write(Util.htmlize(line));
   }
 
   {EOL} { startNewLine(); }

@@ -32,7 +32,7 @@ public final class List2TokenStream extends TokenStream {
     private List<String> l;
     private String[] subTokens;
     private int si;
-    private final TermAttribute termAtt= (TermAttribute) addAttribute(TermAttribute.class);
+    private final TermAttribute termAtt = addAttribute(TermAttribute.class);
 
     public List2TokenStream(List<String> l) {
         if (l == null) {
@@ -43,7 +43,7 @@ public final class List2TokenStream extends TokenStream {
     }
 
     @Override
-    public boolean incrementToken() throws java.io.IOException {
+    public boolean incrementToken() {
         if (l.isEmpty()) {
             // reached end of stream
             return false;
@@ -53,23 +53,21 @@ public final class List2TokenStream extends TokenStream {
             String tok = l.remove(0);
             if (tok == null) {
                 return false;
-            } else {
-                if (tok.indexOf('.') > 0) {
-                    subTokens = tok.split("[^a-z0-9A-Z_]+");
-                } else {
-                    subTokens = null;
-                    termAtt.setTermBuffer(tok);                    
-                    return true;
-                }
-                si = 0;
             }
+            if (tok.indexOf('.') > 0) {
+                subTokens = tok.split("[^a-z0-9A-Z_]+");
+            } else {
+                subTokens = null;
+                termAtt.setTermBuffer(tok);                    
+                return true;
+            }
+            si = 0;
         }
         if (si < subTokens.length) {
             termAtt.setTermBuffer(subTokens[si++]);            
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override

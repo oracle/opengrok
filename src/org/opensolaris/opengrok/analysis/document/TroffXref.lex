@@ -19,6 +19,8 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Portions Copyright 2011 Jens Elkner.
  */
 
 package org.opensolaris.opengrok.analysis.document;
@@ -35,10 +37,15 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %int
 %{ 
-  boolean p = false;
+  int p;
+  int span;
+  int div;
 
   @Override
   public void write(Writer out) throws IOException {
+  		p = 0;
+  		span = 0;
+  		div = 0;
         yyline++;
         this.out = out;
         while(yylex() != YYEOF) {
@@ -50,7 +57,68 @@ import org.opensolaris.opengrok.web.Util;
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
+  
+  // Q&D methods to asure well-formed documents
+  protected void closePara() throws IOException {
+  	if (p > 0) {
+  		out.write("</p>");
+  		p--;
+  	}
+  }
+  protected void closeSpan() throws IOException {
+  	if (span > 0) {
+  		out.write("</span>");
+  		span--;
+  	}
+  }
+  protected void closeDiv() throws IOException {
+  	if (div > 0) {
+  		out.write("</div>");
+  		div--;
+  	}
+  }
+  protected void openPara() throws IOException {
+  	out.write("<p>");
+  	p++;
+  }
+  protected void openSpan(char cssClass) throws IOException {
+  	out.write("<span class=\"");
+  	out.write(cssClass);
+  	out.write("\">");
+  	span++;
+  }
+
+  protected void openDiv(String cssClass) throws IOException {
+  	out.write("<div class=\"");
+  	out.write(cssClass);
+  	out.write("\">");
+  	div++;
+  }
+  
+  protected void cleanup() {
+    try {
+	  while (span > 0) {
+	  	closeSpan();
+	  }
+	  while (p > 0) {
+	  	closePara();
+	  }
+	} catch (IOException e) {
+		// nothing we can do here
+	}
+  }
 %}
+
+%eof{
+	cleanup();
+	try {
+		while (div > 0) {
+			closeDiv();
+		}
+	} catch (IOException e) {
+		// nothing we can do here
+	}
+%eof}
 
 WhiteSpace     = [ \t\f]
 EOL = \r|\n|\r\n
@@ -62,66 +130,65 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 %%
 <YYINITIAL> {
-^\.(SH|TH|SS|IP|NH|TL|UH)       { yybegin(HEADER);out.write("<div class=\"b\">");}
-^(".\\\"")|(\'\\\")|("...\\\"") { yybegin(COMMENT);out.write("<span class=\"c\">");}
+^\.(SH|TH|SS|IP|NH|TL|UH)       { yybegin(HEADER); cleanup(); openDiv("b");}
+^(".\\\"")|(\'\\\")|("...\\\"") { yybegin(COMMENT);openSpan('c');}
 }
 
 <HEADER> {
-{EOL}   { yybegin(YYINITIAL);out.write("</div>"); yyline++;}
+{EOL}   { yybegin(YYINITIAL); cleanup(); closeDiv(); yyline++;}
 }
 
 <COMMENT> {
-{EOL}   { yybegin(YYINITIAL);out.write("</span><br>"); yyline++;}
+{EOL}   { yybegin(YYINITIAL); closeSpan(); out.write("<br/>"); yyline++;}
 }
 
-^\.(B|U|BI|BX|UL|LG|NL|SB|BR|RB) { yybegin(BOLD); out.write("<span class=\"b\">"); }
-^\.(I|SM|IB|IR|RI|IX) { yybegin(BOLD); out.write("<span class=\"s\">"); }
-^\.(CW) { yybegin(BOLD); out.write("<span class=\"k\">"); }
-^\.(DS|LD|ID|BD|CD|RD) { out.write("<span class=\"k\">"); }
-^\.DE   { out.write("</span>"); }
+^\.(B|U|BI|BX|UL|LG|NL|SB|BR|RB) { yybegin(BOLD); openSpan('b'); }
+^\.(I|SM|IB|IR|RI|IX) { yybegin(BOLD); openSpan('s'); }
+^\.(CW) { yybegin(BOLD); openSpan('k'); }
+^\.(DS|LD|ID|BD|CD|RD) { openSpan('k'); }
+^\.DE   { closeSpan(); }
 
 <BOLD> {
-{EOL}      { yybegin(YYINITIAL);out.write("</span> "); yyline++;}
+{EOL}      { yybegin(YYINITIAL); closeSpan(); out.write(' '); yyline++;}
 }
 
-"\\fB"  { out.write("<span class=\"b\">"); }
-"\\fI"  { out.write("<span class=\"s\">"); }
-"\\fC"|"\\f(CW" { out.write("<span class=\"k\">"); }
-"\\fR"  { out.write("</span>"); }
-"\\fP"  { out.write("</span>"); }
+"\\fB"  { openSpan('b'); }
+"\\fI"  { openSpan('s'); }
+"\\fC"|"\\f(CW" { openSpan('k'); }
+"\\fR"  { closeSpan(); }
+"\\fP"  { closeSpan(); }
 
-^\.(PP|LP|P|TP|IP|HP|PD|SP|br|mk) { 
-    if(p)// TODO isn't this buggy ?
-        out.write("</p>");
-    out.write("<p>");
-    p = true;
+^\.(PP|LP|P|TP|IP|HP|PD|SP|br|mk|ce) { 
+    cleanup();
+    openPara();
 }
 
-^\.(RS|RE)[^\n]* { out.write("\n"); }
+^\.(RS)[^\n]* { cleanup(); openDiv("rs"); openPara(); }
+^\.(RE)[^\n]* { cleanup(); closeDiv(); }
 
 ^\.so {out.write(".so ");}
-^\.(EQ|in|sp|ne|rt|br|pn|ds|de|if|ig|el|ft|hy|ie|ll|ps|rm|ta|ti)[^\n]*\n {}
+^\.(EQ|in|sp|ne|rt|pn|ds|de|if|ig|el|ft|hy|ie|ll|ps|rm|ta|ti|na|ad|te|hw|nh|pl)[^\n]*\n { }
 ^\.(NH|DT|EE)[^\n]* {}
 ^"\\(bu\n" {}
-^".nf"  {out.write("<pre>"); }
-^".fi"  {out.write("</pre>"); }
-\\\*\(Tm { out.write(" TM "); }
-\\\*\R { out.write(" (R) "); }
+^".nf"  {closePara(); out.write("<pre>"); }
+^".fi"  {cleanup(); out.write("</pre>"); }
+\\\*\(Tm { out.write("<sup>TM</sup> "); }
+\\\*\R { out.write("&reg; "); }
 \\\((l|r)q { out.write('"'); }
 \\\(mi { out.write('-'); }
 
-^\.TS   {yybegin(TBL);out.write("<table border=\"1\" cellpadding=\"2\" rules=\"all\" bgcolor=\"#ddddcc\"><tr><td>");}
+^\.TS   { cleanup(); yybegin(TBL);out.write("<table rules=\"all\"><tr><td>");}
 <TBL> {
 tab\(.\) { char tab = yycharat(4); }
 \.$    { yybegin(TBLL); }
 .    {}
 }
 <TBLL> {
-\007    { out.write("</td><td>"); }
+\007    { cleanup(); out.write("</td><td>"); }
 ^[\_\=]\n    {}
 T[\{\}] {}
-^\.TE   { yybegin(YYINITIAL); out.write("</td></tr></table>"); }
-{EOL}       { out.write("</td></tr><tr><td>"); yyline++;}
+^\.TE   { yybegin(YYINITIAL); cleanup(); out.write("</td></tr></table>"); }
+{EOL}       { cleanup(); out.write("</td></tr><tr><td>"); yyline++;}
 }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
@@ -145,6 +212,7 @@ T[\{\}] {}
 "\\ "   { out.write(' '); }
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
+"&"		{out.write( "&amp;");}
 {EOL}   { out.write("\n"); yyline++;}
 {WhiteSpace}+   { out.write(' '); }
 [!-~]   { out.write(yycharat(0)); }

@@ -290,8 +290,8 @@ public class Summarizer {
         //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
         ArrayList<Token> result = new ArrayList<Token>();
         TokenStream ts = analyzer.tokenStream("full", new StringReader(text));
-        TermAttribute term = (TermAttribute) ts.addAttribute(TermAttribute.class);
-        OffsetAttribute offset=(OffsetAttribute) ts.addAttribute(OffsetAttribute.class);
+        TermAttribute term = ts.addAttribute(TermAttribute.class);
+        OffsetAttribute offset = ts.addAttribute(OffsetAttribute.class);
         while(ts.incrementToken()) {
             Token t=new Token(term.termBuffer(),0,term.termLength(),offset.startOffset(),offset.endOffset());
             result.add(t);

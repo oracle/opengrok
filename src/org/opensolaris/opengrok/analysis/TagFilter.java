@@ -86,10 +86,9 @@ public class TagFilter extends FilterReader {
                     if(ec == null) {
                         p = true;
                         return ' ';
-                    } else {
-                        p = false;
-                        return ec.charValue();
                     }
+                    p = false;
+                    return ec.charValue();
                 } else if (sp) {
                     esc = -1;
                 } else {

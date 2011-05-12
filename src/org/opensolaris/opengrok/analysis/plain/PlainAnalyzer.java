@@ -71,7 +71,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         len = 0;
         do {
             int rbytes = inReader.read(content, len, content.length - len);
-            if (rbytes > 0) {
+            if (rbytes >= 0) {
                 if (rbytes == (content.length - len)) {
                     char[] content2 = new char[content.length * 2];
                     System.arraycopy(content, 0, content2, 0, content.length);
@@ -96,6 +96,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         }
     }
 
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
             plainfull.reInit(content, len);
@@ -113,6 +114,7 @@ public class PlainAnalyzer extends TextAnalyzer {
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.project = project;

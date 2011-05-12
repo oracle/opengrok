@@ -164,7 +164,7 @@ import org.opensolaris.opengrok.web.Util;
                         }
 
                         out.write("</a>");
-                        if(prevHi){
+                        if (prevHi) {
                                 out.write(" <i> ");
                                 String[] desc = tags.remove(prevLn);
                                 out.write(desc[2]);
@@ -174,7 +174,7 @@ import org.opensolaris.opengrok.web.Util;
 
                         prevHi = hi;
                         prevLn = ln;
-                        if(hi) out.write("<span class=\"h\">");
+                        if (hi) out.write("<span class=\"h\">"); //TODO: closing tag - where?
                         out.write("<a class=\"s\" href=\"");
                         out.write(url);
                         String num = String.valueOf(lineNo);
@@ -215,7 +215,7 @@ import org.opensolaris.opengrok.web.Util;
                         ++lineNo;
                         Integer ln = Integer.valueOf(lineNo);
                         boolean hi = tags.containsKey(ln);
-                        if(prevHi){
+                        if (prevHi) {
                            String[] desc = tags.remove(prevLn);
                            hit.setTag(desc[2]);
                         }
@@ -254,7 +254,7 @@ import org.opensolaris.opengrok.web.Util;
                 matchStart = markedContents.length() - yylength();
         }
 
-        if(curLinePos == markedPos) {
+        if (curLinePos == markedPos) {
                         Integer ln = Integer.valueOf(markedLine);
                         prevHi = tags.containsKey(ln);
                         prevLn = ln;
@@ -299,7 +299,7 @@ import org.opensolaris.opengrok.web.Util;
         rest = markedPos;
   }
   public void dumpRest() throws IOException {
-        if(dumpRest) {
+        if (dumpRest) {
         final int maxLooks = 100;
         for (int i=0; ; i++) {
             final boolean endOfBuffer = (i >= markedContents.length() - rest);

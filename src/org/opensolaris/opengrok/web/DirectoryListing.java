@@ -20,6 +20,8 @@
 /*
  * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
+ * 
+ * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
 
@@ -54,80 +56,98 @@ public class DirectoryListing {
         now = System.currentTimeMillis();
     }
 
-    public void listTo(File dir, Writer out) throws IOException {
-        String[] files = dir.list();
-        if (files != null) {
-            listTo(dir, out, dir.getPath(), files);
-        }
-    }
-
     /**
-     * Write a listing of "dir" to "out"
+     * Write a htmlized listing of the given directory to the given destination.
      *
-     * @param dir to be Listed
-     * @param out writer to write
-     * @param path Virtual Path of the directory
-     * @param files childred of dir
-     * @return a list of READMEs
+     * @param dir the directory to list
+     * @param out write destination
+     * @param path virtual path of the directory (usually the path name of 
+     *  <var>dir</var> with the opengrok source directory stripped off). 
+     * @param files basenames of potential children of the directory to list. 
+     *  Gets filtered by {@link IgnoredNames}.
+     * @return a possible empty list of README files included in the written 
+     *  listing.
+     * 
      * @throws java.io.IOException
-     *
+     * @throws NullPointerException if a parameter except <var>files</var>
+     *  is {@code null}
      */
     public List<String> listTo(File dir, Writer out, String path, String[] files) throws IOException {
-        Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-        boolean alt = true;
-        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
-        out.write("<table cellspacing=\"0\" border=\"0\" id=\"dirlist\">");
-        EftarFileReader.FNode parentFNode = null;
-        if (!"".equals(path)) {
-            out.write("<tr><td colspan=\"4\"><a href=\"..\"><i>Up to higher level directory</i></a></td></tr>");
+        // TODO this belongs to a jsp, not here
+        ArrayList<String> readMes = new ArrayList<String>();
+        int offset = -1;
+        if (files == null) {
+            files = new String[0];
         }
+        Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
+        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        if (path.length() != 0) {
+            out.write("<p><a href=\"..\"><i>Up to higher level directory</i></a></p>");
+        }
+        EftarFileReader.FNode parentFNode = null;
         if (desc != null) {
             parentFNode = desc.getNode(path);
+            if (parentFNode != null) {
+                offset = parentFNode.childOffset;
+            }
         }
-        out.write("<tr class=\"thead\"><th><tt>Name</tt></th><th><tt>Date</tt></th><th><tt>Size</tt></th>");
-
-        if (parentFNode != null && parentFNode.childOffset > 0) {
+        out.write("<table id=\"dirlist\">");
+        out.write("<thead><tr><th/><th>Name</th><th>Date</th><th>Size</th>");
+        if (offset > 0) {
             out.write("<th><tt>Description</tt></th>");
         }
-        out.write("</tr>");
-        ArrayList<String> readMes = new ArrayList<String>();
+        out.write("</tr></thead><tbody>");
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
 
         for (String file : files) {
-            if (!ignoredNames.ignore(file)) {
-                File child = new File(dir, file);
-                if (file.startsWith("README") || file.endsWith("README") || file.startsWith("readme")) {
-                    readMes.add(file);
-                }
-                alt = !alt;
-                out.write("<tr align=\"right\"");
-                out.write(alt ? " class=\"alt\"" : "");
-
-                boolean isDir = child.isDirectory();
-                out.write("><td align=\"left\"><tt><a href=\"" + Util.URIEncodePath(file) + (isDir ? "/\" class=\"r\"" : "\" class=\"p\"") + ">");
-                if (isDir) {
-                    out.write("<b>" + file + "</b></a>/");
-                } else {
-                    out.write(file + "</a>");
-                }
-                Date lastm = new Date(child.lastModified());
-                out.write("</tt></td><td>" + ((now - lastm.getTime()) < 86400000 ? "Today" : dateFormatter.format(lastm)) + "</td>");
-                out.write("<td><tt>" + (isDir ? "" : Util.redableSize(child.length())) + "</tt></td>");
-
-                if (parentFNode != null && parentFNode.childOffset > 0) {
-                    String briefDesc = desc.getChildTag(parentFNode, file);
-                    if (briefDesc == null) {
-                        out.write("<td></td>");
-                    } else {
-                        out.write("<td align=\"left\">");
-                        out.write(briefDesc);
-                        out.write("</td>");
-                    }
-                }
-                out.write("</tr>");
+            if (ignoredNames.ignore(file)) {
+                continue;
             }
+            File child = new File(dir, file);
+            if (file.startsWith("README") || file.endsWith("README") 
+                || file.startsWith("readme"))
+            {
+                readMes.add(file);
+            }
+            boolean isDir = child.isDirectory();
+            out.write("<tr><td><p class=\"");
+            out.write(isDir ? 'r' : 'p');
+            out.write("\"/></td><td><a href=\"");
+            out.write(Util.URIEncodePath(file));
+            if (isDir) {
+                out.write("/\"><b>");
+                out.write(file);
+                out.write("</b></a>/");
+            } else {
+                out.write("\">");
+                out.write(file);
+                out.write("</a>");
+            }
+            Date lastm = new Date(child.lastModified());
+            out.write("</td><td>");
+            if (now - lastm.getTime() < 86400000) {
+                out.write("Today");
+            } else {
+                out.write(dateFormatter.format(lastm));
+            }
+            out.write("</td><td>");
+            // if (isDir) {
+                out.write(Util.readableSize(child.length()));
+            // }
+            out.write("</td>");
+            if (offset > 0) {
+                String briefDesc = desc.getChildTag(parentFNode, file);
+                if (briefDesc == null) {
+                    out.write("<td/>");
+                } else {
+                    out.write("<td>");
+                    out.write(briefDesc);
+                    out.write("</td>");
+                }
+            }
+            out.write("</tr>");
         }
-        out.write("</table>");
+        out.write("</tbody></table>");
         return readMes;
     }
 }

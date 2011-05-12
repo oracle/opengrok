@@ -16,28 +16,32 @@
  *
  * CDDL HEADER END
  */
-
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Jens Elkner.
  */
+package org.opensolaris.opengrok.web;
 
-package org.opensolaris.opengrok.search.context;
+/**
+ * A simple container for search suggestions.
+ * @author  Jens Elkner
+ * @version $Revision$
+ */
+public class Suggestion {
 
-import org.apache.lucene.search.WildcardTermEnum;
+    /** index name */
+    public String name;
+    /** freetext search suggestions */
+    public String[] freetext;
+    /** references search suggestions */
+    public String[] refs;
+    /** definitions search suggestions */
+    public String[] defs;
 
-public class WildCardMatcher extends LineMatcher {
-    final String pattern;
-    
-    public WildCardMatcher(String pattern, boolean caseInsensitive) {
-        super(caseInsensitive);
-        this.pattern = normalizeString(pattern);
-    }
-
-    @Override
-    public int match(String token) {
-        String tokenToMatch = normalizeString(token);
-        return WildcardTermEnum.wildcardEquals(pattern, 0, tokenToMatch, 0)
-            ? MATCHED
-            : NOT_MATCHED;
+    /**
+     * Create a new suggestion.
+     * @param name index name.
+     */
+    public Suggestion(String name) {
+        this.name = name;
     }
 }

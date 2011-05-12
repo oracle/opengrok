@@ -16,14 +16,15 @@
  *
  * CDDL HEADER END
  */
-
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * 
+ * Portions Copyright 2011 Jens Elkner.
  */
-
 package org.opensolaris.opengrok.search;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -35,134 +36,207 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Searcher;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.TagFilter;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.search.context.Context;
-import org.opensolaris.opengrok.search.context.HistoryContext;
-import org.opensolaris.opengrok.web.Constants;
-import org.opensolaris.opengrok.web.EftarFileReader;
+import org.opensolaris.opengrok.web.Prefix;
+import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
 
 /**
- *
- * @author Chandan
- * slightly rewritten by Lubos Kosco
+ * @author Chandan slightly rewritten by Lubos Kosco
  */
 public final class Results {
-    
     private Results() {
         // Util class, should not be constructed
     }
-    
+
     /**
-     * Prints out results in html form
-     * @param searcher
-     * @param hits
-     * @param start
-     * @param end
-     * @param out
-     * @param sourceContext
-     * @param historyContext
-     * @param summer
-     * @param context url context (webapp link/name)
-     * @param srcRoot
-     * @param dataRoot
-     * @param desc
-     * @throws HistoryException
+     * Create a has map keyed by the directory of the document found.
+     * @param searcher  searcher to use.
+     * @param hits      hits produced by the given searcher's search
+     * @param startIdx  the index of the first hit to check
+     * @param stopIdx   the index of the last hit to check
+     * @return a (directory, hitDocument) hashmap
+     * @throws CorruptIndexException
      * @throws IOException
-     * @throws ClassNotFoundException
      */
-    public static void prettyPrintHTML(Searcher searcher,ScoreDoc[] hits, int start, int end, Writer out,
-            Context sourceContext, HistoryContext historyContext,
-            Summarizer summer, String context,
-            String srcRoot,
-            String dataRoot,
-            EftarFileReader desc)
-            throws HistoryException, IOException, ClassNotFoundException
+    private static LinkedHashMap<String, ArrayList<Document>> 
+        createMap(Searcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx) 
+    throws CorruptIndexException, IOException 
     {
-        char[] content = new char[1024*8];
-        String xrefPrefix=context+Constants.xrefP;
-        String morePrefix=context+Constants.moreP;
-        LinkedHashMap<String, ArrayList<Document>> dirHash = new LinkedHashMap<String, ArrayList<Document>>();
-        for (int i = start; i < end; i++) {
-            int docId = hits[i].doc;            
+        LinkedHashMap<String, ArrayList<Document>> dirHash = 
+            new LinkedHashMap<String, ArrayList<Document>>();
+        for (int i = startIdx; i < stopIdx; i++ ) {
+            int docId = hits[i].doc;
             Document doc = searcher.doc(docId);
             String rpath = doc.get("path");
-            String parent = rpath.substring(0,rpath.lastIndexOf('/'));
+            String parent = rpath.substring(0, rpath.lastIndexOf('/'));
             ArrayList<Document> dirDocs = dirHash.get(parent);
-            if(dirDocs == null) {
+            if (dirDocs == null) {
                 dirDocs = new ArrayList<Document>();
                 dirHash.put(parent, dirDocs);
             }
             dirDocs.add(doc);
         }
-        
-        for (Map.Entry<String, ArrayList<Document>> entry: dirHash.entrySet()) {
-            String parent = entry.getKey();
-            String tag = (desc == null) ? "" : " - <i>" + desc.get(parent) + "</i>";
-
-            out.write("<tr class=\"dir\"><td colspan=\"3\">&nbsp;&nbsp;<a href=\"");
-            out.write(Util.URIEncodePath(xrefPrefix + parent));
-            out.write("/\">" + parent + "/</a>" + tag + "</td></tr>");
-
-            boolean alt = false;
-            for (Document doc: entry.getValue()) {
-                String rpath = doc.get("path");
-                String self = rpath.substring(rpath.lastIndexOf('/')+1, rpath.length());
-                String selfUrl = Util.URIEncodePath(xrefPrefix + rpath);
-                out.write("<tr ");
-                if(alt) {
-                    out.write(" class=\"alt\"");
+        return dirHash;
+    }
+    
+    private static String getTags(File basedir, String path, boolean compressed) {
+        char[] content = new char[1024 * 8];
+        FileInputStream fis = null;
+        GZIPInputStream gis = null;
+        FileReader fr = null;
+        Reader r = null;
+        // Grrrrrrrrrrrrr - TagFilter takes Readers, only!!!!
+        // Why? Is it CS sensible?
+        try {
+            if (compressed) {
+                fis = new FileInputStream(new File(basedir, path + ".gz"));
+                gis = new GZIPInputStream(fis);
+                r = new TagFilter(new BufferedReader(new InputStreamReader(gis)));
+            } else {
+                fr = new FileReader(new File(basedir, path));
+                r = new TagFilter(new BufferedReader(fr));
+            }
+            int len = r.read(content);
+            return new String(content, 0, len);
+        } catch (Exception e) {
+            OpenGrokLogger.getLogger().log(
+                Level.WARNING, "An error reading tags from " + basedir + path
+                    + (compressed ? ".gz" : ""), e);
+        } finally {
+            if (r != null) {
+                try {
+                    r.close();
+                    gis = null;
+                    fis = null;
+                    fr = null;
+                } catch (Exception x) { /* ignore */ }
+            }
+            if (compressed) {
+                if (gis != null) {
+                    try { gis.close(); fis = null; } catch (Exception e) { /** ignore */ }
                 }
-                alt ^= true;
-                out.write(">");
-                out.write("<td class=\"q\"><a href=\""+context+Constants.histL+rpath+"\" title=\"History\">H</a> <a href=\""+context+Constants.xrefP+rpath+"?a=true\" title=\"Annotate\">A</a> <a href=\""+context+Constants.rawP+rpath+"\" title=\"Download\">D</a>");
+                if (fis != null) {
+                    try { fis.close(); } catch (Exception e) { /** ignore */ }
+                }
+            } else if (fr != null) {
+                try { fr .close(); } catch (Exception e) { /** ignore */ }
+            }
+            
+        }
+        return "";
+    }
+
+    /**
+     * Prints out results in html form. The following search helper fields are
+     * required to be properly initialized:
+     * <ul>
+     * <li>{@link SearchHelper#dataRoot}</li>
+     * <li>{@link SearchHelper#contextPath}</li>
+     * <li>{@link SearchHelper#searcher}</li>
+     * <li>{@link SearchHelper#hits}</li>
+     * <li>{@link SearchHelper#historyContext} (ignored if {@code null})</li>
+     * <li>{@link SearchHelper#sourceContext} (ignored if {@code null})</li>
+     * <li>{@link SearchHelper#summerizer} (if sourceContext is not {@code null})</li>
+     * <li>{@link SearchHelper#compressed} (if sourceContext is not {@code null})</li>
+     * <li>{@link SearchHelper#sourceRoot} (if sourceContext or historyContext 
+     *  is not {@code null})</li>
+     * </ul>
+     * 
+     * @param out write destination
+     * @param sh search helper which has all required fields set
+     * @param start index of the first hit to print
+     * @param end index of the last hit to print
+     * @throws HistoryException 
+     * @throws IOException 
+     * @throws ClassNotFoundException 
+     */
+    public static void prettyPrint(Writer out, SearchHelper sh, int start, 
+        int end)
+    throws HistoryException, IOException, ClassNotFoundException
+    {
+        String ctxE = Util.URIEncodePath(sh.contextPath);
+        String xrefPrefix = sh.contextPath + Prefix.XREF_P;
+        String morePrefix = sh.contextPath + Prefix.MORE_P;
+        String xrefPrefixE = ctxE + Prefix.XREF_P;
+        String histPrefixE = ctxE + Prefix.HIST_L;
+        String rawPrefixE = ctxE + Prefix.RAW_P;
+        File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
+
+        LinkedHashMap<String, ArrayList<Document>> dirHash = 
+            createMap(sh.searcher, sh.hits, start, end);
+        for (Map.Entry<String, ArrayList<Document>> entry : dirHash.entrySet()) 
+        {
+            String parent = entry.getKey();
+            out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");
+            out.write(xrefPrefixE);
+            out.write(Util.URIEncodePath(parent));
+            out.write("/\">");
+            out.write(parent); // htmlize ???
+            out.write("/</a>");
+            if (sh.desc != null) {
+                out.write(" - <i>");
+                out.write(sh.desc.get(parent)); // htmlize ???
+                out.write("</i>");
+            }
+            out.write("</td></tr>");
+            for (Document doc : entry.getValue()) {
+                String rpath = doc.get("path");
+                String rpathE = Util.URIEncodePath(rpath);
+                out.write("<tr><td class=\"q\"><a href=\"");
+                out.write(histPrefixE);
+                out.write(rpathE);
+                out.write("\" title=\"History\">H</a> <a href=\"");
+                out.write(xrefPrefixE);
+                out.write(rpathE);
+                out.write("?a=true\" title=\"Annotate\">A</a> <a href=\"");
+                out.write(rawPrefixE);
+                out.write(rpathE);
+                out.write("\" title=\"Download\">D</a>");
                 out.write("</td>");
-                out.write("<td class=\"f\"><a href=\"" +
-                        selfUrl + "\">"+self+"</a>&nbsp;</td><td><tt class=\"con\">");
-                if (sourceContext != null) {
-                    String genre = doc.get("t");
+                out.write("<td class=\"f\"><a href=\"");
+                out.write(xrefPrefixE);
+                out.write(rpathE);
+                out.write("\">");
+                out.write(rpath.substring(rpath.lastIndexOf('/') + 1)); // htmlize ???
+                out.write("</a></td><td><tt class=\"con\">");
+                if (sh.sourceContext != null) {
+                    Genre genre = Genre.get(doc.get("t"));
                     Definitions tags = null;
                     Fieldable tagsField = doc.getFieldable("tags");
                     if (tagsField != null) {
                         tags = Definitions.deserialize(tagsField.getBinaryValue());
                     }
-                    try {
-                        if ("p".equals(genre) && srcRoot != null) {
-                            sourceContext.getContext(new FileReader(srcRoot + rpath), out, xrefPrefix, morePrefix, rpath,
-                                    tags, true, null);
-                        } else if("x".equals(genre) && dataRoot != null && summer != null){
-                            Reader r = null;
-                            if ( RuntimeEnvironment.getInstance().isCompressXref() ) {
-                                    r = new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(dataRoot + Constants.xrefP + rpath+".gz"))))); }
-                            else {
-                                    r = new TagFilter(new BufferedReader(new FileReader(dataRoot + Constants.xrefP + rpath))); }
-                            int len = r.read(content);
-                            //FIXME use Highlighter from lucene contrib here, instead of summarizer, we'd also get rid of apache lucene in whole source ...
-                            out.write(summer.getSummary(new String(content, 0, len)).toString());
-                            r.close();
-                        } else if("h".equals(genre) && srcRoot != null && summer != null){
-                            Reader r = new TagFilter(new BufferedReader(new FileReader(srcRoot + rpath)));
-                            int len = r.read(content);
-                            out.write(summer.getSummary(new String(content, 0, len)).toString());
-                            r.close();
-                        } else {
-                            sourceContext.getContext(null, out, xrefPrefix, morePrefix, rpath, tags, true, null);
-                        }
-                    } catch (IOException e) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while creating summary of "+rpath, e);
+                    if (Genre.XREFABLE == genre && sh.summerizer != null) {
+                        String xtags = getTags(xrefDataDir, rpath, sh.compressed);
+                        // FIXME use Highlighter from lucene contrib here,
+                        // instead of summarizer, we'd also get rid of
+                        // apache lucene in whole source ...
+                        out.write(sh.summerizer.getSummary(xtags).toString());
+                    } else if (Genre.HTML == genre && sh.summerizer != null) {
+                        String htags = getTags(sh.sourceRoot, rpath, false);
+                        out.write(sh.summerizer.getSummary(htags).toString());
+                    } else {
+                        FileReader r = genre == Genre.PLAIN 
+                            ? new FileReader(new File(sh.sourceRoot, rpath))
+                            : null; 
+                        sh.sourceContext.getContext(r, out, xrefPrefix, 
+                            morePrefix, rpath, tags, true, null);
                     }
-                    //out.write("Genre = " + genre);
                 }
-                if(historyContext != null) {
-                    historyContext.getContext(srcRoot + parent, self, rpath, out,context);
+                if (sh.historyContext != null) {
+                    sh.historyContext.getContext(new File(sh.sourceRoot, rpath), 
+                        rpath, out, sh.contextPath);
                 }
                 out.write("</tt></td></tr>\n");
             }

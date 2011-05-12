@@ -32,7 +32,9 @@ import java.io.IOException;
  */ 
 public class Project {
     private String path;
-    // this variable is very important, since it's used as the project identifier all over xrefs and webapp
+    // this variable is very important, since it's used as the project identifier 
+    // all over xrefs and webapp
+    // jel: and yes - awefully misleading. It should be called 'name'!
     private String description;
 
     /**
@@ -122,7 +124,9 @@ public class Project {
     public static Project getProject(String path) {
         Project ret = null;
         String lpath=path;
-        if (System.getProperty("file.separator").compareTo("/")!=0) {lpath=path.replace(File.separatorChar, '/');}
+        if (File.separatorChar != '/') {
+            lpath = path.replace(File.separatorChar, '/');
+        }
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project proj : env.getProjects()) {                

@@ -63,11 +63,11 @@ public class TroffAnalyzer extends FileAnalyzer {
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
         len = 0;
-        do{
+        do {
             InputStreamReader inReader = new InputStreamReader(in);
             int rbytes = inReader.read(content, len, content.length - len);
-            if(rbytes > 0 ) {
-                if(rbytes == (content.length - len)) {
+            if (rbytes > 0 ) {
+                if (rbytes == (content.length - len)) {
                     char[] content2 = new char[content.length * 2];
                     System.arraycopy(content,0, content2, 0, content.length);
                     content = content2;
@@ -81,6 +81,7 @@ public class TroffAnalyzer extends FileAnalyzer {
         doc.add(new Field("full", new StringReader("")));
     }
     
+    @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
             troffull.reInit(content, len);
@@ -93,12 +94,13 @@ public class TroffAnalyzer extends FileAnalyzer {
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.project = project;
-        out.write("</pre>");
+        out.write("</pre><div id=\"man\">");
         xref.write(out);
-        out.write("<pre>");
+        out.write("</div><pre>");
     }
     
     /**
@@ -112,8 +114,8 @@ public class TroffAnalyzer extends FileAnalyzer {
         TroffXref xref = new TroffXref(in);
         xref.project = project;
         xref.setDefs(defs);
-        out.write("</pre>");
+        out.write("</pre><div id=\"man\">");
         xref.write(out);
-        out.write("<pre>");
+        out.write("</div><pre>");
     }
 }

@@ -186,7 +186,7 @@ public class ContextTest {
         expectedOutput = hitList ?
             "text" :
             "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> " +
-                     "text</a> <i> type </i><br/>";
+                     "text</a> <i>type</i><br/>";
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
 
@@ -267,7 +267,7 @@ public class ContextTest {
                 c.getContext(in, out, "", "", "", null, true, null);
         assertTrue("No match found", match);
         String s = out.toString();
-        assertTrue("No [all...] link", s.contains(">all</a>...]"));
+        assertTrue("No [all...] link", s.contains(">[all...]</a>"));
     }
 
     /**

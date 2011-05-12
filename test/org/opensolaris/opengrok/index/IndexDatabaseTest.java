@@ -56,7 +56,7 @@ public class IndexDatabaseTest {
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
                 env, true, true, "/c", null,
-                false, false, false, null, null);
+                false, false, false, null, null, null, false);
         indexer.doIndexerExecution(true, 1, null, null);
     }
 

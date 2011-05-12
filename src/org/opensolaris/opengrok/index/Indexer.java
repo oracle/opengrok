@@ -19,11 +19,14 @@
 
 /*
  * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * 
+ * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -45,7 +48,11 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.history.Repository;
+import org.opensolaris.opengrok.history.RepositoryFactory;
+import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**
@@ -80,6 +87,7 @@ public final class Indexer {
         boolean runIndex = true;
         boolean update = true;
         boolean optimizedChanged = false;
+        ArrayList<String> zapCache = new ArrayList<String>();
         CommandLineOptions cmdOptions = new CommandLineOptions();
 
         if (argv.length == 0) {
@@ -96,6 +104,7 @@ public final class Indexer {
             boolean refreshHistory = false;
             String defaultProject = null;
             boolean listFiles = false;
+            boolean listRepos = false;
             boolean createDict = false;
             int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
             
@@ -134,7 +143,7 @@ public final class Indexer {
                 getopt.reset();
                 while ((cmd = getopt.getOpt()) != -1) {
                     switch (cmd) {
-                        case 't':
+                        case 'x':
                             createDict = true;
                             runIndex = false;
                             break;
@@ -381,18 +390,45 @@ public final class Indexer {
                             System.out.println(Info.getFullVersion());
                             System.exit(0);
                             break;
-
+                        case 'k':
+                            zapCache.add(getopt.getOptarg());
+                            break;
+                        case 'K':
+                            listRepos = true;
+                            break;
                         case '?':
                             System.err.println(cmdOptions.getUsage());
                             System.exit(0);
                             break;
-
+                        case 't':
+                            try {
+                                int tmp = Integer.parseInt(getopt.getOptarg());
+                                cfg.setTabSize(tmp);
+                            } catch (NumberFormatException exp) {
+                                System.err.println("ERROR: Failed to parse argument to \"-t\": " + exp.getMessage());
+                                System.exit(1);
+                            }
+                            break;                          
                         default:
                             System.err.println("Internal Error - Unimplemented cmdline option: " + (char) cmd);
                             System.exit(1);
                     }
                 }
 
+                List<Class<? extends Repository>> repositoryClasses = 
+                    RepositoryFactory.getRepositoryClasses();
+                for (Class<? extends Repository> clazz : repositoryClasses) {
+                    try {
+                        Field f = clazz.getDeclaredField("CMD_PROPERTY_KEY");
+                        Object key = f.get(null);
+                        if (key != null) {
+                            cfg.setRepoCmd(clazz.getCanonicalName(), 
+                                System.getProperty(key.toString()));
+                        }
+                    } catch (Exception e) {
+                        // don't care
+                    }
+                }
                 int optind = getopt.getOptind();
                 if (optind != -1) {
                     while (optind < argv.length) {
@@ -454,7 +490,11 @@ public final class Indexer {
 
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,
-                        listFiles, createDict, subFiles, repositories);
+                        listFiles, createDict, subFiles, repositories,
+                        zapCache, listRepos);
+                if (listRepos || !zapCache.isEmpty()) {
+                    return;
+                }
                 if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
                     IndexChangedListener progress = new DefaultIndexChangedListener();
                     getInstance().doIndexerExecution(update, noThreads, subFiles,
@@ -486,7 +526,9 @@ public final class Indexer {
             boolean listFiles,
             boolean createDict,
             List<String> subFiles,
-            List<String> repositories) throws IndexerException, IOException {
+            List<String> repositories,
+            List<String> zapCache,
+            boolean listRepoPathes) throws IndexerException, IOException {
 
         if (env.getDataRootPath() == null) {
             throw new IndexerException("ERROR: Please specify a DATA ROOT path");
@@ -499,13 +541,59 @@ public final class Indexer {
         if (!env.validateExuberantCtags()) {
             throw new IndexerException("Didn't find Exuberant Ctags");
         }
+        if (zapCache == null) {
+            zapCache = new ArrayList<String>(0);
+        }
 
-        if (searchRepositories) {            
+        if (searchRepositories || listRepoPathes || !zapCache.isEmpty()) {            
             log.log(Level.INFO,"Scanning for repositories...");
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
             long time = (System.currentTimeMillis() - start) / 1000;            
             log.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
+            if (listRepoPathes || !zapCache.isEmpty()) {
+                List<RepositoryInfo> repos = env.getRepositories();
+                String prefix =  env.getSourceRootPath();
+                if (listRepoPathes) {
+                    if (repos.isEmpty()) {
+                        System.out.println("No repositories found.");
+                        return;
+                    }
+                    System.out.println("Repositories in " + prefix + ":");
+                    for (RepositoryInfo info : env.getRepositories()) {
+                        String dir = info.getDirectoryName();
+                        System.out.println(dir.substring(prefix.length()));
+                    }
+                }
+                if (!zapCache.isEmpty()) {
+                    HashSet<String> toZap = new HashSet<String>(zapCache.size() << 1);
+                    boolean all = false;
+                    for (String repo : zapCache) {
+                        if (repo.equals("*")) {
+                            all = true;
+                            break;
+                        }
+                        if (repo.startsWith(prefix)) {
+                            repo = repo.substring(prefix.length());
+                        }
+                        toZap.add(repo);
+                    }
+                    if (all) {
+                        toZap.clear();
+                        for (RepositoryInfo info : env.getRepositories()) {
+                            toZap.add(info.getDirectoryName()
+                                .substring(prefix.length()));                           
+                        }                       
+                    }
+                    try {
+                        HistoryGuru.getInstance().removeCache(toZap);
+                    } catch (HistoryException e) {
+                        log.warning("Clearing history cache faild: "
+                            + e.getLocalizedMessage());
+                    }
+                }
+                return;
+            }
         }
 
         if (addProjects) {
@@ -536,6 +624,7 @@ public final class Indexer {
                     Project p = new Project();
                     p.setDescription(name);
                     p.setPath(path);
+                    p.setTabSize(env.getConfiguration().getTabSize());
                     projects.add(p);
                 }
             }
@@ -596,8 +685,7 @@ public final class Indexer {
     public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
             IndexChangedListener progress)
             throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.register();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
         log.info("Starting indexing");
 
         ExecutorService executor = Executors.newFixedThreadPool(noThreads);

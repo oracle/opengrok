@@ -52,8 +52,7 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class ELFAnalyzer extends FileAnalyzer {
 
-    private String content;
-    private int len=0;
+    private StringBuilder content;
     PlainFullTokenizer plainfull;
     StringReader dummy = new StringReader("");
 
@@ -63,7 +62,7 @@ public class ELFAnalyzer extends FileAnalyzer {
      */
     protected ELFAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        content = "";
+        content = new StringBuilder();
         plainfull = new PlainFullTokenizer(dummy);
     }
 
@@ -71,7 +70,7 @@ public class ELFAnalyzer extends FileAnalyzer {
     public void analyze(Document doc, InputStream in) throws IOException {
         if (in instanceof FileInputStream) {
             parseELF((FileInputStream) in);
-            if (len > 0) {
+            if (content.length() > 0) {
                 doc.add(new Field("full", " ", Field.Store.YES, Field.Index.ANALYZED));
             }
         } else {
@@ -79,7 +78,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             final FileInputStream fin = new FileInputStream(fullpath);
             try {
                 parseELF(fin);
-                if (len > 0) {
+                if (content.length() > 0) {
                     doc.add(new Field("full", " ", Field.Store.YES, Field.Index.ANALYZED));
                 }
             } finally {
@@ -147,9 +146,8 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
             sb.append('\n');
         }
-        content = sb.toString();
-        len = content.length();
-
+        sb.trimToSize();
+        content = sb;
     }
     
     private boolean isReadable(int c) {
@@ -175,7 +173,9 @@ public class ELFAnalyzer extends FileAnalyzer {
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
-            plainfull.reInit(content.toCharArray(), content.length());
+            char[] cs = new char[content.length()];
+            content.getChars(0, cs.length, cs, 0);
+            plainfull.reInit(cs, cs.length);
             return plainfull;
         }
         return super.tokenStream(fieldName, reader);
@@ -188,7 +188,8 @@ public class ELFAnalyzer extends FileAnalyzer {
     @Override
     public void writeXref(Writer out) throws IOException {
         out.write("</pre>");
-        Util.htmlize(content, out);
+        String html = Util.htmlize(content);
+        out.write(html);
         out.write("<pre>");
     }
 
@@ -202,6 +203,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         public EI_Class ei_class;
         public EI_Data ei_data;
+        @SuppressWarnings("unused")
         public int ei_version;
         public E_Type e_type;
         public E_Machine e_machine;

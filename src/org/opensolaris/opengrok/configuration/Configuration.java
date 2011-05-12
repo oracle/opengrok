@@ -35,10 +35,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import org.opensolaris.opengrok.analysis.ExpandTabsReader;
+import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -94,16 +101,40 @@ public final class Configuration {
     private int cachePages;
     private String databaseDriver;
     private String databaseUrl;
-    private Integer scanningDepth;
+    private int scanningDepth;
     private Set<String> allowedSymlinks;
     private boolean obfuscatingEMailAddresses;
     private boolean chattyStatusPage;
+    private Map<String,String> cmds;
+    private int tabSize;
 
-    public Integer getScanningDepth() {
+    /**
+     * Get the default tab size (number of space characters per tab character)
+     * to use for each project. If {@code <= 0} tabs are read/write as is. 
+     * @return current tab size set.
+     * @see Project#getTabSize()
+     * @see ExpandTabsReader
+     */
+    public int getTabSize() {
+        return tabSize;
+    }
+
+    /**
+     * Set the default tab size (number of space characters per tab character)
+     * to use for each project. If {@code <= 0} tabs are read/write as is.
+     * @param tabSize tabsize to set.
+     * @see Project#setTabSize(int)
+     * @see ExpandTabsReader
+     */
+    public void setTabSize(int tabSize) {
+        this.tabSize = tabSize;
+    }
+
+    public int getScanningDepth() {
         return scanningDepth;
     }
 
-    public void setScanningDepth(Integer scanningDepth) {
+    public void setScanningDepth(int scanningDepth) {
         this.scanningDepth = scanningDepth;
     }
 
@@ -141,8 +172,34 @@ public final class Configuration {
         setCachePages(5);
         setScanningDepth(3); // default depth of scanning for repositories
         setAllowedSymlinks(new HashSet<String>());
+        setTabSize(4);
+        cmds = new HashMap<String, String>();
     }
 
+    public String getRepoCmd(String clazzName) {
+        return cmds.get(clazzName);
+    }
+    
+    public String setRepoCmd(String clazzName, String cmd) {
+        if (clazzName == null) {
+            return null;
+        }
+        if (cmd == null || cmd.length() == 0) {
+            return cmds.remove(clazzName);
+        }
+        return cmds.put(clazzName, cmd);
+    }
+
+    // just to satisfy bean/de|encoder stuff
+    public Map<String, String> getCmds() {
+        return Collections.unmodifiableMap(cmds);
+    }
+    
+    public void setCmds(Map<String, String> cmds) {
+        this.cmds.clear();
+        this.cmds.putAll(cmds);
+    }
+    
     public String getCtags() {
         return ctags;
     }
@@ -265,6 +322,11 @@ public final class Configuration {
         return urlPrefix;
     }
 
+    /**
+     * Set the URL prefix to be used by the {@link JavaClassAnalyzer} as well
+     * as lexers (see {@link JFlexXref}) when they create output with html links. 
+     * @param urlPrefix prefix to use.
+     */
     public void setUrlPrefix(String urlPrefix) {
         this.urlPrefix = urlPrefix;
     }
