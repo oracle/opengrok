@@ -45,7 +45,7 @@ class GitHistoryParser implements Executor.StreamHandler {
     private enum ParseState {
 
         HEADER, MESSAGE, FILES
-    };
+    }
     private String myDir;
     private History history;
     private GitRepository repository = new GitRepository();

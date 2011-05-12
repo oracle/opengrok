@@ -48,7 +48,7 @@ public class Definitions implements Serializable {
         protected LineTagMap() {
             this.sym_tags = new HashMap<String, Set<Tag>>();
         }
-    };
+    }
     // line -> tag_map
     private final Map<Integer, LineTagMap> line_maps;
 

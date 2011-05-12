@@ -43,7 +43,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
 
     private enum ParseState {
         REVISION, METADATA, COMMENT
-    };      
+    }    
 
     private History history;
     private CVSRepository repository=new CVSRepository();

@@ -338,7 +338,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         public int value() {
             return this.value;
         }
-    };
+    }
 
     private static enum EI_Class {
         ELFCLASSNONE(0),
@@ -373,7 +373,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         public String toString() {
             return textual[value];
         }
-    };
+    }
 
     private static enum EI_Data {
         ELFDATANONE(0),
@@ -399,7 +399,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         public int value() {
             return this.value;
         }
-    };
+    }
 
     private static enum E_Type {
         ET_NONE(0),
@@ -442,7 +442,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
             return textual[value];
         }
-    };
+    }
 
     private static enum E_Machine {
         EM_NONE(0),
@@ -493,7 +493,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
             return textual[value];
         }
-    };
+    }
 
     private static enum E_Version {
         EV_NONE(0),
@@ -526,5 +526,5 @@ public class ELFAnalyzer extends FileAnalyzer {
         public String toString() {
             return textual[value];
         }
-    };
+    }
 }

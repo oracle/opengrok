@@ -38,7 +38,7 @@ public class Getopt {
     static class Option {
         char option;
         String argument;
-    };
+    }
     
     private final List<Option> options;
     private int current;

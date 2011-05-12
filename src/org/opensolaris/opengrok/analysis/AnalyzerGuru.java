@@ -513,7 +513,7 @@ public class AnalyzerGuru {
         BOMS.put("UTF-8", new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
         BOMS.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF});
         BOMS.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE});
-    };
+    }
 
     /**
      * Strip away the byte-order marker from the string, if it has one.
