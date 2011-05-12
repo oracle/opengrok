@@ -212,9 +212,8 @@ class SCCSHistoryParser {
                             pass = false;
                             if (sep && passRecord) {
                                 return 01;
-                            } else {
-                                passRecord = true;
                             }
+                            passRecord = true;
                             break;
                         default:
                             pass = false;

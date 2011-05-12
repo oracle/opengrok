@@ -46,23 +46,24 @@ import org.opensolaris.opengrok.util.Executor;
 public class MercurialRepository extends Repository {
     private static final long serialVersionUID = 1L;
 
+    /** The property name used to obtain the client command for thisrepository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.Mercurial";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "hg";
+
+    /** The boolean property and environment variable name to indicate
+     * whether forest-extension in Mercurial adds repositories inside the
+     * repositories. */
+    public static final String NOFOREST_PROPERTY_KEY =
+        "org.opensolaris.opengrok.history.mercurial.disableForest";
+
     /** Template for formatting hg log output for files. */
     private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n{branches}{tags}{parents}\\nuser: {author}\\ndate: {date|isodate}\\ndescription: {desc|strip|obfuscate}\\n";
 
     /** Template for formatting hg log output for directories. */
-    private static final String DIR_TEMPLATE = TEMPLATE + "files: {files}{file_copies}\\n";
-
-    private static ScmChecker hgBinary = new ScmChecker(new String[] {
-        System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg"),
-        "--help" });
-    
-    /**
-     * Get the name of the Mercurial command that should be used
-     * @return the name of the hg command in use
-     */
-    static String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.Mercurial", "hg");
-    }
+    private static final String DIR_TEMPLATE = TEMPLATE 
+        + "files: {files}{file_copies}\\n";
 
     public MercurialRepository() {
         type = "Mercurial";
@@ -88,7 +89,8 @@ public class MercurialRepository extends Repository {
         }
         
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("log");
         if ( !file.isDirectory() ) { cmd.add("-f"); }
 
@@ -125,8 +127,10 @@ public class MercurialRepository extends Repository {
             revision = rev.substring(0, rev.indexOf(':'));
         }
         try {
-            String filename =  (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
-            String argv[] = {getCommand(), "cat", "-r", revision, filename};
+            String filename =  (new File(parent, basename)).getCanonicalPath()
+                .substring(directoryName.length() + 1);
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            String argv[] = {cmd, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -140,7 +144,7 @@ public class MercurialRepository extends Repository {
                 }
             }
             
-            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
+            ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString());
         } finally {
@@ -179,7 +183,8 @@ public class MercurialRepository extends Repository {
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
         argv.add("annotate");
         argv.add("-u");
         argv.add("-n");
@@ -204,9 +209,10 @@ public class MercurialRepository extends Repository {
             ret = new Annotation(file.getName());
             String line;
             int lineno = 0;
+            Matcher matcher = ANNOTATION_PATTERN.matcher("");
             while ((line = in.readLine()) != null) {
                 ++lineno;
-                Matcher matcher = ANNOTATION_PATTERN.matcher(line);
+                matcher.reset(line);
                 if (matcher.find()) {
                     String author = matcher.group(1);
                     String rev = matcher.group(2);                    
@@ -246,7 +252,8 @@ public class MercurialRepository extends Repository {
         File directory = new File(directoryName);
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("showconfig");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -255,7 +262,7 @@ public class MercurialRepository extends Repository {
 
         if (executor.getOutputString().indexOf("paths.default=") != -1) {
             cmd.clear();
-            cmd.add(getCommand());
+            cmd.add(this.cmd);
             cmd.add("pull");
             cmd.add("-u");
             executor = new Executor(cmd, directory);
@@ -292,7 +299,11 @@ public class MercurialRepository extends Repository {
 
     @Override
     public boolean isWorking() {
-        return hgBinary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd });
+        }
+        return working.booleanValue();
     }
 
     @Override

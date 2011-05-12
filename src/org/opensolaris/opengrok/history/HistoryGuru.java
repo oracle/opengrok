@@ -128,26 +128,30 @@ public final class HistoryGuru {
         if (repos != null) {
             ret = repos.annotate(file, rev);
             History hist = null;
-            boolean h=true;
             try {
                 hist = repos.getHistory(file);
             } catch (HistoryException ex) {
-                Logger.getLogger(HistoryGuru.class.getName()).log(Level.FINEST, "Cannot get messages for tooltip: ", ex);
-                h=false;
+                Logger.getLogger(HistoryGuru.class.getName()).log(Level.FINEST, 
+                    "Cannot get messages for tooltip: ", ex);
             }
-            if (h) {
+            if (hist != null && ret != null) {
              Set<String> revs=ret.getRevisions();
-             List<HistoryEntry> hent = hist.getHistoryEntries();
+             // !!! cannot do this because of not matching rev ids (keys)
+             // first is the most recent one, so we need the position of "rev" 
+             // until the end of the list
              //if (hent.indexOf(rev)>0) {
-             // hent = hent.subList(hent.indexOf(rev), hent.size()); // !!! cannot do this because of not matching rev ids (keys)
-              //first is the most recent one, so we need the position of "rev" until the end of the list
+             //     hent = hent.subList(hent.indexOf(rev), hent.size());
              //}
-             for (Iterator it = hent.iterator(); it.hasNext();) {
-                HistoryEntry he = (HistoryEntry) it.next();
+             for (HistoryEntry he : hist.getHistoryEntries()) {
                 String cmr=he.getRevision();
-                String[] brev=cmr.split(":"); //TODO this is only for mercurial, for other SCMs it might also be a problem, we need to revise how we shorten the rev # for annotate
+                //TODO this is only for mercurial, for other SCMs it might also 
+                // be a problem, we need to revise how we shorten the rev # for 
+                // annotate
+                String[] brev=cmr.split(":"); 
                 if (revs.contains(brev[0])) {
-                    ret.addDesc(brev[0], "changeset: "+he.getRevision()+"\nsummary: "+he.getMessage()+"\nuser: "+he.getAuthor()+"\ndate: "+he.getDate());
+                    ret.addDesc(brev[0], "changeset: "+he.getRevision()
+                        +"\nsummary: "+he.getMessage()+"\nuser: "
+                        +he.getAuthor()+"\ndate: "+he.getDate());
                 }
              }
             }
@@ -303,12 +307,15 @@ public final class HistoryGuru {
                     if (recursiveSearch && repository.supportsSubRepositories()) {
                         File subFiles[] = file.listFiles();
                         if (subFiles == null) {
-                            log.log(Level.WARNING, "Failed to get sub directories for ''{0}'', check access permissions.", file.getAbsolutePath());
-                        } else {
-                            // Search only one level down - if not: too much stat'ing for huge Mercurial repositories
-                            if (depth<=scanningDepth) {                            
-                            addRepositories(subFiles, repos, ignoredNames, false, depth+1);
-                            }
+                            log.log(Level.WARNING, 
+                                "Failed to get sub directories for '" 
+                                + file.getAbsolutePath() 
+                                + "', check access permissions.");
+                        } else if (depth<=scanningDepth) {
+                            // Search only one level down - if not: too much 
+                            // stat'ing for huge Mercurial repositories
+                            addRepositories(subFiles, repos, ignoredNames, 
+                                false, depth+1);
                         }
                     }
                     
@@ -380,18 +387,10 @@ public final class HistoryGuru {
      * Update the source the contents in the source repositories.
      * @param paths A list of files/directories to update
      */
-    public void updateRepositories(List<String> paths) {
+    public void updateRepositories(Collection<String> paths) {
         boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
 
-        ArrayList<Repository> repos = new ArrayList<Repository>();
-        File root = RuntimeEnvironment.getInstance().getSourceRootFile();
-        for (String path : paths) {
-            File f = new File(root, path);
-            Repository r = getRepository(f);
-            if (!repos.contains(r)) {
-                repos.add(r);
-            }
-        }
+        List<Repository> repos = getReposFromString(paths);
 
         for (Repository repository : repos) {
             String type = repository.getClass().getSimpleName();
@@ -486,6 +485,36 @@ public final class HistoryGuru {
         }
     }
 
+    public void createCache(Collection<String> repositories) {
+        if (!useCache()) {
+            return;
+        }
+        createCacheReal(getReposFromString(repositories));
+    }
+
+    public void removeCache(Collection<String> repositories) throws HistoryException {
+        List<Repository> repos = getReposFromString(repositories);
+        HistoryCache cache = historyCache;
+        if (cache == null) {
+            if (RuntimeEnvironment.getInstance().storeHistoryCacheInDB()) {
+                cache = new JDBCHistoryCache();
+                cache.initialize();
+            } else {
+                cache = new FileHistoryCache();
+            }
+        }
+        for (Repository r : repos) {
+            try {
+                cache.clear(r);
+                log.info("History cache for " + r.getDirectoryName() + " cleared.");
+            } catch (HistoryException e) {
+                log.warning("Clearing history cache for repository " +
+                    r.getDirectoryName() + " failed: " + e.getLocalizedMessage());
+            }
+        }
+        invalidateRepositories(repos);
+    }
+
     /**
      * Create the history cache for all of the repositories
      */
@@ -497,25 +526,22 @@ public final class HistoryGuru {
         createCacheReal(repositories.values());
     }
 
-    public void createCache(List<String> repositories) {
-        if (!useCache()) {
-            return;
-        }
-
+    private List<Repository> getReposFromString(Collection<String> repositories) {
         ArrayList<Repository> repos = new ArrayList<Repository>();
         File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (String file : repositories) {
             File f = new File(root, file);
             Repository r = getRepository(f);
             if (r == null) {
-                log.log(Level.WARNING, "Could not locate a repository for {0}", f.getAbsolutePath());
-            } else {
+                log.log(Level.WARNING, "Could not locate a repository for {0}",
+                    f.getAbsolutePath());
+            } else if (!repos.contains(r)){
                 repos.add(r);
             }
         }
-        createCacheReal(repos);
+        return repos;
     }
-
+    
     /**
      * Ensure that we have a directory in the cache. If it's not there, fetch
      * its history and populate the cache. If it's already there, and the
@@ -580,7 +606,8 @@ public final class HistoryGuru {
      * 
      * @param repos The new repositories
      */
-    public void invalidateRepositories(List<RepositoryInfo> repos) {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos) 
+    {
         if (repos == null || repos.isEmpty()) {
             repositories.clear();
         } else {

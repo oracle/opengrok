@@ -43,12 +43,11 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  */
 public class SCCSRepository extends Repository {
     private static final long serialVersionUID = 1L;
-    private static ScmChecker sccsBinary = new ScmChecker(new String[] {
-        System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs"),
-        "help", "help" });
-    private static ScmChecker csscBinary = new ScmChecker(new String[] {
-        System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs"),
-        "--version" });
+    /** The property name used to obtain the client command for this repository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.SCCS";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "sccs";
 
     private Map<String, String> authors_cache;
 
@@ -57,15 +56,12 @@ public class SCCSRepository extends Repository {
         datePattern = "yy/MM/dd";
     }
 
-    private String getCommand() {
-       return System.getProperty("org.opensolaris.opengrok.history.SCCS", "sccs");
-    }
-    
     @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         try {
             File history = SCCSHistoryParser.getSCCSFile(parent, basename);
-            return SCCSget.getRevision(getCommand(),history, rev);
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            return SCCSget.getRevision(cmd, history, rev);
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {
@@ -83,7 +79,8 @@ public class SCCSRepository extends Repository {
         authors_cache = new HashMap<String, String>();
 
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
         argv.add("prs");
         argv.add("-e");
         argv.add("-d");
@@ -148,7 +145,8 @@ public class SCCSRepository extends Repository {
         getAuthors(file);
         
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
         argv.add("get");
         argv.add("-m");
         argv.add("-p");
@@ -233,13 +231,20 @@ public class SCCSRepository extends Repository {
              return true;
          }
          return new File(file, "SCCS").isDirectory();
-       } else {
-        return false; }
+       }
+       return false;
     }
 
     @Override
     public boolean isWorking() {
-        return sccsBinary.available || csscBinary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd, "help", "help" });
+            if (!working.booleanValue()) {
+                working = checkCmd(new String[]{ cmd, "--version" });
+            }
+        }
+        return working.booleanValue();
     }
 
     @Override

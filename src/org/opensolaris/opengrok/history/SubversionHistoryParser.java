@@ -41,7 +41,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Interner;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
@@ -74,7 +73,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         }
 
         @Override
-        public void startElement(String uri, String localName, String qname, Attributes attr) throws SAXException {
+        public void startElement(String uri, String localName, String qname, Attributes attr) {
             if ("logentry".equals(qname)) {
                 entry = new HistoryEntry();
                 entry.setActive(true);
@@ -84,7 +83,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qname) throws SAXException {
+        public void endElement(String uri, String localName, String qname) {
             String s = sb.toString();
             if ("author".equals(qname)) {
                 entry.setAuthor(s);
@@ -117,7 +116,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         }
 
         @Override
-        public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
+        public void characters(char[] arg0, int arg1, int arg2) {
             sb.append(arg0, arg1, arg2);
         }
     }
@@ -175,10 +174,9 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * into the history field.
      *
      * @param input The output from the process
-     * @throws java.io.IOException If an error occurs while reading the stream
      */
     @Override
-    public void processStream(InputStream input) throws IOException {
+    public void processStream(InputStream input) {
         try {
             initSaxParser();
             saxParser.parse(new BufferedInputStream(input), handler);

@@ -43,7 +43,7 @@ public class RCSRepository extends Repository {
     private static final long serialVersionUID = 1L;
 
     public RCSRepository() {
-        working = true;
+        working = Boolean.TRUE;
         type = "RCS";
     }
 
@@ -117,7 +117,7 @@ public class RCSRepository extends Repository {
 
     @Override
     void update() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new IOException("Not supported yet.");
     }
 
     @Override

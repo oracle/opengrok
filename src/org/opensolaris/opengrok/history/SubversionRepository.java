@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,15 +54,13 @@ import org.xml.sax.ext.DefaultHandler2;
  */
 public class SubversionRepository extends Repository {
     private static final long serialVersionUID = 1L;
-    
-    protected String reposPath;
-    private static ScmChecker svnBinary = new ScmChecker(new String[]{
-                getCommand(), "--help"
-            });
+    /** The property name used to obtain the client command for this repository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.Subversion";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "svn";
 
-    private static final String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.Subversion", "svn");
-    }
+    protected String reposPath;
 
     public SubversionRepository() {
         type = "Subversion";
@@ -75,7 +74,7 @@ public class SubversionRepository extends Repository {
         StringBuffer sb = new StringBuffer();
         Node n = node.getFirstChild();
         while (n != null) {
-            if (n.getNodeType() == n.TEXT_NODE) {
+            if (n.getNodeType() == Node.TEXT_NODE) {
                 sb.append(n.getNodeValue());
             }
 
@@ -88,12 +87,12 @@ public class SubversionRepository extends Repository {
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);
 
-        if (svnBinary.available) {
-            boolean rootFound = false; // set to true if we manage to find the
-                                     // root directory
+        if (isWorking()) {
+            // set to true if we manage to find the root directory
+            Boolean rootFound = Boolean.FALSE;
 
             List<String> cmd = new ArrayList<String>();
-            cmd.add(getCommand());
+            cmd.add(this.cmd);
             cmd.add("info");
             cmd.add("--xml");
             File directory = new File(getDirectoryName());
@@ -151,7 +150,8 @@ public class SubversionRepository extends Repository {
         }
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("log");
         cmd.add("--trust-server-cert");
         cmd.add("--non-interactive");
@@ -179,7 +179,8 @@ public class SubversionRepository extends Repository {
         String filename = (new File(parent, basename)).getAbsolutePath().substring(directoryName.length() + 1);
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("cat");
         cmd.add("-r");
         cmd.add(rev);
@@ -240,7 +241,7 @@ public class SubversionRepository extends Repository {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qname) throws SAXException {
+        public void endElement(String uri, String localName, String qname) {
             if ("author".equals(qname)) {
                 author = sb.toString();
             } else if ("entry".equals(qname)) {
@@ -249,7 +250,7 @@ public class SubversionRepository extends Repository {
         }
 
         @Override
-        public void characters(char[] arg0, int arg1, int arg2) throws SAXException {
+        public void characters(char[] arg0, int arg1, int arg2) {
             sb.append(arg0, arg1, arg2);
         }
     }
@@ -266,7 +267,8 @@ public class SubversionRepository extends Repository {
         }
 
         ArrayList<String> argv = new ArrayList<String>();
-        argv.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
         argv.add("annotate");
         argv.add("--trust-server-cert");
         argv.add("--non-interactive");
@@ -330,7 +332,8 @@ public class SubversionRepository extends Repository {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("update");
         cmd.add("--trust-server-cert");
         cmd.add("--non-interactive");
@@ -345,12 +348,16 @@ public class SubversionRepository extends Repository {
        if (file.isDirectory()) {
         File f = new File(file, ".svn");
         return f.exists() && f.isDirectory();
-       } else {
-        return false; }
+       }
+       return false;
     }
 
     @Override
     public boolean isWorking() {
-        return super.isWorking() && svnBinary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd, "--help" });
+        }
+        return working.booleanValue();
     }
 }

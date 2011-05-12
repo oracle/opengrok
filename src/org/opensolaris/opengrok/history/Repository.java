@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * An interface for an external repository. 
@@ -160,7 +161,8 @@ public abstract class Repository extends RepositoryInfo {
      * Annotate the specified revision of a file.
      *
      * @param file the file to annotate
-     * @param revision revision of the file
+     * @param revision revision of the file. Either {@code null} or a none-empty
+     *  string.
      * @return an <code>Annotation</code> object
      * @throws java.io.IOException if an error occurs
      */
@@ -200,16 +202,15 @@ public abstract class Repository extends RepositoryInfo {
             if (sinceRevision == null) {
                 // Failed to get full history, so fail.
                 throw he;
-            } else {
-                // Failed to get partial history. This may have been caused
-                // by changes in the revision numbers since the last update
-                // (bug #14724) so we'll try to regenerate the cache from
-                // scratch instead.
-                OpenGrokLogger.getLogger().log(Level.INFO,
-                        "Failed to get partial history. Attempting to " +
-                        "recreate the history cache from scratch.", he);
-                history = null;
             }
+            // Failed to get partial history. This may have been caused
+            // by changes in the revision numbers since the last update
+            // (bug #14724) so we'll try to regenerate the cache from
+            // scratch instead.
+            OpenGrokLogger.getLogger().log(Level.INFO,
+                    "Failed to get partial history. Attempting to " +
+                    "recreate the history cache from scratch.", he);
+            history = null;
         }
 
         if (sinceRevision != null && history == null) {
@@ -251,6 +252,11 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     public DateFormat getDateFormat() {
-        return new SimpleDateFormat(datePattern, Locale.getDefault());
+        return new SimpleDateFormat(datePattern, Locale.US);
+    }
+    
+    static Boolean checkCmd(final String[] args) {
+        Executor exec = new Executor(args);
+        return Boolean.valueOf(exec.exec(false) == 0);
     }
 }

@@ -97,7 +97,7 @@ class JDBCHistoryCache implements HistoryCache {
     /** SQL queries used by this class. */
     private final static Properties QUERIES = new Properties();
     static {
-        Class klazz = JDBCHistoryCache.class;
+        Class<?> klazz = JDBCHistoryCache.class;
         InputStream in = null;
         try {
             in = klazz.getResourceAsStream(klazz.getSimpleName() + "_queries.properties");
@@ -1166,7 +1166,7 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     @Override
-    public String getInfo() throws HistoryException {
+    public String getInfo() {
         return info;
     }
 }

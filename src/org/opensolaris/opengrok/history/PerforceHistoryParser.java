@@ -113,8 +113,9 @@ public class PerforceHistoryParser {
         List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         BufferedReader reader = new BufferedReader(fileHistory);
         String line;
+        Matcher matcher = CHANGE_PATTERN.matcher("");
         while ((line = reader.readLine()) != null) {
-            Matcher matcher = CHANGE_PATTERN.matcher(line);
+            matcher.reset(line);
             if (matcher.find()) {
                 HistoryEntry entry = new HistoryEntry();
                 entry.setRevision(matcher.group(1));

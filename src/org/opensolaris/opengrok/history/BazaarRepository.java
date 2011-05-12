@@ -44,24 +44,17 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public class BazaarRepository extends Repository {
     private static final long serialVersionUID = 1L;
-    private static ScmChecker bzrBinary = new ScmChecker(new String[] {
-        System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr"),
-        "--help" });
+    /** The property name used to obtain the client command for thisrepository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.Bazaar";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "bzr";
 
     public BazaarRepository() {
         type = "Bazaar";
         datePattern = "EEE yyyy-MM-dd hh:mm:ss ZZZZ";
     }
 
-   /**
-     * Get the name of the Bazaar command that should be used.
-     * 
-     * @return the name of the bzr command in use
-     */
-    private String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.Bazaar", "bzr");
-    }
-    
    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
@@ -77,7 +70,8 @@ public class BazaarRepository extends Repository {
         }
         
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("log");
 
         if (file.isDirectory()) {
@@ -101,8 +95,10 @@ public class BazaarRepository extends Repository {
 
         Process process = null;
         try {
-            String filename =  (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
-            String argv[] = {getCommand(), "cat", "-r", rev, filename};
+            String filename =  (new File(parent, basename)).getCanonicalPath()
+                .substring(directoryName.length() + 1);
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            String argv[] = {cmd, "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -116,7 +112,7 @@ public class BazaarRepository extends Repository {
                 }
             }
             
-            ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
+            ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
@@ -148,7 +144,8 @@ public class BazaarRepository extends Repository {
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("blame");
         cmd.add("--all");
         cmd.add("--long");
@@ -198,7 +195,8 @@ public class BazaarRepository extends Repository {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("info");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -207,7 +205,7 @@ public class BazaarRepository extends Repository {
 
         if (executor.getOutputString().indexOf("parent branch:") != -1) {
             cmd.clear();
-            cmd.add(getCommand());
+            cmd.add(this.cmd);
             cmd.add("up");
             executor = new Executor(cmd, directory);
             if (executor.exec() != 0) {
@@ -236,7 +234,11 @@ public class BazaarRepository extends Repository {
     
     @Override
     public boolean isWorking() {
-        return bzrBinary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd, "--help" });
+        }
+        return working.booleanValue();
     }
 
     @Override

@@ -42,20 +42,17 @@ import org.opensolaris.opengrok.util.Executor;
 public class PerforceRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
-    private static ScmChecker p4Binary = new ScmChecker(new String[]{getCommand(), "help"});
-    private final static Pattern annotation_pattern = Pattern.compile("^(\\d+): .*");
+    /** The property name used to obtain the client command for this repository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.Perforce";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "p4";
+
+    private final static Pattern annotation_pattern = 
+        Pattern.compile("^(\\d+): .*");
 
     public PerforceRepository() {
         type = "Perforce";
-    }
-
-    /**
-     * Get the name of the Perforce command that should be used
-     * 
-     * @return the name of the p4 command in use
-     */
-    private static String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.Perforce", "p4");
     }
 
     @Override
@@ -70,7 +67,8 @@ public class PerforceRepository extends Repository {
         }
 
         ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("annotate");
         cmd.add("-q");
         cmd.add(file.getPath() + ((rev == null) ? "" : "#" + rev));
@@ -105,7 +103,8 @@ public class PerforceRepository extends Repository {
     @Override
     InputStream getHistoryGet(String parent, String basename, String rev) {
         ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("print");
         cmd.add("-q");
         cmd.add(basename + ((rev == null) ? "" : "#" + rev));
@@ -119,7 +118,8 @@ public class PerforceRepository extends Repository {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("sync");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -137,6 +137,8 @@ public class PerforceRepository extends Repository {
         return true;
     }
 
+    private static PerforceRepository testRepo;
+
     /**
      * Check if a given file is in the depot
      * 
@@ -145,14 +147,17 @@ public class PerforceRepository extends Repository {
      */
     public static boolean isInP4Depot(File file) {
         boolean status = false;
-        if (p4Binary.available) {
+        if (testRepo == null) {
+            testRepo = new PerforceRepository();
+        }
+        if (testRepo.isWorking()) {
             ArrayList<String> cmd = new ArrayList<String>();
             String name = file.getName();
             File   dir  = file.getParentFile();
             if (file.isDirectory()) {
                 dir = file;
                 name = "*";
-                cmd.add(getCommand());
+                cmd.add(testRepo.cmd);
                 cmd.add("dirs");
                 cmd.add(name);
                 Executor executor = new Executor(cmd, dir);
@@ -165,7 +170,7 @@ public class PerforceRepository extends Repository {
             }
             if (!status) {
                 cmd.clear();
-                cmd.add(getCommand());
+                cmd.add(testRepo.cmd);
                 cmd.add("files");
                 cmd.add(name);
                 Executor executor = new Executor(cmd, dir);
@@ -187,7 +192,11 @@ public class PerforceRepository extends Repository {
 
     @Override
     public boolean isWorking() {
-        return p4Binary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd, "help" });
+        }
+        return working.booleanValue();
     }
 
     @Override

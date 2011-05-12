@@ -142,7 +142,7 @@ public class RazorRepository extends Repository {
 
     public RazorRepository() {
         type = "Razor";
-        working = true;
+        working = Boolean.TRUE;
         datePattern = "yyyy/MM/dd,hh:mm:ss";
     }
 

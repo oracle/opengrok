@@ -40,25 +40,17 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public class ClearCaseRepository extends Repository {
     private static final long serialVersionUID = 1L;
-
-    private static ScmChecker cleartoolBinary = new ScmChecker(new String[]{
-                getCommand(), "-version"
-            });
+    /** The property name used to obtain the client command for this repository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.ClearCase";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "cleartool";
 
     private boolean verbose;
 
     public ClearCaseRepository() {
         type = "ClearCase";
-        working = true;
         datePattern = "yyyyMMdd.HHmmss";
-    }
-
-    /**
-     * Get the name of the ClearCase command that should be used
-     * @return the name of the cleartool command in use
-     */
-    private static String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.ClearCase", "cleartool");
     }
 
     /**
@@ -92,7 +84,8 @@ public class ClearCaseRepository extends Repository {
         }
         
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("lshistory");
         if (file.isDirectory()) {
             cmd.add("-dir");
@@ -122,7 +115,8 @@ public class ClearCaseRepository extends Repository {
             }
 
             String decorated = filename + "@@" + rev;
-            String argv[] = {getCommand(), "get", "-to", tmpName, decorated};
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            String argv[] = {cmd, "get", "-to", tmpName, decorated};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             drainStream(process.getInputStream());
@@ -194,7 +188,8 @@ public class ClearCaseRepository extends Repository {
 public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<String>();
 
-        argv.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
         argv.add("annotate");
         argv.add("-nheader");
         argv.add("-out");
@@ -270,7 +265,8 @@ public Annotation annotate(File file, String revision) throws IOException {
             File directory = new File(getDirectoryName());
 
             // Check if this is a snapshot view
-            String[] argv = {getCommand(), "catcs"};
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            String[] argv = {cmd, "catcs"};
             process = Runtime.getRuntime().exec(argv, null, directory);
             in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             boolean snapshot = false;
@@ -285,7 +281,8 @@ public Annotation annotate(File file, String revision) throws IOException {
             in = null; // To avoid double close in finally clause
             if (snapshot) {
                 // It is a snapshot view, we need to update it manually
-                argv = new String[]{getCommand(), "update", "-overwrite", "-f"};
+                ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+                argv = new String[]{cmd, "update", "-overwrite", "-f"};
                 process = Runtime.getRuntime().exec(argv, null, directory);
                 in = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 // consume output
@@ -326,7 +323,11 @@ public Annotation annotate(File file, String revision) throws IOException {
 
     @Override
     public boolean isWorking() {
-        return cleartoolBinary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd, "–version" });
+        }
+        return working.booleanValue();
     }
 
     @Override
@@ -362,25 +363,33 @@ public Annotation annotate(File file, String revision) throws IOException {
         return VobsHolder.vobs;
     }
 
-    private static String[] runLsvob() {
-        Executor exec = new Executor(new String[] {getCommand(), "lsvob", "-s"});
-        int rc;
-        if ((rc = exec.exec(true)) == 0) {
-            String output = exec.getOutputString();
+    private static ClearCaseRepository testRepo;
 
-            if (output == null) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "\"cleartool lsvob -s\" output was null");
-                return new String[0];
-            } else {
+    private static String[] runLsvob() {
+        if (testRepo == null) {
+            testRepo = new ClearCaseRepository();
+        }
+        if (testRepo.isWorking()) {
+            Executor exec = new Executor(new String[] {testRepo.cmd, "lsvob", "-s"});
+            int rc;
+            if ((rc = exec.exec(true)) == 0) {
+                String output = exec.getOutputString();
+    
+                if (output == null) {
+                    OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                        "\"cleartool lsvob -s\" output was null");
+                    return new String[0];
+                }
                 String sep = System.getProperty("line.separator");
                 String[] vobs = output.split(Pattern.quote(sep));
-                OpenGrokLogger.getLogger().log(Level.CONFIG, "Found VOBs: {0}", Arrays.asList(vobs));
+                OpenGrokLogger.getLogger().log(Level.CONFIG, "Found VOBs: {0}",
+                    Arrays.asList(vobs));
                 return vobs;
             }
-        } else {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "\"cleartool lsvob -s\" returned non-zero status: {0}", rc);
-            return new String[0];
+            OpenGrokLogger.getLogger().log(Level.SEVERE, 
+                "\"cleartool lsvob -s\" returned non-zero status: " + rc);
         }
+        return new String[0];
     }
 
     @Override

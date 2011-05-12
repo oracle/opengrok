@@ -38,11 +38,15 @@ import org.opensolaris.opengrok.util.Executor;
 public class RepoRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
-//    private static ScmChecker repoBinary = new ScmChecker(new String[]{
-//                getCommand(), "-h"});
+    /** The property name used to obtain the client command for this repository.*/
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.repo";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "repo";
 
     public RepoRepository() {
         type = "repo";
+        setWorking(Boolean.TRUE);
     }
 
     @Override
@@ -50,13 +54,9 @@ public class RepoRepository extends Repository {
         super.setDirectoryName(directoryName);
     }
 
-    private static String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.repo", "repo");
-    }
-
     @Override
     public boolean isWorking() {
-//        return repoBinary.available;
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         return true;
     }
 
@@ -64,7 +64,8 @@ public class RepoRepository extends Repository {
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("sync");
 
         Executor executor = new Executor(cmd, directory);
@@ -78,9 +79,8 @@ public class RepoRepository extends Repository {
         if (file.isDirectory()) {
             File f = new File(file, ".repo");
             return f.exists() && f.isDirectory();
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -99,7 +99,7 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    History getHistory(File file) throws HistoryException {
+    History getHistory(File file) {
         throw new UnsupportedOperationException("Should never be called!");
     }
 
@@ -114,7 +114,7 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    Annotation annotate(File file, String revision) throws IOException {
+    Annotation annotate(File file, String revision) {
         throw new UnsupportedOperationException("Should never be called!");
     }
 

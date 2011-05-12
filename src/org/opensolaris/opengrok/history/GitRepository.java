@@ -46,8 +46,11 @@ import org.opensolaris.opengrok.util.Executor;
 public class GitRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
-    private static ScmChecker gitBinary = new ScmChecker(new String[]{
-                getCommand(), "--help"});
+    /** The property name used to obtain the client command for this repository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.git";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "git";
 
     public GitRepository() {
         type = "git";
@@ -69,7 +72,8 @@ public class GitRepository extends Repository {
         }
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("log");
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
@@ -100,14 +104,6 @@ public class GitRepository extends Repository {
         return new InputStreamReader(input, "UTF-8");
     }
 
-    /**
-     * Get the name of the Git command that should be used
-     * @return the name of the hg command in use
-     */
-    private static String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.git", "git");
-    }
-
     @Override
     public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
@@ -119,8 +115,10 @@ public class GitRepository extends Repository {
 
         Process process = null;
         try {
-            String filename = (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
-            String argv[] = {getCommand(), "show", rev + ":" + filename};
+            String filename = (new File(parent, basename)).getCanonicalPath()
+                .substring(directoryName.length() + 1);
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            String argv[] = {cmd, "show", rev + ":" + filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             InputStream in = process.getInputStream();
@@ -132,7 +130,7 @@ public class GitRepository extends Repository {
                 }
             }
 
-            ret = new BufferedInputStream(new ByteArrayInputStream(output.toByteArray()));
+            ret = new ByteArrayInputStream(output.toByteArray());
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
@@ -163,7 +161,8 @@ public class GitRepository extends Repository {
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("blame");
         cmd.add("-l");
         if (revision != null) {
@@ -211,7 +210,8 @@ public class GitRepository extends Repository {
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("config");
         cmd.add("--list");
 
@@ -222,7 +222,7 @@ public class GitRepository extends Repository {
 
         if (executor.getOutputString().indexOf("remote.origin.url=") != -1) {
             cmd.clear();
-            cmd.add(getCommand());
+            cmd.add(this.cmd);
             cmd.add("pull");
             cmd.add("-n");
             cmd.add("-q");
@@ -246,14 +246,17 @@ public class GitRepository extends Repository {
         if (file.isDirectory()) {
             File f = new File(file, ".git");
             return f.exists() && f.isDirectory();
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
     public boolean isWorking() {
-        return gitBinary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd, "--help" });
+        }
+        return working.booleanValue();
     }
 
     @Override

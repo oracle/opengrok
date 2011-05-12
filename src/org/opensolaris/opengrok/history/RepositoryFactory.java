@@ -25,7 +25,10 @@ package org.opensolaris.opengrok.history;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+
 import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
@@ -54,6 +57,19 @@ public final class RepositoryFactory {
         // Factory class, should not be constructed
     }
 
+    /**
+     * Get a list of all available repository handlers.
+     * @return a list which contains none-{@code null} values, only.
+     */
+    public static List<Class<? extends Repository>> getRepositoryClasses() {
+        ArrayList<Class<? extends Repository>> list = 
+            new ArrayList<Class<? extends Repository>>(repositories.length);
+        for (int i=repositories.length-1; i >= 0; i--) {
+            list.add(repositories[i].getClass());
+        }
+        return list;
+    }
+    
     /**
      * Returns a repository for the given file, or null if no repository was found.
      * 

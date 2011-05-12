@@ -100,9 +100,9 @@ class RCSHistoryParser {
             return;
         }
         traverse(n.getChild(), history);
-        TreeMap brt = n.getBranches();
+        TreeMap<?,?> brt = n.getBranches();
         if (brt != null) {
-            for (Iterator i = brt.values().iterator(); i.hasNext();) {
+            for (Iterator<?> i = brt.values().iterator(); i.hasNext();) {
                 Node b = (Node) i.next();
                 traverse(b, history);
             }

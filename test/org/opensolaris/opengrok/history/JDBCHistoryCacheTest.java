@@ -121,7 +121,7 @@ public class JDBCHistoryCacheTest extends TestCase {
      */
     private void importHgChangeset(File reposRoot, String changesetFile) {
         String[] cmdargs = {
-            MercurialRepository.getCommand(), "import", changesetFile
+            MercurialRepository.CMD_FALLBACK, "import", changesetFile
         };
         Executor exec = new Executor(Arrays.asList(cmdargs), reposRoot);
         int exitCode = exec.exec();

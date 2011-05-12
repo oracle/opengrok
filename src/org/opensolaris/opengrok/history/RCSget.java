@@ -23,11 +23,11 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.apache.commons.jrcs.diff.PatchFailedException;
 import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
@@ -38,7 +38,7 @@ import org.apache.commons.jrcs.rcs.ParseException;
  * Virtualise RCS log as an input stream
  */
 public class RCSget extends InputStream {
-    private BufferedInputStream stream;
+    private InputStream stream;
         
     /**
      * Pass null in version to get current revision
@@ -59,7 +59,7 @@ public class RCSget extends InputStream {
                 sb.append((String)lines[ii]);
                 sb.append("\n");
             }
-            stream = new BufferedInputStream(new ByteArrayInputStream(sb.toString().getBytes()));
+            stream = new ByteArrayInputStream(sb.toString().getBytes());
         } catch (ParseException e) {
             throw RCSRepository.wrapInIOException("Parse error", e);
         } catch (InvalidFileFormatException e) {

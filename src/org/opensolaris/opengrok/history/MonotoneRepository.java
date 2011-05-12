@@ -46,17 +46,11 @@ import org.opensolaris.opengrok.util.Executor;
 public class MonotoneRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
-    private static ScmChecker binary = new ScmChecker(new String[]{
-                System.getProperty("org.opensolaris.opengrok.history.Monotone", "mtn"),
-                "--help"});
-
-    /**
-     * Get the name of the Mercurial command that should be used
-     * @return the name of the hg command in use
-     */
-    static String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.Monotone", "mtn");
-    }
+    /** The property name used to obtain the client command for this repository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.Monotone";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "mnt";
 
     public MonotoneRepository() {
         type = "Monotone";
@@ -74,8 +68,10 @@ public class MonotoneRepository extends Repository {
         String revision = rev;
 
         try {
-            String filename = (new File(parent, basename)).getCanonicalPath().substring(directoryName.length() + 1);
-            String argv[] = {getCommand(), "cat", "-r", revision, filename};
+            String filename = (new File(parent, basename)).getCanonicalPath()
+                .substring(directoryName.length() + 1);
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            String argv[] = { cmd, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -115,7 +111,7 @@ public class MonotoneRepository extends Repository {
     }
 
     Executor getHistoryLogExecutor(File file, String changeset)
-        throws HistoryException, IOException {
+        throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -123,7 +119,8 @@ public class MonotoneRepository extends Repository {
         }
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("log");
 
         if (changeset != null) {
@@ -151,7 +148,8 @@ public class MonotoneRepository extends Repository {
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("annotate");
         cmd.add("--reallyquiet");
         if (revision != null) {
@@ -206,9 +204,10 @@ public class MonotoneRepository extends Repository {
     @Override
     public void update() throws IOException {
         File directory = new File(directoryName);
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        cmd.add(this.cmd);
         cmd.add("pull");
         cmd.add("--reallyquiet");
         Executor executor = new Executor(cmd, directory);
@@ -217,7 +216,7 @@ public class MonotoneRepository extends Repository {
         }
 
         cmd.clear();
-        cmd.add(getCommand());
+        cmd.add(this.cmd);
         cmd.add("update");
         cmd.add("--reallyquiet");
         executor = new Executor(cmd, directory);
@@ -239,7 +238,11 @@ public class MonotoneRepository extends Repository {
 
     @Override
     public boolean isWorking() {
-        return binary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd, "--help"});
+        }
+        return working.booleanValue();
     }
 
     @Override

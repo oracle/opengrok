@@ -45,28 +45,24 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public class CVSRepository extends RCSRepository {
     private static final long serialVersionUID = 1L;
-
-    private static ScmChecker cvsBinary = new ScmChecker(new String[]{
-                getCommand(), "--version"
-            });
+    /** The property name used to obtain the client command for repository. */
+    public static final String CMD_PROPERTY_KEY = 
+        "org.opensolaris.opengrok.history.cvs";
+    /** The command to use to access the repository if none was given explicitly */
+    public static final String CMD_FALLBACK = "cvs";
 
     public CVSRepository() {
         type = "CVS";
         datePattern = "yyyy-MM-dd hh:mm:ss";
     }
     
-   /**
-     * Get the name of the Cvs command that should be used
-     * 
-     * @return the name of the cvs command in use
-     */
-    private static String getCommand() {
-        return System.getProperty("org.opensolaris.opengrok.history.cvs", "cvs");
-    }
-
     @Override
     public boolean isWorking() {
-        return cvsBinary.available;
+        if (working == null) {
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            working = checkCmd(new String[]{ cmd , "--version" });
+        }
+        return working.booleanValue();
     }
 
     @Override
@@ -94,7 +90,8 @@ public class CVSRepository extends RCSRepository {
         File directory = new File(getDirectoryName());
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("update");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -119,7 +116,8 @@ public class CVSRepository extends RCSRepository {
         }
 
         List<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("log");
         cmd.add("-N"); //don't display tags
 
@@ -168,7 +166,8 @@ public class CVSRepository extends RCSRepository {
             revision = rev.substring(0, rev.indexOf(':'));
         }
         try {
-            String argv[] = {getCommand(), "up", "-p", "-r", revision, basename};
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            String argv[] = {cmd, "up", "-p", "-r", revision, basename};
             process = Runtime.getRuntime().exec(argv, null, new File(parent));
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -228,7 +227,8 @@ public class CVSRepository extends RCSRepository {
     @Override
     Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> cmd = new ArrayList<String>();
-        cmd.add(getCommand());
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
         cmd.add("annotate");
         if (revision != null) {
             cmd.add("-r");

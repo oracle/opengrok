@@ -94,6 +94,8 @@ class RazorHistoryParser {
         boolean seenActionType = false;
         boolean lastWasTitle = true;
 
+        Matcher actionMatcher = ACTION_TYPE_PATTERN.matcher("");
+        Matcher infoMatcher = ADDITIONAL_INFO_PATTERN.matcher("");
         while ((line = contents.readLine()) != null) {
 
             parseDebug("Processing '" + line + "'");
@@ -111,9 +113,9 @@ class RazorHistoryParser {
             } else if (!ignoreEntry) {
 
                 if (!seenActionType) {
-                    Matcher matcher = ACTION_TYPE_PATTERN.matcher(line);
+                    actionMatcher.reset(line);
 
-                    if (matcher.find()) {
+                    if (actionMatcher.find()) {
 
                         seenActionType = true;
                         if (entry != null && entry.getDate() != null) {
@@ -122,11 +124,11 @@ class RazorHistoryParser {
                         }
                         entry = new HistoryEntry();
 
-                        String actionType = matcher.group(1);
-                        String userName = matcher.group(2);
-                        String revision = matcher.group(3);
-                        String state = matcher.group(4);
-                        String dateTime = matcher.group(5);
+                        String actionType = actionMatcher.group(1);
+                        String userName = actionMatcher.group(2);
+                        String revision = actionMatcher.group(3);
+                        String state = actionMatcher.group(4);
+                        String dateTime = actionMatcher.group(5);
                         parseDebug("New History Event Seen : actionType = " + actionType + ", userName = " + userName + ", revision = " + revision + ", state = " + state + ", dateTime = " + dateTime);
                         if (actionType.startsWith("INTRODUCE") ||
                                 actionType.contains("CHECK-IN") ||
@@ -150,11 +152,11 @@ class RazorHistoryParser {
                         parseProblem("Expecting actionType and got '" + line + "'");
                     }
                 } else {
-                    Matcher matcher = ADDITIONAL_INFO_PATTERN.matcher(line);
+                    infoMatcher.reset(line);
 
-                    if (matcher.find()) {
-                        String infoType = matcher.group(1);
-                        String details = matcher.group(2);
+                    if (infoMatcher.find()) {
+                        String infoType = infoMatcher.group(1);
+                        String details = infoMatcher.group(2);
 
                         if ("TITLE".equals(infoType)) {
                             parseDebug("Setting Message : '" + details + "'");
