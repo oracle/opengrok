@@ -665,6 +665,34 @@ public class IndexDatabase {
         return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
     }
 
+    boolean accept(File parent, File file) {
+        try {
+            File f1 = parent.getCanonicalFile();
+            File f2 = file.getCanonicalFile();
+            if (f1.equals(f2)) {
+                log.log(Level.INFO, "Skipping links to itself...: {0} {1}",
+                        new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
+                return false;
+            }
+
+            // Now, let's verify that it's not a link back up the chain...
+            File t1 = f1;
+            while ((t1 = t1.getParentFile()) != null) {
+                if (f2.equals(t1)) {
+                    log.log(Level.INFO, "Skipping links to parent...: {0} {1}",
+                            new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
+                    return false;
+                }
+            }
+
+            return accept(file);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Warning: Failed to resolve name: {0} {1}",
+                    new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
+        }
+        return false;
+    }
+
     /**
      * Check if I should accept the path containing a symlink
      * @param absolutePath the path with a symlink to check
@@ -751,7 +779,7 @@ public class IndexDatabase {
             });
 
         for (File file : files) {
-            if (accept(file)) {
+            if (accept(dir, file)) {
                 String path = parent + '/' + file.getName();
 
                 if (file.isDirectory()) {
