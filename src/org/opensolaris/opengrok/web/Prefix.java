@@ -16,6 +16,7 @@
  */
 package org.opensolaris.opengrok.web;
 
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -80,7 +81,7 @@ public enum Prefix {
     }
 
     // should be sufficient for now
-    private static TreeMap<String, Prefix> lookupTable;
+    private static Map<String, Prefix> lookupTable;
     static {
         lookupTable = new TreeMap<String, Prefix>();
         for (Prefix p : Prefix.values()) {
