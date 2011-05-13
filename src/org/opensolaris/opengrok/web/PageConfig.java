@@ -32,6 +32,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,7 +96,7 @@ public class PageConfig {
     private Boolean hasHistory;
     private static final EnumSet<Genre> txtGenres =
             EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
-    private TreeSet<String> requestedProjects;
+    private Set<String> requestedProjects;
     private String requestedProjectsString;
     private String[] dirFileList;
     private QueryBuilder queryBuilder;
@@ -402,7 +403,7 @@ public class PageConfig {
      */
     public List<SortOrder> getSortOrder() {
         List<SortOrder> sort = new ArrayList<SortOrder>();
-        ArrayList<String> vals = getParamVals("sort");
+        List<String> vals = getParamVals("sort");
         for (String s : vals) {
             SortOrder so = SortOrder.get(s);
             if (so != null) {
@@ -611,7 +612,7 @@ public class PageConfig {
      */
     public String getRequestedProjectsAsString() {
         if (requestedProjectsString == null) {
-            TreeSet<String> projects = getRequestedProjects();
+            Set<String> projects = getRequestedProjects();
             if (projects.isEmpty()) {
                 requestedProjectsString = "";
             } else {
@@ -661,7 +662,7 @@ public class PageConfig {
      *  <li>an empty set</li>
      * </ol>
      */
-    public TreeSet<String> getRequestedProjects() {
+    public Set<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects =
                     getRequestedProjects("project", "OpenGrokProject");
@@ -688,7 +689,7 @@ public class PageConfig {
      * @param cookieName    name of the cookie.
      * @return a possible empty list.
      */
-    public ArrayList<String> getCookieVals(String cookieName) {
+    public List<String> getCookieVals(String cookieName) {
         Cookie[] cookies = req.getCookies();
         ArrayList<String> res = new ArrayList<String>();
         if (cookies != null) {
@@ -707,9 +708,9 @@ public class PageConfig {
      * @param name  name of the parameter.
      * @return a possible empty list.
      */
-    private ArrayList<String> getParamVals(String paramName) {
+    private List<String> getParamVals(String paramName) {
         String vals[] = req.getParameterValues(paramName);
-        ArrayList<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<String>();
         if (vals != null) {
             for (int i = vals.length - 1; i >= 0; i--) {
                 splitByComma(vals[i], res);
@@ -739,7 +740,7 @@ public class PageConfig {
             set.add(projects.get(0).getDescription());
             return set;
         }
-        ArrayList<String> vals = getParamVals(paramName);
+        List<String> vals = getParamVals(paramName);
         for (String s : vals) {
             if (Project.getByDescription(s) != null) {
                 set.add(s);
