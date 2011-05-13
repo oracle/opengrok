@@ -207,7 +207,7 @@ public class EftarFileReader {
         return !isOpen;
     }
 
-    public void close() throws IOException {
+    public void close() {
         if (f != null && isOpen) {
             try {
                 f.close();
