@@ -55,7 +55,7 @@ public enum SortOrder {
             return null;
         }
         for (SortOrder s : values()) {
-            if (s.equals(name)) {
+            if (name.equals(s.name)) {
                 return s;
             }
         }
