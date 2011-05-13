@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -86,7 +87,7 @@ public class HistoryGuruTest {
     public void testCreateCache() {
         HistoryGuru instance = HistoryGuru.getInstance();
         instance.createCache();
-        List<String> repos = new ArrayList<String>();
+        Collection<String> repos = new ArrayList<String>();
         repos.add("git");
         repos.add("bazaar");
         repos.add("mercurial");
