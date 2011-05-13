@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
@@ -49,6 +51,7 @@ import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * A simple container to lazy initialize common vars wrt. a single request.
@@ -207,21 +210,9 @@ public class PageConfig {
                 data.errorMsg = "Error reading revisions: "
                         + Util.htmlize(e.getMessage());
             } finally {
-                if (br != null) {
-                    try {
-                        br.close();
-                    } catch (Exception e) {
-                        /** ignore */
-                    }
-                }
+                IOUtils.close(br);
                 for (int i = 0; i < 2; i++) {
-                    if (in[i] != null) {
-                        try {
-                            in[i].close();
-                        } catch (Exception e) {
-                            /** ignore */
-                        }
-                    }
+                    IOUtils.close(in[i]);
                 }
             }
             if (data.errorMsg != null) {
@@ -239,7 +230,7 @@ public class PageConfig {
                             path[i] + "@" + data.rev[i], null);
                     data.param[i] = u.getRawQuery();
                 } catch (URISyntaxException e) {
-                    // should not happen
+                    Logger.getLogger(PageConfig.class.getName()).log(Level.WARNING, "Failed to create URI: ", e);
                 }
             }
             data.full = fullDiff();
@@ -376,7 +367,7 @@ public class PageConfig {
                     defaultValue = x;
                 }
             } catch (Exception e) {
-                // fallback to default
+                Logger.getLogger(PageConfig.class.getName()).log(Level.INFO, "Failed to parse integer " + s, e);
             }
         }
         return defaultValue;
@@ -477,7 +468,7 @@ public class PageConfig {
                 eftarReader = new EftarFileReader(getEnv().getDataRootPath()
                         + "/index/dtags.eftar");
             } catch (Exception e) {
-                /* ignore */
+                Logger.getLogger(PageConfig.class.getName()).log(Level.INFO, "Failed to create EftarFileReader: ", e);
             }
         }
         return eftarReader;
@@ -497,7 +488,7 @@ public class PageConfig {
                 dtag = eftarReader.get(getPath());
                 // cfg.getPrefix() != Prefix.XREF_S) {
             } catch (IOException e) {
-                /* ignore */
+                Logger.getLogger(PageConfig.class.getName()).log(Level.INFO, "Failed to get entry from eftar reader: ", e);
             }
         }
         if (dtag == null) {
@@ -836,9 +827,7 @@ public class PageConfig {
      */
     public String getSourceRootPath() {
         if (sourceRootPath == null) {
-            sourceRootPath = File.separatorChar != '/'
-                    ? getEnv().getSourceRootPath().replace(File.separatorChar, '/')
-                    : getEnv().getSourceRootPath();
+            sourceRootPath = getEnv().getSourceRootPath().replace(File.separatorChar, '/');
         }
         return sourceRootPath;
     }
@@ -858,7 +847,7 @@ public class PageConfig {
     /**
      * Get the canonical path of the related resource relative to the
      * source root directory (used file separators are all '/'). No check is
-     * made, whether the obtained path is really an accessable resource on disk.
+     * made, whether the obtained path is really an accessible resource on disk.
      *
      * @see HttpServletRequest#getPathInfo()
      * @return a possible empty String (denotes the source root directory) but
@@ -867,7 +856,7 @@ public class PageConfig {
     public String getPath() {
         if (path == null) {
             path = Util.getCanonicalPath(req.getPathInfo(), '/');
-            if (path.equals("/")) {
+            if ("/".equals(path)) {
                 path = "";
             }
         }
@@ -925,11 +914,9 @@ public class PageConfig {
      */
     public String getResourcePath() {
         if (resourcePath == null) {
-            resourcePath = File.separatorChar != '/'
-                    ? getResourceFile().getPath()
-                    : getResourceFile().getPath().replace(File.separatorChar, '/');
+            resourcePath = getResourceFile().getPath().replace(File.separatorChar, '/');
         }
-        return resourceFile.getPath();
+        return resourcePath;
     }
 
     /**
@@ -1166,11 +1153,7 @@ public class PageConfig {
         }
         env = null;
         if (eftarReader != null) {
-            try {
-                eftarReader.close();
-            } catch (Exception e) {
-                /** ignore */
-            }
+            eftarReader.close();
         }
     }
 }
