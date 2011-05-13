@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.StringUtils;
 
 /**
@@ -59,11 +60,18 @@ class GitHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(repository.newLogReader(input));
+            process(in);
+        } finally {
+            IOUtils.close(in);
+        }
+    }
+    
+    private void process(BufferedReader in) throws IOException {
         DateFormat df = repository.getDateFormat();
         ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-
-        BufferedReader in = new BufferedReader(repository.newLogReader(input));
-
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         history = new History();
