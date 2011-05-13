@@ -91,10 +91,11 @@ public final class Util {
      * @param dest  where to append the character sequence to
      */
     public static void htmlize(char[] cs, int length, StringBuilder dest) {
+        int len = length;
         if (cs.length < length) {
-            length = cs.length;
+            len = cs.length;
         }
-        for (int i = 0; i < length; i++ ) {
+        for (int i = 0; i < len; i++ ) {
             htmlize(cs[i], dest);
         }
     }
@@ -106,7 +107,7 @@ public final class Util {
      * @param c the character to append
      * @param dest where to append the character to
      */
-    private static final void htmlize(char c, StringBuilder dest) {
+    private static void htmlize(char c, StringBuilder dest) {
         switch (c) {
             case '&':
                 dest.append("&amp;");
@@ -156,7 +157,7 @@ public final class Util {
     private static final String closeQuotedTag = "\">";
 
     /**
-     * Convinience method for
+     * Convenience method for
      * {@code breadcrumbPath(urlPrefix, path, sep, "", false)}.
      *
      * @param urlPrefix prefix to add to each url
@@ -172,7 +173,7 @@ public final class Util {
     }
 
     /**
-     * Convinience method for
+     * Convenience method for
      * {@code breadcrumbPath(urlPrefix, path, sep, "", false, path.endsWith(sep)}.
      *
      * @param urlPrefix prefix to add to each url
@@ -234,17 +235,13 @@ public final class Util {
         if (pnames.length == 0) {
             return path;
         }
-        if (urlPrefix == null) {
-            urlPrefix = "";
-        }
-        if (urlPostfix == null) {
-            urlPostfix = "";
-        }
+        String prefix = urlPrefix != null ? urlPrefix : "";
+        String postfix = urlPostfix != null ? urlPostfix : "";
         StringBuilder pwd = new StringBuilder(path.length() + pnames.length);
         StringBuilder markup =
             new StringBuilder( (pnames.length + 3 >> 1) * path.length()
                 + pnames.length
-                * (17 + urlPrefix.length() + urlPostfix.length()));
+                * (17 + prefix.length() + postfix.length()));
         int k = path.indexOf(pnames[0]);
         if (path.lastIndexOf(sep, k) != -1) {
             pwd.append('/');
@@ -255,8 +252,8 @@ public final class Util {
             if (isDir || i < pnames.length - 1) {
                 pwd.append('/');
             }
-            markup.append(anchorLinkStart).append(urlPrefix).append(pwd)
-                .append(urlPostfix).append(closeQuotedTag).append(pnames[i])
+            markup.append(anchorLinkStart).append(prefix).append(pwd)
+                .append(postfix).append(closeQuotedTag).append(pnames[i])
                 .append(anchorEnd);
             if (isDir || i < pnames.length - 1) {
                 markup.append(sep);
@@ -364,7 +361,7 @@ public final class Util {
         return sb.toString();
     }
 
-    static NumberFormat FORMATTER = new DecimalFormat("#,###,###,###.#");
+    private static NumberFormat FORMATTER = new DecimalFormat("#,###,###,###.#");
 
     /**
      * Convert the given size into a human readable string.
@@ -392,7 +389,7 @@ public final class Util {
      * @return encoded text for use in <a title=""> tag
      */
     public static String encode(String s) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < s.length(); i++ ) {
             char c = s.charAt(i);
             switch (c) {
@@ -558,7 +555,7 @@ public final class Util {
      * @throws NullPointerException if the given buffer is {@code null}.
      * @see #URIEncode(String)
      */
-    public static final void appendQuery(StringBuilder buf, String key,
+    public static void appendQuery(StringBuilder buf, String key,
         String value)
     {
         if (value != null) {
@@ -715,7 +712,7 @@ public final class Util {
      * @throws IOException as defined by the given reader/writer
      * @throws NullPointerException if a parameter is {@code null}.
      */
-    public static final void dump(Writer out, Reader in) throws IOException {
+    public static void dump(Writer out, Reader in) throws IOException {
         if (in == null || out == null) {
             return;
         }
