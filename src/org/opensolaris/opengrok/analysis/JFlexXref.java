@@ -270,7 +270,7 @@ public abstract class JFlexXref {
                 return style;
             }
         }
-        return null;
+        return new String[0];
     }
 
     /**
