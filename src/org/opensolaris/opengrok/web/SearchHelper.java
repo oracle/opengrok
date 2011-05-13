@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -265,8 +266,7 @@ public class SearchHelper {
             }
             // @TODO fix me. I should try to figure out where the exact hit is
             // instead of returning a page with just _one_ entry in....
-            if (uniqueDefinition && searcher != null && hits != null
-                    && hits.length > 0 && isCrossRefSearch) {
+            if (uniqueDefinition && hits != null && hits.length > 0 && isCrossRefSearch) {
                 redirect = contextPath + Prefix.XREF_P
                         + Util.URIEncodePath(searcher.doc(hits[0].doc).get("path"))
                         + '#' + Util.URIEncode(((TermQuery) query).getTerm().text());
@@ -280,7 +280,7 @@ public class SearchHelper {
     }
     private static final Pattern TABSPACE = Pattern.compile("[\t ]+");
 
-    private static final void getSuggestion(String term, SpellChecker checker,
+    private static void getSuggestion(String term, SpellChecker checker,
             List<String> result) throws IOException {
         if (term == null) {
             return;
@@ -290,9 +290,7 @@ public class SearchHelper {
             if (toks[j].length() <= 3) {
                 continue;
             }
-            for (String s : checker.suggestSimilar(toks[j].toLowerCase(), 5)) {
-                result.add(s);
-            }
+            result.addAll(Arrays.asList(checker.suggestSimilar(toks[j].toLowerCase(), 5)));
         }
     }
 
@@ -399,14 +397,12 @@ public class SearchHelper {
             sourceContext = new Context(query, builder.getQueries());
             summerizer = new Summarizer(query, new CompatibleAnalyser());
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Summerizer: " + e.getMessage());
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Summerizer: {0}", e.getMessage());
         }
         try {
             historyContext = new HistoryContext(query);
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "HistoryContext: " + e.getMessage());
+            OpenGrokLogger.getLogger().log(Level.WARNING, "HistoryContext: {0}", e.getMessage());
         }
         return this;
     }
