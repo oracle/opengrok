@@ -235,8 +235,8 @@ public final class Util {
         if (pnames.length == 0) {
             return path;
         }
-        String prefix = urlPrefix != null ? urlPrefix : "";
-        String postfix = urlPostfix != null ? urlPostfix : "";
+        String prefix = urlPrefix == null ? "" : urlPrefix;
+        String postfix = urlPostfix == null ? "" : urlPostfix;
         StringBuilder pwd = new StringBuilder(path.length() + pnames.length);
         StringBuilder markup =
             new StringBuilder( (pnames.length + 3 >> 1) * path.length()
