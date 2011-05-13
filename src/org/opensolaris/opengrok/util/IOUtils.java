@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,6 +81,26 @@ public final class IOUtils {
                 out.close();
             } catch (IOException e) {
                 log.log(Level.WARNING, "Failed to close writer: ", e);
+            }
+        }
+    }
+    
+    public static void close(ServerSocket sock) {
+        if (sock != null) {
+            try {
+                sock.close();
+            } catch (IOException e) {
+                log.log(Level.WARNING, "Failed to close socket: ", e);
+            }
+        }
+    }
+
+    public static void close(Socket sock) {
+        if (sock != null) {
+            try {
+                sock.close();
+            } catch (IOException e) {
+                log.log(Level.WARNING, "Failed to close socket: ", e);
             }
         }
     }

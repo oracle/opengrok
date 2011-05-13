@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Class for reading history entries in a way suitable for indexing by Lucene.
@@ -50,9 +51,7 @@ public class HistoryReader extends Reader {
 
     @Override
     public void close() throws IOException {
-        if (input != null) {
-            input.close();
-        }
+        IOUtils.close(input);
     }
 
     private Reader createInternalReader() {

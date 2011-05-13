@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Perforce repository
@@ -98,7 +99,7 @@ public class PerforceRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "Error: Could not read annotations for " + file, e);
         }
-        reader.close();
+        IOUtils.close(reader);
         return a;
     }
 

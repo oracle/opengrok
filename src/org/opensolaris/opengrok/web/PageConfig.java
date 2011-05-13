@@ -202,7 +202,7 @@ public class PageConfig {
                     }
                     data.file[i] = lines.toArray(new String[lines.size()]);
                     lines.clear();
-                    br.close();
+                    IOUtils.close(br);
                     in[i] = null;
                     br = null;
                 }

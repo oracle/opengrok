@@ -50,6 +50,7 @@ import org.opensolaris.opengrok.jdbc.ConnectionManager;
 import org.opensolaris.opengrok.jdbc.ConnectionResource;
 import org.opensolaris.opengrok.jdbc.InsertQuery;
 import org.opensolaris.opengrok.jdbc.PreparedQuery;
+import org.opensolaris.opengrok.util.IOUtils;
 
 class JDBCHistoryCache implements HistoryCache {
 
@@ -106,12 +107,7 @@ class JDBCHistoryCache implements HistoryCache {
         } catch (IOException ioe) {
             throw new ExceptionInInitializerError(ioe);
         } finally { //NOPMD
-          try {
-             if (in != null ) {
-              in.close(); }
-          } catch (IOException ioe) {
-            throw new ExceptionInInitializerError(ioe); //NOPMD
-          }
+            IOUtils.close(in);
         }
     }
 

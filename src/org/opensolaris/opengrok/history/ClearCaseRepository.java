@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a ClearCase repository.
@@ -180,7 +181,7 @@ public class ClearCaseRepository extends Repository {
                 break;
             }
         }
-        in.close();
+        IOUtils.close(in);
     }
 
     /**
@@ -229,15 +230,7 @@ public Annotation annotate(File file, String revision) throws IOException {
             }
             return a;
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream.", exp);
-                }
-            }
-
+            IOUtils.close(in);
             if (process != null) {
                 try {
                     process.exitValue();
@@ -284,7 +277,7 @@ public Annotation annotate(File file, String revision) throws IOException {
             if (waitFor(process) != 0) {
                 return;
             }
-            in.close();
+            IOUtils.close(in);
             in = null; // To avoid double close in finally clause
             if (snapshot) {
                 // It is a snapshot view, we need to update it manually
@@ -302,14 +295,8 @@ public Annotation annotate(File file, String revision) throws IOException {
                 }
             }
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream.", e);
-                }
-            }
+            IOUtils.close(in);
+            
             if (process != null) {
                 try {
                     process.exitValue();

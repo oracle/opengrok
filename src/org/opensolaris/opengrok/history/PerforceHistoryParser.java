@@ -35,6 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Parse source history for a Perforce Repository
@@ -132,7 +133,7 @@ public class PerforceHistoryParser {
                 entries.add(entry);
             }
         }
-        reader.close();
+        IOUtils.close(reader);
         history.setHistoryEntries(entries);
         return history;
     }
@@ -181,7 +182,7 @@ public class PerforceHistoryParser {
                 }
             }
         }
-        reader.close();
+        IOUtils.close(reader);
         /* ... an entry can also finish when the log is finished */
         if (entry != null) {
             entries.add(entry);

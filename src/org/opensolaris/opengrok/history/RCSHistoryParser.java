@@ -37,6 +37,7 @@ import org.apache.commons.jrcs.rcs.Node;
 import org.apache.commons.jrcs.rcs.ParseException;
 import org.apache.commons.jrcs.rcs.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.IOUtils;
 
 
 /**
@@ -159,7 +160,7 @@ class RCSHistoryParser {
         try {
             return in.readLine();
         } finally {
-            in.close();
+            IOUtils.close(in);
         }
     }
 }

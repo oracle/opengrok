@@ -40,6 +40,7 @@ import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Base class for all different File Analyzers
@@ -173,9 +174,9 @@ public class FileAnalyzer extends Analyzer {
             }
             Writer w = new BufferedWriter(new OutputStreamWriter(out));
             writeXref(w);
-            w.close();
+            IOUtils.close(w);
         } finally {
-            out.close();
+            IOUtils.close(out);
         }
     }
 }

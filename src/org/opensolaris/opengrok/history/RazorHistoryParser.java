@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.StringUtils;
 
 /**
@@ -78,7 +79,7 @@ class RazorHistoryParser {
         try {
             return parseContents(new BufferedReader(contents));
         } finally {
-            contents.close();
+            IOUtils.close(contents);
         }
     }
 

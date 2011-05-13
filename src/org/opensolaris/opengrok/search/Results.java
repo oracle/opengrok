@@ -47,6 +47,7 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
@@ -114,25 +115,10 @@ public final class Results {
                 Level.WARNING, "An error reading tags from " + basedir + path
                     + (compressed ? ".gz" : ""), e);
         } finally {
-            if (r != null) {
-                try {
-                    r.close();
-                    gis = null;
-                    fis = null;
-                    fr = null;
-                } catch (Exception x) { /* ignore */ }
-            }
-            if (compressed) {
-                if (gis != null) {
-                    try { gis.close(); fis = null; } catch (Exception e) { /** ignore */ }
-                }
-                if (fis != null) {
-                    try { fis.close(); } catch (Exception e) { /** ignore */ }
-                }
-            } else if (fr != null) {
-                try { fr .close(); } catch (Exception e) { /** ignore */ }
-            }
-
+            IOUtils.close(r);
+            IOUtils.close(gis);
+            IOUtils.close(fis);
+            IOUtils.close(fr);
         }
         return "";
     }

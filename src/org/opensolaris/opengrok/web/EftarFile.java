@@ -37,6 +37,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File System
@@ -203,7 +204,7 @@ public class EftarFile {
         try {
             readInput(r);
         } finally {
-            r.close();
+            IOUtils.close(r);
         }
     }
 
@@ -237,7 +238,7 @@ public class EftarFile {
         out.writeShort(0);
         offset = RECORD_LENGTH;
         write(root);
-        out.close();
+        IOUtils.close(out);
     }
 
     public void create(String[] args) throws IOException, FileNotFoundException {

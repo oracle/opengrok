@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import org.opensolaris.opengrok.util.IOUtils;
 
 public class CommandLineOptions {
 
@@ -152,7 +153,7 @@ public class CommandLineOptions {
         }
 
         out.flush();
-        out.close();
+        IOUtils.close(out);
 
         return wrt.toString();
     }
@@ -192,7 +193,7 @@ public class CommandLineOptions {
 
         spool(reader, out, "___END_OF_FILE___");
         out.flush();
-        reader.close();
+        IOUtils.close(reader);
 
         return wrt.toString();
     }

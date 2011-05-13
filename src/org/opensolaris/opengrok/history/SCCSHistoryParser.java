@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Reads and filters out junk from a SCCS history file
@@ -89,7 +90,7 @@ class SCCSHistoryParser {
             entries.add(entry);
         }
 
-        in.close();
+        IOUtils.close(in);
 
         History history = new History();
         history.setHistoryEntries(entries);

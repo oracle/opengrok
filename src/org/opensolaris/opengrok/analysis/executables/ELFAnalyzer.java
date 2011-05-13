@@ -41,6 +41,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -82,7 +83,7 @@ public class ELFAnalyzer extends FileAnalyzer {
                     doc.add(new Field("full", " ", Field.Store.YES, Field.Index.ANALYZED));
                 }
             } finally {
-                fin.close();
+                IOUtils.close(fin);
             }
         }
     }

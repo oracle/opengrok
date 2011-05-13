@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * This class gives access to repositories built on top of SCCS (including
@@ -111,14 +112,7 @@ public class SCCSRepository extends Repository {
                 }
             }
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                            "Failed to close stream", e);
-                }
-            }
+            IOUtils.close(in);
 
             if (process != null) {
                 try {
@@ -186,14 +180,7 @@ public class SCCSRepository extends Repository {
             }
             return a;
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream", e);
-                }
-            }
+            IOUtils.close(in);
             if (process != null) {
                 try {
                     process.exitValue();

@@ -37,6 +37,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Monotone repository.
@@ -91,14 +92,7 @@ public class MonotoneRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream", e);
-                }
-            }
+            IOUtils.close(in);
             // Clean up zombie-processes...
             if (process != null) {
                 try {
@@ -188,14 +182,7 @@ public class MonotoneRepository extends Repository {
                 }
             }
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream", e);
-                }
-            }
+            IOUtils.close(in);
         }
         return ret;
     }

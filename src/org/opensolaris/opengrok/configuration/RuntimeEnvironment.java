@@ -47,6 +47,7 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -758,11 +759,7 @@ public final class RuntimeEnvironment {
         XMLEncoder e = new XMLEncoder(sock.getOutputStream());
         e.writeObject(threadConfig.get());
         e.close();
-        try {
-            sock.close();
-        } catch (Exception ex) {
-            log.log(Level.CONFIG, "Couldn't close socket after writing configuration.", ex);
-        }
+        IOUtils.close(sock);
     }
 
     protected void writeConfiguration() throws IOException {
@@ -785,9 +782,7 @@ public final class RuntimeEnvironment {
      * Try to stop the configuration listener thread
      */
     public void stopConfigurationListenerThread() {
-        try {
-            configServerSocket.close();
-        } catch (Exception e) { log.log(Level.FINE, "Stopping config listener thread: ", e); }
+        IOUtils.close(configServerSocket);
     }
 
     /**
@@ -839,12 +834,8 @@ public final class RuntimeEnvironment {
                         } catch (RuntimeException e) {
                             log.log(Level.SEVERE, "Error parsing config file: ", e);
                         } finally {
-                            if (s != null) {
-                                try { s.close(); } catch (Exception ex) { /* ignore */ }
-                            }
-                            if (in != null) {
-                                try { in.close(); } catch (Exception x) { /* ignore */ }
-                            }
+                            IOUtils.close(s);
+                            IOUtils.close(in);
                         }
                     }
                 }
@@ -857,11 +848,7 @@ public final class RuntimeEnvironment {
         }
 
         if (!ret && configServerSocket != null) {
-            try {
-                configServerSocket.close();
-            } catch (IOException ex) {
-                log.log(Level.FINE,"I/O problem closing reader config socket: ",ex);
-            }
+            IOUtils.close(configServerSocket);
         }
 
         return ret;

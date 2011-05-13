@@ -33,6 +33,7 @@ import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
 import org.apache.commons.jrcs.rcs.NodeNotFoundException;
 import org.apache.commons.jrcs.rcs.ParseException;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Virtualise RCS log as an input stream
@@ -79,9 +80,7 @@ public class RCSget extends InputStream {
 
     @Override
     public void close() throws IOException {
-        if (stream != null) {
-            stream.close();
-        }
+        IOUtils.close(stream);
     }
 
     @Override

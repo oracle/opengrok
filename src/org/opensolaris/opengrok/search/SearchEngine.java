@@ -59,6 +59,7 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * This is an encapsulation of the details on how to seach in the index
@@ -358,7 +359,7 @@ public class SearchEngine {
                             try {
                                 l = r.read(content);
                             } finally {
-                                r.close();
+                                IOUtils.close(r);
                             }
                             //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
                             Summary sum = summarizer.getSummary(new String(content, 0, l));

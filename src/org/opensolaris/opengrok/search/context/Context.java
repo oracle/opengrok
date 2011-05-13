@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
 public class Context {
@@ -129,9 +130,7 @@ public class Context {
             boolean limit, List<Hit> hits) {
         alt = !alt;
         if (m == null) {
-            if (in != null) {
-                try { in.close(); } catch (Exception x) { /* ignore */ }
-            }
+            IOUtils.close(in);
             return false;
         }
         boolean anything = false;
@@ -269,11 +268,8 @@ public class Context {
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
         } finally {
-            try {
-                in.close();
-            } catch (IOException e) {
-                // ignore
-            }
+            IOUtils.close(in);
+            
             if (out != null) {
                 try {
                     out.flush();

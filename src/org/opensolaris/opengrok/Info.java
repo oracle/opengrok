@@ -25,6 +25,7 @@ package org.opensolaris.opengrok;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Utility class to get information of the OpenGrok version.
@@ -50,13 +51,7 @@ public final class Info {
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ioe) {
-                System.err.println(ioe.getMessage()); //NOPMD
-            }
+            IOUtils.close(in);
         }
     }
 

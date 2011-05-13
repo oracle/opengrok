@@ -49,6 +49,7 @@ import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
@@ -556,7 +557,7 @@ public final class Configuration {
         try {
             this.encodeObject(out);
         } finally {
-            out.close();
+            IOUtils.close(out);
         }
     }
 
@@ -577,7 +578,7 @@ public final class Configuration {
         try {
             return decodeObject(in);
         } finally {
-            in.close();
+            IOUtils.close(in);
         }
     }
 

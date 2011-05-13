@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.management.Constants;
 import org.opensolaris.opengrok.management.OGAgent;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  *
@@ -58,39 +59,28 @@ public class SettingsPersistence {
      * @throws java.io.IOException
      */
     public SettingsPersistence(String cfgfile) throws IOException {
-        InputStream in=null;
+        InputStream in = null;
         try {
-        in = OGAgent.class.getResourceAsStream("oga.properties");
-        if (in != null) {
-            ogcProperties.load(in);
-            in.close();
+            in = OGAgent.class.getResourceAsStream("oga.properties");
+            if (in != null) {
+                ogcProperties.load(in);
             }
         } catch (IOException ioe) { //NOPMD
-          throw ioe; //do we need to propagate this up ?
+            throw ioe; //do we need to propagate this up ?
         } finally {
-            if (in != null) {
-                in.close(); // this will be just thrown up
-            }
+            IOUtils.close(in);
         }
 
         if (cfgfile != null) {
             propertyFile = new File(cfgfile);
-            FileInputStream is=null;
+            FileInputStream is = null;
             try {
-            is = new FileInputStream(propertyFile);
-            ogcProperties.load(is);
+                is = new FileInputStream(propertyFile);
+                ogcProperties.load(is);
             } catch (IOException ioe) { //NOPMD
-              throw ioe; //do we need to propagate this up ?
+                throw ioe; //do we need to propagate this up ?
             } finally { //NOPMD
-              try {
-              if (is != null) {
-                  is.close();
-              }
-              } catch (IOException ioe) { //NOPMD
-                throw ioe;
-              } finally {
-              existingSettings = true;
-              }
+                IOUtils.close(is);
             }
         }
     }

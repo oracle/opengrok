@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Provides Ctags by having a running instance of ctags
@@ -53,9 +54,7 @@ public class Ctags {
     }
 
     public void close() throws IOException {
-        if (ctagsIn != null) {
-            ctagsIn.close();
-        }
+        IOUtils.close(ctagsIn);
         if (ctags != null) {
             ctags.destroy();
         }
@@ -103,11 +102,7 @@ public class Ctags {
                 } catch (IOException exp) {
                      log.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
                 } finally {
-                    try {
-                        error.close();
-                    } catch (IOException exp) {
-                        log.log(Level.WARNING, "Got an exception closing error stream: ", exp);
-                    }
+                    IOUtils.close(error);
                 }
                 if (sb.length() > 0) {
                      log.warning("Error from ctags: " + sb.toString());

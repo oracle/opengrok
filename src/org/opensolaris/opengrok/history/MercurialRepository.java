@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Mercurial repository.
@@ -153,14 +154,7 @@ public class MercurialRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream", e);
-                }
-            }
+            IOUtils.close(in);
             // Clean up zombie-processes...
             if (process != null) {
                 try {
@@ -230,14 +224,7 @@ public class MercurialRepository extends Repository {
                 }
             }
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream", e);
-                }
-            }
+            IOUtils.close(in);
             if (process != null) {
                 try {
                     process.exitValue();

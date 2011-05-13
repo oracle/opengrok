@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Class for useful functions.
@@ -775,18 +776,9 @@ public final class Util {
             OpenGrokLogger.getLogger().log(Level.WARNING,
                 "An error occured while piping file " + file + ": ", e);
         } finally {
-            if (in != null) {
-                try { in.close(); gis = null; fis = null; }
-                catch (Exception e) { /**/ }
-            }
-            if (gis != null) {
-                try { gis.close(); fis = null; }
-                catch (Exception e) { /**/ }
-            }
-            if (fis != null) {
-                try { fis.close();}
-                catch (Exception e) { /**/ }
-            }
+            IOUtils.close(in);
+            IOUtils.close(gis);
+            IOUtils.close(fis);
         }
         return false;
     }

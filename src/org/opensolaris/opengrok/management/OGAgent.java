@@ -50,6 +50,7 @@ import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
 
 // PMD thinks this import is unused (confused because it's static?)
+import org.opensolaris.opengrok.util.IOUtils;
 import static org.opensolaris.opengrok.management.Constants.*; // NOPMD
 
 /**
@@ -80,13 +81,7 @@ final public class OGAgent {
             e.printStackTrace(System.err);
             ret = false;
         } finally {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                System.err.println("Failed to close stream");
-                e.printStackTrace(System.err);
-                ret = false;
-            }
+            IOUtils.close(stream);
         }
         return ret;
     }

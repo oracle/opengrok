@@ -39,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a local CVS repository.
@@ -135,7 +136,7 @@ public class CVSRepository extends RCSRepository {
                         "Failed to get revision tag of {0}",
                         getDirectoryName() + ": "+exp.getClass().toString() );
                  } finally {
-                    br.close();
+                    IOUtils.close(br);
                    }
                 } catch (IOException ex){
                  OpenGrokLogger.getLogger().log(Level.WARNING,
@@ -193,14 +194,7 @@ public class CVSRepository extends RCSRepository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: {0}", exp.getClass().toString());
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing stream", e);
-                }
-            }
+            IOUtils.close(in);
             // Clean up zombie-processes...
             if (process != null) {
                 try {

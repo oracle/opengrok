@@ -44,6 +44,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.IOUtils;
 
 class FileHistoryCache implements HistoryCache {
     private final Object lock = new Object();
@@ -112,7 +113,7 @@ class FileHistoryCache implements HistoryCache {
             d.close();
             return (History) obj;
         } finally {
-            in.close();
+            IOUtils.close(in);
         }
     }
 
@@ -145,7 +146,7 @@ class FileHistoryCache implements HistoryCache {
                 e.writeObject(history);
                 e.close();
             } finally {
-                out.close();
+                IOUtils.close(out);
             }
         } catch (IOException ioe) {
             throw new HistoryException("Failed to write history", ioe);
