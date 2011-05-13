@@ -76,10 +76,6 @@ public class DirectoryListing {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<String>();
         int offset = -1;
-        if (files == null) {
-            files = new String[0];
-        }
-        Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
         Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
         if (path.length() != 0) {
             out.write("<p><a href=\"..\"><i>Up to higher level directory</i></a></p>");
@@ -99,53 +95,56 @@ public class DirectoryListing {
         out.write("</tr></thead><tbody>");
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
 
-        for (String file : files) {
-            if (ignoredNames.ignore(file)) {
-                continue;
-            }
-            File child = new File(dir, file);
-            if (file.startsWith("README") || file.endsWith("README")
-                || file.startsWith("readme"))
-            {
-                readMes.add(file);
-            }
-            boolean isDir = child.isDirectory();
-            out.write("<tr><td><p class=\"");
-            out.write(isDir ? 'r' : 'p');
-            out.write("\"/></td><td><a href=\"");
-            out.write(Util.URIEncodePath(file));
-            if (isDir) {
-                out.write("/\"><b>");
-                out.write(file);
-                out.write("</b></a>/");
-            } else {
-                out.write("\">");
-                out.write(file);
-                out.write("</a>");
-            }
-            Date lastm = new Date(child.lastModified());
-            out.write("</td><td>");
-            if (now - lastm.getTime() < 86400000) {
-                out.write("Today");
-            } else {
-                out.write(dateFormatter.format(lastm));
-            }
-            out.write("</td><td>");
-            // if (isDir) {
-                out.write(Util.readableSize(child.length()));
-            // }
-            out.write("</td>");
-            if (offset > 0) {
-                String briefDesc = desc.getChildTag(parentFNode, file);
-                if (briefDesc == null) {
-                    out.write("<td/>");
-                } else {
-                    out.write("<td>");
-                    out.write(briefDesc);
-                    out.write("</td>");
+        if (files != null) {
+            Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
+            for (String file : files) {
+                if (ignoredNames.ignore(file)) {
+                    continue;
                 }
+                File child = new File(dir, file);
+                if (file.startsWith("README") || file.endsWith("README")
+                    || file.startsWith("readme"))
+                {
+                    readMes.add(file);
+                }
+                boolean isDir = child.isDirectory();
+                out.write("<tr><td><p class=\"");
+                out.write(isDir ? 'r' : 'p');
+                out.write("\"/></td><td><a href=\"");
+                out.write(Util.URIEncodePath(file));
+                if (isDir) {
+                    out.write("/\"><b>");
+                    out.write(file);
+                    out.write("</b></a>/");
+                } else {
+                    out.write("\">");
+                    out.write(file);
+                    out.write("</a>");
+                }
+                Date lastm = new Date(child.lastModified());
+                out.write("</td><td>");
+                if (now - lastm.getTime() < 86400000) {
+                    out.write("Today");
+                } else {
+                    out.write(dateFormatter.format(lastm));
+                }
+                out.write("</td><td>");
+                // if (isDir) {
+                    out.write(Util.readableSize(child.length()));
+                // }
+                out.write("</td>");
+                if (offset > 0) {
+                    String briefDesc = desc.getChildTag(parentFNode, file);
+                    if (briefDesc == null) {
+                        out.write("<td/>");
+                    } else {
+                        out.write("<td>");
+                        out.write(briefDesc);
+                        out.write("</td>");
+                    }
+                }
+                out.write("</tr>");
             }
-            out.write("</tr>");
         }
         out.write("</tbody></table>");
         return readMes;
