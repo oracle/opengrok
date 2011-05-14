@@ -542,7 +542,7 @@ public final class Indexer {
             throw new IndexerException("Didn't find Exuberant Ctags");
         }
         if (zapCache == null) {
-            zapCache = new ArrayList<String>(0);
+            throw new IndexerException("Internal error, zapCache shouldn't be null");
         }
 
         if (searchRepositories || listRepoPathes || !zapCache.isEmpty()) {

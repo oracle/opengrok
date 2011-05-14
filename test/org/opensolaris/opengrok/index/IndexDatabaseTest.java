@@ -23,6 +23,7 @@
 
 package org.opensolaris.opengrok.index;
 
+import java.util.ArrayList;
 import java.io.File;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -56,7 +57,7 @@ public class IndexDatabaseTest {
         Indexer indexer = Indexer.getInstance();
         indexer.prepareIndexer(
                 env, true, true, "/c", null,
-                false, false, false, null, null, null, false);
+                false, false, false, null, null, new ArrayList<String>(), false);
         indexer.doIndexerExecution(true, 1, null, null);
     }
 
