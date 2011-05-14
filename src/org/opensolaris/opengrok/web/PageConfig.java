@@ -73,7 +73,7 @@ import org.opensolaris.opengrok.util.IOUtils;
  * @author Jens Elkner
  * @version $Revision$
  */
-public class PageConfig {
+public final class PageConfig {
     // TODO if still used, get it from the app context
 
     boolean check4on = true;
@@ -360,18 +360,19 @@ public class PageConfig {
      * @return the parsed int value on success, the given default value otherwise.
      */
     public int getIntParam(String name, int defaultValue) {
+        int ret = defaultValue;
         String s = req.getParameter(name);
         if (s != null && s.length() != 0) {
             try {
                 int x = Integer.parseInt(s, 10);
                 if (x >= 0) {
-                    defaultValue = x;
+                    ret = x;
                 }
             } catch (Exception e) {
                 Logger.getLogger(PageConfig.class.getName()).log(Level.INFO, "Failed to parse integer " + s, e);
             }
         }
-        return defaultValue;
+        return ret;
     }
 
     /**
