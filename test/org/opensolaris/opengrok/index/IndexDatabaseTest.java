@@ -23,8 +23,8 @@
 
 package org.opensolaris.opengrok.index;
 
-import java.util.ArrayList;
 import java.io.File;
+import java.util.ArrayList;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

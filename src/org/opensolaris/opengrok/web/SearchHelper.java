@@ -16,6 +16,7 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright (c) 2011 Jens Elkner.
  */
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -94,27 +94,27 @@ public class SearchHelper {
     public boolean isCrossRefSearch;
     /** if not {@code null}, the consumer should redirect the client to a
      * separate result page denoted by the value of this field. Automatically
-     * set via {@link #prepareExec(TreeSet)} and {@link #executeQuery()}. */
+     * set via {@link #prepareExec(SortedSet)} and {@link #executeQuery()}. */
     public String redirect;
     /** if not {@code null}, the UI should show this error message and stop
-     * processing the search. Automatically set via {@link #prepareExec(TreeSet)}
+     * processing the search. Automatically set via {@link #prepareExec(SortedSet)}
      * and {@link #executeQuery()}.*/
     public String errorMsg;
     /** the searcher used to open/search the index. Automatically set via
-     * {@link #prepareExec(TreeSet)}. */
+     * {@link #prepareExec(SortedSet)}. */
     public Searcher searcher;
     /** list of docs which result from the executing the query */
     public ScoreDoc[] hits;
     /** total number of hits */
     public int totalHits;
     /** the query created by the used {@link QueryBuilder} via
-     * {@link #prepareExec(TreeSet)}. */
+     * {@link #prepareExec(SortedSet)}. */
     public Query query;
     /** the lucene sort instruction based on {@link #order} created via
-     * {@link #prepareExec(TreeSet)}. */
+     * {@link #prepareExec(SortedSet)}. */
     protected Sort sort;
     /** projects to use to setup indexer searchers. Usually setup via
-     * {@link #prepareExec(TreeSet)}. */
+     * {@link #prepareExec(SortedSet)}. */
     public SortedSet<String> projects;
     /** opengrok summary context. Usually created via {@link #prepareSummary()}. */
     public Context sourceContext = null;
@@ -217,13 +217,13 @@ public class SearchHelper {
     }
 
     /**
-     * Start the search prepared by {@link #prepareExec(TreeSet)}.
+     * Start the search prepared by {@link #prepareExec(SortedSet)}.
      * It does nothing if {@link #redirect} or {@link #errorMsg} have a
      * none-{@code null} value.
      * <p>
      * Parameters which should be populated/set at this time:
      * <ul>
-     * <li>all fields required for and populated by {@link #prepareExec(TreeSet)})</li>
+     * <li>all fields required for and populated by {@link #prepareExec(SortedSet)})</li>
      * <li>{@link #start} (default: 0)</li>
      * <li>{@link #maxItems} (default: 0)</li>
      * <li>{@link #isCrossRefSearch} (default: false)</li>

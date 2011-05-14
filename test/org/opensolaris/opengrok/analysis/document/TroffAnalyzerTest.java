@@ -16,12 +16,12 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright 2009 - 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis.document;
 
-import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opensolaris.opengrok.web.Util;
+import static org.junit.Assert.*;
 
 /**
  * @author  Jens Elkner
