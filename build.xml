@@ -671,7 +671,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <patternset refid="libs" />
         </fileset>
     </path>
-    <property name="AS_HOME" value="/opt/glassfish/v3.1/glassfish"/>
+    <property name="AS_HOME" value="glassfish"/>
     <path id="classpath.j2ee">
         <fileset dir="${AS_HOME}/modules">
             <include name="javaee.jar" />

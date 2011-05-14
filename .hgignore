@@ -27,3 +27,4 @@ lib/derby.jar
 lib/jrcs.jar
 derby.log
 nbproject/genfiles.properties
+glassfish
