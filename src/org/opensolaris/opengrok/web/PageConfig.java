@@ -674,7 +674,7 @@ public final class PageConfig {
         }
         return requestedProjects;
     }
-    private static Pattern COMMA_PATTERN = Pattern.compile("'");
+    private static Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
         if (value == null || value.length() == 0) {
