@@ -757,4 +757,5 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         </javac>
     </target>
 
+    <target name="all" depends="clean,jar,compile.jsp,test,javadoc,pmd,findbugs-xml,checkstyle" />
 </project>
