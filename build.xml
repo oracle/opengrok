@@ -23,10 +23,10 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 -->
 <project name="OpenGrok" default="jar" basedir=".">
     <description>Builds, tests, and runs the project opengrok.</description>
-	<property name="build.sysclasspath" value="ignore"/>
-	<property file="${user.home}/config/ant/${ant.project.name}.properties" />
-	<property file="${user.home}/config/ant/global.properties" />
-	<property file="/local/share/javax/global.properties" />
+    <property name="build.sysclasspath" value="ignore"/>
+    <property file="${user.home}/config/ant/${ant.project.name}.properties" />
+    <property file="${user.home}/config/ant/global.properties" />
+    <property file="/local/share/javax/global.properties" />
 
     <import file="nbproject/build-impl.xml"/>
 
@@ -113,16 +113,16 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
 
     <target name="-exclude-client" unless="compileSystrayClient">	    
-	<echo>JDK doesn't have java.awt.TrayIcon, excluding building of systray client ... </echo>
-	<property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
+        <echo>JDK doesn't have java.awt.TrayIcon, excluding building of systray client ... </echo>
+        <property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
     </target>
     
                  
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
         <pathelement path="${java.class.path}"/>
-	<pathelement path="lib"/>
-	<pathelement path="../lib"/>
+        <pathelement path="lib"/>
+        <pathelement path="../lib"/>
     </path>
 
     <path id="findbugs.lib.search.path">
@@ -150,7 +150,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path"/>    
     <target name="jflex">
         <mkdir dir="${src.generatedsrc.dir}"/>
-	<jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
@@ -163,8 +163,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlXref.lex" destdir="${src.generatedsrc.dir}"/>
-	<jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-	<jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpXref.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
@@ -201,7 +201,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
          so that we have history information from Mercurial available.
       -->
     <target name="-check-is-hg-repo">
-      <available property="build.from.repo" file=".hg" type="dir"/>
+        <available property="build.from.repo" file=".hg" type="dir"/>
     </target>
 
     <!-- Get the id of the changeset we're building from by reading
@@ -211,12 +211,12 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
       -->
     <target name="-get-changeset-from-file"
             depends="-check-is-hg-repo" unless="build.from.repo">
-      <tempfile property="hg.archival.temp" deleteonexit="true"/>
-      <copy file=".hg_archival.txt" tofile="${hg.archival.temp}"/>
-      <replaceregexp file="${hg.archival.temp}" flags="s"
+        <tempfile property="hg.archival.temp" deleteonexit="true"/>
+        <copy file=".hg_archival.txt" tofile="${hg.archival.temp}"/>
+        <replaceregexp file="${hg.archival.temp}" flags="s"
                      match=".*node: ([0-9a-f]{12}).*"
                      replace="\1"/>
-      <loadfile srcFile="${hg.archival.temp}" property="changeset"/>
+        <loadfile srcFile="${hg.archival.temp}" property="changeset"/>
     </target>
 
     <target name="-update-build-info"
@@ -244,7 +244,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
       -->
     <target name="-touch-manifest">
       <!-- no attributes, main-class and class-path will be added later -->
-      <manifest file="manifest.mf" mode="replace"/>
+        <manifest file="manifest.mf" mode="replace"/>
     </target>
 
     <target name="-pre-init" depends="-touch-manifest, -exclude-client"/>
@@ -254,21 +254,21 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         opengrok.jar depends
       -->
     <target name="-post-init">
-      <pathconvert property="opengrok.lib.files" pathsep=" ">
-        <path>
-          <pathelement path="${javac.classpath}"/>
-        </path>
-        <flattenmapper/>
-        <map from="" to="lib/"/>
-      </pathconvert>
+        <pathconvert property="opengrok.lib.files" pathsep=" ">
+            <path>
+                <pathelement path="${javac.classpath}"/>
+            </path>
+            <flattenmapper/>
+            <map from="" to="lib/"/>
+        </pathconvert>
     </target>
 
     <!-- Update the manifest file with a classpath attribute -->
     <target name="-update-manifest-classpath">
-      <manifest file="${manifest.file}" mode="update">
-        <attribute name="Class-Path"
+        <manifest file="${manifest.file}" mode="update">
+            <attribute name="Class-Path"
                    value="${opengrok.lib.files} lib/derbyclient.jar lib/derby.jar"/>
-      </manifest>
+        </manifest>
     </target>
 
     <target name="-pre-jar" depends="-update-manifest-classpath,-update-build-info"/>
@@ -279,16 +279,16 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
       -->
     <target name="-copy-lib-without-netbeans"
             unless="manifest.available+main.class+mkdist.available">
-      <copy todir="${dist.dir}/lib">
-        <fileset file="${file.reference.ant.jar}"/>
-      </copy>
-      <copy todir="${dist.dir}">
-        <fileset dir="." includes="${opengrok.lib.files}"/>
-      </copy>
+        <copy todir="${dist.dir}/lib">
+            <fileset file="${file.reference.ant.jar}"/>
+        </copy>
+        <copy todir="${dist.dir}">
+            <fileset dir="." includes="${opengrok.lib.files}"/>
+        </copy>
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">
-	<war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
+        <war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" excludes="META-INF/context.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
             <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
@@ -304,53 +304,53 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="package" depends="jar">
-      <exec os="SunOS" executable="/usr/bin/pkgmk" failonerror="true">
-        <arg line="-o -d build -r . -v ${version} -f platform/solaris/pkgdef/prototype"/>
-      </exec>
-      <exec os="SunOS" executable="/usr/bin/pkgtrans" failonerror="true">
-	<arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
-      </exec>
+        <exec os="SunOS" executable="/usr/bin/pkgmk" failonerror="true">
+            <arg line="-o -d build -r . -v ${version} -f platform/solaris/pkgdef/prototype"/>
+        </exec>
+        <exec os="SunOS" executable="/usr/bin/pkgtrans" failonerror="true">
+            <arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
+        </exec>
     </target>
 
     <target name="dist" depends="jar">
-      <tar destfile="${dist.dir}/${distname}-${version}.tar.gz"
+        <tar destfile="${dist.dir}/${distname}-${version}.tar.gz"
            compression="gzip">
-        <tarfileset dir="." prefix="${distname}-${version}/doc">
-          <include name="README.txt"/>
-          <include name="CHANGES.txt"/>
-          <include name="LICENSE.txt"/>
-          <include name="NOTICE.txt"/>
-	  <include name="paths.tsv"/>
-	  <include name="logging.properties"/>
-        </tarfileset>
-        <tarfileset dir="." prefix="${distname}-${version}/bin" mode="755">
-          <include name="OpenGrok"/>
-        </tarfileset>
-        <tarfileset dir="doc" prefix="${distname}-${version}/doc">
-          <include name="EXAMPLE.txt"/>
-        </tarfileset>
-        <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/lib">
-          <include name="opengrok.jar"/>
-          <include name="source.war"/>
-          <include name="lib/*"/>
-          <exclude name="lib/servlet-api.jar"/>
-        </tarfileset>
-	<tarfileset dir="${dist.dir}" prefix="${distname}-${version}/man/man1">
-          <include name="opengrok.1"/>
-        </tarfileset>
-      </tar>
+            <tarfileset dir="." prefix="${distname}-${version}/doc">
+                <include name="README.txt"/>
+                <include name="CHANGES.txt"/>
+                <include name="LICENSE.txt"/>
+                <include name="NOTICE.txt"/>
+                <include name="paths.tsv"/>
+                <include name="logging.properties"/>
+            </tarfileset>
+            <tarfileset dir="." prefix="${distname}-${version}/bin" mode="755">
+                <include name="OpenGrok"/>
+            </tarfileset>
+            <tarfileset dir="doc" prefix="${distname}-${version}/doc">
+                <include name="EXAMPLE.txt"/>
+            </tarfileset>
+            <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/lib">
+                <include name="opengrok.jar"/>
+                <include name="source.war"/>
+                <include name="lib/*"/>
+                <exclude name="lib/servlet-api.jar"/>
+            </tarfileset>
+            <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/man/man1">
+                <include name="opengrok.1"/>
+            </tarfileset>
+        </tar>
     </target>
 
     <target name="dist-src" depends="init">
-      <mkdir dir="${dist.dir}"/>
-      <exec executable="hg">
-        <arg value="archive"/>
-        <arg value="-t"/>
-        <arg value="tgz"/>
+        <mkdir dir="${dist.dir}"/>
+        <exec executable="hg">
+            <arg value="archive"/>
+            <arg value="-t"/>
+            <arg value="tgz"/>
 <!--	<arg value="-p"/>
 	<arg value="${distname}-${version}-src"/> -->
-        <arg value="${dist.dir}/${distname}-${version}-src.tar.gz"/>
-      </exec>
+            <arg value="${dist.dir}/${distname}-${version}-src.tar.gz"/>
+        </exec>
     </target>
     
     <target name="-check_findbugs" description="Check that findbugs jar files are present">
@@ -445,35 +445,35 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="cpd-xml" depends="compile, -check_pmd" description="Run CPD on OpenGrok source code, print output in xml">
-      <path id="pmd.lib" >
+        <path id="pmd.lib" >
             <pathelement location="${pmd.home}/lib/pmd.jar"/>
             <pathelement location="${pmd.home}/lib/jaxen.jar"/>
-      </path>
-      <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="pmd.lib"/>
-      <cpd minimumTokenCount="100" format="xml" outputFile="pmd/cpd_report.xml">
-        <fileset dir="src">
-            <include name="**/*.java"/>
-        </fileset>
-        <fileset dir="test">
-            <include name="**/*.java"/>
-        </fileset>
-      </cpd>
+        </path>
+        <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="pmd.lib"/>
+        <cpd minimumTokenCount="100" format="xml" outputFile="pmd/cpd_report.xml">
+            <fileset dir="src">
+                <include name="**/*.java"/>
+            </fileset>
+            <fileset dir="test">
+                <include name="**/*.java"/>
+            </fileset>
+        </cpd>
     </target>
 
     <target name="cpd" depends="compile, -check_pmd" description="Run CPD on OpenGrok source code">
-      <path id="pmd.lib" >
+        <path id="pmd.lib" >
             <pathelement location="${pmd.home}/lib/pmd.jar"/>
             <pathelement location="${pmd.home}/lib/jaxen.jar"/>
-      </path>
-      <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="pmd.lib"/>
-      <cpd minimumTokenCount="100" outputFile="pmd/cpd_report.txt">
-        <fileset dir="src">
-            <include name="**/*.java"/>
-        </fileset>
-        <fileset dir="test">
-            <include name="**/*.java"/>
-        </fileset>
-      </cpd>
+        </path>
+        <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" classpathref="pmd.lib"/>
+        <cpd minimumTokenCount="100" outputFile="pmd/cpd_report.txt">
+            <fileset dir="src">
+                <include name="**/*.java"/>
+            </fileset>
+            <fileset dir="test">
+                <include name="**/*.java"/>
+            </fileset>
+        </cpd>
     </target>
 
     <target name="-check_emma" description="Check that emma jar files are present">
@@ -514,7 +514,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <!-- Change root in CVS test repository -->
         <!-- Strange indentation in line two levels below to get newline correctly -->
         <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
-</concat>
+        </concat>
         <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
         <copy todir="${test.hg}/.hg">
             <fileset dir="${test.hg}/hg"/>
@@ -535,42 +535,42 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="-create-svn-repository">
-      <delete dir="${test.svn}"/>
-      <delete dir="${build.test.reposroots}/svn"/>
-      <mkdir dir="${build.test.reposroots}"/>
-      <exec executable="svnadmin" failifexecutionfails="true">
-        <arg value="create"/>
-        <arg value="${build.test.reposroots}/svn"/>
-      </exec>
+        <delete dir="${test.svn}"/>
+        <delete dir="${build.test.reposroots}/svn"/>
+        <mkdir dir="${build.test.reposroots}"/>
+        <exec executable="svnadmin" failifexecutionfails="true">
+            <arg value="create"/>
+            <arg value="${build.test.reposroots}/svn"/>
+        </exec>
       
       <!-- need absolute path for svn url -->
-      <pathconvert property="test.svn.url">
-        <map from="" to="file://"/>
-        <path location="${build.test.reposroots}/svn"/>
-      </pathconvert>
+        <pathconvert property="test.svn.url">
+            <map from="" to="file://"/>
+            <path location="${build.test.reposroots}/svn"/>
+        </pathconvert>
 
-      <exec executable="svn" failifexecutionfails="false">
-        <arg value="import"/>
-        <arg value="${test.sources}"/>
-        <arg value="${test.svn.url}"/>
-        <arg value="-m"/>
-        <arg value="Initial import"/>
-      </exec>
-      <exec executable="svn" failifexecutionfails="false">
-        <arg value="checkout"/>
-        <arg value="${test.svn.url}"/>
-        <arg value="${test.svn}"/>
-      </exec>
+        <exec executable="svn" failifexecutionfails="false">
+            <arg value="import"/>
+            <arg value="${test.sources}"/>
+            <arg value="${test.svn.url}"/>
+            <arg value="-m"/>
+            <arg value="Initial import"/>
+        </exec>
+        <exec executable="svn" failifexecutionfails="false">
+            <arg value="checkout"/>
+            <arg value="${test.svn.url}"/>
+            <arg value="${test.svn}"/>
+        </exec>
     </target>
     
     <target name="-create-razor-repository">
-      <delete dir="${test.razor}"/>
-      <copy todir="${test.razor}/Razor-Simple">
-        <fileset dir="ext/SampleRazorRepository/UserSandbox"/>
-      </copy>
-      <copy todir="${test.razor}/Razor-Simple/SimpleCProgram/.razor">
-        <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
-      </copy>
+        <delete dir="${test.razor}"/>
+        <copy todir="${test.razor}/Razor-Simple">
+            <fileset dir="ext/SampleRazorRepository/UserSandbox"/>
+        </copy>
+        <copy todir="${test.razor}/Razor-Simple/SimpleCProgram/.razor">
+            <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
+        </copy>
 
       <!--
           The support for binaries in Razor repositories is not fully
@@ -585,11 +585,11 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
-      <delete dir="${test.hg}/.hg"/>
-      <delete file="${test.hg}/.hgignore"/>
-      <delete dir="${test.svn}"/>
-      <delete dir="${test.razor}"/>
-      <delete file="${test.cvs.repo}/CVS/Root"/>
+        <delete dir="${test.hg}/.hg"/>
+        <delete file="${test.hg}/.hgignore"/>
+        <delete dir="${test.svn}"/>
+        <delete dir="${test.razor}"/>
+        <delete file="${test.cvs.repo}/CVS/Root"/>
     </target>
 
     <target name="emma-report" description="Analyze" depends="-check_emma">
@@ -641,90 +641,90 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     <!-- Build our patched JRCS library. -->
     <target name="jrcs" depends="-pre-pre-compile">
-      <mkdir dir="${build.dir}/jrcs"/>
-      <javac srcdir="jrcs/src" destdir="${build.dir}/jrcs"
+        <mkdir dir="${build.dir}/jrcs"/>
+        <javac srcdir="jrcs/src" destdir="${build.dir}/jrcs"
              nowarn="on" source="1.4"/>
-      <jar destfile="${file.reference.jrcs.jar}">
-        <fileset dir="${build.dir}/jrcs" includes="**/*.class"/>
-      </jar>
+        <jar destfile="${file.reference.jrcs.jar}">
+            <fileset dir="${build.dir}/jrcs" includes="**/*.class"/>
+        </jar>
     </target>
 
 
 	<!-- compile jsp - just to test -->
-	<property name="debug" value="on" />
-	<property name="jsdebug" value="off" />
-	<property name="compress" value=".gz" />
-	<property name="debuglevel" value="source,lines,vars" />
-	<property name="optimize" value="on" />
-	<property name="deprecation" value="on" />
-	<property name="listfiles" value="true" />
+    <property name="debug" value="on" />
+    <property name="jsdebug" value="off" />
+    <property name="compress" value=".gz" />
+    <property name="debuglevel" value="source,lines,vars" />
+    <property name="optimize" value="on" />
+    <property name="deprecation" value="on" />
+    <property name="listfiles" value="true" />
 
-	<property name="codebase"   	value="org/opensolaris/opengrok"/>
-	<property name="codebase.dot"   value="org.opensolaris.opengrok"/>
-	<property name="web.src.dir" location="web" />
+    <property name="codebase"   	value="org/opensolaris/opengrok"/>
+    <property name="codebase.dot"   value="org.opensolaris.opengrok"/>
+    <property name="web.src.dir" location="web" />
 	
-	<patternset id="libs">
-		<include name="*.jar" />
-	</patternset>
-	<path id="classpath.base">
-		<fileset dir="lib">
-			<patternset refid="libs" />
-		</fileset>
-	</path>
-	<property name="AS_HOME" value="/opt/glassfish/v3.1/glassfish"/>
-	<path id="classpath.j2ee">
-		<fileset dir="${AS_HOME}/modules">
-			<include name="javaee.jar" />
+    <patternset id="libs">
+        <include name="*.jar" />
+    </patternset>
+    <path id="classpath.base">
+        <fileset dir="lib">
+            <patternset refid="libs" />
+        </fileset>
+    </path>
+    <property name="AS_HOME" value="/opt/glassfish/v3.1/glassfish"/>
+    <path id="classpath.j2ee">
+        <fileset dir="${AS_HOME}/modules">
+            <include name="javaee.jar" />
 			<!-- for the **/auth/* stuff, only -->
-			<include name="appserv-rt.jar" />
-			<include name="appserv-deployment-client.jar" />
-		</fileset>
-	</path>
-	<path id="classpath.jspc">
-		<fileset dir="${AS_HOME}/modules">
-			<include name="javax.servlet.jar"/>
-			<include name="javax.servlet.jsp.jar"/>
-			<include name="jsp-impl.jar"/>
-			<include name="el-impl.jar"/>
-			<include name="javax.servlet.jsp.jstl.jar"/>
-			<include name="jstl-impl.jar"/>
-			<include name="jsf-api.jar"/>
-			<include name="jsf-impl.jar"/>
-			<include name="tools.jar"/>
-		</fileset>
-	</path>
+            <include name="appserv-rt.jar" />
+            <include name="appserv-deployment-client.jar" />
+        </fileset>
+    </path>
+    <path id="classpath.jspc">
+        <fileset dir="${AS_HOME}/modules">
+            <include name="javax.servlet.jar"/>
+            <include name="javax.servlet.jsp.jar"/>
+            <include name="jsp-impl.jar"/>
+            <include name="el-impl.jar"/>
+            <include name="javax.servlet.jsp.jstl.jar"/>
+            <include name="jstl-impl.jar"/>
+            <include name="jsf-api.jar"/>
+            <include name="jsf-impl.jar"/>
+            <include name="tools.jar"/>
+        </fileset>
+    </path>
 
-	<path id="classpath.web">
-		<path refid="classpath.j2ee"/>
-		<path refid="classpath.base"/>
-	</path>
+    <path id="classpath.web">
+        <path refid="classpath.j2ee"/>
+        <path refid="classpath.base"/>
+    </path>
 
-	<path id="classpath.jsp">
-		<path refid="classpath.jspc"/>
-		<path refid="classpath.web"/>
-	</path>
+    <path id="classpath.jsp">
+        <path refid="classpath.jspc"/>
+        <path refid="classpath.web"/>
+    </path>
 
-	<target name="-jsp.check" depends="init">
-		<mkdir dir="${build.dir}/src/jsp/${codebase}/jsp" />
-		<uptodate property="jsp.not.changed">
-			<srcfiles dir="${web.src.dir}" includes="**/*.jsp,**/*.jspf"/>
-			<mapper type="glob" from="*.jsp" 
+    <target name="-jsp.check" depends="init">
+        <mkdir dir="${build.dir}/src/jsp/${codebase}/jsp" />
+        <uptodate property="jsp.not.changed">
+            <srcfiles dir="${web.src.dir}" includes="**/*.jsp,**/*.jspf"/>
+            <mapper type="glob" from="*.jsp" 
 				to="${build.dir}/src/jsp/${codebase}/jsp/*_jsp.java"/>
-		</uptodate>
-	</target>
+        </uptodate>
+    </target>
 	
-	<target name="-jsp.generate" depends="-jsp.check" unless="jsp.not.changed">
-		<taskdef name="jasper" classname="org.apache.jasper.JspC"
+    <target name="-jsp.generate" depends="-jsp.check" unless="jsp.not.changed">
+        <taskdef name="jasper" classname="org.apache.jasper.JspC"
 			classpathref="classpath.jsp" />
-		<mkdir dir="${build.dir}/src/web"/>
-		<copy todir="${build.dir}/src/web">			
-			<fileset dir="${web.src.dir}">
-				<include name="**/*.jsp"/>
-				<include name="**/*.jspf"/>
-				<include name="**/index_body.html"/>
-			</fileset>
-		</copy>
-		<jasper validateXml="false" 
+        <mkdir dir="${build.dir}/src/web"/>
+        <copy todir="${build.dir}/src/web">			
+            <fileset dir="${web.src.dir}">
+                <include name="**/*.jsp"/>
+                <include name="**/*.jspf"/>
+                <include name="**/index_body.html"/>
+            </fileset>
+        </copy>
+        <jasper validateXml="false" 
 			outputdir="${build.dir}/src/jsp" 
 			javaencoding="UTF-8"
 			uriroot="${build.dir}/src/web"
@@ -734,27 +734,27 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 			smapsuppressed="false"
 			webxmlfragment="${build.dir}/src/servlets_web.xml"
 			/>
-		<loadfile property="wdd" srcfile="${build.dir}/src/servlets_web.xml"/>
-		<copy file="${web.src.dir}/WEB-INF/web.xml" todir="${build.dir}"
+        <loadfile property="wdd" srcfile="${build.dir}/src/servlets_web.xml"/>
+        <copy file="${web.src.dir}/WEB-INF/web.xml" todir="${build.dir}"
 			overwrite="true">
-			<filterset>
-				<filter token="generated servlet mappings" 
+            <filterset>
+                <filter token="generated servlet mappings" 
 					value=" generated start -->${wdd}&lt;!-- generated end " />
-			</filterset>
-		</copy>
-	</target>
+            </filterset>
+        </copy>
+    </target>
 
-	<target name="compile.jsp" depends="compile,-jsp.generate"
+    <target name="compile.jsp" depends="compile,-jsp.generate"
 		description="--> compile java source code and jsp pages"
 	>
-		<javac srcdir="${build.dir}/src/jsp" destdir="${build.dir}/classes"
+        <javac srcdir="${build.dir}/src/jsp" destdir="${build.dir}/classes"
 			includes="**/*.java"
 			optimize="${optimize}" debug="${debug}" debuglevel="${debuglevel}"
 			deprecation="${deprecation}" classpathref="classpath.jsp"
 			encoding="UTF-8" listfiles="${listfiles}"
 			includeantruntime="false">
-			<compilerarg value="-Xlint:unchecked" compiler="javac1.6"/>
-		</javac>
-	</target>
+            <compilerarg value="-Xlint:unchecked" compiler="javac1.6"/>
+        </javac>
+    </target>
 
 </project>
