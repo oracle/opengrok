@@ -29,6 +29,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -41,6 +43,7 @@ public class EftarFileReader {
 
     private final RandomAccessFile f;
     private boolean isOpen;
+    private static final Logger log = Logger.getLogger(EftarFileReader.class.getName());
 
     class FNode {
 
@@ -123,6 +126,9 @@ public class EftarFileReader {
             try {
                 tagString = getTag();
             } catch (IOException e) {
+                if (!(e instanceof EOFException)) {
+                    log.log(Level.WARNING, "Got excption while getting the tag: ", e);                
+                }
                 // ignore;
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;

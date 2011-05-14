@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.document.Document;
@@ -124,6 +125,8 @@ public class SearchHelper {
     /** Default query parse error message prefix */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
 
+    private static final Logger log = Logger.getLogger(SearchHelper.class.getName());
+    
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
@@ -354,7 +357,7 @@ public class SearchHelper {
                     res.add(s);
                 }
             } catch (IOException e) {
-                /* ignore */
+                log.log(Level.WARNING, "Got excption while getting spelling suggestions: ", e);
             } finally {
                 if (spellDirectory != null) {
                     spellDirectory.close();
@@ -362,7 +365,9 @@ public class SearchHelper {
                 if (checker != null) {
                     try {
                         checker.close();
-                    } catch (Exception x) { /* ignore */ }
+                    } catch (Exception x) { 
+                        log.log(Level.WARNING, "Got excption while closing spelling suggestions: ", x);
+                    }
                 }
             }
         }

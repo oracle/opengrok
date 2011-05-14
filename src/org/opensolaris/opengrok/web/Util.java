@@ -38,6 +38,7 @@ import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 import org.opensolaris.opengrok.Info;
@@ -540,6 +541,7 @@ public final class Util {
             return q == null ? "" : URLEncoder.encode(q, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             // Should not happen. UTF-8 must be supported by JVMs.
+            Logger.getLogger(EftarFileReader.class.getName()).log(Level.WARNING, "Failed to URL-encode UTF-8: ", e);            
         }
         return null;
     }

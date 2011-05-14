@@ -274,7 +274,7 @@ public class Context {
                 try {
                     out.flush();
                 } catch (IOException e) {
-                    // ignore
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to flush stream: ", e);
                 }
             }
         }
