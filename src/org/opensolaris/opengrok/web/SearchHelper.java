@@ -151,7 +151,7 @@ public class SearchHelper {
      *  multiple DATA_ROOT/$project/index).
      * @return this instance
      */
-    public SearchHelper prepareExec(TreeSet<String> projects) {
+    public SearchHelper prepareExec(SortedSet<String> projects) {
         if (redirect != null || errorMsg != null) {
             return this;
         }

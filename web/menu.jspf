@@ -24,7 +24,7 @@ Use is subject to license terms.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page import="
-java.util.TreeSet,
+java.util.SortedSet,
 java.util.TreeMap,
 java.util.Map.Entry,
 java.util.List,
@@ -149,7 +149,7 @@ org.opensolaris.opengrok.web.Util"
 		onkeyup="javascript: checkEnter(event);" class="q" id="project" 
 		name="project" multiple="multiple" size="<%= 
 		Math.min(6, projects.size()) %>"><%
-		TreeSet<String> pRequested = cfg.getRequestedProjects();
+		SortedSet<String> pRequested = cfg.getRequestedProjects();
 		for (Entry<String,String> e : pMap.entrySet()) {
 			// TODO below "selected" has no effect if one refreshes the page 
 			// with F5 also below ondblclick doesn't work in IE ...

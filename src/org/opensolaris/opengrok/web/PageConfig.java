@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,7 +97,7 @@ public final class PageConfig {
     private Boolean hasHistory;
     private static final EnumSet<Genre> txtGenres =
             EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
-    private Set<String> requestedProjects;
+    private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
     private String[] dirFileList;
     private QueryBuilder queryBuilder;
@@ -664,7 +665,7 @@ public final class PageConfig {
      *  <li>an empty set</li>
      * </ol>
      */
-    public Set<String> getRequestedProjects() {
+    public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects =
                     getRequestedProjects("project", "OpenGrokProject");
