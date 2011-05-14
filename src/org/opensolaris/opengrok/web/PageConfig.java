@@ -146,7 +146,7 @@ public final class PageConfig {
         String srcRoot = getSourceRootPath();
         String context = req.getContextPath();
 
-        String[] path = new String[2];
+        String[] filepath = new String[2];
         data.rev = new String[2];
         data.file = new String[2][];
         data.param = new String[2];
@@ -157,7 +157,7 @@ public final class PageConfig {
                 tmp = p.split("@");
             }
             if (tmp != null && tmp.length == 2) {
-                path[i - 1] = tmp[0];
+                filepath[i - 1] = tmp[0];
                 data.rev[i - 1] = tmp[1];
             }
         }
@@ -178,7 +178,7 @@ public final class PageConfig {
             BufferedReader br = null;
             try {
                 for (int i = 0; i < 2; i++) {
-                    File f = new File(srcRoot + path[i]);
+                    File f = new File(srcRoot + filepath[i]);
                     in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
                 }
                 if (data.genre == null) {
@@ -229,7 +229,7 @@ public final class PageConfig {
             for (int i = 0; i < 2; i++) {
                 try {
                     URI u = new URI(null, null, null,
-                            path[i] + "@" + data.rev[i], null);
+                            filepath[i] + "@" + data.rev[i], null);
                     data.param[i] = u.getRawQuery();
                 } catch (URISyntaxException e) {
                     log.log(Level.WARNING, "Failed to create URI: ", e);
@@ -291,8 +291,8 @@ public final class PageConfig {
             if (getPrefix() == Prefix.XREF_P) {
                 String[] list = getResourceFileList();
                 if (list.length == 0) {
-                    String rev = getRequestedRevision();
-                    if (rev.length() != 0 && !hasHistory()) {
+                    String revision = getRequestedRevision();
+                    if (revision.length() != 0 && !hasHistory()) {
                         return null;
                     }
                 }
@@ -673,7 +673,7 @@ public final class PageConfig {
     }
     private static Pattern COMMA_PATTERN = Pattern.compile("'");
 
-    private static final void splitByComma(String value, List<String> result) {
+    private static void splitByComma(String value, List<String> result) {
         if (value == null || value.length() == 0) {
             return;
         }
@@ -956,7 +956,7 @@ public final class PageConfig {
                 : "";
     }
 
-    private final File checkFile(File dir, String name, boolean compressed) {
+    private File checkFile(File dir, String name, boolean compressed) {
         File f = null;
         if (compressed) {
             f = new File(dir, name + ".gz");
