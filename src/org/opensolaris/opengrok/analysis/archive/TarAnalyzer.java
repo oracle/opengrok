@@ -46,7 +46,7 @@ import org.opensolaris.opengrok.web.Util;
  */
 
 public class TarAnalyzer extends FileAnalyzer {
-    private StringBuilder content;
+    private final StringBuilder content;
 
     private static final Reader dummy = new StringReader("");
 

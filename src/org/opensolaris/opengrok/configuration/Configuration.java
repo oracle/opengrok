@@ -106,7 +106,7 @@ public final class Configuration {
     private Set<String> allowedSymlinks;
     private boolean obfuscatingEMailAddresses;
     private boolean chattyStatusPage;
-    private Map<String,String> cmds;
+    private final Map<String,String> cmds;
     private int tabSize;
 
     /**

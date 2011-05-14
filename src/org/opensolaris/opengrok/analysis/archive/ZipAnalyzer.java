@@ -45,7 +45,7 @@ import org.opensolaris.opengrok.web.Util;
  * @author Chandan
  */
 public class ZipAnalyzer extends FileAnalyzer {
-    private StringBuilder content;
+    private final StringBuilder content;
 
     private static final Reader dummy = new StringReader("");
 
