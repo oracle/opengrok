@@ -102,7 +102,8 @@ public final class PageConfig {
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
-
+    private static final Logger log = Logger.getLogger(PageConfig.class.getName());
+    
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
      * generate.
@@ -231,7 +232,7 @@ public final class PageConfig {
                             path[i] + "@" + data.rev[i], null);
                     data.param[i] = u.getRawQuery();
                 } catch (URISyntaxException e) {
-                    Logger.getLogger(PageConfig.class.getName()).log(Level.WARNING, "Failed to create URI: ", e);
+                    log.log(Level.WARNING, "Failed to create URI: ", e);
                 }
             }
             data.full = fullDiff();
@@ -369,7 +370,7 @@ public final class PageConfig {
                     ret = x;
                 }
             } catch (Exception e) {
-                Logger.getLogger(PageConfig.class.getName()).log(Level.INFO, "Failed to parse integer " + s, e);
+                log.log(Level.INFO, "Failed to parse integer " + s, e);
             }
         }
         return ret;
@@ -470,7 +471,7 @@ public final class PageConfig {
                 eftarReader = new EftarFileReader(getEnv().getDataRootPath()
                         + "/index/dtags.eftar");
             } catch (Exception e) {
-                Logger.getLogger(PageConfig.class.getName()).log(Level.INFO, "Failed to create EftarFileReader: ", e);
+                log.log(Level.INFO, "Failed to create EftarFileReader: ", e);
             }
         }
         return eftarReader;
@@ -490,7 +491,7 @@ public final class PageConfig {
                 dtag = eftarReader.get(getPath());
                 // cfg.getPrefix() != Prefix.XREF_S) {
             } catch (IOException e) {
-                Logger.getLogger(PageConfig.class.getName()).log(Level.INFO, "Failed to get entry from eftar reader: ", e);
+                log.log(Level.INFO, "Failed to get entry from eftar reader: ", e);
             }
         }
         if (dtag == null) {
