@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -70,7 +70,7 @@ public final class Results {
      * @throws CorruptIndexException
      * @throws IOException
      */
-    private static LinkedHashMap<String, ArrayList<Document>>
+    private static Map<String, ArrayList<Document>>
         createMap(Searcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
     throws CorruptIndexException, IOException
     {
@@ -159,9 +159,8 @@ public final class Results {
         String rawPrefixE = ctxE + Prefix.RAW_P;
         File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
 
-        LinkedHashMap<String, ArrayList<Document>> dirHash =
-            createMap(sh.searcher, sh.hits, start, end);
-        for (Map.Entry<String, ArrayList<Document>> entry : dirHash.entrySet())
+        for (Map.Entry<String, ArrayList<Document>> entry :
+                createMap(sh.searcher, sh.hits, start, end).entrySet())
         {
             String parent = entry.getKey();
             out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");

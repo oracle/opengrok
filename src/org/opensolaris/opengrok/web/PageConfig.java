@@ -732,7 +732,7 @@ public final class PageConfig {
      *  lists used as fallback
      * @return a possible empty set but never {@code null}.
      */
-    protected TreeSet<String> getRequestedProjects(String paramName,
+    protected SortedSet<String> getRequestedProjects(String paramName,
             String cookieName) {
         TreeSet<String> set = new TreeSet<String>();
         List<Project> projects = getEnv().getProjects();
