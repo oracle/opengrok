@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -101,7 +101,7 @@ public class Context {
         for (Map.Entry<String, String> entry : subqueries.entrySet()) {
             String field = entry.getKey();
             String queryText = entry.getValue();
-            if (field.equals("full")) {
+            if ("full".equals(field)) {
                 field = "q"; // bah - search query params should be consistent!
             }
             sb.append(field).append("=").append(Util.URIEncode(queryText))

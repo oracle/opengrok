@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -569,7 +569,7 @@ public final class Indexer {
                     HashSet<String> toZap = new HashSet<String>(zapCache.size() << 1);
                     boolean all = false;
                     for (String repo : zapCache) {
-                        if (repo.equals("*")) {
+                        if ("*".equals(repo)) {
                             all = true;
                             break;
                         }
