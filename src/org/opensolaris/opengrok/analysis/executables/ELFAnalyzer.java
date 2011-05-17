@@ -32,7 +32,9 @@ import java.io.Writer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
@@ -54,8 +56,19 @@ import org.opensolaris.opengrok.web.Util;
 public class ELFAnalyzer extends FileAnalyzer {
 
     private StringBuilder content;
-    PlainFullTokenizer plainfull;
-    StringReader dummy = new StringReader("");
+    private PlainFullTokenizer plainfull;
+    private StringReader dummy = new StringReader("");
+
+    private static final List<String> readableSections;
+    static {
+        readableSections = new ArrayList<String>();
+        readableSections.add(".debug_str");
+        readableSections.add(".comment");
+        readableSections.add(".data");
+        readableSections.add(".data1");
+        readableSections.add(".rodata");
+        readableSections.add(".rodata1");
+    }
 
     /**
      * Creates a new instance of ELFAnalyzer
@@ -115,16 +128,14 @@ public class ELFAnalyzer extends FileAnalyzer {
             fmap.position(eh.e_shoff + (i * eh.e_shentsize));
 
             sections[i] = new ELFSection(fmap);
-            String sectionName;
-            if ((sectionName = getName(stringSection.sh_offset, sections[i].sh_name, fmap)) != null) {
+            String sectionName = getName(stringSection.sh_offset, sections[i].sh_name, fmap);
+            if (sectionName != null) {
                 sectionMap.put(sectionName, sections[i].sh_offset);
             }
 
             if (sections[i].sh_type == ELFSection.SHT_STRTAB) {
                 readables[ri++] = i;
-            } else if (".debug_str".equals(sectionName) || ".comment".equals(sectionName)
-                    || ".data".equals(sectionName) || ".data1".equals(sectionName)
-                    || ".rodata".equals(sectionName) || ".rodata1".equals(sectionName)) {
+            } else if (readableSections.contains(sectionName)) {
                 readables[ri++] = i;
             }
         }
