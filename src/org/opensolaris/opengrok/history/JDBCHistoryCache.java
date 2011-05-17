@@ -582,10 +582,10 @@ class JDBCHistoryCache implements HistoryCache {
         return history;
     }
 
-    private static PreparedQuery GET_REPOSITORY =
+    private static final PreparedQuery GET_REPOSITORY =
             new PreparedQuery(getQuery("getRepository"));
 
-    private static InsertQuery INSERT_REPOSITORY =
+    private static final InsertQuery INSERT_REPOSITORY =
             new InsertQuery(getQuery("addRepository"));
 
     @Override
@@ -604,13 +604,13 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static InsertQuery ADD_CHANGESET =
+    private static final InsertQuery ADD_CHANGESET =
             new InsertQuery(getQuery("addChangeset"));
 
-    private static PreparedQuery ADD_DIRCHANGE =
+    private static final PreparedQuery ADD_DIRCHANGE =
             new PreparedQuery(getQuery("addDirchange"));
 
-    private static PreparedQuery ADD_FILECHANGE =
+    private static final PreparedQuery ADD_FILECHANGE =
             new PreparedQuery(getQuery("addFilechange"));
 
     private void storeHistory(ConnectionResource conn, History history,
@@ -882,10 +882,10 @@ class JDBCHistoryCache implements HistoryCache {
         return getGeneratedIntKey(insert);
     }
 
-    private final static PreparedQuery GET_AUTHORS =
+    private static final PreparedQuery GET_AUTHORS =
             new PreparedQuery(getQuery("getAuthors"));
 
-    private final static InsertQuery ADD_AUTHOR =
+    private static final InsertQuery ADD_AUTHOR =
             new InsertQuery(getQuery("addAuthor"));
 
     /**
@@ -929,16 +929,16 @@ class JDBCHistoryCache implements HistoryCache {
         return map;
     }
 
-    private static PreparedQuery GET_DIRS =
+    private static final PreparedQuery GET_DIRS =
             new PreparedQuery(getQuery("getDirectories"));
 
-    private static PreparedQuery GET_FILES =
+    private static final PreparedQuery GET_FILES =
             new PreparedQuery(getQuery("getFiles"));
 
-    private static InsertQuery INSERT_DIR =
+    private static final InsertQuery INSERT_DIR =
             new InsertQuery(getQuery("addDirectory"));
 
-    private static InsertQuery INSERT_FILE =
+    private static final InsertQuery INSERT_FILE =
             new InsertQuery(getQuery("addFile"));
 
     /**
@@ -1077,7 +1077,7 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static PreparedQuery GET_LATEST_REVISION =
+    private static final PreparedQuery GET_LATEST_REVISION =
             new PreparedQuery(getQuery("getLatestCachedRevision"));
 
     @Override
