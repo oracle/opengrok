@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.util.IOUtils;
 public class CommandLineOptions {
 
     private final static String ON_OFF = "on/off";
+    private final static String NUMBER = "number";
 
     static class Option {
 
@@ -88,7 +89,7 @@ public class CommandLineOptions {
         options.add(new Option('K', null, "List all repository pathes and exit."));
         options.add(new Option('L', "path", "Path to the subdirectory in the web-application containing the requested stylesheet. The following factory-defaults exist: \"default\", \"offwhite\" and \"polished\""));
         options.add(new Option('l', ON_OFF, "Turn on/off locking of the Lucene database during index generation"));
-        options.add(new Option('m', "number", "The maximum words to index in a file"));
+        options.add(new Option('m', NUMBER, "The maximum words to index in a file"));
         options.add(new Option('N', "/path/to/symlink", "Allow this symlink to be followed. Option may be repeated."));
         options.add(new Option('n', null, "Do not generate indexes, but process all other command line options"));
         options.add(new Option('O', ON_OFF, "Turn on/off the optimization of the index database as part of the indexing step"));
@@ -100,8 +101,8 @@ public class CommandLineOptions {
         options.add(new Option('r', ON_OFF, "Turn on/off support for remote SCM systems"));
         options.add(new Option('S', null, "Search for \"external\" source repositories and add them"));
         options.add(new Option('s', "/path/to/source/root", "The root directory of the source tree"));
-        options.add(new Option('T', "number", "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));
-        options.add(new Option('t', "number", "Default tabsize to use (number of spaces per tab character)"));
+        options.add(new Option('T', NUMBER, "The number of threads to use for index generation. By default the number of threads will be set to the number of available CPUs"));
+        options.add(new Option('t', NUMBER, "Default tabsize to use (number of spaces per tab character)"));
         options.add(new Option('U', "host:port", "Send the current configuration to the specified address (This is most likely the web-app configured with ConfigAddress)"));
         options.add(new Option('u', "url", "URL to the database that contains the history cache. Default: If -j specifies \"embedded\", \"jdbc:derby:$DATA_ROOT/cachedb;create=true\"; otherwise, \"jdbc:derby://localhost/cachedb;create=true\""));
         options.add(new Option('V', null, "Print version and quit"));
@@ -109,7 +110,7 @@ public class CommandLineOptions {
         options.add(new Option('W', "/path/to/configuration", "Write the current configuration to the specified file (so that the web application can use the same configuration"));
         options.add(new Option('w', "webapp-context", "Context of webapp. Default is /source. If you specify a different name, make sure to rename source.war to that name."));
         options.add(new Option('X', "url:suffix", "URL Suffix for the user Information provider. Default: \"\""));
-        options.add(new Option('z', "number", "depth of scanning for repositories in directory structure relative to source root"));
+        options.add(new Option('z', NUMBER, "depth of scanning for repositories in directory structure relative to source root"));
     }
 
     public String getCommandString() {
