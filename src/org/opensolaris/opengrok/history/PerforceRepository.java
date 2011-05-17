@@ -140,7 +140,8 @@ public class PerforceRepository extends Repository {
         return true;
     }
 
-    private static PerforceRepository testRepo;
+    private final static PerforceRepository testRepo =
+            new PerforceRepository();
 
     /**
      * Check if a given file is in the depot
@@ -150,9 +151,6 @@ public class PerforceRepository extends Repository {
      */
     public static boolean isInP4Depot(File file) {
         boolean status = false;
-        if (testRepo == null) {
-            testRepo = new PerforceRepository();
-        }
         if (testRepo.isWorking()) {
             ArrayList<String> cmd = new ArrayList<String>();
             String name = file.getName();

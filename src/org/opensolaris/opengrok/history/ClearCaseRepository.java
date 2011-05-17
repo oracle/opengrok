@@ -359,12 +359,10 @@ public Annotation annotate(File file, String revision) throws IOException {
         return VobsHolder.vobs;
     }
 
-    private static ClearCaseRepository testRepo;
+    private final static ClearCaseRepository testRepo =
+            new ClearCaseRepository();
 
     private static String[] runLsvob() {
-        if (testRepo == null) {
-            testRepo = new ClearCaseRepository();
-        }
         if (testRepo.isWorking()) {
             Executor exec = new Executor(new String[] {testRepo.cmd, "lsvob", "-s"});
             int rc;
