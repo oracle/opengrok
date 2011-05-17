@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
+ * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -172,9 +173,7 @@ public final class PageConfig {
             return data;
         }
         data.genre = AnalyzerGuru.getGenre(getResourceFile().getName());
-        if (data.genre == Genre.IMAGE) {
-            return data; // no more info needed
-        }
+
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
             BufferedReader br = null;
@@ -183,6 +182,7 @@ public final class PageConfig {
                     File f = new File(srcRoot + filepath[i]);
                     in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
                 }
+
                 if (data.genre == null) {
                     try {
                         data.genre = AnalyzerGuru.getGenre(in[0]);
@@ -190,12 +190,12 @@ public final class PageConfig {
                         data.errorMsg = "Unable to determine the file type: "
                                 + Util.htmlize(e.getMessage());
                     }
-                    if (data.genre == Genre.IMAGE
-                            || (data.genre != Genre.PLAIN
-                            && data.genre != Genre.HTML)) {
-                        return data;
-                    }
                 }
+
+                if (data.genre != Genre.PLAIN && data.genre != Genre.HTML) {
+                    return data;
+                }
+
                 ArrayList<String> lines = new ArrayList<String>();
                 Project p = getProject();
                 for (int i = 0; i < 2; i++) {
@@ -267,13 +267,13 @@ public final class PageConfig {
     }
 
     /**
-     * Check, whether the request contains minial information required to
+     * Check, whether the request contains minimal information required to
      * produce a valid page. If this method returns an empty string, the
      * referred file or directory actually exists below the source root
      * directory and is readable.
      *
      * @return {@code null} if the referred src file, directory or history is not
-     *  available, an empty String if further processing is ok and a none-empty
+     *  available, an empty String if further processing is ok and a non-empty
      *  string which contains the URI encoded redirect path if the request
      *  should be redirected.
      * @see #resourceNotAvailable()
@@ -292,11 +292,9 @@ public final class PageConfig {
         if (isDir()) {
             if (getPrefix() == Prefix.XREF_P) {
                 String[] list = getResourceFileList();
-                if (list.length == 0) {
-                    String revision = getRequestedRevision();
-                    if (revision.length() != 0 && !hasHistory()) {
-                        return null;
-                    }
+                if (list.length == 0 &&
+                        !getRequestedRevision().isEmpty() && !hasHistory()) {
+                    return null;
                 }
             } else if (getPrefix() == Prefix.RAW_P) {
                 return null;
@@ -308,7 +306,7 @@ public final class PageConfig {
     /**
      * Get a list of filenames in the requested path.
      * @return an empty array, if the resource does not exist, is not a
-     *  directory or an error occured when reading it, otherwise a list of
+     *  directory or an error occurred when reading it, otherwise a list of
      *  filenames in that directory.
      * @see #getResourceFile()
      * @see #isDir()

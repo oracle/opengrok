@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -41,25 +40,23 @@ public final class Hash2TokenStream extends TokenStream {
 
     @Override
     public boolean incrementToken() throws java.io.IOException {
-        while (true) {
-            if (i <= 0) {
-                if (keys.hasNext()) {
-                    term = keys.next();
-                    terms = term.split("[^a-zA-Z_0-9]+");
-                    i = terms.length;
-                    if (i > 0) {
-                        termAtt.setTermBuffer(terms[--i]);
-                        return true;
-                    }
-                    // no tokens found in this key, try next
-                    continue;
+        while (i <= 0) {
+            if (keys.hasNext()) {
+                term = keys.next();
+                terms = term.split("[^a-zA-Z_0-9]+");
+                i = terms.length;
+                if (i > 0) {
+                    termAtt.setTermBuffer(terms[--i]);
+                    return true;
                 }
-                return false;
+                // no tokens found in this key, try next
+                continue;
             }
-            //System.out.println("Returning " + term + h.get(term));
-            termAtt.setTermBuffer(terms[--i]);
-            return true;
+            return false;
         }
+
+        termAtt.setTermBuffer(terms[--i]);
+        return true;
     }
 
     @Override

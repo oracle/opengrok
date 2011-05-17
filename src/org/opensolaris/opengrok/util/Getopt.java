@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
@@ -69,47 +68,44 @@ public class Getopt {
         int ii = 0;
         while (ii < argv.length) {
             char[] chars = argv[ii].toCharArray();
-            if (chars.length > 0) {
-
-                if (chars[0] == '-') {
-                    if (argv[ii].equals("--")) {
-                        // End of command line options ;)
-                        optind = ii + 1;
-                        break;
-                    }
-
-                    for (int jj = 1; jj < chars.length; ++jj) {
-                        int idx = opts.indexOf(chars[jj]);
-                        if (idx == -1) {
-                            throw new ParseException("Unknown argument: " + argv[ii].substring(jj), ii);
-                        }
-
-                        Option option = new Option();
-                        option.option = chars[jj];
-                        options.add(option);
-                        // does this option take an argument?
-                        if ((idx + 1) < opts.length() && (opts.charAt(idx + 1) ==':')) {
-                            // next should be an argument
-                            if ((jj + 1) < chars.length) {
-                                // Rest of this is the argument
-                                option.argument = argv[ii].substring(jj + 1);
-                                break;
-                            }
-                            // next argument vector contains the argument
-                            ++ii;
-                            if (ii < argv.length) {
-                                option.argument = argv[ii];
-                            } else {
-                                throw new ParseException("Option " + chars[jj] + " requires an argument", ii);
-                            }
-                        }
-                    }
-                    ++ii;
-                } else {
-                    // End of options
-                    optind = ii;
+            if (chars.length > 0 && chars[0] == '-') {
+                if (argv[ii].equals("--")) {
+                    // End of command line options ;)
+                    optind = ii + 1;
                     break;
                 }
+
+                for (int jj = 1; jj < chars.length; ++jj) {
+                    int idx = opts.indexOf(chars[jj]);
+                    if (idx == -1) {
+                        throw new ParseException("Unknown argument: " + argv[ii].substring(jj), ii);
+                    }
+
+                    Option option = new Option();
+                    option.option = chars[jj];
+                    options.add(option);
+                    // does this option take an argument?
+                    if ((idx + 1) < opts.length() && (opts.charAt(idx + 1) ==':')) {
+                        // next should be an argument
+                        if ((jj + 1) < chars.length) {
+                            // Rest of this is the argument
+                            option.argument = argv[ii].substring(jj + 1);
+                            break;
+                        }
+                        // next argument vector contains the argument
+                        ++ii;
+                        if (ii < argv.length) {
+                            option.argument = argv[ii];
+                        } else {
+                            throw new ParseException("Option " + chars[jj] + " requires an argument", ii);
+                        }
+                    }
+                }
+                ++ii;
+            } else {
+                // End of options
+                optind = ii;
+                break;
             }
         }
     }
