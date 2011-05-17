@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -31,6 +30,7 @@ import java.io.RandomAccessFile;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.util.IOUtils;
 
 
 /**
@@ -125,11 +125,10 @@ public class EftarFileReader {
             String tagString = null;
             try {
                 tagString = getTag();
+            } catch (EOFException e) { // NOPMD
+                // ignore
             } catch (IOException e) {
-                if (!(e instanceof EOFException)) {
-                    log.log(Level.WARNING, "Got excption while getting the tag: ", e);                
-                }
-                // ignore;
+                log.log(Level.WARNING, "Got excption while getting the tag: ", e);
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }
@@ -214,13 +213,9 @@ public class EftarFileReader {
     }
 
     public void close() {
-        if (f != null && isOpen) {
-            try {
-                f.close();
-                isOpen = false;
-            } catch (Exception e) {
-                /** ignore */
-            }
+        if (isOpen) {
+            IOUtils.close(f);
+            isOpen = false;
         }
     }
 }
