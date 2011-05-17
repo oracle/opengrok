@@ -116,7 +116,7 @@ public class SearchEngine {
     private final char[] content = new char[1024*8];
     private String source;
     private String data;
-    private final static boolean docsScoredInOrder = false;
+    private static final boolean docsScoredInOrder = false;
 
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages= RuntimeEnvironment.getInstance().getCachePages();

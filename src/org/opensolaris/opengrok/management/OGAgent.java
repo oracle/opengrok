@@ -62,7 +62,7 @@ import static org.opensolaris.opengrok.management.Constants.*; // NOPMD
 final public class OGAgent {
     Properties props;
 
-    private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
+    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
     private MBeanServer server = null;
 
 

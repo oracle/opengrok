@@ -85,7 +85,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             }
         };
 
-    public final static PlainAnalyzerFactory DEFAULT_INSTANCE =
+    public static final PlainAnalyzerFactory DEFAULT_INSTANCE =
             new PlainAnalyzerFactory();
 
     private PlainAnalyzerFactory() {

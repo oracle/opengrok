@@ -132,7 +132,7 @@ public class MonotoneRepository extends Repository {
         return new Executor(cmd, new File(directoryName));
     }
     /** Pattern used to extract author/revision from hg annotate. */
-    private final static Pattern ANNOTATION_PATTERN =
+    private static final Pattern ANNOTATION_PATTERN =
             Pattern.compile("^(\\w+)\\p{Punct}\\p{Punct} by (\\S+)");
 
     /**

@@ -39,11 +39,11 @@ import org.apache.lucene.search.Query;
  * the different fields.
  */
 public class QueryBuilder {
-    final static String FULL = "full";
-    final static String DEFS = "defs";
-    final static String REFS = "refs";
-    final static String PATH = "path";
-    final static String HIST = "hist";
+    static final String FULL = "full";
+    static final String DEFS = "defs";
+    static final String REFS = "refs";
+    static final String PATH = "path";
+    static final String HIST = "hist";
     /**
      * A map containing the query text for each field. (We use a sorted map here
      * only because we have tests that check the generated query string. If we

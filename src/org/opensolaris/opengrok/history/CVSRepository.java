@@ -251,7 +251,7 @@ public class CVSRepository extends RCSRepository {
     }
 
     /** Pattern used to extract author/revision from cvs annotate. */
-    private final static Pattern ANNOTATE_PATTERN =
+    private static final Pattern ANNOTATE_PATTERN =
         Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     protected Annotation parseAnnotation(Reader input, String fileName)

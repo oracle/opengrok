@@ -38,8 +38,8 @@ import org.opensolaris.opengrok.util.IOUtils;
 
 public class CommandLineOptions {
 
-    private final static String ON_OFF = "on/off";
-    private final static String NUMBER = "number";
+    private static final String ON_OFF = "on/off";
+    private static final String NUMBER = "number";
 
     static class Option {
 

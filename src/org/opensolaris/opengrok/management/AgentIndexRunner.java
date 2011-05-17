@@ -52,13 +52,13 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
         MBeanRegistration, Runnable, IndexChangedListener, NotificationEmitter {
 
     private transient static AgentIndexRunner indexerInstance = null;
-    private final static String NOTIFICATIONACTIONTYPE = "ogaaction";
-    private final static String NOTIFICATIONEXCEPTIONTYPE = "ogaexception";
-    private final static String NOTIFICATIONINFOSTRINGTYPE = "ogainfostring";
-    private final static String NOTIFICATIONINFOLONGTYPE = "ogainfolong";
+    private static final String NOTIFICATIONACTIONTYPE = "ogaaction";
+    private static final String NOTIFICATIONEXCEPTIONTYPE = "ogaexception";
+    private static final String NOTIFICATIONINFOSTRINGTYPE = "ogainfostring";
+    private static final String NOTIFICATIONINFOLONGTYPE = "ogainfolong";
     private boolean enabled;
     private transient Thread indexThread = null;
-    private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
+    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
     private RuntimeEnvironment env = null;
     private long lastIndexStart = 0;
     private long lastIndexFinish = 0;
@@ -68,7 +68,7 @@ public final class AgentIndexRunner implements AgentIndexRunnerMBean, Notificati
             new HashSet<NotificationHolder>();
     private static long sequenceNo = 0;
     private final StringBuilder notifications = new StringBuilder();
-    private final static int MAXMESSAGELENGTH = 50000;
+    private static final int MAXMESSAGELENGTH = 50000;
 
     /**
      * The only constructor is private, so other classes will only get an

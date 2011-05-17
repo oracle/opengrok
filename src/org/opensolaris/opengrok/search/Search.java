@@ -36,7 +36,7 @@ import org.opensolaris.opengrok.util.Getopt;
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 final class Search {
 
-    private final static String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" +
+    private static final String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" +
             "\t -R <configuration.xml> Read configuration from the specified file\n" +
             "\t -d Symbol Definitions\n" +
             "\t -r Symbol References\n" +

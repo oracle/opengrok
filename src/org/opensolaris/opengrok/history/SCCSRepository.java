@@ -73,7 +73,7 @@ public class SCCSRepository extends Repository {
     }
 
      /** Pattern used to extract revision from sccs get */
-    private final static Pattern AUTHOR_PATTERN =
+    private static final Pattern AUTHOR_PATTERN =
         Pattern.compile("^([\\d.]+)\\s+(\\S+)");
 
     private void getAuthors(File file) throws IOException {
@@ -125,7 +125,7 @@ public class SCCSRepository extends Repository {
     }
 
     /** Pattern used to extract revision from sccs get */
-    private final static Pattern ANNOTATION_PATTERN =
+    private static final Pattern ANNOTATION_PATTERN =
         Pattern.compile("^([\\d.]+)\\s+");
 
     /**

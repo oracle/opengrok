@@ -96,7 +96,7 @@ class JDBCHistoryCache implements HistoryCache {
     private String info;
 
     /** SQL queries used by this class. */
-    private final static Properties QUERIES = new Properties();
+    private static final Properties QUERIES = new Properties();
     static {
         Class<?> klazz = JDBCHistoryCache.class;
         InputStream in = null;

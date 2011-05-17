@@ -54,7 +54,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
 
     AgentConnection con;
     private static final Logger logger = OpenGrokLogger.getLogger();
-    private final static Level[] levels = new Level[]{Level.ALL,
+    private static final Level[] levels = new Level[]{Level.ALL,
     Level.CONFIG, Level.FINE,Level.FINER,Level.FINEST,Level.INFO,Level.OFF,
     Level.SEVERE, Level.WARNING};
     private ObjectName managementObjectName;
@@ -67,9 +67,9 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
     private String publishURL = "";
     private Configuration config = null;
     private String configurationFile = null;
-    private final static String[] projectTableHeaders = new String[]{"Id","Description","Path","Default"};
-    private final static String[] repositoryTableHeaders = new String[]{"Directory","Type","SCM Working"};
-    private final static String[] ignoredNamesHeaders = new String[]{"IgnorePatterns"};
+    private static final String[] projectTableHeaders = new String[]{"Id","Description","Path","Default"};
+    private static final String[] repositoryTableHeaders = new String[]{"Directory","Type","SCM Working"};
+    private static final String[] ignoredNamesHeaders = new String[]{"IgnorePatterns"};
 
     /** Creates new form ConfigurationsFrame
      * @param ac AgentConnection connection to the Opengrok agent.

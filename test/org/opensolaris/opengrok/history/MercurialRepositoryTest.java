@@ -41,7 +41,7 @@ public class MercurialRepositoryTest {
      * Revision numbers present in the Mercurial test repository, in the
      * order they are supposed to be returned from getHistory().
      */
-    private final static String[] REVISIONS = {
+    private static final String[] REVISIONS = {
         "2:585a1b3f2efb", "1:f24a5fd7a85d", "0:816b6279ae9c"
     };
 

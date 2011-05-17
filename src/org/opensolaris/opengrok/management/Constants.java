@@ -36,7 +36,7 @@ public final class Constants {
      * Protocol name used in URLs for the RMI JMX protocol. JMXServiceURL
      * always converts the protocol name to lower case (as per class javadoc).
      */
-    public final static String RMI_PROTOCOL = "rmi";
+    public static final String RMI_PROTOCOL = "rmi";
 
     /** Property specifying path where log files should be written. */
     public static final String LOG_PATH =

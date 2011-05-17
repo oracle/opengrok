@@ -39,15 +39,15 @@ import org.opensolaris.opengrok.util.IOUtils;
  */
 public class SettingsPersistence {
 
-    public final static String HOST = Constants.JMX_HOST;
-    public final static String JMXPORT = Constants.JMX_PORT;
-    public final static String RMIPORT = Constants.RMI_PORT;
-    public final static String JMXURL = Constants.JMX_URL;
-    public final static String INDEXTIMEOUTKEY = "org.opensolaris.opengrok.management.indextimeout";
-    public final static String CONNECTIONTIMEOUTKEY = "org.opensolaris.opengrok.management.connectiontimeout";
-    public final static String LOGGINGPATHKEY = Constants.LOG_PATH;
-    public final static String FILELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.filelevel";
-    public final static String CONSOLELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.consolelevel";
+    public static final String HOST = Constants.JMX_HOST;
+    public static final String JMXPORT = Constants.JMX_PORT;
+    public static final String RMIPORT = Constants.RMI_PORT;
+    public static final String JMXURL = Constants.JMX_URL;
+    public static final String INDEXTIMEOUTKEY = "org.opensolaris.opengrok.management.indextimeout";
+    public static final String CONNECTIONTIMEOUTKEY = "org.opensolaris.opengrok.management.connectiontimeout";
+    public static final String LOGGINGPATHKEY = Constants.LOG_PATH;
+    public static final String FILELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.filelevel";
+    public static final String CONSOLELOGLEVELKEY = "org.opensolaris.opengrok.management.logging.consolelevel";
     private final Properties ogcProperties = new Properties();
     private File propertyFile;
     private boolean existingSettings = false; //NOPMD we do change it, but in deep finally block

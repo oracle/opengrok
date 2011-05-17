@@ -37,7 +37,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 public final class Management implements ManagementMBean, MBeanRegistration {
 
     private static Management managementInstance = null;
-    private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
+    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
     private final Properties ogaProperties;
     private final long startTime; // Stores the time this bean is created
     private Boolean update = Boolean.FALSE;

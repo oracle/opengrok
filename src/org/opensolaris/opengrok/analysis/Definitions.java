@@ -37,11 +37,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class Definitions implements Serializable {
-    private final static long serialVersionUID = 1191703801007779489L;
+    private static final long serialVersionUID = 1191703801007779489L;
 
     // Per line sym -> tags mapping
     public static class LineTagMap implements Serializable {
-        private final static long serialVersionUID = 1191703801007779481L;
+        private static final long serialVersionUID = 1191703801007779481L;
         private final Map<String, Set<Tag>> sym_tags; //NOPMD
 
         protected LineTagMap() {
@@ -140,7 +140,7 @@ public class Definitions implements Serializable {
      * Class that represents a single tag.
      */
     public static class Tag implements Serializable {
-        private final static long serialVersionUID = 1217869075425651464L;
+        private static final long serialVersionUID = 1217869075425651464L;
 
         /** Line number of the tag. */
         public final int line;

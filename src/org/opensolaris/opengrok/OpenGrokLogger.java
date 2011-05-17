@@ -42,7 +42,7 @@ public final class OpenGrokLogger {
 
     private static int LOGFILESIZELIMIT = 1000000;
     private static int LOGFILESCOUNT = 30;
-    private final static Logger log = Logger.getLogger("org.opensolaris.opengrok");
+    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
     private static Level consoleLevel = Level.WARNING;
     private static Level fileLevel = Level.FINE;
     private static String filepath = "";

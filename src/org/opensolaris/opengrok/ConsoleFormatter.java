@@ -38,7 +38,7 @@ final public class ConsoleFormatter extends Formatter {
 
    private final java.text.SimpleDateFormat formatter =
       new java.text.SimpleDateFormat("HH:mm:ss.SSS");
-   private final static String lineSeparator = System.
+   private static final String lineSeparator = System.
       getProperty("line.separator");
 
    private String ts(Date date) {

@@ -55,12 +55,12 @@ public class AgentConnection implements NotificationListener {
     private boolean connected = false;
     private ActionListener actionListener = null;
     private boolean listenerRegistered = false;
-    private final static long RECONNECT_SLEEPTIME = 5000;
-    public final static String JAVA_LANG_STRING = "java.lang.String";
-    public final static String JAVA_LANG_OBJECT = "java.lang.Object";
+    private static final long RECONNECT_SLEEPTIME = 5000;
+    public static final String JAVA_LANG_STRING = "java.lang.String";
+    public static final String JAVA_LANG_OBJECT = "java.lang.Object";
     private StringBuilder filesInfo = new StringBuilder();
     /** MAX size of the filesInfo buffer */
-    private final static int FILESINFOMAX = 50000;
+    private static final int FILESINFOMAX = 50000;
     private long starttime = 0;
     private long endtime = 0;
 

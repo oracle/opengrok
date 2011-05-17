@@ -91,15 +91,15 @@ final class KeywordsFormat
     final Format Source_FORMAT =
             new MessageFormat("\\$Source: {0} \\$");
 
-    private final static String ID_RE = "\\$Id(:[^\\$]*)?\\$";
-    private final static String HEADER_RE = "\\$Header(:[^\\$]*)?\\$";
-    private final static String SOURCE_RE = "\\$Source(:[^\\$]*)?\\$";
-    private final static String RCSFILE_RE = "\\$RCSfile(:[^\\$]*)?\\$";
-    private final static String REVISION_RE = "\\$Revision(:[^\\$]*)?\\$";
-    private final static String DATE_RE = "\\$Date(:[^\\$]*)?\\$";
-    private final static String AUTHOR_RE = "\\$Author(:[^\\$]*)?\\$";
-    private final static String STATE_RE = "\\$State(:[^\\$]*)?\\$";
-    private final static String LOCKER_RE = "\\$Locker(:[^\\$]*)?\\$";
+    private static final String ID_RE = "\\$Id(:[^\\$]*)?\\$";
+    private static final String HEADER_RE = "\\$Header(:[^\\$]*)?\\$";
+    private static final String SOURCE_RE = "\\$Source(:[^\\$]*)?\\$";
+    private static final String RCSFILE_RE = "\\$RCSfile(:[^\\$]*)?\\$";
+    private static final String REVISION_RE = "\\$Revision(:[^\\$]*)?\\$";
+    private static final String DATE_RE = "\\$Date(:[^\\$]*)?\\$";
+    private static final String AUTHOR_RE = "\\$Author(:[^\\$]*)?\\$";
+    private static final String STATE_RE = "\\$State(:[^\\$]*)?\\$";
+    private static final String LOCKER_RE = "\\$Locker(:[^\\$]*)?\\$";
 
     /**
      * update the given text made of RCS keywords with the appropriate

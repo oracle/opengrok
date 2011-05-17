@@ -170,7 +170,7 @@ public class MercurialRepository extends Repository {
     }
 
     /** Pattern used to extract author/revision from hg annotate. */
-    private final static Pattern ANNOTATION_PATTERN =
+    private static final Pattern ANNOTATION_PATTERN =
         Pattern.compile("^\\s*(\\S+)\\s+(\\d+)\\s");
 
     /**

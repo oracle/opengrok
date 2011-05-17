@@ -134,7 +134,7 @@ public class BazaarRepository extends Repository {
     }
 
     /** Pattern used to extract author/revision from bzr blame. */
-    private final static Pattern BLAME_PATTERN =
+    private static final Pattern BLAME_PATTERN =
         Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
 
     /**

@@ -152,7 +152,7 @@ public class GitRepository extends Repository {
         return ret;
     }
     /** Pattern used to extract author/revision from git blame. */
-    private final static Pattern BLAME_PATTERN =
+    private static final Pattern BLAME_PATTERN =
             Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
 
     /**

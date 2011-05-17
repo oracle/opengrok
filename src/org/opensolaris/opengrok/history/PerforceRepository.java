@@ -49,7 +49,7 @@ public class PerforceRepository extends Repository {
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "p4";
 
-    private final static Pattern annotation_pattern =
+    private static final Pattern annotation_pattern =
         Pattern.compile("^(\\d+): .*");
 
     public PerforceRepository() {
@@ -140,7 +140,7 @@ public class PerforceRepository extends Repository {
         return true;
     }
 
-    private final static PerforceRepository testRepo =
+    private static final PerforceRepository testRepo =
             new PerforceRepository();
 
     /**
