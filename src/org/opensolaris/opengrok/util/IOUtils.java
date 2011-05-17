@@ -19,14 +19,12 @@
 
 /*
  * Copyright (c) 2011 Trond Norbye
+ * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -46,46 +44,16 @@ public final class IOUtils {
         // singleton
     }
 
-    public static void close(InputStream in) {
-        if (in != null) {
+    public static void close(Closeable c) {
+        if (c != null) {
             try {
-                in.close();
+                c.close();
             } catch (IOException e) {
-                log.log(Level.WARNING, "Failed to close input stream: ", e);
+                log.log(Level.WARNING, "Failed to close resource: ", e);
             }
         }
     }
 
-    public static void close(OutputStream out) {
-        if (out != null) {
-            try {
-                out.close();
-            } catch (IOException e) {
-                log.log(Level.WARNING, "Failed to close output stream: ", e);
-            }
-        }
-    }
-
-    public static void close(Reader in) {
-        if (in != null) {
-            try {
-                in.close();
-            } catch (IOException e) {
-                log.log(Level.WARNING, "Failed to close reader: ", e);
-            }
-        }
-    }
-
-    public static void close(Writer out) {
-        if (out != null) {
-            try {
-                out.close();
-            } catch (IOException e) {
-                log.log(Level.WARNING, "Failed to close writer: ", e);
-            }
-        }
-    }
-    
     public static void close(ServerSocket sock) {
         if (sock != null) {
             try {
