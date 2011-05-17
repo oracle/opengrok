@@ -328,7 +328,7 @@ public final class Util {
             }
             if (canonical) {
                 if (names[i].equals("..")) {
-                    if (res.size() > 0) {
+                    if (!res.isEmpty()) {
                         res.removeLast();
                     }
                 } else if (names[i].equals(".")) {
