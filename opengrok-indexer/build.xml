@@ -18,16 +18,15 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project name="OpenGrok" default="jar" basedir=".">
     <description>Builds, tests, and runs the project opengrok.</description>
 
-    <property name="version" value="0.9.1-alpha"/>
     <property name="distname" value="opengrok"/>
-    
+
+    <property name="build.classes.dir" value="target/classes"/>
 
     <property name="test.repositories" value="../testdata/repositories"/>
     <property name="test.sources" value="../testdata/sources"/>
@@ -68,9 +67,33 @@ Use is subject to license terms.
          so that we have history information from Mercurial available.
       -->
     <target name="-check-is-hg-repo">
-      <available property="build.from.repo" file=".hg" type="dir"/>
+      <available property="build.from.repo" file=".hg" filepath=".." type="dir"/>
     </target>
 
+    <!-- Get the id of the changeset we're building from by reading
+         .hg_archival.txt file created by hg archive. This will only
+         be used when we're not building from a checked out copy of
+         the repository, for example the source distribution.
+      -->
+    <target name="-get-changeset-from-file"
+            depends="-check-is-hg-repo" unless="build.from.repo">
+        <tempfile property="hg.archival.temp" deleteonexit="true"/>
+        <copy file="../.hg_archival.txt" tofile="${hg.archival.temp}"/>
+        <replaceregexp file="${hg.archival.temp}" flags="s"
+                     match=".*node: ([0-9a-f]{12}).*"
+                     replace="\1"/>
+        <loadfile srcFile="${hg.archival.temp}" property="changeset"/>
+    </target>
+
+    <target name="-update-build-info"
+            depends="-get-changeset-from-command,-get-changeset-from-file">
+        <mkdir dir="${build.classes.dir}/org/opensolaris/opengrok"/>
+        <propertyfile
+            file="${build.classes.dir}/org/opensolaris/opengrok/info.properties">
+            <entry  key="version" value="${version}"/>
+            <entry  key="changeset" value="${changeset}"/>
+        </propertyfile>
+    </target>
 
     <target name="-post-compile-test">
         <antcall target="-create-svn-repository"/>
