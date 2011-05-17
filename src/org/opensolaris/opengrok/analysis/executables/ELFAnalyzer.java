@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -57,7 +56,6 @@ public class ELFAnalyzer extends FileAnalyzer {
 
     private StringBuilder content;
     private PlainFullTokenizer plainfull;
-    private StringReader dummy = new StringReader("");
 
     private static final List<String> READABLE_SECTIONS;
     static {
@@ -77,7 +75,7 @@ public class ELFAnalyzer extends FileAnalyzer {
     protected ELFAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
         content = new StringBuilder();
-        plainfull = new PlainFullTokenizer(dummy);
+        plainfull = new PlainFullTokenizer(new StringReader(""));
     }
 
     @Override
