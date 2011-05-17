@@ -177,10 +177,10 @@ public class Executor {
                     .append(processBuilder.command().toString())
                     .append(" in directory ");
             File cwd = processBuilder.directory();
-            if (cwd != null) {
-                    msg.append(cwd.toString());
+            if (cwd == null) {
+                msg.append(System.getProperty("user.dir"));
             } else {
-                    msg.append(System.getProperty("user.dir"));
+                msg.append(cwd.toString());
             }
             if (stderr != null && stderr.length > 0) {
                     msg.append(": ");

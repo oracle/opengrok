@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -481,7 +481,13 @@ public final class Util {
                 out.write(anchorEnd);
             }
             String a = annotation.getAuthor(num);
-            if (userPageLink != null) {
+            if (userPageLink == null) {
+                out.write("<span class=\"a\">");
+                htmlize(a, buf);
+                out.write(buf.toString());
+                out.write("</span>");
+                buf.setLength(0);
+            } else {
                 out.write(anchorClassStart);
                 out.write("a\" href=\"");
                 out.write(userPageLink);
@@ -494,12 +500,6 @@ public final class Util {
                 out.write(buf.toString());
                 buf.setLength(0);
                 out.write(anchorEnd);
-            } else {
-                out.write("<span class=\"a\">");
-                htmlize(a, buf);
-                out.write(buf.toString());
-                out.write("</span>");
-                buf.setLength(0);
             }
             out.write("</span>");
         }
