@@ -182,29 +182,33 @@ public class Annotation {
     //TODO below might be useless, need to test with more SCMs and different commit messages
     // to see if it will not be usefull, if title attribute of <a> loses it's breath
     public void writeTooltipMap(Writer out) throws IOException {
-        StringBuffer map = new StringBuffer(100);
-        map.append("<script type=\"text/javascript\">\nvar desc = new Object();\n");
+        out.append("<script type=\"text/javascript\">\nvar desc = new Object();\n");
         for (Entry<String, String> entry : desc.entrySet()) {
-            map.append("desc['" + entry.getKey() + "'] = \"" + entry.getValue() + "\";\n");
+            out.append("desc['");
+            out.append(entry.getKey());
+            out.append("'] = \"");
+            out.append(entry.getValue());
+            out.append("\";\n");
         }
-        map.append("</script>\n");
-        out.write(map.toString());
+        out.append("</script>\n");
     }
 
     @Override
     public String toString() {
-        StringBuffer sb = new StringBuffer();
-        for (Line line : lines) {
-            sb.append(line.revision + "|" + line.author + ": \n");
-        }
         StringWriter sw = new StringWriter();
+        for (Line line : lines) {
+            sw.append(line.revision);
+            sw.append("|");
+            sw.append(line.author);
+            sw.append(": \n");
+        }
+        
         try {
             writeTooltipMap(sw);
         } catch (IOException e) {
             log.finest(e.getMessage());
         }
-        sb.append(sw.toString());
 
-        return sb.toString();
+        return sw.toString();
     }
 }
