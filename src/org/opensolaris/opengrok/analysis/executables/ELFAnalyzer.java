@@ -59,15 +59,15 @@ public class ELFAnalyzer extends FileAnalyzer {
     private PlainFullTokenizer plainfull;
     private StringReader dummy = new StringReader("");
 
-    private static final List<String> readableSections;
+    private static final List<String> READABLE_SECTIONS;
     static {
-        readableSections = new ArrayList<String>();
-        readableSections.add(".debug_str");
-        readableSections.add(".comment");
-        readableSections.add(".data");
-        readableSections.add(".data1");
-        readableSections.add(".rodata");
-        readableSections.add(".rodata1");
+        READABLE_SECTIONS = new ArrayList<String>();
+        READABLE_SECTIONS.add(".debug_str");
+        READABLE_SECTIONS.add(".comment");
+        READABLE_SECTIONS.add(".data");
+        READABLE_SECTIONS.add(".data1");
+        READABLE_SECTIONS.add(".rodata");
+        READABLE_SECTIONS.add(".rodata1");
     }
 
     /**
@@ -135,7 +135,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
             if (sections[i].sh_type == ELFSection.SHT_STRTAB) {
                 readables[ri++] = i;
-            } else if (readableSections.contains(sectionName)) {
+            } else if (READABLE_SECTIONS.contains(sectionName)) {
                 readables[ri++] = i;
             }
         }
