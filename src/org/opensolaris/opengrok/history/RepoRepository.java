@@ -50,11 +50,6 @@ public class RepoRepository extends Repository {
     }
 
     @Override
-    public void setDirectoryName(String directoryName) {
-        super.setDirectoryName(directoryName);
-    }
-
-    @Override
     public boolean isWorking() {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         return true;
