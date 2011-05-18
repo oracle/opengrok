@@ -101,7 +101,7 @@ public final class PageConfig {
             EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
-    private String[] dirFileList;
+    private Boolean dirContainsResources;
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
@@ -291,8 +291,7 @@ public final class PageConfig {
         // jel: outfactored from list.jsp - seems to be bogus
         if (isDir()) {
             if (getPrefix() == Prefix.XREF_P) {
-                String[] list = getResourceFileList();
-                if (list.length == 0 &&
+                if (!containsResources() &&
                         !getRequestedRevision().isEmpty() && !hasHistory()) {
                     return null;
                 }
@@ -304,23 +303,23 @@ public final class PageConfig {
     }
 
     /**
-     * Get a list of filenames in the requested path.
-     * @return an empty array, if the resource does not exist, is not a
-     *  directory or an error occurred when reading it, otherwise a list of
-     *  filenames in that directory.
+     * Check if there are any resources available on the requested path.
+     * @return {@code false}, if the resource does not exist, is not a
+     * directory or an error occurred when reading it; otherwise {@code true}
      * @see #getResourceFile()
      * @see #isDir()
      */
-    public String[] getResourceFileList() {
-        if (dirFileList == null) {
+    public boolean containsResources() {
+        if (dirContainsResources == null) {
             if (isDir() && getResourcePath().length() > 1) {
-                dirFileList = getResourceFile().list();
-            }
-            if (dirFileList == null) {
-                dirFileList = new String[0];
+                String[] dirFileList = getResourceFile().list();
+                dirContainsResources =
+                        dirFileList != null && dirFileList.length > 0;
+            } else {
+                dirContainsResources = false;
             }
         }
-        return dirFileList;
+        return dirContainsResources;
     }
 
     /**
