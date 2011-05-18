@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -41,6 +42,13 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Trond Norbye
  */
 public abstract class Repository extends RepositoryInfo {
+
+    /**
+     * The command with which to access the external repository. Can be
+     * {@code null} if the repository isn't accessed via a CLI, or if it
+     * hasn't been initialized by {@link #ensureCommand} yet.
+     */
+    protected String cmd;
 
     abstract boolean fileHasHistory(File file);
 
@@ -258,5 +266,30 @@ public abstract class Repository extends RepositoryInfo {
     static Boolean checkCmd(final String[] args) {
         Executor exec = new Executor(args);
         return Boolean.valueOf(exec.exec(false) == 0);
+    }
+
+    /**
+     * Set the name of the external client command that should be used to
+     * access the repository wrt. the given parameters. Does nothing, if this
+     * repository's <var>cmd</var> has already been set (i.e. has a
+     * non-{@code null} value).
+     *
+     * @param propertyKey property key to lookup the corresponding system property.
+     * @param fallbackCommand the command to use, if lookup fails.
+     * @return the command to use.
+     * @see #cmd
+     */
+    protected String ensureCommand(String propertyKey, String fallbackCommand) {
+        if (cmd != null) {
+            return cmd;
+        }
+        cmd = RuntimeEnvironment.getInstance()
+            .getRepoCmd(this.getClass().getCanonicalName());
+        if (cmd == null) {
+            cmd = System.getProperty(propertyKey, fallbackCommand);
+            RuntimeEnvironment.getInstance()
+                .setRepoCmd(this.getClass().getCanonicalName(), cmd);
+        }
+        return cmd;
     }
 }

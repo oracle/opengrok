@@ -18,14 +18,11 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
 import java.io.Serializable;
-
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Class to contain the common info for a repository. This object
@@ -42,7 +39,6 @@ public class RepositoryInfo implements Serializable {
     protected String type;
     protected boolean remote;
     protected String datePattern;
-    protected String cmd;
 
     /**
      * Empty constructor to support serialization.
@@ -57,7 +53,6 @@ public class RepositoryInfo implements Serializable {
         this.working = Boolean.valueOf(orig.isWorking());
         this.remote = orig.isRemote();
         this.datePattern = orig.datePattern;
-        this.cmd = orig.cmd;
     }
 
     /**
@@ -135,31 +130,6 @@ public class RepositoryInfo implements Serializable {
 
     public String getDatePattern() {
         return datePattern;
-    }
-
-    /**
-     * Set the name of the external client command that should be used to
-     * access the repository wrt. the given parameters. Does nothing, if this
-     * repository's <var>cmd</var> has been already set (i.e. has a
-     * none-{@code null} value).
-     *
-     * @param propertyKey property key to lookup the corresponding system property.
-     * @param fallbackCommand the command to use, if lookup fails.
-     * @return the command to use.
-     * @see #cmd
-     */
-    protected String ensureCommand(String propertyKey, String fallbackCommand) {
-        if (cmd != null) {
-            return cmd;
-        }
-        cmd = RuntimeEnvironment.getInstance()
-            .getRepoCmd(this.getClass().getCanonicalName());
-        if (cmd == null) {
-            cmd = System.getProperty(propertyKey, fallbackCommand);
-            RuntimeEnvironment.getInstance()
-                .setRepoCmd(this.getClass().getCanonicalName(), cmd);
-        }
-        return cmd;
     }
 }
 
