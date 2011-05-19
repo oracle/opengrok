@@ -101,7 +101,7 @@ public final class PageConfig {
             EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
-    private Boolean dirContainsResources;
+    private String[] dirFileList;
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
@@ -291,7 +291,8 @@ public final class PageConfig {
         // jel: outfactored from list.jsp - seems to be bogus
         if (isDir()) {
             if (getPrefix() == Prefix.XREF_P) {
-                if (!containsResources() &&
+                String[] list = getResourceFileList();
+                if (list.length == 0 &&
                         !getRequestedRevision().isEmpty() && !hasHistory()) {
                     return null;
                 }
@@ -303,23 +304,23 @@ public final class PageConfig {
     }
 
     /**
-     * Check if there are any resources available on the requested path.
-     * @return {@code false}, if the resource does not exist, is not a
-     * directory or an error occurred when reading it; otherwise {@code true}
+     * Get a list of filenames in the requested path.
+     * @return an empty array, if the resource does not exist, is not a
+     *  directory or an error occurred when reading it, otherwise a list of
+     *  filenames in that directory.
      * @see #getResourceFile()
      * @see #isDir()
      */
-    public boolean containsResources() {
-        if (dirContainsResources == null) {
+    public String[] getResourceFileList() {
+        if (dirFileList == null) {
             if (isDir() && getResourcePath().length() > 1) {
-                String[] dirFileList = getResourceFile().list();
-                dirContainsResources =
-                        dirFileList != null && dirFileList.length > 0;
-            } else {
-                dirContainsResources = false;
+                dirFileList = getResourceFile().list();
+            }
+            if (dirFileList == null) {
+                dirFileList = new String[0];
             }
         }
-        return dirContainsResources;
+        return dirFileList;
     }
 
     /**
