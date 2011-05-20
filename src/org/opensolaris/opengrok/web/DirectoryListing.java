@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -31,7 +30,7 @@ import java.io.Writer;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -72,7 +71,7 @@ public class DirectoryListing {
      * @throws NullPointerException if a parameter except <var>files</var>
      *  is {@code null}
      */
-    public List<String> listTo(File dir, Writer out, String path, String[] files) throws IOException {
+    public List<String> listTo(File dir, Writer out, String path, List<String> files) throws IOException {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<String>();
         int offset = -1;
@@ -96,7 +95,7 @@ public class DirectoryListing {
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
 
         if (files != null) {
-            Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
+            Collections.sort(files, String.CASE_INSENSITIVE_ORDER);
             for (String file : files) {
                 if (ignoredNames.ignore(file)) {
                     continue;

@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page import="
@@ -101,8 +101,8 @@ document.pageReady.push(function() { pageReadyList();});
 		}
 		// requesting a directory listing
 		DirectoryListing dl = new DirectoryListing(cfg.getEftarReader());
-		String[] files = cfg.getResourceFileList();
-		if (files.length != 0) {
+		List<String> files = cfg.getResourceFileList();
+		if (!files.isEmpty()) {
 			List<String> readMes = dl.listTo(resourceFile, out, path, files);
 			File[] catfiles = cfg.findDataFiles(readMes);
 			for (int i=0; i < catfiles.length; i++) {

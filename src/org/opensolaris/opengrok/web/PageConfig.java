@@ -32,6 +32,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -101,7 +103,7 @@ public final class PageConfig {
             EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
-    private String[] dirFileList;
+    private List<String> dirFileList;
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
@@ -291,8 +293,7 @@ public final class PageConfig {
         // jel: outfactored from list.jsp - seems to be bogus
         if (isDir()) {
             if (getPrefix() == Prefix.XREF_P) {
-                String[] list = getResourceFileList();
-                if (list.length == 0 &&
+                if (getResourceFileList().isEmpty() &&
                         !getRequestedRevision().isEmpty() && !hasHistory()) {
                     return null;
                 }
@@ -305,19 +306,23 @@ public final class PageConfig {
 
     /**
      * Get a list of filenames in the requested path.
-     * @return an empty array, if the resource does not exist, is not a
+     * @return an empty list, if the resource does not exist, is not a
      *  directory or an error occurred when reading it, otherwise a list of
      *  filenames in that directory.
      * @see #getResourceFile()
      * @see #isDir()
      */
-    public String[] getResourceFileList() {
+    public List<String> getResourceFileList() {
         if (dirFileList == null) {
+            String[] files = null;
             if (isDir() && getResourcePath().length() > 1) {
-                dirFileList = getResourceFile().list();
+                files = getResourceFile().list();
             }
-            if (dirFileList == null) {
-                dirFileList = new String[0];
+            if (files == null) {
+                dirFileList = Collections.emptyList();
+            } else {
+                dirFileList =
+                        Collections.unmodifiableList(Arrays.asList(files));
             }
         }
         return dirFileList;

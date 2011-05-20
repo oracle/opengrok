@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
+import java.util.Arrays;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -232,7 +232,8 @@ public class DirectoryListingTest {
         out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
         DirectoryListing instance = new DirectoryListing();
-        instance.listTo(directory, out, directory.getPath(), directory.list());
+        instance.listTo(directory, out, directory.getPath(),
+                        Arrays.asList(directory.list()));
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         assertNotNull("DocumentBuilderFactory is null", factory);
