@@ -30,7 +30,6 @@ import java.io.Writer;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -95,7 +94,6 @@ public class DirectoryListing {
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
 
         if (files != null) {
-            Collections.sort(files, String.CASE_INSENSITIVE_ORDER);
             for (String file : files) {
                 if (ignoredNames.ignore(file)) {
                     continue;

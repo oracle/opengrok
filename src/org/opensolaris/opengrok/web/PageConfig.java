@@ -308,7 +308,7 @@ public final class PageConfig {
      * Get a list of filenames in the requested path.
      * @return an empty list, if the resource does not exist, is not a
      *  directory or an error occurred when reading it, otherwise a list of
-     *  filenames in that directory.
+     *  filenames in that directory, sorted alphabetically
      * @see #getResourceFile()
      * @see #isDir()
      */
@@ -321,6 +321,7 @@ public final class PageConfig {
             if (files == null) {
                 dirFileList = Collections.emptyList();
             } else {
+                Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
                 dirFileList =
                         Collections.unmodifiableList(Arrays.asList(files));
             }
