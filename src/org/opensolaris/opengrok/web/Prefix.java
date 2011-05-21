@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
+ * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -69,7 +70,7 @@ public enum Prefix {
     SEARCH_O("/opensearch"),
     /** related source file or directory not found/unavailable/ignored */
     NOT_FOUND("/enoent"),
-    /** misc error occured */
+    /** misc error occurred */
     ERROR("/error")
     ;
     private String prefix;
@@ -109,10 +110,9 @@ public enum Prefix {
             return UNKNOWN;
         }
         int idx = servletPath.indexOf('/', 1);
-        if (idx > 0) {
-            servletPath = servletPath.substring(0, idx);
-        }
-        Prefix p = lookupTable.get(servletPath);
+        String pathPrefix = (idx == -1) ?
+                servletPath : servletPath.substring(0, idx);
+        Prefix p = lookupTable.get(pathPrefix);
         return p == null ? UNKNOWN : p;
     }
 }
