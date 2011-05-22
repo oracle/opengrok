@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ */
 /* Portions Copyright 2008 Peter Bray */
 package org.opensolaris.opengrok.history;
 
@@ -83,7 +86,6 @@ class RazorHistoryParser {
         }
     }
 
-    @SuppressWarnings("PMD.ConfusingTernary")
     protected History parseContents(BufferedReader contents) throws IOException {
         DateFormat df = repository.getDateFormat();
         String line;
@@ -113,7 +115,36 @@ class RazorHistoryParser {
 
             } else if (!ignoreEntry) {
 
-                if (!seenActionType) {
+                if (seenActionType) {
+                    infoMatcher.reset(line);
+
+                    if (infoMatcher.find()) {
+                        String infoType = infoMatcher.group(1);
+                        String details = infoMatcher.group(2);
+
+                        if ("TITLE".equals(infoType)) {
+                            parseDebug("Setting Message : '" + details + "'");
+                            entry.setMessage(details);
+                            lastWasTitle = true;
+                        } else if ("ISSUE".equals(infoType)) {
+                            parseDebug("Adding CR : '" + details + "'");
+                            entry.addChangeRequest(details);
+                        } else {
+                            parseDebug("Ignoring Info Type Line '" + line + "'");
+                        }
+                    } else {
+                        if (!line.startsWith("##") && line.charAt(0) == '#') {
+                            parseDebug("Seen Comment : '" + line + "'");
+                            if (lastWasTitle) {
+                                entry.appendMessage("");
+                                lastWasTitle = false;
+                            }
+                            entry.appendMessage(line.substring(1));
+                        } else {
+                            parseProblem("Expecting addlInfo and got '" + line + "'");
+                        }
+                    }
+                } else {
                     actionMatcher.reset(line);
 
                     if (actionMatcher.find()) {
@@ -152,36 +183,6 @@ class RazorHistoryParser {
                     } else {
                         parseProblem("Expecting actionType and got '" + line + "'");
                     }
-                } else {
-                    infoMatcher.reset(line);
-
-                    if (infoMatcher.find()) {
-                        String infoType = infoMatcher.group(1);
-                        String details = infoMatcher.group(2);
-
-                        if ("TITLE".equals(infoType)) {
-                            parseDebug("Setting Message : '" + details + "'");
-                            entry.setMessage(details);
-                            lastWasTitle = true;
-                        } else if ("ISSUE".equals(infoType)) {
-                            parseDebug("Adding CR : '" + details + "'");
-                            entry.addChangeRequest(details);
-                        } else {
-                            parseDebug("Ignoring Info Type Line '" + line + "'");
-                        }
-                    } else {
-                        if (!line.startsWith("##") && line.charAt(0) == '#') {
-                            parseDebug("Seen Comment : '" + line + "'");
-                            if (lastWasTitle) {
-                                entry.appendMessage("");
-                                lastWasTitle = false;
-                            }
-                            entry.appendMessage(line.substring(1));
-                        } else {
-                            parseProblem("Expecting addlInfo and got '" + line + "'");
-                        }
-                    }
-
                 }
             }
         }

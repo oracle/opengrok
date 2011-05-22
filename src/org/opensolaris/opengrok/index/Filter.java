@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.index;
@@ -148,11 +148,10 @@ public class Filter implements Serializable {
      *
      * @param pattern the pattern to add
      */
-    @SuppressWarnings("PMD.ConfusingTernary")
     private void addPattern(String pattern) {
-        if (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1) {
+        if (pattern.contains("*") || pattern.contains("?")) {
             patterns.add(compilePattern(pattern));
-        } else if (pattern.indexOf(File.separatorChar) != -1) {
+        } else if (pattern.contains(File.separator)) {
             if (pattern.charAt(0) == File.separatorChar) {
                 path.add(pattern);
             } else {

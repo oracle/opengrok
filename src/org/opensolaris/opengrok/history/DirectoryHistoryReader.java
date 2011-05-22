@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -71,7 +70,6 @@ public class DirectoryHistoryReader {
     HistoryEntry currentEntry;
     History history;
 
-    @SuppressWarnings("PMD.ConfusingTernary")
     public DirectoryHistoryReader(String path) throws IOException {
         //TODO can we introduce paging here ???  this class is used just for rss.jsp !
         int hitsPerPage=RuntimeEnvironment.getInstance().getHitsPerPage();
@@ -115,7 +113,7 @@ public class DirectoryHistoryReader {
                     }
                     int ls = rpath.lastIndexOf('/');
                     if (ls != -1) {
-                        String rparent = (ls != -1) ? rpath.substring(0, ls) : "";
+                        String rparent = rpath.substring(0, ls);
                         String rbase = rpath.substring(ls + 1);
                         History hist = null;
                         try {

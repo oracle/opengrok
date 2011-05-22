@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -284,7 +283,6 @@ public final class HistoryGuru {
      * @param depth current depth - using global scanningDepth - one can limit
      *  this to improve scanning performance
      */
-    @SuppressWarnings("PMD.ConfusingTernary")
     private void addRepositories(File[] files, Collection<RepositoryInfo> repos,
             IgnoredNames ignoredNames, boolean recursiveSearch, int depth) {
         for (File file : files) {
@@ -298,7 +296,20 @@ public final class HistoryGuru {
                 log.log(Level.WARNING, "Could not create repoitory for '"
                     + file + "', missing access rights.", iae);
             }
-            if (repository != null) {
+            if (repository == null) {
+                // Not a repository, search it's sub-dirs
+                if (file.isDirectory() && !ignoredNames.ignore(file)) {
+                    File subFiles[] = file.listFiles();
+                    if (subFiles == null) {
+                        log.log(Level.WARNING,
+                            "Failed to get sub directories for '"
+                            + file.getAbsolutePath()
+                            + "', check access permissions.");
+                    } else if (depth<=scanningDepth) {
+                        addRepositories(subFiles, repos, ignoredNames, depth+1);
+                    }
+                }
+            } else {
                 try {
                     String path = file.getCanonicalPath();
                     repository.setDirectoryName(path);
@@ -329,19 +340,6 @@ public final class HistoryGuru {
                     log.log(Level.WARNING, "Failed to get canonical path for "
                         + file.getAbsolutePath() + ": " + exp.getMessage());
                     log.log(Level.WARNING, "Repository will be ignored...", exp);
-                }
-            } else {
-                // Not a repository, search it's sub-dirs
-                if (file.isDirectory() && !ignoredNames.ignore(file)) {
-                    File subFiles[] = file.listFiles();
-                    if (subFiles == null) {
-                        log.log(Level.WARNING,
-                            "Failed to get sub directories for '"
-                            + file.getAbsolutePath()
-                            + "', check access permissions.");
-                    } else if (depth<=scanningDepth) {
-                        addRepositories(subFiles, repos, ignoredNames, depth+1);
-                    }
                 }
             }
         }

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -59,7 +58,6 @@ public class BZip2Analyzer extends FileAnalyzer {
 
     private FileAnalyzer fa;
 
-    @SuppressWarnings("PMD.ConfusingTernary")
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
         if (in.read() != 'B') {
@@ -76,7 +74,9 @@ public class BZip2Analyzer extends FileAnalyzer {
             String newname = path.substring(0, path.lastIndexOf('.'));
             //System.err.println("BZIPPED OF = " + newname);
             fa = AnalyzerGuru.getAnalyzer(gzis, newname);
-            if (fa != null && fa.getClass() != BZip2Analyzer.class) {
+            if (fa instanceof BZip2Analyzer) {
+                fa = null;
+            } else {
                 if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
                     this.g = Genre.XREFABLE;
                 } else {
@@ -90,9 +90,6 @@ public class BZip2Analyzer extends FileAnalyzer {
                             Field.Index.NOT_ANALYZED));
                     }
                 }
-            } else {
-                fa = null;
-                //System.err.println("Did not analyze " + newname);
             }
         }
     }

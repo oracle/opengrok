@@ -137,11 +137,14 @@ public class Summarizer {
         // how many query terms are present.  An excerpt is
         // a List full of Fragments and Highlights
         //
-        @SuppressWarnings("PMD.ConfusingTernary")
         SortedSet<Excerpt> excerptSet = new TreeSet<Excerpt>(new Comparator<Excerpt>() {
             @Override
             public int compare(Excerpt excerpt1, Excerpt excerpt2) {
-                if (excerpt1 != null && excerpt2 != null) {
+                if (excerpt1 == null) {
+                    return excerpt2 == null ? 0 : -1;
+                } else if (excerpt2 == null) {
+                    return 1;
+                } else {
                     int numToks1 = excerpt1.numUniqueTokens();
                     int numToks2 = excerpt2.numUniqueTokens();
 
@@ -152,16 +155,9 @@ public class Summarizer {
                     } else {
                         return 1;
                     }
-                } else if (excerpt1 == null && excerpt2 != null) {
-                    return -1;
-                } else if (excerpt1 != null && excerpt2 == null) {
-                    return 1;
-                } else {
-                    return 0;
-                }
                 }
             }
-        );
+        });
 
         //
         // Iterate through all terms in the document
