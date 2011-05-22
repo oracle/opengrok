@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -73,7 +72,7 @@ public class MonotoneRepository extends Repository {
             String filename = (new File(parent, basename)).getCanonicalPath()
                 .substring(directoryName.length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = { cmd, "cat", "-r", revision, filename};
+            String argv[] = {cmd, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -231,7 +230,7 @@ public class MonotoneRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(new String[]{ cmd, "--help"});
+            working = checkCmd(cmd, "--help");
         }
         return working.booleanValue();
     }

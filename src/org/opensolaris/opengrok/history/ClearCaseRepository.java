@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
@@ -320,7 +323,7 @@ public Annotation annotate(File file, String revision) throws IOException {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(new String[]{ cmd, "–version" });
+            working = checkCmd(cmd, "–version");
         }
         return working.booleanValue();
     }

@@ -263,7 +263,7 @@ public abstract class Repository extends RepositoryInfo {
         return new SimpleDateFormat(datePattern, Locale.US);
     }
 
-    static Boolean checkCmd(final String[] args) {
+    static Boolean checkCmd(String... args) {
         Executor exec = new Executor(args);
         return Boolean.valueOf(exec.exec(false) == 0);
     }

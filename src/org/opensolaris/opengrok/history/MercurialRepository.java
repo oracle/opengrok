@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -288,7 +287,7 @@ public class MercurialRepository extends Repository {
     @Override
     boolean supportsSubRepositories() {
         String val = System.getenv(NOFOREST_PROPERTY_KEY);
-        return ! (val == null
+        return !(val == null
             ? Boolean.getBoolean(NOFOREST_PROPERTY_KEY)
             : Boolean.parseBoolean(val));
     }
@@ -297,7 +296,7 @@ public class MercurialRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(new String[]{ cmd });
+            working = checkCmd(cmd);
         }
         return working.booleanValue();
     }

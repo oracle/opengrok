@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -232,9 +231,9 @@ public class SCCSRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(new String[]{ cmd, "help", "help" });
+            working = checkCmd(cmd, "help", "help");
             if (!working.booleanValue()) {
-                working = checkCmd(new String[]{ cmd, "--version" });
+                working = checkCmd(cmd, "--version");
             }
         }
         return working.booleanValue();

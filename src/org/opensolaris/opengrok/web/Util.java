@@ -628,7 +628,7 @@ public final class Util {
         int m = line1.length();
         int n = line2.length();
         if (n == 0 || m == 0) {
-            return new String[] { line1.toString(), line2.toString() };
+            return new String[] {line1.toString(), line2.toString()};
         }
 
         int s = 0;
