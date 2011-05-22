@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
+ * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -55,6 +56,7 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.search.Summarizer;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Working set for a search basically to factor out/separate search related
@@ -417,12 +419,6 @@ public class SearchHelper {
      * the used {@link #searcher}).
      */
     public void destroy() {
-        if (searcher != null) {
-            try {
-                searcher.close();
-            } catch (IOException e) {
-                /* ignore */
-            }
-        }
+        IOUtils.close(searcher);
     }
 }
