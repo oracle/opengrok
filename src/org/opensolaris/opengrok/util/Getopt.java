@@ -34,7 +34,7 @@ import java.util.List;
  *
  */
 public class Getopt {
-    static class Option {
+    private static class Option {
         char option;
         String argument;
     }
@@ -60,7 +60,7 @@ public class Getopt {
     }
 
     /**
-     * Parse the command lineoptions
+     * Parse the command line options
      * @throws ParseException if an illegal argument is passed
      */
     public void parse() throws ParseException {
