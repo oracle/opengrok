@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -43,9 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.opensolaris.opengrok.analysis.ExpandTabsReader;
-import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -114,7 +111,7 @@ public final class Configuration {
      * to use for each project. If {@code <= 0} tabs are read/write as is.
      * @return current tab size set.
      * @see Project#getTabSize()
-     * @see ExpandTabsReader
+     * @see org.opensolaris.opengrok.analysis.ExpandTabsReader
      */
     public int getTabSize() {
         return tabSize;
@@ -125,7 +122,7 @@ public final class Configuration {
      * to use for each project. If {@code <= 0} tabs are read/write as is.
      * @param tabSize tabsize to set.
      * @see Project#setTabSize(int)
-     * @see ExpandTabsReader
+     * @see org.opensolaris.opengrok.analysis.ExpandTabsReader
      */
     public void setTabSize(int tabSize) {
         this.tabSize = tabSize;
@@ -324,8 +321,10 @@ public final class Configuration {
     }
 
     /**
-     * Set the URL prefix to be used by the {@link JavaClassAnalyzer} as well
-     * as lexers (see {@link JFlexXref}) when they create output with html links.
+     * Set the URL prefix to be used by the {@link
+     * org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzer} as well
+     * as lexers (see {@link org.opensolaris.opengrok.analysis.JFlexXref})
+     * when they create output with html links.
      * @param urlPrefix prefix to use.
      */
     public void setUrlPrefix(String urlPrefix) {
