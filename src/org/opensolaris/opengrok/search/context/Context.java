@@ -156,7 +156,7 @@ public class Context {
                             if (in == null) {
                                 if (out == null) {
                                     Hit hit = new Hit(path,
-                                            Util.htmlize(desc[3]).replaceAll(
+                                            Util.htmlize(desc[3]).replace(
                                             desc[0], "<b>" + desc[0] + "</b>"),
                                             desc[1], false, alt);
                                     hits.add(hit);
@@ -170,7 +170,7 @@ public class Context {
                                     out.write("\"><span class=\"l\">");
                                     out.write(desc[1]);
                                     out.write("</span> ");
-                                    out.write(Util.htmlize(desc[3]).replaceAll(
+                                    out.write(Util.htmlize(desc[3]).replace(
                                             desc[0], "<b>" + desc[0] + "</b>"));
                                     out.write("</a> <i>");
                                     out.write(desc[2]);

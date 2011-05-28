@@ -204,7 +204,7 @@ public class Ctags {
                 final String match;
                 if ((p > 0) && (p - mstart > 6)) {
                     match = tagLine.substring(mstart + 3, p - 4).
-                            replaceAll("\\/", "/").replaceAll("[ \t]+", " ");
+                            replace("\\/", "/").replaceAll("[ \t]+", " ");
                 } else {
                     continue;
                 }

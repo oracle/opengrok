@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -360,7 +360,7 @@ public class RuntimeEnvironmentTest {
         String m = c.getXMLRepresentationAsString();
         Configuration o = Configuration.makeXMLStringAsConfiguration(m);
         assertNotNull(o);
-        m = m.replaceAll("a", "m");
+        m = m.replace('a', 'm');
         try {
              o = Configuration.makeXMLStringAsConfiguration(m);
              fail("makeXmlStringsAsConfiguration should throw exception");

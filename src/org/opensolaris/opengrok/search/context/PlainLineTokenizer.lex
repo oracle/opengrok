@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 /**
@@ -351,7 +351,7 @@ import org.opensolaris.opengrok.web.Util;
                 out.write("\"><span class=\"l\">");
                 out.write(desc[1]);
                 out.write("</span> ");
-                out.write(Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"));
+                out.write(Util.htmlize(desc[3]).replace(desc[0], "<b>" + desc[0] + "</b>"));
                 out.write("</a> <i> ");
                 out.write(desc[2]);
                 out.write(" </i><br/>");
@@ -359,7 +359,7 @@ import org.opensolaris.opengrok.web.Util;
         } else {
            for(Integer rem : tags.keySet()) {
                 String[] desc = tags.get(rem);
-                hit = new Hit(url, "<html>" + Util.htmlize(desc[3]).replaceAll(desc[0], "<b>" + desc[0] + "</b>"), 
+                hit = new Hit(url, "<html>" + Util.htmlize(desc[3]).replace(desc[0], "<b>" + desc[0] + "</b>"),
                               desc[1], false, alt);
                 hit.setTag(desc[2]);
                 hits.add(hit);
