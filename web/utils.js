@@ -81,7 +81,7 @@ function pageReadyMast() {
 function domReadyMenu() {
 	var projects = document.projects;
 	var sbox = document.getElementById('sbox');
-	
+/*	
 	$("#project").autocomplete(projects, {
 		minChars: 0,
 		multiple: true,
@@ -102,7 +102,7 @@ function domReadyMenu() {
 			},
 		width: "300px"
 	});
-
+*/
 	// TODO  Bug 11749
 	// var p = document.getElementById('project');
 	// p.setAttribute("autocomplete", "off");

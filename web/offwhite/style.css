@@ -51,7 +51,7 @@ input, button {
 	background-color: #d6d6c0;
 }
 
-input:hover, input:active, button:hover, button:active {
+input.submit:hover, input.submit:active, button:hover, button:active {
 	background-color: #e0e0d0;
 }
 

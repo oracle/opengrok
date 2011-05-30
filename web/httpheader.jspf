@@ -72,7 +72,7 @@ include file="pageconfig.jspf"
 	title="OpenGrok Search for current project(s)" />
 <script type="text/javascript" src="<%=ctxPath%>/jquery-1.4.4.min.js"></script>
 <script type="text/javascript" src="<%=ctxPath%>/jquery.tooltip-1.3.pack.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/jquery.autocomplete-1.1.pack.js"></script>
+<%--<script type="text/javascript" src="<%=ctxPath%>/jquery.autocomplete-1.1.pack.js"></script> --%>
 <script type="text/javascript" src="<%=ctxPath%>/utils.js"></script>
 <title><%=cfg.getTitle()%></title><% 
 	out.write(cfg.getHeaderData());

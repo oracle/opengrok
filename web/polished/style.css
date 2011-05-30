@@ -61,7 +61,7 @@ input, button {
 	);
 }
 
-input:hover, input:active, button:hover, button:active {
+input.submit:hover, input.submit:active, button:hover, button:active {
 	color: #444444;
 	background-image: -webkit-gradient(
 		linear, left bottom, left top,

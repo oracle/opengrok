@@ -51,8 +51,11 @@ input, button {
 	background-color: #a3b8cb;
 }
 
-input:hover, input:active, button:hover, button:active {
-	color: #ffffff;
+/* below seems to be a problem for input boxes, where the color will overwrite the text inside, let's leave it for buttons though
+for search and clear buttons will make it part of submit class ONLY */
+input.submit:hover, input.submit:active,
+button:hover, button:active {
+	color: #ffffff;        
 }
 
 label {
@@ -212,7 +215,7 @@ input.q { /* text input fields */
 	border: 1px solid #bbbbff;
 }
 
-input.submit { /* start search button */
+input.submit { /* start search button , clear button */
 	font-weight: bold;
 }
 
