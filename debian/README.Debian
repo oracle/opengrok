@@ -1,0 +1,34 @@
+OpenGrok - a wicked fast source browser, now in Debian
+-------------------------------------------------------
+
+OpenGrok is a fast and usable source code search and cross reference
+engine, written in Java. It helps you search, cross-reference and navigate
+your source tree. It can understand various program file formats and
+version control histories like SCCS, RCS, CVS and Subversion
+
+OpenGrok is the tool used for the OpenSolaris Source Browser.
+
+
+Usability notes:
+----------------
+
+Please read EXAMPLE.txt for sample automated setups.
+
+OpenGrok uses Suns java, hence you need to run it with proper JAVA_HOME set
+up and PATH pointing to Suns java (e.g. run 
+/usr/lib/jvm/java-1.6.0-sun/bin/java )
+
+For opengrok as standalone java application to work, one needs to have a
+graphical DISPLAY ready and working.
+
+Default webapp directory is /source , if someone wants to change this, 
+you need to specify special option to indexer: -w /<webapp_name> , otherwise 
+cross-references will NOT work.
+Also note, that in run.sh there are sample JAVA_OPTS, where I really recommend
+using more memory for indexing (1GB should be more than enough).
+
+After copying/deploying source.war to tomcat, WEB-INF/web.xml needs to 
+be corrected and changed from default one to correctly point to sources and 
+index directories.
+
+ -- Lubos Kosco <tarzanek@gmail.com>  Sun, 15 Apr 2007 20:21:29 +0200

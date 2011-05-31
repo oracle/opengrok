@@ -1,0 +1,4 @@
+dist/opengrok.jar	usr/share/opengrok/ 
+dist/source.war	usr/share/opengrok/
+dist/lib/jrcs.jar	usr/share/opengrok/lib/
+dist/lib/jrcs.jar	usr/share/opengrok/lib/

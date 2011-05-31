@@ -1,0 +1,7 @@
+version=3
+
+#opts=downloadurlmangle=s/;jsessionid/ /
+#http://www.opensolaris.org/os/project/opengrok/files/ opengrok-([\d.]+)-src.tar.gz debian echo "we're here"
+
+http://hub.opensolaris.org/bin/download/Project+opengrok/files/ opengrok-([\d.]+)-src.tar.gz debian echo "we're here"
+

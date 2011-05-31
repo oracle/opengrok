@@ -1,0 +1,22 @@
+Source: opengrok
+Section: contrib/devel
+Priority: optional
+Maintainer: Lubos Kosco <tarzanek@gmail.com>
+Build-Depends: @cdbs@, sun-java6-jdk , ant-optional, junit4, jflex (>= 1.4.3-1), liblucene3-java, libbcel-java(>= 5.2-6), libservlet2.4-java, exuberant-ctags
+Standards-Version: 3.7.3
+Homepage: http://www.opensolaris.org/os/project/opengrok
+
+Package: opengrok
+Architecture: all
+Depends: sun-java6-jre | java2-runtime, exuberant-ctags (>= 1:5.6-1), ant, liblucene3-java, libbcel-java(>= 5.2-6)
+Recommends: tomcat6
+Description: Wicked fast source code indexing and search software
+ OpenGrok is a fast and usable source code search and cross reference
+ engine, written in Java on top of lucene. It helps you search, 
+ cross-reference and navigate your source tree. It can understand 
+ various program file formats and version control histories like 
+ Mercurial, SCCS, RCS, CVS and Subversion
+ .
+ OpenGrok is the tool used for the OpenSolaris Source Browser.
+ .
+

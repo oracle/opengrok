@@ -1,0 +1,6 @@
+opengrok (0.11-1) unstable; urgency=low
+
+  * Initial release (Closes: #425609)
+  * 
+
+ -- Lubos Kosco <tarzanek@gmail.com>  Tue, 15 June 2011 14:54:24 +0200

@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+
+DEB_AUTO_UPDATE_DEBIAN_CONTROL=yes
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/ant.mk
+include /usr/share/cdbs/1/class/ant-vars.mk
+#include /usr/share/cdbs/1/rules/patchsys-quilt.mk
+#include /usr/share/cdbs/1/rules/tarball.mk
+
+#automagically unpack our jrcs build to create the jar
+#DEB_TARBALL := $(CURDIR)/tarballdir/mygnustuff_beta-1.2.3.tar.gz
+
+#JAVA_HOME := /usr/lib/jvm/java-1.5.0-sun/
+JAVA_HOME=/usr/lib/jvm/java-6-sun/
+
+#ANT_HOME := /usr/share/ant/
+#ANT_OPTS :=
+ANT_ARGS := -d
+
+DEB_ANT_BUILD_TARGET = jar-debian
+#DEB_ANT_BUILD_TARGET = jar
+#DEB_ANT_BUILD_TARGET = default
+#DEB_ANT_CLEAN_TARGET = clean
