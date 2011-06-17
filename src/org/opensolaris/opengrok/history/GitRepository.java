@@ -58,6 +58,49 @@ public class GitRepository extends Repository {
     }
 
     /**
+     * Get path of the requested file given a commit hash.
+     * Useful for tracking the path when file has changed its location.
+     *
+     * @param fileName name of the file to retrieve the path
+     * @param revision commit hash to track the path of the file
+     * @return full path of the file on success; null string on failure
+     */
+    private String getCorrectPath(String fileName, String revision) throws IOException {
+        List<String> cmd = new ArrayList<String>();
+        String path = "";
+
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("blame");
+        cmd.add("-l");
+        cmd.add("-C");
+        cmd.add(fileName);
+        File file = new File(fileName);
+        File directory = new File(directoryName);
+        Executor exec = new Executor(cmd, directory);
+
+        int status = exec.exec();
+        if (status != 0) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list in resolving correct path");
+            return path;
+        }
+        BufferedReader in = new BufferedReader(exec.getOutputReader());
+        String pattern = "^\\W*" + revision + " (.+?) .*$";
+        Pattern commitPattern = Pattern.compile(pattern);
+        String line = "";
+        Matcher matcher = commitPattern.matcher(line);
+        while ((line = in.readLine()) != null) {
+            matcher.reset(line);
+            if (matcher.find()) {
+                path = matcher.group(1);
+                break;
+            }
+        }
+
+        return path;
+    }    
+
+    /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
      *
@@ -126,10 +169,24 @@ public class GitRepository extends Repository {
 
             InputStream in = process.getInputStream();
             int len;
+            boolean error = true;
 
             while ((len = in.read(buffer)) != -1) {
+                error = false;
                 if (len > 0) {
                     output.write(buffer, 0, len);
+                }
+            }
+            if (error) {
+                process.destroy();
+                String path = getCorrectPath(filename, rev);
+                argv[2] = rev + ":" + path;
+                process = Runtime.getRuntime().exec(argv, null, directory);
+                in = process.getInputStream();
+                while ((len = in.read(buffer)) != -1) {
+                    if (len > 0) {
+                        output.write(buffer, 0, len);
+                    }
                 }
             }
 
@@ -176,6 +233,50 @@ public class GitRepository extends Repository {
 
         Executor exec = new Executor(cmd, file.getParentFile());
         int status = exec.exec();
+
+        // File might have changed its location
+        if (status != 0) {
+            cmd.clear();
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            cmd.add(this.cmd);
+            cmd.add("blame");
+            cmd.add("-l");
+            cmd.add("-C");
+            cmd.add(file.getName());
+            exec = new Executor(cmd, file.getParentFile());
+            status = exec.exec();
+            if (status != 0) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list");
+            }
+            BufferedReader in = new BufferedReader(exec.getOutputReader());
+            String pattern = "^\\W*" + revision + " (.+?) .*$";
+            Pattern commitPattern = Pattern.compile(pattern);
+            String line = "";
+            Matcher matcher = commitPattern.matcher(line);
+            while ((line = in.readLine()) != null) {
+                matcher.reset(line);
+                if (matcher.find()) {
+                    String filepath = matcher.group(1);
+                    cmd.clear();
+                    ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+                    cmd.add(this.cmd);
+                    cmd.add("blame");
+                    cmd.add("-l");
+                    if (revision != null) {
+                        cmd.add(revision);
+                    }
+                    cmd.add("--");
+                    cmd.add(filepath);
+                    File directory = new File(directoryName);
+                    exec = new Executor(cmd, directory);
+                    status = exec.exec();
+                    if (status != 0) {
+                        OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame details for modified file path");
+                    }
+                    break;
+                }
+            }
+        }
 
         if (status != 0) {
             OpenGrokLogger.getLogger().log(Level.WARNING,
