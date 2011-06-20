@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.vb;
 
@@ -42,9 +42,9 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 public class VBAnalyzer extends PlainAnalyzer {
 
-    private VBSymbolTokenizer cref;
-    private VBXref xref;
-    private Reader dummy = new StringReader("");
+    private final VBSymbolTokenizer cref;
+    private final VBXref xref;
+    private final Reader dummy = new StringReader("");
 
     /** Creates a new instance of VBAnalyzer */
     protected VBAnalyzer(FileAnalyzerFactory factory) {
