@@ -52,6 +52,9 @@ public class GitRepository extends Repository {
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "git";
 
+    /** git blame command */
+    private static final String BLAME = "blame";
+
     public GitRepository() {
         type = "git";
         datePattern = "EEE MMM dd hh:mm:ss yyyy ZZZZ";
@@ -71,11 +74,10 @@ public class GitRepository extends Repository {
 
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
-        cmd.add("blame");
+        cmd.add(BLAME);
         cmd.add("-l");
         cmd.add("-C");
         cmd.add(fileName);
-        File file = new File(fileName);
         File directory = new File(directoryName);
         Executor exec = new Executor(cmd, directory);
 
@@ -224,7 +226,7 @@ public class GitRepository extends Repository {
         List<String> cmd = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
-        cmd.add("blame");
+        cmd.add(BLAME);
         cmd.add("-l");
         if (revision != null) {
             cmd.add(revision);
@@ -239,7 +241,7 @@ public class GitRepository extends Repository {
             cmd.clear();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             cmd.add(this.cmd);
-            cmd.add("blame");
+            cmd.add(BLAME);
             cmd.add("-l");
             cmd.add("-C");
             cmd.add(file.getName());
@@ -260,7 +262,7 @@ public class GitRepository extends Repository {
                     cmd.clear();
                     ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
                     cmd.add(this.cmd);
-                    cmd.add("blame");
+                    cmd.add(BLAME);
                     cmd.add("-l");
                     if (revision != null) {
                         cmd.add(revision);
