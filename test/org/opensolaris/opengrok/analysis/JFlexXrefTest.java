@@ -315,4 +315,13 @@ public class JFlexXrefTest {
         // Verify that the comment's <span> block is terminated.
         assertTrue(out.toString().contains("<span class=\"c\">/**/</span>"));
     }
+
+    @Test
+    public void bug18586() throws IOException {
+        String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
+        SQLXref xref = new SQLXref(new FileInputStream(filename));
+        xref.setDefs(ctags.doCtags(filename + "\n"));
+        // The next call used to fail with an ArrayIndexOutOfBoundsException.
+        xref.write(new StringWriter());
+    }
 }

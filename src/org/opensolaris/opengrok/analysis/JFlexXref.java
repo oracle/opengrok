@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 
@@ -66,34 +66,52 @@ public abstract class JFlexXref {
     protected String userPageSuffix;
 
     /**
-     * Description of styles to use for different types of definitions. Each
-     * element in the array contains a three-element string array with the
-     * following values: (0) the name of the style definition type given by
-     * CTags, (1) the class name used by the style sheets when rendering the
-     * xref, and (2) the title of the section listing symbols of this type
-     * in the xref's navigation panel, or {@code null} if this type should not
-     * be included in the navigation panel.
+     * Description of the style to use for a type of definitions.
      */
-    private static final String[][] DEFINITION_STYLES = {
-        {"macro",      "xm",   "Macro"},
-        {"argument",   "xa",   null},
-        {"local",      "xl",   null},
-        {"variable",   "xv",   "Variable"},
-        {"class",      "xc",   "Class"},
-        {"package",    "xp",   "Package"},
-        {"interface",  "xi",   "Interface"},
-        {"namespace",  "xn",   "Namespace"},
-        {"enumerator", "xer",  null},
-        {"enum",       "xe",   "Enum"},
-        {"struct",     "xs",   "Struct"},
-        {"typedefs",   "xts",  null},
-        {"typedef",    "xt",   "Typedef"},
-        {"union",      "xu",   null},
-        {"field",      "xfld", null},
-        {"member",     "xmb",  null},
-        {"function",   "xf",   "Function"},
-        {"method",     "xmt",  "Method"},
-        {"subroutine", "xsr",  "Subroutine"},
+    private static class Style {
+        /** Name of the style definition as given by CTags. */
+        final String name;
+
+        /** Class name used by the style sheets when rendering the xref. */
+        final String ssClass;
+
+        /**
+         * The title of the section to which this type belongs, or {@code null}
+         * if this type should not be listed in the navigation panel.
+         */
+        final String title;
+
+        /** Construct a style description. */
+        Style(String name, String ssClass, String title) {
+            this.name = name;
+            this.ssClass = ssClass;
+            this.title = title;
+        }
+    }
+
+    /**
+     * Description of styles to use for different types of definitions.
+     */
+    private static final Style[] DEFINITION_STYLES = {
+        new Style("macro",      "xm",   "Macro"),
+        new Style("argument",   "xa",   null),
+        new Style("local",      "xl",   null),
+        new Style("variable",   "xv",   "Variable"),
+        new Style("class",      "xc",   "Class"),
+        new Style("package",    "xp",   "Package"),
+        new Style("interface",  "xi",   "Interface"),
+        new Style("namespace",  "xn",   "Namespace"),
+        new Style("enumerator", "xer",  null),
+        new Style("enum",       "xe",   "Enum"),
+        new Style("struct",     "xs",   "Struct"),
+        new Style("typedefs",   "xts",  null),
+        new Style("typedef",    "xt",   "Typedef"),
+        new Style("union",      "xu",   null),
+        new Style("field",      "xfld", null),
+        new Style("member",     "xmb",  null),
+        new Style("function",   "xf",   "Function"),
+        new Style("method",     "xmt",  "Method"),
+        new Style("subroutine", "xsr",  "Subroutine"),
     };
 
     protected JFlexXref() {
@@ -208,12 +226,12 @@ public abstract class JFlexXref {
                 new HashMap<String, SortedSet<Tag>>();
 
         for (Tag tag : defs.getTags()) {
-            String[] style = getStyle(tag.type);
-            if (style != null && style[2] != null) {
-                SortedSet<Tag> tags = symbols.get(style[0]);
+            Style style = getStyle(tag.type);
+            if (style != null && style.title != null) {
+                SortedSet<Tag> tags = symbols.get(style.name);
                 if (tags == null) {
                     tags = new TreeSet<Tag>(cmp);
-                    symbols.put(style[0], tags);
+                    symbols.put(style.name, tags);
                 }
                 tags.add(tag);
             }
@@ -223,16 +241,16 @@ public abstract class JFlexXref {
         out.append("function get_sym_list(){return [");
 
         boolean first = true;
-        for (String[] style : DEFINITION_STYLES) {
-            SortedSet<Tag> tags = symbols.get(style[0]);
+        for (Style style : DEFINITION_STYLES) {
+            SortedSet<Tag> tags = symbols.get(style.name);
             if (tags != null) {
                 if (!first) {
                     out.append(',');
                 }
                 out.append("[\"");
-                out.append(style[2]);
+                out.append(style.title);
                 out.append("\",\"");
-                out.append(style[1]);
+                out.append(style.ssClass);
                 out.append("\",[");
 
                 boolean firstTag = true;
@@ -259,18 +277,17 @@ public abstract class JFlexXref {
      * Get the style description for a definition type.
      *
      * @param type the definition type
-     * @return a three element string array that describes the style of a
-     * definition type (name of type, CSS style class, title in the navigation
-     * panel)
+     * @return the style of a definition type, or {@code null} if no style is
+     * defined for the type
      * @see #DEFINITION_STYLES
      */
-    private String[] getStyle(String type) {
-        for (String[] style : DEFINITION_STYLES) {
-            if (type.startsWith(style[0])) {
+    private Style getStyle(String type) {
+        for (Style style : DEFINITION_STYLES) {
+            if (type.startsWith(style.name)) {
                 return style;
             }
         }
-        return new String[0];
+        return null;
     }
 
     /**
@@ -308,9 +325,9 @@ public abstract class JFlexXref {
             String type = strs[0];
             String style_class = "d";
 
-            String[] style = getStyle(type);
+            Style style = getStyle(type);
             if (style != null) {
-                style_class = style[1];
+                style_class = style.ssClass;
             }
 
             // 1) Create an anchor for direct links. (Perhaps we should only
