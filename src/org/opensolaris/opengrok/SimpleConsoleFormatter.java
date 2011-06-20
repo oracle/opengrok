@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok;
@@ -54,7 +54,7 @@ final public class SimpleConsoleFormatter extends Formatter {
       sb.append(": ");
       sb.append(formatMessage(record));
       Throwable thrown = record.getThrown();
-      if (null != thrown && record.getLevel().intValue() < Level.CONFIG.intValue()) {
+      if (null != thrown && record.getLevel().intValue() > Level.CONFIG.intValue()) {
          sb.append(lineSeparator);
          java.io.ByteArrayOutputStream ba=new java.io.ByteArrayOutputStream();
          thrown.printStackTrace(new java.io.PrintStream(ba, true));
