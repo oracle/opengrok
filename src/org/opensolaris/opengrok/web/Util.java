@@ -693,6 +693,7 @@ public final class Util {
         printTableRow(out, "Bug page", env.getBugPage());
         printTableRow(out, "Bug pattern", env.getBugPattern());
         printTableRow(out, "User page", env.getUserPage());
+        printTableRow(out, "User page suffix", env.getUserPageSuffix());
         printTableRow(out, "Review page", env.getReviewPage());
         printTableRow(out, "Review pattern", env.getReviewPattern());
         printTableRow(out, "Using projects", env.hasProjects());

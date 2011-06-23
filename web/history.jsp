@@ -18,8 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -50,6 +49,12 @@ include file="mast.jsp"
 
 		boolean striked = false;
 		String userPage = env.getUserPage();
+		String userPageSuffix = env.getUserPageSuffix();
+		if (userPageSuffix == null) {
+			// Set to empty string so we can append it to the URL
+			// unconditionally later.
+			userPageSuffix = "";
+		}
 		String bugPage = env.getBugPage();
 		String bugRegex = env.getBugPattern();
 		if (bugRegex == null || bugRegex.equals("")) {
@@ -154,7 +159,7 @@ document.domReady.push(function() {domReadyHistory();});
 				if (author == null) {
 				%>(no author)<%
 				} else if (userPage != null && userPage.length() > 0) {
-				%><a href="<%= userPage + Util.htmlize(author) 
+				%><a href="<%= userPage + Util.htmlize(author) + userPageSuffix
 				%>"><%= Util.htmlize(author)%></a><%
 				} else {
 				%><%= author %><%
