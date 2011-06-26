@@ -63,6 +63,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -90,7 +91,7 @@ public class IndexDatabase {
     private boolean dirty;
     private boolean running;
     private List<String> directories;
-    private static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
+    static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
     private Ctags ctags;
     private LockFactory lockfact;
 
@@ -155,8 +156,8 @@ public class IndexDatabase {
                 public void run() {
                     try {
                         db.update();
-                    } catch (Exception e) {
-                        log.log(Level.FINE,"Problem updating lucene index database: ",e);
+                    } catch (Throwable e) {
+                        log.log(Level.SEVERE,"Problem updating lucene index database: ",e);
                     }
                 }
             });
@@ -214,8 +215,8 @@ public class IndexDatabase {
                     public void run() {
                         try {
                             db.update();
-                        } catch (Exception e) {
-                            log.log(Level.WARNING, "An error occured while updating index", e);
+                        } catch (Throwable e) {
+                            log.log(Level.SEVERE, "An error occured while updating index", e);
                         }
                     }
                 });
@@ -426,8 +427,8 @@ public class IndexDatabase {
                     public void run() {
                         try {
                             db.update();
-                        } catch (Exception e) {
-                            log.log(Level.FINE,"Problem updating lucene index database: ",e);
+                        } catch (Throwable e) {
+                            log.log(Level.SEVERE,"Problem updating lucene index database: ",e);
                         }
                     }
                 });

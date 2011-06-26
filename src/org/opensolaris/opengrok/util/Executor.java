@@ -30,9 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
@@ -42,6 +45,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  */
 public class Executor {
 
+    private static final Logger log = Logger.getLogger(Executor.class.getName());
     private List<String> cmdList;
     private File workingDirectory;
     private byte[] stdout;
@@ -295,6 +299,22 @@ public class Executor {
                     bytes.write(buffer, 0, len);
                 }
             }
+        }
+    }
+    
+    public static void registerErrorHandler() {
+        UncaughtExceptionHandler dueh =
+            Thread.currentThread().getDefaultUncaughtExceptionHandler();
+        if (dueh == null) {
+            log.fine("Installing default uncaught exception handler");
+            Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    log.log(Level.SEVERE, "Uncaught exception in thread " 
+                        + t.getName() + " with ID " + t.getId() + ": "
+                        + e.getMessage(), e);
+                }
+            });
         }
     }
 }

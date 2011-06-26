@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
@@ -53,6 +54,7 @@ import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**
@@ -66,7 +68,7 @@ public final class Indexer {
     private static final String ON = "on";
     private static final String OFF = "off";
     private static Indexer index = new Indexer();
-    private static final Logger log = Logger.getLogger(Indexer.class.getName());
+    static final Logger log = Logger.getLogger(Indexer.class.getName());
 
     private static final String DERBY_EMBEDDED_DRIVER =
             "org.apache.derby.jdbc.EmbeddedDriver";
@@ -94,6 +96,7 @@ public final class Indexer {
             System.err.println(cmdOptions.getUsage());
             System.exit(1);
         } else {
+            Executor.registerErrorHandler();
             boolean searchRepositories = false;
             ArrayList<String> subFiles = new ArrayList<String>();
             ArrayList<String> repositories = new ArrayList<String>();
@@ -502,12 +505,12 @@ public final class Indexer {
                 }
                 getInstance().sendToConfigHost(env, configHost);
             } catch (IndexerException ex) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Exception running indexer", ex);
+                log.log(Level.SEVERE, "Exception running indexer", ex);
                 System.err.println(cmdOptions.getUsage());
                 System.exit(1);
-            } catch (IOException ioe) {
-                System.err.println("Got IOException " + ioe);
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Exception running indexer", ioe);
+            } catch (Throwable e) {
+                System.err.println("Exception: " + e.getLocalizedMessage());
+                log.log(Level.SEVERE, "Unexpected Exception", e);
                 System.exit(1);
             }
         }
@@ -738,13 +741,10 @@ public final class Indexer {
                             } else if (optimize) {
                                 db.optimize();
                             }
-                        } catch (Exception e) {
-                            if (update) {
-                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while updating index", e);
-                            } else {
-                                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while optimizing index", e);
-                            }
-                            log.log(Level.SEVERE,"Stack trace: ",e.fillInStackTrace());
+                        } catch (Throwable e) {
+                            log.log(Level.SEVERE, "An error occured while "
+                                + (update ? "updating" : "optimizing")
+                                + " index", e);
                         }
                     }
                 });
@@ -757,7 +757,7 @@ public final class Indexer {
                 // Wait forever
                 executor.awaitTermination(999,TimeUnit.DAYS);
             } catch (InterruptedException exp) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
+                log.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
        }
     }
