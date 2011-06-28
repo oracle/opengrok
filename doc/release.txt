@@ -14,7 +14,8 @@ ant -lib ../ext_lib/
 emma reports should be based according to what is set for the release, usually it's overall coverage above 80%)
 (hudson can help here, see README.txt on setup)
 
-3) produce proper distributions, check them before upload
+3) produce proper distributions, check them before upload, always try to build on Solaris, since
+gnu tar might create a non-standard compliant .tgz
 ant -lib ../ext_lib/ dist
 ant -lib ../ext_lib/ dist-src
 ant -lib ../ext_lib/ package
