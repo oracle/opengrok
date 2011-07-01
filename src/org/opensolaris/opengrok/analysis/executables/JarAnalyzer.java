@@ -18,21 +18,17 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.analysis.TokenStream;
@@ -41,8 +37,6 @@ import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.List2TokenStream;
-import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 /**
@@ -53,75 +47,35 @@ import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
  */
 
 public class JarAnalyzer extends FileAnalyzer {
-    private byte[] content;
-
-    private List<String> defs;
-    private List<String> refs;
     private StringWriter xref;
 
-    private static final Reader dummy = new StringReader("");
     protected JarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        content = new byte[16 * 1024];
     }
 
     public void analyze(Document doc, InputStream in) throws IOException {
-        defs = new LinkedList<String>();
-        refs = new LinkedList<String>();
-        StringBuilder fullText = new StringBuilder();
         xref = new StringWriter();
 
         ZipInputStream zis = new ZipInputStream(in);
         ZipEntry entry;
-        byte buf[] = new byte[1024];
         while ((entry = zis.getNextEntry()) != null) {
             String ename = entry.getName();
             xref.write("<br/><b>"+ ename + "</b>");
-            fullText.append(ename);
-            fullText.append('\n');
-            int len = 0;
+            doc.add(new Field("full", new StringReader(ename)));
             FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
             if (fac instanceof JavaClassAnalyzerFactory) {
                 JavaClassAnalyzer jca =
                     (JavaClassAnalyzer) fac.getAnalyzer();
-                BufferedInputStream bif = new BufferedInputStream(zis);
-                int r;
-                while((r = bif.read(buf)) > 0) {
-                    if( len + r > content.length) {
-                        byte[] content2 = new byte[content.length*2];
-                        System.arraycopy(content, 0, content2, 0, len);
-                        content = content2;
-                    }
-                    System.arraycopy(buf, 0, content, len, r);
-                    len += r;
-                }
-                jca.analyze(doc, new ByteArrayInputStream(content));
-                doc.removeField("defs");
-                doc.removeField("refs");
-                doc.removeField("full");
-                defs.addAll(jca.getDefs());
-                refs.addAll(jca.getRefs());
-                fullText.append(jca.getFull());
+                jca.analyze(doc, new BufferedInputStream(zis));
                 xref.write("<pre>");
                 jca.writeXref(xref);
                 xref.write("</pre>");
             }
         }
-        doc.add(new Field("full", new TagFilter(new StringReader(fullText.toString()))));
-        if(!defs.isEmpty()) {
-            doc.add(new Field("defs",dummy));
-        }
-        if(!refs.isEmpty()) {
-            doc.add(new Field("refs",dummy));
-        }
     }
 
     public TokenStream tokenStream(String fieldName, Reader reader) {
-        if ("defs".equals(fieldName)) {
-            return new List2TokenStream(defs);
-        } else if ("refs".equals(fieldName)) {
-            return new List2TokenStream(refs);
-        } else if ("full".equals(fieldName)) {
+        if ("full".equals(fieldName)) {
             return new PlainFullTokenizer(reader);
         }
         return super.tokenStream(fieldName, reader);

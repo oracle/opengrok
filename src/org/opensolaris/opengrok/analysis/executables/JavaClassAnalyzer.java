@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -85,7 +84,6 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     private String xref;
     private String fullText;
     private JavaClass c;
-    private final Reader dummy = new StringReader("");
 
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
@@ -107,9 +105,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         fullText = out.toString();
 
         if (fullText != null && fullText.length() > 0) {
-            doc.add(new Field("defs", dummy));
-            doc.add(new Field("refs", dummy));
-            doc.add(new Field("full", dummy));
+            doc.add(new Field("defs", new List2TokenStream(defs)));
+            doc.add(new Field("refs", new List2TokenStream(refs)));
+            doc.add(new Field("full", new StringReader(fullText)));
         }
     }
 
@@ -129,12 +127,8 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
-        if ("defs".equals(fieldName)) {
-            return new List2TokenStream(defs);
-        } else if ("refs".equals(fieldName)) {
-            return new List2TokenStream(refs);
-        } else if ("full".equals(fieldName)) {
-            return new PlainFullTokenizer(new TagFilter(new StringReader(fullText)));
+        if ("full".equals(fieldName)) {
+            return new PlainFullTokenizer(new TagFilter(reader));
         }
         return super.tokenStream(fieldName, reader);
     }
