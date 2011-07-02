@@ -27,8 +27,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.analysis.TokenStream;
@@ -47,30 +48,29 @@ import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
  */
 
 public class JarAnalyzer extends FileAnalyzer {
-    private StringWriter xref;
+    private Map<String, String> xrefs;
 
     protected JarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
 
     public void analyze(Document doc, InputStream in) throws IOException {
-        xref = new StringWriter();
+        xrefs = new LinkedHashMap<String, String>();
 
         ZipInputStream zis = new ZipInputStream(in);
         ZipEntry entry;
         while ((entry = zis.getNextEntry()) != null) {
             String ename = entry.getName();
-            xref.write("<br/><b>"+ ename + "</b>");
+            String xref = null;
             doc.add(new Field("full", new StringReader(ename)));
             FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
             if (fac instanceof JavaClassAnalyzerFactory) {
                 JavaClassAnalyzer jca =
                     (JavaClassAnalyzer) fac.getAnalyzer();
                 jca.analyze(doc, new BufferedInputStream(zis));
-                xref.write("<pre>");
-                jca.writeXref(xref);
-                xref.write("</pre>");
+                xref = jca.getXref();
             }
+            xrefs.put(ename, xref);
         }
     }
 
@@ -86,6 +86,16 @@ public class JarAnalyzer extends FileAnalyzer {
      * @param out Writer to write HTML cross-reference
      */
     public void writeXref(Writer out) throws IOException {
-        out.write(xref.toString());
+        for (Map.Entry<String, String> entry : xrefs.entrySet()) {
+            out.write("<br/><b>");
+            out.write(entry.getKey());
+            out.write("</b>");
+            if (entry.getValue() != null) {
+                out.write("<pre>");
+                out.write(entry.getValue());
+                out.write("</pre>");
+            }
+        }
+        xrefs = null;
     }
 }

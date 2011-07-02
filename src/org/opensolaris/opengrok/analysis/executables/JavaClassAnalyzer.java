@@ -29,7 +29,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.ClassFormatException;
@@ -82,15 +81,13 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     private List<String> refs;
     private List<String> full;
     private String xref;
-    private String fullText;
     private JavaClass c;
 
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
-        defs = new LinkedList<String>();
-        refs = new LinkedList<String>();
-        full = new LinkedList<String>();
-        fullText = null;
+        defs = new ArrayList<String>();
+        refs = new ArrayList<String>();
+        full = new ArrayList<String>();
         xref = null;
 
         ClassParser classparser = new ClassParser(in, doc.get("path"));
@@ -98,30 +95,24 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         StringWriter out = new StringWriter();
         getContent(out);
         xref = out.toString();
+
+        out.getBuffer().setLength(0); // clear the buffer
         for (String fl : full) {
             out.write(fl);
             out.write('\n');
         }
-        fullText = out.toString();
+        String constants = out.toString();
 
-        if (fullText != null && fullText.length() > 0) {
-            doc.add(new Field("defs", new List2TokenStream(defs)));
-            doc.add(new Field("refs", new List2TokenStream(refs)));
-            doc.add(new Field("full", new StringReader(fullText)));
-        }
+        doc.add(new Field("defs", new List2TokenStream(defs)));
+        doc.add(new Field("refs", new List2TokenStream(refs)));
+        doc.add(new Field("full", new StringReader(xref)));
+        doc.add(new Field("full", new StringReader(constants)));
     }
 
-    public List<String> getDefs() {
-        return defs;
+    public String getXref() {
+        return xref;
     }
 
-    public List<String> getRefs() {
-        return refs;
-    }
-
-    public String getFull() {
-        return fullText;
-    }
     private int[] v;
     private ConstantPool cp;
 
