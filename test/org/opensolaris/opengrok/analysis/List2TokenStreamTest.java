@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -79,8 +78,8 @@ public class List2TokenStreamTest {
     public void testFailfastOnNull() {
         try {
             new List2TokenStream(null);
-            fail("expected an IllegalArgumentException");
-        } catch (IllegalArgumentException iae) {
+            fail("expected an exception");
+        } catch (NullPointerException npe) {
             // expected
         }
     }

@@ -18,39 +18,35 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.util.Iterator;
 import java.util.List;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 public final class List2TokenStream extends TokenStream {
 
-    private List<String> l;
+    private Iterator<String> it;
     private String[] subTokens;
     private int si;
     private final TermAttribute termAtt = addAttribute(TermAttribute.class);
 
     public List2TokenStream(List<String> l) {
-        if (l == null) {
-            throw new IllegalArgumentException("list is null");
-        }
-        this.l = l;
-        subTokens = null;
+        it = l.iterator();
     }
 
     @Override
     public boolean incrementToken() {
-        if (l.isEmpty()) {
+        if (!it.hasNext()) {
             // reached end of stream
             return false;
         }
 
         if (subTokens == null || subTokens.length == si) {
-            String tok = l.remove(0);
+            String tok = it.next();
             if (tok == null) {
                 return false;
             }
@@ -72,6 +68,6 @@ public final class List2TokenStream extends TokenStream {
 
     @Override
     public void close() {
-        l = null;
+        it = null;
     }
 }
