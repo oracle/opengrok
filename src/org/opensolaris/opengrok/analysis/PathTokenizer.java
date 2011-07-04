@@ -18,12 +18,12 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.Reader;
+import java.util.Arrays;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
@@ -59,9 +59,7 @@ public class PathTokenizer extends Tokenizer {
 
         do {
             if (i >= buf.length) {
-                char nb[] = new char[buf.length * 2];
-                System.arraycopy(buf, 0, nb, 0, buf.length);
-                buf = nb;
+                buf = Arrays.copyOf(buf, buf.length * 2);
             }
             buf[i++] = Character.toLowerCase((char) c);
             c = input.read();

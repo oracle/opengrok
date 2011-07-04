@@ -54,8 +54,7 @@ public class Getopt {
         options = new ArrayList<Option>();
         current = -1;
         optind = -1;
-        this.argv = new String[argv.length];
-        System.arraycopy(argv, 0, this.argv, 0, argv.length);
+        this.argv = argv.clone();
         this.opts = opts;
     }
 

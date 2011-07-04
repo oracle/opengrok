@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.Arrays;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
@@ -68,9 +69,7 @@ public class XMLAnalyzer extends TextAnalyzer {
             int rbytes = in.read(content, len, content.length - len);
             if(rbytes > 0 ) {
                 if(rbytes == (content.length - len)) {
-                    char[] content2 = new char[content.length * 2];
-                    System.arraycopy(content,0, content2, 0, content.length);
-                    content = content2;
+                    content = Arrays.copyOf(content, content.length * 2);
                 }
                 len += rbytes;
             } else {
