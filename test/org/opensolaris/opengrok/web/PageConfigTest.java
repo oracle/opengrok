@@ -26,9 +26,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.util.TestRepository;
+
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for the {@code PageConfig} class.
