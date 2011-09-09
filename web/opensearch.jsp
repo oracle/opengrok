@@ -68,7 +68,7 @@ include file="projects.jspf"
 	<InputEncoding>UTF-8</InputEncoding>
 	<Image height="16" width="16" type="image/png"><%= img %></Image>
 <%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
-	<Url template="<%= url.toString() %>q={searchTerms}" type="text/html"/>
+	<Url template="<%= url.toString() %>&amp;q={searchTerms}" type="text/html"/>
 </OpenSearchDescription>
 <%
 }
