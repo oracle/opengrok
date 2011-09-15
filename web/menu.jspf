@@ -65,7 +65,7 @@ org.opensolaris.opengrok.web.Util"
 		}
 %>
 <script type="text/javascript">/* <![CDATA[ */
-	document.projects = [ <%= jsProjects.toString() 
+    document.projects = [ <%= Util.encode(jsProjects.toString())
 	%> ];document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P 
 	%>';document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
