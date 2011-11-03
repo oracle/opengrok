@@ -46,7 +46,6 @@ public class CAnalyzerFactory extends FileAnalyzerFactory {
         "S",
         "XS",                   // Mainly found in perl directories
         "X",                    // rpcgen input files
-        "CS",                   // C#
     };
 
     public CAnalyzerFactory() {

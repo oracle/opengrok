@@ -131,6 +131,17 @@ public class Filter implements Serializable {
             }
         }
 
+        //Check File extension
+        if (!ret) {      
+            int start = fileName.indexOf(".");          
+            if(start != -1){
+                String fileExtension = fileName.substring(start,fileName.length());
+                 if (filename.contains(fileExtension)) {
+                     ret = true;
+                }
+            }
+        }
+        
         return ret;
     }
 

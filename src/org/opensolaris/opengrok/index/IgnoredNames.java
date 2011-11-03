@@ -61,7 +61,21 @@ public final class IgnoredNames extends Filter {
         "deleted_files",
         ".make.*",
         ".del-*",
-        "_MTN"
+        "bin",
+        "obj",
+        "_MTN",
+        //File Extensions for Visual Studio and Mono Projects
+        ".vspscc",
+        ".suo",
+        ".vssscc",
+        ".user",
+        ".ncb",
+        ".gpState",
+        ".snc",
+        ".sln",
+        ".vsmdi",
+        ".lib",
+        ".dll",
     };
 
     public IgnoredNames() {

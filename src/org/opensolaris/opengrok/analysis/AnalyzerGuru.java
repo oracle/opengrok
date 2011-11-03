@@ -64,6 +64,8 @@ import org.opensolaris.opengrok.analysis.python.PythonAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sh.ShAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.sql.SQLAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.tcl.TclAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.csharp.CSharpAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.vb.VBAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
@@ -126,6 +128,8 @@ public class AnalyzerGuru {
             ZipAnalyzerFactory.DEFAULT_INSTANCE,
             new TarAnalyzerFactory(),
             new CAnalyzerFactory(),
+            new CSharpAnalyzerFactory(),
+            new VBAnalyzerFactory(),
             new CxxAnalyzerFactory(),
             new ShAnalyzerFactory(),
             PlainAnalyzerFactory.DEFAULT_INSTANCE,

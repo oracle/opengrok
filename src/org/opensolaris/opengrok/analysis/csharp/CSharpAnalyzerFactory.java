@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 
-package org.opensolaris.opengrok.analysis.plain;
+package org.opensolaris.opengrok.analysis.csharp;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -33,30 +34,26 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class XMLAnalyzerFactory extends FileAnalyzerFactory {
+public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
-        "HTML", "HTM", "XML", "ASPX", "ASCX", "ASAX", "MASTER", "XAML"
+        "CS"
     };
 
     private static final String[] MAGICS = {
-        "<htm", "<HTM", "<?xm", "<?Xm", "<?XM",
-        "<!--", "<!EN", "<!DO", "<tit",
-        "<TIT", "<XML", "<xml", "<HEA", "<hea"
     };
 
-    public XMLAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, "text/html", Genre.PLAIN);
+    public CSharpAnalyzerFactory() {
+        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new XMLAnalyzer(this);
+        return new CSharpAnalyzer(this);
     }
 
     @Override
     public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
-        throws IOException
-    {
-        XMLAnalyzer.writeXref(in, out, defs, annotation, project);
+        throws IOException {
+        CSharpAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }
