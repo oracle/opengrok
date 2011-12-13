@@ -43,7 +43,7 @@ include file="projects.jspf"
 	StringBuilder url = new StringBuilder(128);
         String protocol="http://";
         if (request.getProtocol().toUpperCase().startsWith("HTTPS")) protocol="https://";
-	url.append("http://").append(request.getServerName());
+	url.append(protocol).append(request.getServerName());
 	int port = request.getServerPort();
 	if (port != 80) {
 		url.append(':').append(request.getServerPort());
