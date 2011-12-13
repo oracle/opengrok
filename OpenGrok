@@ -762,7 +762,7 @@ DerbyServer()
     case "${OS_NAME}:${OS_VERSION}" in
         SunOS:5.10) Error "unsupported OS" ;;
         SunOS:5.11)
-                    svcadm enable javadb
+                    /sbin/svcadm enable javadb
                      ;;
         Linux:*)
                     mkdir -p $DATA_ROOT/derby

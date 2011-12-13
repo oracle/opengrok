@@ -166,6 +166,9 @@ To find perl files that do not use /usr/bin/perl but something else:
 To find all strings begining with foo use the wildcard:
 <a href="search?q=foo*">foo*</a>
 
+To find all files which have . c in their name(dot is a token!):
+<a href="search?path=%22. c%22">". c"</a>
+
 </pre>
     
 <p>Opengrok search is powered by <a href="http://lucene.apache.org/"

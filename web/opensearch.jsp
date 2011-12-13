@@ -41,6 +41,8 @@ include file="projects.jspf"
 	cfg = PageConfig.get(request);
 
 	StringBuilder url = new StringBuilder(128);
+        String protocol="http://";
+        if (request.getProtocol().toUpperCase().startsWith("HTTPS")) protocol="https://";
 	url.append("http://").append(request.getServerName());
 	int port = request.getServerPort();
 	if (port != 80) {
