@@ -41,12 +41,12 @@ include file="projects.jspf"
 	cfg = PageConfig.get(request);
 
 	StringBuilder url = new StringBuilder(128);
-        String protocol="http://";
-        if (request.getProtocol().toUpperCase().startsWith("HTTPS")) protocol="https://";
-	url.append(protocol).append(request.getServerName());
+        String scheme=request.getScheme();
+        url.append(scheme).append("://").append(request.getServerName());
 	int port = request.getServerPort();
-	if (port != 80) {
-		url.append(':').append(request.getServerPort());
+	if ((port != 80 && scheme.equals("http")) ||
+               (port != 443 && scheme.equals("https"))) {
+		url.append(':').append(port);
 	}
 	port = url.length();	// mark
 	String img = url.append(cfg.getCssDir()).append("/img/icon.png").toString();
