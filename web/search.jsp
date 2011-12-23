@@ -63,17 +63,6 @@ include file="projects.jspf"
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);
     }
-    if (searchHelper.errorMsg != null
-        && searchHelper.errorMsg.startsWith(SearchHelper.PARSE_ERROR_MSG))
-    {
-        searchHelper.errorMsg = SearchHelper.PARSE_ERROR_MSG
-            + "<br/>You might try to enclose your search term in quotes, "
-            + "<a href=\"help.jsp#escaping\">escape special characters</a> "
-            + "with <b>\\</b>, or read the <a href=\"help.jsp\">Help</a> "
-            + "on the query language."
-            + "Error message from parser:<br/>" + searchHelper.errorMsg
-                .substring(SearchHelper.PARSE_ERROR_MSG.length());
-    }
     if (searchHelper.errorMsg != null) {
         cfg.setTitle("Search Error");
     } else {
@@ -125,8 +114,18 @@ include file="menu.jspf"
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
     if (searchHelper.errorMsg != null) {
-        %><h3>Error</h3>
-        <p><%= Util.htmlize(searchHelper.errorMsg) %></p><%
+        %><h3>Error</h3><p><%
+        if (searchHelper.errorMsg.startsWith((SearchHelper.PARSE_ERROR_MSG))) {
+            %><%= Util.htmlize(SearchHelper.PARSE_ERROR_MSG) %>
+            <br/>You might try to enclose your search term in quotes,
+            <a href="help.jsp#escaping">escape special characters</a>
+            with <b>\</b>, or read the <a href="help.jsp">Help</a>
+            on the query language. Error message from parser:<br/>
+            <%= Util.htmlize(searchHelper.errorMsg.substring(
+                        SearchHelper.PARSE_ERROR_MSG.length())) %><%
+        } else {
+            %><%= Util.htmlize(searchHelper.errorMsg) %><%
+        }%></p><%
     } else if (searchHelper.hits == null) {
         %><p>No hits</p><%
     } else if (searchHelper.hits.length == 0) {

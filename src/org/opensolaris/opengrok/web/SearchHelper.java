@@ -208,7 +208,7 @@ public class SearchHelper {
                     break;
             }
         } catch (ParseException e) {
-            errorMsg = "Unable to parse your query: " + e.getMessage();
+            errorMsg = PARSE_ERROR_MSG + e.getMessage();
         } catch (FileNotFoundException e) {
 //          errorMsg = "Index database(s) not found: " + e.getMessage();
             errorMsg = "Index database(s) not found.";
