@@ -1,10 +1,10 @@
-<%-- 
+<%--
 $Id$
 
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -25,12 +25,12 @@ Portions Copyright 2011 Jens Elkner.
     pageEncoding="UTF-8" import="
 org.opensolaris.opengrok.web.PageConfig"
 %><%!
-	private PageConfig cfg;
-	/** Just cleanup cached objects */
+    private PageConfig cfg;
+    /** Just cleanup cached objects */
 
-	public void jspDestroy() {
-		if (cfg != null) {
-			cfg.cleanup();
-		}
-	}
+    public void jspDestroy() {
+        if (cfg != null) {
+            cfg.cleanup();
+        }
+    }
 %>

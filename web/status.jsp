@@ -1,10 +1,10 @@
-<%-- 
+<%--
 $Id$
 
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -31,39 +31,39 @@ include file="projects.jspf"
 %><%
 /* ---------------------- status.jsp start --------------------- */
 {
-	cfg = PageConfig.get(request);
-	cfg.setTitle("Status");
+    cfg = PageConfig.get(request);
+    cfg.setTitle("Status");
 %><%@
 
-include file="httpheader.jspf" 
+include file="httpheader.jspf"
 
 %>
 <body>
-	<div id="page">
-		<div id="whole_header">
-			<div id="header"><%@
+    <div id="page">
+        <div id="whole_header">
+            <div id="header"><%@
 
 include file="pageheader.jspf"
 
-			%>
-			</div>
-			<div id="Masthead"></div>
-		</div>
-		<div id="status">
-			<h1>OpenGrok status page</h1>
-			<p>
+            %>
+            </div>
+            <div id="Masthead"></div>
+        </div>
+        <div id="status">
+            <h1>OpenGrok status page</h1>
+            <p>
 This page is only used for testing purposes to dump some of the
 internal settings on your OpenGrok server.</p><%
-		if (cfg.getEnv().isChattyStatusPage()) {
-			Util.dumpConfiguration(out);
-		} else {
-		%><p>
+        if (cfg.getEnv().isChattyStatusPage()) {
+            Util.dumpConfiguration(out);
+        } else {
+        %><p>
 For security reasons, printing of internal settings is not enabled by
 default. To enable, set the property <tt>chattyStatusPage</tt> to
 <tt>true</tt> in <tt>configuration.xml</tt>.</p><%
-		}
-		%>
-		</div>
+        }
+        %>
+        </div>
 <%
 }
 /* ---------------------- status.jsp start --------------------- */

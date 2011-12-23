@@ -1,8 +1,8 @@
-<%-- 
+<%--
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -27,55 +27,55 @@ org.opensolaris.opengrok.web.Util"
 %><%
 /* ---------------------- error.jsp start --------------------- */
 {
-	cfg = PageConfig.get(request);
-	cfg.setTitle("Error!");
+    cfg = PageConfig.get(request);
+    cfg.setTitle("Error!");
 
-	String context = request.getContextPath();
-	String configError = "";
-	if (cfg.getSourceRootPath().isEmpty()) {
-		configError = "CONFIGURATION parameter has not been configured in "
-			+ "web.xml! Please configure your webapp.";
-	} else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
-		configError = "The source root specified in your configuration does "
-			+ "not point to a valid directory! Please configure your webapp.";
-	}
-%><%@ 
+    String context = request.getContextPath();
+    String configError = "";
+    if (cfg.getSourceRootPath().isEmpty()) {
+        configError = "CONFIGURATION parameter has not been configured in "
+            + "web.xml! Please configure your webapp.";
+    } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
+        configError = "The source root specified in your configuration does "
+            + "not point to a valid directory! Please configure your webapp.";
+    }
+%><%@
 
-include file="httpheader.jspf" 
+include file="httpheader.jspf"
 
 %>
 <body>
 <div id="page">
-	<div id="whole_header">
- 	   <div id="header">
+    <div id="whole_header">
+       <div id="header">
 <%@
-    
+
 include file="pageheader.jspf"
 
 %>
-    	</div>
-		<div id="Masthead"></div>
-		<div id="sbar"><%@
+        </div>
+        <div id="Masthead"></div>
+        <div id="sbar"><%@
 
 include file="menu.jspf"
 
-		%></div>
-	</div>
-	<h3 class="error">There was an error!</h3>
-	<p class="error"><%= configError %></p><%
-	if (exception != null) {
+        %></div>
+    </div>
+    <h3 class="error">There was an error!</h3>
+    <p class="error"><%= configError %></p><%
+    if (exception != null) {
 %>
-		<p class="error"><%= exception.getMessage() %></p>
-		<pre><%
-		StringWriter wrt = new StringWriter();
-		PrintWriter prt = new PrintWriter(wrt);
-		exception.printStackTrace(prt);
-		prt.close();
-		out.write(Util.htmlize(wrt.toString()));
-		%></pre><%
-	} else {
-		%><p class="error">Unknown Error</p><%
-	}
+        <p class="error"><%= exception.getMessage() %></p>
+        <pre><%
+        StringWriter wrt = new StringWriter();
+        PrintWriter prt = new PrintWriter(wrt);
+        exception.printStackTrace(prt);
+        prt.close();
+        out.write(Util.htmlize(wrt.toString()));
+        %></pre><%
+    } else {
+        %><p class="error">Unknown Error</p><%
+    }
 }
 /* ---------------------- error.jsp end --------------------- */
 %><%@

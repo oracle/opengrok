@@ -40,58 +40,58 @@ include file="pageconfig.jspf"
 %><%
 /* ---------------------- raw.jsp start --------------------- */
 {
-	cfg = PageConfig.get(request);
-	String redir = cfg.canProcess();
-	if (redir == null || redir.length() > 0) {
-		if (redir != null) {
-			response.sendRedirect(redir);
-		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		}
-		return;
-	}
-	
-	File f = cfg.getResourceFile();
-	String revision = cfg.getRequestedRevision();
-	if (revision.length() == 0) {
-		revision = null;
-	}
-	InputStream in = null;
-	try {
-		if (revision != null) {
-			in = HistoryGuru.getInstance().getRevision(f.getParent(), 
-				f.getName(), revision.substring(2));
-		} else {
-			long flast = cfg.getLastModified();
-			if (request.getDateHeader("If-Modified-Since") >= flast) {
-				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-				return;
-			}
-			in = new FileInputStream(f);
-			response.setContentLength((int) f.length());
-			response.setDateHeader("Last-Modified", f.lastModified());
-		}
-	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		return ;
-	}	
-	String mimeType = getServletContext().getMimeType(f.getAbsolutePath());
-	response.setContentType(mimeType);
+    cfg = PageConfig.get(request);
+    String redir = cfg.canProcess();
+    if (redir == null || redir.length() > 0) {
+        if (redir != null) {
+            response.sendRedirect(redir);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+        return;
+    }
 
-	try {
-		response.setHeader("content-disposition", "attachment; filename=" 
-			+ f.getName());
-		OutputStream o = response.getOutputStream();
-		byte[] buffer = new byte[8192];
-		int nr;
-		while ((nr = in.read(buffer)) > 0) {
-			o.write(buffer, 0, nr);
-		}
-		o.flush();
-		o.close();
-	} finally {
-		in.close();
-	}
+    File f = cfg.getResourceFile();
+    String revision = cfg.getRequestedRevision();
+    if (revision.length() == 0) {
+        revision = null;
+    }
+    InputStream in = null;
+    try {
+        if (revision != null) {
+            in = HistoryGuru.getInstance().getRevision(f.getParent(),
+                f.getName(), revision.substring(2));
+        } else {
+            long flast = cfg.getLastModified();
+            if (request.getDateHeader("If-Modified-Since") >= flast) {
+                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                return;
+            }
+            in = new FileInputStream(f);
+            response.setContentLength((int) f.length());
+            response.setDateHeader("Last-Modified", f.lastModified());
+        }
+    } catch (Exception e) {
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        return ;
+    }
+    String mimeType = getServletContext().getMimeType(f.getAbsolutePath());
+    response.setContentType(mimeType);
+
+    try {
+        response.setHeader("content-disposition", "attachment; filename="
+            + f.getName());
+        OutputStream o = response.getOutputStream();
+        byte[] buffer = new byte[8192];
+        int nr;
+        while ((nr = in.read(buffer)) > 0) {
+            o.write(buffer, 0, nr);
+        }
+        o.flush();
+        o.close();
+    } finally {
+        in.close();
+    }
 }
 /* ---------------------- raw.jsp end-------------------- */
 %>

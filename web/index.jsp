@@ -1,8 +1,8 @@
-<%-- 
+<%--
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -20,39 +20,39 @@ Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 Portions Copyright 2011 Jens Elkner.
---%><%@ page session="false" errorPage="error.jsp" %><%@ 
+--%><%@ page session="false" errorPage="error.jsp" %><%@
 
 include file="projects.jspf"
 
 %><%
 /* ---------------------- index.jsp start --------------------- */
 {
-	cfg = PageConfig.get(request);
-	cfg.setTitle("Search");
+    cfg = PageConfig.get(request);
+    cfg.setTitle("Search");
 %><%@
 
 include file="httpheader.jspf"
 
 %><body>
-	<div id="page">
-		<div id="whole_header">
-			<div id="header"><%@
+    <div id="page">
+        <div id="whole_header">
+            <div id="header"><%@
 
 include file="pageheader.jspf"
 
-			%></div>
-			<div id="Masthead"></div>
-			<div id="sbar"><%@
+            %></div>
+            <div id="Masthead"></div>
+            <div id="sbar"><%@
 
 include file="menu.jspf"
 
-			%></div>
-		</div>
-		<div id="results"><%@
+            %></div>
+        </div>
+        <div id="results"><%@
 
 include file="index_body.html"
 
-		%></div>
+        %></div>
 <%
 }
 /* ---------------------- index.jsp end --------------------- */

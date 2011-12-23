@@ -43,9 +43,9 @@ import org.opensolaris.opengrok.web.Util;
 
   @Override
   public void write(Writer out) throws IOException {
-  		p = 0;
-  		span = 0;
-  		div = 0;
+        p = 0;
+        span = 0;
+        div = 0;
         yyline++;
         this.out = out;
         while(yylex() != YYEOF) {
@@ -60,64 +60,64 @@ import org.opensolaris.opengrok.web.Util;
   
   // Q&D methods to asure well-formed documents
   protected void closePara() throws IOException {
-  	if (p > 0) {
-  		out.write("</p>");
-  		p--;
-  	}
+      if (p > 0) {
+          out.write("</p>");
+          p--;
+      }
   }
   protected void closeSpan() throws IOException {
-  	if (span > 0) {
-  		out.write("</span>");
-  		span--;
-  	}
+      if (span > 0) {
+          out.write("</span>");
+          span--;
+      }
   }
   protected void closeDiv() throws IOException {
-  	if (div > 0) {
-  		out.write("</div>");
-  		div--;
-  	}
+      if (div > 0) {
+          out.write("</div>");
+          div--;
+      }
   }
   protected void openPara() throws IOException {
-  	out.write("<p>");
-  	p++;
+      out.write("<p>");
+      p++;
   }
   protected void openSpan(char cssClass) throws IOException {
-  	out.write("<span class=\"");
-  	out.write(cssClass);
-  	out.write("\">");
-  	span++;
+      out.write("<span class=\"");
+      out.write(cssClass);
+      out.write("\">");
+      span++;
   }
 
   protected void openDiv(String cssClass) throws IOException {
-  	out.write("<div class=\"");
-  	out.write(cssClass);
-  	out.write("\">");
-  	div++;
+      out.write("<div class=\"");
+      out.write(cssClass);
+      out.write("\">");
+      div++;
   }
   
   protected void cleanup() {
     try {
-	  while (span > 0) {
-	  	closeSpan();
-	  }
-	  while (p > 0) {
-	  	closePara();
-	  }
-	} catch (IOException e) {
-		// nothing we can do here
-	}
+        while (span > 0) {
+            closeSpan();
+        }
+        while (p > 0) {
+            closePara();
+        }
+    } catch (IOException e) {
+        // nothing we can do here
+    }
   }
 %}
 
 %eof{
-	cleanup();
-	try {
-		while (div > 0) {
-			closeDiv();
-		}
-	} catch (IOException e) {
-		// nothing we can do here
-	}
+    cleanup();
+    try {
+        while (div > 0) {
+            closeDiv();
+        }
+    } catch (IOException e) {
+        // nothing we can do here
+    }
 %eof}
 
 WhiteSpace     = [ \t\f]
@@ -212,7 +212,7 @@ T[\{\}] {}
 "\\ "   { out.write(' '); }
 "<"     {out.write( "&lt;");}
 ">"     {out.write( "&gt;");}
-"&"		{out.write( "&amp;");}
+"&"     {out.write( "&amp;");}
 {EOL}   { out.write("\n"); yyline++;}
 {WhiteSpace}+   { out.write(' '); }
 [!-~]   { out.write(yycharat(0)); }

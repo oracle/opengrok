@@ -81,7 +81,7 @@ public class CSharpAnalyzer extends PlainAnalyzer  {
      * @param annotation annotation for the file (could be null)
      */
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
-    	CSharpXref xref = new CSharpXref(in);
+        CSharpXref xref = new CSharpXref(in);
         xref.annotation = annotation;
         xref.project = project;
         //xref.setDefs(defs);

@@ -85,15 +85,15 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
         out.write("&gt;");
 }
 
-/*{Hier}	
- 	{ out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
+/*{Hier}
+    { out.write(Util.breadcrumbPath(urlPrefix+"defs=",yytext(),'.'));}
 */
 {Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
- \"	{ yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'	{ yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "/*"	{ yybegin(COMMENT);out.write("<span class=\"c\">/*");}
- "//"	{ yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
+ \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
+ \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
+ "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
+ "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
 }
 
 <STRING> {
@@ -118,7 +118,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 }
 
 <COMMENT> {
-"*/"	{ yybegin(YYINITIAL); out.write("*/</span>"); }
+"*/"    { yybegin(YYINITIAL); out.write("*/</span>"); }
 }
 
 <SCOMMENT> {
@@ -140,7 +140,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 <STRING, COMMENT, SCOMMENT, QSTRING, VSTRING> {
 {Path}
- 	{ out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
 {File}
         {

@@ -1,10 +1,10 @@
-<%-- 
+<%--
 $Id$
 
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -31,32 +31,32 @@ org.opensolaris.opengrok.OpenGrokLogger,
 org.apache.lucene.search.Query,
 org.opensolaris.opengrok.search.QueryBuilder,
 org.opensolaris.opengrok.search.context.Context"
-%><%@include 
+%><%@include
 
 file="mast.jsp"
 
 %><%
 /* ---------------------- more.jsp start --------------------- */
 {
-	cfg = PageConfig.get(request);
-	QueryBuilder qbuilder = cfg.getQueryBuilder();
+    cfg = PageConfig.get(request);
+    QueryBuilder qbuilder = cfg.getQueryBuilder();
 
-	try {
-		Query tquery = qbuilder.build();
-		if (tquery != null) {
-			Context sourceContext = new Context(tquery, qbuilder.getQueries());
+    try {
+        Query tquery = qbuilder.build();
+        if (tquery != null) {
+            Context sourceContext = new Context(tquery, qbuilder.getQueries());
 %><p><span class="pagetitle">Lines Matching <b><%= tquery %></b></span></p>
 <div id="more" style="line-height:1.5em;">
-	<pre><%
-			sourceContext.getContext(new FileReader(cfg.getResourceFile()), out, 
-				request.getContextPath() + Prefix.XREF_P, null, cfg.getPath(), 
-				null, false, null);
-	%></pre>
+    <pre><%
+            sourceContext.getContext(new FileReader(cfg.getResourceFile()), out,
+                request.getContextPath() + Prefix.XREF_P, null, cfg.getPath(),
+                null, false, null);
+    %></pre>
 </div><%
-		}
-	} catch (Exception e) {
-		OpenGrokLogger.getLogger().log(Level.WARNING, e.getMessage());
-	}
+        }
+    } catch (Exception e) {
+        OpenGrokLogger.getLogger().log(Level.WARNING, e.getMessage());
+    }
 }
 /* ---------------------- more.jsp end --------------------- */
 %><%@

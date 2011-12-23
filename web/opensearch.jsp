@@ -1,10 +1,10 @@
-<%-- 
+<%--
 $Id$
 
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -36,41 +36,41 @@ include file="pageconfig.jspf"
 include file="projects.jspf"
 
 %><%
-	/* ---------------------- opensearch.jsp start --------------------- */
+    /* ---------------------- opensearch.jsp start --------------------- */
 {
-	cfg = PageConfig.get(request);
+    cfg = PageConfig.get(request);
 
-	StringBuilder url = new StringBuilder(128);
+    StringBuilder url = new StringBuilder(128);
         String scheme=request.getScheme();
         url.append(scheme).append("://").append(request.getServerName());
-	int port = request.getServerPort();
-	if ((port != 80 && scheme.equals("http")) ||
+    int port = request.getServerPort();
+    if ((port != 80 && scheme.equals("http")) ||
                (port != 443 && scheme.equals("https"))) {
-		url.append(':').append(port);
-	}
-	port = url.length();	// mark
-	String img = url.append(cfg.getCssDir()).append("/img/icon.png").toString();
-	url.setLength(port);	// rewind
+        url.append(':').append(port);
+    }
+    port = url.length();    // mark
+    String img = url.append(cfg.getCssDir()).append("/img/icon.png").toString();
+    url.setLength(port);    // rewind
 
-	/* TODO  Bug 11749 ??? */
-	StringBuilder text = new StringBuilder();
-	url.append(request.getContextPath()).append(Prefix.SEARCH_P).append('?');
-	Set<String> projects = cfg.getRequestedProjects();
-	for (String name : projects) {
-		text.append(name).append(',');
-		Util.appendQuery(url, "project", name);
-	}
-	if (text.length() != 0) {
-		text.setLength(text.length()-1);
-	}
+    /* TODO  Bug 11749 ??? */
+    StringBuilder text = new StringBuilder();
+    url.append(request.getContextPath()).append(Prefix.SEARCH_P).append('?');
+    Set<String> projects = cfg.getRequestedProjects();
+    for (String name : projects) {
+        text.append(name).append(',');
+        Util.appendQuery(url, "project", name);
+    }
+    if (text.length() != 0) {
+        text.setLength(text.length()-1);
+    }
 %><?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-	<ShortName>OpenGrok <%= text.toString() %></ShortName>
-	<Description>Search in OpenGrok <%= text.toString() %></Description>
-	<InputEncoding>UTF-8</InputEncoding>
-	<Image height="16" width="16" type="image/png"><%= img %></Image>
+    <ShortName>OpenGrok <%= text.toString() %></ShortName>
+    <Description>Search in OpenGrok <%= text.toString() %></Description>
+    <InputEncoding>UTF-8</InputEncoding>
+    <Image height="16" width="16" type="image/png"><%= img %></Image>
 <%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
-	<Url template="<%= url.toString() %>&amp;q={searchTerms}" type="text/html"/>
+    <Url template="<%= url.toString() %>&amp;q={searchTerms}" type="text/html"/>
 </OpenSearchDescription>
 <%
 }

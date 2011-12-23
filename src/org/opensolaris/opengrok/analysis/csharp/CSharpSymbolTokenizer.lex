@@ -60,8 +60,8 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <STRING> {
- \"	{ yybegin(YYINITIAL); }
-\\\\ | \\\"	{}
+ \"     { yybegin(YYINITIAL); }
+\\\\ | \\\"     {}
 }
 
 <VSTRING> {
@@ -69,15 +69,15 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <QSTRING> {
- \'	{ yybegin(YYINITIAL); }
+ \'     { yybegin(YYINITIAL); }
 }
 
 <COMMENT> {
-"*/"	{ yybegin(YYINITIAL);}
+"*/"    { yybegin(YYINITIAL);}
 }
 
 <SCOMMENT> {
-\n	{ yybegin(YYINITIAL);}
+\n      { yybegin(YYINITIAL);}
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING, VSTRING> {

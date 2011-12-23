@@ -1,10 +1,10 @@
-<%-- 
+<%--
 $Id$
 
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -39,141 +39,141 @@ org.opensolaris.opengrok.web.Util"
 %><%
 /* ---------------------- menu.jspf start --------------------- */
 {
-	// PageConfig cfg = PageConfig.get(request);
+    // PageConfig cfg = PageConfig.get(request);
 
-	List<Project> projects = cfg.getEnv().getProjects();
-	if (projects == null) {
-		projects = new ArrayList<Project>(0);
-	}
-	TreeMap<String, String> pMap = new TreeMap<String, String>();
-	QueryBuilder queryParams = cfg.getQueryBuilder();
-	if (projects.size() != 0) {
-		for (Project p : projects) {
-			String name = p.getDescription();
-			String esc = Util.formQuoteEscape(p.getDescription());
-			pMap.put(name, esc);
-		}
-		StringBuilder jsProjects = new StringBuilder(64);
-		jsProjects.append('\'');
-		for (String name : cfg.getRequestedProjects()) {
-			jsProjects.append(name).append("','");
-		}
-		if (jsProjects.length() > 1) {
-			jsProjects.setLength(jsProjects.length()-2);
-		} else {
-			jsProjects.setLength(0);
-		}
+    List<Project> projects = cfg.getEnv().getProjects();
+    if (projects == null) {
+        projects = new ArrayList<Project>(0);
+    }
+    TreeMap<String, String> pMap = new TreeMap<String, String>();
+    QueryBuilder queryParams = cfg.getQueryBuilder();
+    if (projects.size() != 0) {
+        for (Project p : projects) {
+            String name = p.getDescription();
+            String esc = Util.formQuoteEscape(p.getDescription());
+            pMap.put(name, esc);
+        }
+        StringBuilder jsProjects = new StringBuilder(64);
+        jsProjects.append('\'');
+        for (String name : cfg.getRequestedProjects()) {
+            jsProjects.append(name).append("','");
+        }
+        if (jsProjects.length() > 1) {
+            jsProjects.setLength(jsProjects.length()-2);
+        } else {
+            jsProjects.setLength(0);
+        }
 %>
 <script type="text/javascript">/* <![CDATA[ */
     document.projects = [ <%= Util.encode(jsProjects.toString())
-	%> ];document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P 
-	%>';document.domReady.push(function() { domReadyMenu(); });
+    %> ];document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P
+    %>';document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
 </script><%
-	}
+    }
 %>
 <form action="search" id="sbox">
 
 <div id="qtbl">
 <table>
-	<tr>
-		<td><label for="s1">Full&nbsp;Search</label></td>
-		<td><input tabindex="1" class="q" name="q" id="s1" value="<%= 
-				Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
-	</tr>
-	<tr>
-		<td><label for="s2">Definition</label></td>
-		<td><input class="q" tabindex="2" name="defs" id="s2" value="<%= 
-			Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
-	</tr>
-	<tr>
-		<td><label for="s3">Symbol</label></td>
-		<td><input class="q" tabindex="3" name="refs" id="s3" value="<%= 
-			Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
-	</tr>
-	<tr>
-		<td><label for="s4">File&nbsp;Path</label></td>
-		<td><input class="q" tabindex="4" name="path" id="s4" value="<%= 
-			Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
-	</tr>
-	<tr>
-		<td><label for="s5">History</label></td>
-		<td><input class="q" tabindex="5" name="hist" id="s5" value="<%= 
-			Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
-	</tr>
+    <tr>
+        <td><label for="s1">Full&nbsp;Search</label></td>
+        <td><input tabindex="1" class="q" name="q" id="s1" value="<%=
+                Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s2">Definition</label></td>
+        <td><input class="q" tabindex="2" name="defs" id="s2" value="<%=
+            Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s3">Symbol</label></td>
+        <td><input class="q" tabindex="3" name="refs" id="s3" value="<%=
+            Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s4">File&nbsp;Path</label></td>
+        <td><input class="q" tabindex="4" name="path" id="s4" value="<%=
+            Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s5">History</label></td>
+        <td><input class="q" tabindex="5" name="hist" id="s5" value="<%=
+            Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
+    </tr>
 <%-- TODO  Bug 11749
 <%
-	if (projects.size() != 0) {
-		String imgDir = cfg.getCssDir() + "/img/";
-	%>
-	<tr>
-		<td>Project(s)</td>
-		<td>
-			<table class="combo_table" id="combotable">
-				<tbody>
-					<tr>
-						<td class="combo_td1"><div class="combo_div4" 
-							style="background: transparent url(<%=
-								imgDir %>transparent_pixel.gif) 
-								repeat scroll 0% 0%;"><input 
-								class="combo_input1 combo_input" id="project" 
-								name="project" size="25" 
-								value="<%= cfg.getRequestedProjectsAsString() 
-								%>"/></div>
-						</td>
-						<td valign="top" align="left" class="combo_td2" 
-							id="combotable_button"><a 
-							onclick='javascript: $("#project").click();
-							$("#project").click();'/><img style="display: none;" 
-							alt="" src="<%= imgDir %>button2.png"/>
-						</td>
-					</tr>
-				</tbody>
-			</table></td>
-	</tr><%
-	}
+    if (projects.size() != 0) {
+        String imgDir = cfg.getCssDir() + "/img/";
+    %>
+    <tr>
+        <td>Project(s)</td>
+        <td>
+            <table class="combo_table" id="combotable">
+                <tbody>
+                    <tr>
+                        <td class="combo_td1"><div class="combo_div4"
+                            style="background: transparent url(<%=
+                                imgDir %>transparent_pixel.gif)
+                                repeat scroll 0% 0%;"><input
+                                class="combo_input1 combo_input" id="project"
+                                name="project" size="25"
+                                value="<%= cfg.getRequestedProjectsAsString()
+                                %>"/></div>
+                        </td>
+                        <td valign="top" align="left" class="combo_td2"
+                            id="combotable_button"><a
+                            onclick='javascript: $("#project").click();
+                            $("#project").click();'/><img style="display: none;"
+                            alt="" src="<%= imgDir %>button2.png"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table></td>
+    </tr><%
+    }
 %>
 --%>
 </table>
 </div><%
 
-	if (projects.size() != 0) {
+    if (projects.size() != 0) {
 %>
 <div id="ptbl">
-	<p><label for="project">In Project(s)</label> <button tabindex="6" type="button"
-		onclick="javascript: selectAllProjects(); return false;"
-		>select all</button>&nbsp;<button tabindex="7" type="button"
-		onclick="javascript: invertAllProjects(); return false;"
-		>invert selection</button> </p>
-	<select tabindex="8" ondblclick="javascript: goFirstProject();" 
-		onkeyup="javascript: checkEnter(event);" class="q" id="project" 
-		name="project" multiple="multiple" size="<%= 
-		Math.min(6, projects.size()) %>"><%
-		SortedSet<String> pRequested = cfg.getRequestedProjects();
-		for (Entry<String,String> e : pMap.entrySet()) {
-			// TODO below "selected" has no effect if one refreshes the page 
-			// with F5 also below ondblclick doesn't work in IE ...
-			// ondblclick="javascript:goFirstProject();"
-		%>
-		<option value="<%= e.getValue() %>"<%
-			if (pRequested.contains(e.getKey())) {
-			%> selected="selected"<%
-			}
-			%>><%= e.getValue() %></option><%
-		}
-		%>
-	</select>
+    <p><label for="project">In Project(s)</label> <button tabindex="6" type="button"
+        onclick="javascript: selectAllProjects(); return false;"
+        >select all</button>&nbsp;<button tabindex="7" type="button"
+        onclick="javascript: invertAllProjects(); return false;"
+        >invert selection</button> </p>
+    <select tabindex="8" ondblclick="javascript: goFirstProject();"
+        onkeyup="javascript: checkEnter(event);" class="q" id="project"
+        name="project" multiple="multiple" size="<%=
+        Math.min(6, projects.size()) %>"><%
+        SortedSet<String> pRequested = cfg.getRequestedProjects();
+        for (Entry<String,String> e : pMap.entrySet()) {
+            // TODO below "selected" has no effect if one refreshes the page
+            // with F5 also below ondblclick doesn't work in IE ...
+            // ondblclick="javascript:goFirstProject();"
+        %>
+        <option value="<%= e.getValue() %>"<%
+            if (pRequested.contains(e.getKey())) {
+            %> selected="selected"<%
+            }
+            %>><%= e.getValue() %></option><%
+        }
+        %>
+    </select>
 </div><%
-	}
-	%>
+    }
+    %>
 
-<p><input 
-	tabindex="9" class="submit" type="submit" value="Search"/> <input 
-	tabindex="10" class="submit" onclick="javascript: sbox.q.value=''; 
-	sbox.defs.value = ''; sbox.refs.value = ''; sbox.path.value = ''; 
-	sbox.hist.value = ''; sbox.project.value ='';" type="button" 
-	value=" Clear "/> <button class="help" 
-	tabindex="11" onclick="window.open('help.jsp')">Help</button>
+<p><input
+    tabindex="9" class="submit" type="submit" value="Search"/> <input
+    tabindex="10" class="submit" onclick="javascript: sbox.q.value='';
+    sbox.defs.value = ''; sbox.refs.value = ''; sbox.path.value = '';
+    sbox.hist.value = ''; sbox.project.value ='';" type="button"
+    value=" Clear "/> <button class="help"
+    tabindex="11" onclick="window.open('help.jsp')">Help</button>
 </p>
 </form>
 <%
