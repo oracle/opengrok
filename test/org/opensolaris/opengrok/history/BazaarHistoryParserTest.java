@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -127,7 +126,7 @@ public class BazaarHistoryParserTest {
         
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
-        assertEquals(4, result.getHistoryEntries().size());
+        assertEquals(3, result.getHistoryEntries().size());
         
         HistoryEntry e1 = result.getHistoryEntries().get(0);
         assertEquals(revId1, e1.getRevision());
@@ -145,11 +144,7 @@ public class BazaarHistoryParserTest {
         assertEquals(0, e3.getFiles().size());
         assertTrue(e3.getMessage().contains("line1"));
         assertTrue(e3.getMessage().contains("line2"));
-
-        HistoryEntry e4 = result.getHistoryEntries().get(3);
-        assertEquals(revId4, e4.getRevision());
-        assertEquals(author4, e4.getAuthor());
-        assertEquals(0, e4.getFiles().size());
+        assertTrue(e3.getMessage().contains("revno: " + revId4));
     }
     
     @Test

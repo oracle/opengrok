@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -78,7 +77,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
         return new History(entries);
     }
 
-      /**
+    /**
      * Process the output from the log command and insert the HistoryEntries
      * into the history field.
      *
@@ -95,15 +94,7 @@ class BazaarHistoryParser implements Executor.StreamHandler {
 
         HistoryEntry entry = null;
         int state = 0;
-        int ident = 0;
         while ((s = in.readLine()) != null) {
-            int nident = 0;
-            int len = s.length();
-            while (nident < len && s.charAt(nident) == ' ') {
-                ++nident;
-            }
-
-            s = s.trim();
             if ("------------------------------------------------------------".equals(s)) {
                 if (entry != null && state > 2) {
                     entries.add(entry);
@@ -111,26 +102,28 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                 entry = new HistoryEntry();
                 entry.setActive(true);
                 state = 0;
-                ident = nident;
                 continue;
             }
 
             switch (state) {
                 case 0:
-                    if (ident == nident && s.startsWith("revno:")) {
+                    // First, go on until revno is found.
+                    if (s.startsWith("revno:")) {
                         String rev[] = s.substring("revno:".length()).trim().split(" ");
                         entry.setRevision(rev[0]);
                         ++state;
                     }
                     break;
                 case 1:
-                    if (ident == nident && s.startsWith("committer:")) {
+                    // Then, look for committer.
+                    if (s.startsWith("committer:")) {
                         entry.setAuthor(s.substring("committer:".length()).trim());
                         ++state;
                     }
                     break;
                 case 2:
-                    if (ident == nident && s.startsWith("timestamp:")) {
+                    // And then, look for timestamp.
+                    if (s.startsWith("timestamp:")) {
                         try {
                             Date date = df.parse(s.substring("timestamp:".length()).trim());
                             entry.setDate(date);
@@ -142,16 +135,25 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                     }
                     break;
                 case 3:
-                    if (!(ident == nident && s.startsWith("message:"))) {
-                        if (ident == nident && (s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:"))) {
-                            ++state;
-                        } else {
-                            entry.appendMessage(s);
-                        }
+                    // Expect the commit message to follow immediately after
+                    // the timestamp, and that everything up to the list of
+                    // modified, added and removed files is part of the commit
+                    // message.
+                    if (s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:")) {
+                        ++state;
+                    } else if (s.startsWith("  ")) {
+                        // Commit messages returned by bzr log -v are prefixed
+                        // with two blanks.
+                        entry.appendMessage(s.substring(2));
                     }
                     break;
                 case 4:
+                    // Finally, store the list of modified, added and removed
+                    // files. (Except the labels.)
                     if (!(s.startsWith("modified:") || s.startsWith("added:") || s.startsWith("removed:"))) {
+                        // The list of files is prefixed with blanks.
+                        s = s.trim();
+
                         int idx = s.indexOf(" => ");
                         if (idx != -1) {
                             s = s.substring(idx + 4);
