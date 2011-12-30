@@ -143,6 +143,9 @@ public class DirectoryListing {
                     continue;
                 }
                 File child = new File(dir, file);
+                if (ignoredNames.ignore(child)) {
+                    continue;
+                }
                 if (file.startsWith("README") || file.endsWith("README")
                     || file.startsWith("readme"))
                 {
