@@ -972,7 +972,8 @@ public final class PageConfig {
     public boolean resourceNotAvailable() {
         getIgnoredNames();
         return getResourcePath().equals("/") || ignoredNames.ignore(getPath())
-                || ignoredNames.ignore(resourceFile.getParentFile().getName());
+                || ignoredNames.ignore(resourceFile.getParentFile().getName())
+                || ignoredNames.ignore(resourceFile);
     }
 
     /**

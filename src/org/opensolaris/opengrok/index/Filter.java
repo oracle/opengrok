@@ -108,6 +108,7 @@ public class Filter implements Serializable {
         boolean ret = false;
 
         String fileName = file.getName();
+        String absolute = file.getAbsolutePath();
 
         if (filename.contains(fileName)) {
             ret = true;
@@ -118,11 +119,17 @@ public class Filter implements Serializable {
                     ret = true;
                     break;
                 }
+                if (p.pattern().contains("/")) {
+                    m = p.matcher(absolute);
+                    if (m.matches()) {
+                        ret = true;
+                        break;
+                    }
+                }
             }
         }
 
         if (!ret) {
-            String absolute = file.getAbsolutePath();
             for (String s : path) {
                 if (absolute.endsWith(s)) {
                     ret = true;
