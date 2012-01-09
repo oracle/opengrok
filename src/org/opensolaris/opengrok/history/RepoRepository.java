@@ -33,9 +33,9 @@ import org.opensolaris.opengrok.util.Executor;
  * Access to a Git repository.
  *
  * @author Trond Norbye <trond.norbye@gmail.com>
- * @todo cache all of the GitRepositories within the class
  */
 public class RepoRepository extends Repository {
+    // TODO: cache all of the GitRepositories within the class
 
     private static final long serialVersionUID = 1L;
     /** The property name used to obtain the client command for this repository.*/

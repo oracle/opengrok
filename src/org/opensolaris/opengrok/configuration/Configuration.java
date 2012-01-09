@@ -30,9 +30,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -513,12 +513,12 @@ public final class Configuration {
      * page header.
      */
     public String getHeaderIncludeFileContent() {
-	StringBuilder contents = new StringBuilder();
-	File hdrfile = new File(getDataRoot(), "header_include");
+        StringBuilder contents = new StringBuilder();
+        File hdrfile = new File(getDataRoot(), "header_include");
 
-	try {
-	    BufferedReader input = new BufferedReader(new FileReader(hdrfile));
-	    try {
+        try {
+            BufferedReader input = new BufferedReader(new FileReader(hdrfile));
+            try {
                 String line = null;
                 while (( line = input.readLine()) != null) {
                     contents.append(line);
@@ -526,6 +526,7 @@ public final class Configuration {
                 }
             }
             catch (java.io.IOException e) {
+                // TODO: use logger to produce error message
                 return "";
             }
             finally {
@@ -533,10 +534,12 @@ public final class Configuration {
                     input.close();
                 }
                 catch (Exception e) {
+                    return contents.toString();
                 }
             }
         }
         catch (java.io.FileNotFoundException e) {
+            // TODO: use logger to produce error message
             return "";
         }
         return contents.toString();
