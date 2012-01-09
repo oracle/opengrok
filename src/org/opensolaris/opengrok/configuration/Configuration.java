@@ -506,6 +506,40 @@ public final class Configuration {
         return new Date(timestamp.lastModified());
     }
 
+    /**
+     * Return string from the header include file so it can be embedded into
+     * page header.
+     */
+    public String getHeaderIncludeFileContent() {
+	StringBuilder contents = new StringBuilder();
+	File hdrfile = new File(getDataRoot(), "header_include");
+
+	try {
+	    BufferedReader input = new BufferedReader(new FileReader(hdrfile));
+	    try {
+                String line = null;
+                while (( line = input.readLine()) != null) {
+                    contents.append(line);
+                    contents.append(System.getProperty("line.separator"));
+                }
+            }
+            catch (java.io.IOException e) {
+                return "";
+            }
+            finally {
+                try {
+                    input.close();
+                }
+                catch (Exception e) {
+                }
+            }
+        }
+        catch (java.io.FileNotFoundException e) {
+            return "";
+        }
+        return contents.toString();
+    }
+
     public String getDatabaseDriver() {
         return databaseDriver;
     }

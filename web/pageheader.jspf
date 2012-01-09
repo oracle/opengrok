@@ -23,7 +23,8 @@ Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
 {
 %>
 <a href="<%= request.getContextPath() %>/"><span id="MastheadLogo"></span></a>
+<%= cfg.getEnv().getHeaderIncludeFileContent() %>
 <% 
 }
-/* ---------------------- pageheader.jspf start --------------------- */
+/* ---------------------- pageheader.jspf end --------------------- */
 %>
