@@ -201,7 +201,9 @@ web.xml of source.war file and change them (see note1) appropriately.
     * SRC_ROOT: the absolute path name of the root directory of your source tree
     * DATA_ROOT: absolute path of the directory where OpenGrok data
     files are stored
-
+       - Header file 'header_include' can be created under DATA_ROOT. The
+         contents of this file file will be appended to the header of each
+	 web page after the OpenGrok logo element.
 
 Optional Step.3 - Path Descriptions
 -----------------------------------
