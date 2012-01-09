@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Logger;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,6 +108,7 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String,String> cmds;
     private int tabSize;
+    private static final Logger logger = Logger.getLogger("org.opensolaris.opengrok");
 
     /**
      * Get the default tab size (number of space characters per tab character)
@@ -526,20 +528,19 @@ public final class Configuration {
                 }
             }
             catch (java.io.IOException e) {
-                // TODO: use logger to produce error message
+                logger.warning("failed to read header include file: " + e);
                 return "";
             }
             finally {
                 try {
                     input.close();
                 }
-                catch (Exception e) {
-                    return contents.toString();
+                catch (java.io.IOException e) {
+                    logger.info("failed to close header include file: " + e);
                 }
             }
         }
         catch (java.io.FileNotFoundException e) {
-            // TODO: use logger to produce error message
             return "";
         }
         return contents.toString();
