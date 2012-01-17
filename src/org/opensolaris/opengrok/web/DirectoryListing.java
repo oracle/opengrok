@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -55,6 +55,32 @@ public class DirectoryListing {
     }
 
     /**
+     * Write part of HTML code which contains file/directory last
+     * modification time and size.
+     *
+     * @param out write destination
+     * @param child the file or directory to use for writing the data
+     *
+     * @throws NullPointerException if a parameter is {@code null}
+     */
+    private void PrintDateSize(Writer out, File child) throws IOException {
+        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        Date lastm = new Date(child.lastModified());
+
+        out.write("<td>");
+        if (now - lastm.getTime() < 86400000) {
+            out.write("Today");
+        } else {
+            out.write(dateFormatter.format(lastm));
+        }
+        out.write("</td><td>");
+        // if (isDir) {
+            out.write(Util.readableSize(child.length()));
+        // }
+        out.write("</td>");
+    }
+
+    /**
      * Write a htmlized listing of the given directory to the given destination.
      *
      * @param dir the directory to list
@@ -72,12 +98,9 @@ public class DirectoryListing {
      */
     public List<String> listTo(File dir, Writer out, String path, List<String> files) throws IOException {
         // TODO this belongs to a jsp, not here
+        boolean dotdot = false;
         ArrayList<String> readMes = new ArrayList<String>();
         int offset = -1;
-        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
-        if (path.length() != 0) {
-            out.write("<p><a href=\"..\"><i>Up to higher level directory</i></a></p>");
-        }
         EftarFileReader.FNode parentFNode = null;
         if (desc != null) {
             parentFNode = desc.getNode(path);
@@ -85,13 +108,24 @@ public class DirectoryListing {
                 offset = parentFNode.childOffset;
             }
         }
-        out.write("<table id=\"dirlist\">");
-        out.write("<thead><tr><th/><th>Name</th><th>Date</th><th>Size</th>");
+
+        out.write("<table id=\"dirlist\">\n");
+        out.write("<thead>\n<tr><th/><th>Name</th><th>Date</th><th>Size</th>");
         if (offset > 0) {
             out.write("<th><tt>Description</tt></th>");
         }
-        out.write("</tr></thead><tbody>");
+        out.write("</tr>\n</thead>\n<tbody>\n");
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
+
+        // print the '..' entry even for empty directories
+        if (!dotdot && path.length() != 0) {
+            File parentDir = new File(dir, "..");
+            out.write("<tr><td><p class=\"'r'\"/></td><td>");
+            dotdot = true;
+            out.write("<b><a href=\"..\">..</a></b></td>");
+            PrintDateSize(out, parentDir);
+            out.write("</tr>\n");
+        }
 
         if (files != null) {
             for (String file : files) {
@@ -118,18 +152,8 @@ public class DirectoryListing {
                     out.write(file);
                     out.write("</a>");
                 }
-                Date lastm = new Date(child.lastModified());
-                out.write("</td><td>");
-                if (now - lastm.getTime() < 86400000) {
-                    out.write("Today");
-                } else {
-                    out.write(dateFormatter.format(lastm));
-                }
-                out.write("</td><td>");
-                // if (isDir) {
-                    out.write(Util.readableSize(child.length()));
-                // }
                 out.write("</td>");
+                PrintDateSize(out, child);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, file);
                     if (briefDesc == null) {
@@ -140,10 +164,10 @@ public class DirectoryListing {
                         out.write("</td>");
                     }
                 }
-                out.write("</tr>");
+                out.write("</tr>\n");
             }
         }
-        out.write("</tbody></table>");
+        out.write("</tbody>\n</table>");
         return readMes;
     }
 }
