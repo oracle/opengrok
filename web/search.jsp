@@ -200,7 +200,7 @@ include file="menu.jspf"
         <p class="pagetitle">Searched <b><%= searchHelper.query
             %></b> (Results <b> <%= start + 1 %> - <%= thispage + start
             %></b> of <b><%= totalHits %></b>) sorted by <%=
-            searchHelper.order %></p><%
+            searchHelper.order.getDesc() %></p><%
         if (slider.length() > 0) {
         %>
         <p class="slider"><%= slider %></p><%
