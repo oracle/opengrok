@@ -119,11 +119,10 @@ public class DirectoryListing {
 
         // print the '..' entry even for empty directories
         if (!dotdot && path.length() != 0) {
-            File parentDir = new File(dir, "..");
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
             dotdot = true;
             out.write("<b><a href=\"..\">..</a></b></td>");
-            PrintDateSize(out, parentDir);
+            PrintDateSize(out, dir.getParentFile());
             out.write("</tr>\n");
         }
 

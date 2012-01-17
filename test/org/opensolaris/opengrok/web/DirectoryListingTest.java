@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -248,9 +248,10 @@ public class DirectoryListingTest {
 
         NodeList nl = document.getElementsByTagName("tr");
         int len = nl.getLength();
-        assertEquals(entries.length + 1, len);
-        // Skip the the header
-        for (int i = 1; i < len; ++i) {
+        // add one extra for header and one for parent directory link
+        assertEquals(entries.length + 2, len);
+        // Skip the the header and parent link
+        for (int i = 2; i < len; ++i) {
             validateEntry((Element) nl.item(i));
         }
     }
