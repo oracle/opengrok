@@ -1,6 +1,6 @@
 /* common stuff */
 body {
-	font-family: "Liberation Sans", sans-serif;
+	font-family: sans-serif;
 	margin: 1ex 1ex 0 1ex;
 }
 
@@ -56,7 +56,7 @@ label {
 
 .pre { /* the diff content */
 	white-space: pre-wrap;
-	font-family: "Liberation Mono", monospace;
+	font-family: monospace;
 	margin: 0;
 }
 
@@ -202,7 +202,7 @@ table#revisions {
 
 #revisions tbody td:first-child {
 	/* rev number - git/mercurial revs numbers look bad with prop. fonts */
-	font-family: "Liberation Mono", monospace;
+	font-family: monospace;
 	text-align: right;
 }
 
@@ -272,7 +272,7 @@ table#revisions {
 
 /* directory listing */
 table#dirlist { /* the "Name" column */
-	font-family:	"Liberation Mono", monospace;
+	font-family: monospace;
 	border-style: none;
 	border-collapse: collapse;
 }
@@ -347,7 +347,7 @@ table#dirlist { /* the "Name" column */
 #src .s		{ /* strings */			color: green; } 
 #src .c		{ /* comment */			color: #666; }
 #src .b		{ /* heading/title/bold */	color: #000; font-weight: bold; }
-#src .k		{ /* block display */ 	color: #000; font-family: "Liberation Mono", monospace; }
+#src .k		{ /* block display */ 	color: #000; font-family: monospace; }
 #src a.d	{ /* symbol definition */	color: #909; font-weight: bold; }
 
 a.xm	{ /* macro */			color: #c66; font-weight: bold; }
