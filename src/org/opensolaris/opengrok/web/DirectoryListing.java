@@ -30,7 +30,6 @@ import java.io.Writer;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -60,15 +59,16 @@ public class DirectoryListing {
      *
      * @param out write destination
      * @param child the file or directory to use for writing the data
+     * @param dateFormatter the formatter to use for pretty printing dates
      *
      * @throws NullPointerException if a parameter is {@code null}
      */
-    private void PrintDateSize(Writer out, File child) throws IOException {
-        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
-        Date lastm = new Date(child.lastModified());
+    private void PrintDateSize(Writer out, File child, Format dateFormatter)
+            throws IOException {
+        long lastm = child.lastModified();
 
         out.write("<td>");
-        if (now - lastm.getTime() < 86400000) {
+        if (now - lastm < 86400000) {
             out.write("Today");
         } else {
             out.write(dateFormatter.format(lastm));
@@ -98,7 +98,6 @@ public class DirectoryListing {
      */
     public List<String> listTo(File dir, Writer out, String path, List<String> files) throws IOException {
         // TODO this belongs to a jsp, not here
-        boolean dotdot = false;
         ArrayList<String> readMes = new ArrayList<String>();
         int offset = -1;
         EftarFileReader.FNode parentFNode = null;
@@ -117,12 +116,13 @@ public class DirectoryListing {
         out.write("</tr>\n</thead>\n<tbody>\n");
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
 
+        Format dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+
         // print the '..' entry even for empty directories
-        if (!dotdot && path.length() != 0) {
+        if (path.length() != 0) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
-            dotdot = true;
             out.write("<b><a href=\"..\">..</a></b></td>");
-            PrintDateSize(out, dir.getParentFile());
+            PrintDateSize(out, dir.getParentFile(), dateFormatter);
             out.write("</tr>\n");
         }
 
@@ -152,7 +152,7 @@ public class DirectoryListing {
                     out.write("</a>");
                 }
                 out.write("</td>");
-                PrintDateSize(out, child);
+                PrintDateSize(out, child, dateFormatter);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, file);
                     if (briefDesc == null) {
