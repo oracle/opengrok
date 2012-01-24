@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -40,6 +40,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.opensolaris.opengrok.Info;
@@ -304,6 +306,28 @@ public final class Util {
             buf.setLength(buf.length()-1);
         }
         return buf.toString();
+    }
+
+    private final static Pattern EMAIL_PATTERN =
+        Pattern.compile("([^<\\s]+@[^>\\s]+)");
+
+    /**
+     * Get email address of the author.
+     *
+     * @param author
+     *            string containing author and possibly email address.
+     * @return email address of the author or
+     *      full author string if the author string does not contain an email
+     *      address.
+     */
+    public static String getEmail(String author) {
+        Matcher email_matcher = EMAIL_PATTERN.matcher(author);
+        String email = author;
+        if (email_matcher.find()) {
+            email = email_matcher.group(1).trim();
+        }
+
+        return email;
     }
 
     /**

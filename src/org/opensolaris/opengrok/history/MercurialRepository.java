@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -38,6 +39,7 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * Access to a Mercurial repository.
@@ -170,7 +172,7 @@ public class MercurialRepository extends Repository {
 
     /** Pattern used to extract author/revision from hg annotate. */
     private static final Pattern ANNOTATION_PATTERN =
-        Pattern.compile("^\\s*(\\S+)\\s+(\\d+)\\s");
+        Pattern.compile("^\\s*(\\d+):");
 
     /**
      * Annotate the specified file/revision.
@@ -185,9 +187,7 @@ public class MercurialRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(cmd);
         argv.add("annotate");
-        argv.add("-u");
         argv.add("-n");
-        argv.add("-f");
         if (revision != null) {
             argv.add("-r");
             if (revision.indexOf(':') == -1) {
@@ -202,6 +202,25 @@ public class MercurialRepository extends Repository {
         Process process = null;
         BufferedReader in = null;
         Annotation ret = null;
+        HashMap<String,HistoryEntry> revs = new HashMap<String,HistoryEntry>();
+
+        // Construct hash map for history entries from history cache. This is
+        // needed later to get user string for particular revision.
+	try {
+            History hist = HistoryGuru.getInstance().getHistory(file, false);
+            for (HistoryEntry e : hist.getHistoryEntries()) {
+	        // Chop out the colon and all hexadecimal what follows.
+                // This is because the whole changeset identification is
+                // stored in history index while annotate only needs the
+                // revision identifier.
+                revs.put(e.getRevision().replaceFirst(":[a-f0-9]+", ""), e);
+            }
+	} catch (HistoryException he) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "Error: cannot get history for file " + file);
+	    return null;
+	}
+
         try {
             process = pb.start();
             in = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -213,9 +232,13 @@ public class MercurialRepository extends Repository {
                 ++lineno;
                 matcher.reset(line);
                 if (matcher.find()) {
-                    String author = matcher.group(1);
-                    String rev = matcher.group(2);
-                    ret.addLine(rev, author, true);
+                    String rev = matcher.group(1);
+                    String author = "N/A";
+                    // Use the history index hash map to get the author.
+		    if (revs.get(rev) != null) {
+                         author = revs.get(rev).getAuthor();
+	            }
+                    ret.addLine(rev, Util.getEmail(author.trim()), true);
                 } else {
                     OpenGrokLogger.getLogger().log(Level.SEVERE,
                         "Error: did not find annotation in line "
