@@ -511,15 +511,13 @@ public final class Configuration {
     }
 
     /**
-     * Return string from the header include file so it can be embedded into
-     * page header.
+     * Return contents of a file or empty string if the file cannot be read.
      */
-    public String getHeaderIncludeFileContent() {
+    private String getFileContent(File file) {
         StringBuilder contents = new StringBuilder();
-        File hdrfile = new File(getDataRoot(), "header_include");
 
         try {
-            BufferedReader input = new BufferedReader(new FileReader(hdrfile));
+            BufferedReader input = new BufferedReader(new FileReader(file));
             try {
                 String line = null;
                 while (( line = input.readLine()) != null) {
@@ -544,6 +542,26 @@ public final class Configuration {
             return "";
         }
         return contents.toString();
+    }
+
+    /**
+     * Return string from the header include file so it can be embedded into
+     * page footer.
+     */
+    public String getFooterIncludeFileContent() {
+        File hdrfile = new File(getDataRoot(), "footer_include");
+        
+        return getFileContent(hdrfile);
+    }
+
+    /**
+     * Return string from the header include file so it can be embedded into
+     * page header.
+     */
+    public String getHeaderIncludeFileContent() {
+        File hdrfile = new File(getDataRoot(), "header_include");
+
+        return getFileContent(hdrfile);
     }
 
     public String getDatabaseDriver() {

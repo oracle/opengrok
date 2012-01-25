@@ -41,12 +41,15 @@ org.opensolaris.opengrok.web.Prefix"
     <div id="footer">
 <p><a href="http://www.opensolaris.org/os/project/opengrok/"
  title="Served by OpenGrok"><span id="fti"></span></a></p>
-<p>Indexes created <%= cfg.getEnv().getDateForLastIndexRun() %></p><%
+<p>Indexes created <%= cfg.getEnv().getDateForLastIndexRun() %></p>
+    <%= cfg.getEnv().getConfiguration().getFooterIncludeFileContent() %>
+    <%
     if (needAddDiv.contains(cfg.getPrefix())) {
         %></div><% // #content
     }
     // #footer, #page:
-    %></div>
+    %>
+    </div>
 </div>
 </body>
 </html>
