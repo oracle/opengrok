@@ -144,7 +144,6 @@ available to user running opengrok with all permissions. In root user case
 it will create all the directories needed, otherwise you have to manually
 create the directory and grant all permissions to the user used.
 
-
 4.2.2 - Populate DATA_ROOT Directory
 ------------------------------------
 
@@ -168,11 +167,11 @@ otherwise (if SRC_ROOT is in different directory) run:
 
   $ ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
 
-Above command should try to upload latest index status reflected into
+The above command attempts to upload the latest index status reflected into
 configuration.xml to a running source web application.
-Once above command finishes without errors(e.g. SEVERE: Failed to send
-configuration to localhost:2424
-), you should be able to enjoy your opengrok and search your sources using
+Once above command finishes without errors
+(e.g. SEVERE: Failed to send configuration to localhost:2424),
+you should be able to enjoy your opengrok and search your sources using
 latest indexes and setup.
 
 Congratulations, you should now be able to point your browser to
@@ -203,7 +202,6 @@ have a look at it, eventually create a configuration out of it and use
 OPENGROK_CONFIGURATION environment variable to point to it. Obviously such
 setups can be used for nightly cron job updates of index or other automated
 purposes.
-
 
 4.3 Using smf service (Solaris) to maintain OpenGrok indexes
 ------------------------------------------------------------
@@ -336,8 +334,10 @@ change the :
 
 By default OpenGrok stores history indexes in gzipped xml files. An alternative
 is to use Java DB instead. This has the advantage of less disk space and
-incremental indexing. On the other hand it consumes more system memory because
-the database has to run in background.
+incremental indexing. Also, for some Source Code Management systems the
+History view will show a list of files modified with given change.
+On the other hand it consumes more system memory because the database has to
+run in background.
 
 You need Java DB 10.5.3 or later. To install it peform the following steps:
 
@@ -349,11 +349,12 @@ Debian/Ubuntu:
 
   # apt-get install sun-java6-javadb
 
-There are two modes, having Java DB embedded, or running a Java DB server.
-Java DB server is default option, we will not describe how to set up embedded
-option.
 
 1) Start the server:
+
+  There are two modes, having Java DB embedded, or running a Java DB server.
+  Java DB server is the default option, we will not describe how to set up the
+  embedded one.
 
   $ mkdir -p $DATA_ROOT/derby
 
@@ -376,16 +377,29 @@ option.
           -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
 
 
-2) You need to have the derbyclient.jar in lib directory of opengrok.jar and
-   in source.war WEB-INF/lib
+2) Copy derbyclient.jar to the lib directory 
+
+  The derbyclient.jar is provided with Java DB installation.
+  The lib directory is the one where opengrok.jar is located.
+  E.g. for Tomcat it is located in the WEB-INF directory which was created
+  as a result of deploying the source.war file.
 
 Copy it over from:
 
   Solaris 11: /opt/SUNWjavadb/lib/derbyclient.jar
   Debian: /usr/lib/jvm/java-6-sun/db/lib/derbyclient.jar
 
+  For example on Solaris 11 with bundled Java DB and Tomcat the command
+  will be:
+
+    # cp /opt/SUNWjavadb/lib/derbyclient.jar \
+          /var/tomcat6/webapps/source/WEB-INF/lib/
+
 3) Use these options with indexer when indexing/generating the configuration:
    -D -H
+
+   This is achieved by setting the OPENGROK_DERBY environment variable when
+   using the OpenGrok shell script.
 
 The Java DB server has to be running during indexing and for the web
 application.
