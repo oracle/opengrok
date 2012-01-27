@@ -76,7 +76,7 @@ label {
 
 /* required for help page, only */
 #sbar { /* full search navbar */
-	border-top: 1px solid ffc726;
+	border-top: 1px solid #ffc726;
 	background-color: #FFFFE5;
 	margin: 0;
 	clear: both;

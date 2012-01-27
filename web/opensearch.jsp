@@ -18,8 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -40,17 +39,32 @@ include file="projects.jspf"
 {
     cfg = PageConfig.get(request);
 
+    // Optimize for URLs up to 128 characters. 
     StringBuilder url = new StringBuilder(128);
-        String scheme=request.getScheme();
-        url.append(scheme).append("://").append(request.getServerName());
+    String ForwardedHost = request.getHeader("X-Forwarded-Host");
+    String scheme = request.getScheme();
     int port = request.getServerPort();
-    if ((port != 80 && scheme.equals("http")) ||
-               (port != 443 && scheme.equals("https"))) {
-        url.append(':').append(port);
+
+    url.append(scheme).append("://");
+
+    // Play nice in proxy environment by using hostname from the original
+    // request to construct the URLs.
+    // Will not work well if the scheme or port is different for proxied server
+    // and original server. Unfortunately the X-Forwarded-Host does not seem to
+    // contain the port number so there is no way around it.
+    if (ForwardedHost != null) {
+        url.append(ForwardedHost);
+    } else {
+        url.append(request.getServerName());
+
+        // Append port if needed.
+        if ((port != 80 && scheme.equals("http")) ||
+                   (port != 443 && scheme.equals("https"))) {
+            url.append(':').append(port);
+        }
     }
-    port = url.length();    // mark
-    String img = url.append(cfg.getCssDir()).append("/img/icon.png").toString();
-    url.setLength(port);    // rewind
+
+    String imgurl = url +  cfg.getCssDir() + "/img/icon.png";
 
     /* TODO  Bug 11749 ??? */
     StringBuilder text = new StringBuilder();
@@ -68,7 +82,7 @@ include file="projects.jspf"
     <ShortName>OpenGrok <%= text.toString() %></ShortName>
     <Description>Search in OpenGrok <%= text.toString() %></Description>
     <InputEncoding>UTF-8</InputEncoding>
-    <Image height="16" width="16" type="image/png"><%= img %></Image>
+    <Image height="16" width="16" type="image/png"><%= imgurl %></Image>
 <%-- <Url type="application/x-suggestions+json" template="suggestionURL"/>--%>
     <Url template="<%= url.toString() %>&amp;q={searchTerms}" type="text/html"/>
 </OpenSearchDescription>
