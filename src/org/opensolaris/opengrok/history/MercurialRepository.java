@@ -206,7 +206,7 @@ public class MercurialRepository extends Repository {
 
         // Construct hash map for history entries from history cache. This is
         // needed later to get user string for particular revision.
-	try {
+        try {
             History hist = HistoryGuru.getInstance().getHistory(file, false);
             for (HistoryEntry e : hist.getHistoryEntries()) {
 	        // Chop out the colon and all hexadecimal what follows.
