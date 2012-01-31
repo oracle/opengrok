@@ -18,15 +18,14 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 PKG=OSOLopengrok
 BASEDIR=/
 NAME=OpenGrok
 VENDOR=http://www.opensolaris.org/os/project/opengrok/
-EMAIL=opengrok[at]sun.com
+EMAIL=opengrok-discuss@opensolaris.org
 CATEGORY=application
 CLASSES=none manifest
 ARCH=generic
