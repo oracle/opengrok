@@ -18,8 +18,7 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+# Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 i pkginfo
@@ -48,9 +47,6 @@ d none var/opengrok/source 0755 webservd webservd
 d none var/svc 755 root sys
 d none var/svc/manifest 755 root sys
 d none var/svc/manifest/application 755 root sys
-d none var/tomcat6 0755 root bin
-d none var/tomcat6/webapps 0755 webservd webservd
-
 f manifest var/svc/manifest/application/opengrok.xml=platform/solaris/smf/opengrok.xml 444 root sys
 f none lib/svc/method/svc-opengrok=platform/solaris/smf/svc-opengrok 555 root bin
 f none usr/opengrok/bin/OpenGrok=OpenGrok 0777 bin bin
@@ -71,5 +67,4 @@ f none usr/opengrok/lib/jrcs.jar=lib/jrcs.jar 0444 root bin
 f none usr/opengrok/lib/swing-layout-0.9.jar=lib/swing-layout-0.9.jar 0444 root bin
 f none usr/opengrok/lib/ogindexd=platform/solaris/smf/ogindexd 0555 root bin
 f none usr/opengrok/man/man1/opengrok.1=dist/opengrok.1 0444 root bin
-f none var/tomcat6/webapps/source.war=dist/source.war 0444 webservd webservd
-s none usr/opengrok/lib/source.war=../../../var/tomcat6/webapps/source.war
+f none usr/opengrok/lib/source.war=dist/source.war 0444 webservd webservd

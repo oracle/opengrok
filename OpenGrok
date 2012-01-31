@@ -742,7 +742,7 @@ DeployWar()
     fi
 
     Progress "Installing ${OPENGROK_DIST_WAR} to ${warTarget} ..."
-    ${DO} cp "${OPENGROK_DIST_WAR}" "${warTarget}/"
+    ${DO} cp -p "${OPENGROK_DIST_WAR}" "${warTarget}/"
     if [ $? != 0 ]
     then
         FatalError "Web Application Installation FAILED"
