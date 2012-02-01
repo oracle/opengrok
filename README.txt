@@ -231,6 +231,10 @@ To rebuild the index later (e.g. after source code changed) just run:
 
   # svcadm refresh opengrok
 
+The service makes it possible to supply part of the configuration via the
+opengrok/readonly_config service property which is set to
+/etc/opengrok/readonly_configuration.xml by default.
+
 Note: before removing opengrok package please disable the service.
 If you don't do it, it will not be removed automatically.
 In such case please remove it manually.
