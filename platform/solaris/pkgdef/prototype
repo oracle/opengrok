@@ -43,7 +43,7 @@ d none var/opengrok 0755 webservd webservd
 d none var/opengrok/data 0755 webservd webservd
 d none var/opengrok/etc 0755 webservd webservd
 d none var/opengrok/log 0755 webservd webservd
-d none var/opengrok/source 0755 webservd webservd
+d none var/opengrok/src 0755 webservd webservd
 d none var/svc 755 root sys
 d none var/svc/manifest 755 root sys
 d none var/svc/manifest/application 755 root sys
