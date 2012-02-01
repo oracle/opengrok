@@ -78,7 +78,7 @@ Use is subject to license terms.
 		<propval
 			name="srcdir"
 			type="astring"
-			value="none" />
+			value="/var/opengrok/src" />
 		<propval
 			name="cachedir"
 			type="astring"
