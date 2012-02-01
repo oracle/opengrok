@@ -203,10 +203,13 @@ OPENGROK_CONFIGURATION environment variable to point to it. Obviously such
 setups can be used for nightly cron job updates of index or other automated
 purposes.
 
-4.3 Using smf service (Solaris) to maintain OpenGrok indexes
+4.3 Using SMF service (Solaris) to maintain OpenGrok indexes
 ------------------------------------------------------------
 
-If you installed opengrok from a package, then configure the service like this:
+If you installed OpenGrok from the OSOLopengrok package, it will work out of
+the box. Should you need to configure it (e.g. because of non-default SRC_ROOT
+or DATA_ROOT paths) it is done via the 'opengrok' property group of the
+service like this:
 
   # svccfg -s opengrok setprop \
        opengrok/srcdir="/absolute/path/to/your/sourcetree"
@@ -217,7 +220,7 @@ the web application is already running.
 
 Now enable the service:
 
-  # svcadm enable -rs opengrok 
+  # svcadm enable -rs opengrok
 
 Note that this will enable tomcat6 service as dependency.
 
@@ -232,10 +235,10 @@ To rebuild the index later (e.g. after source code changed) just run:
   # svcadm refresh opengrok
 
 The service makes it possible to supply part of the configuration via the
-opengrok/readonly_config service property which is set to
+'opengrok/readonly_config' service property which is set to
 /etc/opengrok/readonly_configuration.xml by default.
 
-Note: before removing opengrok package please disable the service.
+Note: before removing the package please disable the service.
 If you don't do it, it will not be removed automatically.
 In such case please remove it manually.
 
