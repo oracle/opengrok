@@ -86,7 +86,7 @@ Use is subject to license terms.
 		<propval
 			name="default_params"
 			type="astring"
-			value="-P -S -r on -c /usr/bin/exctags" />
+			value="-P -S -r on" />
 		<propval
 			name="java_extra_params"
 			type="astring"
