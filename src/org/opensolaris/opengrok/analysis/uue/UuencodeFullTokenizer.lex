@@ -49,7 +49,9 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 %state MODE NAME UUE
 
 %%
+//<YYINITIAL, MODE, NAME, UUE> {
 <<EOF>>   { return false; }
+//}
 
 <YYINITIAL> {
   ^ ( "begin " | "begin-base64 " ) {
@@ -64,7 +66,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     return true;
   }
 
-  . {}
+  .|\n {}
 }
 
 <MODE> {
@@ -75,7 +77,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-  . { yybegin(YYINITIAL); yypushback(1); }
+  .|\n { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <NAME>{
@@ -86,7 +88,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-  . { yybegin(YYINITIAL); yypushback(1); }
+  .|\n { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <UUE> {
@@ -96,5 +98,5 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-  . {}
+  .|\n {}
 }
