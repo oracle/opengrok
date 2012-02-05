@@ -41,9 +41,9 @@ return false;
 %caseless
 %char
 %{
+  boolean b64;
   boolean modeFound;
   boolean nameFound;
-  boolean b64;
 %}
 
 //WhiteSpace     = [ \t\f\r]+|\n
@@ -58,6 +58,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 <YYINITIAL> {
   ^ ( "begin " | "begin-" ) {
+    b64 = false;
     modeFound = false;
     nameFound = false;
     yybegin(BEGIN);
@@ -76,16 +77,25 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
 <BEGIN> {
   " " {
-    yybegin(MODE);
-    b64 = false;
+    if (!b64)
+      yybegin(MODE);
+    else
+      yybegin(YYINITIAL);
   }
-  "-base64 " {
-    yybegin(MODE);
+  "-" {
+    if (b64)
+      yybegin(YYINITIAL);
     b64 = true;
-    setAttribs("-",
-	       yychar, yychar + 1);
-    setAttribs(yytext().toLowerCase().substring(1, yylength() - 1),
-	       yychar + 1, yychar + 1 + yylength() - 1);
+    setAttribs(yytext(), yychar, yychar + yylength());
+    return true;
+  }
+  "base64 " {
+    if (b64)
+      yybegin(MODE);
+    else
+      yybegin(YYINITIAL);
+    yypushback(1);
+    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
   .|\n { yybegin(YYINITIAL); yypushback(1); }
