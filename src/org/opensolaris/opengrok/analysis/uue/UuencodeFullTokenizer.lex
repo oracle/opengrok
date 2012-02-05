@@ -88,6 +88,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 	       yychar + 1, yychar + 1 + yylength() - 1);
     return true;
   }
+  .|\n { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <MODE> {
@@ -97,19 +98,22 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
+  .|\n { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <NAME>{
-  " " { if (nameFound) yybegin(UUE); }
+  \n {
+    if (nameFound)
+      yybegin(UUE);
+    else
+      yybegin(YYINITIAL);
+  }
   {Identifier}|{Number}|{Printable} {
     nameFound = true;
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-}
-
-<BEGIN, MODE, NAME> {
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
+  . { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <UUE> {
