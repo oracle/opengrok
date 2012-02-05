@@ -40,22 +40,27 @@ return false;
 %eofval}
 %caseless
 %char
+%{
+  boolean modeFound;
+  boolean nameFound;
+  boolean b64;
+%}
 
 //WhiteSpace     = [ \t\f\r]+|\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 Number = [0-9]+|[0-9]+\.[0-9]+| "0[xX]" [0-9a-fA-F]+
 Printable = [\@\$\%\^\&\-+=\?\.\:]
 
-%state MODE NAME UUE
+%state BEGIN MODE NAME UUE
 
 %%
-//<YYINITIAL, MODE, NAME, UUE> {
 <<EOF>>   { return false; }
-//}
 
 <YYINITIAL> {
-  ^ ( "begin " | "begin-base64 " ) {
-    yybegin(MODE);
+  ^ ( "begin " | "begin-" ) {
+    modeFound = false;
+    nameFound = false;
+    yybegin(BEGIN);
     yypushback(1);
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
@@ -69,34 +74,55 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
   .|\n {}
 }
 
+<BEGIN> {
+  " " {
+    yybegin(MODE);
+    b64 = false;
+  }
+  "-base64 " {
+    yybegin(MODE);
+    b64 = true;
+    setAttribs("-",
+	       yychar, yychar + 1);
+    setAttribs(yytext().toLowerCase().substring(1, yylength() - 1),
+	       yychar + 1, yychar + 1 + yylength() - 1);
+    return true;
+  }
+}
+
 <MODE> {
-  [ ] {}
-  [^ \n]+ " " {
-    yybegin(NAME);
-    yypushback(1);
+  " " { if (modeFound) yybegin(NAME); }
+  {Identifier}|{Number}|{Printable} {
+    modeFound = true;
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <NAME>{
-  [ ] {}
-  [^ \n]+\n {
-    yybegin(UUE);
-    yypushback(1);
+  " " { if (nameFound) yybegin(UUE); }
+  {Identifier}|{Number}|{Printable} {
+    nameFound = true;
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
+}
+
+<BEGIN, MODE, NAME> {
   .|\n { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <UUE> {
   ^ ( "end" | "====" ) \n {
-    yybegin(YYINITIAL);
     yypushback(1);
-    setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
-    return true;
+    String t = yytext();
+    if (t.equals("end") && !b64) {
+      yybegin(YYINITIAL);
+      setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
+      return true;
+    } else if (t.equals("====") && b64)
+      yybegin(YYINITIAL);
   }
+  [ -~]* {}
   .|\n {}
 }
