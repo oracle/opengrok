@@ -21,3 +21,6 @@ ant -lib ../ext_lib/ dist-src
 ant -lib ../ext_lib/ package
 
 the release is OK, once above is fullfilled to our satisfaction
+
+4) tag the build used for release in the versioning system so we can get back to it
+

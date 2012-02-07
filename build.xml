@@ -92,7 +92,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     -->
 
-    <property name="version" value="0.11-rc3"/>
+    <property name="version" value="0.11"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
