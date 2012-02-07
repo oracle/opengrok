@@ -174,7 +174,7 @@ public final class Configuration {
         setCachePages(5);
         setScanningDepth(3); // default depth of scanning for repositories
         setAllowedSymlinks(new HashSet<String>());
-        setTabSize(4);
+        //setTabSize(4);
         cmds = new HashMap<String, String>();
     }
 
