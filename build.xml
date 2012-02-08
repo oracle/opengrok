@@ -321,9 +321,9 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     
     <target name="download-lucene" depends="-check-lucene" if="lucene_not_downloaded">
         <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
-        dest="lib" verbose="true" usetimestamp="true"/>
+        dest="lib/${lucene-core.jar}" verbose="true" usetimestamp="true"/>
         <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-spellchecker/${lucene.version}/${lucene-spellchecker.jar}"
-        dest="lib" verbose="true" usetimestamp="true"/>
+        dest="lib/${lucene-spellchecker.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">
