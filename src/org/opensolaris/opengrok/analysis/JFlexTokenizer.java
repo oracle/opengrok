@@ -27,13 +27,14 @@ import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
 import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 /**
  * this class was created because of lucene 2.4.1 update which introduced char[] in Tokens instead of String
  * lucene 3.0.0 uses AttributeSource instead of Tokens to make things even easier :-D
+ * lucene 3.5.0 CharTermAttribute will be used
  *
  * Generally this is a "template" for all new Tokenizers, so be carefull when changing it,
  * it will impact almost ALL symbol tokenizers in OpenGrok ...
@@ -64,7 +65,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
         yyclose();
     }
 
-    protected TermAttribute termAtt= addAttribute(TermAttribute.class);
+    protected CharTermAttribute termAtt= addAttribute(CharTermAttribute.class);
     protected OffsetAttribute offsetAtt= addAttribute(OffsetAttribute.class);
     protected PositionIncrementAttribute posIncrAtt= addAttribute(PositionIncrementAttribute.class);
 
@@ -80,8 +81,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     protected void setAttribs(String str, int start, int end) {
         //FIXME increasing below by one(default) might be tricky, need more analysis
+        // after lucene upgrade to 3.5 below is most probably not even needed
         this.posIncrAtt.setPositionIncrement(1);
-        this.termAtt.setTermBuffer(str);
+        this.termAtt.setEmpty();
+        this.termAtt.append(str);
         this.offsetAtt.setOffset(start, end);
     }
 }

@@ -25,6 +25,7 @@ jdepend/report.txt
 jdepend/report.xml
 lib/derby.jar
 lib/jrcs.jar
+lib/lucene-*
 derby.log
 nbproject/genfiles.properties
 glassfish

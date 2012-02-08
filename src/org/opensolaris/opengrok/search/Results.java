@@ -41,7 +41,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.IndexSearcher;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
@@ -71,7 +71,7 @@ public final class Results {
      * @throws IOException
      */
     private static Map<String, ArrayList<Document>>
-        createMap(Searcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
+        createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
     throws CorruptIndexException, IOException
     {
         LinkedHashMap<String, ArrayList<Document>> dirHash =

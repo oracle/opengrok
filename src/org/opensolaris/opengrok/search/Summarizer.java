@@ -33,7 +33,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -167,7 +167,7 @@ public class Summarizer {
             //
             // If we find a term that's in the query...
             //
-            if (highlight.contains(tokens[i].term())) {
+            if (highlight.contains(tokens[i].toString())) {
                 //
                 // Start searching at a point SUM_CONTEXT terms back,
                 // and move SUM_CONTEXT terms into the future.
@@ -197,8 +197,8 @@ public class Summarizer {
                     // Now grab the hit-element, if present
                     //
                     Token t = tokens[j];
-                    if (highlight.contains(t.term())) {
-                        excerpt.addToken(t.term());
+                    if (highlight.contains(t.toString())) {
+                        excerpt.addToken(t.toString());
                         excerpt.add(new Summary.Fragment(text.substring(offset, t.startOffset())));
                         excerpt.add(new Summary.Highlight(text.substring(t.startOffset(),t.endOffset())));
                         offset = t.endOffset();
@@ -286,10 +286,10 @@ public class Summarizer {
         //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
         ArrayList<Token> result = new ArrayList<Token>();
         TokenStream ts = analyzer.tokenStream("full", new StringReader(text));
-        TermAttribute term = ts.addAttribute(TermAttribute.class);
+        CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         OffsetAttribute offset = ts.addAttribute(OffsetAttribute.class);
         while(ts.incrementToken()) {
-            Token t=new Token(term.termBuffer(),0,term.termLength(),offset.startOffset(),offset.endOffset());
+            Token t=new Token(term.buffer(),0,term.length(),offset.startOffset(),offset.endOffset());
             result.add(t);
         }
         return result.toArray(new Token[result.size()]);

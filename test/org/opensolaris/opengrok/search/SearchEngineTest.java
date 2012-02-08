@@ -146,7 +146,7 @@ public class SearchEngineTest {
         SearchEngine instance = new SearchEngine();
         instance.setHistory("Once upon a time");
         instance.setFile("Makefile");
-        instance.setDefinition("std::string");
+        instance.setDefinition("\"std::string\"");
         instance.setSymbol("toString");
         instance.setFreetext("OpenGrok");
         assertTrue(instance.isValidQuery());
@@ -216,7 +216,7 @@ public class SearchEngineTest {
         // wildcards and case sensitivity of definition search
         instance = new SearchEngine();
         instance.setDefinition("Mai*"); // definition is case sensitive
-        instance.setFile("Main.java OR main.c");
+        instance.setFile("\"Main.java\" OR \"main.c\"");
         instance.search();
         assertEquals("+defs:Mai* +(path:\"main . java\" path:\"main . c\")",
                      instance.getQuery());
@@ -228,7 +228,7 @@ public class SearchEngineTest {
         // wildcards and case sensitivity of symbol search
         instance = new SearchEngine();
         instance.setSymbol("Mai*"); // symbol is case sensitive
-        instance.setFile("Main.java OR main.c");
+        instance.setFile("\"Main.java\" OR \"main.c\"");
         instance.search();
         assertEquals(2, instance.search());
         instance.setSymbol("MaI*"); // should not match Main
@@ -238,7 +238,7 @@ public class SearchEngineTest {
         // wildcards and case insensitivity of freetext search
         instance = new SearchEngine();
         instance.setFreetext("MaI*"); // should match both Main and main
-        instance.setFile("Main.java OR main.c");
+        instance.setFile("\"Main.java\" OR \"main.c\"");
         assertEquals(10, instance.search());
 
         // file name search is case insensitive

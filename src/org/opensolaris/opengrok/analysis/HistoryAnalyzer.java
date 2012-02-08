@@ -28,7 +28,9 @@ import java.util.Set;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opensolaris.opengrok.search.SearchEngine;
 
 public final class HistoryAnalyzer extends Analyzer {
     private final Set<Object> stopWords;
@@ -46,18 +48,18 @@ public final class HistoryAnalyzer extends Analyzer {
 
     /** Builds an analyzer which removes words in ENGLISH_STOP_WORDS. */
     public HistoryAnalyzer() {
-        stopWords = StopFilter.makeStopSet(ENGLISH_STOP_WORDS);
+        stopWords = StopFilter.makeStopSet(SearchEngine.LUCENE_VERSION,ENGLISH_STOP_WORDS);
     }
 
     /** Builds an analyzer which removes words in the provided array. */
     public HistoryAnalyzer(String[] stopWords) {
-        this.stopWords = StopFilter.makeStopSet(stopWords);
+        this.stopWords = StopFilter.makeStopSet(SearchEngine.LUCENE_VERSION,stopWords);
     }
 
     /** Filters LowerCaseTokenizer with StopFilter. */
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
         //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
-        return new StopFilter(true,new PlainFullTokenizer(reader), stopWords);
+        return new StopFilter(SearchEngine.LUCENE_VERSION,new PlainFullTokenizer(reader), stopWords);
     }
 }

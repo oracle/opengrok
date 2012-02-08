@@ -30,23 +30,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MultiSearcher;
-import org.apache.lucene.search.ParallelMultiSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Searcher;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -104,7 +97,7 @@ public class SearchHelper {
     public String errorMsg;
     /** the searcher used to open/search the index. Automatically set via
      * {@link #prepareExec(SortedSet)}. */
-    public Searcher searcher;
+    public IndexSearcher searcher;
     /** list of docs which result from the executing the query */
     public ScoreDoc[] hits;
     /** total number of hits */
@@ -172,25 +165,31 @@ public class SearchHelper {
             if (projects.isEmpty()) {
                 //no project setup
                 FSDirectory dir = FSDirectory.open(indexDir);
-                searcher = new IndexSearcher(dir);
+                searcher = new IndexSearcher(IndexReader.open(dir));
             } else if (projects.size() == 1) {
                 // just 1 project selected
                 FSDirectory dir =
                         FSDirectory.open(new File(indexDir, projects.first()));
-                searcher = new IndexSearcher(dir);
+                searcher = new IndexSearcher(IndexReader.open(dir));
             } else {
-                //more projects
-                IndexSearcher[] searchables = new IndexSearcher[projects.size()];
+                //more projects                                
+                IndexReader[] subreaders=new IndexReader[projects.size()];
                 int ii = 0;
                 //TODO might need to rewrite to Project instead of
                 // String , need changes in projects.jspf too
                 for (String proj : projects) {
                     FSDirectory dir = FSDirectory.open(new File(indexDir, proj));
-                    searchables[ii++] = new IndexSearcher(dir);
+                    subreaders[ii++] = IndexReader.open(dir);
+                }
+                MultiReader searchables=new MultiReader(subreaders, true);
+                ExecutorService executor=null; 
+                if (parallel) {
+                    int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this
+                    executor= Executors.newFixedThreadPool(noThreads);
                 }
                 searcher = parallel
-                        ? new ParallelMultiSearcher(searchables)
-                        : new MultiSearcher(searchables);
+                        ? new IndexSearcher(searchables,executor)
+                        : new IndexSearcher(searchables);
             }
             // TODO check if below is somehow reusing sessions so we don't
             // requery again and again, I guess 2min timeout sessions could be

@@ -90,7 +90,7 @@ public class PlainAnalyzer extends TextAnalyzer {
                 doc.add(new Field("defs", dummy));
                 doc.add(new Field("refs", dummy)); //@FIXME adding a refs field only if it has defs?
                 byte[] tags = defs.serialize();
-                doc.add(new Field("tags", tags, Field.Store.YES));
+                doc.add(new Field("tags", tags));
             }
         }
     }

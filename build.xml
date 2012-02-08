@@ -25,8 +25,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <description>Builds, tests, and runs the project opengrok.</description>
     <property name="build.sysclasspath" value="ignore"/>
     <property file="${user.home}/config/ant/${ant.project.name}.properties" />
-    <property file="${user.home}/config/ant/global.properties" />
-    <property file="/local/share/javax/global.properties" />
+    <property file="${user.home}/config/ant/global.properties" />    
 
     <import file="nbproject/build-impl.xml"/>
 
@@ -92,7 +91,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     -->
 
-    <property name="version" value="0.11.1"/>
+    <property name="version" value="0.12-dev"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
@@ -236,12 +235,17 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
         
     <property name="coverage.dir" value="${basedir}/coverage"/>
-    <target name="-pre-compile" depends="jrcs,jflex"/>
+    <target name="-pre-compile" depends="jrcs,jflex,download-lucene"/>
     <target name="-post-clean">
         <delete dir="${src.generatedsrc.dir}"/>
         <delete file="${manifest.file}"/>
         <delete dir="${coverage.dir}"/>
         <antcall target="-delete-generated-repository-files"/>
+    </target>
+    
+    <target name="clean-lib" depends="init">
+        <delete file="${file.reference.lucene-core.jar}"/>
+        <delete file="${file.reference.lucene-spellchecker.jar}"/>        
     </target>
 
     <!--
@@ -291,6 +295,35 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <copy todir="${dist.dir}">
             <fileset dir="." includes="${opengrok.lib.files}"/>
         </copy>
+    </target>
+    
+    <path id="plainlib.search.path">        
+        <pathelement path="lib"/>
+        <pathelement path="../lib"/>
+    </path>
+    
+    <target name="-check-lucene" description="Check that lucene jar files are present">
+        <available file="${lucene-core.jar}" type="file" property="lucene-core.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>        
+        <available file="${lucene-spellchecker.jar}" type="file" property="lucene-spellchecker.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>        
+        <condition property="lucene_not_downloaded">
+            <not>
+            <and>
+                <isset property="lucene-core.jar.present"/>
+                <isset property="lucene-core.jar.present"/>
+             </and>
+             </not>
+        </condition>         
+    </target>
+    
+    <target name="download-lucene" depends="-check-lucene" if="lucene_not_downloaded">
+        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
+        dest="lib" verbose="true" usetimestamp="true"/>
+        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-spellchecker/${lucene.version}/${lucene-spellchecker.jar}"
+        dest="lib" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">

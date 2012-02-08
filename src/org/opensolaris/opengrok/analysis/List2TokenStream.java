@@ -25,14 +25,14 @@ package org.opensolaris.opengrok.analysis;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 public final class List2TokenStream extends TokenStream {
 
     private Iterator<String> it;
     private String[] subTokens;
     private int si;
-    private final TermAttribute termAtt = addAttribute(TermAttribute.class);
+    private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
     public List2TokenStream(List<String> l) {
         it = l.iterator();
@@ -54,13 +54,15 @@ public final class List2TokenStream extends TokenStream {
                 subTokens = tok.split("[^a-z0-9A-Z_]+");
             } else {
                 subTokens = null;
-                termAtt.setTermBuffer(tok);
+                termAtt.setEmpty();
+                termAtt.append(tok);
                 return true;
             }
             si = 0;
         }
         if (si < subTokens.length) {
-            termAtt.setTermBuffer(subTokens[si++]);
+            termAtt.setEmpty();
+            termAtt.append(subTokens[si++]);
             return true;
         }
         return false;
