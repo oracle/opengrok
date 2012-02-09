@@ -363,8 +363,6 @@ Debian/Ubuntu:
   Java DB server is the default option, we will not describe how to set up the
   embedded one.
 
-  $ mkdir -p $DATA_ROOT/derby
-
   Solaris 11:
 
     Use one of the following methods to start the database:
@@ -375,11 +373,13 @@ Debian/Ubuntu:
   
     b) from command line:
   
+       $ mkdir -p $DATA_ROOT/derby
        $ java -Dderby.system.home=$DATA_ROOT/derby \
            -jar /opt/SUNWjavadb/lib/derbynet.jar start
   
   Debian:
 
+    $ mkdir -p $DATA_ROOT/derby
     $ java -Dderby.system.home=$DATA_ROOT/derby \
           -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
 
@@ -413,9 +413,18 @@ application.
 
 Note: To use a bigger database buffer, which may improve performance of both
 indexing and fetching of history, create a file named derby.properties in
-$DATA_ROOT/derby and add this line to it:
+the JavaDB data directory and add this line to it:
 
-derby.storage.pageCacheSize=25000
+  - If using specific data directory:
+
+    # echo "derby.storage.pageCacheSize=25000" >> \
+          $DATA_ROOT/derby/derby.properties
+
+  - Using default directory on Solaris with JavaDB being run from SMF:
+
+    # echo "derby.storage.pageCacheSize=25000" >> \
+          /var/lib/javadb/data/derby.properties
+
 
 5. Optional Command Line Interface Usage
 ----------------------------------------
