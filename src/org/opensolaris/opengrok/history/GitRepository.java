@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -87,16 +87,20 @@ public class GitRepository extends Repository {
             return path;
         }
         BufferedReader in = new BufferedReader(exec.getOutputReader());
-        String pattern = "^\\W*" + revision + " (.+?) .*$";
-        Pattern commitPattern = Pattern.compile(pattern);
-        String line = "";
-        Matcher matcher = commitPattern.matcher(line);
-        while ((line = in.readLine()) != null) {
-            matcher.reset(line);
-            if (matcher.find()) {
-                path = matcher.group(1);
-                break;
+        try {
+            String pattern = "^\\W*" + revision + " (.+?) .*$";
+            Pattern commitPattern = Pattern.compile(pattern);
+            String line = "";
+            Matcher matcher = commitPattern.matcher(line);
+            while ((line = in.readLine()) != null) {
+                matcher.reset(line);
+                if (matcher.find()) {
+                    path = matcher.group(1);
+                    break;
+                }
             }
+        } finally {
+            in.close();
         }
 
         return path;
@@ -251,32 +255,36 @@ public class GitRepository extends Repository {
                 OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list");
             }
             BufferedReader in = new BufferedReader(exec.getOutputReader());
-            String pattern = "^\\W*" + revision + " (.+?) .*$";
-            Pattern commitPattern = Pattern.compile(pattern);
-            String line = "";
-            Matcher matcher = commitPattern.matcher(line);
-            while ((line = in.readLine()) != null) {
-                matcher.reset(line);
-                if (matcher.find()) {
-                    String filepath = matcher.group(1);
-                    cmd.clear();
-                    ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-                    cmd.add(this.cmd);
-                    cmd.add(BLAME);
-                    cmd.add("-l");
-                    if (revision != null) {
-                        cmd.add(revision);
+            try {
+                String pattern = "^\\W*" + revision + " (.+?) .*$";
+                Pattern commitPattern = Pattern.compile(pattern);
+                String line = "";
+                Matcher matcher = commitPattern.matcher(line);
+                while ((line = in.readLine()) != null) {
+                    matcher.reset(line);
+                    if (matcher.find()) {
+                        String filepath = matcher.group(1);
+                        cmd.clear();
+                        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+                        cmd.add(this.cmd);
+                        cmd.add(BLAME);
+                        cmd.add("-l");
+                        if (revision != null) {
+                            cmd.add(revision);
+                        }
+                        cmd.add("--");
+                        cmd.add(filepath);
+                        File directory = new File(directoryName);
+                        exec = new Executor(cmd, directory);
+                        status = exec.exec();
+                        if (status != 0) {
+                            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame details for modified file path");
+                        }
+                        break;
                     }
-                    cmd.add("--");
-                    cmd.add(filepath);
-                    File directory = new File(directoryName);
-                    exec = new Executor(cmd, directory);
-                    status = exec.exec();
-                    if (status != 0) {
-                        OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame details for modified file path");
-                    }
-                    break;
                 }
+            } finally {
+                in.close();
             }
         }
 
