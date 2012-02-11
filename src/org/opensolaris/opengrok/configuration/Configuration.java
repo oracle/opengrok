@@ -505,63 +505,90 @@ public final class Configuration {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
     }
 
-    public Date getDateForLastIndexRun() {
-        File timestamp = new File(getDataRoot(), "timestamp");
-        return new Date(timestamp.lastModified());
-    }
-
+    private transient Date lastModified;
     /**
-     * Return contents of a file or empty string if the file cannot be read.
+     * Get the date of the last index update.
+     * @return the time of the last index update.
      */
-    private String getFileContent(File file) {
-        StringBuilder contents = new StringBuilder();
-
-        try {
-            BufferedReader input = new BufferedReader(new FileReader(file));
-            try {
-                String line = null;
-                while (( line = input.readLine()) != null) {
-                    contents.append(line);
-                    contents.append(System.getProperty("line.separator"));
-                }
-            }
-            catch (java.io.IOException e) {
-                logger.warning("failed to read header include file: " + e);
-                return "";
-            }
-            finally {
-                try {
-                    input.close();
-                }
-                catch (java.io.IOException e) {
-                    logger.info("failed to close header include file: " + e);
-                }
-            }
-        }
-        catch (java.io.FileNotFoundException e) {
-            return "";
-        }
-        return contents.toString();
+    public Date getDateForLastIndexRun() {
+    	if (lastModified == null) {
+    		File timestamp = new File(getDataRoot(), "timestamp");
+        	lastModified = new Date(timestamp.lastModified());
+    	}
+    	return lastModified;
     }
 
     /**
-     * Return string from the header include file so it can be embedded into
-     * page footer.
+     * Get the contents of a file or empty string if the file cannot be read.
+     */
+    private static String getFileContent(File file) {
+        if (file == null || ! file.canRead()) {
+        	return "";
+        }
+        FileReader fin = null;
+        BufferedReader input = null;
+        try {
+        	fin = new FileReader(file);
+            input = new BufferedReader(fin);
+            String line = null;
+            StringBuilder contents = new StringBuilder();
+            String EOL = System.getProperty("line.separator");
+            while (( line = input.readLine()) != null) {
+                contents.append(line).append(EOL);
+            }
+            return contents.toString();
+        } catch (java.io.FileNotFoundException e) {
+            /* should usually not happen */
+        } catch (java.io.IOException e) {
+            logger.warning("failed to read header include file: " + e.getMessage());
+        } finally {
+        	if (input != null) {
+	            try { input.close(); } 
+	            catch (Exception e) { /* nothing we can do about it */ }
+        	} else if (fin != null) {
+	            try { fin.close(); } 
+	            catch (Exception e) { /* nothing we can do about it */ }
+        	}
+        }
+        return "";
+    }
+
+    /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should 
+     * be included into the footer of generated web pages.
+     */
+    public static final String FOOTER_INCLUDE_FILE = "footer_include";
+    
+    private transient String footer = null;
+    /**
+     * Get the contents of the footer include file.
+     * @return an empty string if it could not be read successfully, the 
+     * 	contents of the file otherwise.
      */
     public String getFooterIncludeFileContent() {
-        File hdrfile = new File(getDataRoot(), "footer_include");
-        
-        return getFileContent(hdrfile);
+    	if (footer == null) {
+    		footer = getFileContent(new File(getDataRoot(), FOOTER_INCLUDE_FILE));
+    	}
+    	return footer;
     }
 
     /**
-     * Return string from the header include file so it can be embedded into
-     * page header.
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should 
+     * be included into the footer of generated web pages.
+     */
+    public static final String HEADER_INCLUDE_FILE = "header_include";
+    
+    private transient String header = null;
+    /**
+     * Get the contents of the footer include file.
+     * @return an empty string if it could not be read successfully, the 
+     * 	contents of the file otherwise.
      */
     public String getHeaderIncludeFileContent() {
-        File hdrfile = new File(getDataRoot(), "header_include");
-
-        return getFileContent(hdrfile);
+    	if (header == null) {
+    		header = getFileContent(new File(getDataRoot(), HEADER_INCLUDE_FILE));
+    	}
+    	return header;
     }
 
     public String getDatabaseDriver() {
