@@ -236,6 +236,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         
     <property name="coverage.dir" value="${basedir}/coverage"/>
     <target name="-pre-compile" depends="jrcs,jflex,download-lucene"/>
+	<target name="eclipse" depends="-pre-compile" 
+		description="satisfy eclipse dependencies"/>
     <target name="-post-clean">
         <delete dir="${src.generatedsrc.dir}"/>
         <delete file="${manifest.file}"/>
@@ -271,6 +273,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <flattenmapper/>
             <map from="" to="lib/"/>
         </pathconvert>
+    	<mkdir dir="${build.test.classes.dir}"/>
+    	<mkdir dir="${build.dir}/src/jsp"/>
     </target>
 
     <!-- Update the manifest file with a classpath attribute -->

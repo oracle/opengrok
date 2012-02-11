@@ -6,13 +6,13 @@
 	<classpathentry kind="src" path="generatedsrc"/>
 	<classpathentry kind="src" path="build/src/jsp"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="lib/lucene-core-3.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-spellchecker-3.0.2.jar"/>
 	<classpathentry kind="lib" path="/local/share/ant/lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/bcel-5.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jasper GF3"/>
 	<classpathentry kind="lib" path="build/jrcs"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="build/test/classes"/>
+	<classpathentry kind="lib" path="lib/lucene-core-3.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-spellchecker-3.5.0.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
