@@ -135,6 +135,9 @@ public class EftarFileReader {
     }
 
     public EftarFileReader(String file) throws FileNotFoundException {
+        this(new File(file));
+    }
+    public EftarFileReader(File file) throws FileNotFoundException {
         f = new RandomAccessFile(file, "r");
         isOpen = true;
     }

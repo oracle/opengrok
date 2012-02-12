@@ -108,7 +108,7 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String,String> cmds;
     private int tabSize;
-    private static final Logger logger = Logger.getLogger("org.opensolaris.opengrok");
+    private static final Logger logger = Logger.getLogger(Configuration.class.getName());
 
     /**
      * Get the default tab size (number of space characters per tab character)
@@ -591,6 +591,29 @@ public final class Configuration {
     	return header;
     }
 
+    /**
+     * The name of the eftar file relative to the <var>DATA_ROOT</var>, which 
+     * contains definition tags.
+     */
+    public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
+
+    private transient String dtagsEftar = null; 
+    /**
+     * Get the eftar file, which contains definition tags.
+     * @return {@code null} if there is no such file, the file otherwise.
+     */
+    public File getDtagsEftar() {
+        if (dtagsEftar == null) {
+            File tmp = new File(getDataRoot() + "/" + EFTAR_DTAGS_FILE);
+            if (tmp.canRead()) {
+                dtagsEftar = tmp.getName();
+            } else {
+                dtagsEftar = "";
+            }
+        }
+        return dtagsEftar.isEmpty() ? null : new File(dtagsEftar);
+    }
+    
     public String getDatabaseDriver() {
         return databaseDriver;
     }

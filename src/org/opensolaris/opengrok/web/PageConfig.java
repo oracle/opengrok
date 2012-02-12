@@ -473,11 +473,15 @@ public final class PageConfig {
      */
     public EftarFileReader getEftarReader() {
         if (eftarReader == null || eftarReader.isClosed()) {
-            try {
-                eftarReader = new EftarFileReader(getEnv().getDataRootPath()
-                        + "/index/dtags.eftar");
-            } catch (Exception e) {
-                log.log(Level.INFO, "Failed to create EftarFileReader: ", e);
+            File f = getEnv().getConfiguration().getDtagsEftar();
+            if (f == null) {
+                eftarReader = null;
+            } else {
+                try {
+                    eftarReader = new EftarFileReader(f);
+                } catch (Exception e) {
+                    log.log(Level.FINE, "Failed to create EftarFileReader: ", e);
+                }
             }
         }
         return eftarReader;

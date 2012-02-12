@@ -26,6 +26,9 @@ package org.opensolaris.opengrok.web;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -107,7 +110,8 @@ public class EftarFileTest {
      */
     @Test
     public void searchEftarFile() throws Exception {
-        EftarFileReader er = new EftarFileReader(eftar.getAbsolutePath());
+        assertNotNull("Create from string", new EftarFileReader(eftar.getAbsolutePath()));
+        EftarFileReader er = new EftarFileReader(eftar);
         StringBuilder sb = new StringBuilder();
         StringBuilder match = new StringBuilder();
         match.append("Description ");
