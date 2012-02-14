@@ -146,11 +146,6 @@ public final class Indexer {
                 getopt.reset();
                 while ((cmd = getopt.getOpt()) != -1) {
                     switch (cmd) {
-                        case 'x':
-                            createDict = true;
-                            runIndex = false;
-                            break;
-
                         case 'q':
                             cfg.setVerbose(false);
                             OpenGrokLogger.setOGConsoleLogLevel(Level.WARNING);
