@@ -22,6 +22,8 @@
 #   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
 #   - EXUBERANT_CTAGS             Full Path to Exuberant CTags
 #   - JAVA_HOME                   Full Path to Java Installation Root
+#   - JAVA                        Full Path to java binary
+#   - JAVA_OPTS                   Java options
 #   - OPENGROK_APP_SERVER         Application Server ("Tomcat" or "Glassfish")
 #   - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
@@ -257,8 +259,7 @@ DefaultInstanceConfiguration()
     fi
 
     # OPTIONAL: JVM Options
-    #JAVA_OPTS="-server -Xmx2048m"
-    JAVA_OPTS="-Xmx2048m"
+    JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
 
     # OPTIONAL: Full Path to History Utilities
     HG="`Which hg`"
