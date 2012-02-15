@@ -78,27 +78,27 @@ org.opensolaris.opengrok.web.Util"
 <table>
     <tr>
         <td><label for="s1">Full&nbsp;Search</label></td>
-        <td><input tabindex="1" class="q" name="q" id="s1" value="<%=
+        <td><input tabindex="1" class="q" name="q" id="q" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s2">Definition</label></td>
-        <td><input class="q" tabindex="2" name="defs" id="s2" value="<%=
+        <td><input class="q" tabindex="2" name="defs" id="defs" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s3">Symbol</label></td>
-        <td><input class="q" tabindex="3" name="refs" id="s3" value="<%=
+        <td><input class="q" tabindex="3" name="refs" id="refs" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s4">File&nbsp;Path</label></td>
-        <td><input class="q" tabindex="4" name="path" id="s4" value="<%=
+        <td><input class="q" tabindex="4" name="path" id="path" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s5">History</label></td>
-        <td><input class="q" tabindex="5" name="hist" id="s5" value="<%=
+        <td><input class="q" tabindex="5" name="hist" id="hist" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
 <%-- TODO  Bug 11749
