@@ -4,7 +4,7 @@
 #
 # Supported Operating Systems:
 #   - Solaris 10  (SunOS 5.10)
-#   - OpenSolaris (SunOS 5.11)
+#   - Solaris 11  (SunOS 5.11)
 #   - Debian      (Linux)
 #
 # Supported Deployment Engines:
@@ -27,20 +27,35 @@
 #   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET         Fallback WAR Target Directory
 #   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
-#   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish (contains domains)
+#   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish
+#                                 (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
-#   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working through project, it's good to have Verbose Mode enabled too, cost of this is one more traversal of the project before indexing it (*)
-#   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote) Repositories (*)
-#   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)_
-#   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go (by default 3 directories from SRC_ROOT)
-#   - OPENGROK_WPREFIX            Disable wildcard prefix search query support (*)
-#   - OPENGROK_DERBY              if set, then indexer tries to use derby as historycache (see derby command of this script)
-#
-#   - READ_XML_CONFIGURATION      file with read only configuration - a temp workaround for bug # 327
+#   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
+#                                 through project, it's good to have Verbose
+#                                 Mode enabled too, cost of this is one more
+#                                 traversal of the project before indexing it(*)
+#   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote)
+#                                 Repositories (*)
+#   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
+#   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
+#                                 (by default 3 directories from SRC_ROOT)
+#   - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
+#                                 (use "none" to avoid sending it to web app)
+#   - OPENGROK_WPREFIX            Disable wildcard prefix search query
+#                                 support (*)
+#   - OPENGROK_DERBY              if set, then indexer tries to use derby as
+#                                 historycache (see derby command of this
+#                                 script)
+#   - READ_XML_CONFIGURATION      file with read only configuration
+#                                 - temporary workaround for bug # 327
 #
 # Notes:
 #   (*) Any Non-Empty String will enable these options
+#
+
+#
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
 #
 
 #
@@ -49,15 +64,18 @@
 
 Usage()
 {
+    progname=`basename $0`
+
     echo 1>&2
-    echo "Usage: ${0} <deploy|derby|update|updateQuietly|usage>" 1>&2
-    echo "       ${0} index [<directory>]" 1>&2
+    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage>" 1>&2
+    echo "       ${progname} index [<directory>]" 1>&2
     echo 1>&2
     echo "  Optional environment variables:" 1>&2
     echo "    OPENGROK_CONFIGURATION - location of your configuration" 1>&2
     echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... " 1>&2
     echo 1>&2
-    echo "    See the code for more information on configuration options / variables" 1>&2
+    echo "    See the code for more information on configuration options /" \
+        "variables" 1>&2
     echo 1>&2
     exit 1
 }
@@ -220,7 +238,19 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Configuration Address (host:port)
     #           (conf/web.xml default is localhost:2424)
-    WEBAPP_CONFIG_ADDRESS="-U localhost:2424"
+    WEBAPP_CONFIG=""
+    if [ -n "${OPENGROK_WEBAPP_CFGADDR}" ]; then
+        WEBAPP_CONFIG_ADDRESS=${OPENGROK_WEBAPP_CFGADDR}
+	if [ "${OPENGROK_WEBAPP_CFGADDR}" == "none" ]; then
+	    WEBAPP_CONFIG_ADDRESS=""
+	fi
+    else
+        WEBAPP_CONFIG_ADDRESS="localhost:2424"
+    fi
+
+    if [ -n "${WEBAPP_CONFIG_ADDRESS}" ]; then
+        WEBAPP_CONFIG="-U ${WEBAPP_CONFIG_ADDRESS}"
+    fi
 
     # OPTIONAL: JVM Options
     #JAVA_OPTS="-server -Xmx2048m"
@@ -685,7 +715,7 @@ StdInvocation()
         ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
         ${READ_XML_CONF}                                        \
         -W ${XML_CONFIGURATION}                                 \
-        ${WEBAPP_CONFIG_ADDRESS}                                \
+        ${WEBAPP_CONFIG}                                        \
         -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
         "${@}"
 
