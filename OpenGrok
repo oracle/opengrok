@@ -67,19 +67,6 @@ Usage()
     progname=`basename $0`
 
     exec >&2
-    echo ""
-    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage>"
-    echo "       ${progname} index [<directory>]"
-    echo ""
-    echo "  Optional environment variables:"
-    echo "    OPENGROK_CONFIGURATION - location of your configuration"
-    echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... "
-    echo ""
-    echo "    See the code for more information on configuration options /" \
-        "variables"
-    echo ""
-
-=======
     echo 1>&2
     echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage>" 1>&2
     echo "       ${progname} index [<directory>]" 1>&2
@@ -91,7 +78,6 @@ Usage()
     echo "    See the code for more information on configuration options /" \
         "variables" 1>&2
     echo 1>&2
->>>>>>> 46a2885... Bug 19164 - OpenGrok shell script should have a way to tell not to send config to webapp
     exit 1
 }
 
