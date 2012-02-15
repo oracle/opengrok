@@ -600,6 +600,9 @@ LoadStandardEnvironment()
     fi
 }
 
+#
+# Load default configuration and then merge with user specified configuration.
+#
 LoadInstanceConfiguration()
 {
     # Note: As all functions have been defined by the time this routine
@@ -609,14 +612,13 @@ LoadInstanceConfiguration()
     # functionality used to determine the default deployment environment
     # find dependencies or validate the configuration, for example.
 
+    Progress "Loading the default instance configuration ..."
+    DefaultInstanceConfiguration
     if [ -n "${OPENGROK_CONFIGURATION}" -a -f "${OPENGROK_CONFIGURATION}" ]
     then
         # Load the Local OpenGrok Configuration Environment
         Progress "Loading ${OPENGROK_CONFIGURATION} ..."
         . "${OPENGROK_CONFIGURATION}"
-    else
-        Progress "Loading the default instance configuration ..."
-        DefaultInstanceConfiguration
     fi
 }
 
