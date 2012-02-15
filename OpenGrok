@@ -481,10 +481,10 @@ FindApplicationServerType()
     # Maybe a better implementation would be to call Application
     # Server specific WAR Directory and see if they exist.
 
-    if [    -d "/var/tomcat6/webapps"     \
-         -o -d "/var/lib/tomcat6/webapps" \
-         -o -d "/var/lib/tomcat5/webapps" \
-         -o -d "/var/lib/tomcat5.5/webapps" \
+    if [    -d "/var/tomcat6/webapps"        \
+         -o -d "/var/lib/tomcat6/webapps"    \
+         -o -d "/var/lib/tomcat5/webapps"    \
+         -o -d "/var/lib/tomcat5.5/webapps"  \
        ]
     then
         echo "Tomcat"
@@ -513,14 +513,12 @@ DetermineWarDirectoryTomcat()
         return
     fi
 
-    # Note: the whitespace before 'do' has to be there.
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
         /var/lib/tomcat6        \
         /var/lib/tomcat5        \
-        /var/lib/tomcat5.5      \
-
+        /var/lib/tomcat5.5
     do
         if [ -d "${prefix}/webapps" ]
         then
@@ -545,8 +543,7 @@ DetermineWarDirectoryGlassfish()
 
     for prefix in                       \
         ${OPENGROK_GLASSFISH_BASE}      \
-        /var/appserver                  \
-
+        /var/appserver
     do
         if [ -d "${prefix}/domains" ]
         then
