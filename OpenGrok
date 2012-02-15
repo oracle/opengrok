@@ -189,8 +189,7 @@ DefaultInstanceConfiguration()
 
     # DEVELOPMENT: Debug option, if enabled current indexer will listen on the
     # port 8010 until a debugger connects
-    #JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket"
-    #JAVA_DEBUG="$JAVA_DEBUG,server=y,address=8010,suspend=y"
+    #JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,address=8010,suspend=y"
 
     # OPTIONAL: Ignore these patterns as names of files or directories
     #IGNORE_PATTERNS="-i dummy"
@@ -512,6 +511,7 @@ DetermineWarDirectoryTomcat()
         return
     fi
 
+    # Note: the whitespace before 'do' has to be there.
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
