@@ -512,7 +512,6 @@ DetermineWarDirectoryTomcat()
         return
     fi
 
-    # Note: the whitespace before 'do' has to be there.
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
