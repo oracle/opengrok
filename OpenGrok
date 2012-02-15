@@ -186,7 +186,8 @@ DefaultInstanceConfiguration()
     # REQUIRED: Java Virtual Machine
     JAVA="${JAVA:-$JAVA_HOME/bin/java}"
 
-    # DEVELOPMENT: Debug option, if enabled current indexer will listen on the port 8010 until a debugger connects
+    # DEVELOPMENT: Debug option, if enabled current indexer will listen on the
+    # port 8010 until a debugger connects
     #JAVA_DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,address=8010,suspend=y"
 
     # OPTIONAL: Ignore these patterns as names of files or directories
@@ -375,7 +376,7 @@ Which()
 LocateBinary() {
     for f in $@
     do
-	file=`which $f 2>/dev/null | grep -v '^no '`
+	file=`which "$f" 2>/dev/null | grep -v '^no '`
 	if test -n "$file" -a -x "$file"
 	then
 	    echo $file
@@ -508,6 +509,7 @@ DetermineWarDirectoryTomcat()
         return
     fi
 
+    # Note: the whitespace before 'do' has to be there.
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
@@ -563,7 +565,8 @@ DetermineWarDirectoryGlassfish()
 
         if [ ! -d "${directory}" ]
         then
-            FatalError "Missing Specified Glassfish Domain ${OPENGROK_GLASSFISH_DOMAIN}"
+            FatalError "Missing Specified Glassfish Domain " \
+	        "${OPENGROK_GLASSFISH_DOMAIN}"
         fi
 
         echo "${directory}"
@@ -575,7 +578,8 @@ DetermineWarDirectoryGlassfish()
 
     if [ -z "${firstDomain}" ]
     then
-        FatalError "Failed to dynamically determine Glassfish Domain from ${domainDirectory}"
+        FatalError "Failed to dynamically determine Glassfish Domain from " \
+	    "${domainDirectory}"
     fi
 
     echo "${domainDirectory}/${firstDomain}/autodeploy"
@@ -591,7 +595,8 @@ LoadStandardEnvironment()
 {
     # Setup a standard execution environment (if required)
 
-    OPENGROK_STANDARD_ENV="${OPENGROK_STANDARD_ENV:-/pkgs/sbin/CronExecutionEnvironment.sh}"
+    cronexec="/pkgs/sbin/CronExecutionEnvironment.sh"
+    OPENGROK_STANDARD_ENV="${OPENGROK_STANDARD_ENV:-$cronexec}"
 
     if [ -f "${OPENGROK_STANDARD_ENV}" ]
     then
@@ -643,9 +648,9 @@ ValidateConfiguration()
 
     if [ -n "${OPENGROK_DERBY}" ]
     then
-        Warning "CHECK: derbyclient.jar needs to be in where the rest of opengrok used jars are and in unpacked source.war in WEB-INF/lib !!!"
+        Warning "CHECK: derbyclient.jar needs to be in where the rest of " \
+	    "opengrok used jars are and in unpacked source.war in WEB-INF/lib !"
     fi
-
 }
 
 CreateRuntimeRequirements()
@@ -663,13 +668,15 @@ CreateRuntimeRequirements()
 
     if [ ! -d "${OPENGROK_INSTANCE_BASE}/etc" ]
     then
-        Warning  "OpenGrok generated etc path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
+        Warning  "OpenGrok generated etc path ${OPENGROK_INSTANCE_BASE}/etc " \
+	    "doesn't exist"
         Progress "  Attempting to create generated etc directory ... "
         ${DO} mkdir -p "${OPENGROK_INSTANCE_BASE}/etc"
     fi
     if [ ! -d "${OPENGROK_INSTANCE_BASE}/etc" ]
     then
-        FatalError "OpenGrok etc path ${OPENGROK_INSTANCE_BASE}/etc doesn't exist"
+        FatalError "OpenGrok etc path ${OPENGROK_INSTANCE_BASE}/etc " \
+	    "doesn't exist"
     fi
 
     if [ -n "${LOGGER_CONFIG_PATH}" -a ! -f "${LOGGER_CONFIG_PATH}" ]
@@ -681,25 +688,30 @@ CreateRuntimeRequirements()
                       "(${LOGGER_CONF_SOURCE}) to install as default" \
                       "logging configuration (${LOGGER_CONFIG_PATH})"
         else
-         ${DO} grep -v java.util.logging.FileHandler.pattern "${LOGGER_CONF_SOURCE}" > "${LOGGER_CONFIG_PATH}"
-         ${DO} grep java.util.logging.FileHandler.pattern "${LOGGER_CONF_SOURCE}" | sed "s|opengrok%g.%u.log|${OPENGROK_INSTANCE_BASE}/log/opengrok%g.%u.log|g" >> "${LOGGER_CONFIG_PATH}"
-	 if [ ! -d ${OPENGROK_INSTANCE_BASE}/log ]
-         then
-             ${DO} mkdir ${OPENGROK_INSTANCE_BASE}/log
-         fi
+            filename="opengrok%g.%u.log"
+            fullpath="${OPENGROK_INSTANCE_BASE}/log/opengrok%g.%u.log"
+            ${DO} grep -v java.util.logging.FileHandler.pattern \
+	        "${LOGGER_CONF_SOURCE}" > "${LOGGER_CONFIG_PATH}"
+            ${DO} grep java.util.logging.FileHandler.pattern \
+	        "${LOGGER_CONF_SOURCE}" | \
+		sed "s|$filename|$fullpath|g" >> "${LOGGER_CONFIG_PATH}"
+	     if [ ! -d ${OPENGROK_INSTANCE_BASE}/log ]
+             then
+                 ${DO} mkdir ${OPENGROK_INSTANCE_BASE}/log
+             fi
         fi
     fi
 
     if [ -n "${OPENGROK_DERBY}" ]
     then
-      if [ ! -d "${OPENGROK_INSTANCE_BASE}/derby" ]
-       then
-        Warning  "OpenGrok generated derby path ${OPENGROK_INSTANCE_BASE}/derby doesn't exist"
-        Progress "  Attempting to create generated derby directory ... "
-        ${DO} mkdir -p ${OPENGROK_INSTANCE_BASE}/derby
-      fi
+        if [ ! -d "${OPENGROK_INSTANCE_BASE}/derby" ]
+        then
+            Warning "OpenGrok generated derby path " \
+	        "${OPENGROK_INSTANCE_BASE}/derby doesn't exist"
+            Progress "  Attempting to create generated derby directory ... "
+            ${DO} mkdir -p ${OPENGROK_INSTANCE_BASE}/derby
+        fi
     fi
-
 }
 
 StdInvocation()
@@ -721,7 +733,6 @@ StdInvocation()
         ${WEBAPP_CONFIG}                                        \
         -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
         "${@}"
-
 }
 
 UpdateGeneratedData()
@@ -761,7 +772,8 @@ DeployWar()
 
     if [ -z "${warTarget}" ]
     then
-        FatalError "Unable to determine Deployment Directory for ${applicationServer}"
+        FatalError "Unable to determine Deployment Directory for " \
+	    "${applicationServer}"
     fi
 
     if [ ! -f "${OPENGROK_DIST_WAR}" ]
@@ -782,8 +794,10 @@ DeployWar()
     fi
 
     Progress
-    Progress "Start your application server (${applicationServer}), if it is not already"
-    Progress "running, or wait until it loads the just installed web application."
+    Progress "Start your application server (${applicationServer}), " \
+        "if it is not already"
+    Progress "running, or wait until it loads the just installed web " \
+        "application."
     Progress
     Progress "OpenGrok should be available on <HOST>:<PORT>/source"
     Progress "  where HOST and PORT are configured in ${applicationServer}."
@@ -799,7 +813,8 @@ DerbyServer()
                      ;;
         Linux:*)
                     mkdir -p $DATA_ROOT/derby
-                    java -Dderby.system.home=$DATA_ROOT/derby -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
+                    java -Dderby.system.home=$DATA_ROOT/derby \
+		        -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
                      ;;
         *)          Error "unsupported OS" ;;
     esac
@@ -819,7 +834,6 @@ LoadStandardEnvironment
 LoadInstanceConfiguration
 
 case "${1}" in
-
     deploy)
         DeployWar
         ;;
@@ -863,10 +877,4 @@ case "${1}" in
     *)
         Usage
         ;;
-
 esac
-
-#
-# End of File
-#
-
