@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
+
 OpenGrok - a wicked fast source browser
 ---------------------------------------
 
@@ -44,7 +49,7 @@ Offical page of the project is on:
         http://ant.apache.org/
       - JFlex
         http://www.jflex.org/
-      - Netbeans (optional, at least 7.1)
+      - Netbeans (optional, at least 7.1, will need Ant 1.8.1)
         http://netbeans.org/
 
 3. Usage
@@ -515,7 +520,36 @@ This agent is work in progress, so it might not fully work.
 8. Information for developers
 -----------------------------
 
-8.1 Using Findbugs
+8.1 Unit testing
+----------------
+
+Note: For full coverage report your system has to provide proper junit test 
+environment, that would mean:
+
+  - you have to use Ant 1.7 and above
+  - at least junit-4.10.jar has to be in ant's classpath (e.g. in ./lib)
+    - Example install in the top of the opengrok repository:
+
+      $ cd lib
+      $ wget http://.../junit-4.10.jar
+      $ jar -xf junit-4.10.jar
+
+  - install derby.jar to ant's classpath so that Java DB tests can be run
+  - your PATH must contain directory with exuberant ctags binary
+    - Note: make sure that the directory which contains exuberant ctags binary
+      is prepended before the directory with plain ctags program.
+  - your PATH variable must contain directories which contain binaries of
+    appropriate SCM software which means commands hg, sccs, cvs, git, bzr, svn
+    (svnadmin too). They must be available for the full report.
+
+The tests are then run as follows:
+
+  $ ant -lib ./lib test
+
+To check if the test completed without error look for AssertionFailedError
+occurences in the TESTS-TestSuites.xml file produced by the test run.
+
+8.2 Using Findbugs
 ------------------
 
 If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
@@ -550,7 +584,7 @@ under the lib directory):
 There is also a findbugs-xml ant target that can be used to generate XML files
 that can later be parsed, e.g. by Jenkins.
 
-8.2 Using Emma
+8.3 Using Emma
 --------------
 
 If you want to check test coverage on OpenGrok, download Emma from
@@ -601,17 +635,7 @@ To generate reports, run ant again:
 Look at coverage/coverage.txt, coverage/coverage.xml and 
 coverage/coverage.html to see how complete your tests are.
 
-Note: For full coverage report your system has to provide proper junit test 
-environment, that would mean:
-
-  - you have to use ant 1.7 and above
-  - at least junit-4.?.jar has to be in ants classpath (e.g. in ./lib)
-  - your PATH must contain exuberant ctags binary
-  - your PATH variable must contain binaries of appropriate SCM SW, so
-    commands hg, sccs, cvs, git, bzr, svn (svnadmin too) must be available for
-    the full report.
-
-8.3 Using Checkstyle
+8.4 Using Checkstyle
 --------------------
 
 To check that your code follows the standard coding conventions,
@@ -645,7 +669,7 @@ checkstyle under the lib directory):
 
   $ ant checkstyle -Dcheckstyle.home=lib/checkstyle
 
-8.4 Using PMD and CPD
+8.5 Using PMD and CPD
 ---------------------
 
 To check the quality of the OpenGrok code you can also use PMD
@@ -688,7 +712,7 @@ Which will result in:
   $ ls pmd
   cpd_report.xml cpd_report.txt
 
-8.5 Using JDepend
+8.6 Using JDepend
 ---------------------
 
 To see dependencies in the source code, you can use JDepend from
