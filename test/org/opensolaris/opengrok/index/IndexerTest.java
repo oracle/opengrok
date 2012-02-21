@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -285,20 +285,17 @@ public class IndexerTest {
     @Test
     public void testBug11896() throws Exception {
 
-        boolean test = true;
-        Executor executor = new Executor(new String[] {"mkfifo"});
-
-        executor.exec(true);
-        String output = executor.getErrorString();
-        if (output == null || output.indexOf("mkfifo") == -1 || output.indexOf("command not found") > -1) {
-            System.out.println("Error: No mkfifo found in PATH!\n");
-            test =  false;
-        }
+       boolean test = true;
+       if (FileUtilities.findProgInPath("mkfifo") == null) {
+           System.out.println("Error: mkfifo not found in PATH !\n");
+           test = false;
+       }
 
        if (test) {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
+        Executor executor;
         
         executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot()+"/testBug11896"});
         executor.exec(true);

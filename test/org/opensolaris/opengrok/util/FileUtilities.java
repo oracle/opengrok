@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
@@ -128,4 +127,29 @@ public class FileUtilities {
     private FileUtilities() {
     }
 
+    /**
+     * Determine if given program is present in one of the directories
+     * in PATH environment variable.
+     *
+     * @param  progName name of the program
+     * @return absolute path to the program or null
+     */
+    public static File findProgInPath(String progName) {
+        String systemPath = System.getenv("PATH");
+        if (systemPath == null) {
+             return null;
+        }
+
+        String[] pathDirs = systemPath.split(File.pathSeparator);
+        File absoluteFile = null;
+
+        for (String dir : pathDirs) {
+            File file = new File(dir, progName);
+            if (file.isFile() && file.canExecute()) {
+                absoluteFile = file;
+                break;
+            }
+        }
+        return absoluteFile;
+    }
 }
