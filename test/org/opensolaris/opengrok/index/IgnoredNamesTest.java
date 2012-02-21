@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.index;
@@ -41,22 +41,32 @@ public class IgnoredNamesTest {
         List<String> names = instance.getItems();
         assertNotNull(names);
 
+        /* self-test */
         for (String name : names) {
             assertTrue(instance.ignore(name));
         }
-        
+
+        /* Make sure common paths are not ignored by default. */
+	assertFalse(instance.ignore("usr/src/foo/bin"));
+	assertFalse(instance.ignore("usr/src/foo/bin/bar.ksh"));
+	assertFalse(instance.ignore("usr/src/bar/obj"));
+	assertFalse(instance.ignore("usr/src/bar/obj/foo.ksh"));
+	assertFalse(instance.ignore("usr/src/foo/bar/usr.lib/main.c"));
+	assertFalse(instance.ignore("usr/src/foo/bar/usr.lib"));
+
+        /* cumulative test */
         names = new ArrayList<String>();
         names.add("*.o");
-        
+
         instance.setItems(names);
         names = instance.getItems();
         assertEquals(1, names.size());
-        
+
         assertTrue(instance.ignore("foo.o"));
         assertFalse(instance.ignore("foo"));
         assertTrue(instance.ignore(".o"));
         assertFalse(instance.ignore("foo.oo"));
-        
+
         instance.add("Makefile");
         names = instance.getItems();
         assertEquals(2, names.size());

@@ -18,17 +18,16 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
 
 /**
- * This class maintains a list of file names (like "cscope.out"), SRC_ROOT relative
- * file paths (like "usr/src/uts" or "usr/src/Makefile"), and glob patterns
- * (like .make.*) which opengrok should ignore.
+ * This class maintains a list of file names (like "cscope.out"), SRC_ROOT
+ * relative file paths (like "usr/src/uts" or "usr/src/Makefile"), and glob
+ * patterns (like .make.*) which opengrok should ignore.
  *
  * @author Chandan
  */
@@ -47,8 +46,9 @@ public final class IgnoredNames extends Filter {
         "Codemgr_wsdata",
         ".cvsignore",
         "CVSROOT",
-        "TAGS",
-        "tags",
+        // tags are leftover from the time when ctags did not run daemonized
+        // "TAGS",
+        // "tags",
         ".svn",
         ".git",
         ".repo",
@@ -61,10 +61,8 @@ public final class IgnoredNames extends Filter {
         "deleted_files",
         ".make.*",
         ".del-*",
-        "bin",
-        "obj",
         "_MTN",
-        //File Extensions for Visual Studio and Mono Projects
+        // File Extensions for Visual Studio and Mono Projects
         ".vspscc",
         ".suo",
         ".vssscc",
@@ -74,7 +72,6 @@ public final class IgnoredNames extends Filter {
         ".snc",
         ".sln",
         ".vsmdi",
-        ".lib",
         ".dll",
     };
 
