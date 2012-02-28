@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -31,6 +30,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTransientException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -152,18 +152,13 @@ class JDBCHistoryCache implements HistoryCache {
      */
     private static void handleSQLException(SQLException sqle, int attemptNo)
             throws SQLException {
-        // TODO: When we only support JDK 6 or later, check for
-        // SQLTransactionRollbackException instead of SQLState. Or
-        // perhaps SQLTransientException.
         boolean isTransient = false;
-        Throwable t = sqle;
-        do {
-            if (t instanceof SQLException) {
-                String sqlState = ((SQLException) t).getSQLState();
-                isTransient = (sqlState != null) && sqlState.startsWith("40");
+        for (Throwable cause : sqle) {
+            if (cause instanceof SQLTransientException) {
+                isTransient = true;
+                break;
             }
-            t = t.getCause();
-        } while (!isTransient && t != null);
+        }
 
         if (isTransient && attemptNo < MAX_RETRIES) {
             Logger logger = OpenGrokLogger.getLogger();

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.jdbc;
@@ -100,10 +99,7 @@ public class ConnectionResource {
     public PreparedStatement getStatement(StatementCreator creator)
             throws SQLException {
         PreparedStatement ps = statements.get(creator);
-        if (ps == null) {
-            // Should also check isClosed() here, but it's only available in
-            // JDK 6, so we can't. Anyway, callers shouldn't close the
-            // statements they get from this method.
+        if (ps == null || ps.isClosed()) {
             ps = creator.create(conn);
             statements.put(creator, ps);
         }
