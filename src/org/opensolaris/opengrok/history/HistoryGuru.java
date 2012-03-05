@@ -466,8 +466,16 @@ public final class HistoryGuru {
     }
 
     private void createCacheReal(Collection<Repository> repositories) {
-        ExecutorService executor = Executors
-            .newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+        int num = Runtime.getRuntime().availableProcessors() * 2;
+        String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
+        if (total != null) {
+            try {
+                num = Integer.valueOf(total);
+            } catch (Throwable t) {
+                log.log(Level.WARNING, "Failed to parse the number of cache threads to use for cache creation", t);
+            }
+        }
+        ExecutorService executor = Executors.newFixedThreadPool(num);
 
         for (final Repository repos : repositories) {
             final String latestRev;
