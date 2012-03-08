@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -162,10 +162,15 @@ public class UtilTest {
         assertEquals("", Util.URIEncodePath(""));
         assertEquals("/", Util.URIEncodePath("/"));
         assertEquals("a", Util.URIEncodePath("a"));
-        assertEquals("a+b", Util.URIEncodePath("a+b"));
+        assertEquals("%09", Util.URIEncodePath("\t"));
+        assertEquals("a%2Bb", Util.URIEncodePath("a+b"));
         assertEquals("a%20b", Util.URIEncodePath("a b"));
         assertEquals("/a//x/yz/%23%23/%20/%20%3F",
                      Util.URIEncodePath("/a//x/yz/##/ / ?"));
+        assertEquals("foo%3A%3Abar%3A%3Atest.js",
+                     Util.URIEncodePath("foo::bar::test.js"));
+        assertEquals("bl%C3%A5b%C3%A6rsyltet%C3%B8y",
+                     Util.URIEncodePath("bl\u00E5b\u00E6rsyltet\u00F8y"));
     }
 
     @Test

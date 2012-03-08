@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -135,7 +135,8 @@ public class Context {
         }
         boolean anything = false;
         TreeMap<Integer, String[]> matchingTags = null;
-        String urlPrefixE = Util.URIEncodePath(urlPrefix);
+        String urlPrefixE =
+                (urlPrefix == null) ? "" : Util.URIEncodePath(urlPrefix);
         String pathE = Util.URIEncodePath(path);
         if (tags != null) {
             matchingTags = new TreeMap<Integer, String[]>();
