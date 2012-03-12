@@ -983,6 +983,27 @@ public final class PageConfig {
         }
         return null;
     }
+    
+    private File checkFileResolve(File dir, String name, boolean compressed) {
+        File lresourceFile=new File(getSourceRootPath()+getPath(), name);
+            if (!lresourceFile.canRead()) {
+                lresourceFile = new File("/");
+            }                
+        File f = null;
+        if (compressed) {
+            f = new File(dir, name + ".gz");
+            if (f.exists() && f.isFile()
+                    && f.lastModified() >= lresourceFile.lastModified()) {
+                return f;
+            }
+        }
+        f = new File(dir, name);
+        if (f.exists() && f.isFile()
+                && f.lastModified() >= lresourceFile.lastModified()) {
+            return f;
+        }
+        return null;
+    }
 
     /**
      * Find the files with the given names in the {@link #getPath()} directory
@@ -1008,7 +1029,7 @@ public final class PageConfig {
             getResourceFile();
             boolean compressed = getEnv().isCompressXref();
             for (int i = res.length - 1; i >= 0; i--) {
-                res[i] = checkFile(dir, filenames.get(i), compressed);
+                res[i] = checkFileResolve(dir, filenames.get(i), compressed);
             }
         }
         return res;
