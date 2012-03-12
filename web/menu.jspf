@@ -169,9 +169,7 @@ org.opensolaris.opengrok.web.Util"
 
 <p><input
     tabindex="9" class="submit" type="submit" value="Search"/> <input
-    tabindex="10" class="submit" onclick="javascript: sbox.q.value='';
-    sbox.defs.value = ''; sbox.refs.value = ''; sbox.path.value = '';
-    sbox.hist.value = ''; sbox.project.value ='';" type="button"
+    tabindex="10" class="submit" onclick="javascript: clearSearchFrom();" type="button"
     value=" Clear "/> <button class="help"
     tabindex="11" onclick="window.open('help.jsp')">Help</button>
 </p>

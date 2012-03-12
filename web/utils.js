@@ -387,13 +387,32 @@ function goFirstProject() {
     window.location = document.xrefPath + '/' + selected[0];
 }
 
+function clearSearchFrom() {
+    $("#sbox :input[type=text]").each(
+        function() {            
+                $(this).attr("value", "");            
+        }
+    );    
+    $("#project *").each(
+        function() {
+            if ($(this).attr("selected")) {
+                $(this).removeAttr("selected")
+            } 
+        }
+    );
+}
+
 function checkEnter(event) {
-    if (event.keyCode == '13' && sbox.q.value == '' && sbox.defs.value==''
-        && sbox.refs.value == '' && sbox.path.value == ''
-        && sbox.hist.value == '')
+    concat='';
+    $("#sbox :input[type=text]").each(
+        function() {            
+                concat+=$.trim($(this).val());
+        }
+    );
+    if (event.keyCode == '13' && concat=='')
     {
         goFirstProject();
     } else if (event.keyCode == '13') {
-        sbox.submit();
+        $("#sbox").submit();
     }
 }
