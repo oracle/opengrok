@@ -140,9 +140,9 @@ and run
 This command will do some sanity checks and will deploy the source.war in
 its directory to one of detected web application containers.
 Please follow the error message it provides.
+
 If it fails to discover your container, please refer to optional steps on
-changing web application properties, which has manual steps on how to do
-this.
+changing web application properties below, which explains how to do this.
 
 Note that OpenGrok script expects the directory /var/opengrok to be
 available to user running opengrok with all permissions. In root user case
@@ -286,17 +286,42 @@ web.xml of source.war file and change them (see note1) appropriately.
 	 The contents of this file file will be appended to the footer of each
 	 web page after the information about last index update.
 
-4.4.3 - Path Descriptions
--------------------------
+4.4.3 - Path Descriptions (optional)
+------------------------------------
 
-OpenGrok uses path descriptions in various places (For eg. while showing
-directory listings or search results) Example descriptions are in paths.tsv
-file. You can list descriptions for directories one per line tab separated
-format path tab description. Refer to example 4 below.
+OpenGrok can use path descriptions in various places (e.g. while showing
+directory listings or search results). Example descriptions are in paths.tsv
+file (delivered as /usr/opengrok/doc/paths.tsv by OpenGrok package on Solaris).
+The paths.tsv file is read by OpenGrok indexing script from the configuration
+directory (the same where configuration.xml is located) which will create file
+dtags.eftar in the index subdirectory under DATA_ROOT directory which will
+then be used by the webapp to display the descriptions.
 
-Note 1 - Changing webapp parameters: web.xml is the deployment descriptor
-for the web application. It is in a Jar file named source.war, you can
-change the :
+The file contains descriptions for directories one per line. Path to the
+directory and its description are separated by tab. The path to the directory
+is absolute path under the SRC_ROOT directory.
+
+For example, if the SRC_ROOT directory contains the following directories:
+
+foo
+bar
+bar/blah
+random
+random/code
+
+then the paths.tsv file contents can look like this:
+
+/foo	source code for foo
+/bar	source code for bar
+/bar/blah	source code for blah
+
+Note that only some paths can have a description.
+
+4.4.4 - Changing webapp parameters (optional)
+---------------------------------------------
+
+web.xml is the deployment descriptor for the web application. It is in a Jar
+file named source.war, you can change it as follows:
 
     * Option 1: Unzip the file to TOMCAT/webapps/source/ directory and
      change the source/WEB-INF/web.xml and other static html files like
