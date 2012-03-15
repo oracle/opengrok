@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.c;
 
@@ -38,6 +38,7 @@ import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * An Analyzer for C++ files
+ * @author Trond Norbye
  */
 public class CxxAnalyzer extends PlainAnalyzer {
     /** Creates a new instance of CAnalyzer */
@@ -57,12 +58,13 @@ public class CxxAnalyzer extends PlainAnalyzer {
         doc.add(new Field("refs", dummy));
     }
 
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    @Override
+    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
             cref.reInit(super.content, super.len);
             return cref;
         }
-        return super.tokenStream(fieldName, reader);
+        return super.overridableTokenStream(fieldName, reader);
     }
 
     /**

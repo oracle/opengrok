@@ -75,7 +75,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
      * @throws java.io.IOException
      */
     @Override
-    public boolean incrementToken() throws java.io.IOException {
+    public final boolean incrementToken() throws java.io.IOException {
         return this.yylex();
     }
 

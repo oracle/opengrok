@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.javascript;
 
@@ -60,18 +60,20 @@ public class JavaScriptAnalyzer extends PlainAnalyzer {
         doc.add(new Field("refs", dummy));
     }
 
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    @Override
+    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
             cref.reInit(super.content, super.len);
             return cref;
         }
-        return super.tokenStream(fieldName, reader);
+        return super.overridableTokenStream(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.setDefs(defs);

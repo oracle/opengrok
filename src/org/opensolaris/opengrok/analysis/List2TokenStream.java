@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -39,7 +39,7 @@ public final class List2TokenStream extends TokenStream {
     }
 
     @Override
-    public boolean incrementToken() {
+    public final boolean incrementToken() {
         if (!it.hasNext()) {
             // reached end of stream
             return false;

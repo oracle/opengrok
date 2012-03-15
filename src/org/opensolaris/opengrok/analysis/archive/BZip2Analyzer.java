@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -95,11 +95,11 @@ public class BZip2Analyzer extends FileAnalyzer {
     }
 
     @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
         if (fa != null) {
-            return fa.tokenStream(fieldName, reader);
+            return fa.overridableTokenStream(fieldName, reader);
         }
-        return super.tokenStream(fieldName, reader);
+        return super.overridableTokenStream(fieldName, reader);
     }
 
     /**

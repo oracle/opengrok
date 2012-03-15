@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.fortran;
 
@@ -37,6 +37,7 @@ import org.opensolaris.opengrok.history.Annotation;
 
 /**
  * An Analyzer for Fortran type of files
+ * @author Scott Halstead
  */
 public class FortranAnalyzer extends PlainAnalyzer {
 
@@ -57,12 +58,12 @@ public class FortranAnalyzer extends PlainAnalyzer {
     }
 
     @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
         if ("refs".equals(fieldName)) {
             fref.reInit(super.content, super.len);
             return fref;
         }
-        return super.tokenStream(fieldName, reader);
+        return super.overridableTokenStream(fieldName, reader);
     }
 
     /**

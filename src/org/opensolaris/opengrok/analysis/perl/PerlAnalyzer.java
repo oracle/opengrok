@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.perl;
 
@@ -61,12 +61,12 @@ public class PerlAnalyzer extends PlainAnalyzer {
     }
 
     @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
             cref.reInit(super.content, super.len);
             return cref;
         }
-        return super.tokenStream(fieldName, reader);
+        return super.overridableTokenStream(fieldName, reader);
     }
 
     /**

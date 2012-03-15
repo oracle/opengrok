@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -141,9 +141,8 @@ public class FileAnalyzer extends Analyzer {
     public void analyze(Document doc, InputStream in) throws IOException {
         // not used
     }
-
-    @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+        
+    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
         if ("path".equals(fieldName) || "project".equals(fieldName)) {
             return new PathTokenizer(reader);
         } else if ("hist".equals(fieldName)) {
@@ -152,6 +151,17 @@ public class FileAnalyzer extends Analyzer {
         OpenGrokLogger.getLogger().log(Level.WARNING, "Have no analyzer for: {0}", fieldName);
         return null;
     }
+
+    @Override
+    public final TokenStream tokenStream(String fieldName, Reader reader) {
+        return this.overridableTokenStream(fieldName, reader);
+    }        
+        
+    @Override    
+    public final TokenStream reusableTokenStream(String fieldName, Reader reader) {
+        //TODO needs refactoring to get more speed and less ram usage for indexer
+        return this.tokenStream(fieldName, reader);
+    }           
 
     /**
      * Write a cross referenced HTML file.

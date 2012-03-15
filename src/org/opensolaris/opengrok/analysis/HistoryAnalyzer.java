@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -28,7 +27,6 @@ import java.util.Set;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.search.SearchEngine;
 
@@ -58,8 +56,14 @@ public final class HistoryAnalyzer extends Analyzer {
 
     /** Filters LowerCaseTokenizer with StopFilter. */
     @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    public final TokenStream tokenStream(String fieldName, Reader reader) {
         //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
         return new StopFilter(SearchEngine.LUCENE_VERSION,new PlainFullTokenizer(reader), stopWords);
+    }
+    
+    @Override
+    public final TokenStream reusableTokenStream(String fieldName, Reader reader) {
+        //TODO needs refactoring to get more speed and less ram usage for indexer
+        return this.tokenStream(fieldName, reader);
     }
 }

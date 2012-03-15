@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -38,7 +37,8 @@ public class CompatibleAnalyser extends Analyzer {
         pather  = new PathAnalyzer();
     }
 
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    @Override
+    public final TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
             return new PlainFullTokenizer(reader);
         } else if ("refs".equals(fieldName)) {
@@ -51,5 +51,11 @@ public class CompatibleAnalyser extends Analyzer {
             return historer.tokenStream(fieldName, reader);
         }
         return new PlainFullTokenizer(reader);
+    }
+    
+    @Override
+    public final TokenStream reusableTokenStream(String fieldName, Reader reader) {
+        //TODO needs refactoring to get more speed and less ram usage for indexer
+        return this.tokenStream(fieldName, reader);
     }
 }

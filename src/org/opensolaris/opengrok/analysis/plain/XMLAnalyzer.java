@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -79,13 +79,14 @@ public class XMLAnalyzer extends TextAnalyzer {
 
         doc.add(new Field("full", dummy));
     }
-
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    
+    @Override
+    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
             plainfull.reInit(content, len);
             return plainfull;
         }
-        return super.tokenStream(fieldName, reader);
+        return super.overridableTokenStream(fieldName, reader);
     }
 
     /**
