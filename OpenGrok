@@ -37,7 +37,7 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_REMOTE_REPOS       Disable History Cache for (remote)
+#   - OPENGROK_REMOTE_REPOS_OFF   Disable History Cache for (remote)
 #                                 Repositories (*)
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
@@ -206,10 +206,9 @@ DefaultInstanceConfiguration()
         SCAN_FOR_REPOSITORY=""
     fi
 
-    # OPTIONAL: Remote Repository Support (CVS or SVN)
-    #           (Can be very time demanding, uncomment if needed)
+    # OPTIONAL: Disable remote repository support (CVS or SVN) [on by default]
     REMOTE_REPOSITORIES="-r on"
-    if [ -n "${OPENGROK_REMOTE_REPOS}" ]
+    if [ -n "${OPENGROK_REMOTE_REPOS_OFF}" ]
     then
         REMOTE_REPOSITORIES=""
     fi
