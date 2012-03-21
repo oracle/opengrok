@@ -375,7 +375,8 @@ specify configuration file with extra configuration options for ctags.
 This can be done by setting OPENGROK_CTAGS_OPTIONS_FILE environment variable
 when running the OpenGrok shell script (or directly with the -o option for
 opengrok.jar). Default location for the configuration file in the OpenGrok
-shell script is DATA_ROOT/etc/ctags.config.
+shell script is etc/ctags.config under the OpenGrok base directory (by default
+the full path to the file will be /var/opengrok/etc/ctags.config).
 
 Sample configuration file for Solaris code base is delivered in the doc/
 directory.
