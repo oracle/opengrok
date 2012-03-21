@@ -102,6 +102,7 @@ public final class Configuration {
     private int cachePages;
     private String databaseDriver;
     private String databaseUrl;
+    private String CTagsExtraOptionsFile;
     private int scanningDepth;
     private Set<String> allowedSymlinks;
     private boolean obfuscatingEMailAddresses;
@@ -543,11 +544,11 @@ public final class Configuration {
             logger.warning("failed to read header include file: " + e.getMessage());
         } finally {
         	if (input != null) {
-	            try { input.close(); } 
-	            catch (Exception e) { /* nothing we can do about it */ }
+                    try { input.close(); } 
+                    catch (Exception e) { /* nothing we can do about it */ }
         	} else if (fin != null) {
-	            try { fin.close(); } 
-	            catch (Exception e) { /* nothing we can do about it */ }
+                    try { fin.close(); } 
+                    catch (Exception e) { /* nothing we can do about it */ }
         	}
         }
         return "";
@@ -628,6 +629,14 @@ public final class Configuration {
 
     public void setDatabaseUrl(String databaseUrl) {
         this.databaseUrl = databaseUrl;
+    }
+
+    public String getCTagsExtraOptionsFile() {
+        return CTagsExtraOptionsFile;
+    }
+
+    public void setCTagsExtraOptionsFile(String filename) {
+        this.CTagsExtraOptionsFile = filename;
     }
 
     public Set<String> getAllowedSymlinks() {

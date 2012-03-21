@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -93,6 +93,7 @@ public class CommandLineOptions {
         options.add(new Option('N', "/path/to/symlink", "Allow this symlink to be followed. Option may be repeated."));
         options.add(new Option('n', null, "Do not generate indexes, but process all other command line options"));
         options.add(new Option('O', ON_OFF, "Turn on/off the optimization of the index database as part of the indexing step"));
+        options.add(new Option('o', "path", "File with extra command line options for ctags"));
         options.add(new Option('P', null, "Generate a project for each of the top-level directories in source root"));
         options.add(new Option('p', "/path/to/default/project", "This is the path to the project that should be selected by default in the web application(when no other project set either in cookie or in parameter). You should strip off the source root."));
         options.add(new Option('Q', ON_OFF, "Turn on/off quick context scan. By default only the first 32k of a file is scanned, and a '[..all..]' link is inserted if the file is bigger. Activating this may slow the server down (Note: this is setting only affects the web application)"));

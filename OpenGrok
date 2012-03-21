@@ -21,6 +21,9 @@
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
 #   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
 #   - EXUBERANT_CTAGS             Full Path to Exuberant CTags
+#   - OPENGROK_CTAGS_OPTIONS_FILE Full path to file with extra command line
+#                                 options for CTags program (for its --options
+#                                 switch), default is DATA_ROOT/etc/ctags.config
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary
 #   - JAVA_OPTS                   Java options
@@ -179,6 +182,13 @@ DefaultInstanceConfiguration()
 
     # REQUIRED: Exuberant CTags (http://ctags.sf.net)
     EXUBERANT_CTAGS="${EXUBERANT_CTAGS:-`FindExuberantCTags`}"
+
+    # OPTIONAL: supply extra command line options to CTags program
+    if [ -n ${OPENGROK_CTAGS_OPTIONS_FILE} ]; then
+        CTAGS_OPTIONS_FILE="${OPENGROK_CTAGS_OPTIONS_FILE}"
+    elif [ -r "${OPENGROK_INSTANCE_BASE}/etc/ctags.config" ]; then
+        CTAGS_OPTIONS_FILE="${OPENGROK_INSTANCE_BASE}/etc/ctags.config"
+    fi
 
     # REQUIRED: Java Home
     JAVA_HOME="${JAVA_HOME:-`FindJavaHome`}"
@@ -726,6 +736,7 @@ StdInvocation()
         ${VERBOSE} ${QUIET}                                     \
         ${PROGRESS}                                             \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
+        ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         \
         ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
         ${READ_XML_CONF}                                        \
         -W ${XML_CONFIGURATION}                                 \

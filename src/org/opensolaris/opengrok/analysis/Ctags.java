@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -47,10 +47,15 @@ public class Ctags {
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
     //default: setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
     private String binary;
+    private String CTagsExtraOptionsFile = null;
     private ProcessBuilder processBuilder;
 
     public void setBinary(String binary) {
         this.binary = binary;
+    }
+
+    public void setCTagsExtraOptionsFile(String CTagsExtraOptionsFile) {
+        this.CTagsExtraOptionsFile = CTagsExtraOptionsFile;
     }
 
     public void close() throws IOException {
@@ -63,12 +68,16 @@ public class Ctags {
     private void initialize() throws IOException {
         if (processBuilder == null) {
             List<String> command = new ArrayList<String>();
+            String commandStr = "";
+
             command.add(binary);
             command.add("--c-kinds=+l");
+
             // Workaround for bug #14924: Don't get local variables in Java
             // code since that creates many false positives. Uncomment the next
             // line when the bug has been fixed.
             // command.add("--java-kinds=+l");
+
             command.add("--sql-kinds=+l");
             command.add("--Fortran-kinds=+L");
             command.add("--C++-kinds=+l");
@@ -79,7 +88,18 @@ public class Ctags {
             command.add("--fields=-anf+iKnS");
             command.add("--excmd=pattern");
             command.add("--langmap=sh:+.kshlib"); // RFE #17849
-            command.add("--regex-Asm=/^[ \\t]*(ENTRY|ENTRY2|ALTENTRY)[ \\t]*\\(([a-zA-Z0-9_]+)/\\2/f,function/");  // for assmebly definitions
+
+            /* Add extra command line options for ctags. */
+            if (CTagsExtraOptionsFile != null) {
+                log.log(Level.WARNING, "Adding extra options to ctags");
+                command.add("--options=" + CTagsExtraOptionsFile);
+            }
+
+            for (String s : command) {
+                commandStr += s + " ";
+            }
+            log.log(Level.FINE, "Executing ctags command [" + commandStr + "]");
+
             processBuilder = new ProcessBuilder(command);
         }
 

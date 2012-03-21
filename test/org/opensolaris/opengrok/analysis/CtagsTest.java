@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -49,6 +49,16 @@ public class CtagsTest {
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
+
+        /*
+         * This setting is only needed for bug19195 but it does not seem
+         * that it is possible to specify it just for single test case.
+         * The config file contains assembly specific settings so it should
+         * not be harmful to other test cases.
+         */
+        String extraOptionsFile = "testdata/sources/bug19195/ctags.config";
+        ctags.setCTagsExtraOptionsFile(extraOptionsFile);
+
         assertTrue("No point in running ctags tests without valid ctags",
                 RuntimeEnvironment.getInstance().validateExuberantCtags());
         repository = new TestRepository();
@@ -108,10 +118,35 @@ public class CtagsTest {
             if (tag.type.startsWith("method")) {
                 assertTrue("too many methods", count < names.length);
                 assertEquals("method name", names[count], tag.symbol);
-                assertEquals("method name", lines[count], tag.line);
+                assertEquals("method line", lines[count], tag.line);
                 count++;
             }
         }
         assertEquals("method count", names.length, count);
+    }
+
+    /**
+     * Test that multiple extra command line options are processed correctly
+     * for assembler source code. Bug #19195.
+     */
+    @Test
+    public void bug19195() throws Exception {
+        // Expected method names found in the file
+        String[] names = {"foo", "bar", "_fce", "__fce"};
+        // Expected line numbers for the methods
+        int[] lines = {28, 51, 71, 71};
+
+        /* Perform the actual test. */
+        Definitions result = getDefs("bug19195/test.s");
+        int count = 0;
+        for (Definitions.Tag tag : result.getTags()) {
+            if (tag.type.startsWith("function")) {
+                assertTrue("too many functions", count < names.length);
+                assertEquals("function name", names[count], tag.symbol);
+                assertEquals("function line", lines[count], tag.line);
+                count++;
+            }
+        }
+        assertEquals("function count", names.length, count);
     }
 }

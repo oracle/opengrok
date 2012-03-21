@@ -366,6 +366,20 @@ file named source.war, you can change it as follows:
 
      This file will contain something like the Context described above.
 
+4.4.5 Custom ctags configuration
+--------------------------------
+
+To make ctags recognize additional symbols/definitions/etc. it is possible to
+specify configuration file with extra configuration options for ctags.
+
+This can be done by setting OPENGROK_CTAGS_OPTIONS_FILE environment variable
+when running the OpenGrok shell script (or directly with the -o option for
+opengrok.jar). Default location for the configuration file in the OpenGrok
+shell script is DATA_ROOT/etc/ctags.config.
+
+Sample configuration file for Solaris code base is delivered in the doc/
+directory.
+
 4.5 Using Java DB for history cache
 -----------------------------------
 
@@ -544,6 +558,18 @@ This agent is work in progress, so it might not fully work.
 
 8. Information for developers
 -----------------------------
+
+8.0 Building
+------------
+
+Just run 'ant' from command line in the top-level directory or use build
+process driven by graphical developer environment such as Netbeans.
+
+8.0.1 Package build
+-----------------
+
+Run 'ant package' to create package (specific for the operating system this is
+being executed on) under the dist/ directory.
 
 8.1 Unit testing
 ----------------

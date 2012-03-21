@@ -19,8 +19,10 @@
 #
 # CDDL HEADER END
 #
-# Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
-# Use is subject to license terms.
+
+#
+# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+#
 
 version=`grep 'name="version"' build.xml | cut -f 4 -d \"`
 revision=0.`uname -v | perl -ne 's/(\d+)/print "$1\n"/e'`
@@ -73,6 +75,7 @@ PKGSEND add file CHANGES.txt mode=0444 owner=root group=sys path=/usr/opengrok/d
 PKGSEND add file LICENSE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/LICENSE.txt
 PKGSEND add file NOTICE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/NOTICE.txt
 PKGSEND add file doc/EXAMPLE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/EXAMPLE.txt
+PKGSEND add file doc/ctags.config mode=0444 owner=root group=sys path=/usr/opengrok/doc/ctags.config
 
 
 # install libs

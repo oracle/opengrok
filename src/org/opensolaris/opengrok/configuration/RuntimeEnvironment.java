@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -685,6 +685,14 @@ public final class RuntimeEnvironment {
 
     public void setDatabaseUrl(String databaseUrl) {
         threadConfig.get().setDatabaseUrl(databaseUrl);
+    }
+
+    public String getCTagsExtraOptionsFile() {
+        return threadConfig.get().getCTagsExtraOptionsFile();
+    }
+
+    public void setCTagsExtraOptionsFile(String filename) {
+        threadConfig.get().setCTagsExtraOptionsFile(filename);
     }
 
     public Set<String> getAllowedSymlinks() {

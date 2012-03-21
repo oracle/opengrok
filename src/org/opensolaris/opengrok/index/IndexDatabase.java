@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.index;
@@ -313,6 +313,13 @@ public class IndexDatabase {
         }
         if (ctags == null) {
             log.severe("Unable to run ctags! searching definitions will not work!");
+        }
+
+        if (ctags != null) {
+            String filename = RuntimeEnvironment.getInstance().getCTagsExtraOptionsFile();
+            if (filename != null) {
+                ctags.setCTagsExtraOptionsFile(filename);
+            }
         }
 
         try {

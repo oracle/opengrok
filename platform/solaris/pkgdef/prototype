@@ -55,6 +55,7 @@ f none usr/opengrok/doc/README.txt=README.txt 0444 root sys
 f none usr/opengrok/doc/CHANGES.txt=CHANGES.txt 0444 root sys
 f none usr/opengrok/doc/LICENSE.txt=LICENSE.txt 0444 root sys
 f none usr/opengrok/doc/NOTICE.txt=NOTICE.txt 0444 root sys
+f none usr/opengrok/doc/ctags.config=doc/ctags.config 0444 root sys
 f none usr/opengrok/doc/paths.tsv=paths.tsv 0444 root sys
 f none usr/opengrok/doc/EXAMPLE.txt=doc/EXAMPLE.txt 0444 root sys
 f none usr/opengrok/doc/opengrok-agent.properties=platform/solaris/default/opengrok-agent.properties 0444 root sys

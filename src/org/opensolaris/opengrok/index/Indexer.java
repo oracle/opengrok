@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -214,7 +214,7 @@ public final class Indexer {
                             databaseURL = getopt.getOptarg();
                             break;
                         case 'r':
-                             {
+                            {
                                 if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                                     cfg.setRemoteScmSupported(true);
                                 } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
@@ -226,8 +226,21 @@ public final class Indexer {
                                 }
                             }
                             break;
+                        case 'o':
+                            String CTagsExtraOptionsFile = getopt.getOptarg();
+                            File CTagsFile = new File(CTagsExtraOptionsFile);
+                            if (!(CTagsFile.isFile() && CTagsFile.canRead())) {
+                                System.err.println("ERROR: File '" +
+                                    CTagsExtraOptionsFile +
+                                    "' not found for the -o option");
+                                System.exit(1);
+                            }
+                            System.err.println("INFO: file with extra " +
+                               "options for ctags: " + CTagsExtraOptionsFile);
+                            cfg.setCTagsExtraOptionsFile(CTagsExtraOptionsFile);
+                            break;
                         case 'O':
-                             {
+                            {
                                 boolean oldval = cfg.isOptimizeDatabase();
                                 if (getopt.getOptarg().equalsIgnoreCase(ON)) {
                                     cfg.setOptimizeDatabase(true);
