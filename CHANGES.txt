@@ -1,3 +1,100 @@
+March 2012 update 0.11.1
+-------------------------------------------------
+
+This is a stability improvement release and we suggest to use it instead 0.11
+
+Bug fixes
+
+ avoid unecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occures
+ avoid eftar file test and exception on every page access
+ fix clean button
+ various OpenGrok script fixes (JAVA_OPTS now configurable, can now disable sending config to webapp, 
+ Bug #19181: - ignored list should not contain bin,lib entries
+ Bug #19188: if filename has ":" in its name, the link to it from xref will be wrong
+ Bug #19184: - README file contents are not displayed anymore in directory listing
+
+
+February 2012 update 0.11
+-------------------------------------------------
+
+This is a major update. It is advised that you cleanup your old DATA_ROOT
+(ideally remove it, or move it aside) and run indexing from fresh. Also the web
+application should be replaced, since the new indexes are not compatible with
+the old web application. Note that this doesn't apply to upgrades from the 0.11
+release candidate, since the format of the xrefs didn't change between the
+release candidate and the release. 
+
+New features
+
+    PHP analyzer
+    Visual Basic analyzer
+    Javascript analyzer
+    C# analyzer
+    completely refactored UI, upgraded jquery to 1.4.4
+    SSL, SSO and mod_proxy compatible
+
+Bug fixes
+
+    Bug #17612: Simple PHP Analyzer
+    Bug #17507: indexer hangs when svn requests certificate confirmation
+    Bug #17609: path assumptions & binary names used by installer script need modifications.
+    Bug #17688: File handles leaked in JSPs
+    Bug #13677: xref cache is not updated if code changes in SRC_ROOT
+    Bug #17731: Character encoding improper in Annotation
+    Bug #17817: xref treats include statements with angle brackets and quote marks differently when they contain path part
+    Bug #17816: Link to include file without file extension performs definition search
+    Bug #17936: ArrayIndexOutOfBoundsException when using n=50 as URL query parameter
+    Bug #18163: C++ keywords is not recognized in xref output
+    Bug #18198: ShXref gets confused by here-documents
+    Bug #17885: /**/ comments broke java xref
+    Bug #17584: Beginning of highlighted change in code is not started from absolute zero position in the row
+    Bug #18103: RFE: repository CLI cmds - better error reporting
+    Bug #16895: Maven build doesn't update manifest
+    Bug #18144: indexer will enter infinite cycle if it encounters symlink to dot , Add an "all" target to compile everything and run test cases, pmd, findbugs etc
+    Bug #16894: Maven build lacks info.properties
+    Bug #18585: Exceptions are not logged if severity is higher than CONFIG
+    Bug #18586: ArrayIndexOutOfBoundsException when indexing SQL file
+    Bug #18606: URL suffix for user information not included in history view
+    Bug #18602: JarAnalyzer can run out of memory
+    Bug #18641: Cannot access history for directories
+    Bug #18932: non escaped backslash in output javascript causes issues * Implement the verbatim string support for C# (Bug 18655) to suffixes in the xml analyzer class. (Bug 18687).
+    Bug #18754: opensearch does not work with HTTPS fixing as per Jens Elkner
+    Bug #19116: SQLIntegrityConstraintViolationException when indexing Bazaar history
+    Bug #1720: Add service outage banner at top of webapp pages
+    Bug #19105: convert the link to parent directory to .. and move it to the file listing
+    Bug #19105: use the browser's default fonts update the DirectoryListing test after fix for Bug 19105 and use getParentFile() for better portability
+    Bug #19105: reuse the SimpleDateFormat instance
+    Bug #19145: annotate view for Mercurial displays only first name of the author in some cases
+    Bug #19141: opensearch based searches are broken in mod_proxy environment
+    Bug #19161: Solaris package should not deliver source.war to /var/tomcat6 in any form
+    Bug #19110: Tab expansion problems in 0.11-rctemp - disable of default tabs to mitigate
+
+For bug details refer to Bugzilla -
+https://defect.opensolaris.org/bz/buglist.cgi?product=opengrok&query_format=advanced&target_milestone=0.11&order=bug_id%20DESC
+
+Contributors
+
+We'd like to thank all the people who report bugs, send us ideas for
+improvements or contribute code. Below are just the people who sent patches or
+pushed code, but that doesn't mean that we don't appreciate your work. Reports
+and feedback from the users of OpenGrok is essential to make the developers able
+to continue improving the product. Note that this is just a summary of how many
+changes each person made, which doesn't necessarily reflect how significant each
+change was. Inspect the history log with hg log -v -r 0.10:0.11 to get all
+details.
+
+56 Knut Anders Hatlen <knut.hatlen@oracle.com>
+56 Trond Norbye <trond.norbye@gmail.com>
+24 Vladimir Kotal <Vladimir.Kotal@oracle.com>
+15 Jens Elkner <jel+opengrok@cs.uni-magdeburg.de>
+12 Lubos Kosco <Lubos.Kosco@Oracle.COM>
+1 Chris Eldredge <chris.eldredge@gmail.com>
+1 Felix Annan <felannan@yahoo.com>
+1 Haufe-Lexware - Christoph Hofmann <Christoph.Hofmann@haufe-lexware.com>
+1 Karthik Rajagopalan <Karthik.Rajagopalan@schrodinger.com>
+1 Miroslav Osladil <mira@osladil.cz>
+
+
 January 2011 update 0.10
 -------------------------------------------------
 
