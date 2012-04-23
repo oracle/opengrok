@@ -122,6 +122,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <pathelement path="${java.class.path}"/>
         <pathelement path="lib"/>
         <pathelement path="../lib"/>
+        <pathelement location="lib/JFlex.jar"/>
     </path>
 
     <path id="findbugs.lib.search.path">
@@ -317,7 +318,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <not>
             <and>
                 <isset property="lucene-core.jar.present"/>
-                <isset property="lucene-core.jar.present"/>
+                <isset property="lucene-spellchecker.jar.present"/>
              </and>
              </not>
         </condition>         

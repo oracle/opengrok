@@ -351,7 +351,7 @@ public class IndexDatabase {
                 HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
 
                 String startuid = Util.path2uid(dir, "");
-                IndexReader reader = IndexReader.open(indexDirectory,false); // open existing index
+                IndexReader reader = IndexReader.open(indexDirectory); // open existing index
                 try {
                     uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
 
@@ -502,7 +502,7 @@ public class IndexDatabase {
 
         try {
             log.info("Generating spelling suggestion index ... ");
-            indexReader = IndexReader.open(indexDirectory,false);
+            indexReader = IndexReader.open(indexDirectory);
             checker = new SpellChecker(spellDirectory);
             //TODO below seems only to index "defs" , possible bug ?
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
@@ -930,7 +930,7 @@ public class IndexDatabase {
         TermEnum iter = null;
 
         try {
-            ireader = IndexReader.open(indexDirectory,false); // open existing index
+            ireader = IndexReader.open(indexDirectory); // open existing index
             iter = ireader.terms(new Term("u", "")); // init uid iterator
             while (iter.term() != null) {
                 log.fine(Util.uid2url(iter.term().text()));
@@ -991,7 +991,7 @@ public class IndexDatabase {
         TermEnum iter = null;
 
         try {
-            ireader = IndexReader.open(indexDirectory,false);
+            ireader = IndexReader.open(indexDirectory);
             iter = ireader.terms(new Term("defs", ""));
             while (iter.term() != null) {
                 if (iter.term().field().startsWith("f")) {
@@ -1044,7 +1044,7 @@ public class IndexDatabase {
         try {
             FSDirectory fdir=FSDirectory.open(indexDir,NoLockFactory.getNoLockFactory());
             if (indexDir.exists() && IndexReader.indexExists(fdir)) {
-                ret = IndexReader.open(fdir,false);
+                ret = IndexReader.open(fdir);
             }
         } catch (Exception ex) {
             log.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());

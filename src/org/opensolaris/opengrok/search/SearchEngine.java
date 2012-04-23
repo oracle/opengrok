@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search;
@@ -61,6 +60,7 @@ import org.opensolaris.opengrok.util.IOUtils;
  * @author Trond Norbye 2005
  * @author Lubos Kosco 2010 - upgrade to lucene 3.0.0
  * @author Lubos Kosco 2011 - upgrade to lucene 3.5.0
+ * @author Lubos Kosco 2012 - upgrade to lucene 3.6.0
  */
 public class SearchEngine {
     /** Message text used when logging exceptions thrown when searching. */
@@ -70,7 +70,7 @@ public class SearchEngine {
     //increase the version - every change of below makes us incompatible with the
     //old index and we need to ask for reindex
     /** version of lucene index common for whole app*/
-    public static final Version LUCENE_VERSION=Version.LUCENE_35;
+    public static final Version LUCENE_VERSION=Version.LUCENE_36;
 
     /**
      * Holds value of property definition.
@@ -162,7 +162,7 @@ public class SearchEngine {
      * @throws IOException
      */
     private void searchSingleDatabase(File root,boolean paging) throws IOException {
-        IndexReader ireader = IndexReader.open(FSDirectory.open(root),true);
+        IndexReader ireader = IndexReader.open(FSDirectory.open(root));
         searcher = new IndexSearcher(ireader);        
         collector = TopScoreDocCollector.create(hitsPerPage*cachePages,docsScoredInOrder);
         searcher.search(query,collector);
@@ -190,7 +190,7 @@ public class SearchEngine {
         File droot=new File(RuntimeEnvironment.getInstance().getDataRootFile(), "index");
         int ii=0;
         for (Project project : root) {
-        IndexReader ireader = (IndexReader.open(FSDirectory.open(new File(droot,project.getPath()) ),true));
+        IndexReader ireader = (IndexReader.open(FSDirectory.open(new File(droot,project.getPath()) )));
         subreaders[ii++]=ireader;
         }
         MultiReader searchables=new MultiReader(subreaders, true);

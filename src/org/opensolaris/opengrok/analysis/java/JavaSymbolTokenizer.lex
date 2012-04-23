@@ -34,6 +34,9 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %public
 %class JavaSymbolTokenizer
 %extends JFlexTokenizer
+%init{
+super(in);
+%init}
 %unicode
 %type boolean
 %eofval{

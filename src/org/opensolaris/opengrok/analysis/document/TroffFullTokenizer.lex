@@ -33,6 +33,9 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class TroffFullTokenizer
 %extends JFlexTokenizer
 %unicode
+%init{
+super(in);
+%init}
 %type boolean
 %eofval{
 return false;

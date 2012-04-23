@@ -566,6 +566,10 @@ This agent is work in progress, so it might not fully work.
 Just run 'ant' from command line in the top-level directory or use build
 process driven by graphical developer environment such as Netbeans.
 
+Note: in case you are behind http proxy, use ANT_OPTS to download lucene
+E.g. $ ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
+
+
 8.0.1 Package build
 -----------------
 

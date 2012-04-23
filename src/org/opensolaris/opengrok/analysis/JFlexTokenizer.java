@@ -49,6 +49,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
     abstract public boolean yylex() throws IOException;
     abstract public void yyreset(Reader reader);
     abstract public void yyclose() throws IOException;
+    
+    public JFlexTokenizer(java.io.Reader input) {
+        super(input);
+    }
 
     /**
      * Reinitialize the tokenizer with new contents.
