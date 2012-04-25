@@ -240,7 +240,7 @@ DefaultInstanceConfiguration()
     # OPTIONAL: Web Site Look & Feel
     #           (Options: default, offwhite and polished.
     #            Note the quoting requirements)
-    #SKIN='-L "default"'
+    #SKIN='-L default'
 
     # OPTIONAL: Set Maximum Indexed Words Per File
     # Note, that you might run out of memory, then either increase JVM memory

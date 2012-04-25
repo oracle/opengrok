@@ -446,10 +446,10 @@ table#dirlist { /* the "Name" column */
 #results .l, #more .l,
 #difftable i, del.d { /* line number/annotation block */
 	display: inline-block;
-	width: 5ex;
+	width: 6ex;
 	text-align: right;
-	padding-right: 1ex;
-	margin-right: 0.2em;
+	padding-right: 0 1ex;
+	margin-right: .5ex;
 	background-color: #dddddd;
 	color: #666;
 }
@@ -634,3 +634,4 @@ a.xsr	{ /* subroutine */		color: #00f; font-weight: bold; }
 	background-position: -459px 0;
 }
 /* ############### end of footer ############## */
+
