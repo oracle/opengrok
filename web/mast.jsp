@@ -147,9 +147,6 @@ include file="pageheader.jspf"
     String[] vals = cfg.getSearchOnlyIn();
         %><li><input type="checkbox" name="path" value="<%= vals[0]
             %>" <%= vals[2] %>/> only in <b><%= vals[1] %></b></li>
-        <%-- TODO: for directories a better way is probably to use
-            './' or "this directory" instead of the full path
-            again - full path is already shown above the navbar ... --%>
     </ul><%
     if (proj != null) {
     %>
