@@ -474,10 +474,12 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <path id="pmd.lib" >
             <pathelement location="${pmd.home}/lib/pmd.jar"/>
             <pathelement location="${pmd.home}/lib/jaxen.jar"/>
+            <pathelement location="${pmd.home}/lib/asm.jar"/>
         </path>
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
         <mkdir dir="pmd"/>
-        <pmd targetjdk="1.6" failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
+        <pmd failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
+            <version>java 1.6</version>
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>

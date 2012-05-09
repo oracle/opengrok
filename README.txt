@@ -734,14 +734,15 @@ from http://pmd.sourceforge.net/.
 How to install:
 
   $ cd ~/.ant/lib
-  $ unzip ~/Desktop/pmd-bin-4.2.5.zip
-  $ ln -s pmd-4.2.5/ pmd
+  $ unzip ~/Desktop/pmd-bin-5.0.0.zip
+  $ ln -s pmd-5.0.0/ pmd
 
 You also have to make links to the jar files:
 
   $ cd ~/.ant/lib/pmd/lib
-  $ ln -s pmd-4.2.5.jar pmd.jar
+  $ ln -s pmd-5.0.0.jar pmd.jar
   $ ln -s jaxen-1.1.1.jar jaxen.jar
+  $ ln -s asm-3.2.jar asm.jar
 
 To run PMD on the rource code, just run ant pmd:
 
@@ -757,7 +758,7 @@ unzip the .zip file to a directory, and use the pmd.home property
 to tell ant where to find PMD, like this (if you have installed 
 PMD under the lib directory):
 
-  $ ant pmd -Dpmd.home=lib/pmd-4.2.5
+  $ ant pmd -Dpmd.home=lib/pmd-5.0.0
 
 To run CPD, just use the same as above, but use targets:
 
