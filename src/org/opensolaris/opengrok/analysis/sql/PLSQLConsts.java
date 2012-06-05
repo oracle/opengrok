@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Set;
 
 @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
-public final class Consts {
+public final class PLSQLConsts {
     private static final Set<String> reservedKeywords;
     static {
         HashSet<String> kwds = new HashSet<String>();
@@ -39,13 +39,14 @@ public final class Consts {
             //populateKeywordSet(kwds, "sql2003reserved.dat");
             //populateKeywordSet(kwds, "sql2008reserved.dat");
             populateKeywordSet(kwds, "sql2011reserved.dat");
+            populateKeywordSet(kwds, "plsql2011reserved.dat"); // this is just diff on top of sql iso
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
         reservedKeywords = Collections.unmodifiableSet(kwds);
     }
 
-    private Consts() {
+    private PLSQLConsts() {
         // Util class, can not be constructed.
     }
 

@@ -70,14 +70,14 @@ Usage()
     progname=`basename $0`
 
     exec >&2
-    echo 1>&2
-    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage>" 1>&2
-    echo "       ${progname} index [<directory>]" 1>&2
-    echo 1>&2
-    echo "  Optional environment variables:" 1>&2
-    echo "    OPENGROK_CONFIGURATION - location of your configuration" 1>&2
-    echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... " 1>&2
-    echo 1>&2
+    echo ""
+    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help>"
+    echo "       ${progname} index [<directory>]"
+    echo ""
+    echo "  Optional environment variables:"
+    echo "    OPENGROK_CONFIGURATION - location of your configuration"
+    echo "      e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf ${0} ... "
+    echo ""
     echo "    See the code for more information on configuration options /" \
         "variables" 1>&2
     echo 1>&2
@@ -881,11 +881,10 @@ case "${1}" in
         UpdateDescriptionCache
         ;;
 
-    usage)
+    usage|help)
         OpenGrokUsage
         Usage
         ;;
-
     *)
         Usage
         ;;

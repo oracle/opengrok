@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sql;
@@ -33,23 +33,26 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-public class SQLAnalyzerFactory extends FileAnalyzerFactory {
-    private static final String[] SUFFIXES = {
-        "SQL"        
+public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
+    private static final String[] SUFFIXES = {        
+        "PLS",
+        "PKS", //?
+        "PLD",
+        "PLB"
     };
 
-    public SQLAnalyzerFactory() {
+    public PLSQLAnalyzerFactory() {
         super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
     protected FileAnalyzer newAnalyzer() {
-        return new SQLAnalyzer(this);
+        return new PLSQLAnalyzer(this);
     }
 
     @Override
     public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
         throws IOException {
-        SQLAnalyzer.writeXref(in, out, defs, annotation, project);
+        PLSQLAnalyzer.writeXref(in, out, defs, annotation, project);
     }
 }

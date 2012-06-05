@@ -88,6 +88,10 @@ public class Ctags {
             command.add("--fields=-anf+iKnS");
             command.add("--excmd=pattern");
             command.add("--langmap=sh:+.kshlib"); // RFE #17849
+            command.add("--langmap=sql:+.plb"); // RFE #19208
+            command.add("--langmap=sql:+.pls"); // RFE #19208
+            command.add("--langmap=sql:+.pld"); // RFE #19208
+            command.add("--langmap=sql:+.pks"); // RFE #19208 ?
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
