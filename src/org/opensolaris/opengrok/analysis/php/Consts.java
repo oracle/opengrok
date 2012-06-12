@@ -34,6 +34,7 @@ public class Consts{
         kwd.add("array");
         kwd.add("as");
         kwd.add("break");
+        kwd.add("callable");
         kwd.add("case");
         kwd.add("catch"); //As of PHP5
         kwd.add("cfunction"); // PHP4 Only
@@ -59,8 +60,10 @@ public class Consts{
         kwd.add("function");
         kwd.add("global");
         kwd.add("goto"); //As of PHP5.3
+        kwd.add("instanceof");
         kwd.add("if");
         kwd.add("implements"); //As of PHP5
+        kwd.add("insteadof"); //As of PHP5.4
         kwd.add("interface"); //As of PHP5
         kwd.add("interfaceof"); //As of PHP5
         kwd.add("namespace"); //As of PHP5
@@ -73,6 +76,7 @@ public class Consts{
         kwd.add("static");
         kwd.add("switch");
         kwd.add("throw"); //As of PHP5
+        kwd.add("trait"); //As of PHP5.4
         kwd.add("try"); //As of PHP5
         kwd.add("use");
         kwd.add("var");
@@ -87,6 +91,7 @@ public class Consts{
         kwd.add("__LINE__");
         kwd.add("__METHOD__");
         kwd.add("__NAMESPACE__");
+        kwd.add("__TRAIT__"); //As of PHP5.4
 
         //Constructs
         kwd.add("die");
@@ -103,5 +108,8 @@ public class Consts{
         kwd.add("return");
         kwd.add("print");
         kwd.add("unset");
+
+        //Misc
+        kwd.add("__halt_compiler");
     }
 }
