@@ -39,10 +39,11 @@ super(in);
 return false;
 %eofval}
 %char
+%debug
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+Identifier = [a-zA-Z_\u007F-\u10FFFF] [a-zA-Z0-9_\u007F-\u10FFFF]*
 
-%state STRING SCOMMENT QSTRING
+%state STRING SCOMMENT COMMENT QSTRING STRINGEXPR STRINGVAR
 
 %%
 
@@ -52,28 +53,63 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
                         setAttribs(id, yychar, yychar + yylength());
                         return true; }
               }
- \"     { yybegin(STRING); }
- \'     { yybegin(QSTRING); }
- "#"   { yybegin(SCOMMENT); }
- }
+ \"     { yypush(STRING); }
+ \'     { yypush(QSTRING); }
+ "#"|"//" { yybegin(SCOMMENT); }
+ "/*" { yybegin(COMMENT); }
+}
 
 <STRING> {
- \"     { yybegin(YYINITIAL); }
- \\\"    {}
- \n     { yybegin(YYINITIAL); }
+ \"     { yypop(); }
+ \\\\   {}
+ \\\"   {}
+ "\\{"  {}
+ "$"    { yypush(STRINGVAR); }
+ "{$"   { yypush(STRINGEXPR); }
 }
 
 <QSTRING> {
- \'     { yybegin(YYINITIAL); }
+ \'     { yypop(); }
  \\\'   {}
- \n     { yybegin(YYINITIAL); }
+}
+
+<STRINGVAR, STRINGEXPR> {
+ {Identifier}   {
+                    String id = yytext();
+                    setAttribs(id, yychar, yychar + yylength());
+                    return true;
+                }
+}
+
+<STRINGVAR> {
+ \[[^\]]+\]     {} //stuff between [] are strings, even though they're unquoted
+ .|\n           {
+                    yypushback(1); // don't consume it
+                    yypop();
+                }
+ <<EOF>>   { return false;}
+}
+
+<STRINGEXPR> {
+ {Identifier}   {
+                    String id = yytext();
+                    setAttribs(id, yychar, yychar + yylength());
+                    return true;
+                }
+ \"             { yypush(STRING); }
+ \'             { yypush(QSTRING); }
+ \}             { yypop(); }
 }
 
 <SCOMMENT> {
- \n    { yybegin(YYINITIAL);}
+ "?>"|\n    { yybegin(YYINITIAL);}
 }
 
-<YYINITIAL, STRING, SCOMMENT, QSTRING> {
+<COMMENT> {
+ "*/"       { yybegin(YYINITIAL);}
+}
+
+<YYINITIAL, STRING, STRINGEXPR, SCOMMENT, COMMENT, QSTRING> {
 <<EOF>>   { return false;}
 .|\n    {}
 }

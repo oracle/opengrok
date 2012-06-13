@@ -18,7 +18,7 @@
  */
 
 /*
- * Cross reference a Php file
+ * Cross reference a PHP file
  */
 
 package org.opensolaris.opengrok.analysis.php;
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
+import java.util.Stack;
 
 %%
 %public
@@ -36,135 +37,302 @@ import org.opensolaris.opengrok.web.Util;
 %ignorecase
 %int
 %{
+  private Stack<String> docLabels = new Stack<String>();
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
 %}
+%debug
 
-WhiteSpace     = [ \t\f]+
+WhiteSpace     = [ \t]+
 EOL = \r|\n|\r\n
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]+
+Identifier = [a-zA-Z_\u007F-\u10FFFF] [a-zA-Z0-9_\u007F-\u10FFFF]*
 
 URIChar = [\?\+\%\&\:\/\.\@\_\;\=\$\,\-\!\~\*\\]
 FNameChar = [a-zA-Z0-9_\-\.]
 File = [a-zA-Z]{FNameChar}* "." ("php"|"php3"|"php4"|"phps"|"phtml"|"inc"|"diff"|"patch")
 Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
-Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
+BinaryNumber = 0[b|B][01]+
+OctalNumber = 0[0-7]+
+DecimalNumber = [1-9][0-9]+
+HexadecimalNumber = 0[xX][0-9a-fA-F]+
+FloatNumber = (([0-9]* "." [0-9]+) | ([0-9]+ "." [0-9]*) | [0-9]+)([eE][+-]?[0-9]+)?
+Number = [+-]?({BinaryNumber}|{OctalNumber}|{DecimalNumber}|{HexadecimalNumber}|{FloatNumber})
 
-Pods = "=back" | "=begin" | "=end" | "=for" | "=head1" | "=head2" | "=item" | "=over" | "=pod"
-PodEND = "=cut"
+OpeningTag = ("<?" "php"?) | "<?="
+ClosingTag = "?>"
 
-%state  STRING SCOMMENT QSTRING POD
+HtmlNameStart = [:a-zA-Z_\u00C0-\u10FFFFFF]
+HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
+
+%state TAG_NAME AFTER_TAG_NAME ATTRIBUTE_NOQUOTE ATTRIBUTE_SINGLE ATTRIBUTE_DOUBLE
+%state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING STRINGEXPR STRINGVAR
 
 %%
-<YYINITIAL>{
-
-{Identifier} {
-    String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline);
+<YYINITIAL> { //HTML
+    "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME, null); }
 }
 
-("$"|"@"|"%"|"&") {Identifier} {
-  //we ignore keywords if the identifier starts with one of variable chars ...
-    String id = yytext().substring(1);
-    out.write(yytext().substring(0,1));
-    writeSymbol(id, null, yyline);
+<TAG_NAME> {
+    {HtmlName} {
+        out.write("<span class=\"b\">");
+        writeSymbol(yytext(), null, yyline);
+        out.write("</span>");
+        yybegin(AFTER_TAG_NAME);
+    }
 }
 
-"<" ({File}|{Path}) ">" {
-        out.write("&lt;");
-        String path = yytext();
-        path = path.substring(1, path.length() - 1);
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");
-        out.write("&gt;");
+<AFTER_TAG_NAME> {
+    {HtmlName} {
+        writeSymbol(yytext(), null, yyline);
+    }
+
+    "=" {WhiteSpace}* (\" | \')? {
+        char attributeDelim = yycharat(yylength()-1);
+        out.write("=<span class=\"s\">");
+        out.write(yytext().substring(1));
+        if (attributeDelim == '\'') {
+            yypush(ATTRIBUTE_SINGLE, null);
+        } else if (attributeDelim == '"') {
+            yypush(ATTRIBUTE_DOUBLE, null);
+        } else {
+            yypush(ATTRIBUTE_NOQUOTE, null);
+        }
+    }
 }
 
-{Number}        { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
-
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "#"   { yybegin(SCOMMENT);out.write("<span class=\"c\">#");}
-^ {Pods}   { yybegin(POD);out.write("<span class=\"c\">"+yytext());}
+<TAG_NAME, AFTER_TAG_NAME> {
+    ">"     { out.write("&gt;"); yypop(); } //to YYINITIAL
 }
 
-<POD> {
-^ {PodEND} .* / {EOL} {
-    yybegin(YYINITIAL); out.write(yytext()+"</span>");
-    // without eol lookahead one could perhaps just use below and use yytext().trim() above ?
-    //startNewLine();
-  }
+<YYINITIAL, TAG_NAME, AFTER_TAG_NAME> {
+    {OpeningTag}    { out.write(Util.htmlize(yytext())); yypush(IN_SCRIPT, null); }
 }
+
+<ATTRIBUTE_NOQUOTE> {
+    {WhiteSpace}* {EOL} {
+        out.write("</span>");
+        startNewLine();
+        yypop();
+    }
+    {WhiteSpace} {
+        out.write(yytext());
+        out.write("</span>");
+        yypop();
+    }
+    ">"     { out.write("&gt;</span>"); yypop(); yypop(); } //pop twice
+}
+
+<ATTRIBUTE_DOUBLE>\" { out.write("\"</span>"); yypop(); }
+<ATTRIBUTE_SINGLE>\' { out.write("'</span>"); yypop(); }
+
+<ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
+    {WhiteSpace}* {EOL} {
+        out.write("</span>");
+        startNewLine();
+        out.write("<span class=\"s\">");
+    }
+}
+
+<ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
+    {OpeningTag} {
+        out.write("</span>");
+        out.write(Util.htmlize(yytext()));
+        yypush(IN_SCRIPT, "<span class=\"s\">");
+    }
+}
+
+<IN_SCRIPT> {
+    "$" {Identifier} {
+        //we ignore keywords if the identifier starts with one of variable chars
+        String id = yytext().substring(1);
+        out.write("$");
+        writeSymbol(id, null, yyline);
+    }
+
+    {Identifier} {
+        writeSymbol(yytext(), Consts.kwd, yyline);
+    }
+
+    \"         { yypush(STRING, null); out.write("<span class=\"s\">\""); }
+    \'         { yypush(QSTRING, null); out.write("<span class=\"s\">\'"); }
+
+    "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
+        out.write("&lt;&lt;&lt;")
+        int i = 3, j = yylength()-1;
+        while (yycharat(i) == ' ' || yycharat(i) == '\t') {
+            out.write(yycharat(i));
+        }
+        while (yycharat(j) == '\n' || yycharat(j) == '\r') { j--; }
+
+        if (yycharat(i) == '\'' || yycharat(i) == '"') {
+            yypush(NOWDOC, null);
+            String text = yytext().substring(i+1, j);
+            this.docLabels.push(text);
+            out.write(yycharat(i));
+            out.write("<span class=\"b\">");
+            out.write(text);
+            out.write("</span>");
+            out.write(yycharat(i));
+        } else {
+            yypush(HEREDOC, null);
+            String text = yytext().substring(i+1, j+1);
+            this.docLabels.push(text);
+            out.write("<span class=\"b\">");
+            out.write(text);
+            out.write("</span>");
+        }
+    }
+
+    {Number}   { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
+
+    "#"|"//"   { yypush(SCOMMENT, null); out.write("<span class=\"c\">" + yytext()); }
+    "/*"       { yypush(COMMENT, null); out.write("<span class=\"c\">/*"); }
+
+    \{         { out.write(yytext()); yypush(IN_SCRIPT, null); }
+    \}         { out.write(yytext()); if (!this.stack.empty()) yypop(); } //may pop STRINGEXPR
+
+    {ClosingTag}    { out.write(Util.htmlize(yytext())); yypop(); }
+} //end of IN_SCRIPT
 
 <STRING> {
-  \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
- \\\\   { out.write("\\\\"); }
- \\\"   { out.write("\\\""); }
- {WhiteSpace}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
-    startNewLine();
-  }
+    \\\\ | \\\" | "\\{" | "\\$" {
+        out.write(yytext());
+    }
+
+    "$"     {
+        out.write("</span>$");
+        yypush(STRINGVAR, "<span class=\"s\">");
+    }
+
+    "{$" | "${" {
+        out.write("</span>");
+        out.write(yytext());
+        yypush(STRINGEXPR, "<span class=\"s\">");
+    }
+
+    \"      { out.write("\"</span>"); yypop(); }
 }
 
 <QSTRING> {
- "\\\\" { out.write("\\\\"); }
- "\\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { yybegin(YYINITIAL); out.write("'</span>"); }
- {WhiteSpace}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
-    startNewLine();
-  }
+    \\\\ | \\\' {
+        out.write(yytext());
+    }
+    \'      { out.write("\"</span>"); yypop(); }
+}
+
+<HEREDOC, NOWDOC>^{Identifier} ";" {EOL}  {
+    int i = yylength() - 1;
+    while (yycharat(i) == '\n' || yycharat(i) == '\r') { i--; }
+    if (yytext().substring(0, i).equals(this.docLabels.top())) {
+        String text = this.docLabels.pop();
+        yypop();
+        out.write("</span><span class=\"b\"");
+        out.write(text);
+        out.write("<span>;");
+        startNewLine();
+    }
+}
+
+<STRINGVAR> {
+    {Identifier}    { writeSymbol(yytext(), null, yyline); }
+
+    \[ {Number} \] {
+        out.write("[<span class=\"n\">");
+        out.write(yytext().substring(1, yylength()-1));
+        out.write("</span>]");
+        yypop(); //because "$arr[0][1]" is the same as $arr[0] . "[1]"
+    }
+
+    \[ {Identifier} \] {
+        //then the identifier is actually a string!
+        out.write("[<span class=\"s\">");
+        out.write(yytext().substring(1, yylength()-1));
+        out.write("</span>]");
+        yypop();
+    }
+
+    \[ "$" {Identifier} \] {
+        out.write("[$");
+        writeSymbol(yytext().substring(2, yylength()-1), null, yyline);
+        out.write("]");
+        yypop();
+    }
+
+    "->" {Identifier} {
+        out.write("-&gt;");
+        writeSymbol(yytext().substring(2), null, yyline);
+        yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
+    }
+
+    . | \n          { yypushback(1); yypop(); }
+}
+
+<STRINGEXPR> {
+    {Identifier} {
+        writeSymbol(yytext(), null, yyline);
+    }
+    \}  { out.write('}'); yypop(); }
+    \[  { out.write('['); yypush(IN_SCRIPT, null); }
 }
 
 <SCOMMENT> {
-  {WhiteSpace}*{EOL} {
-    yybegin(YYINITIAL); out.write("</span>");
-    startNewLine();
-  }
+    {ClosingTag}    {
+        out.write("</span>");
+        out.write(Util.htmlize(yytext()));
+        yypop(); yypop(); //hopefully pop to YYINITIAL
+    }
+    {WhiteSpace}* {EOL} {
+        out.write("</span>");
+        startNewLine();
+        yypop();
+    }
 }
 
-
-<YYINITIAL, STRING, SCOMMENT, QSTRING, POD> {
-"&"     {out.write( "&amp;");}
-"<"     {out.write( "&lt;");}
-">"     {out.write( "&gt;");}
-{WhiteSpace}*{EOL}      { startNewLine(); }
- {WhiteSpace}   { out.write(yytext()); }
- [!-~]  { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+<COMMENT> {
+    "*/"    { out.write("*/</span>"); yypop(); }
 }
 
-<STRING, SCOMMENT, STRING, QSTRING, POD> {
-{Path}
-        { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
+<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, IN_SCRIPT, STRING, QSTRING, HEREDOC, NOWDOC, SCOMMENT, COMMENT, STRINGEXPR, STRINGVAR> {
+    "&"     { out.write( "&amp;"); }
+    "<"     { out.write( "&lt;"); }
+    ">"     { out.write( "&gt;"); }
+    {WhiteSpace}* {EOL} {
+        startNewLine();
+    }
+    {WhiteSpace}    {
+        out.write(yytext());
+    }
+    [!-~]   { out.write(yycharat(0)); }
+    .       { writeUnicodeChar(yycharat(0)); }
+}
 
-{File}
-        {
-        String path = yytext();
-        out.write("<a href=\""+urlPrefix+"path=");
-        out.write(path);
-        appendProject();
-        out.write("\">");
-        out.write(path);
-        out.write("</a>");}
+<YYINITIAL, SCOMMENT, COMMENT, QSTRING, STRING, HEREDOC, NOWDOC> {
+    {Path}
+            { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
-("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {
-         String url = yytext();
-         out.write("<a href=\"");
-         out.write(url);out.write("\">");
-         out.write(url);out.write("</a>");}
+    {File}
+            {
+            String path = yytext();
+            out.write("<a href=\""+urlPrefix+"path=");
+            out.write(path);
+            appendProject();
+            out.write("\">");
+            out.write(path);
+            out.write("</a>");}
 
-{FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
-        {
-          writeEMailAddress(yytext());
-        }
+    ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
+            {
+            String url = yytext();
+            out.write("<a href=\"");
+            out.write(url);out.write("\">");
+            out.write(url);out.write("</a>");}
+
+    {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+
+            {
+            writeEMailAddress(yytext());
+            }
 }

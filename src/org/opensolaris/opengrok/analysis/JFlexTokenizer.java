@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Stack;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
@@ -45,11 +46,15 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
 public abstract class JFlexTokenizer extends Tokenizer {
 
+    private Stack<Integer> stack = new Stack<Integer>();
+
     // default jflex scanner methods and variables
     abstract public boolean yylex() throws IOException;
     abstract public void yyreset(Reader reader);
     abstract public void yyclose() throws IOException;
-    
+    abstract public void yybegin(int newState);
+    abstract public int yystate();
+
     public JFlexTokenizer(java.io.Reader input) {
         super(input);
     }
@@ -90,5 +95,14 @@ public abstract class JFlexTokenizer extends Tokenizer {
         this.termAtt.setEmpty();
         this.termAtt.append(str);
         this.offsetAtt.setOffset(start, end);
+    }
+
+    public void yypush(int newState) {
+        this.stack.push(yystate());
+        yybegin(newState);
+    }
+
+    public void yypop() {
+        yybegin(this.stack.pop());
     }
 }

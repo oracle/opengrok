@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.Stack;
 import java.util.TreeSet;
 import org.opensolaris.opengrok.analysis.Definitions.Tag;
 import org.opensolaris.opengrok.configuration.Project;
@@ -64,6 +65,9 @@ public abstract class JFlexXref {
      * unnecessary lookups.
      * @see #startNewLine() */
     protected String userPageSuffix;
+
+    protected Stack<Integer> stack = new Stack<Integer>();
+    protected Stack<String> stackPopString = new Stack<String>();
 
     /**
      * Description of the style to use for a type of definitions.
@@ -178,6 +182,10 @@ public abstract class JFlexXref {
 
     /** Set the value of {@code yyline}. */
     protected abstract void setLineNumber(int x);
+
+    public abstract void yybegin(int newState);
+
+    public abstract int yystate();
 
     /**
      * Write xref to the specified {@code Writer}.
@@ -407,6 +415,20 @@ public abstract class JFlexXref {
             out.write(address.replace("@", " (at) "));
         } else {
             out.write(address);
+        }
+    }
+
+    public void yypush(int newState, String popString) {
+        this.stack.push(yystate());
+        this.stackPopString.push(popString);
+        yybegin(newState);
+    }
+
+    public void yypop() throws IOException {
+        yybegin(this.stack.pop());
+        String popString = this.stackPopString.pop();
+        if (popString != null) {
+            out.write(popString);
         }
     }
 }
