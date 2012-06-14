@@ -161,10 +161,10 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     \'         { yypush(QSTRING, null); out.write("<span class=\"s\">\'"); }
 
     "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
-        out.write("&lt;&lt;&lt;")
+        out.write("&lt;&lt;&lt;");
         int i = 3, j = yylength()-1;
         while (yycharat(i) == ' ' || yycharat(i) == '\t') {
-            out.write(yycharat(i));
+            out.write(yycharat(i++));
         }
         while (yycharat(j) == '\n' || yycharat(j) == '\r') { j--; }
 
@@ -179,12 +179,14 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             out.write(yycharat(i));
         } else {
             yypush(HEREDOC, null);
-            String text = yytext().substring(i+1, j+1);
+            String text = yytext().substring(i, j+1);
             this.docLabels.push(text);
             out.write("<span class=\"b\">");
             out.write(text);
             out.write("</span>");
         }
+        startNewLine();
+        out.write("<span class=\"c\">");
     }
 
     {Number}   { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
@@ -198,7 +200,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     {ClosingTag}    { out.write(Util.htmlize(yytext())); yypop(); }
 } //end of IN_SCRIPT
 
-<STRING> {
+<STRING>\" { out.write("\"</span>"); yypop(); }
+
+<STRING, HEREDOC> {
     \\\\ | \\\" | "\\{" | "\\$" {
         out.write(yytext());
     }
@@ -213,8 +217,6 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write(yytext());
         yypush(STRINGEXPR, "<span class=\"s\">");
     }
-
-    \"      { out.write("\"</span>"); yypop(); }
 }
 
 <QSTRING> {
@@ -227,14 +229,23 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 <HEREDOC, NOWDOC>^{Identifier} ";" {EOL}  {
     int i = yylength() - 1;
     while (yycharat(i) == '\n' || yycharat(i) == '\r') { i--; }
-    if (yytext().substring(0, i).equals(this.docLabels.top())) {
+    if (yytext().substring(0, i).equals(this.docLabels.peek())) {
         String text = this.docLabels.pop();
         yypop();
-        out.write("</span><span class=\"b\"");
+        out.write("</span><span class=\"b\">");
         out.write(text);
-        out.write("<span>;");
+        out.write("</span>;");
+        startNewLine();
+    } else {
+        out.write(yytext().substring(0,i) + ";");
         startNewLine();
     }
+}
+
+<STRING, QSTRING, HEREDOC, NOWDOC>{WhiteSpace}* {EOL} {
+    out.write("</span>;");
+    startNewLine();
+    out.write("<span class=\"s\">");
 }
 
 <STRINGVAR> {

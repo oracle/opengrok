@@ -3,6 +3,17 @@ si"><a href='bar' goo foo=ooo oo=ooo kk
 kk></a><h1 foo="foo<?= $a // foo ?>c
 com">h1 text</h1><?php
 
+$a = <<<FOO
+Foo 1
+$foo[$bar][there]
+{$foo[<<< 	'BAR'
+bar$b
+UBAR;
+BAR;
+]}
+GFOO;
+FOO;
+
 /**
 comentario */
 //comentario

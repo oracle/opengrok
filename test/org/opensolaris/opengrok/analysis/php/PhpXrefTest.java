@@ -20,10 +20,17 @@ public class PhpXrefTest {
     }
 
     public static void main(String args[]) throws IOException {
+        args = new String[] {"C:\\opengrok\\opengrok-dev\\testdata\\sources\\php\\sample.php"};
+        
+        System.err.println(
+                "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
+                + "href=\"http://localhost:8080/source/default/style.css\" /></head>");
+        System.err.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
         PhpAnalyzer.writeXref(
                 new InputStreamReader(new FileInputStream(new File(args[0])), "UTF-8"),
                 w, null, null, null);
         System.err.print(w.toString());
+        System.err.println("</pre></div></body></html>");
     }
 }
