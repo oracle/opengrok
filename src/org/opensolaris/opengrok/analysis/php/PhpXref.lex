@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
-import java.util.Stack;
+import java.util.*;
 
 %%
 %public
@@ -37,12 +37,23 @@ import java.util.Stack;
 %ignorecase
 %int
 %{
+  private final static Set<String> PSEUDO_TYPES;
   private Stack<String> docLabels = new Stack<String>();
   // TODO move this into an include file when bug #16053 is fixed
   @Override
   protected int getLineNumber() { return yyline; }
   @Override
   protected void setLineNumber(int x) { yyline = x; }
+
+  static {
+    PSEUDO_TYPES = new HashSet<String>(Arrays.asList(
+        new String[] {
+            "resource", "mixed", "void", "null", "integer", "int", "boolean",
+            "bool", "callable", "callback", "float", "double", "array",
+            "string", "object"
+        }
+    ));
+  }
 %}
 %debug
 
@@ -68,11 +79,13 @@ ClosingTag = "?>"
 DoubleQuoteEscapeSequences = \\ (([nrtfve\"`\\$]) | ([xX] [0-9a-fA-F]{1,2}) |  ([0-7]{1,3}))
 SingleQuoteEscapeSequences = \\ [\\\']
 
+DocPreviousChar = ("*" | {WhiteSpace} | "{")
+
 HtmlNameStart = [:a-zA-Z_\u00C0-\u10FFFFFF]
 HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 %state TAG_NAME AFTER_TAG_NAME ATTRIBUTE_NOQUOTE ATTRIBUTE_SINGLE ATTRIBUTE_DOUBLE
-%state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING STRINGEXPR STRINGVAR
+%state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT DOCCOMMENT QSTRING STRINGEXPR STRINGVAR
 
 %%
 <YYINITIAL> { //HTML
@@ -195,6 +208,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     {Number}   { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
     "#"|"//"   { yypush(SCOMMENT, null); out.write("<span class=\"c\">" + yytext()); }
+    "/**"      { yypush(DOCCOMMENT, null); out.write("<span class=\"c\">/*"); yypushback(1); }
     "/*"       { yypush(COMMENT, null); out.write("<span class=\"c\">/*"); }
 
     \{         { out.write(yytext()); yypush(IN_SCRIPT, null); }
@@ -332,11 +346,67 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 }
 
-<COMMENT> {
+<DOCCOMMENT> {
+    {DocPreviousChar} ("@throws"|"@return"|"@var") {WhiteSpace}+
+    {Identifier} "[]"? ({WhiteSpace}* "|" {WhiteSpace}* {Identifier} "[]"?)*  {
+        out.write(yycharat(0));
+
+        int i = 1;
+        while (yycharat(i) != ' ' && yycharat(i) != '\t') { i++; }
+        out.write("<strong>");
+        out.write(Util.htmlize(yytext().substring(1, i)));
+        out.write("</strong>");
+
+        int j = i;
+        char c;
+        while (i < yylength()) {
+            //skip over whitespace, [] and |
+            while (i < yylength() && ((c = yycharat(i)) == ' ' || c == '\t'
+                    || c == '[' || c == ']' || c == '|')) {
+                out.write(c);
+                i++;
+            }
+            j = i;
+            while (j < yylength() && (c = yycharat(j)) != ' ' && c != '\t'
+                    && c != '|' && c != '[') { j++; }
+            out.write("<em>");
+            writeSymbol(Util.htmlize(yytext().substring(i, j)),
+                    PSEUDO_TYPES, yyline, false);
+            out.write("</em>");
+            i = j;
+        }
+    }
+
+    {DocPreviousChar} "@param" {WhiteSpace}+ "$" {Identifier} {
+        out.write(yycharat(0));
+        out.write("<strong>@param</strong>");
+        int i = "X@param".length();
+        while (yycharat(i) == ' ' || yycharat(i) == '\t') {
+            out.write(yycharat(i++));
+        }
+        out.write("<em>$");
+        writeSymbol(Util.htmlize(yytext().substring(i + 1)), null, yyline);
+        out.write("</em>");
+    }
+
+    {DocPreviousChar} "@" {Identifier} {
+        out.write(yycharat(0));
+        out.write("<strong>");
+        out.write(Util.htmlize(yytext().substring(1)));
+        out.write("</strong>");
+    }
+}
+
+<COMMENT, DOCCOMMENT> {
+    {WhiteSpace}* {EOL} {
+        out.write("</span>");
+        startNewLine();
+        out.write("<span class=\"c\">");
+    }
     "*/"    { out.write("*/</span>"); yypop(); }
 }
 
-<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, IN_SCRIPT, STRING, QSTRING, HEREDOC, NOWDOC, SCOMMENT, COMMENT, STRINGEXPR, STRINGVAR> {
+<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, IN_SCRIPT, STRING, QSTRING, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
     "&"     { out.write( "&amp;"); }
     "<"     { out.write( "&lt;"); }
     ">"     { out.write( "&gt;"); }
@@ -350,7 +420,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     .       { writeUnicodeChar(yycharat(0)); }
 }
 
-<YYINITIAL, SCOMMENT, COMMENT, QSTRING, STRING, HEREDOC, NOWDOC> {
+<YYINITIAL, SCOMMENT, COMMENT, DOCCOMMENT, QSTRING, STRING, HEREDOC, NOWDOC> {
     {Path}
             { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 

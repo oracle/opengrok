@@ -20,7 +20,10 @@ EO
 GFOO;
 FOO;
 
-/**
+/**@foo @foo
+ *@throws FooException
+ * @return	Foo|Bar[]|	mixed|Baz[]|	Bat | Bak 
+ * @param $foo_hh Foo bar
 comentario */
 //comentario
 #come

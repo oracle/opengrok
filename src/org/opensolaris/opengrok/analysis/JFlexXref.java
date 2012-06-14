@@ -320,11 +320,28 @@ public abstract class JFlexXref {
      * @throws IOException if an error occurs while writing to the stream
      */
     protected void writeSymbol(String symbol, Set<String> keywords, int line)
+            throws IOException{
+        writeSymbol(symbol, keywords, line, true);
+    }
+
+    /**
+     * Write a symbol and generate links as appropriate.
+     *
+     * @param symbol the symbol to write
+     * @param keywords a set of keywords recognized by this analyzer (no links
+     * will be generated if the symbol is a keyword)
+     * @param line the line number on which the symbol appears
+     * @param caseSensitive Whether the keyword list is case sensitive
+     * @throws IOException if an error occurs while writing to the stream
+     */
+    protected void writeSymbol(
+            String symbol, Set<String> keywords, int line, boolean caseSensitive)
             throws IOException {
         String[] strs = new String[1];
         strs[0] = "";
 
-        if (keywords != null && keywords.contains(symbol)) {
+        if (keywords != null && keywords.contains(
+                caseSensitive ? symbol : symbol.toLowerCase())) {
             // This is a keyword, so we don't create a link.
             out.append("<b>").append(symbol).append("</b>");
 
