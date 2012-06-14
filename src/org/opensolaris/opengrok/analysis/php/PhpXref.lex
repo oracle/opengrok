@@ -65,6 +65,9 @@ Number = [+-]?({BinaryNumber}|{OctalNumber}|{DecimalNumber}|{HexadecimalNumber}|
 OpeningTag = ("<?" "php"?) | "<?="
 ClosingTag = "?>"
 
+DoubleQuoteEscapeSequences = \\ (([nrtfve\"`\\$]) | ([xX] [0-9a-fA-F]{1,2}) |  ([0-7]{1,3}))
+SingleQuoteEscapeSequences = \\ [\\\']
+
 HtmlNameStart = [:a-zA-Z_\u00C0-\u10FFFFFF]
 HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
@@ -79,7 +82,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 <TAG_NAME> {
     {HtmlName} {
         out.write("<span class=\"b\">");
-        writeSymbol(yytext(), null, yyline);
+        out.write(yytext());
         out.write("</span>");
         yybegin(AFTER_TAG_NAME);
     }
@@ -87,7 +90,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <AFTER_TAG_NAME> {
     {HtmlName} {
-        writeSymbol(yytext(), null, yyline);
+        out.write(yytext()); //attribute
     }
 
     "=" {WhiteSpace}* (\" | \')? {
@@ -186,7 +189,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
             out.write("</span>");
         }
         startNewLine();
-        out.write("<span class=\"c\">");
+        out.write("<span class=\"s\">");
     }
 
     {Number}   { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
@@ -203,8 +206,14 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 <STRING>\" { out.write("\"</span>"); yypop(); }
 
 <STRING, HEREDOC> {
-    \\\\ | \\\" | "\\{" | "\\$" {
+    "\\{" {
         out.write(yytext());
+    }
+
+    {DoubleQuoteEscapeSequences} {
+        out.write("<strong>");
+        out.write(yytext());
+        out.write("</strong>");
     }
 
     "$"     {
@@ -212,38 +221,55 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         yypush(STRINGVAR, "<span class=\"s\">");
     }
 
-    "{$" | "${" {
+    "${" {
         out.write("</span>");
         out.write(yytext());
         yypush(STRINGEXPR, "<span class=\"s\">");
     }
+
+    /* ${ is different from {$ -- for instance {$foo->bar[1]} is valid
+     * but ${foo->bar[1]} is not. ${ only enters full blown scripting mode
+     * when {Identifer}[ is found (see the PHP scanner) */
+    "{$" {
+        out.write("</span>");
+        out.write("{");
+        yypushback(1);
+        yypush(IN_SCRIPT, "<span class=\"s\">");
+    }
 }
 
 <QSTRING> {
-    \\\\ | \\\' {
+    {SingleQuoteEscapeSequences} {
+        out.write("<strong>");
         out.write(yytext());
+        out.write("</strong>");
     }
+
     \'      { out.write("\"</span>"); yypop(); }
 }
 
-<HEREDOC, NOWDOC>^{Identifier} ";" {EOL}  {
+<HEREDOC, NOWDOC>^{Identifier} ";"? {EOL}  {
     int i = yylength() - 1;
+    boolean hasSemi = false;
     while (yycharat(i) == '\n' || yycharat(i) == '\r') { i--; }
-    if (yytext().substring(0, i).equals(this.docLabels.peek())) {
+    if (yycharat(i) == ';') { hasSemi = true; i--; }
+    if (yytext().substring(0, i+1).equals(this.docLabels.peek())) {
         String text = this.docLabels.pop();
         yypop();
         out.write("</span><span class=\"b\">");
         out.write(text);
-        out.write("</span>;");
+        out.write("</span>");
+        if (hasSemi) out.write(";");
         startNewLine();
     } else {
-        out.write(yytext().substring(0,i) + ";");
+        out.write(yytext().substring(0,i+1));
+        if (hasSemi) out.write(";");
         startNewLine();
     }
 }
 
 <STRING, QSTRING, HEREDOC, NOWDOC>{WhiteSpace}* {EOL} {
-    out.write("</span>;");
+    out.write("</span>");
     startNewLine();
     out.write("<span class=\"s\">");
 }
@@ -287,7 +313,10 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         writeSymbol(yytext(), null, yyline);
     }
     \}  { out.write('}'); yypop(); }
-    \[  { out.write('['); yypush(IN_SCRIPT, null); }
+    \[  { out.write('['); yybegin(IN_SCRIPT); } /* don't push. when we find '}'
+                                                 * and we pop we want to go to
+                                                 * STRING/HEREDOC, not back to
+                                                 * STRINGEXPR */
 }
 
 <SCOMMENT> {

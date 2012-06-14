@@ -4,13 +4,19 @@ kk></a><h1 foo="foo<?= $a // foo ?>c
 com">h1 text</h1><?php
 
 $a = <<<FOO
-Foo 1
+Foo 1 \n \x0 \0 \007 \xFF \j \\\"\$ \{
 $foo[$bar][there]
+{${$name}}
+{\$\${{$foo->bar[1]}
 {$foo[<<< 	'BAR'
 bar$b
 UBAR;
-BAR;
-]}
+UBAR
+BAR
+]->ff["Bar" . <<<EO
+$foo[kk][ll]
+EO
+/*comment*/]}
 GFOO;
 FOO;
 
