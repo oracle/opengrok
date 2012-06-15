@@ -40,6 +40,7 @@ public final class RepositoryFactory {
 
     private static Repository repositories[] = {
         new MercurialRepository(),
+        new AccuRevRepository(),
         new BazaarRepository(),
         new GitRepository(),
         new MonotoneRepository(),
