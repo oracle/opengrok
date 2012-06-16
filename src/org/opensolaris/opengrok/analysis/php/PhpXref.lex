@@ -236,7 +236,6 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write("</em>");
         
         out.write(yytext().substring(j, yylength()));
-        out.write(")");
     }
 
     b? \" {
