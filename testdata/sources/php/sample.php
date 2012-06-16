@@ -4,9 +4,9 @@ kk></a><h1 foo="foo<?= $a // foo ?>c
 com">h1 text</h1>
 <!-- foo <?= $bar /* ?>*///?> http://foo.com
 <h1> --><?php
-
+$b = "\" \``"; $c = `\" \`"`;
 $a = ( 	bool)(INT	 )(binary)<<<FOO
-Foo 1 \n \x0 \0 \007 \xFF \j \\\"\$ \{
+Foo 1 \n \x0 \0 \007 \" \` \xFF \j \\\"\$ \{
 $foo[$bar][there]
 {${$name}}
 {\$\${{$foo->bar[1]}

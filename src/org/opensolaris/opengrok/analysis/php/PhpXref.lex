@@ -90,7 +90,7 @@ ClosingTag = "?>"
 CastTypes = "int"|"integer"|"real"|"double"|"float"|"string"|"binary"|"array"
             |"object"|"bool"|"boolean"|"unset"
 
-DoubleQuoteEscapeSequences = \\ (([nrtfve\"`\\$]) | ([xX] [0-9a-fA-F]{1,2}) |  ([0-7]{1,3}))
+DoubleQuoteEscapeSequences = \\ (([nrtfve\\$]) | ([xX] [0-9a-fA-F]{1,2}) |  ([0-7]{1,3}))
 SingleQuoteEscapeSequences = \\ [\\\']
 
 DocPreviousChar = "*" | {WhiteSpace}
@@ -111,7 +111,7 @@ HtmlNameStart = [:a-zA-Z_\u00C0-\u10FFFFFF]
 HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 %state TAG_NAME AFTER_TAG_NAME ATTRIBUTE_NOQUOTE ATTRIBUTE_SINGLE ATTRIBUTE_DOUBLE HTMLCOMMENT
-%state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING STRINGEXPR STRINGVAR
+%state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING BACKQUOTE STRINGEXPR STRINGVAR
 %state DOCCOMMENT DOCCOM_TYPE_THEN_NAME DOCCOM_NAME DOCCOM_TYPE
 
 %%
@@ -251,6 +251,8 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write("<span class=\"s\">\'");
     }
 
+    ` { yypush(BACKQUOTE, null); out.write("<span class=\"s\">`"); }
+
     b? "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
         if (yycharat(0) == 'b') { out.write('b'); }
         out.write("&lt;&lt;&lt;");
@@ -293,9 +295,17 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     {ClosingTag}    { out.write(Util.htmlize(yytext())); yypop(); }
 } //end of IN_SCRIPT
 
-<STRING>\" { out.write("\"</span>"); yypop(); }
+<STRING> {
+    \\\" { out.write("<strong>"); out.write(yytext()); out.write("</strong>"); }
+    \" { out.write("\"</span>"); yypop(); }
+}
 
-<STRING, HEREDOC> {
+<BACKQUOTE> {
+    "\\`" { out.write("<strong>"); out.write(yytext()); out.write("</strong>"); }
+    "`" { out.write("`</span>"); yypop(); }
+}
+
+<STRING, BACKQUOTE, HEREDOC> {
     "\\{" {
         out.write(yytext());
     }
@@ -358,7 +368,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 }
 
-<STRING, QSTRING, HEREDOC, NOWDOC>{WhiteSpace}* {EOL} {
+<STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC>{WhiteSpace}* {EOL} {
     out.write("</span>");
     startNewLine();
     out.write("<span class=\"s\">");
@@ -487,7 +497,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     "*/"    { out.write("*/</span>"); yypop(); }
 }
 
-<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, HTMLCOMMENT, IN_SCRIPT, STRING, QSTRING, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
+<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, HTMLCOMMENT, IN_SCRIPT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
     "&"     { out.write( "&amp;"); }
     "<"     { out.write( "&lt;"); }
     ">"     { out.write( "&gt;"); }
@@ -501,7 +511,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     .       { writeUnicodeChar(yycharat(0)); }
 }
 
-<YYINITIAL, HTMLCOMMENT, SCOMMENT, COMMENT, DOCCOMMENT, QSTRING, STRING, HEREDOC, NOWDOC> {
+<YYINITIAL, HTMLCOMMENT, SCOMMENT, COMMENT, DOCCOMMENT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC> {
     {Path}
             { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
