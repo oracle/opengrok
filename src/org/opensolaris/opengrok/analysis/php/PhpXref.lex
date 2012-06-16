@@ -239,12 +239,22 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write(")");
     }
 
-    \"         { yypush(STRING, null); out.write("<span class=\"s\">\""); }
-    \'         { yypush(QSTRING, null); out.write("<span class=\"s\">\'"); }
+    b? \" {
+        yypush(STRING, null);
+        if (yycharat(0) == 'b') { out.write('b'); }
+        out.write("<span class=\"s\">\"");
+    }
 
-    "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
+    b? \' {
+        yypush(QSTRING, null);
+        if (yycharat(0) == 'b') { out.write('b'); }
+        out.write("<span class=\"s\">\'");
+    }
+
+    b? "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
+        if (yycharat(0) == 'b') { out.write('b'); }
         out.write("&lt;&lt;&lt;");
-        int i = 3, j = yylength()-1;
+        int i = yycharat(0) == 'b' ? 4 : 3, j = yylength()-1;
         while (isTabOrSpace(i)) {
             out.write(yycharat(i++));
         }

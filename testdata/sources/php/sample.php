@@ -10,7 +10,7 @@ Foo 1 \n \x0 \0 \007 \xFF \j \\\"\$ \{
 $foo[$bar][there]
 {${$name}}
 {\$\${{$foo->bar[1]}
-{$foo[<<< 	'BAR'
+{$foo[b<<< 	'BAR'
 bar$b
 UBAR;
 UBAR
@@ -31,7 +31,7 @@ comentario */
 //comentario
 #come
 
-$gata = 'gata\'';
+$gata = b'gata\''; echo b"gata";
 echo "A Mini é $gata!
 Isto \$bar $foo[bar] ainda é {$_SERVER["{$_SERVER["$_SERVER[foo]"]}"]} string
 $foo->bar->sing $foo[$bar][there] $foo[0b001] ${a[/*foo*/4]}";
