@@ -3,8 +3,10 @@ si"><a href='bar' goo foo=ooo oo=ooo kk
 kk></a><h1 foo="foo<?= $a // foo ?>c
 com">h1 text</h1>
 <!-- foo <?= $bar /* ?>*///?> http://foo.com
-<h1> --><?php
-$b = "\" \``"; $c = `\" \`"`;
+<h1> --><?php $g = $a xor $c;
+$b = "\" \``"; $c = `\" \`" {$a[$a 
+->	
+	doo * 0x2] } bar`;
 $a = ( 	bool)(INT	 )(binary)<<<FOO
 Foo 1 \n \x0 \0 \007 \" \` \xFF \j \\\"\$ \{
 $foo[$bar][there]

@@ -328,8 +328,10 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     /* ${ is different from {$ -- for instance {$foo->bar[1]} is valid
-     * but ${foo->bar[1]} is not. ${ only enters full blown scripting mode
-     * when {Identifer}[ is found (see the PHP scanner) */
+     * but ${foo->bar[1]} is not. ${ only enters the full blown scripting state
+     * when {Identifer}[ is found (see the PHP scanner). Tthe parser seems to
+     * put more restrictions on the {$ scripting mode than on the
+     * "${" {Identifer} "[" scripting mode, but that's not relevant here */
     "{$" {
         out.write("</span>");
         out.write("{");
