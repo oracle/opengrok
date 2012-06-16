@@ -1,9 +1,11 @@
 <h3>some text</h3><ad:2 href="bar foo
 si"><a href='bar' goo foo=ooo oo=ooo kk
 kk></a><h1 foo="foo<?= $a // foo ?>c
-com">h1 text</h1><?php
+com">h1 text</h1>
+<!-- foo <?= $bar /* ?>*///?> http://foo.com
+<h1> --><?php
 
-$a = <<<FOO
+$a = ( 	bool)(INT	 )(binary)<<<FOO
 Foo 1 \n \x0 \0 \007 \xFF \j \\\"\$ \{
 $foo[$bar][there]
 {${$name}}
@@ -20,9 +22,10 @@ EO
 GFOO;
 FOO;
 
-/**@foo @foo
+/**@foo @foo {@foo bar} {@link http://foobar.com/}
  *@throws FooException
  * @return	Foo|Bar[]|	mixed|Baz[]|	Bat | Bak 
+ * @param (mixed|int[]|Foo)[]|Foo[]	$param fo
  * @param $foo_hh Foo bar
 comentario */
 //comentario

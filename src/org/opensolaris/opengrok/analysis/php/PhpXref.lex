@@ -48,11 +48,22 @@ import java.util.*;
   static {
     PSEUDO_TYPES = new HashSet<String>(Arrays.asList(
         new String[] {
-            "resource", "mixed", "void", "null", "integer", "int", "boolean",
-            "bool", "callable", "callback", "float", "double", "array",
-            "string", "object"
+            "string", "integer", "int", "boolean", "bool", "float", "double",
+            "object", "mixed", "array", "resource", "void", "null", "callback",
+            "false", "true", "self"
         }
     ));
+  }
+
+  private void writeDocTag() throws IOException {
+    out.write(yycharat(0));
+    out.write("<strong>");
+    out.write(Util.htmlize(yytext().substring(1)));
+    out.write("</strong>");
+  }
+
+  private boolean isTabOrSpace(int i) {
+    return yycharat(i) == '\t' || yycharat(i) == ' ';
   }
 %}
 %debug
@@ -76,20 +87,41 @@ Number = [+-]?({BinaryNumber}|{OctalNumber}|{DecimalNumber}|{HexadecimalNumber}|
 OpeningTag = ("<?" "php"?) | "<?="
 ClosingTag = "?>"
 
+CastTypes = "int"|"integer"|"real"|"double"|"float"|"string"|"binary"|"array"
+            |"object"|"bool"|"boolean"|"unset"
+
 DoubleQuoteEscapeSequences = \\ (([nrtfve\"`\\$]) | ([xX] [0-9a-fA-F]{1,2}) |  ([0-7]{1,3}))
 SingleQuoteEscapeSequences = \\ [\\\']
 
-DocPreviousChar = ("*" | {WhiteSpace} | "{")
+DocPreviousChar = "*" | {WhiteSpace}
+
+//does not supported nested type expressions like ((array|integer)[]|boolean)[]
+//that would require additional states
+DocType = {IndividualDocType} (\| {IndividualDocType})*
+IndividualDocType = ({SimpleDocType} "[]"? | ( \( {SimpleDocType} "[]"? ( \| {SimpleDocType} "[]"? )* \)\[\] ))
+SimpleDocType = {Identifier}
+
+DocParamWithType = "return" | "throws" | "throw" | "var" | "see"  //"see" can take a URL
+DocParamWithTypeAndName = "param" | "global" | "property" | "property-read"
+                          | "property-write"
+DocInlineTags = "internal" | "inheritDoc" | "link" | "example"
+//method needs special treatment
 
 HtmlNameStart = [:a-zA-Z_\u00C0-\u10FFFFFF]
 HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
-%state TAG_NAME AFTER_TAG_NAME ATTRIBUTE_NOQUOTE ATTRIBUTE_SINGLE ATTRIBUTE_DOUBLE
-%state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT DOCCOMMENT QSTRING STRINGEXPR STRINGVAR
+%state TAG_NAME AFTER_TAG_NAME ATTRIBUTE_NOQUOTE ATTRIBUTE_SINGLE ATTRIBUTE_DOUBLE HTMLCOMMENT
+%state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING STRINGEXPR STRINGVAR
+%state DOCCOMMENT DOCCOM_TYPE_THEN_NAME DOCCOM_NAME DOCCOM_TYPE
 
 %%
 <YYINITIAL> { //HTML
     "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME, null); }
+    
+    "<!--" {
+        out.write("<span class=\"c\">&lt;!--");
+        yybegin(HTMLCOMMENT);
+    }
 }
 
 <TAG_NAME> {
@@ -161,6 +193,25 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 }
 
+<HTMLCOMMENT> {
+    "-->" {
+        out.write("--&gt;</span>");
+        yybegin(YYINITIAL);
+    }
+
+    {WhiteSpace}* {EOL} {
+        out.write("</span>");
+        startNewLine();
+        out.write("<span class=\"c\">");
+    }
+
+    {OpeningTag} {
+        out.write("</span>");
+        out.write(Util.htmlize(yytext()));
+        yypush(IN_SCRIPT, "<span class=\"c\">");
+    }
+}
+
 <IN_SCRIPT> {
     "$" {Identifier} {
         //we ignore keywords if the identifier starts with one of variable chars
@@ -173,13 +224,28 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         writeSymbol(yytext(), Consts.kwd, yyline);
     }
 
+    \( {WhiteSpace}* {CastTypes} {WhiteSpace}* \) {
+        out.write("(");
+        int i = 1, j;
+        while (isTabOrSpace(i)) { out.write(yycharat(i++)); }
+
+        out.write("<em>");
+        j = i + 1;
+        while (!isTabOrSpace(j) && yycharat(j) != ')') { j++; }
+        out.write(yytext().substring(i, j));
+        out.write("</em>");
+        
+        out.write(yytext().substring(j, yylength()));
+        out.write(")");
+    }
+
     \"         { yypush(STRING, null); out.write("<span class=\"s\">\""); }
     \'         { yypush(QSTRING, null); out.write("<span class=\"s\">\'"); }
 
     "<<<" {WhiteSpace}* ({Identifier} | (\'{Identifier}\') | (\"{Identifier}\")){EOL} {
         out.write("&lt;&lt;&lt;");
         int i = 3, j = yylength()-1;
-        while (yycharat(i) == ' ' || yycharat(i) == '\t') {
+        while (isTabOrSpace(i)) {
             out.write(yycharat(i++));
         }
         while (yycharat(j) == '\n' || yycharat(j) == '\r') { j--; }
@@ -347,54 +413,59 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <DOCCOMMENT> {
-    {DocPreviousChar} ("@throws"|"@return"|"@var") {WhiteSpace}+
-    {Identifier} "[]"? ({WhiteSpace}* "|" {WhiteSpace}* {Identifier} "[]"?)*  {
-        out.write(yycharat(0));
+    {DocPreviousChar} "@" {DocParamWithType} {
+        writeDocTag(); yybegin(DOCCOM_TYPE);
+    }
 
-        int i = 1;
-        while (yycharat(i) != ' ' && yycharat(i) != '\t') { i++; }
-        out.write("<strong>");
-        out.write(Util.htmlize(yytext().substring(1, i)));
-        out.write("</strong>");
+    {DocPreviousChar} "@" {DocParamWithTypeAndName} {
+        writeDocTag(); yybegin(DOCCOM_TYPE_THEN_NAME);
+    }
 
+    ("{@" {DocInlineTags}) | {DocPreviousChar} "@" {Identifier} {
+        writeDocTag();
+    }
+}
+
+<DOCCOM_TYPE_THEN_NAME, DOCCOM_TYPE> {
+    {WhiteSpace}+ {DocType} {
+        int i = 0;
+        do { out.write(yycharat(i++)); } while (isTabOrSpace(i));
         int j = i;
-        char c;
         while (i < yylength()) {
-            //skip over whitespace, [] and |
-            while (i < yylength() && ((c = yycharat(i)) == ' ' || c == '\t'
-                    || c == '[' || c == ']' || c == '|')) {
+            //skip over [], |, ( and )
+            char c;
+            while (i < yylength() && ((c = yycharat(i)) == '[' || c == ']'
+                    || c == '|' || c == '(' || c == ')')) {
                 out.write(c);
                 i++;
             }
             j = i;
-            while (j < yylength() && (c = yycharat(j)) != ' ' && c != '\t'
-                    && c != '|' && c != '[') { j++; }
+            while (j < yylength() && (c = yycharat(j)) != ')' && c != '|'
+            && c != '[') { j++; }
             out.write("<em>");
             writeSymbol(Util.htmlize(yytext().substring(i, j)),
                     PSEUDO_TYPES, yyline, false);
             out.write("</em>");
             i = j;
         }
+        yybegin(yystate() == DOCCOM_TYPE_THEN_NAME ? DOCCOM_NAME : DOCCOMMENT);
     }
 
-    {DocPreviousChar} "@param" {WhiteSpace}+ "$" {Identifier} {
-        out.write(yycharat(0));
-        out.write("<strong>@param</strong>");
-        int i = "X@param".length();
-        while (yycharat(i) == ' ' || yycharat(i) == '\t') {
-            out.write(yycharat(i++));
-        }
+    .|\n { yybegin(DOCCOMMENT); yypushback(1); }
+}
+
+<DOCCOM_NAME> {
+    {WhiteSpace}+ "$" {Identifier} {
+        int i = 0;
+        do { out.write(yycharat(i++)); } while (isTabOrSpace(i));
+
         out.write("<em>$");
         writeSymbol(Util.htmlize(yytext().substring(i + 1)), null, yyline);
         out.write("</em>");
+        yybegin(DOCCOMMENT);
     }
 
-    {DocPreviousChar} "@" {Identifier} {
-        out.write(yycharat(0));
-        out.write("<strong>");
-        out.write(Util.htmlize(yytext().substring(1)));
-        out.write("</strong>");
-    }
+    .|\n { yybegin(DOCCOMMENT); yypushback(1); }
 }
 
 <COMMENT, DOCCOMMENT> {
@@ -406,7 +477,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     "*/"    { out.write("*/</span>"); yypop(); }
 }
 
-<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, IN_SCRIPT, STRING, QSTRING, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
+<YYINITIAL, TAG_NAME, AFTER_TAG_NAME, ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE, HTMLCOMMENT, IN_SCRIPT, STRING, QSTRING, HEREDOC, NOWDOC, SCOMMENT, COMMENT, DOCCOMMENT, STRINGEXPR, STRINGVAR> {
     "&"     { out.write( "&amp;"); }
     "<"     { out.write( "&lt;"); }
     ">"     { out.write( "&gt;"); }
@@ -420,7 +491,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     .       { writeUnicodeChar(yycharat(0)); }
 }
 
-<YYINITIAL, SCOMMENT, COMMENT, DOCCOMMENT, QSTRING, STRING, HEREDOC, NOWDOC> {
+<YYINITIAL, HTMLCOMMENT, SCOMMENT, COMMENT, DOCCOMMENT, QSTRING, STRING, HEREDOC, NOWDOC> {
     {Path}
             { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 
