@@ -50,7 +50,7 @@ import java.util.*;
         new String[] {
             "string", "integer", "int", "boolean", "bool", "float", "double",
             "object", "mixed", "array", "resource", "void", "null", "callback",
-            "false", "true", "self"
+            "false", "true", "self", "callable"
         }
     ));
   }
