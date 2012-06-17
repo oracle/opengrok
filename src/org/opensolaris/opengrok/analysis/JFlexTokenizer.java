@@ -46,7 +46,7 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
 public abstract class JFlexTokenizer extends Tokenizer {
 
-    private Stack<Integer> stack = new Stack<Integer>();
+    protected Stack<Integer> stack = new Stack<Integer>();
 
     // default jflex scanner methods and variables
     abstract public boolean yylex() throws IOException;
