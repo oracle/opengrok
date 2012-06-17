@@ -1,0 +1,42 @@
+<!DOCTYPE html><html><head><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><link rel="stylesheet" type="text/css" href="http://localhost:8080/source/default/style.css" /><title>PHP Xref Test</title></head>
+<body><div id="src"><pre>
+<a class="l" name="1" href="#1">1</a>&lt;<span class="b">h3</span>&gt;some text&lt;/<span class="b">h3</span>&gt;&lt;<span class="b">ad:2</span> href=<span class="s">"bar foo</span>
+<a class="l" name="2" href="#2">2</a><span class="s">si"</span>&gt;&lt;<span class="b">a</span> href=<span class="s">'bar'</span> goo foo=<span class="s">ooo </span>oo=<span class="s">ooo </span>kk
+<a class="l" name="3" href="#3">3</a>kk&gt;&lt;/<span class="b">a</span>&gt;&lt;<span class="b">h1</span> foo=<span class="s">"foo</span>&lt;?= $<a href="/source/s?defs=a">a</a> <span class="c">// foo </span>?&gt;<span class="s">c</span>
+<a class="l" name="4" href="#4">4</a><span class="s">com"</span>&gt;h1 text&lt;/<span class="b">h1</span>&gt;
+<a class="l" name="5" href="#5">5</a><span class="c">&lt;!-- foo </span>&lt;?= $<a href="/source/s?defs=bar">bar</a> <span class="c">/* ?&gt;*/</span><span class="c">//</span>?&gt;<span class="c"> <a href="http://foo.com">http://foo.com</a></span>
+<a class="l" name="6" href="#6">6</a><span class="c">&lt;h1&gt; --&gt;</span>&lt;?php $<a href="/source/s?defs=g">g</a> = $<a href="/source/s?defs=a">a</a> <b>xor</b> $<a href="/source/s?defs=c">c</a>;
+<a class="l" name="7" href="#7">7</a>$<a href="/source/s?defs=b">b</a> = <span class="s">"<strong>\"</strong> \``"</span>; $<a href="/source/s?defs=c">c</a> = <span class="s">`\" <strong>\`</strong>" </span>{$<a href="/source/s?defs=a">a</a>[$<a href="/source/s?defs=a">a</a>
+<a class="l" name="8" href="#8">8</a>-&gt;
+<a class="l" name="9" href="#9">9</a>	<a href="/source/s?defs=doo">doo</a> * <span class="n">0x2</span>] }<span class="s"> bar`</span>;
+<a class="hl" name="10" href="#10">10</a>$<a href="/source/s?defs=a">a</a> = ( 	<em>bool</em>)(<em>INT</em>	 )(<em>binary</em>)&lt;&lt;&lt;<span class="b">FOO</span>
+<a class="l" name="11" href="#11">11</a><span class="s">Foo 1 <strong>\n</strong> <strong>\x0</strong> <strong>\0</strong> <strong>\007</strong> \" \` <strong>\xFF</strong> \j <strong>\\</strong>\"<strong>\$</strong> \{</span>
+<a class="l" name="12" href="#12">12</a><span class="s"></span>$<a href="/source/s?defs=foo">foo</a>[$<a href="/source/s?defs=bar">bar</a>]<span class="s">[there]</span>
+<a class="l" name="13" href="#13">13</a><span class="s"></span>{${$<a href="/source/s?defs=name">name</a>}}<span class="s"></span>
+<a class="l" name="14" href="#14">14</a><span class="s">{<strong>\$</strong><strong>\$</strong>{</span>{$<a href="/source/s?defs=foo">foo</a>-&gt;<a href="/source/s?defs=bar">bar</a>[<span class="n">1</span>]}<span class="s"></span>
+<a class="l" name="15" href="#15">15</a><span class="s"></span>{$<a href="/source/s?defs=foo">foo</a>[b&lt;&lt;&lt; 	'<span class="b">BAR</span>'
+<a class="l" name="16" href="#16">16</a><span class="s">bar$b</span>
+<a class="l" name="17" href="#17">17</a><span class="s">UBAR;
+<a class="l" name="18" href="#18">18</a>UBAR
+<a class="l" name="19" href="#19">19</a></span><span class="b">BAR</span>
+<a class="hl" name="20" href="#20">20</a>]-&gt;<a href="/source/s?defs=ff">ff</a>[<span class="s">"Bar"</span> . &lt;&lt;&lt;<span class="b">EO</span>
+<a class="l" name="21" href="#21">21</a><span class="s"></span>$<a href="/source/s?defs=foo">foo</a>[<span class="s">kk</span>]<span class="s">[ll]</span>
+<a class="l" name="22" href="#22">22</a><span class="s"></span><span class="b">EO</span>
+<a class="l" name="23" href="#23">23</a><span class="c">/*comment*/</span>]}<span class="s"></span>
+<a class="l" name="24" href="#24">24</a><span class="s">GFOO;
+<a class="l" name="25" href="#25">25</a></span><span class="b">FOO</span>;
+<a class="l" name="26" href="#26">26</a>
+<a class="l" name="27" href="#27">27</a><span class="c">/**<strong>@foo</strong> <strong>@foo</strong> {@foo bar} {<strong>@link</strong> <a href="http://foobar.com/">http://foobar.com/</a>}</span>
+<a class="l" name="28" href="#28">28</a><span class="c"> *<strong>@throws</strong> <em><a href="/source/s?defs=FooException">FooException</a></em></span>
+<a class="l" name="29" href="#29">29</a><span class="c"> * <strong>@return</strong>	<em><a href="/source/s?defs=Foo">Foo</a></em>|<em><a href="/source/s?defs=Bar">Bar</a></em>[]<em><a href="/source/s?defs="></a></em>|	mixed|Baz[]|	Bat | Bak</span>
+<a class="hl" name="30" href="#30">30</a><span class="c"> * <strong>@param</strong> (<em><b>mixed</b></em>|<em><b>int</b></em>[]|<em><a href="/source/s?defs=Foo">Foo</a></em>)[]|<em><a href="/source/s?defs=Foo">Foo</a></em>[]<em><a href="/source/s?defs="></a></em>	<em>$<a href="/source/s?defs=param">param</a></em> fo</span>
+<a class="l" name="31" href="#31">31</a><span class="c"> * <strong>@param</strong> $foo_hh Foo bar</span>
+<a class="l" name="32" href="#32">32</a><span class="c">comentario */</span>
+<a class="l" name="33" href="#33">33</a><span class="c">//comentario</span>
+<a class="l" name="34" href="#34">34</a><span class="c">#come</span>
+<a class="l" name="35" href="#35">35</a>
+<a class="l" name="36" href="#36">36</a>$<a href="/source/s?defs=gata">gata</a> = b<span class="s">'gata<strong>\'</strong>"</span>; <b>echo</b> b<span class="s">"gata"</span>;
+<a class="l" name="37" href="#37">37</a><b>echo</b> <span class="s">"A Mini &#233; </span>$<a href="/source/s?defs=gata">gata</a><span class="s">!</span>
+<a class="l" name="38" href="#38">38</a><span class="s">Isto <strong>\$</strong>bar </span>$<a href="/source/s?defs=foo">foo</a>[<span class="s">bar</span>]<span class="s"> ainda &#233; </span>{$<a href="/source/s?defs=_SERVER">_SERVER</a>[<span class="s">"</span>{$<a href="/source/s?defs=_SERVER">_SERVER</a>[<span class="s">"</span>$<a href="/source/s?defs=_SERVER">_SERVER</a>[<span class="s">foo</span>]<span class="s">"</span>]}<span class="s">"</span>]}<span class="s"> string</span>
+<a class="l" name="39" href="#39">39</a><span class="s"></span>$<a href="/source/s?defs=foo">foo</a>-&gt;<a href="/source/s?defs=bar">bar</a><span class="s">-&gt;sing </span>$<a href="/source/s?defs=foo">foo</a>[$<a href="/source/s?defs=bar">bar</a>]<span class="s">[there] </span>$<a href="/source/s?defs=foo">foo</a>[<span class="n">0b001</span>]<span class="s"> </span>${<a href="/source/s?defs=a">a</a>[<span class="c">/*foo*/</span><span class="n">4</span>]}<span class="s">"</span>;
+<a class="hl" name="40" href="#40">40</a></pre></div></body></html>

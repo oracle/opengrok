@@ -66,7 +66,6 @@ import java.util.*;
     return yycharat(i) == '\t' || yycharat(i) == ' ';
   }
 %}
-%debug
 
 WhiteSpace     = [ \t]+
 EOL = \r|\n|\r\n

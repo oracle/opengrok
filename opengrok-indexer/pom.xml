@@ -40,7 +40,7 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
         <sourceDirectory>../src</sourceDirectory>
         <testSourceDirectory>../test</testSourceDirectory>
 
-        <resources>            
+        <resources>
             <resource>
                 <targetPath>org/opensolaris/opengrok/analysis/sql/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/analysis/sql/</directory>
@@ -75,6 +75,11 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
             <testResource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
                 <directory>../test/org/opensolaris/opengrok/history/</directory>
+                <excludes><exclude>*.java</exclude></excludes>
+            </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/php/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/php/</directory>
                 <excludes><exclude>*.java</exclude></excludes>
             </testResource>
         </testResources>
