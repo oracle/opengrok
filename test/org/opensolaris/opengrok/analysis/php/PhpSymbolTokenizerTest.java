@@ -7,7 +7,6 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -64,7 +63,6 @@ public class PhpSymbolTokenizerTest {
                 "org/opensolaris/opengrok/analysis/php/sample.php");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
         String[] termsFor = getTermsFor(r);
-        System.out.println(Arrays.toString(termsFor));
         assertArrayEquals(
                 new String[]{
                     "a", //line 3
