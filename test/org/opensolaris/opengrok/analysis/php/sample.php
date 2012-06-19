@@ -2,8 +2,8 @@
 si"><a href='bar' goo foo=ooo oo=ooo kk
 kk></a><h1 foo="foo<?= $a // foo ?>c
 com">h1 text</h1>
-<!-- foo <?= $bar /* ?>*///?> http://foo.com
-<h1> --><?php $g = $a xor $c;
+<!-- foo <?php function foo() { $bar = 077; /* ?>*///?> http://foo.com
+<h1> --><?php } $g = $a xor $c;
 $b = "\" \``"; $c = `\" \`" {$a[$a 
 ->	
 	doo * 0x2] } bar`;
@@ -17,7 +17,7 @@ bar$b
 UBAR;
 UBAR
 BAR
-]->ff["Bar" . <<<EO
+]->ff["Bar"["0"[0]] . <<<EO
 $foo[kk][ll]
 EO
 /*comment*/]}
@@ -33,7 +33,7 @@ comentario */
 //comentario
 #come
 
-$gata = b'gata\''; echo b"gata";
+$gata{"1"} = b'gata\''; echo b"gata";
 echo "A Mini é $gata!
 Isto \$bar $foo[bar] ainda é {$_SERVER["{$_SERVER["$_SERVER[foo]"]}"]} string
 $foo->bar->sing $foo[$bar][there] $foo[0b001] ${a[/*foo*/4]}";

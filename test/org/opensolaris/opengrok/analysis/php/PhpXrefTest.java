@@ -12,11 +12,11 @@ public class PhpXrefTest {
 
     @Test
     public void basicTest() throws IOException {
-        String s = "foo bar";
+        String s = "<?php foo bar";
         Writer w = new StringWriter();
         PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
         assertEquals(
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a><a href=\"/"
+                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>&lt;?php <a href=\"/"
                 + "source/s?defs=foo\">foo</a> <a href=\"/source/s?defs=bar\">bar</a>",
                 w.toString());
     }

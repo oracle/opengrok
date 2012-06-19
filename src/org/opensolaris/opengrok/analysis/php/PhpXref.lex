@@ -65,6 +65,13 @@ import java.util.*;
   private boolean isTabOrSpace(int i) {
     return yycharat(i) == '\t' || yycharat(i) == ' ';
   }
+
+  private static boolean isHtmlState(int state) {
+    return state == TAG_NAME            || state == AFTER_TAG_NAME
+        || state == ATTRIBUTE_NOQUOTE   || state == ATTRIBUTE_SINGLE
+        || state == ATTRIBUTE_DOUBLE    || state == HTMLCOMMENT
+        || state == YYINITIAL;
+  }
 %}
 
 WhiteSpace     = [ \t]+
@@ -83,6 +90,7 @@ HexadecimalNumber = 0[xX][0-9a-fA-F]+
 FloatNumber = (([0-9]* "." [0-9]+) | ([0-9]+ "." [0-9]*) | [0-9]+)([eE][+-]?[0-9]+)?
 Number = [+-]?({BinaryNumber}|{OctalNumber}|{DecimalNumber}|{HexadecimalNumber}|{FloatNumber})
 
+//do not support <script language="php"> and </script> opening/closing tags
 OpeningTag = ("<?" "php"?) | "<?="
 ClosingTag = "?>"
 
@@ -116,7 +124,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 %%
 <YYINITIAL> { //HTML
     "<" | "</"      { out.write(Util.htmlize(yytext())); yypush(TAG_NAME, null); }
-    
+
     "<!--" {
         out.write("<span class=\"c\">&lt;!--");
         yybegin(HTMLCOMMENT);
@@ -233,7 +241,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         while (!isTabOrSpace(j) && yycharat(j) != ')') { j++; }
         out.write(yytext().substring(i, j));
         out.write("</em>");
-        
+
         out.write(yytext().substring(j, yylength()));
     }
 
@@ -288,9 +296,23 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     "/*"       { yypush(COMMENT, null); out.write("<span class=\"c\">/*"); }
 
     \{         { out.write(yytext()); yypush(IN_SCRIPT, null); }
-    \}         { out.write(yytext()); if (!this.stack.empty()) yypop(); } //may pop STRINGEXPR
+    \}         {
+        out.write(yytext());
+        if (!this.stack.empty() && !isHtmlState(this.stack.peek()))
+            yypop(); //may pop STRINGEXPR/HEREDOC/BACKQUOTE
+        /* we don't pop unconditionally because we can exit a <?php block with
+         * with open braces and we discard the information about the number of
+         * open braces when exiting the block (see the action for {ClosingTag}
+         * below. An alternative would be keeping two stacks -- one for HTML
+         * and another for PHP. The PHP scanner only needs one stack because
+         * it doesn't need to keep state about the HTML */
+    }
 
-    {ClosingTag}    { out.write(Util.htmlize(yytext())); yypop(); }
+    {ClosingTag} {
+        out.write(Util.htmlize(yytext()));
+        while (!isHtmlState(yystate()))
+            yypop();
+    }
 } //end of IN_SCRIPT
 
 <STRING> {
@@ -423,7 +445,8 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     {ClosingTag}    {
         out.write("</span>");
         out.write(Util.htmlize(yytext()));
-        yypop(); yypop(); //hopefully pop to YYINITIAL
+        while (!isHtmlState(yystate()))
+            yypop();
     }
     {WhiteSpace}* {EOL} {
         out.write("</span>");

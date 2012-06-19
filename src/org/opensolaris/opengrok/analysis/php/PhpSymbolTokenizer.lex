@@ -60,6 +60,10 @@ return false;
   private boolean isTabOrSpace(int i) {
     return yycharat(i) == '\t' || yycharat(i) == ' ';
   }
+
+  private static boolean isHtmlState(int state) {
+    return state == YYINITIAL;
+  }
 %}
 
 WhiteSpace     = [ \t]+
@@ -89,16 +93,9 @@ SingleQuoteEscapeSequences = \\ [\\\']
 
 DocPreviousChar = "*" | {WhiteSpace}
 
-//does not supported nested type expressions like ((array|integer)[]|boolean)[]
-//that would require additional states
-DocType = {IndividualDocType} (\| {IndividualDocType})*
-IndividualDocType = ({SimpleDocType} "[]"? | ( \( {SimpleDocType} "[]"? ( \| {SimpleDocType} "[]"? )* \)\[\] ))
-SimpleDocType = {Identifier}
-
 DocParamWithType = "return" | "throws" | "throw" | "var" | "see"  //"see" can take a URL
 DocParamWithTypeAndName = "param" | "global" | "property" | "property-read"
                           | "property-write"
-DocInlineTags = "internal" | "inheritDoc" | "link" | "example"
 //method needs special treatment
 
 %state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING BACKQUOTE STRINGEXPR STRINGVAR
@@ -156,9 +153,12 @@ DocInlineTags = "internal" | "inheritDoc" | "link" | "example"
     "/*"       { yypush(COMMENT); }
 
     \{         { yypush(IN_SCRIPT); }
-    \}         { if (!this.stack.empty()) yypop(); } //may pop STRINGEXPR
+    \}         {
+        if (!this.stack.empty() && !isHtmlState(this.stack.peek()))
+            yypop(); //may pop STRINGEXPR/HEREDOC/BACKQUOTE
+    }
 
-    {ClosingTag}    { yypop(); }
+    {ClosingTag}    { while (!isHtmlState(yystate())) yypop(); }
 } //end of IN_SCRIPT
 
 <STRING> {
@@ -253,7 +253,7 @@ DocInlineTags = "internal" | "inheritDoc" | "link" | "example"
 
 <SCOMMENT> {
     {ClosingTag}    {
-        yypop(); yypop(); //hopefully pop to YYINITIAL
+        while (!isHtmlState(yystate())) yypop();
     }
     {WhiteSpace}* {EOL} {
         yypop();
