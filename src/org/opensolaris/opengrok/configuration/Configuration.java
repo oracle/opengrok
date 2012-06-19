@@ -512,11 +512,11 @@ public final class Configuration {
      * @return the time of the last index update.
      */
     public Date getDateForLastIndexRun() {
-    	if (lastModified == null) {
-    		File timestamp = new File(getDataRoot(), "timestamp");
-        	lastModified = new Date(timestamp.lastModified());
-    	}
-    	return lastModified;
+        if (lastModified == null) {
+                File timestamp = new File(getDataRoot(), "timestamp");
+                lastModified = new Date(timestamp.lastModified());
+        }
+        return lastModified;
     }
 
     /**
@@ -524,12 +524,12 @@ public final class Configuration {
      */
     private static String getFileContent(File file) {
         if (file == null || ! file.canRead()) {
-        	return "";
+                return "";
         }
         FileReader fin = null;
         BufferedReader input = null;
         try {
-        	fin = new FileReader(file);
+                fin = new FileReader(file);
             input = new BufferedReader(fin);
             String line = null;
             StringBuilder contents = new StringBuilder();
@@ -543,62 +543,62 @@ public final class Configuration {
         } catch (java.io.IOException e) {
             logger.warning("failed to read header include file: " + e.getMessage());
         } finally {
-        	if (input != null) {
-                    try { input.close(); } 
+                if (input != null) {
+                    try { input.close(); }
                     catch (Exception e) { /* nothing we can do about it */ }
-        	} else if (fin != null) {
-                    try { fin.close(); } 
+                } else if (fin != null) {
+                    try { fin.close(); }
                     catch (Exception e) { /* nothing we can do about it */ }
-        	}
+                }
         }
         return "";
     }
 
     /**
-     * The name of the file relative to the <var>DATA_ROOT</var>, which should 
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the footer of generated web pages.
      */
     public static final String FOOTER_INCLUDE_FILE = "footer_include";
-    
+
     private transient String footer = null;
     /**
      * Get the contents of the footer include file.
-     * @return an empty string if it could not be read successfully, the 
-     * 	contents of the file otherwise.
+     * @return an empty string if it could not be read successfully, the
+     *  contents of the file otherwise.
      */
     public String getFooterIncludeFileContent() {
-    	if (footer == null) {
-    		footer = getFileContent(new File(getDataRoot(), FOOTER_INCLUDE_FILE));
-    	}
-    	return footer;
+        if (footer == null) {
+                footer = getFileContent(new File(getDataRoot(), FOOTER_INCLUDE_FILE));
+        }
+        return footer;
     }
 
     /**
-     * The name of the file relative to the <var>DATA_ROOT</var>, which should 
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the footer of generated web pages.
      */
     public static final String HEADER_INCLUDE_FILE = "header_include";
-    
+
     private transient String header = null;
     /**
      * Get the contents of the footer include file.
-     * @return an empty string if it could not be read successfully, the 
-     * 	contents of the file otherwise.
+     * @return an empty string if it could not be read successfully, the
+     *  contents of the file otherwise.
      */
     public String getHeaderIncludeFileContent() {
-    	if (header == null) {
-    		header = getFileContent(new File(getDataRoot(), HEADER_INCLUDE_FILE));
-    	}
-    	return header;
+        if (header == null) {
+                header = getFileContent(new File(getDataRoot(), HEADER_INCLUDE_FILE));
+        }
+        return header;
     }
 
     /**
-     * The name of the eftar file relative to the <var>DATA_ROOT</var>, which 
+     * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
      * contains definition tags.
      */
     public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
 
-    private transient String dtagsEftar = null; 
+    private transient String dtagsEftar = null;
     /**
      * Get the eftar file, which contains definition tags.
      * @return {@code null} if there is no such file, the file otherwise.
@@ -614,7 +614,7 @@ public final class Configuration {
         }
         return dtagsEftar.isEmpty() ? null : new File(dtagsEftar);
     }
-    
+
     public String getDatabaseDriver() {
         return databaseDriver;
     }

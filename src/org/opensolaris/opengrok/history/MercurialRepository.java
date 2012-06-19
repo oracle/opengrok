@@ -209,17 +209,17 @@ public class MercurialRepository extends Repository {
         try {
             History hist = HistoryGuru.getInstance().getHistory(file, false);
             for (HistoryEntry e : hist.getHistoryEntries()) {
-	        // Chop out the colon and all hexadecimal what follows.
+                // Chop out the colon and all hexadecimal what follows.
                 // This is because the whole changeset identification is
                 // stored in history index while annotate only needs the
                 // revision identifier.
                 revs.put(e.getRevision().replaceFirst(":[a-f0-9]+", ""), e);
             }
-	} catch (HistoryException he) {
+        } catch (HistoryException he) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Error: cannot get history for file " + file);
-	    return null;
-	}
+            return null;
+        }
 
         try {
             process = pb.start();
@@ -235,9 +235,9 @@ public class MercurialRepository extends Repository {
                     String rev = matcher.group(1);
                     String author = "N/A";
                     // Use the history index hash map to get the author.
-		    if (revs.get(rev) != null) {
+                    if (revs.get(rev) != null) {
                          author = revs.get(rev).getAuthor();
-	            }
+                    }
                     ret.addLine(rev, Util.getEmail(author.trim()), true);
                 } else {
                     OpenGrokLogger.getLogger().log(Level.SEVERE,
