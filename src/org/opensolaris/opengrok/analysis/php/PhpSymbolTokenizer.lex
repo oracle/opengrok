@@ -96,6 +96,7 @@ DocPreviousChar = "*" | {WhiteSpace}
 DocParamWithType = "return" | "throws" | "throw" | "var" | "see"  //"see" can take a URL
 DocParamWithTypeAndName = "param" | "global" | "property" | "property-read"
                           | "property-write"
+DocParamWithName = "uses"
 //method needs special treatment
 
 %state IN_SCRIPT STRING SCOMMENT HEREDOC NOWDOC COMMENT QSTRING BACKQUOTE STRINGEXPR STRINGVAR
@@ -268,6 +269,10 @@ DocParamWithTypeAndName = "param" | "global" | "property" | "property-read"
 
     {DocPreviousChar} "@" {DocParamWithTypeAndName} {WhiteSpace}+ {
         yybegin(DOCCOM_TYPE_THEN_NAME);
+    }
+
+    {DocPreviousChar} "@" {DocParamWithName} {WhiteSpace}+ {
+        yybegin(DOCCOM_NAME);
     }
 }
 

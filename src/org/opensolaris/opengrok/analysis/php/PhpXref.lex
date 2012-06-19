@@ -111,6 +111,7 @@ SimpleDocType = {Identifier}
 DocParamWithType = "return" | "throws" | "throw" | "var" | "see"  //"see" can take a URL
 DocParamWithTypeAndName = "param" | "global" | "property" | "property-read"
                           | "property-write"
+DocParamWithName = "uses"
 DocInlineTags = "internal" | "inheritDoc" | "link" | "example"
 //method needs special treatment
 
@@ -462,6 +463,10 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
     {DocPreviousChar} "@" {DocParamWithTypeAndName} {
         writeDocTag(); yybegin(DOCCOM_TYPE_THEN_NAME);
+    }
+
+    {DocPreviousChar} "@" {DocParamWithName} {
+        writeDocTag(); yybegin(DOCCOM_NAME);
     }
 
     ("{@" {DocInlineTags}) | {DocPreviousChar} "@" {Identifier} {

@@ -26,6 +26,7 @@ FOO;
 
 /**@foo @foo {@foo bar} {@link http://foobar.com/}
  *@throws FooException
+ * @uses 	$used
  * @return	Foo|Bar[]|	mixed|Baz[]|	Bat | Bak 
  * @param (mixed|int[]|Foo)[]|Foo[]	$param fo
  * @param $foo_hh Foo bar

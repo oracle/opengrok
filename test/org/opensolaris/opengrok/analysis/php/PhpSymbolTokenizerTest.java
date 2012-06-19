@@ -78,12 +78,13 @@ public class PhpSymbolTokenizerTest {
                     "ff", //line 20
                     "foo", //line 21
                     "FooException", //line 28
-                    "Foo", "Bar", //line 29
-                    "Foo", "Foo", "param", //line 30
-                    "gata", //line 36
+                    "used",
+                    "Foo", "Bar", //line 30
+                    "Foo", "Foo", "param", //line 31
                     "gata", //line 37
-                    "foo", "_SERVER", "_SERVER", "_SERVER", //line 38
-                    "foo", "bar", "foo", "bar", "foo", "a", //line 39
+                    "gata", //line 38
+                    "foo", "_SERVER", "_SERVER", "_SERVER", //line 39
+                    "foo", "bar", "foo", "bar", "foo", "a", //line 40
                 },
                 termsFor);
     }
