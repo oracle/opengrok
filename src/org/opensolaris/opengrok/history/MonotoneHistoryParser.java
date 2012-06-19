@@ -101,7 +101,9 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
         int state = 0;
         while ((s = in.readLine()) != null) {
             s = s.trim();
-            if ("-----------------------------------------------------------------".equals(s)) {
+            // Later versions of monotone (such as 1.0) output even more dashes so lets require
+            // the minimum amount for maximum compatibility between monotone versions.
+            if (s.startsWith("-----------------------------------------------------------------")) {
                 if (entry != null && state > 2) {
                     entries.add(entry);
                 }

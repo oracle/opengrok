@@ -126,6 +126,7 @@ public class MonotoneRepository extends Repository {
 
         cmd.add("--no-graph");
         cmd.add("--no-merges");
+        cmd.add("--no-format-dates");
         cmd.add(filename);
 
         return new Executor(cmd, new File(directoryName));
@@ -147,7 +148,7 @@ public class MonotoneRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("annotate");
-        cmd.add("--reallyquiet");
+        cmd.add(getQuietOption());
         if (revision != null) {
             cmd.add("-r");
             cmd.add(revision);
@@ -199,7 +200,7 @@ public class MonotoneRepository extends Repository {
         List<String> cmd = new ArrayList<String>();
         cmd.add(this.cmd);
         cmd.add("pull");
-        cmd.add("--reallyquiet");
+        cmd.add(getQuietOption());
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
             throw new IOException(executor.getErrorString());
@@ -208,7 +209,7 @@ public class MonotoneRepository extends Repository {
         cmd.clear();
         cmd.add(this.cmd);
         cmd.add("update");
-        cmd.add("--reallyquiet");
+        cmd.add(getQuietOption());
         executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
             throw new IOException(executor.getErrorString());
@@ -249,5 +250,20 @@ public class MonotoneRepository extends Repository {
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
         return new MonotoneHistoryParser(this).parse(file, sinceRevision);
+    }
+
+    private String getQuietOption() {
+        if (useDeprecated()) {
+            return "--reallyquiet";
+        } else {
+            return "--quiet --quiet";
+        }
+    }
+
+    public static final String DEPRECATED_KEY =
+            "org.opensolaris.opengrok.history.monotone.deprecated";
+
+    private boolean useDeprecated() {
+        return Boolean.parseBoolean(System.getProperty(DEPRECATED_KEY, "false"));
     }
 }
