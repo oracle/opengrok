@@ -16,7 +16,7 @@ public class PhpXrefTest {
         Writer w = new StringWriter();
         PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
         assertEquals(
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>&lt;?php <a href=\"/"
+                "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
                 + "source/s?defs=foo\">foo</a> <a href=\"/source/s?defs=bar\">bar</a>",
                 w.toString());
     }
@@ -35,12 +35,15 @@ public class PhpXrefTest {
     }
 
     public static void main(String args[]) throws IOException {
+        InputStream is = null;
         if (args.length == 0) {
-            args = new String[]{"C:\\opengrok\\opengrok-dev\\test\\org\\"
-                    + "opensolaris\\opengrok\\analysis\\php\\sample.php"};
+            is = PhpXrefTest.class.getClassLoader().getResourceAsStream(
+                "org/opensolaris/opengrok/analysis/php/sample.php");
+        } else {
+            is = new FileInputStream(new File(args[0]));
         }
 
-        writePhpXref(new FileInputStream(new File(args[0])), System.err);
+        writePhpXref(is, System.out);
     }
 
     @Test
