@@ -1,4 +1,4 @@
-<h3>some text</h3><ad:2 href="bar foo
+<h3>some text</h3><ad:a2 href="bar foo
 si"><a href='bar' goo foo=ooo oo=ooo kk
 kk></a><h1 foo="foo<?= $a // foo ?>c
 com">h1 text</h1>

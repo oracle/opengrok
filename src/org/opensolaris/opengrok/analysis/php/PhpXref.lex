@@ -115,7 +115,7 @@ DocParamWithName = "uses"
 DocInlineTags = "internal" | "inheritDoc" | "link" | "example"
 //method needs special treatment
 
-HtmlNameStart = [:a-zA-Z_\u00C0-\u10FFFFFF]
+HtmlNameStart = [a-zA-Z_\u00C0-\u10FFFFFF]
 HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 %state TAG_NAME AFTER_TAG_NAME ATTRIBUTE_NOQUOTE ATTRIBUTE_SINGLE ATTRIBUTE_DOUBLE HTMLCOMMENT
@@ -134,8 +134,19 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <TAG_NAME> {
     {HtmlName} {
-        out.write("<span class=\"b\">");
+        out.write("<span class=\"n\">");
         out.write(yytext());
+        out.write("</span>");
+        yybegin(AFTER_TAG_NAME);
+    }
+
+    {HtmlName}:{HtmlName} {
+        out.write("<span class=\"n\">");
+        int i = 0;
+        while (yycharat(i) != ':') i++;
+        out.write(yytext().substring(0,i));
+        out.write("</span>:<span class=\"n\">");
+        out.write(yytext().substring(i + 1));
         out.write("</span>");
         yybegin(AFTER_TAG_NAME);
     }
@@ -143,7 +154,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <AFTER_TAG_NAME> {
     {HtmlName} {
+        out.write("<strong>");
         out.write(yytext()); //attribute
+        out.write("</strong>");
     }
 
     "=" {WhiteSpace}* (\" | \')? {
@@ -165,7 +178,11 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 }
 
 <YYINITIAL, TAG_NAME, AFTER_TAG_NAME> {
-    {OpeningTag}    { out.write(Util.htmlize(yytext())); yypush(IN_SCRIPT, null); }
+    {OpeningTag}    {
+        out.write("<strong>");
+        out.write(Util.htmlize(yytext()));
+        out.write("</strong>");
+        yypush(IN_SCRIPT, null); }
 }
 
 <ATTRIBUTE_NOQUOTE> {
@@ -195,8 +212,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <ATTRIBUTE_NOQUOTE, ATTRIBUTE_DOUBLE, ATTRIBUTE_SINGLE> {
     {OpeningTag} {
-        out.write("</span>");
+        out.write("</span><strong>");
         out.write(Util.htmlize(yytext()));
+        out.write("</strong>");
         yypush(IN_SCRIPT, "<span class=\"s\">");
     }
 }
@@ -214,8 +232,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {OpeningTag} {
-        out.write("</span>");
+        out.write("</span><strong>");
         out.write(Util.htmlize(yytext()));
+        out.write("</strong>");
         yypush(IN_SCRIPT, "<span class=\"c\">");
     }
 }
@@ -310,7 +329,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
     }
 
     {ClosingTag} {
+        out.write("<strong>");
         out.write(Util.htmlize(yytext()));
+        out.write("</strong>");
         while (!isHtmlState(yystate()))
             yypop();
     }
@@ -444,8 +465,9 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
 
 <SCOMMENT> {
     {ClosingTag}    {
-        out.write("</span>");
+        out.write("</span><strong>");
         out.write(Util.htmlize(yytext()));
+        out.write("</strong>");
         while (!isHtmlState(yystate()))
             yypop();
     }
