@@ -80,8 +80,7 @@ public class SearchHelper {
     public QueryBuilder builder;
     /** the order to use to ordery query results */
     public SortOrder order;
-    /** if {@code true} a {@link ParallelMultiSearcher} will be used instead of
-     * a {@link MultiSearcher}. */
+    /** if {@code true} multi-threaded search will be used. */
     public boolean parallel;
     /** Indicate, whether this is search from a cross reference. If {@code true}
      * {@link #executeQuery()} sets {@link #redirect} if certain conditions are
@@ -119,9 +118,10 @@ public class SearchHelper {
     public HistoryContext historyContext;
     /** Default query parse error message prefix */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
+    private ExecutorService executor=null; 
 
     private static final Logger log = Logger.getLogger(SearchHelper.class.getName());
-    
+           
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
@@ -181,8 +181,7 @@ public class SearchHelper {
                     FSDirectory dir = FSDirectory.open(new File(indexDir, proj));
                     subreaders[ii++] = IndexReader.open(dir);
                 }
-                MultiReader searchables=new MultiReader(subreaders, true);
-                ExecutorService executor=null; 
+                MultiReader searchables=new MultiReader(subreaders, true);                
                 if (parallel) {
                     int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this
                     executor= Executors.newFixedThreadPool(noThreads);
@@ -419,5 +418,16 @@ public class SearchHelper {
      */
     public void destroy() {
         IOUtils.close(searcher);
+        IOUtils.close(searcher.getIndexReader());
+        if (executor != null) {
+            try {
+                executor.shutdown();
+            } catch (SecurityException se) {
+                log.warning(se.getLocalizedMessage());
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "destroy", se);
+                }
+            }
+        }
     }
 }
