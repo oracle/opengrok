@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.sh;
 
@@ -40,7 +40,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "SH",
         "KSH",
-        "KSHLIB",   // RFE #17849
+        "KSHLIB",	// RFE #17849
         "CSH",
         "BASH",
         "RUBY",
@@ -52,13 +52,11 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
         "COM",
         "SPEC",
         "FLG",
-        "XCL",                  // message
+        "XCL",		// message
     };
 
     private static final String[] MAGICS = {
         "#!",
-        "##",
-        "#\n#",
     };
 
     public ShAnalyzerFactory() {
@@ -71,7 +69,8 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     }
 
     @Override
-    public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
+    public void writeXref(Reader in, Writer out, Definitions defs,
+        Annotation annotation, Project project)
         throws IOException {
         ShAnalyzer.writeXref(in, out, defs, annotation, project);
     }

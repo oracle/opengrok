@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -409,10 +409,10 @@ public class AnalyzerGuru {
         throws IOException
     {
         FileAnalyzerFactory factory = find(file);
-        //TODO above is not that great, since if 2 analyzers share one extension
-        //then only the first one registered will own it
-        //it would be cool if above could return more analyzers and below would
-        //then decide between them ...
+        // TODO above is not that great, since if 2 analyzers share one extension
+        // then only the first one registered will own it
+        // it would be cool if above could return more analyzers and below would
+        // then decide between them ...
         if (factory != null) {
             return factory;
         }
@@ -457,6 +457,8 @@ public class AnalyzerGuru {
         byte[] content = new byte[8];
         int len = in.read(content);
         in.reset();
+
+        /* Need at least 4 bytes to perform magic string matching. */
         if (len < 4) {
             return null;
         }
