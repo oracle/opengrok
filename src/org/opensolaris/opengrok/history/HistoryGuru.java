@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -266,6 +268,23 @@ public final class HistoryGuru {
         }
 
         return false;
+    }
+
+    /**
+     * Get the last modified times for all files and subdirectories in the
+     * specified directory.
+     *
+     * @param directory the directory whose files to check
+     * @return a map from file names to modification times for the files that
+     *   the history cache has information about
+     */
+    public Map<String, Date> getLastModifiedTimes(File directory)
+            throws HistoryException {
+        Repository repository = getRepository(directory);
+        if (repository != null && useCache()) {
+            return historyCache.getLastModifiedTimes(directory, repository);
+        }
+        return Collections.emptyMap();
     }
 
     private void addRepositories(File[] files, Collection<RepositoryInfo> repos,

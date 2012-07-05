@@ -30,9 +30,13 @@ import java.io.Writer;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
 
 /**
@@ -59,13 +63,16 @@ public class DirectoryListing {
      *
      * @param out write destination
      * @param child the file or directory to use for writing the data
+     * @param modTime the time of the last commit that touched {@code child},
+     * or {@code null} if unknown
      * @param dateFormatter the formatter to use for pretty printing dates
      *
      * @throws NullPointerException if a parameter is {@code null}
      */
-    private void PrintDateSize(Writer out, File child, Format dateFormatter)
+    private void PrintDateSize(Writer out, File child, Date modTime,
+                               Format dateFormatter)
             throws IOException {
-        long lastm = child.lastModified();
+        long lastm = modTime == null ? child.lastModified() : modTime.getTime();
 
         out.write("<td>");
         if (now - lastm < 86400000) {
@@ -96,7 +103,8 @@ public class DirectoryListing {
      * @throws NullPointerException if a parameter except <var>files</var>
      *  is {@code null}
      */
-    public List<String> listTo(File dir, Writer out, String path, List<String> files) throws IOException {
+    public List<String> listTo(File dir, Writer out, String path, List<String> files)
+            throws HistoryException, IOException {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<String>();
         int offset = -1;
@@ -122,9 +130,12 @@ public class DirectoryListing {
         if (path.length() != 0) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
             out.write("<b><a href=\"..\">..</a></b></td>");
-            PrintDateSize(out, dir.getParentFile(), dateFormatter);
+            PrintDateSize(out, dir.getParentFile(), null, dateFormatter);
             out.write("</tr>\n");
         }
+
+        Map<String, Date> modTimes =
+                HistoryGuru.getInstance().getLastModifiedTimes(dir);
 
         if (files != null) {
             for (String file : files) {
@@ -152,7 +163,7 @@ public class DirectoryListing {
                     out.write("</a>");
                 }
                 out.write("</td>");
-                PrintDateSize(out, child, dateFormatter);
+                PrintDateSize(out, child, modTimes.get(file), dateFormatter);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, file);
                     if (briefDesc == null) {

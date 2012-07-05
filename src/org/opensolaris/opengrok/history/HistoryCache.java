@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
+import java.util.Date;
+import java.util.Map;
 
 interface HistoryCache {
 
@@ -31,7 +32,7 @@ interface HistoryCache {
      * Create and initialize an empty history cache if one doesn't exist
      * already.
      *
-     * @throws HistoryException if initalization fails
+     * @throws HistoryException if initialization fails
      */
     void initialize() throws HistoryException;
 
@@ -104,6 +105,18 @@ interface HistoryCache {
      */
     String getLatestCachedRevision(Repository repository)
             throws HistoryException;
+
+    /**
+     * Get the last modified times for all files and subdirectories in the
+     * specified directory.
+     *
+     * @param directory which directory to fetch modification times for
+     * @param repository the repository in which the directory lives
+     * @return a map from file names to modification times
+     */
+    Map<String, Date> getLastModifiedTimes(
+            File directory, Repository repository)
+        throws HistoryException;
 
     /**
      * Clear the history cache for a repository.

@@ -35,6 +35,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1155,6 +1156,55 @@ class JDBCHistoryCache implements HistoryCache {
         } finally {
             connectionManager.releaseConnection(conn);
         }
+    }
+
+    @Override
+    public Map<String, Date> getLastModifiedTimes(
+            File directory, Repository repository)
+        throws HistoryException
+    {
+        try {
+            for (int i = 0;; i++) {
+                try {
+                    return getLastModifiedTimesForAllFiles(
+                            directory, repository);
+                } catch (SQLException sqle) {
+                    handleSQLException(sqle, i);
+                }
+            }
+        } catch (SQLException sqle) {
+            throw new HistoryException(sqle);
+        }
+    }
+
+    private static final PreparedQuery GET_LAST_MODIFIED_TIMES =
+            new PreparedQuery(getQuery("getLastModifiedTimes"));
+
+    private Map<String, Date> getLastModifiedTimesForAllFiles(
+            File directory, Repository repository)
+        throws HistoryException, SQLException
+    {
+        final Map<String, Date> map = new HashMap<String, Date>();
+
+        final ConnectionResource conn =
+                connectionManager.getConnectionResource();
+        try {
+            PreparedStatement ps = conn.getStatement(GET_LAST_MODIFIED_TIMES);
+            ps.setString(1, toUnixPath(repository.getDirectoryName()));
+            ps.setString(2, getSourceRootRelativePath(directory));
+            ResultSet rs = ps.executeQuery();
+            try {
+                while (rs.next()) {
+                    map.put(rs.getString(1), rs.getTimestamp(2));
+                }
+            } finally {
+                rs.close();
+            }
+        } finally {
+            connectionManager.releaseConnection(conn);
+        }
+
+        return map;
     }
 
     @Override

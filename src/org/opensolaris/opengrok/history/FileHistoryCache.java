@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -36,6 +35,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -286,6 +287,15 @@ class FileHistoryCache implements HistoryCache {
     @Override
     public String getLatestCachedRevision(Repository repository) {
         return null;
+    }
+
+    @Override
+    public Map<String, Date> getLastModifiedTimes(
+            File directory, Repository repository) {
+        // We don't have a good way to get this information from the file
+        // cache, so leave it to the caller to find a reasonable time to
+        // display (typically the last modified time on the file system).
+        return Collections.emptyMap();
     }
 
     @Override
