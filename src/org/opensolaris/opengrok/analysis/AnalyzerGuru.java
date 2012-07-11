@@ -27,13 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.logging.Level;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
@@ -458,10 +452,15 @@ public class AnalyzerGuru {
         int len = in.read(content);
         in.reset();
 
-        /* Need at least 4 bytes to perform magic string matching. */
-        if (len < 4) {
-            return null;
-        }
+        if (len < 8) {
+            /*
+             * Need at least 4 bytes to perform magic string matching.
+             */
+            if (len < 4) {
+                return null;
+            }
+            content = Arrays.copyOf(content, len);
+         }
 
         FileAnalyzerFactory factory = find(content);
         if (factory != null) {
