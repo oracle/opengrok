@@ -155,6 +155,12 @@ public final class PageConfig {
         data.rev = new String[2];
         data.file = new String[2][];
         data.param = new String[2];
+
+        /*
+         * Basically the request URI looks like this:
+         * http://$site/$webapp/diff/$resourceFile?r1=$fileA@$revA&r2=$fileB@$revB
+	 * The code below extracts file path and revision from the URI.
+         */
         for (int i = 1; i <= 2; i++) {
             String[] tmp = null;
             String p = req.getParameter("r" + i);
@@ -181,7 +187,7 @@ public final class PageConfig {
             BufferedReader br = null;
             try {
                 for (int i = 0; i < 2; i++) {
-                    File f = getResourceFile();
+                    File f = new File(srcRoot + filepath[i]);
                     in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
                     if (in[i] == null) {
                         data.errorMsg = "Unable to get revision " +
