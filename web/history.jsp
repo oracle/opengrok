@@ -133,13 +133,13 @@ document.domReady.push(function() {domReadyHistory();});
                         } else if (count == 1) {
                     %> checked="checked"<%
                         }
-                    %> name="r1" value="<%= rp %>@<%= rev%>"/>
+                    %> name="r1" value="<%= path %>@<%= rev%>"/>
                 <input type="radio"
                     name="r2"<%
                         if (count == 0) {
                     %> checked="checked"<%
                         }
-                    %> value="<%= rp %>@<%= rev %>"/></td><%
+                    %> value="<%= path %>@<%= rev %>"/></td><%
                     } else {
                         striked = true;
                 %>
