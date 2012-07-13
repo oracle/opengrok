@@ -373,7 +373,7 @@ class JDBCHistoryCache implements HistoryCache {
                 try {
                     PreparedStatement ps = conn.getStatement(IS_DIR_IN_CACHE);
                     ps.setString(1, toUnixPath(repository.getDirectoryName()));
-                    ps.setString(2, getRelativePath(file, repository));
+                    ps.setString(2, getSourceRootRelativePath(file));
                     ResultSet rs = ps.executeQuery();
                     try {
                         return rs.next();
@@ -407,19 +407,6 @@ class JDBCHistoryCache implements HistoryCache {
         } catch (IOException ioe) {
             throw new HistoryException(ioe);
         }
-    }
-
-    /**
-     * Get the path of a file relative to the repository root.
-     * @param file the file to get the path for
-     * @param repository the repository
-     * @return relative path for {@code file} with unix file separators
-     */
-    private static String getRelativePath(File file, Repository repository)
-            throws HistoryException {
-        String filePath = toUnixPath(file);
-        String reposPath = toUnixPath(repository.getDirectoryName());
-        return getRelativePath(filePath, reposPath);
     }
 
     /**

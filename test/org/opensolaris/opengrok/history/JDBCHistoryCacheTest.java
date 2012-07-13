@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -298,9 +297,23 @@ public class JDBCHistoryCacheTest extends TestCase {
         assertFalse(cache.hasCacheForDirectory(svnRoot, svnRepos));
 
         // Store history for Subversion repository.
-        cache.store(hgRepos.getHistory(svnRoot), svnRepos);
+        cache.store(svnRepos.getHistory(svnRoot), svnRepos);
         assertTrue(cache.hasCacheForDirectory(hgRoot, hgRepos));
         assertTrue(cache.hasCacheForDirectory(svnRoot, svnRepos));
+
+        // Bug #19230: Test that it works for sub-directories too, not only
+        // for the repository root.
+        assertTrue(
+            cache.hasCacheForDirectory(new File(svnRoot, "c"), svnRepos));
+        assertTrue(
+            cache.hasCacheForDirectory(new File(svnRoot, "lisp"), svnRepos));
+
+        // Also test that we don't claim to have history for a directory
+        // that's not under version control, even if it lives in a version
+        // controlled source tree.
+        File notCheckedIn = new File(svnRoot, "not-checked-in");
+        assertTrue(notCheckedIn.mkdir());
+        assertFalse(cache.hasCacheForDirectory(notCheckedIn, svnRepos));
     }
 
     /**
