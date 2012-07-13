@@ -184,7 +184,7 @@ DefaultInstanceConfiguration()
     EXUBERANT_CTAGS="${EXUBERANT_CTAGS:-`FindExuberantCTags`}"
 
     # OPTIONAL: supply extra command line options to CTags program
-    if [ -n ${OPENGROK_CTAGS_OPTIONS_FILE} ]; then
+    if [ -n "${OPENGROK_CTAGS_OPTIONS_FILE}" ]; then
         CTAGS_OPTIONS_FILE="${OPENGROK_CTAGS_OPTIONS_FILE}"
     elif [ -r "${OPENGROK_INSTANCE_BASE}/etc/ctags.config" ]; then
         CTAGS_OPTIONS_FILE="${OPENGROK_INSTANCE_BASE}/etc/ctags.config"
