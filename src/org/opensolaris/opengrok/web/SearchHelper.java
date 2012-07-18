@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -417,8 +417,11 @@ public class SearchHelper {
      * the used {@link #searcher}).
      */
     public void destroy() {
-        IOUtils.close(searcher);
-        IOUtils.close(searcher.getIndexReader());
+        if (searcher != null) {
+            IOUtils.close(searcher);
+            IOUtils.close(searcher.getIndexReader());
+        }
+
         if (executor != null) {
             try {
                 executor.shutdown();
