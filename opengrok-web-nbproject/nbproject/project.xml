@@ -27,11 +27,11 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.lucene-core-3.6.0.jar}</file>
+                    <file>${file.reference.lucene-core-3.6.1.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.lucene-spellchecker-3.6.0.jar}</file>
+                    <file>${file.reference.lucene-spellchecker-3.6.1.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
             </web-module-libraries>
