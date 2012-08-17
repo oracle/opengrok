@@ -48,7 +48,7 @@ Offical page of the project is on:
       - Ant (1.7 and later)
         http://ant.apache.org/
       - JFlex
-        http://www.jflex.org/
+        http://www.jflex.de/
       - Netbeans (optional, at least 7.1, will need Ant 1.8.1)
         http://netbeans.org/
 
