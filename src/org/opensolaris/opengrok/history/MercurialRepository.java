@@ -54,9 +54,11 @@ public class MercurialRepository extends Repository {
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "hg";
 
-    /** The boolean property and environment variable name to indicate
+    /**
+     * The boolean property and environment variable name to indicate
      * whether forest-extension in Mercurial adds repositories inside the
-     * repositories. */
+     * repositories.
+     */
     public static final String NOFOREST_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.mercurial.disableForest";
 
@@ -97,7 +99,7 @@ public class MercurialRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("log");
-        if ( !file.isDirectory() ) { cmd.add("-f"); }
+        if (!file.isDirectory()) { cmd.add("-f"); }
 
         if (changeset != null) {
             cmd.add("-r");
@@ -300,11 +302,11 @@ public class MercurialRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
-      if (file.isDirectory()) {
-        File f = new File(file, ".hg");
-        return f.exists() && f.isDirectory();
-      }
-      return false;
+        if (file.isDirectory()) {
+            File f = new File(file, ".hg");
+            return f.exists() && f.isDirectory();
+        }
+        return false;
     }
 
     @Override
