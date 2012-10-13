@@ -18,13 +18,13 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.junit.After;
@@ -103,13 +103,15 @@ public class EftarFileTest {
 
     /**
      * Test usage of an EftarFile
-     * @throws java.lang.Exception if an error occurs while accessing the
-     *                             eftar file
+     * @throws IOException if an error occurs while accessing the eftar file
      */
     @Test
-    public void searchEftarFile() throws Exception {
-        assertNotNull("Create from string", new EftarFileReader(eftar.getAbsolutePath()));
-        EftarFileReader er = new EftarFileReader(eftar);
+    public void searchEftarFile() throws IOException {
+        searchEftarFile(new EftarFileReader(eftar));
+        searchEftarFile(new EftarFileReader(eftar.getAbsolutePath()));
+    }
+
+    private void searchEftarFile(EftarFileReader er) throws IOException {
         StringBuilder sb = new StringBuilder();
         StringBuilder match = new StringBuilder();
         match.append("Description ");
