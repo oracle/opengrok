@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -160,19 +160,12 @@ public class Definitions implements Serializable {
     }
 
     public void addTag(int line, String symbol, String type, String text) {
-        // The strings are frequently repeated (a symbol can be used in
-        // multiple definitions, multiple definitions can have the same type,
-        // one line can contain multiple definitions). Intern them to minimize
-        // the space consumed by them (see bug #809).
-        final String internedSymbol = symbol.intern();
-        final String internedType = type.intern();
-        final String internedText = text.intern();
-        Tag new_tag = new Tag(line, internedSymbol, internedType, internedText);
+        Tag new_tag = new Tag(line, symbol, type, text);
         tags.add(new_tag);
-        Set<Integer> lines = symbols.get(internedSymbol);
+        Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {
             lines = new HashSet<Integer>();
-            symbols.put(internedSymbol, lines);
+            symbols.put(symbol, lines);
         }
         Integer aLine = Integer.valueOf(line);
         lines.add(aLine);
@@ -185,10 +178,10 @@ public class Definitions implements Serializable {
         }
 
         // Insert sym->tag map for this line
-        Set<Tag> tags = line_map.sym_tags.get(internedSymbol);
+        Set<Tag> tags = line_map.sym_tags.get(symbol);
         if (tags == null) {
             tags = new HashSet<Tag>();
-            line_map.sym_tags.put(internedSymbol, tags);
+            line_map.sym_tags.put(symbol, tags);
         }
         tags.add(new_tag);
     }

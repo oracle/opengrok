@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.Interner;
 
 /**
  * Provides Ctags by having a running instance of ctags
@@ -233,9 +234,13 @@ public class Ctags {
                     continue;
                 }
 
+                // Bug #809: Keep track of which symbols have already been
+                // seen to prevent duplicating them in memory.
+                final Interner<String> seenSymbols = new Interner<String>();
+
                 final String type =
                         inher == null ? kind : kind + " in " + inher;
-                defs.addTag(Integer.parseInt(lnum), def.trim(), type.trim(), match.trim());
+                addTag(defs, seenSymbols, lnum, def, type, match);
                 if (signature != null) {
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
                     String[] args = signature.split(",");
@@ -249,8 +254,8 @@ public class Ctags {
                             for (String name : names) {
                              if (name.length()>0) {
                               //log.fine("Param Def = "+ string);
-                              defs.addTag(Integer.parseInt(lnum), name.trim(),
-                                    "argument", def.trim() + signature.trim());
+                              addTag(defs, seenSymbols, lnum, name, "argument",
+                                     def.trim() + signature.trim());
                               break;
                              }
                             }
@@ -263,5 +268,18 @@ public class Ctags {
             log.log(Level.WARNING, "CTags parsing problem: ", e);
         }
         log.severe("CTag reader cycle was interrupted!");
+    }
+
+    /**
+     * Add a tag to a {@code Definitions} instance.
+     */
+    private void addTag(Definitions defs, Interner<String> seenSymbols,
+            String lnum, String symbol, String type, String text) {
+        // The strings are frequently repeated (a symbol can be used in
+        // multiple definitions, multiple definitions can have the same type,
+        // one line can contain multiple definitions). Intern them to minimize
+        // the space consumed by them (see bug #809).
+        defs.addTag(Integer.parseInt(lnum), seenSymbols.intern(symbol.trim()),
+            seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()));
     }
 }
