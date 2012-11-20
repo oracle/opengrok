@@ -55,12 +55,22 @@
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
-                <version>3.6.1</version>
+                <version>4.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
-                <artifactId>lucene-spellchecker</artifactId>
-                <version>3.6.1</version>
+                <artifactId>lucene-analyzers-common</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-suggest</artifactId>
+                <version>4.0.0</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -102,7 +112,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <forkMode>always</forkMode>
+			<forkMode>always</forkMode>
+			<argLine>-XX:-UseSplitVerifier</argLine>
                 </configuration>
             </plugin>
             <plugin>

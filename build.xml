@@ -499,7 +499,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
         <mkdir dir="pmd"/>
         <pmd failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
-            <version>java 1.6</version>
+            <version>java 1.7</version>
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
@@ -795,8 +795,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 			javaencoding="UTF-8"
 			uriroot="${build.dir}/src/web"
 			package="${codebase.dot}.jsp"
-			compilersourcevm="1.6"
-			compilertargetvm="1.6"
+			compilersourcevm="1.7"
+			compilertargetvm="1.7"
 			smapsuppressed="false"
 			webxmlfragment="${build.dir}/src/servlets_web.xml"
 			/>
@@ -819,7 +819,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 			deprecation="${deprecation}" classpathref="classpath.jsp"
 			encoding="UTF-8" listfiles="${listfiles}"
 			includeantruntime="false">
-            <compilerarg value="-Xlint:unchecked" compiler="javac1.6"/>
+            <compilerarg value="-Xlint:unchecked" compiler="javac1.7"/>
         </javac>
     </target>
 

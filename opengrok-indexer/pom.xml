@@ -183,7 +183,13 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-spellchecker</artifactId>
+            <artifactId>lucene-analyzers-common</artifactId>
+        </dependency>
+        <dependency>                                                                                                                                                                                     <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+        </dependency>
+        <dependency>                                                                                                                                                                                     <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-suggest</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
