@@ -4,7 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/web-project/3">
             <name>opengrok-web-nbproject</name>
-            <minimum-ant-version>1.7.1</minimum-ant-version>
+            <minimum-ant-version>1.6.5</minimum-ant-version>
             <web-module-libraries>
                 <library dirs="200">
                     <file>${file.reference.ant.jar}</file>
