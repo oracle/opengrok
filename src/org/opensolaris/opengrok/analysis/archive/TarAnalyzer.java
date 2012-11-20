@@ -25,36 +25,32 @@ package org.opensolaris.opengrok.analysis.archive;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.web.Util;
 
 /**
- * Analyzes TAR files
- * Created on September 22, 2005
+ * Analyzes TAR files Created on September 22, 2005
  *
  * @author Chandan
  */
-
 public class TarAnalyzer extends FileAnalyzer {
+
     private final StringBuilder content;
-
-    private static final Reader dummy = new StringReader("");
-
-    private final PlainFullTokenizer plainfull;
+    private PlainFullTokenizer plainfull;
+    TokenStreamComponents tsc_pf;
 
     protected TarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        content = new StringBuilder(64*1024);
-        plainfull = new PlainFullTokenizer(dummy);
+        content = new StringBuilder(64 * 1024);
     }
 
     @Override
@@ -67,22 +63,29 @@ public class TarAnalyzer extends FileAnalyzer {
             content.append(entry.getName()).append('\n');
         }
         content.trimToSize();
-        doc.add(new Field("full",dummy));
+        doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
-        if("full".equals(fieldName)) {
-            char[] cs = new char[content.length()];
-            content.getChars(0, cs.length, cs, 0);
-            plainfull.reInit(cs, cs.length);
-            return plainfull;
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
+        if ("full".equals(fieldName)) {
+            plainfull = new PlainFullTokenizer(reader);
+            plainfull.reInit(content.toString());
+            tsc_pf = new TokenStreamComponents(plainfull) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainfull.reInit(content.toString());
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pf;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to store HTML cross-reference
      */
     @Override

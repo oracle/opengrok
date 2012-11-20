@@ -37,6 +37,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Populate the Mercurial Repositories
+ *
  * @author Trond Norbye
  */
 public final class WebappListener implements ServletContextListener {

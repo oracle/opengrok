@@ -42,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
@@ -58,9 +57,8 @@ import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Getopt;
 
 /**
- * Creates and updates an inverted source index
- * as well as generates Xref, file stats etc., if specified
- * in the options
+ * Creates and updates an inverted source index as well as generates Xref, file
+ * stats etc., if specified in the options
  */
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 public final class Indexer {
@@ -69,10 +67,8 @@ public final class Indexer {
     private static final String OFF = "off";
     private static Indexer index = new Indexer();
     static final Logger log = Logger.getLogger(Indexer.class.getName());
-
     private static final String DERBY_EMBEDDED_DRIVER =
             "org.apache.derby.jdbc.EmbeddedDriver";
-
     private static final String DERBY_CLIENT_DRIVER =
             "org.apache.derby.jdbc.ClientDriver";
 
@@ -82,6 +78,7 @@ public final class Indexer {
 
     /**
      * Program entry point
+     *
      * @param argv argument vector
      */
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
@@ -162,19 +159,18 @@ public final class Indexer {
                         case 'c':
                             cfg.setCtags(getopt.getOptarg());
                             break;
-                        case 'w':
-                             {
-                                String webapp = getopt.getOptarg();
-                                if (webapp.charAt(0) != '/' && !webapp.startsWith("http")) {
-                                    webapp = "/" + webapp;
-                                }
-                                if (webapp.endsWith("/")) {
-                                    cfg.setUrlPrefix(webapp + "s?");
-                                } else {
-                                    cfg.setUrlPrefix(webapp + "/s?");
-                                }
+                        case 'w': {
+                            String webapp = getopt.getOptarg();
+                            if (webapp.charAt(0) != '/' && !webapp.startsWith("http")) {
+                                webapp = "/" + webapp;
                             }
-                            break;
+                            if (webapp.endsWith("/")) {
+                                cfg.setUrlPrefix(webapp + "s?");
+                            } else {
+                                cfg.setUrlPrefix(webapp + "/s?");
+                            }
+                        }
+                        break;
                         case 'W':
                             configFilename = getopt.getOptarg();
                             break;
@@ -213,49 +209,47 @@ public final class Indexer {
                         case 'u':
                             databaseURL = getopt.getOptarg();
                             break;
-                        case 'r':
-                            {
-                                if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                    cfg.setRemoteScmSupported(true);
-                                } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                    cfg.setRemoteScmSupported(false);
-                                } else {
-                                    System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
-                                    System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
-                                    System.err.println("           \"-r off\" will ignore SCM for remote systems");
-                                }
+                        case 'r': {
+                            if (getopt.getOptarg().equalsIgnoreCase(ON)) {
+                                cfg.setRemoteScmSupported(true);
+                            } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
+                                cfg.setRemoteScmSupported(false);
+                            } else {
+                                System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
+                                System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
+                                System.err.println("           \"-r off\" will ignore SCM for remote systems");
                             }
-                            break;
+                        }
+                        break;
                         case 'o':
                             String CTagsExtraOptionsFile = getopt.getOptarg();
                             File CTagsFile = new File(CTagsExtraOptionsFile);
                             if (!(CTagsFile.isFile() && CTagsFile.canRead())) {
-                                System.err.println("ERROR: File '" +
-                                    CTagsExtraOptionsFile +
-                                    "' not found for the -o option");
+                                System.err.println("ERROR: File '"
+                                        + CTagsExtraOptionsFile
+                                        + "' not found for the -o option");
                                 System.exit(1);
                             }
-                            System.err.println("INFO: file with extra " +
-                               "options for ctags: " + CTagsExtraOptionsFile);
+                            System.err.println("INFO: file with extra "
+                                    + "options for ctags: " + CTagsExtraOptionsFile);
                             cfg.setCTagsExtraOptionsFile(CTagsExtraOptionsFile);
                             break;
-                        case 'O':
-                            {
-                                boolean oldval = cfg.isOptimizeDatabase();
-                                if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                    cfg.setOptimizeDatabase(true);
-                                } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                    cfg.setOptimizeDatabase(false);
-                                } else {
-                                    System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -O");
-                                    System.err.println("       Ex: \"-O on\" will optimize the database as part of the index generation");
-                                    System.err.println("           \"-O off\" disable optimization of the index database");
-                                }
-                                if (oldval != cfg.isOptimizeDatabase()) {
-                                    optimizedChanged = true;
-                                }
+                        case 'O': {
+                            boolean oldval = cfg.isOptimizeDatabase();
+                            if (getopt.getOptarg().equalsIgnoreCase(ON)) {
+                                cfg.setOptimizeDatabase(true);
+                            } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
+                                cfg.setOptimizeDatabase(false);
+                            } else {
+                                System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -O");
+                                System.err.println("       Ex: \"-O on\" will optimize the database as part of the index generation");
+                                System.err.println("           \"-O off\" disable optimization of the index database");
                             }
-                            break;
+                            if (oldval != cfg.isOptimizeDatabase()) {
+                                optimizedChanged = true;
+                            }
+                        }
+                        break;
                         case 'v':
                             cfg.setVerbose(true);
                             OpenGrokLogger.setOGConsoleLogLevel(Level.INFO);
@@ -264,8 +258,7 @@ public final class Indexer {
                             cfg.setPrintProgress(true);
                             break;
 
-                        case 's':
-                        {
+                        case 's': {
                             File sourceRoot = new File(getopt.getOptarg());
                             if (!sourceRoot.isDirectory()) {
                                 System.err.println("ERROR: Source root must be a directory");
@@ -274,8 +267,7 @@ public final class Indexer {
                             cfg.setSourceRoot(sourceRoot.getCanonicalPath());
                             break;
                         }
-                        case 'd':
-                        {
+                        case 'd': {
                             File dataRoot = new File(getopt.getOptarg());
                             if (!dataRoot.exists() && !dataRoot.mkdirs()) {
                                 System.err.println("ERROR: Cannot create data root");
@@ -332,35 +324,34 @@ public final class Indexer {
 
                             break;
 
-                        case 'A':
-                             {
-                                String[] arg = getopt.getOptarg().split(":");
-                                if (arg.length != 2) {
-                                    System.err.println("ERROR: You must specify: -A extension:class");
-                                    System.err.println("       Ex: -A foo:org.opensolaris.opengrok.analysis.c.CAnalyzer");
-                                    System.err.println("           will use the C analyzer for all files ending with .foo");
-                                    System.err.println("       Ex: -A c:-");
-                                    System.err.println("           will disable the c-analyzer for for all files ending with .c");
-                                    System.exit(1);
-                                }
-
-                                arg[0] = arg[0].substring(arg[0].lastIndexOf('.') + 1).toUpperCase();
-                                if (arg[1].equals("-")) {
-                                    AnalyzerGuru.addExtension(arg[0], null);
-                                    break;
-                                }
-
-                                try {
-                                    AnalyzerGuru.addExtension(
-                                            arg[0],
-                                            AnalyzerGuru.findFactory(arg[1]));
-                                } catch (Exception e) {
-                                    log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
-                                    log.log(Level.SEVERE, "Stack: ",e.fillInStackTrace());
-                                    System.exit(1);
-                                }
+                        case 'A': {
+                            String[] arg = getopt.getOptarg().split(":");
+                            if (arg.length != 2) {
+                                System.err.println("ERROR: You must specify: -A extension:class");
+                                System.err.println("       Ex: -A foo:org.opensolaris.opengrok.analysis.c.CAnalyzer");
+                                System.err.println("           will use the C analyzer for all files ending with .foo");
+                                System.err.println("       Ex: -A c:-");
+                                System.err.println("           will disable the c-analyzer for for all files ending with .c");
+                                System.exit(1);
                             }
-                            break;
+
+                            arg[0] = arg[0].substring(arg[0].lastIndexOf('.') + 1).toUpperCase();
+                            if (arg[1].equals("-")) {
+                                AnalyzerGuru.addExtension(arg[0], null);
+                                break;
+                            }
+
+                            try {
+                                AnalyzerGuru.addExtension(
+                                        arg[0],
+                                        AnalyzerGuru.findFactory(arg[1]));
+                            } catch (Exception e) {
+                                log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
+                                log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
+                                System.exit(1);
+                            }
+                        }
+                        break;
                         case 'L':
                             cfg.setWebappLAF(getopt.getOptarg());
                             break;
@@ -427,14 +418,14 @@ public final class Indexer {
                 }
 
                 List<Class<? extends Repository>> repositoryClasses =
-                    RepositoryFactory.getRepositoryClasses();
+                        RepositoryFactory.getRepositoryClasses();
                 for (Class<? extends Repository> clazz : repositoryClasses) {
                     try {
                         Field f = clazz.getDeclaredField("CMD_PROPERTY_KEY");
                         Object key = f.get(null);
                         if (key != null) {
                             cfg.setRepoCmd(clazz.getCanonicalName(),
-                                System.getProperty(key.toString()));
+                                    System.getProperty(key.toString()));
                         }
                     } catch (Exception e) {
                         // don't care
@@ -450,8 +441,10 @@ public final class Indexer {
 
                 //logging starts here
                 if (cfg.isVerbose()) {
-                  String fn=LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
-                  if (fn!=null) {System.out.println("Logging filehandler pattern: "+fn);}
+                    String fn = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
+                    if (fn != null) {
+                        System.out.println("Logging filehandler pattern: " + fn);
+                    }
                 }
 
                 if (cfg.isHistoryCacheInDB()) {
@@ -557,14 +550,14 @@ public final class Indexer {
         }
 
         if (searchRepositories || listRepoPathes || !zapCache.isEmpty()) {
-            log.log(Level.INFO,"Scanning for repositories...");
+            log.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
             long time = (System.currentTimeMillis() - start) / 1000;
             log.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
             if (listRepoPathes || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
-                String prefix =  env.getSourceRootPath();
+                String prefix = env.getSourceRootPath();
                 if (listRepoPathes) {
                     if (repos.isEmpty()) {
                         System.out.println("No repositories found.");
@@ -593,14 +586,13 @@ public final class Indexer {
                         toZap.clear();
                         for (RepositoryInfo info : env.getRepositories()) {
                             toZap.add(info.getDirectoryName()
-                                .substring(prefix.length()));
+                                    .substring(prefix.length()));
                         }
                     }
                     try {
                         HistoryGuru.getInstance().removeCache(toZap);
                     } catch (HistoryException e) {
-                        log.warning("Clearing history cache faild: "
-                            + e.getLocalizedMessage());
+                        log.log(Level.WARNING, "Clearing history cache failed: {0}", e.getLocalizedMessage());
                     }
                 }
                 return;
@@ -642,7 +634,6 @@ public final class Indexer {
 
             // The projects should be sorted...
             Collections.sort(projects, new Comparator<Project>() {
-
                 @Override
                 public int compare(Project p1, Project p2) {
                     String s1 = p1.getDescription();
@@ -740,7 +731,6 @@ public final class Indexer {
                 final boolean optimize = env.isOptimizeDatabase();
                 db.addIndexChangedListener(progress);
                 executor.submit(new Runnable() {
-
                     @Override
                     public void run() {
                         try {
@@ -751,8 +741,8 @@ public final class Indexer {
                             }
                         } catch (Throwable e) {
                             log.log(Level.SEVERE, "An error occured while "
-                                + (update ? "updating" : "optimizing")
-                                + " index", e);
+                                    + (update ? "updating" : "optimizing")
+                                    + " index", e);
                         }
                     }
                 });
@@ -763,11 +753,11 @@ public final class Indexer {
         while (!executor.isTerminated()) {
             try {
                 // Wait forever
-                executor.awaitTermination(999,TimeUnit.DAYS);
+                executor.awaitTermination(999, TimeUnit.DAYS);
             } catch (InterruptedException exp) {
                 log.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
-       }
+        }
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
@@ -779,7 +769,7 @@ public final class Indexer {
                     InetAddress host = InetAddress.getByName(cfg[0]);
                     RuntimeEnvironment.getInstance().writeConfiguration(host, Integer.parseInt(cfg[1]));
                 } catch (Exception ex) {
-                    log.log(Level.SEVERE, "Failed to send configuration to " + configHost+" (is web application server running with opengrok deployed?)", ex);
+                    log.log(Level.SEVERE, "Failed to send configuration to " + configHost + " (is web application server running with opengrok deployed?)", ex);
                 }
             } else {
                 log.severe("Syntax error: ");

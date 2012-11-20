@@ -22,11 +22,7 @@
  */
 
 package org.opensolaris.opengrok.analysis.php;
-import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.web.Util;
 import java.util.*;
 
 %%
@@ -39,6 +35,7 @@ super(in);
 %init}
 %type boolean
 %eofval{
+this.finalOffset=zzEndRead;
 return false;
 %eofval}
 %char

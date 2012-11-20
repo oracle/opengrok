@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.search.context;
 
 import java.io.ByteArrayInputStream;
@@ -32,8 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.After;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -41,13 +41,13 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.w3c.dom.Document;
-import static org.junit.Assert.*;
 
 public class ContextTest {
+
     /**
      * The value returned by {@link RuntimeEnvironment#isQuickContextScan()}
-     * before the test is run. Will be used to restore the flag after each
-     * test case.
+     * before the test is run. Will be used to restore the flag after each test
+     * case.
      */
     private boolean savedQuickContextScanFlag;
 
@@ -118,8 +118,8 @@ public class ContextTest {
      * Helper method for testing various paths through the getContext() method.
      *
      * @param limit true if limited, quick context scan should be used
-     * @param hitList true if output should be written to a list instead of
-     * a writer
+     * @param hitList true if output should be written to a list instead of a
+     * writer
      */
     private void testGetContext(boolean limit, boolean hitList)
             throws ParseException {
@@ -139,10 +139,10 @@ public class ContextTest {
             assertEquals("1", hits.get(0).getLineno());
         }
 
-        String expectedOutput = hitList ?
-            "abc <b>def</b> ghi" :
-            "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> " +
-                     "abc <b>def</b> ghi</a><br/>";
+        String expectedOutput = hitList
+                ? "abc <b>def</b> ghi"
+                : "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
+                + "abc <b>def</b> ghi</a><br/>";
 
         String actualOutput = hitList ? hits.get(0).getLine() : out.toString();
 
@@ -163,10 +163,10 @@ public class ContextTest {
             assertEquals("1", hits.get(0).getLineno());
         }
 
-        expectedOutput = hitList ?
-            "abc <b>def</b> ghi" :
-            "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> " +
-                     "abc <b>def</b> ghi</a> <i> type</i> <br/>";
+        expectedOutput = hitList
+                ? "abc <b>def</b> ghi"
+                : "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
+                + "abc <b>def</b> ghi</a> <i> type</i> <br/>";
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
 
@@ -183,10 +183,10 @@ public class ContextTest {
             assertEquals("1", hits.get(0).getLineno());
         }
 
-        expectedOutput = hitList ?
-            "text" :
-            "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> " +
-                     "text</a> <i>type</i><br/>";
+        expectedOutput = hitList
+                ? "text"
+                : "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
+                + "text</a> <i>type</i><br/>";
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
 
@@ -218,10 +218,9 @@ public class ContextTest {
     }
 
     /**
-     * Test that we don't get an {@code ArrayIndexOutOfBoundsException} when
-     * a long (&gt;100 characters) line which contains a match is not
-     * terminated with a newline character before the buffer boundary.
-     * Bug #383.
+     * Test that we don't get an {@code ArrayIndexOutOfBoundsException} when a
+     * long (&gt;100 characters) line which contains a match is not terminated
+     * with a newline character before the buffer boundary. Bug #383.
      */
     @Test
     public void testLongLineNearBufferBoundary() throws ParseException {
@@ -229,8 +228,8 @@ public class ContextTest {
         Arrays.fill(chars, 'a');
         char[] substring = " this is a test ".toCharArray();
         System.arraycopy(substring, 0,
-                         chars, Context.MAXFILEREAD - substring.length,
-                         substring.length);
+                chars, Context.MAXFILEREAD - substring.length,
+                substring.length);
         Reader in = new CharArrayReader(chars);
         QueryBuilder qb = new QueryBuilder().setFreetext("test");
         Context c = new Context(qb.build(), qb.getQueries());
@@ -240,13 +239,13 @@ public class ContextTest {
         assertTrue("No match found", match);
         String s = out.toString();
         assertTrue("Match not written to Writer",
-                   s.contains(" this is a <b>test</b>"));
+                s.contains(" this is a <b>test</b>"));
         assertTrue("No match on line #1", s.contains("href=\"#1\""));
     }
 
     /**
-     * Test that we get the [all...] link if a very long line crosses the
-     * buffer boundary. Bug 383.
+     * Test that we get the [all...] link if a very long line crosses the buffer
+     * boundary. Bug 383.
      */
     @Test
     public void testAllLinkWithLongLines() throws ParseException {
@@ -271,8 +270,8 @@ public class ContextTest {
     }
 
     /**
-     * Test that a line with more than 100 characters after the first match
-     * is truncated, and that &hellip; is appended to show that the line is
+     * Test that a line with more than 100 characters after the first match is
+     * truncated, and that &hellip; is appended to show that the line is
      * truncated. Bug 383.
      */
     @Test
@@ -300,8 +299,8 @@ public class ContextTest {
     }
 
     /**
-     * Test that valid HTML is generated for a match that spans multiple
-     * lines. It used to nest the tags incorrectly. Bug #15632.
+     * Test that valid HTML is generated for a match that spans multiple lines.
+     * It used to nest the tags incorrectly. Bug #15632.
      */
     @Test
     public void testMultiLineMatch() throws Exception {
@@ -345,8 +344,8 @@ public class ContextTest {
     }
 
     /**
-     * Verify that the matching lines are shown in their original form and
-     * not lower-cased (bug #16848).
+     * Verify that the matching lines are shown in their original form and not
+     * lower-cased (bug #16848).
      */
     @Test
     public void bug16848() throws Exception {
@@ -355,9 +354,9 @@ public class ContextTest {
         QueryBuilder qb = new QueryBuilder().setFreetext("mixed");
         Context c = new Context(qb.build(), qb.getQueries());
         assertTrue(c.getContext(in, out, "", "", "", null, false, null));
-        assertEquals("<a class=\"s\" href=\"#0\"><span class=\"l\">0</span> " +
-                        "<b>Mixed</b> case: abc AbC dEf</a><br/>",
-                     out.toString());
+        assertEquals("<a class=\"s\" href=\"#0\"><span class=\"l\">0</span> "
+                + "<b>Mixed</b> case: abc AbC dEf</a><br/>",
+                out.toString());
     }
 
     /**
@@ -367,15 +366,15 @@ public class ContextTest {
     public void bug17582() throws Exception {
         // Freetext search should match regardless of case
         bug17582(new QueryBuilder().setFreetext("Bug17582"),
-                new int[] {2, 3}, new String[] {"type1", "type2"});
+                new int[]{2, 3}, new String[]{"type1", "type2"});
 
         // Defs search should only match if case matches
         bug17582(new QueryBuilder().setDefs("Bug17582"),
-                new int[] {3}, new String[] {"type2"});
+                new int[]{3}, new String[]{"type2"});
 
         // Refs search should only match if case matches
         bug17582(new QueryBuilder().setRefs("Bug17582"),
-                new int[] {3}, new String[] {"type2"});
+                new int[]{3}, new String[]{"type2"});
 
         // Path search shouldn't match anything in source
         bug17582(new QueryBuilder().setPath("Bug17582"),
@@ -384,12 +383,12 @@ public class ContextTest {
         // Refs should only match if case matches, but freetext will match
         // regardless of case
         bug17582(new QueryBuilder().setRefs("Bug17582").setFreetext("Bug17582"),
-                new int[] {2, 3}, new String[] {"type1", "type2"});
+                new int[]{2, 3}, new String[]{"type1", "type2"});
 
         // Refs should only match if case matches, hist shouldn't match
         // anything in source
         bug17582(new QueryBuilder().setRefs("Bug17582").setHist("bug17582"),
-                new int[] {3}, new String[] {"type2"});
+                new int[]{3}, new String[]{"type2"});
     }
 
     /**

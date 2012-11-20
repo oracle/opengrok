@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
@@ -120,6 +121,10 @@ public final class Configuration {
      * Get the default tab size (number of space characters per tab character)
      * to use for each project. If {@code <= 0} tabs are read/write as is.
      *
+     *
+     *
+
+     *
      * @return current tab size set.
      * @see Project#getTabSize()
      * @see org.opensolaris.opengrok.analysis.ExpandTabsReader
@@ -131,6 +136,10 @@ public final class Configuration {
     /**
      * Set the default tab size (number of space characters per tab character)
      * to use for each project. If {@code <= 0} tabs are read/write as is.
+     *
+     *
+     *
+
      *
      * @param tabSize tabsize to set.
      * @see Project#setTabSize(int)
@@ -186,6 +195,8 @@ public final class Configuration {
         setAllowedSymlinks(new HashSet<String>());
         //setTabSize(4);
         cmds = new HashMap<String, String>();
+        setSourceRoot(null);
+        setDataRoot(null);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -543,7 +554,7 @@ public final class Configuration {
         try {
             fin = new FileReader(file);
             input = new BufferedReader(fin);
-            String line = null;
+            String line;
             StringBuilder contents = new StringBuilder();
             String EOL = System.getProperty("line.separator");
             while ((line = input.readLine()) != null) {
@@ -555,7 +566,7 @@ public final class Configuration {
              * should usually not happen
              */
         } catch (java.io.IOException e) {
-            logger.warning("failed to read header include file: " + e.getMessage());
+            logger.log(Level.WARNING, "failed to read header include file: {0}", e.getMessage());
         } finally {
             if (input != null) {
                 try {

@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis.sql;
 
 import java.io.IOException;
@@ -34,7 +33,7 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class SQLAnalyzer extends PlainAnalyzer {
 
-    private final SQLXref xref = new SQLXref((Reader)null);
+    private final SQLXref xref = new SQLXref((Reader) null);
 
     public SQLAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
@@ -42,8 +41,10 @@ public class SQLAnalyzer extends PlainAnalyzer {
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to write HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.project = project;
@@ -52,8 +53,8 @@ public class SQLAnalyzer extends PlainAnalyzer {
     }
 
     /**
-     * Write a cross referenced HTML file. Reads the source from
-     * an input stream.
+     * Write a cross referenced HTML file. Reads the source from an input
+     * stream.
      *
      * @param in input source
      * @param out output xref writer

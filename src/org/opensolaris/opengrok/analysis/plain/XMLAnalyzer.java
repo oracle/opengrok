@@ -24,13 +24,12 @@ package org.opensolaris.opengrok.analysis.plain;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.Arrays;
-
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
@@ -38,8 +37,7 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
- * Analyzes HTML files
- * Created on September 30, 2005
+ * Analyzes HTML files Created on September 30, 2005
  *
  * @author Chandan
  */
@@ -47,9 +45,7 @@ public class XMLAnalyzer extends TextAnalyzer {
 
     private char[] content;
     private int len;
-    private final PlainFullTokenizer plainfull;
-    private final XMLXref xref;
-    private static final Reader dummy = new StringReader("");
+    private final XMLXref xref = new XMLXref(AnalyzerGuru.dummyR);
 
     /**
      * Creates a new instance of XMLAnalyzer
@@ -58,41 +54,49 @@ public class XMLAnalyzer extends TextAnalyzer {
         super(factory);
         content = new char[64 * 1024];
         len = 0;
-        plainfull = new PlainFullTokenizer(dummy);
-        xref = new XMLXref(dummy);
     }
 
     @Override
     public void analyze(Document doc, Reader in) throws IOException {
         len = 0;
-        do{
+        do {
             int rbytes = in.read(content, len, content.length - len);
-            if(rbytes > 0 ) {
-                if(rbytes == (content.length - len)) {
+            if (rbytes > 0) {
+                if (rbytes == (content.length - len)) {
                     content = Arrays.copyOf(content, content.length * 2);
                 }
                 len += rbytes;
             } else {
                 break;
             }
-        } while(true);
+        } while (true);
 
-        doc.add(new Field("full", dummy));
+        doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
     }
-    
+
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
+            final PlainFullTokenizer plainfull = new PlainFullTokenizer(AnalyzerGuru.dummyR);
             plainfull.reInit(content, len);
-            return plainfull;
+            TokenStreamComponents tsc_pf = new TokenStreamComponents(plainfull) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainfull.reInit(content, len);
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pf;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to write HTML cross-reference
      */
+    @Override
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.project = project;
@@ -101,6 +105,7 @@ public class XMLAnalyzer extends TextAnalyzer {
 
     /**
      * Write a cross referenced HTML file reads the source from in
+     *
      * @param in Input source
      * @param out Output xref writer
      * @param defs definitions for the file (could be null)

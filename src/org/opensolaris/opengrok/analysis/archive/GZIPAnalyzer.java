@@ -29,7 +29,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -39,13 +38,14 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 /**
- * Analyzes GZip files
- * Created on September 22, 2005
+ * Analyzes GZip files Created on September 22, 2005
  *
  * @author Chandan
  */
 public class GZIPAnalyzer extends FileAnalyzer {
+
     private Genre g;
+
     @Override
     public Genre getGenre() {
         if (g != null) {
@@ -57,22 +57,23 @@ public class GZIPAnalyzer extends FileAnalyzer {
     protected GZIPAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
-
     private FileAnalyzer fa;
 
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
         BufferedInputStream gzis = new BufferedInputStream(new GZIPInputStream(in));
         String path = doc.get("path");
-        if (path != null &&
-                (path.endsWith(".gz") || path.endsWith(".GZ") || path.endsWith(".Gz"))) {
+        if (path != null
+                && (path.endsWith(".gz") || path.endsWith(".GZ") || path.endsWith(".Gz"))) {
             String newname = path.substring(0, path.length() - 3);
             //System.err.println("GZIPPED OF = " + newname);
             fa = AnalyzerGuru.getAnalyzer(gzis, newname);
             if (fa == null) {
                 this.g = Genre.DATA;
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Did not analyze {0}, detected as data.", newname);
+                //TODO we could probably wrap tar analyzer here, need to do research on reader coming from gzis ...
             } else { // cant recurse!
+                //simple file gziped case captured here
                 if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
                     this.g = Genre.XREFABLE;
                 } else {
@@ -82,25 +83,25 @@ public class GZIPAnalyzer extends FileAnalyzer {
                 if (doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
-                        doc.add(new Field("t", g.typeName(), Field.Store.YES,
-                            Field.Index.NOT_ANALYZED));
+                        doc.add(new Field("t", g.typeName(), AnalyzerGuru.string_ft_stored_nanalyzed_norms));
                     }
                 }
-                return;
+
             }
         }
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if (fa != null) {
-            return fa.overridableTokenStream(fieldName, reader);
+            return fa.createComponents(fieldName, reader);
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to store HTML cross-reference
      */
     @Override

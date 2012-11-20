@@ -22,40 +22,61 @@
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.io.IOException;
 import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 
 public class CompatibleAnalyser extends Analyzer {
-    PathAnalyzer pather;
-    HistoryAnalyzer historer;
 
     public CompatibleAnalyser() {
-        historer = new HistoryAnalyzer();
-        pather  = new PathAnalyzer();
+        super(new Analyzer.PerFieldReuseStrategy());
     }
 
     @Override
-    public final TokenStream tokenStream(String fieldName, Reader reader) {
+    protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
-            return new PlainFullTokenizer(reader);
+            final PlainFullTokenizer plainfull = new PlainFullTokenizer(reader);
+            TokenStreamComponents tsc_pf = new TokenStreamComponents(plainfull) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainfull.reInit(reader);
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pf;
         } else if ("refs".equals(fieldName)) {
-            return new PlainSymbolTokenizer(reader);
+            final PlainSymbolTokenizer plainref = new PlainSymbolTokenizer(reader);
+            TokenStreamComponents tsc_pr = new TokenStreamComponents(plainref) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainref.reInit(reader);
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pr;
         } else if ("defs".equals(fieldName)) {
-            return new PlainSymbolTokenizer(reader);
-        } else if ("path".equals(fieldName) || "project".equals(fieldName)) {
-            return pather.tokenStream(fieldName, reader);
+            final PlainSymbolTokenizer plaindef = new PlainSymbolTokenizer(reader);
+            TokenStreamComponents tsc_pd = new TokenStreamComponents(plaindef) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plaindef.reInit(reader);
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pd;
+        } else if ("path".equals(fieldName)) {
+            final PathTokenizer pathtokenizer = new PathTokenizer(reader);
+            TokenStreamComponents tsc_path = new TokenStreamComponents(pathtokenizer);
+            return tsc_path;
+        } else if ("project".equals(fieldName)) {
+            final PathTokenizer projecttokenizer = new PathTokenizer(reader);
+            TokenStreamComponents tsc_project = new TokenStreamComponents(projecttokenizer);
+            return tsc_project;
         } else if ("hist".equals(fieldName)) {
-            return historer.tokenStream(fieldName, reader);
+            return new HistoryAnalyzer().createComponents(fieldName, reader);
         }
-        return new PlainFullTokenizer(reader);
-    }
-    
-    @Override
-    public final TokenStream reusableTokenStream(String fieldName, Reader reader) {
-        //TODO needs refactoring to get more speed and less ram usage for indexer
-        return this.tokenStream(fieldName, reader);
+        return new TokenStreamComponents(new PlainFullTokenizer(reader));
     }
 }

@@ -18,12 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.Locale;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
@@ -37,6 +35,7 @@ super(in);
 %init}
 %type boolean
 %eofval{
+this.finalOffset=zzEndRead;
 return false;
 %eofval}
 %caseless
@@ -52,5 +51,4 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 {Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
                         setAttribs(yytext().toLowerCase(Locale.getDefault()), yychar, yychar + yylength());
                         return true; }
-<<EOF>>   { return false;}
 .|\n    {}

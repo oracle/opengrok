@@ -16,6 +16,7 @@ import static org.junit.Assert.*;
 
 /**
  * Tests the {@link PhpSymbolTokenizer} class.
+ *
  * @author Gustavo Lopes
  */
 public class PhpSymbolTokenizerTest {
@@ -33,8 +34,7 @@ public class PhpSymbolTokenizerTest {
 
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<String>();
-        JFlexTokenizer ts = (JFlexTokenizer)
-                this.analyzer.overridableTokenStream("refs", null);
+        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs", r).getTokenStream();
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {

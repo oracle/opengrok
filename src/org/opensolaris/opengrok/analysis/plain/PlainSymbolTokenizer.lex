@@ -18,12 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
-import java.io.IOException;
-import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %%
 %public
@@ -35,6 +33,7 @@ super(in);
 %init}
 %type boolean
 %eofval{
+this.finalOffset=zzEndRead;
 return false;
 %eofval}
 %char
@@ -43,5 +42,4 @@ return false;
 //TODO decide if we should let one char symbols
 [a-zA-Z_] [a-zA-Z0-9_]+ {setAttribs(yytext(), yychar, yychar + yylength());
                         return true; }
-<<EOF>>   { return false;}
 .|\n    {}

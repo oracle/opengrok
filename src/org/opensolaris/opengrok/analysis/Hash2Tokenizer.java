@@ -22,25 +22,39 @@
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.io.Reader;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-public final class Hash2TokenStream extends TokenStream {
+public final class Hash2Tokenizer extends Tokenizer {
     int i=0;
     String term;
     String terms[];
     Iterator<String> keys;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    private int finalOffset;
 
-    public Hash2TokenStream(Set<String> symbols){
+    public Hash2Tokenizer(Reader reader){
+        super(reader);
+        keys=new HashSet<String>().iterator();
+    }
+    
+    public Hash2Tokenizer(Set<String> symbols){
+        super(AnalyzerGuru.dummyR);
+        keys=symbols.iterator();
+    }
+    
+    public void reInit(Set<String> symbols) {
         keys = symbols.iterator();
     }
 
     @Override
     public final boolean incrementToken() throws java.io.IOException {
-        while (i <= 0) {
+        clearAttributes();
+        while (i <= 0) {            
             if (keys.hasNext()) {
                 term = keys.next();
                 terms = term.split("[^a-zA-Z_0-9]+");
@@ -55,14 +69,9 @@ public final class Hash2TokenStream extends TokenStream {
             }
             return false;
         }
-
+        finalOffset=0;
         termAtt.setEmpty();
         termAtt.append(terms[--i]);
         return true;
-    }
-
-    @Override
-    public void close() {
-        // Nothing to close
     }
 }

@@ -50,9 +50,8 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.List2TokenStream;
@@ -61,8 +60,7 @@ import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
- * Ananlyzes Java Class files
- * Created on September 23, 2005
+ * Analyzes Java Class files Created on September 23, 2005
  *
  * @author Chandan
  * @author Lubos Kosco , January 2010 , updated bcel, comment on thread safety
@@ -71,7 +69,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
     private final String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
 
-    /** Creates a new instance of JavaClassAnalyzer
+    /**
+     * Creates a new instance of JavaClassAnalyzer
+     *
      * @param factory The factory that creates JavaClassAnalyzers
      */
     protected JavaClassAnalyzer(FileAnalyzerFactory factory) {
@@ -103,25 +103,32 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
         String constants = out.toString();
 
-        doc.add(new Field("defs", new List2TokenStream(defs)));
-        doc.add(new Field("refs", new List2TokenStream(refs)));
-        doc.add(new Field("full", new StringReader(xref)));
-        doc.add(new Field("full", new StringReader(constants)));
+        doc.add(new TextField("defs", new List2TokenStream(defs)));
+        doc.add(new TextField("refs", new List2TokenStream(refs)));
+        doc.add(new TextField("full", new StringReader(xref)));
+        doc.add(new TextField("full", new StringReader(constants)));
     }
 
     public String getXref() {
         return xref;
     }
-
     private int[] v;
     private ConstantPool cp;
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
-            return new PlainFullTokenizer(new TagFilter(reader));
+            final PlainFullTokenizer plainfull = new PlainFullTokenizer(new TagFilter(reader));
+            TokenStreamComponents tc = new TokenStreamComponents(plainfull) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainfull.reInit(new TagFilter(reader)); //TODO could be improved, lucene has xhtml parsers/readers
+                    super.setReader(reader);
+                }
+            };
+            return tc;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     protected String linkPath(String path) {
@@ -152,7 +159,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         refs.add(t);
 
         out.write('\n');
-        String aflg = null;
+        String aflg;
         out.write(aflg = Utility.accessToString(c.getAccessFlags(), true));
         if (aflg != null) {
             out.write(' ');
@@ -209,7 +216,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             defs.add(t);
             refs.add(t);
             out.write('\n');
-        // @TODO show Attributes
+            // @TODO show Attributes
         }
 
         for (org.apache.bcel.classfile.Method m : c.getMethods()) {
@@ -284,6 +291,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to write HTML cross-reference
      */
     @Override

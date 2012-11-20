@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -36,11 +36,12 @@ public class PathTokenizer extends Tokenizer {
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
     public PathTokenizer(Reader input) {
-        super(input);
+        super(input);        
     }
-
+                
     @Override
     public final boolean incrementToken() throws java.io.IOException {
+        clearAttributes();
         if (dot) {
             dot = false;
             termAtt.copyBuffer(ADOT,0,1);

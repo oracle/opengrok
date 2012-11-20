@@ -24,15 +24,11 @@ package org.opensolaris.opengrok.analysis.java;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
-
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
+import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -40,57 +36,22 @@ import org.opensolaris.opengrok.history.Annotation;
  *
  * @author Martin Englund
  */
-public class JavaAnalyzer extends PlainAnalyzer {
+public class JavaAnalyzer extends AbstractSourceCodeAnalyzer {
 
-    JavaSymbolTokenizer cref;
-    JavaXref xref;
-    Reader dummy = new StringReader("");
+    private final JavaSymbolTokenizer jref = new JavaSymbolTokenizer(AnalyzerGuru.dummyR);
+    ;
+    private final JavaXref xref = new JavaXref(AnalyzerGuru.dummyR);
 
-    /** Creates a new instance of JavaAnalyzer */
+    /**
+     * Creates a new instance of JavaAnalyzer
+     */
     protected JavaAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        cref = new JavaSymbolTokenizer(dummy);
-        xref = new JavaXref(dummy);
+        super.setAnalyzers(jref, xref);
     }
 
-    @Override
-    public void analyze(Document doc, Reader in) throws IOException {
-        super.analyze(doc, in);
-        doc.add(new Field("refs", dummy));
-    }
-
-    @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {        
-        if("refs".equals(fieldName)) {
-            cref.reInit(super.content, super.len);
-            return cref;
-        }
-        return super.overridableTokenStream(fieldName, reader);
-    }
-
-    /**
-     * Write a cross referenced HTML file.
-     * @param out Writer to write HTML cross-reference
-     */
-    public void writeXref(Writer out) throws IOException {
-        xref.reInit(content, len);
-        xref.setDefs(defs);
-        xref.project = project;
-        xref.write(out);
-    }
-
-    /**
-     * Write a cross referenced HTML file reads the source from in
-     * @param in Input source
-     * @param out Output xref writer
-     * @param defs definitions for the file (could be null)
-     * @param annotation annotation for the file (could be null)
-     */
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
         JavaXref xref = new JavaXref(in);
-        xref.annotation = annotation;
-        xref.project = project;
-        xref.setDefs(defs);
-        xref.write(out);
+        AbstractSourceCodeAnalyzer.writeXref(xref, in, out, defs, annotation, project);
     }
 }

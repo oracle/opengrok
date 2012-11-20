@@ -24,23 +24,23 @@ package org.opensolaris.opengrok.analysis.plain;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.Arrays;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.TextField;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.Hash2TokenStream;
+import org.opensolaris.opengrok.analysis.Hash2Tokenizer;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
- * Analyzer for plain text files
- * Created on September 21, 2005
+ * Analyzer for plain text files Created on September 21, 2005
  *
  * @author Chandan
  */
@@ -48,20 +48,16 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     protected char[] content;
     protected int len;
-    private final PlainFullTokenizer plainfull;
-    private final PlainSymbolTokenizer plainref;
-    private final PlainXref xref;
-    private static final Reader dummy = new StringReader(" ");
+    protected PlainXref xref = new PlainXref((Reader) null);
     protected Definitions defs;
 
-    /** Creates a new instance of PlainAnalyzer */
+    /**
+     * Creates a new instance of PlainAnalyzer
+     */
     protected PlainAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
         content = new char[64 * 1024];
         len = 0;
-        plainfull = new PlainFullTokenizer(dummy);
-        plainref = new PlainSymbolTokenizer(dummy);
-        xref = new PlainXref((Reader) null);
     }
 
     @Override
@@ -82,35 +78,61 @@ public class PlainAnalyzer extends TextAnalyzer {
             }
         } while (true);
 
-        doc.add(new Field("full", dummy));
+        doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
         String fullpath;
         if ((fullpath = doc.get("fullpath")) != null && ctags != null) {
             defs = ctags.doCtags(fullpath + "\n");
             if (defs != null && defs.numberOfSymbols() > 0) {
-                doc.add(new Field("defs", dummy));
-                doc.add(new Field("refs", dummy)); //@FIXME adding a refs field only if it has defs?
+                doc.add(new Field("defs", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
+                doc.add(new Field("refs", AnalyzerGuru.dummyS, TextField.TYPE_STORED)); //@FIXME adding a refs field only if it has defs?
                 byte[] tags = defs.serialize();
-                doc.add(new Field("tags", tags));
+                doc.add(new StoredField("tags", tags));
             }
         }
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
+            final PlainFullTokenizer plainfull = new PlainFullTokenizer(AnalyzerGuru.dummyR);
             plainfull.reInit(content, len);
-            return plainfull;
+            TokenStreamComponents tsc_pf = new TokenStreamComponents(plainfull) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainfull.reInit(content, len);
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pf;
         } else if ("refs".equals(fieldName)) {
+            final PlainSymbolTokenizer plainref = new PlainSymbolTokenizer(AnalyzerGuru.dummyR);
             plainref.reInit(content, len);
-            return plainref;
+            TokenStreamComponents tsc_pr = new TokenStreamComponents(plainref) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainref.reInit(content, len);
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pr;
         } else if ("defs".equals(fieldName)) {
-            return new Hash2TokenStream(defs.getSymbols());
+            final Hash2Tokenizer hash2Tokenizer = new Hash2Tokenizer(AnalyzerGuru.dummyR);
+            hash2Tokenizer.reInit(defs.getSymbols());
+            TokenStreamComponents tsc_h2t = new TokenStreamComponents(hash2Tokenizer) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    hash2Tokenizer.reInit(defs.getSymbols());
+                    super.setReader(reader);
+                }
+            };
+            return tsc_h2t;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to write HTML cross-reference
      */
     @Override
@@ -122,6 +144,7 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     /**
      * Write a cross referenced HTML file reads the source from in
+     *
      * @param in Input source
      * @param out Output xref writer
      * @param defs definitions for the file (could be null)

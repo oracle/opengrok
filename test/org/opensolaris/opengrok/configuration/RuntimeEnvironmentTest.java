@@ -32,12 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.history.RepositoryInfo;
-import static org.junit.Assert.*;
 
 /**
  * Test the RuntimeEnvironment class

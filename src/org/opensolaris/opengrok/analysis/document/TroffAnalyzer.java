@@ -26,12 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.Arrays;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
+import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -39,25 +39,22 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
- * Analyzes [tn]roff files
- * Created on September 30, 2005
+ * Analyzes [tn]roff files Created on September 30, 2005
  *
  * @author Chandan
  */
 public class TroffAnalyzer extends FileAnalyzer {
+
     private char[] content;
     private int len;
-
-    private final TroffFullTokenizer troffull;
     private final TroffXref xref;
-    Reader dummy = new StringReader("");
+
     /**
      * Creates a new instance of TroffAnalyzer
      */
     protected TroffAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        troffull = new TroffFullTokenizer(dummy);
-        xref = new TroffXref(dummy);
+        xref = new TroffXref(AnalyzerGuru.dummyR);
         content = new char[12 * 1024];
     }
 
@@ -67,7 +64,7 @@ public class TroffAnalyzer extends FileAnalyzer {
         do {
             InputStreamReader inReader = new InputStreamReader(in);
             int rbytes = inReader.read(content, len, content.length - len);
-            if (rbytes > 0 ) {
+            if (rbytes > 0) {
                 if (rbytes == (content.length - len)) {
                     content = Arrays.copyOf(content, content.length * 2);
                 }
@@ -75,22 +72,31 @@ public class TroffAnalyzer extends FileAnalyzer {
             } else {
                 break;
             }
-        } while(true);
+        } while (true);
 
-        doc.add(new Field("full", new StringReader("")));
+        doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
+            final TroffFullTokenizer troffull = new TroffFullTokenizer(reader);
             troffull.reInit(content, len);
-            return troffull;
+            TokenStreamComponents tc = new TokenStreamComponents(troffull) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    troffull.reInit(content, len);
+                    super.setReader(reader);
+                }
+            };
+            return tc;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to write HTML cross-reference
      */
     @Override
@@ -104,6 +110,7 @@ public class TroffAnalyzer extends FileAnalyzer {
 
     /**
      * Write a cross referenced HTML file reads the source from in
+     *
      * @param in Input source
      * @param out Output xref writer
      * @param defs definitions for the file (could be null)

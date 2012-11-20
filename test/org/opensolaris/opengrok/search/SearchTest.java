@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.search;
 
 import java.io.ByteArrayOutputStream;
@@ -29,6 +28,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,7 +36,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.Indexer;
 import org.opensolaris.opengrok.index.IndexerTest;
 import org.opensolaris.opengrok.util.TestRepository;
-import static org.junit.Assert.*;
 
 /**
  * Basic testing of the Search class
@@ -143,7 +142,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main~"}));
         assertTrue(instance.search());
-        assertEquals("Search for main~ in testdata sources",8, instance.results.size());
+        assertEquals("Search for main~ in testdata sources", 8, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main troff\"~5"}));
         assertTrue(instance.search());
@@ -151,7 +150,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "Main OR main"}));
         assertTrue(instance.search());
-        assertEquals("Search for Main OR main in testdata sources",8, instance.results.size());
+        assertEquals("Search for Main OR main in testdata sources", 8, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main file\""}));
         assertTrue(instance.search());
@@ -159,7 +158,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "+main -file"}));
         assertTrue(instance.search());
-        assertEquals("search for main but not file",8, instance.results.size());
+        assertEquals("search for main but not file", 8, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main AND (file OR field)"}));
         assertTrue(instance.search());

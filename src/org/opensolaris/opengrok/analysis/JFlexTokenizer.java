@@ -18,14 +18,14 @@
  */
 
 /*
- * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.Stack;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -33,26 +33,27 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
 /**
- * this class was created because of lucene 2.4.1 update which introduced char[] in Tokens instead of String
- * lucene 3.0.0 uses AttributeSource instead of Tokens to make things even easier :-D
- * lucene 3.5.0 CharTermAttribute will be used
  *
- * Generally this is a "template" for all new Tokenizers, so be carefull when changing it,
- * it will impact almost ALL symbol tokenizers in OpenGrok ...
+ * Generally this is a "template" for all new Tokenizers, so be carefull when
+ * changing it, it will impact almost ALL symbol tokenizers in OpenGrok ...
  *
  * Created on August 24, 2009
+ *
  * @author Lubos Kosco
  */
-
 public abstract class JFlexTokenizer extends Tokenizer {
 
     protected Stack<Integer> stack = new Stack<Integer>();
 
     // default jflex scanner methods and variables
     abstract public boolean yylex() throws IOException;
+
     abstract public void yyreset(Reader reader);
+
     abstract public void yyclose() throws IOException;
+
     abstract public void yybegin(int newState);
+
     abstract public int yystate();
 
     public JFlexTokenizer(java.io.Reader input) {
@@ -66,20 +67,35 @@ public abstract class JFlexTokenizer extends Tokenizer {
      * @param length the number of characters to use from the char buffer
      */
     public final void reInit(char[] contents, int length) {
-        yyreset(new CharArrayReader(contents, 0, length));
+        this.yyreset(new CharArrayReader(contents, 0, length));
+    }
+
+    public final void reInit(String s) {
+        this.yyreset(new StringReader(s));
+    }
+
+    /**
+     * Reinitialize the tokenizer with new reader.
+     *
+     * @param reader new reader for this tokenizer
+     */
+    public final void reInit(Reader reader) {
+        this.yyreset(reader);
     }
 
     @Override
     public final void close() throws IOException {
-        yyclose();
+        this.yyclose();
     }
-
-    protected CharTermAttribute termAtt= addAttribute(CharTermAttribute.class);
-    protected OffsetAttribute offsetAtt= addAttribute(OffsetAttribute.class);
-    protected PositionIncrementAttribute posIncrAtt= addAttribute(PositionIncrementAttribute.class);
+    protected CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    protected OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
+    protected PositionIncrementAttribute posIncrAtt = addAttribute(PositionIncrementAttribute.class);
+    protected int finalOffset;
 
     /**
-     * This will reinitalize internal AttributeImpls, or it returns false if end of input Reader ...
+     * This will re-initalize internal AttributeImpls, or it returns false if
+     * end of input Reader ...
+     *
      * @return false if no more tokens, otherwise true
      * @throws java.io.IOException
      */
@@ -89,9 +105,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
     }
 
     protected void setAttribs(String str, int start, int end) {
+        clearAttributes();
         //FIXME increasing below by one(default) might be tricky, need more analysis
-        // after lucene upgrade to 3.5 below is most probably not even needed
-        this.posIncrAtt.setPositionIncrement(1);
+        // after lucene upgrade to 3.5 below is most probably not even needed        
+        this.posIncrAtt.setPositionIncrement(1);        
         this.termAtt.setEmpty();
         this.termAtt.append(str);
         this.offsetAtt.setOffset(start, end);
@@ -99,10 +116,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     public void yypush(int newState) {
         this.stack.push(yystate());
-        yybegin(newState);
+        this.yybegin(newState);
     }
 
     public void yypop() {
-        yybegin(this.stack.pop());
+        this.yybegin(this.stack.pop());
     }
 }

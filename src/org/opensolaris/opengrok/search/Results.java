@@ -37,10 +37,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
-
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -57,27 +56,27 @@ import org.opensolaris.opengrok.web.Util;
  * @author Chandan slightly rewritten by Lubos Kosco
  */
 public final class Results {
+
     private Results() {
         // Util class, should not be constructed
     }
 
     /**
      * Create a has map keyed by the directory of the document found.
-     * @param searcher  searcher to use.
-     * @param hits      hits produced by the given searcher's search
-     * @param startIdx  the index of the first hit to check
-     * @param stopIdx   the index of the last hit to check
+     *
+     * @param searcher searcher to use.
+     * @param hits hits produced by the given searcher's search
+     * @param startIdx the index of the first hit to check
+     * @param stopIdx the index of the last hit to check
      * @return a (directory, hitDocument) hashmap
      * @throws CorruptIndexException
      * @throws IOException
      */
-    private static Map<String, ArrayList<Document>>
-        createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
-    throws CorruptIndexException, IOException
-    {
+    private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
+            throws CorruptIndexException, IOException {
         LinkedHashMap<String, ArrayList<Document>> dirHash =
-            new LinkedHashMap<String, ArrayList<Document>>();
-        for (int i = startIdx; i < stopIdx; i++ ) {
+                new LinkedHashMap<String, ArrayList<Document>>();
+        for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
             Document doc = searcher.doc(docId);
             String rpath = doc.get("path");
@@ -113,7 +112,7 @@ public final class Results {
             return new String(content, 0, len);
         } catch (Exception e) {
             OpenGrokLogger.getLogger().log(
-                Level.WARNING, "An error reading tags from " + basedir + path
+                    Level.WARNING, "An error reading tags from " + basedir + path
                     + (compressed ? ".gz" : ""), e);
         } finally {
             IOUtils.close(r);
@@ -126,19 +125,16 @@ public final class Results {
 
     /**
      * Prints out results in html form. The following search helper fields are
-     * required to be properly initialized:
-     * <ul>
+     * required to be properly initialized: <ul>
      * <li>{@link SearchHelper#dataRoot}</li>
      * <li>{@link SearchHelper#contextPath}</li>
-     * <li>{@link SearchHelper#searcher}</li>
-     * <li>{@link SearchHelper#hits}</li>
+     * <li>{@link SearchHelper#searcher}</li> <li>{@link SearchHelper#hits}</li>
      * <li>{@link SearchHelper#historyContext} (ignored if {@code null})</li>
      * <li>{@link SearchHelper#sourceContext} (ignored if {@code null})</li>
-     * <li>{@link SearchHelper#summerizer} (if sourceContext is not {@code null})</li>
-     * <li>{@link SearchHelper#compressed} (if sourceContext is not {@code null})</li>
-     * <li>{@link SearchHelper#sourceRoot} (if sourceContext or historyContext
-     *  is not {@code null})</li>
-     * </ul>
+     * <li>{@link SearchHelper#summerizer} (if sourceContext is not
+     * {@code null})</li> <li>{@link SearchHelper#compressed} (if sourceContext
+     * is not {@code null})</li> <li>{@link SearchHelper#sourceRoot} (if
+     * sourceContext or historyContext is not {@code null})</li> </ul>
      *
      * @param out write destination
      * @param sh search helper which has all required fields set
@@ -149,9 +145,8 @@ public final class Results {
      * @throws ClassNotFoundException
      */
     public static void prettyPrint(Writer out, SearchHelper sh, int start,
-        int end)
-    throws HistoryException, IOException, ClassNotFoundException
-    {
+            int end)
+            throws HistoryException, IOException, ClassNotFoundException {
         String ctxE = Util.URIEncodePath(sh.contextPath);
         String xrefPrefix = sh.contextPath + Prefix.XREF_P;
         String morePrefix = sh.contextPath + Prefix.MORE_P;
@@ -161,8 +156,7 @@ public final class Results {
         File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
 
         for (Map.Entry<String, ArrayList<Document>> entry :
-                createMap(sh.searcher, sh.hits, start, end).entrySet())
-        {
+                createMap(sh.searcher, sh.hits, start, end).entrySet()) {
             String parent = entry.getKey();
             out.write("<tr class=\"dir\"><td colspan=\"3\"><a href=\"");
             out.write(xrefPrefixE);
@@ -199,9 +193,9 @@ public final class Results {
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
                     Definitions tags = null;
-                    Fieldable tagsField = doc.getFieldable("tags");
+                    IndexableField tagsField = doc.getField("tags");
                     if (tagsField != null) {
-                        tags = Definitions.deserialize(tagsField.getBinaryValue());
+                        tags = Definitions.deserialize(tagsField.binaryValue().bytes);
                     }
                     if (Genre.XREFABLE == genre && sh.summerizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
@@ -214,15 +208,15 @@ public final class Results {
                         out.write(sh.summerizer.getSummary(htags).toString());
                     } else {
                         FileReader r = genre == Genre.PLAIN
-                            ? new FileReader(new File(sh.sourceRoot, rpath))
-                            : null;
+                                ? new FileReader(new File(sh.sourceRoot, rpath))
+                                : null;
                         sh.sourceContext.getContext(r, out, xrefPrefix,
-                            morePrefix, rpath, tags, true, null);
+                                morePrefix, rpath, tags, true, null);
                     }
                 }
                 if (sh.historyContext != null) {
                     sh.historyContext.getContext(new File(sh.sourceRoot, rpath),
-                        rpath, out, sh.contextPath);
+                            rpath, out, sh.contextPath);
                 }
                 out.write("</tt></td></tr>\n");
             }

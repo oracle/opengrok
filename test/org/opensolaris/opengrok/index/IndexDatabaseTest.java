@@ -20,23 +20,23 @@
 /*
  * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
 import java.util.ArrayList;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
-import static org.junit.Assert.*;
 
 /**
  * Unit tests for the {@code IndexDatabase} class.
  */
 public class IndexDatabaseTest {
+
     private static TestRepository repository;
 
     public IndexDatabaseTest() {
@@ -84,5 +84,4 @@ public class IndexDatabaseTest {
         Definitions defs2 = IndexDatabase.getDefinitions(f2);
         assertNull(defs2);
     }
-
 }

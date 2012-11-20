@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -36,7 +36,8 @@ import java.util.logging.Level;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -55,12 +56,12 @@ import org.opensolaris.opengrok.search.SearchEngine;
  * implement their own HistoryReader!)
  *
  * @author Chandan
- * @author Lubos Kosco update for lucene 3.0.0
+ * @author Lubos Kosco update for lucene 4.0.0
  */
 public class DirectoryHistoryReader {
 
     private final Map<Date, Map<String, Map<String, SortedSet<String>>>> hash =
-        new LinkedHashMap<Date, Map<String, Map<String, SortedSet<String>>>>();
+            new LinkedHashMap<Date, Map<String, Map<String, SortedSet<String>>>>();
     Iterator<Date> diter;
     Date idate;
     Iterator<String> aiter;
@@ -72,10 +73,10 @@ public class DirectoryHistoryReader {
 
     public DirectoryHistoryReader(String path) throws IOException {
         //TODO can we introduce paging here ???  this class is used just for rss.jsp !
-        int hitsPerPage=RuntimeEnvironment.getInstance().getHitsPerPage();
-        int cachePages=RuntimeEnvironment.getInstance().getCachePages();
+        int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
+        int cachePages = RuntimeEnvironment.getInstance().getCachePages();
         IndexReader ireader = null;
-        IndexSearcher searcher = null;
+        IndexSearcher searcher;
         try {
             String src_root = RuntimeEnvironment.getInstance().getSourceRootPath();
             ireader = IndexDatabase.getIndexReader(path);
@@ -83,17 +84,17 @@ public class DirectoryHistoryReader {
                 throw new IOException("Could not locate index database");
             }
             searcher = new IndexSearcher(ireader);
-            SortField sfield=new SortField("date",SortField.STRING, true);
+            SortField sfield = new SortField("date", SortField.Type.STRING, true);
             Sort sort = new Sort(sfield);
-            QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION,"path", new CompatibleAnalyser());
-            Query query = null;
+            QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION, "path", new CompatibleAnalyser());
+            Query query;
             ScoreDoc[] hits = null;
             try {
                 query = qparser.parse(path);
-                TopFieldDocs fdocs=searcher.search(query, null,hitsPerPage*cachePages, sort);
-                fdocs=searcher.search(query, null,fdocs.totalHits, sort);
+                TopFieldDocs fdocs = searcher.search(query, null, hitsPerPage * cachePages, sort);
+                fdocs = searcher.search(query, null, fdocs.totalHits, sort);
                 hits = fdocs.scoreDocs;
-            } catch (org.apache.lucene.queryParser.ParseException e) {
+            } catch (ParseException e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while parsing search query", e);
             }
             if (hits != null) {
@@ -138,13 +139,6 @@ public class DirectoryHistoryReader {
 
             history = new History(entries);
         } finally {
-            if (searcher != null) {
-                try {
-                    searcher.close();
-                } catch (Exception ex) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing searcher", ex);
-                }
-            }
             if (ireader != null) {
                 try {
                     ireader.close();

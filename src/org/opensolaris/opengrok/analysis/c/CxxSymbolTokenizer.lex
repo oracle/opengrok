@@ -18,12 +18,10 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.c;
-import java.io.IOException;
-import java.io.Reader;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 
@@ -77,6 +75,6 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
-<<EOF>>   { return false;}
+<<EOF>>   { this.finalOffset =  zzEndRead; return false;}
 .|\n    {}
 }

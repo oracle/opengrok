@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -40,11 +40,24 @@ import org.apache.lucene.search.Query;
  * the different fields.
  */
 public class QueryBuilder {
-    static final String FULL = "full";
-    static final String DEFS = "defs";
-    static final String REFS = "refs";
-    static final String PATH = "path";
-    static final String HIST = "hist";
+
+    /**
+     * Fields we use in lucene public ones
+     */
+    public static final String FULL = "full";
+    public static final String DEFS = "defs";
+    public static final String REFS = "refs";
+    public static final String PATH = "path";
+    public static final String HIST = "hist";
+    /**
+     * Fields we use in lucene internal ones
+     */
+    public static final String U = "u";
+    public static final String TAGS = "tags";
+    public static final String T = "t";
+    public static final String FULLPATH = "fullpath";
+    public static final String PROJECT = "project";
+    public static final String DATE = "date";
     /**
      * A map containing the query text for each field. (We use a sorted map here
      * only because we have tests that check the generated query string. If we
@@ -55,14 +68,17 @@ public class QueryBuilder {
 
     /**
      * Set search string for the "full" field.
+     *
      * @param freetext query string to set
      * @return this instance
      */
     public QueryBuilder setFreetext(String freetext) {
         return addQueryText(FULL, freetext);
     }
+
     /**
      * Get search string for the "full" field.
+     *
      * @return {@code null} if not set, the query string otherwise.
      */
     public String getFreetext() {
@@ -71,14 +87,17 @@ public class QueryBuilder {
 
     /**
      * Set search string for the "defs" field.
+     *
      * @param defs query string to set
      * @return this instance
      */
     public QueryBuilder setDefs(String defs) {
         return addQueryText(DEFS, defs);
     }
+
     /**
      * Get search string for the "full" field.
+     *
      * @return {@code null} if not set, the query string otherwise.
      */
     public String getDefs() {
@@ -87,29 +106,36 @@ public class QueryBuilder {
 
     /**
      * Set search string for the "refs" field.
+     *
      * @param refs query string to set
      * @return this instance
      */
     public QueryBuilder setRefs(String refs) {
         return addQueryText(REFS, refs);
     }
+
     /**
      * Get search string for the "refs" field.
+     *
      * @return {@code null} if not set, the query string otherwise.
      */
     public String getRefs() {
         return getQueryText(REFS);
     }
 
-    /** Set search string for the "path" field.
+    /**
+     * Set search string for the "path" field.
+     *
      * @param path query string to set
      * @return this instance
      */
     public QueryBuilder setPath(String path) {
         return addQueryText(PATH, path);
     }
+
     /**
      * Get search string for the "path" field.
+     *
      * @return {@code null} if not set, the query string otherwise.
      */
     public String getPath() {
@@ -118,14 +144,17 @@ public class QueryBuilder {
 
     /**
      * Set search string for the "hist" field.
+     *
      * @param hist query string to set
      * @return this instance
      */
     public QueryBuilder setHist(String hist) {
         return addQueryText(HIST, hist);
     }
+
     /**
      * Get search string for the "hist" field.
+     *
      * @return {@code null} if not set, the query string otherwise.
      */
     public String getHist() {
@@ -133,8 +162,9 @@ public class QueryBuilder {
     }
 
     /**
-     * Get a map containing the query text for each of the fields that have
-     * been set.
+     * Get a map containing the query text for each of the fields that have been
+     * set.
+     *
      * @return a possible empty map.
      */
     public Map<String, String> getQueries() {
@@ -143,6 +173,7 @@ public class QueryBuilder {
 
     /**
      * Get the number of query fields set.
+     *
      * @return the current number of fields with a none-empty query string.
      */
     public int getSize() {
@@ -154,7 +185,7 @@ public class QueryBuilder {
      * builder.
      *
      * @return a query, or {@code null} if no query text is available.
-     * @throws ParseException  if the query text cannot be parsed
+     * @throws ParseException if the query text cannot be parsed
      */
     public Query build() throws ParseException {
         if (queries.isEmpty()) {
@@ -190,8 +221,7 @@ public class QueryBuilder {
             if (query instanceof BooleanQuery) {
                 BooleanQuery boolQuery = (BooleanQuery) query;
                 if (hasClause(boolQuery, Occur.SHOULD)
-                    && !hasClause(boolQuery, Occur.MUST))
-                {
+                        && !hasClause(boolQuery, Occur.MUST)) {
                     combinedQuery.add(query, Occur.MUST);
                 } else {
                     for (BooleanClause clause : boolQuery) {
@@ -234,12 +264,12 @@ public class QueryBuilder {
      */
     private String escapeQueryString(String field, String query) {
         return FULL.equals(field)
-            // The free text field may contain terms qualified with other
-            // field names, so we don't escape single colons.
-            ? query.replace("::", "\\:\\:")
-            // Other fields shouldn't use qualified terms, so escape colons
-            // so that we can search for them.
-            : query.replace(":", "\\:");
+                // The free text field may contain terms qualified with other
+                // field names, so we don't escape single colons.
+                ? query.replace("::", "\\:\\:")
+                // Other fields shouldn't use qualified terms, so escape colons
+                // so that we can search for them.
+                : query.replace(":", "\\:");
     }
 
     /**
@@ -248,11 +278,10 @@ public class QueryBuilder {
      * @param field the field to build the query against
      * @param queryText the query text
      * @return a parsed query
-     * @throws ParseException   if the query text cannot be parsed
+     * @throws ParseException if the query text cannot be parsed
      */
     private Query buildQuery(String field, String queryText)
-        throws ParseException
-    {
+            throws ParseException {
         return new CustomQueryParser(field).parse(queryText);
     }
 

@@ -144,10 +144,15 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     <available file="JFlex.jar" type="file" property="JFlex.present">
         <filepath refid="lib.search.path"/>
-    </available>
+    </available>    
     <fail unless="JFlex.present" message="Please download JFlex (http://jflex.de/) and put JFlex.jar it into ./lib directory (or in ant classpath)."/>
 
-    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path"/>    
+    <target name="download-jflex" unless="JFlex.present">
+        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/1.4.3/jflex-1.4.3.jar"
+        dest="lib/JFlex.jar" verbose="true" usetimestamp="true"/>        
+    </target>    
+
+    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path" />    
     <target name="jflex">
         <mkdir dir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
@@ -237,7 +242,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
         
     <property name="coverage.dir" value="${basedir}/coverage"/>
-    <target name="-pre-compile" depends="jrcs,jflex,download-lucene"/>
+    <target name="-pre-compile" depends="jrcs,download-jflex,jflex,download-lucene"/>
 	<target name="eclipse" depends="-pre-compile" 
 		description="satisfy eclipse dependencies"/>
     <target name="-post-clean">
@@ -249,7 +254,9 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     
     <target name="clean-lib" depends="init">
         <delete file="${file.reference.lucene-core.jar}"/>
-        <delete file="${file.reference.lucene-spellchecker.jar}"/>        
+        <delete file="${file.reference.lucene-analyzers-common.jar}"/>
+        <delete file="${file.reference.lucene-queryparser.jar}"/>
+        <delete file="${file.reference.lucene-suggest.jar}"/>
     </target>
 
     <!--
@@ -311,15 +318,23 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <target name="-check-lucene" description="Check that lucene jar files are present">
         <available file="${lucene-core.jar}" type="file" property="lucene-core.jar.present">
             <filepath refid="plainlib.search.path"/>
-        </available>        
-        <available file="${lucene-spellchecker.jar}" type="file" property="lucene-spellchecker.jar.present">
+        </available> 
+        <available file="${lucene-analyzers-common.jar}" type="file" property="lucene-analyzers-common.jar.present">
             <filepath refid="plainlib.search.path"/>
-        </available>        
+        </available> 
+        <available file="${lucene-queryparser.jar}" type="file" property="lucene-queryparser.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available> 
+        <available file="${lucene-suggest.jar}" type="file" property="lucene-suggest.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>         
         <condition property="lucene_not_downloaded">
             <not>
             <and>
                 <isset property="lucene-core.jar.present"/>
-                <isset property="lucene-spellchecker.jar.present"/>
+                <isset property="lucene-analyzers-common.jar.present"/>
+                <isset property="lucene-queryparser.jar.present"/>
+                <isset property="lucene-suggest.jar.present"/>
              </and>
              </not>
         </condition>         
@@ -328,8 +343,12 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <target name="download-lucene" depends="-check-lucene" if="lucene_not_downloaded">
         <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
         dest="lib/${lucene-core.jar}" verbose="true" usetimestamp="true"/>
-        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-spellchecker/${lucene.version}/${lucene-spellchecker.jar}"
-        dest="lib/${lucene-spellchecker.jar}" verbose="true" usetimestamp="true"/>
+        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common/${lucene.version}/${lucene-analyzers-common.jar}"
+        dest="lib/${lucene-analyzers-common.jar}" verbose="true" usetimestamp="true"/>
+        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-queryparser/${lucene.version}/${lucene-queryparser.jar}"
+        dest="lib/${lucene-queryparser.jar}" verbose="true" usetimestamp="true"/>
+        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-suggest/${lucene.version}/${lucene-suggest.jar}"
+        dest="lib/${lucene-suggest.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.tools.bzip2.CBZip2InputStream;
@@ -36,12 +35,12 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 /**
- * Analyzes a BZip2 file
- * Created on September 22, 2005
+ * Analyzes a BZip2 file Created on September 22, 2005
  *
  * @author Chandan
  */
 public class BZip2Analyzer extends FileAnalyzer {
+
     private Genre g;
 
     @Override
@@ -55,7 +54,6 @@ public class BZip2Analyzer extends FileAnalyzer {
     protected BZip2Analyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
-
     private FileAnalyzer fa;
 
     @Override
@@ -68,26 +66,24 @@ public class BZip2Analyzer extends FileAnalyzer {
         }
         BufferedInputStream gzis = new BufferedInputStream(new CBZip2InputStream(in));
         String path = doc.get("path");
-        if(path != null &&
-            (path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))
-            ) {
+        if (path != null
+                && (path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))) {
             String newname = path.substring(0, path.lastIndexOf('.'));
             //System.err.println("BZIPPED OF = " + newname);
             fa = AnalyzerGuru.getAnalyzer(gzis, newname);
             if (fa instanceof BZip2Analyzer) {
                 fa = null;
             } else {
-                if(fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
+                if (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE) {
                     this.g = Genre.XREFABLE;
                 } else {
                     this.g = Genre.DATA;
                 }
                 fa.analyze(doc, gzis);
-                if(doc.get("t") != null) {
+                if (doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
-                        doc.add(new Field("t", g.typeName(), Field.Store.YES,
-                            Field.Index.NOT_ANALYZED));
+                        doc.add(new Field("t", g.typeName(), AnalyzerGuru.string_ft_stored_nanalyzed_norms));
                     }
                 }
             }
@@ -95,15 +91,16 @@ public class BZip2Analyzer extends FileAnalyzer {
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if (fa != null) {
-            return fa.overridableTokenStream(fieldName, reader);
+            return fa.createComponents(fieldName, reader);
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to store HTML cross-reference
      */
     @Override

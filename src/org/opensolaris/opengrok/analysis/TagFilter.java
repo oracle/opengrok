@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -34,6 +33,7 @@ import java.util.Map;
  * @author Chandan
  */
 public class TagFilter extends FilterReader {
+
     private boolean pass;
     private int esc;
     private boolean p;
@@ -48,15 +48,16 @@ public class TagFilter extends FilterReader {
         esctag = new char[10];
         escs = new HashMap<String, Character>();
         escs.put("&gt", Character.valueOf('>'));
-        escs.put("&lt",  Character.valueOf('<'));
-        escs.put("&amp",  Character.valueOf('&'));
+        escs.put("&lt", Character.valueOf('<'));
+        escs.put("&amp", Character.valueOf('&'));
     }
 
+    @Override
     public final int read(char[] buf, int start, int len) throws java.io.IOException {
-        int n=0;
+        int n = 0;
         int pos = start;
         int c;
-        while((c = this.read()) > -1 && n <= len && pos < buf.length) {
+        while ((c = this.read()) > -1 && n <= len && pos < buf.length) {
             buf[pos++] = (char) c;
             n++;
         }
@@ -75,15 +76,15 @@ public class TagFilter extends FilterReader {
             } else if (c == '>') {
                 pass = true;
                 c = ' ';
-            } else if(pass && c == '&') {
+            } else if (pass && c == '&') {
                 esc = 0;
             }
-            boolean sp =  isSpace(c);
-            if(esc >= 0) {
-                if(c == ';') {
-                    Character ec = escs.get(new String(esctag,0,esc));
+            boolean sp = isSpace(c);
+            if (esc >= 0) {
+                if (c == ';') {
+                    Character ec = escs.get(new String(esctag, 0, esc));
                     esc = -1;
-                    if(ec == null) {
+                    if (ec == null) {
                         p = true;
                         return ' ';
                     }
@@ -92,8 +93,8 @@ public class TagFilter extends FilterReader {
                 } else if (sp) {
                     esc = -1;
                 } else {
-                    if(esc < 10) {
-                        esctag[esc++] = (char)c;
+                    if (esc < 10) {
+                        esctag[esc++] = (char) c;
                     } else {
                         esc = -1;
                     }
@@ -107,12 +108,11 @@ public class TagFilter extends FilterReader {
     }
 
     public static boolean isSpace(int ch) {
-        return (ch <= 0x0020) &&
-                (((((1L << 0x0009) |
-                (1L << 0x000A) |
-                (1L << 0x000C) |
-                (1L << 0x000D) |
-                (1L << 0x0020)) >> ch) & 1L) != 0);
+        return (ch <= 0x0020)
+                && (((((1L << 0x0009)
+                | (1L << 0x000A)
+                | (1L << 0x000C)
+                | (1L << 0x000D)
+                | (1L << 0x0020)) >> ch) & 1L) != 0);
     }
-
 }

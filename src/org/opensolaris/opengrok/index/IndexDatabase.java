@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.index;
 
 import java.io.BufferedInputStream;
@@ -40,10 +39,9 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.*;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
@@ -53,6 +51,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
+import org.apache.lucene.util.BytesRef;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -71,7 +70,7 @@ import org.opensolaris.opengrok.web.Util;
  * one index database per project.
  *
  * @author Trond Norbye
- * @author Lubos Kosco , update for lucene 3.0.0
+ * @author Lubos Kosco , update for lucene 4.0.0
  */
 public class IndexDatabase {
 
@@ -79,7 +78,7 @@ public class IndexDatabase {
     private FSDirectory indexDirectory;
     private FSDirectory spellDirectory;
     private IndexWriter writer;
-    private TermEnum uidIter;
+    private TermsEnum uidIter;
     private IgnoredNames ignoredNames;
     private Filter includedNames;
     private AnalyzerGuru analyzerGuru;
@@ -96,8 +95,8 @@ public class IndexDatabase {
     private LockFactory lockfact;
 
     /**
-     * Create a new instance of the Index Database. Use this constructor if
-     * you don't use any projects
+     * Create a new instance of the Index Database. Use this constructor if you
+     * don't use any projects
      *
      * @throws java.io.IOException if an error occurs while creating directories
      */
@@ -107,8 +106,10 @@ public class IndexDatabase {
 
     /**
      * Create a new instance of an Index Database for a given project
+     *
      * @param project the project to create the database for
-     * @throws java.io.IOException if an errror occurs while creating directories
+     * @throws java.io.IOException if an errror occurs while creating
+     * directories
      */
     public IndexDatabase(Project project) throws IOException {
         this.project = project;
@@ -119,6 +120,7 @@ public class IndexDatabase {
     /**
      * Update the index database for all of the projects. Print progress to
      * standard out.
+     *
      * @param executor An executor to run the job
      * @throws IOException if an error occurs
      */
@@ -128,6 +130,7 @@ public class IndexDatabase {
 
     /**
      * Update the index database for all of the projects
+     *
      * @param executor An executor to run the job
      * @param listener where to signal the changes to the database
      * @throws IOException if an error occurs
@@ -151,13 +154,12 @@ public class IndexDatabase {
             }
 
             executor.submit(new Runnable() {
-
                 @Override
                 public void run() {
                     try {
                         db.update();
                     } catch (Throwable e) {
-                        log.log(Level.SEVERE,"Problem updating lucene index database: ",e);
+                        log.log(Level.SEVERE, "Problem updating lucene index database: ", e);
                     }
                 }
             });
@@ -166,6 +168,7 @@ public class IndexDatabase {
 
     /**
      * Update the index database for a number of sub-directories
+     *
      * @param executor An executor to run the job
      * @param listener where to signal the changes to the database
      * @param paths
@@ -210,7 +213,6 @@ public class IndexDatabase {
             for (final IndexDatabase db : dbs) {
                 db.addIndexChangedListener(listener);
                 executor.submit(new Runnable() {
-
                     @Override
                     public void run() {
                         try {
@@ -249,10 +251,10 @@ public class IndexDatabase {
             }
 
             if (!env.isUsingLuceneLocking()) {
-                 lockfact = NoLockFactory.getNoLockFactory();
+                lockfact = NoLockFactory.getNoLockFactory();
             }
-            indexDirectory = FSDirectory.open(indexDir,lockfact);
-            spellDirectory = FSDirectory.open(spellDir,lockfact);
+            indexDirectory = FSDirectory.open(indexDir, lockfact);
+            spellDirectory = FSDirectory.open(spellDir, lockfact);
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
@@ -267,12 +269,12 @@ public class IndexDatabase {
     }
 
     /**
-     * By default the indexer will traverse all directories in the project.
-     * If you add directories with this function update will just process
-     * the specified directories.
+     * By default the indexer will traverse all directories in the project. If
+     * you add directories with this function update will just process the
+     * specified directories.
      *
      * @param dir The directory to scan
-     * @return <code>true</code> if the file is added, false oth
+     * @return <code>true</code> if the file is added, false otherwise
      */
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public boolean addDirectory(String dir) {
@@ -292,6 +294,7 @@ public class IndexDatabase {
 
     /**
      * Update the content of this index database
+     *
      * @throws IOException if an error occurs
      * @throws HistoryException if an error occurs when accessing the history
      */
@@ -323,10 +326,10 @@ public class IndexDatabase {
         try {
             //TODO we might need to add writer.commit after certain phases of index generation, right now it will only happen in the end
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer); 
-            iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);            
+            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
+            iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             //iwc.setRAMBufferSizeMB(256.0);  //TODO check what is the sweet spot
-            writer = new IndexWriter(indexDirectory, iwc);            
+            writer = new IndexWriter(indexDirectory, iwc);
             writer.commit(); // to make sure index exists on the disk
             //writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
 
@@ -349,23 +352,41 @@ public class IndexDatabase {
                 HistoryGuru.getInstance().ensureHistoryCacheExists(sourceRoot);
 
                 String startuid = Util.path2uid(dir, "");
-                IndexReader reader = IndexReader.open(indexDirectory); // open existing index
+                IndexReader reader = DirectoryReader.open(indexDirectory); // open existing index
+                Terms terms = null;
+                int numDocs = reader.numDocs();
+                if (numDocs > 0) {
+                    Fields uFields = MultiFields.getFields(reader);//reader.getTermVectors(0);
+                    terms = uFields.terms(QueryBuilder.U);
+                }
+                Terms termsa;
+                //terms.
+                termsa = SlowCompositeReaderWrapper.wrap(reader).terms("u"); //new Term("u", startuid)
                 try {
-                    uidIter = reader.terms(new Term("u", startuid)); // init uid iterator
+                    if (numDocs > 0) {
+                        uidIter = terms.iterator(null);
+                        uidIter.seekExact(new BytesRef(startuid), true); // init uid iterator
+                    }
+                    //TODO above and below probably breaks removing old docIDs from index ... REWRITE !
+/*                    else {
+                     //Term xx = new Term("u", startuid);
+                     uidIter=new SingleTermsEnum(uidIter, new BytesRef(startuid) );                        
+                     }
+                     */
 
                     //TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;
                     if (RuntimeEnvironment.getInstance().isPrintProgress()) {
-                     log.log(Level.INFO, "Counting files in {0} ...", dir);
-                     file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
-                     if (log.isLoggable(Level.INFO)) {
-                      log.log(Level.INFO, "Need to process: {0} files for {1}", new Object[]{file_cnt,dir});
-                     }
+                        log.log(Level.INFO, "Counting files in {0} ...", dir);
+                        file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
+                        if (log.isLoggable(Level.INFO)) {
+                            log.log(Level.INFO, "Need to process: {0} files for {1}", new Object[]{file_cnt, dir});
+                        }
                     }
 
                     indexDown(sourceRoot, dir, false, 0, file_cnt);
 
-                    while (uidIter.term() != null && uidIter.term().field().equals("u") && uidIter.term().text().startsWith(startuid)) {
+                    while (uidIter != null && uidIter.term() != null && uidIter.term().utf8ToString().startsWith(startuid)) {
                         removeFile();
                         uidIter.next();
                     }
@@ -404,11 +425,11 @@ public class IndexDatabase {
             File timestamp = new File(env.getDataRootFile(), "timestamp");
             if (timestamp.exists()) {
                 if (!timestamp.setLastModified(System.currentTimeMillis())) {
-                   log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
+                    log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
                 }
             } else {
                 if (!timestamp.createNewFile()) {
-                   log.log(Level.WARNING, "Failed to create file ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
+                    log.log(Level.WARNING, "Failed to create file ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
                 }
             }
         }
@@ -416,6 +437,7 @@ public class IndexDatabase {
 
     /**
      * Optimize all index databases
+     *
      * @param executor An executor to run the job
      * @throws IOException if an error occurs
      */
@@ -434,13 +456,12 @@ public class IndexDatabase {
             final IndexDatabase db = d;
             if (db.isDirty()) {
                 executor.submit(new Runnable() {
-
                     @Override
                     public void run() {
                         try {
                             db.update();
                         } catch (Throwable e) {
-                            log.log(Level.SEVERE,"Problem updating lucene index database: ",e);
+                            log.log(Level.SEVERE, "Problem updating lucene index database: ", e);
                         }
                     }
                 });
@@ -455,17 +476,17 @@ public class IndexDatabase {
         synchronized (lock) {
             if (running) {
                 log.warning("Optimize terminated... Someone else is updating / optimizing it!");
-                return ;
+                return;
             }
             running = true;
         }
         IndexWriter wrt = null;
         try {
             log.info("Optimizing the index ... ");
-            Analyzer analyzer = new StandardAnalyzer(SearchEngine.LUCENE_VERSION);            
-            IndexWriterConfig conf = new IndexWriterConfig(SearchEngine.LUCENE_VERSION,analyzer);
+            Analyzer analyzer = new StandardAnalyzer(SearchEngine.LUCENE_VERSION);
+            IndexWriterConfig conf = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            
+
             wrt = new IndexWriter(indexDirectory, conf);
             wrt.forceMerge(1); // this is deprecated and not needed anymore
             log.info("done");
@@ -496,17 +517,17 @@ public class IndexDatabase {
      */
     public void createSpellingSuggestions() {
         IndexReader indexReader = null;
-        SpellChecker checker = null;
+        SpellChecker checker;
 
         try {
             log.info("Generating spelling suggestion index ... ");
-            indexReader = IndexReader.open(indexDirectory);
+            indexReader = DirectoryReader.open(indexDirectory);
             checker = new SpellChecker(spellDirectory);
             //TODO below seems only to index "defs" , possible bug ?
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer); 
+            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            checker.indexDictionary(new LuceneDictionary(indexReader, "defs"),iwc,false);
+            checker.indexDictionary(new LuceneDictionary(indexReader, QueryBuilder.DEFS), iwc, false);
             log.info("done");
         } catch (IOException e) {
             log.log(Level.SEVERE, "ERROR: Generating spelling: {0}", e);
@@ -535,29 +556,31 @@ public class IndexDatabase {
             try {
                 if (!dirty && !dirtyFile.createNewFile()) {
                     if (!dirtyFile.exists()) {
-                       log.log(Level.FINE,
-                               "Failed to create \"dirty-file\": {0}",
-                               dirtyFile.getAbsolutePath());
+                        log.log(Level.FINE,
+                                "Failed to create \"dirty-file\": {0}",
+                                dirtyFile.getAbsolutePath());
                     }
                     dirty = true;
                 }
             } catch (IOException e) {
-                log.log(Level.FINE,"When creating dirty file: ",e);
+                log.log(Level.FINE, "When creating dirty file: ", e);
             }
         }
     }
+
     /**
-     * Remove a stale file (uidIter.term().text()) from the index database
-     * (and the xref file)
+     * Remove a stale file (uidIter.term().text()) from the index database (and
+     * the xref file)
+     *
      * @throws java.io.IOException if an error occurs
      */
     private void removeFile() throws IOException {
-        String path = Util.uid2url(uidIter.term().text());
+        String path = Util.uid2url(uidIter.term().utf8ToString());
 
         for (IndexChangedListener listener : listeners) {
             listener.fileRemove(path);
         }
-        writer.deleteDocuments(uidIter.term());
+        writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
 
         File xrefFile;
         if (RuntimeEnvironment.getInstance().isCompressXref()) {
@@ -583,6 +606,7 @@ public class IndexDatabase {
 
     /**
      * Add a file to the Lucene index (and generate a xref file)
+     *
      * @param file The file to add
      * @param path The path to the file (from source root)
      * @throws java.io.IOException if an error occurs
@@ -603,10 +627,20 @@ public class IndexDatabase {
                 d = analyzerGuru.getDocument(file, in, path, fa);
             } catch (Exception e) {
                 log.log(Level.INFO,
-                        "Skipped file ''{0}'' because the analyzer didn''t " +
-                        "understand it.",
+                        "Skipped file ''{0}'' because the analyzer didn''t "
+                        + "understand it.",
                         path);
-                log.log(Level.FINE, "Exception from analyzer:", e);
+                StringBuilder stack = new StringBuilder();
+                for (StackTraceElement ste : e.getStackTrace()) {
+                    stack.append(ste.toString()).append(System.lineSeparator());
+                }
+                StringBuilder sstack = new StringBuilder();
+                for (Throwable t : e.getSuppressed()) {
+                    for (StackTraceElement ste : t.getStackTrace()) {
+                        sstack.append(ste.toString()).append(System.lineSeparator());
+                    }
+                }
+                log.log(Level.FINE, "Exception from analyzer {0}: {1} {2}{3}{4}{5}{6}", new String[]{fa.getClass().getName(), e.toString(), System.lineSeparator(), stack.toString(), System.lineSeparator(), sstack.toString()});
                 return;
             }
 
@@ -634,15 +668,16 @@ public class IndexDatabase {
 
     /**
      * Check if I should accept this file into the index database
+     *
      * @param file the file to check
      * @return true if the file should be included, false otherwise
      */
     private boolean accept(File file) {
 
-        if (!includedNames.isEmpty() &&
-           // the filter should not affect directory names
-            (!(file.isDirectory() || includedNames.match(file))) ) {
-                return false;
+        if (!includedNames.isEmpty()
+                && // the filter should not affect directory names
+                (!(file.isDirectory() || includedNames.match(file)))) {
+            return false;
         }
         if (ignoredNames.ignore(file)) {
             return false;
@@ -664,11 +699,11 @@ public class IndexDatabase {
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
                 log.log(Level.WARNING, "Warning: ignored special file {0}", absolutePath);
-                    return false;
+                return false;
             }
         } catch (IOException exp) {
             log.log(Level.WARNING, "Warning: Failed to resolve name: {0}", absolutePath);
-            log.log(Level.FINE,"Stack Trace: ",exp);
+            log.log(Level.FINE, "Stack Trace: ", exp);
         }
 
         if (file.isDirectory()) {
@@ -715,6 +750,7 @@ public class IndexDatabase {
 
     /**
      * Check if I should accept the path containing a symlink
+     *
      * @param absolutePath the path with a symlink to check
      * @param canonicalPath the canonical path to the file
      * @return true if the file should be accepted, false otherwise
@@ -728,8 +764,8 @@ public class IndexDatabase {
         for (String allowedSymlink : RuntimeEnvironment.getInstance().getAllowedSymlinks()) {
             if (absolutePath.startsWith(allowedSymlink)) {
                 String allowedTarget = new File(allowedSymlink).getCanonicalPath();
-                if (canonicalPath.startsWith(allowedTarget) &&
-                    absolutePath.substring(allowedSymlink.length()).equals(canonicalPath.substring(allowedTarget.length()))) {
+                if (canonicalPath.startsWith(allowedTarget)
+                        && absolutePath.substring(allowedSymlink.length()).equals(canonicalPath.substring(allowedTarget.length()))) {
                     return true;
                 }
             }
@@ -769,15 +805,17 @@ public class IndexDatabase {
 
     /**
      * Generate indexes recursively
+     *
      * @param dir the root indexDirectory to generate indexes for
      * @param path the path
-     * @param count_only if true will just traverse the source root and count files
+     * @param count_only if true will just traverse the source root and count
+     * files
      * @param cur_count current count during the traversal of the tree
      * @param est_total estimate total files to process
      *
      */
     private int indexDown(File dir, String parent, boolean count_only, int cur_count, int est_total) throws IOException {
-        int lcur_count=cur_count;
+        int lcur_count = cur_count;
         if (isInterrupted()) {
             return lcur_count;
         }
@@ -793,10 +831,10 @@ public class IndexDatabase {
         }
         Arrays.sort(files, new Comparator<File>() {
             @Override
-                public int compare(File p1, File p2) {
-                    return p1.getName().compareTo(p2.getName());
-                }
-            });
+            public int compare(File p1, File p2) {
+                return p1.getName().compareTo(p2.getName());
+            }
+        });
 
         for (File file : files) {
             if (accept(dir, file)) {
@@ -810,21 +848,21 @@ public class IndexDatabase {
                         continue;
                     }
 
-                    if (RuntimeEnvironment.getInstance().isPrintProgress() && est_total > 0 && log.isLoggable(Level.INFO) )
-                    {
-                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total) });
+                    if (RuntimeEnvironment.getInstance().isPrintProgress() && est_total > 0 && log.isLoggable(Level.INFO)) {
+                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total)});
                     }
 
                     if (uidIter != null) {
                         String uid = Util.path2uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
-                        while (uidIter.term() != null && uidIter.term().field().equals("u") &&
-                                uidIter.term().text().compareTo(uid) < 0) {
+                        BytesRef buid = new BytesRef(uid);
+                        while (uidIter.term() != null
+                                && uidIter.term().compareTo(buid) < 0) {
                             removeFile();
                             uidIter.next();
                         }
 
-                        if (uidIter.term() != null && uidIter.term().field().equals("u") &&
-                                uidIter.term().text().compareTo(uid) == 0) {
+                        if (uidIter.term() != null
+                                && uidIter.term().bytesEquals(buid)) {
                             uidIter.next(); // keep matching docs
                             continue;
                         }
@@ -881,6 +919,7 @@ public class IndexDatabase {
 
     /**
      * List all files in all of the index databases
+     *
      * @throws IOException if an error occurs
      */
     public static void listAllFiles() throws IOException {
@@ -889,8 +928,9 @@ public class IndexDatabase {
 
     /**
      * List all files in some of the index databases
+     *
      * @param subFiles Subdirectories for the various projects to list the files
-     *                 for (or null or an empty list to dump all projects)
+     * for (or null or an empty list to dump all projects)
      * @throws IOException if an error occurs
      */
     public static void listAllFiles(List<String> subFiles) throws IOException {
@@ -925,23 +965,22 @@ public class IndexDatabase {
      */
     public void listFiles() throws IOException {
         IndexReader ireader = null;
-        TermEnum iter = null;
+        TermsEnum iter;
+        Terms terms = null;
 
         try {
-            ireader = IndexReader.open(indexDirectory); // open existing index
-            iter = ireader.terms(new Term("u", "")); // init uid iterator
+            ireader = DirectoryReader.open(indexDirectory); // open existing index
+            int numDocs = ireader.numDocs();
+            if (numDocs > 0) {
+                Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
+                terms = uFields.terms(QueryBuilder.U);
+            }
+            iter = terms.iterator(null); // init uid iterator
             while (iter.term() != null) {
-                log.fine(Util.uid2url(iter.term().text()));
+                log.fine(Util.uid2url(iter.term().utf8ToString()));
                 iter.next();
             }
         } finally {
-            if (iter != null) {
-                try {
-                    iter.close();
-                } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing index iterator", e);
-                }
-            }
 
             if (ireader != null) {
                 try {
@@ -986,29 +1025,28 @@ public class IndexDatabase {
 
     public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
-        TermEnum iter = null;
+        TermsEnum iter = null;
+        Terms terms = null;
 
         try {
-            ireader = IndexReader.open(indexDirectory);
-            iter = ireader.terms(new Term("defs", ""));
+            ireader = DirectoryReader.open(indexDirectory);
+            int numDocs = ireader.numDocs();
+            if (numDocs > 0) {
+                Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
+                terms = uFields.terms(QueryBuilder.DEFS);
+            }
+            iter = terms.iterator(null); // init uid iterator            
             while (iter.term() != null) {
-                if (iter.term().field().startsWith("f")) {
-                    if (iter.docFreq() > 16 && iter.term().text().length() > freq) {
-                        log.warning(iter.term().text());
-                    }
-                    iter.next();
-                } else {
-                    break;
+                //if (iter.term().field().startsWith("f")) {
+                if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
+                    log.warning(iter.term().utf8ToString());
                 }
+                iter.next();
+                /*} else {
+                 break;
+                 }*/
             }
         } finally {
-            if (iter != null) {
-                try {
-                    iter.close();
-                } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing index iterator", e);
-                }
-            }
 
             if (ireader != null) {
                 try {
@@ -1022,9 +1060,10 @@ public class IndexDatabase {
 
     /**
      * Get an indexReader for the Index database where a given file
+     *
      * @param path the file to get the database for
-     * @return The index database where the file should be located or null if
-     *         it cannot be located.
+     * @return The index database where the file should be located or null if it
+     * cannot be located.
      */
     public static IndexReader getIndexReader(String path) {
         IndexReader ret = null;
@@ -1040,13 +1079,13 @@ public class IndexDatabase {
             indexDir = new File(indexDir, p.getPath());
         }
         try {
-            FSDirectory fdir=FSDirectory.open(indexDir,NoLockFactory.getNoLockFactory());
-            if (indexDir.exists() && IndexReader.indexExists(fdir)) {
-                ret = IndexReader.open(fdir);
+            FSDirectory fdir = FSDirectory.open(indexDir, NoLockFactory.getNoLockFactory());
+            if (indexDir.exists() && DirectoryReader.indexExists(fdir)) {
+                ret = DirectoryReader.open(fdir);
             }
         } catch (Exception ex) {
             log.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());
-            log.log(Level.FINE,"Stack Trace: ",ex);
+            log.log(Level.FINE, "Stack Trace: ", ex);
         }
         return ret;
     }
@@ -1055,8 +1094,8 @@ public class IndexDatabase {
      * Get the latest definitions for a file from the index.
      *
      * @param file the file whose definitions to find
-     * @return definitions for the file, or {@code null} if they could not
-     * be found
+     * @return definitions for the file, or {@code null} if they could not be
+     * found
      * @throws IOException if an error happens when accessing the index
      * @throws ParseException if an error happens when building the Lucene query
      * @throws ClassNotFoundException if the class for the stored definitions
@@ -1077,24 +1116,20 @@ public class IndexDatabase {
         try {
             Query q = new QueryBuilder().setPath(path).build();
             IndexSearcher searcher = new IndexSearcher(ireader);
-            try {
-                TopDocs top = searcher.search(q, 1);
-                if (top.totalHits == 0) {
-                    // No hits, no definitions...
-                    return null;
-                }
-                Document doc = searcher.doc(top.scoreDocs[0].doc);
-                String foundPath = doc.get("path");
+            TopDocs top = searcher.search(q, 1);
+            if (top.totalHits == 0) {
+                // No hits, no definitions...
+                return null;
+            }
+            Document doc = searcher.doc(top.scoreDocs[0].doc);
+            String foundPath = doc.get(QueryBuilder.PATH);
 
-                // Only use the definitions if we found an exact match.
-                if (path.equals(foundPath)) {
-                    Fieldable tags = doc.getFieldable("tags");
-                    if (tags != null) {
-                        return Definitions.deserialize(tags.getBinaryValue());
-                    }
+            // Only use the definitions if we found an exact match.
+            if (path.equals(foundPath)) {
+                IndexableField tags = doc.getField(QueryBuilder.TAGS);
+                if (tags != null) {
+                    return Definitions.deserialize(tags.binaryValue().bytes);
                 }
-            } finally {
-                searcher.close();
             }
         } finally {
             ireader.close();
@@ -1125,5 +1160,4 @@ public class IndexDatabase {
         hash = 41 * hash + (this.project == null ? 0 : this.project.hashCode());
         return hash;
     }
-
 }

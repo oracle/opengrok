@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,13 +45,13 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
-import static org.junit.Assert.*;
 
 /**
  *
  * @author Trond Norbye
  */
 public class IndexerTest {
+
     TestRepository repository;
 
     public IndexerTest() {
@@ -127,15 +128,15 @@ public class IndexerTest {
         Indexer.getInstance().prepareIndexer(
                 env,
                 false, // don't search for repositories
-                true,  // scan and add projects
-                null,  // no default project
-                null,  // don't write config file
+                true, // scan and add projects
+                null, // no default project
+                null, // don't write config file
                 false, // don't refresh history
                 false, // don't list files
                 false, // don't create dictionary
-                null,  // subFiles - not needed since we don't list files
-                null,   // repositories - not needed when not refreshing history
-                new ArrayList<String>(),   // don't zap cache
+                null, // subFiles - not needed since we don't list files
+                null, // repositories - not needed when not refreshing history
+                new ArrayList<String>(), // don't zap cache
                 false); // don't list repos
 
         List<Project> newProjects = env.getProjects();
@@ -158,7 +159,7 @@ public class IndexerTest {
         // The properties of p1 should be preserved
         assertEquals("project path", p1.getPath(), newP1.getPath());
         assertEquals("project description",
-                     p1.getDescription(), newP1.getDescription());
+                p1.getDescription(), newP1.getDescription());
         assertEquals("project tabsize", p1.getTabSize(), newP1.getTabSize());
     }
 
@@ -179,10 +180,11 @@ public class IndexerTest {
     }
 
     private class MyIndexChangeListener implements org.opensolaris.opengrok.index.IndexChangedListener {
+
         List<String> files = new ArrayList<String>();
 
         @Override
-        public void fileAdd(String path, String analyzer) {            
+        public void fileAdd(String path, String analyzer) {
         }
 
         @Override
@@ -193,12 +195,13 @@ public class IndexerTest {
         @Override
         public void fileRemove(String path) {
         }
+
         @Override
         public void fileUpdate(String path) {
         }
 
         @Override
-        public void fileRemoved(String path) {            
+        public void fileRemoved(String path) {
         }
     }
 
@@ -213,12 +216,12 @@ public class IndexerTest {
         List<RepositoryInfo> repos = env.getRepositories();
         Repository r = null;
         for (RepositoryInfo ri : repos) {
-            if (ri.getDirectoryName().equals(repository.getSourceRoot()+"/rfe2575")) {
+            if (ri.getDirectoryName().equals(repository.getSourceRoot() + "/rfe2575")) {
                 r = RepositoryFactory.getRepository(ri);
                 break;
             }
         }
-        
+
         if (r != null && r.isWorking() && env.validateExuberantCtags()) {
             Project project = new Project();
             project.setPath("/rfe2575");
@@ -240,7 +243,7 @@ public class IndexerTest {
             System.out.println("Skipping test. Repository for rfe2575 not found or could not find a ctags or an sccs I could use in path.");
         }
     }
-    
+
     @Test
     public void testXref() throws IOException {
         List<File> files = new ArrayList<File>();
@@ -261,6 +264,7 @@ public class IndexerTest {
             out.close();
         }
     }
+
     @Test
     public void testBug3430() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -285,39 +289,39 @@ public class IndexerTest {
     @Test
     public void testBug11896() throws Exception {
 
-       boolean test = true;
-       if (FileUtilities.findProgInPath("mkfifo") == null) {
-           System.out.println("Error: mkfifo not found in PATH !\n");
-           test = false;
-       }
-
-       if (test) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setSourceRoot(repository.getSourceRoot());
-        env.setDataRoot(repository.getDataRoot());
-        Executor executor;
-        
-        executor = new Executor(new String[] {"mkdir", "-p", repository.getSourceRoot()+"/testBug11896"});
-        executor.exec(true);
-
-        executor = new Executor(new String[] {"mkfifo", repository.getSourceRoot()+"/testBug11896/FIFO"});
-        executor.exec(true);      
-
-        if (env.validateExuberantCtags()) {
-            Project project = new Project();
-            project.setPath("/testBug11896");
-            IndexDatabase idb = new IndexDatabase(project);
-            assertNotNull(idb);
-            MyIndexChangeListener listener = new MyIndexChangeListener();
-            idb.addIndexChangedListener(listener);
-            System.out.println("Trying to index a special file - FIFO in this case.");
-            idb.update();
-            assertEquals(0, listener.files.size());
-        } else {
-            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+        boolean test = true;
+        if (FileUtilities.findProgInPath("mkfifo") == null) {
+            System.out.println("Error: mkfifo not found in PATH !\n");
+            test = false;
         }
-       } else {
+
+        if (test) {
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+            env.setSourceRoot(repository.getSourceRoot());
+            env.setDataRoot(repository.getDataRoot());
+            Executor executor;
+
+            executor = new Executor(new String[]{"mkdir", "-p", repository.getSourceRoot() + "/testBug11896"});
+            executor.exec(true);
+
+            executor = new Executor(new String[]{"mkfifo", repository.getSourceRoot() + "/testBug11896/FIFO"});
+            executor.exec(true);
+
+            if (env.validateExuberantCtags()) {
+                Project project = new Project();
+                project.setPath("/testBug11896");
+                IndexDatabase idb = new IndexDatabase(project);
+                assertNotNull(idb);
+                MyIndexChangeListener listener = new MyIndexChangeListener();
+                idb.addIndexChangedListener(listener);
+                System.out.println("Trying to index a special file - FIFO in this case.");
+                idb.update();
+                assertEquals(0, listener.files.size());
+            } else {
+                System.out.println("Skipping test. Could not find a ctags I could use in path.");
+            }
+        } else {
             System.out.println("Skipping test for bug 11896. Could not find a mkfifo in path.");
-       }
+        }
     }
 }

@@ -36,9 +36,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
@@ -55,98 +56,133 @@ import org.opensolaris.opengrok.util.IOUtils;
  * Working set for a search basically to factor out/separate search related
  * complexity from UI design.
  *
- * @author  Jens Elkner
+ * @author Jens Elkner
  * @version $Revision$
  */
 public class SearchHelper {
 
-    /** opengrok's data root: used to find the search index file */
+    /**
+     * opengrok's data root: used to find the search index file
+     */
     public File dataRoot;
-    /** context path, i.e. the applications context path (usually /source) to
-     * use when generating a redirect URL */
+    /**
+     * context path, i.e. the applications context path (usually /source) to use
+     * when generating a redirect URL
+     */
     public String contextPath;
-    /** piggyback: if {@code true}, files in opengrok's data directory are
-     * gzipped compressed. */
+    /**
+     * piggyback: if {@code true}, files in opengrok's data directory are
+     * gzipped compressed.
+     */
     public boolean compressed;
-    /** piggyback: the source root directory. */
+    /**
+     * piggyback: the source root directory.
+     */
     public File sourceRoot;
-    /** piggyback: the eftar filereader to use. */
+    /**
+     * piggyback: the eftar filereader to use.
+     */
     public EftarFileReader desc;
-    /** the result cursor start index, i.e. where to start displaying results */
+    /**
+     * the result cursor start index, i.e. where to start displaying results
+     */
     public int start;
-    /** max. number of result items to show */
+    /**
+     * max. number of result items to show
+     */
     public int maxItems;
-    /** the QueryBuilder used to create the query */
+    /**
+     * the QueryBuilder used to create the query
+     */
     public QueryBuilder builder;
-    /** the order to use to ordery query results */
+    /**
+     * the order to use to ordery query results
+     */
     public SortOrder order;
-    /** if {@code true} multi-threaded search will be used. */
+    /**
+     * if {@code true} multi-threaded search will be used.
+     */
     public boolean parallel;
-    /** Indicate, whether this is search from a cross reference. If {@code true}
+    /**
+     * Indicate, whether this is search from a cross reference. If {@code true}
      * {@link #executeQuery()} sets {@link #redirect} if certain conditions are
-     * met. */
+     * met.
+     */
     public boolean isCrossRefSearch;
-    /** if not {@code null}, the consumer should redirect the client to a
+    /**
+     * if not {@code null}, the consumer should redirect the client to a
      * separate result page denoted by the value of this field. Automatically
-     * set via {@link #prepareExec(SortedSet)} and {@link #executeQuery()}. */
+     * set via {@link #prepareExec(SortedSet)} and {@link #executeQuery()}.
+     */
     public String redirect;
-    /** if not {@code null}, the UI should show this error message and stop
-     * processing the search. Automatically set via {@link #prepareExec(SortedSet)}
-     * and {@link #executeQuery()}.*/
+    /**
+     * if not {@code null}, the UI should show this error message and stop
+     * processing the search. Automatically set via
+     * {@link #prepareExec(SortedSet)} and {@link #executeQuery()}.
+     */
     public String errorMsg;
-    /** the searcher used to open/search the index. Automatically set via
-     * {@link #prepareExec(SortedSet)}. */
+    /**
+     * the searcher used to open/search the index. Automatically set via
+     * {@link #prepareExec(SortedSet)}.
+     */
     public IndexSearcher searcher;
-    /** list of docs which result from the executing the query */
+    /**
+     * list of docs which result from the executing the query
+     */
     public ScoreDoc[] hits;
-    /** total number of hits */
+    /**
+     * total number of hits
+     */
     public int totalHits;
-    /** the query created by the used {@link QueryBuilder} via
-     * {@link #prepareExec(SortedSet)}. */
+    /**
+     * the query created by the used {@link QueryBuilder} via
+     * {@link #prepareExec(SortedSet)}.
+     */
     public Query query;
-    /** the lucene sort instruction based on {@link #order} created via
-     * {@link #prepareExec(SortedSet)}. */
+    /**
+     * the lucene sort instruction based on {@link #order} created via
+     * {@link #prepareExec(SortedSet)}.
+     */
     protected Sort sort;
-    /** projects to use to setup indexer searchers. Usually setup via
-     * {@link #prepareExec(SortedSet)}. */
+    /**
+     * projects to use to setup indexer searchers. Usually setup via
+     * {@link #prepareExec(SortedSet)}.
+     */
     public SortedSet<String> projects;
-    /** opengrok summary context. Usually created via {@link #prepareSummary()}. */
+    /**
+     * opengrok summary context. Usually created via {@link #prepareSummary()}.
+     */
     public Context sourceContext = null;
-    /** result summarizer usually created via {@link #prepareSummary()}. */
+    /**
+     * result summarizer usually created via {@link #prepareSummary()}.
+     */
     public Summarizer summerizer = null;
-    /** history context usually created via {@link #prepareSummary()}.*/
+    /**
+     * history context usually created via {@link #prepareSummary()}.
+     */
     public HistoryContext historyContext;
-    /** Default query parse error message prefix */
+    /**
+     * Default query parse error message prefix
+     */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
-    private ExecutorService executor=null; 
-
+    private ExecutorService executor = null;
     private static final Logger log = Logger.getLogger(SearchHelper.class.getName());
-           
+
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
-     * nothing if {@link #redirect} or {@link #errorMsg} have a none-{@code null}
-     * value.
-     * <p>
-     * Parameters which should be populated/set at this time:
-     * <ul>
-     * <li>{@link #builder}</li>
-     * <li>{@link #dataRoot}</li>
+     * nothing if {@link #redirect} or {@link #errorMsg} have a
+     * none-{@code null} value. <p> Parameters which should be populated/set at
+     * this time: <ul> <li>{@link #builder}</li> <li>{@link #dataRoot}</li>
      * <li>{@link #order} (falls back to relevance if unset)</li>
-     * <li>{@link #parallel} (default: false)</li>
-     * </ul>
-     * Populates/sets:
-     * <ul>
-     * <li>{@link #query}</li>
-     * <li>{@link #searcher}</li>
-     * <li>{@link #sort}</li>
-     * <li>{@link #projects}</li>
-     * <li>{@link #errorMsg} if an error occurs</li>
+     * <li>{@link #parallel} (default: false)</li> </ul> Populates/sets: <ul>
+     * <li>{@link #query}</li> <li>{@link #searcher}</li> <li>{@link #sort}</li>
+     * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
      *
-     * @param projects  project to use query. If empty, a none-project opengrok
-     *  setup is assumed (i.e. DATA_ROOT/index will be used instead of possible
-     *  multiple DATA_ROOT/$project/index).
+     * @param projects project to use query. If empty, a none-project opengrok
+     * setup is assumed (i.e. DATA_ROOT/index will be used instead of possible
+     * multiple DATA_ROOT/$project/index).
      * @return this instance
      */
     public SearchHelper prepareExec(SortedSet<String> projects) {
@@ -165,29 +201,29 @@ public class SearchHelper {
             if (projects.isEmpty()) {
                 //no project setup
                 FSDirectory dir = FSDirectory.open(indexDir);
-                searcher = new IndexSearcher(IndexReader.open(dir));
+                searcher = new IndexSearcher(DirectoryReader.open(dir));
             } else if (projects.size() == 1) {
                 // just 1 project selected
                 FSDirectory dir =
                         FSDirectory.open(new File(indexDir, projects.first()));
-                searcher = new IndexSearcher(IndexReader.open(dir));
+                searcher = new IndexSearcher(DirectoryReader.open(dir));
             } else {
                 //more projects                                
-                IndexReader[] subreaders=new IndexReader[projects.size()];
+                IndexReader[] subreaders = new IndexReader[projects.size()];
                 int ii = 0;
                 //TODO might need to rewrite to Project instead of
                 // String , need changes in projects.jspf too
                 for (String proj : projects) {
                     FSDirectory dir = FSDirectory.open(new File(indexDir, proj));
-                    subreaders[ii++] = IndexReader.open(dir);
+                    subreaders[ii++] = DirectoryReader.open(dir);
                 }
-                MultiReader searchables=new MultiReader(subreaders, true);                
+                MultiReader searchables = new MultiReader(subreaders, true);
                 if (parallel) {
                     int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this
-                    executor= Executors.newFixedThreadPool(noThreads);
+                    executor = Executors.newFixedThreadPool(noThreads);
                 }
                 searcher = parallel
-                        ? new IndexSearcher(searchables,executor)
+                        ? new IndexSearcher(searchables, executor)
                         : new IndexSearcher(searchables);
             }
             // TODO check if below is somehow reusing sessions so we don't
@@ -196,10 +232,10 @@ public class SearchHelper {
             // then wait ;)
             switch (order) {
                 case LASTMODIFIED:
-                    sort = new Sort(new SortField("date", SortField.STRING, true));
+                    sort = new Sort(new SortField("date", SortField.Type.STRING, true));
                     break;
                 case BY_PATH:
-                    sort = new Sort(new SortField("fullpath", SortField.STRING));
+                    sort = new Sort(new SortField("fullpath", SortField.Type.STRING));
                     break;
                 default:
                     sort = Sort.RELEVANCE;
@@ -217,25 +253,19 @@ public class SearchHelper {
     }
 
     /**
-     * Start the search prepared by {@link #prepareExec(SortedSet)}.
-     * It does nothing if {@link #redirect} or {@link #errorMsg} have a
-     * none-{@code null} value.
-     * <p>
-     * Parameters which should be populated/set at this time:
-     * <ul>
-     * <li>all fields required for and populated by {@link #prepareExec(SortedSet)})</li>
-     * <li>{@link #start} (default: 0)</li>
-     * <li>{@link #maxItems} (default: 0)</li>
-     * <li>{@link #isCrossRefSearch} (default: false)</li>
-     * </ul>
-     * Populates/sets:
-     * <ul>
-     * <li>{@link #hits} (see {@link TopFieldDocs#scoreDocs})</li>
+     * Start the search prepared by {@link #prepareExec(SortedSet)}. It does
+     * nothing if {@link #redirect} or {@link #errorMsg} have a
+     * none-{@code null} value. <p> Parameters which should be populated/set at
+     * this time: <ul> <li>all fields required for and populated by
+     * {@link #prepareExec(SortedSet)})</li> <li>{@link #start} (default:
+     * 0)</li> <li>{@link #maxItems} (default: 0)</li>
+     * <li>{@link #isCrossRefSearch} (default: false)</li> </ul> Populates/sets:
+     * <ul> <li>{@link #hits} (see {@link TopFieldDocs#scoreDocs})</li>
      * <li>{@link #totalHits} (see {@link TopFieldDocs#totalHits})</li>
-     * <li>{@link #contextPath}</li>
-     * <li>{@link #errorMsg} if an error occurs</li>
-     * <li>{@link #redirect} if certain conditions are met</li>
+     * <li>{@link #contextPath}</li> <li>{@link #errorMsg} if an error
+     * occurs</li> <li>{@link #redirect} if certain conditions are met</li>
      * </ul>
+     *
      * @return this instance
      */
     public SearchHelper executeQuery() {
@@ -258,8 +288,8 @@ public class SearchHelper {
             boolean uniqueDefinition = false;
             if (isSingleDefinitionSearch && hits != null && hits.length == 1) {
                 Document doc = searcher.doc(hits[0].doc);
-                if (doc.getFieldable("tags") != null) {
-                    byte[] rawTags = doc.getFieldable("tags").getBinaryValue();
+                if (doc.getField("tags") != null) {
+                    byte[] rawTags = doc.getField("tags").binaryValue().bytes;
                     Definitions tags = Definitions.deserialize(rawTags);
                     String symbol = ((TermQuery) query).getTerm().text();
                     if (tags.occurrences(symbol) == 1) {
@@ -301,13 +331,10 @@ public class SearchHelper {
      * If a search did not return a hit, one may use this method to obtain
      * suggestions for a new search.
      *
-     * <p>
-     * Parameters which should be populated/set at this time:
-     * <ul>
-     * <li>{@link #projects}</li>
-     * <li>{@link #dataRoot}</li>
-     * <li>{@link #builder}</li>
-     * </ul>
+     * <p> Parameters which should be populated/set at this time: <ul>
+     * <li>{@link #projects}</li> <li>{@link #dataRoot}</li>
+     * <li>{@link #builder}</li> </ul>
+     *
      * @return a possible empty list of sugeestions.
      */
     public List<Suggestion> getSuggestions() {
@@ -365,7 +392,7 @@ public class SearchHelper {
                 if (checker != null) {
                     try {
                         checker.close();
-                    } catch (Exception x) { 
+                    } catch (Exception x) {
                         log.log(Level.WARNING, "Got excption while closing spelling suggestions: ", x);
                     }
                 }
@@ -378,19 +405,11 @@ public class SearchHelper {
      * Prepare the fields to support printing a fullblown summary. Does nothing
      * if {@link #redirect} or {@link #errorMsg} have a none-{@code null} value.
      *
-     * <p>
-     * Parameters which should be populated/set at this time:
-     * <ul>
-     * <li>{@link #query}</li>
-     * <li>{@link #builder}</li>
-     * </ul>
-     * Populates/sets:
-     * Otherwise the following fields are set (includes {@code null}):
-     * <ul>
-     * <li>{@link #sourceContext}</li>
-     * <li>{@link #summerizer}</li>
-     * <li>{@link #historyContext}</li>
-     * </ul>
+     * <p> Parameters which should be populated/set at this time: <ul>
+     * <li>{@link #query}</li> <li>{@link #builder}</li> </ul> Populates/sets:
+     * Otherwise the following fields are set (includes {@code null}): <ul>
+     * <li>{@link #sourceContext}</li> <li>{@link #summerizer}</li>
+     * <li>{@link #historyContext}</li> </ul>
      *
      * @return this instance.
      */
@@ -413,12 +432,11 @@ public class SearchHelper {
     }
 
     /**
-     * Free any resources associated with this helper (that includes closing
-     * the used {@link #searcher}).
+     * Free any resources associated with this helper (that includes closing the
+     * used {@link #searcher}).
      */
     public void destroy() {
         if (searcher != null) {
-            IOUtils.close(searcher);
             IOUtils.close(searcher.getIndexReader());
         }
 

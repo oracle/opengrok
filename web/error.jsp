@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@ page session="false" isErrorPage="true" import="
@@ -32,7 +32,7 @@ org.opensolaris.opengrok.web.Util"
 
     String context = request.getContextPath();
     String configError = "";
-    if (cfg.getSourceRootPath().isEmpty()) {
+    if (cfg.getSourceRootPath()==null || cfg.getSourceRootPath().isEmpty()) {
         configError = "CONFIGURATION parameter has not been configured in "
             + "web.xml! Please configure your webapp.";
     } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {

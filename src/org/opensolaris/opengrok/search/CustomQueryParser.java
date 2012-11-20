@@ -21,11 +21,10 @@
  * Copyright 2010 Sun Micosystems.  All rights reserved.
  * Use is subject to license terms.
  */
-
 package org.opensolaris.opengrok.search;
 
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -34,6 +33,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * A custom query parser for OpenGrok.
  */
 class CustomQueryParser extends QueryParser {
+
     /**
      * Create a query parser customized for OpenGrok.
      *
@@ -53,23 +53,23 @@ class CustomQueryParser extends QueryParser {
      * Is this field case sensitive?
      *
      * @param field name of the field to check
-     * @return {@code true} if the field is case sensitive,
-     *         {@code false} otherwise
+     * @return {@code true} if the field is case sensitive, {@code false}
+     * otherwise
      */
     private static boolean isCaseSensitive(String field) {
         // Only definition search and reference search are case sensitive
-        return QueryBuilder.DEFS.equals(field) ||
-                QueryBuilder.REFS.equals(field);
+        return QueryBuilder.DEFS.equals(field)
+                || QueryBuilder.REFS.equals(field);
     }
 
     /**
-     * Get a canonical form of a search term. This will convert the term
-     * to lower case if the field is case insensitive.
+     * Get a canonical form of a search term. This will convert the term to
+     * lower case if the field is case insensitive.
      *
      * @param field the field to search on
      * @param term the term to search for
-     * @return the canonical form of the search term, which matches how it
-     *         is stored in the index
+     * @return the canonical form of the search term, which matches how it is
+     * stored in the index
      */
     // The analyzers use the default locale. They probably should have used
     // a fixed locale, but since they don't, we ignore that PMD warning here.
@@ -81,7 +81,6 @@ class CustomQueryParser extends QueryParser {
     // Override the get***Query() methods to lower case the search terms if
     // the field is case sensitive. We don't need to override getFieldQuery()
     // because it uses the analyzer to convert the terms to canonical form.
-
     @Override
     protected Query getFuzzyQuery(String field, String term, float min)
             throws ParseException {
@@ -96,13 +95,14 @@ class CustomQueryParser extends QueryParser {
 
     @Override
     protected Query getRangeQuery(String field, String term1, String term2,
-                                  boolean inclusive)
+            boolean startinclusive, boolean endinclusive)
             throws ParseException {
         return super.getRangeQuery(
                 field,
                 getCanonicalTerm(field, term1),
                 getCanonicalTerm(field, term2),
-                inclusive);
+                startinclusive,
+                endinclusive);
     }
 
     @Override

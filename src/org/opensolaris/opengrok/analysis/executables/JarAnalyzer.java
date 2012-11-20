@@ -32,22 +32,20 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 /**
- * Analyzes JAR, WAR, EAR (Java Archive) files.
- * Created on September 22, 2005
+ * Analyzes JAR, WAR, EAR (Java Archive) files. Created on September 22, 2005
  *
  * @author Chandan
  */
-
 public class JarAnalyzer extends FileAnalyzer {
+
     private Map<String, String> xrefs;
 
     protected JarAnalyzer(FileAnalyzerFactory factory) {
@@ -63,11 +61,11 @@ public class JarAnalyzer extends FileAnalyzer {
         while ((entry = zis.getNextEntry()) != null) {
             String ename = entry.getName();
             String xref = null;
-            doc.add(new Field("full", new StringReader(ename)));
+            doc.add(new TextField("full", new StringReader(ename)));
             FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
             if (fac instanceof JavaClassAnalyzerFactory) {
                 JavaClassAnalyzer jca =
-                    (JavaClassAnalyzer) fac.getAnalyzer();
+                        (JavaClassAnalyzer) fac.getAnalyzer();
                 jca.analyze(doc, new BufferedInputStream(zis));
                 xref = jca.getXref();
             }
@@ -76,15 +74,24 @@ public class JarAnalyzer extends FileAnalyzer {
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
-            return new PlainFullTokenizer(reader);
+            final PlainFullTokenizer plainfull = new PlainFullTokenizer(reader);
+            TokenStreamComponents tsc_pf = new TokenStreamComponents(plainfull) {
+                @Override
+                protected void setReader(final Reader reader) throws IOException {
+                    plainfull.reInit(reader);
+                    super.setReader(reader);
+                }
+            };
+            return tsc_pf;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.createComponents(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
+     *
      * @param out Writer to write HTML cross-reference
      */
     @Override

@@ -26,12 +26,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.*;
 import java.util.logging.Level;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
@@ -105,6 +109,11 @@ public class AnalyzerGuru {
     /** List of all registered {@code FileAnalyzerFactory} instances. */
     private static final List<FileAnalyzerFactory>
         factories = new ArrayList<FileAnalyzerFactory>();
+        
+    public static final Reader dummyR = new StringReader("");
+    public static final String dummyS = "";
+    public static final FieldType string_ft_stored_nanalyzed_norms = new FieldType(StringField.TYPE_STORED);
+    public static final FieldType string_ft_nstored_nanalyzed_norms = new FieldType(StringField.TYPE_NOT_STORED);
 
     /*
      * If you write your own analyzer please register it here
@@ -144,8 +153,15 @@ public class AnalyzerGuru {
         for (FileAnalyzerFactory analyzer : analyzers) {
             registerAnalyzer(analyzer);
         }
+        
+        string_ft_stored_nanalyzed_norms.setOmitNorms(false);
+        string_ft_nstored_nanalyzed_norms.setOmitNorms(false);
+        
     }
 
+    public List<FileAnalyzerFactory> getAnalyzerFactories() {
+        return factories;
+    }
     /**
      * Register a {@code FileAnalyzerFactory} instance.
      */
@@ -211,7 +227,7 @@ public class AnalyzerGuru {
         }
         return factory.getAnalyzer();
     }
-
+        
     /**
      * Create a Lucene document and fill in the required fields
      * @param file The file to index
@@ -227,34 +243,35 @@ public class AnalyzerGuru {
         String date = DateTools.timeToString(file.lastModified(),
             DateTools.Resolution.MILLISECOND);
         doc.add(new Field("u", Util.path2uid(path, date),
-            Field.Store.YES, Field.Index.NOT_ANALYZED));
+            string_ft_stored_nanalyzed_norms));
         doc.add(new Field("fullpath", file.getAbsolutePath(),
-            Field.Store.NO, Field.Index.NOT_ANALYZED));
+            string_ft_nstored_nanalyzed_norms));
 
         try {
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
             if (hr != null) {
-                doc.add(new Field("hist", hr));
+                doc.add(new TextField("hist", hr));
                 // date = hr.getLastCommentDate() //RFE
             }
         } catch (HistoryException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occurred while reading history: ", e);
-        }
-        doc.add(new Field("date", date, Field.Store.YES, Field.Index.NOT_ANALYZED));
+        }    
+        doc.add(new Field("date", date, string_ft_stored_nanalyzed_norms));
         if (path != null) {
-            doc.add(new Field("path", path, Field.Store.YES, Field.Index.ANALYZED));
+            doc.add(new Field("path", path, TextField.TYPE_STORED));
             Project project = Project.getProject(path);
             if (project != null) {
-                doc.add(new Field("project", project.getPath(), Field.Store.YES, Field.Index.ANALYZED));
+                doc.add(new Field("project", project.getPath(), 
+                        TextField.TYPE_STORED));
             }
         }
 
         if (fa != null) {
             Genre g = fa.getGenre();
             if (g == Genre.PLAIN || g == Genre.XREFABLE || g == Genre.HTML) {
-                doc.add(new Field("t", g.typeName(), Field.Store.YES,
-                    Field.Index.NOT_ANALYZED));
-            }
+                doc.add(new Field("t", g.typeName(), string_ft_stored_nanalyzed_norms
+                    ));
+            }                   
             fa.analyze(doc, in);
         }
 
