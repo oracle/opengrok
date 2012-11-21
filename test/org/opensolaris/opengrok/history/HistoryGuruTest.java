@@ -31,13 +31,13 @@ import java.util.Collection;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
-import static org.junit.Assert.*;
 
 /**
  * Test the functionality provided by the HistoryGuru (with friends)
@@ -65,11 +65,11 @@ public class HistoryGuruTest {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException {        
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() {        
     }
 
     @Test
@@ -122,7 +122,7 @@ public class HistoryGuruTest {
     }
 
     @Test
-    public void bug16465() throws HistoryException, IOException {
+    public void testBug16465() throws HistoryException, IOException {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (f.getName().equals("bugreport16465@")) {
