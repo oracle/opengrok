@@ -106,6 +106,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
     <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
+    <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
 
@@ -581,6 +582,10 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <!-- Strange indentation in line two levels below to get newline correctly -->
         <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
         </concat>
+	<!-- Generate ZIP files used for unit testing git/.git are renamed -->
+	<copy todir="${test.git}/.git">
+		<fileset dir="${test.git}/git"/>
+	</copy>	
         <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
         <copy todir="${test.hg}/.hg">
             <fileset dir="${test.hg}/hg"/>
@@ -593,7 +598,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
               defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
                 basedir="${test.repositories}"
-                excludes="mercurial/hg/**, mercurial/hgignore"
+		excludes="mercurial/hg/**, mercurial/hgignore, git/git/**"
                 update="false"
                 defaultexcludes="no"/>
 
@@ -652,7 +657,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
         <delete dir="${test.hg}/.hg"/>
-        <delete file="${test.hg}/.hgignore"/>
+	<delete file="${test.hg}/.hgignore"/>
+	<delete dir="${test.git}/.git"/>
         <delete dir="${test.svn}"/>
         <delete dir="${test.razor}"/>
         <delete file="${test.cvs.repo}/CVS/Root"/>

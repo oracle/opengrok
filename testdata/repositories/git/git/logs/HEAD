@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 bb74b7e849170c31dc1b1b5801c83bf0094a3b10 Trond Norbye <trond@sunray-srv.norbye.org> 1218571573 +0200	commit (initial): Added a small test program
+bb74b7e849170c31dc1b1b5801c83bf0094a3b10 8482156421620efbb44a7b6f0eb19d1f191163c7 Trond Norbye <trond@sunray-srv.norbye.org> 1218571643 +0200	commit: Add the result of a make on Solaris x86
+8482156421620efbb44a7b6f0eb19d1f191163c7 aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a Trond Norbye <trond@sunray-srv.norbye.org> 1218571965 +0200	commit: Add lint make target and fix lint warnings
