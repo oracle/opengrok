@@ -18,9 +18,9 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.history;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class HistoryEntryTest {
     private String historyRevision = "1.0";
     private String historyAuthor = "test author";
     private String historyMessage = "history entry message";
-    
+ 
     public HistoryEntryTest() {
     }
 
@@ -60,7 +60,8 @@ public class HistoryEntryTest {
 
     @Before
     public void setUp() {
-        instance = new HistoryEntry(historyRevision, historyDate, historyAuthor, historyMessage, true);
+        instance = new HistoryEntry(historyRevision, historyDate,
+            historyAuthor, null, historyMessage, true);
     }
 
     @After
@@ -228,7 +229,7 @@ public class HistoryEntryTest {
      * Test of setFiles method, of class HistoryEntry.
      */
     @Test
-    public void setFiles() {        
+    public void setFiles() {
         TreeSet<String> files = new TreeSet<String>();
         files.add("file1.file");
         files.add("file2.file");
@@ -278,8 +279,10 @@ public class HistoryEntryTest {
         files.add("file1.file");
         files.add("file2.file");
         instance.setFiles(files);
+        instance.setTags("test tag");
         instance.strip();
         assertEquals(0, instance.getFiles().size());
+        assertEquals(null, instance.getTags());
     }
 
 }

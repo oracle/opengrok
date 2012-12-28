@@ -80,6 +80,7 @@ public class CommandLineOptions {
         options.add(new Option('D', null, "Store history cache in a database (needs the JDBC driver in the classpath, typically derbyclient.jar or derby.jar)"));
         options.add(new Option('d', "/path/to/data/root", "The directory where OpenGrok stores the generated data"));
         options.add(new Option('e', null, "Economical - consumes less disk space. It does not generate hyper text cross reference files offline, but will do so on demand - which could be sightly slow."));
+        options.add(new Option('G', null, "Assign commit tags to all entries in history for all repositories."));
         options.add(new Option('H', null, "Generate history cache for all repositories"));
         options.add(new Option('h', "/path/to/repository", "just generate history cache for the specified repos (absolute path from source root)"));
         options.add(new Option('I', "pattern", "Only files matching this pattern will be examined (supports wildcards, example: -I *.java -I *.c)"));

@@ -61,7 +61,7 @@ class JDBCHistoryCache implements HistoryCache {
 
     /** The names of all the tables created by this class. */
     private static final String[] TABLES = {
-        "REPOSITORIES", "FILES", "AUTHORS", "CHANGESETS", "FILECHANGES",
+        "REPOSITORIES", "FILES", "AUTHORS", "TAGS", "CHANGESETS", "FILECHANGES",
         "DIRECTORIES", "DIRCHANGES"
     };
 
@@ -93,6 +93,9 @@ class JDBCHistoryCache implements HistoryCache {
 
     /** The id to be used for the next row inserted into AUTHORS. */
     private final AtomicInteger nextAuthorId = new AtomicInteger();
+
+    /** The id to be used for the next row inserted into TAGS. */
+    private final AtomicInteger nextTagId = new AtomicInteger();
 
     /** Info string to return from {@link #getInfo()}. */
     private String info;
@@ -213,6 +216,10 @@ class JDBCHistoryCache implements HistoryCache {
             s.execute(getQuery("createTableAuthors"));
         }
 
+        if (!tableExists(dmd, SCHEMA, "TAGS")) {
+            s.execute(getQuery("createTableTags"));
+        }
+
         if (!tableExists(dmd, SCHEMA, "CHANGESETS")) {
             s.execute(getQuery("createTableChangesets"));
             // Create a composite index on the repository in ascending order
@@ -239,6 +246,7 @@ class JDBCHistoryCache implements HistoryCache {
         initIdGenerator(s, "getMaxDirId", nextDirId);
         initIdGenerator(s, "getMaxChangesetId", nextChangesetId);
         initIdGenerator(s, "getMaxAuthorId", nextAuthorId);
+        initIdGenerator(s, "getMaxTagId", nextTagId);
 
         StringBuilder infoBuilder = new StringBuilder();
         infoBuilder.append(getClass().getSimpleName() + "\n");
@@ -576,16 +584,17 @@ class JDBCHistoryCache implements HistoryCache {
                     // Get the information about a changeset
                     String revision = rs.getString(1);
                     String author = rs.getString(2);
-                    Timestamp time = rs.getTimestamp(3);
-                    String message = rs.getString(4);
+                    String tags = rs.getString(3);
+                    Timestamp time = rs.getTimestamp(4);
+                    String message = rs.getString(5);
                     HistoryEntry entry = new HistoryEntry(
-                                revision, time, author, message, true);
+                                revision, time, author, tags, message, true);
                     entries.add(entry);
 
                     // Fill the list of files touched by the changeset, if
                     // requested.
                     if (withFiles) {
-                        int changeset = rs.getInt(5);
+                        int changeset = rs.getInt(6);
                         filePS.setInt(1, changeset);
 
                         // We do check next(), but PMD doesn't understand it.
@@ -647,6 +656,7 @@ class JDBCHistoryCache implements HistoryCache {
 
         Integer reposId = null;
         Map<String, Integer> authors = null;
+        Map<String, Integer> tags = null;
         Map<String, Integer> files = null;
         Map<String, Integer> directories = null;
         PreparedStatement addChangeset = null;
@@ -662,6 +672,11 @@ class JDBCHistoryCache implements HistoryCache {
 
                 if (authors == null) {
                     authors = getAuthors(conn, history, reposId);
+                    conn.commit();
+                }
+                
+                if (tags == null) {
+                    tags = getTags(conn, history, reposId);
                     conn.commit();
                 }
 
@@ -713,7 +728,12 @@ class JDBCHistoryCache implements HistoryCache {
                 try {
                     addChangeset.setString(2, entry.getRevision());
                     addChangeset.setInt(3, authors.get(entry.getAuthor()));
-                    addChangeset.setTimestamp(4,
+                    if (entry.getTags() != null) {
+                        addChangeset.setInt(4, tags.get(entry.getTags()));
+                    } else {
+                        addChangeset.setNull(4, java.sql.Types.INTEGER);
+                    }
+                    addChangeset.setTimestamp(5,
                             new Timestamp(entry.getDate().getTime()));
                     String msg = entry.getMessage();
                     // Truncate the message if it can't fit in a VARCHAR
@@ -721,9 +741,9 @@ class JDBCHistoryCache implements HistoryCache {
                     if (msg.length() > MAX_MESSAGE_LENGTH) {
                         msg = truncate(msg, MAX_MESSAGE_LENGTH);
                     }
-                    addChangeset.setString(5, msg);
+                    addChangeset.setString(6, msg);
                     int changesetId = nextChangesetId.getAndIncrement();
-                    addChangeset.setInt(6, changesetId);
+                    addChangeset.setInt(7, changesetId);
                     addChangeset.executeUpdate();
 
                     // Add one row for each file in FILECHANGES, and one row
@@ -917,6 +937,12 @@ class JDBCHistoryCache implements HistoryCache {
     private static final InsertQuery ADD_AUTHOR =
             new InsertQuery(getQuery("addAuthor"));
 
+    private static final PreparedQuery GET_TAGS =
+            new PreparedQuery(getQuery("getTags"));
+
+    private static final InsertQuery ADD_TAGS =
+            new InsertQuery(getQuery("addTags"));
+
     /**
      * Get a map from author names to their ids in the database. The authors
      * that are not in the database are added to it.
@@ -955,6 +981,38 @@ class JDBCHistoryCache implements HistoryCache {
             }
         }
 
+        return map;
+    }
+    
+    private Map<String, Integer> getTags(
+            ConnectionResource conn, History history, int reposId) 
+        throws SQLException {
+        HashMap<String, Integer> map = new HashMap<String, Integer>();
+        PreparedStatement ps = conn.getStatement(GET_TAGS);
+        ps.setInt(1, reposId);
+        ResultSet rs = ps.executeQuery();
+        try {
+            while (rs.next()) {
+                map.put(rs.getString(1), rs.getInt(2));
+            }
+        } finally {
+            rs.close();
+        }
+
+        PreparedStatement insert = conn.getStatement(ADD_TAGS);
+        insert.setInt(1, reposId);
+        for (HistoryEntry entry : history.getHistoryEntries()) {
+            String tags = entry.getTags();
+            if (tags != null && !map.containsKey(tags)) {
+                int id = nextTagId.getAndIncrement();
+                insert.setString(2, tags);
+                insert.setInt(3, id);
+                insert.executeUpdate();
+                map.put(tags, id);
+                conn.commit();
+            }
+        }
+        
         return map;
     }
 

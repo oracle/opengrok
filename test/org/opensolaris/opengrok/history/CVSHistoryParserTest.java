@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -71,7 +70,7 @@ public class CVSHistoryParserTest {
 
     /**
      * Parse something that could come out from the W3C public CVS repository
-     * 
+     *
      * @throws java.lang.Exception
      */
     @Test
@@ -79,6 +78,7 @@ public class CVSHistoryParserTest {
         String revId1 = "1.2";
         String revId2 = "1.2.4.5";
         String revId3 = "1.134";
+        String tag1 = "file_tag";
         String author1 = "username";
         String author2 = "username2";
         String date1 = "2005-05-16 21:22:34 +0200";
@@ -91,23 +91,29 @@ public class CVSHistoryParserTest {
                 "branch:\n" +
                 "locks: strict\n" +
                 "access list:\n" +
+                "symbolic names:\n" +
+                "\t" + tag1 + ": " + revId2 + "\n" +
                 "keyword substitution: kv\n" +
                 "total revisions: 4;\tselected revisions: 3\n" +
                 "description:\n" +
                 "----------------------------\n" +
                 "revision " + revId1 + "\n" +
-                "date: " + date1 + ";  author: " + author1 + ";  state: Exp;  lines: +2 -2;\n" +
+                "date: " + date1 + ";  author: " + author1 +
+                ";  state: Exp;  lines: +2 -2;\n" +
                 "a comment\n" +
                 "----------------------------\n" +
                 "revision " + revId2 + "\n" +
-                "date: " + date2 + ";  author: " + author2 + ";  state: Exp;  lines: +2 -4;\n" +
+                "date: " + date2 + ";  author: " + author2 +
+                ";  state: Exp;  lines: +2 -4;\n" +
                 "just a short comment\n" +
                 "----------------------------\n" +
                 "revision " + revId3 + "\n" +
-                "date: " + date1 + ";  author: " + author1 + ";  state: Exp;  lines: +6 -2;\n" +
+                "date: " + date1 + ";  author: " + author1 +
+                ";  state: Exp;  lines: +6 -2;\n" +
                 "some comment that is\n" +
                 "spanning two lines\n" +
-                "=============================================================================\n";
+                "==========================================================" +
+                "===================\n";
         History result = instance.parse(output);
         assertNotNull(result);
         assertEquals(3, result.getHistoryEntries().size());
@@ -117,13 +123,16 @@ public class CVSHistoryParserTest {
         assertEquals(0, e0.getFiles().size());
         HistoryEntry e1 = result.getHistoryEntries().get(1);
         assertEquals(revId2, e1.getRevision());
+        assertEquals(tag1, e1.getTags());
         assertEquals(author2, e1.getAuthor());
         assertEquals(0, e1.getFiles().size());
         HistoryEntry e2 = result.getHistoryEntries().get(2);
         assertEquals(revId3, e2.getRevision());
         assertEquals(author1, e2.getAuthor());
         assertEquals(0, e2.getFiles().size());
-        assertTrue("Should contain comment of both lines: line 1", e2.getMessage().contains("some"));
-        assertTrue("Should contain comment of both lines: line 2", e2.getMessage().contains("two"));
+        assertTrue("Should contain comment of both lines: line 1",
+            e2.getMessage().contains("some"));
+        assertTrue("Should contain comment of both lines: line 2",
+            e2.getMessage().contains("two"));
     }
 }

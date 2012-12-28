@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -27,9 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -49,6 +47,12 @@ public abstract class Repository extends RepositoryInfo {
      * hasn't been initialized by {@link #ensureCommand} yet.
      */
     protected String cmd;
+    
+    /**
+     * List of <revision, tags> pairs for repositories which display tags
+     * only for files changed by the tagged commit.
+     */
+    protected TreeSet<TagEntry> tagList = null;
 
     abstract boolean fileHasHistory(File file);
 
@@ -164,6 +168,75 @@ public abstract class Repository extends RepositoryInfo {
      * @return <code>true</code> if annotation is supported
      */
     abstract boolean fileHasAnnotation(File file);
+    
+    /**
+     * Returns if this repository tags only files changed in last commit, i.e.
+     * if we need to prepare list of repository-wide tags prior to creation of
+     * file history entries.
+     * @return True if we need tag list creation prior to file parsing,
+     * false by default.
+     */
+    boolean hasFileBasedTags() {
+        return false;
+    }
+    
+    TreeSet<TagEntry> getTagList() {
+        return this.tagList;
+    }
+    
+    /**
+     * Assign tags to changesets they represent
+     * The complete list of tags must be pre-built using {@code getTagList()}.
+     * Then this function squeeze all tags to changesets which actually exist
+     * in the history of given file.
+     * Must be implemented repository-specific.
+     * @see getTagList
+     * @param hist History we want to assign tags to.
+     */
+    void assignTagsInHistory(History hist) throws HistoryException {
+        if (hist == null) {
+            return;
+        }
+        if (this.getTagList() == null) {
+            throw new HistoryException("Tag list was not created before assigning tags to changesets!");
+        }
+        Iterator<TagEntry> it = this.getTagList().descendingIterator();
+        TagEntry lastTagEntry = null;
+        // Go through all commits of given file
+        for (HistoryEntry ent : hist.getHistoryEntries()) {
+            // Assign all tags created since the last revision
+            // Revision in this HistoryEntry must be already specified!
+            // TODO is there better way to do this? We need to "repeat"
+            // last element returned by call to next()
+            while (lastTagEntry != null || it.hasNext()) {
+                if (lastTagEntry == null) {
+                    lastTagEntry = it.next();
+                }
+                if (lastTagEntry.compareTo(ent) >= 0) {
+                    if (ent.getTags() == null) {
+                        ent.setTags(lastTagEntry.getTags());
+                    } else {
+                        ent.setTags(ent.getTags() + ", " + lastTagEntry.getTags());
+                    }
+                } else {
+                    break;
+                }
+                if (it.hasNext()) {
+                    lastTagEntry = it.next();
+                } else {
+                    lastTagEntry = null;
+                }
+            }
+        }        
+    }
+    
+    /**
+     * Create internal list of all tags in this repository.
+     * @param directory 
+     */
+    protected void buildTagList(File directory) {
+        this.tagList = null;
+    }
 
     /**
      * Annotate the specified revision of a file.

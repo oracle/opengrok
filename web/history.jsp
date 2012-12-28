@@ -86,7 +86,15 @@ document.domReady.push(function() {domReadyHistory();});
         + uriEncodedName %>"><%= path %></a></caption>
     <thead>
         <tr>
-            <th>Revision</th><%
+            <th>Revision <%
+            if (hist.hasTags()) {
+                %><a href="#" onclick="javascript: toggle_revtags(); return false;">
+                    <span class="revtags-hidden">
+                    (&lt;&lt;&lt; Hide revision tags)</span>
+                    <span class="revtags">
+                    (Show revision tags &gt;&gt;&gt;)</span></a><%
+            }
+            %></th><%
             if (!cfg.isDir()) {
             %>
             <th><input type="submit" value=" Compare "/></th><%
@@ -113,6 +121,21 @@ document.domReady.push(function() {domReadyHistory();});
                 String rev = entry.getRevision();
                 if (rev == null || rev.length() == 0) {
                     rev = "";
+                }
+                String tags = entry.getTags();
+
+                if (tags != null) {
+			int colspan;
+			if (cfg.isDir())
+				colspan = 4;
+			else
+				colspan = 5;
+                    %>
+        <tr class="revtags-hidden">
+            <td colspan="<%= colspan %>" class="revtags">
+                <b>Revision tags:</b> <%= tags %>
+            </td>
+        </tr><tr style="display: none;"></tr><%
                 }
     %>
         <tr><%

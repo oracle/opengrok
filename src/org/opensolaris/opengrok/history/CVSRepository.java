@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
@@ -118,7 +117,6 @@ public class CVSRepository extends RCSRepository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("log");
-        cmd.add("-N"); //don't display tags
 
         if (isBranch==null) {
             File tagFile = new File(getDirectoryName(), "CVS/Tag");

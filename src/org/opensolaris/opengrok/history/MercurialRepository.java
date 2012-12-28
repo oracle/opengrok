@@ -29,14 +29,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
@@ -339,6 +338,77 @@ public class MercurialRepository extends Repository {
     @Override
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
-        return new MercurialHistoryParser(this).parse(file, sinceRevision);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        History result = new MercurialHistoryParser(this).parse(file, sinceRevision);
+        // Assign tags to changesets they represent
+        // We don't need to check if this repository supports tags, because we know it:-)
+        if (env.isTagsEnabled()) {
+            assignTagsInHistory(result);
+        }
+        return result;
+    }
+    
+    /**
+     * We need to create list of all tags prior to creation of HistoryEntries
+     * per file.
+     * @return true.
+     */
+    @Override
+    boolean hasFileBasedTags() {
+        return true;
+    }
+    
+    @Override
+    protected void buildTagList(File directory) {
+        this.tagList = new TreeSet<TagEntry>();
+        ArrayList<String> argv = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
+        argv.add("tags");
+        ProcessBuilder pb = new ProcessBuilder(argv);
+        pb.directory(directory);
+        Process process = null;
+        BufferedReader in = null;
+
+        try {
+            process = pb.start();
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                String parts[] = line.split("  *");
+                if (parts.length < 2) {
+                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                }
+                // Grrr, how to parse tags with spaces inside?
+                // This solution will loose multiple spaces;-/
+                String tag = parts[0];
+                for (int i = 1; i < parts.length - 1; ++i) {
+                    tag += " " + parts[i];
+                }
+                String revParts[] = parts[parts.length - 1].split(":");
+                if (revParts.length != 2) {
+                    throw new HistoryException("Mercurial revision parsing error: " + parts[parts.length - 1]);
+                }
+                TagEntry tagEntry = new MercurialTagEntry(Integer.parseInt(revParts[0]), tag);
+                // Reverse the order of the list
+                this.tagList.add(tagEntry);
+            }
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
+            this.tagList = null;
+        } catch (HistoryException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse tag list: {0}", e.getMessage());
+            this.tagList = null;
+        }
+        
+        IOUtils.close(in);
+        if (process != null) {
+            try {
+                process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                // the process is still running??? just kill it..
+                process.destroy();
+            }
+        }
     }
 }

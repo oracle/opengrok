@@ -172,6 +172,7 @@ class FileHistoryCache implements HistoryCache {
     @Override
     public void store(History history, Repository repository)
             throws HistoryException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (history.getHistoryEntries() == null) {
             return;
@@ -187,7 +188,12 @@ class FileHistoryCache implements HistoryCache {
                     list = new ArrayList<HistoryEntry>();
                     map.put(s, list);
                 }
-                list.add(e);
+                // We need to do deep copy in order to have different tags per each commit
+                if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
+                    list.add(new HistoryEntry(e));
+                } else {
+                    list.add(e);
+                }
             }
         }
 
@@ -198,6 +204,12 @@ class FileHistoryCache implements HistoryCache {
             }
             History hist = new History();
             hist.setHistoryEntries(e.getValue());
+
+            // Assign tags to changesets they represent
+            if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
+                repository.assignTagsInHistory(hist);
+            }
+
             File file = new File(root, e.getKey());
             if (!file.isDirectory()) {
                 storeFile(hist, file);

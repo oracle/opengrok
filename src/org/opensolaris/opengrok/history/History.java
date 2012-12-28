@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -70,6 +69,22 @@ public class History {
     public boolean hasFileList() {
         for (HistoryEntry entry : entries) {
             if (!entry.getFiles().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if at least one history entry has a tag list.
+     *
+     * @return {@code true} if at least one of the entries has a non-empty
+     * tag list, {@code false} otherwise
+     * @todo Use a private variable instead of for loop?
+     */
+    public boolean hasTags() {
+        for (HistoryEntry entry : entries) {
+            if (entry.getTags() != null) {
                 return true;
             }
         }

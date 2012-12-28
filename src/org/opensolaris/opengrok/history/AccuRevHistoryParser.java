@@ -65,34 +65,28 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
         String relPath = repository.getDepotRelativePath(file);
 
         /*
-         * ------------------------------------------------------ When the path
-         * given is really just the root to the source workarea, no history is
-         * available, create fake.
-        *------------------------------------------------------
+         * When the path given is really just the root to the source
+         * workarea, no history is available, create fake.
          */
         if (relPath.equals("/./")) {
 
             List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
 
             entries.add(new HistoryEntry(
-                    "", new Date(), "OpenGrok", "Workspace Root", true));
+                    "", new Date(), "OpenGrok", null, "Workspace Root", true));
 
             history = new History(entries);
 
         } else {
             try {
                 /*
-                 * -------------------------------------------------------------
                  * Errors will be logged, so not bothering to add to the output.
-                *-------------------------------------------------------------
                  */
                 Executor executor = repository.getHistoryLogExecutor(file);
                 executor.exec(true, this);
 
                 /*
-                 * ---------------------------------------------- Try again
-                 * because there was no 'keep' history.
-                *----------------------------------------------
+                 * Try again because there was no 'keep' history.
                  */
                 if (!foundHistory) {
                     executor = repository.getHistoryLogExecutor(file);
@@ -121,7 +115,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
         history = new History();
 
         /*
-         * ---------------------------------------------------------------
          * Accurev history of an element (directory or file) looks like:
          *
          * element: /./path/to/element eid: 238865 transaction 1486194; purge;
@@ -139,7 +132,6 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
          * comment (message)
          *
          * Any lines not recognized are ignored.
-        *---------------------------------------------------------------
          */
         while ((line = in.readLine()) != null) {
 

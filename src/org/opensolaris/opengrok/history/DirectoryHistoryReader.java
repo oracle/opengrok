@@ -197,7 +197,7 @@ public class DirectoryHistoryReader {
 
         icomment = citer.next();
 
-        currentEntry = new HistoryEntry(null, idate, iauthor, icomment, true);
+        currentEntry = new HistoryEntry(null, idate, iauthor, null, icomment, true);
 
         return true;
     }

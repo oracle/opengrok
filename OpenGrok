@@ -52,6 +52,8 @@
 #   - OPENGROK_DERBY              if set, then indexer tries to use derby as
 #                                 historycache (see derby command of this
 #                                 script)
+#   - OPENGROK_TAG                Enable parsing of revision tags into the History
+#                                 view
 #   - READ_XML_CONFIGURATION      file with read only configuration
 #                                 - temporary workaround for bug # 327
 #
@@ -304,6 +306,14 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     if [ -n "${OPENGROK_DERBY}" ]
     then
         DERBY_HISTORY_CACHE="-D"
+    fi
+
+    # OPTIONAL: Show revision tags in History view.
+    #		Turn this off if you want to increase indexing performance a bit
+    #           (default: off)
+    if [ -n "${OPENGROK_TAG}" ]
+    then
+        HISTORY_TAGS="-G"
     fi
 
     # DELIVERED: An update program for EftarFile
@@ -733,6 +743,7 @@ StdInvocation()
         -jar ${OPENGROK_JAR}                                    \
         ${IGNORE_PATTERNS} ${ENABLE_PROJECTS}                   \
         ${DERBY_HISTORY_CACHE}                                  \
+        ${HISTORY_TAGS}						\
         ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOSITORIES}           \
         ${SCAN_DEPTH}                                           \
         ${VERBOSE} ${QUIET}                                     \

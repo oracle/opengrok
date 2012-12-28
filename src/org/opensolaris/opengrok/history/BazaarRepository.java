@@ -18,24 +18,21 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Bazaar repository.
@@ -257,11 +254,82 @@ public class BazaarRepository extends Repository {
 
     @Override
     History getHistory(File file, String sinceRevision) throws HistoryException {
-        return new BazaarHistoryParser(this).parse(file, sinceRevision);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        History result = new BazaarHistoryParser(this).parse(file, sinceRevision);
+        // Assign tags to changesets they represent
+        // We don't need to check if this repository supports tags, because we know it:-)
+        if (env.isTagsEnabled()) {
+            assignTagsInHistory(result);
+        }
+        return result;
     }
 
     @Override
     History getHistory(File file) throws HistoryException {
         return getHistory(file, null);
+    }
+
+    @Override
+    boolean hasFileBasedTags() {
+        return true;
+    }
+
+    /**
+     * @param directory Directory where we list tags
+     */
+    @Override
+    protected void buildTagList(File directory) {
+        this.tagList = new TreeSet<TagEntry>();
+        ArrayList<String> argv = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
+        argv.add("tags");
+        ProcessBuilder pb = new ProcessBuilder(argv);
+        pb.directory(directory);
+        Process process = null;
+        BufferedReader in = null;
+
+        try {
+            process = pb.start();
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                String parts[] = line.split("  *");
+                if (parts.length < 2) {
+                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                }
+                // Grrr, how to parse tags with spaces inside?
+                // This solution will loose multiple spaces;-/
+                String tag = parts[0];
+                for (int i = 1; i < parts.length - 1; ++i) {
+                    tag += " " + parts[i];
+                }
+                TagEntry tagEntry = new BazaarTagEntry(Integer.parseInt(parts[parts.length - 1]), tag);
+                // Bazaar lists multiple tags on more lines. We need to merge those into single TagEntry
+                TagEntry higher = this.tagList.ceiling(tagEntry);
+                if (higher != null && higher.equals(tagEntry)) {
+                    // Found in the tree, merge tags
+                    this.tagList.remove(higher);
+                    tagEntry.setTags(higher.getTags() + ", " + tag);
+                }
+                this.tagList.add(tagEntry);
+            }
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
+            this.tagList = null;
+        } catch (HistoryException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse tag list: {0}", e.getMessage());
+            this.tagList = null;
+        }
+
+        IOUtils.close(in);
+        if (process != null) {
+            try {
+                process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                // the process is still running??? just kill it..
+                process.destroy();
+            }
+        }
     }
 }

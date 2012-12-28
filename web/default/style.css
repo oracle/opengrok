@@ -295,6 +295,18 @@ table#revisions {
 	display: none;
 }
 
+#revisions tr.revtags { /* "Show revision tags" */
+	display: table-row;
+}
+
+#revisions span.revtags { /* "Show revision tags" */
+	display: inline;
+}
+
+#revisions tr.revtags-hidden, #revisions span.revtags-hidden { /* "Hide revision tags" */
+	display: none;
+}
+
 #revisions tbody td:first-child {
 	/* rev number - git/mercurial revs numbers look bad with prop. fonts */
 	font-family: monospace;
@@ -309,6 +321,11 @@ table#revisions {
 #revisions tbody td:nth-child(4) { /* author column */
 	padding: 0 1ex;
 	text-align: center;
+}
+
+#revisions tbody td.revtags { /* tags row */
+        text-align: left;
+        color: #777777;
 }
 
 .rssbadge { /* RSS/XML Feed on history page */

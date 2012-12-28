@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * This is a factory class for the different repositories.
@@ -78,6 +79,7 @@ public final class RepositoryFactory {
      * @return Correct repository for the given file
      */
     public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         Repository res = null;
         for (Repository rep : repositories) {
             if (rep.isRepositoryFor(file)) {
@@ -101,6 +103,13 @@ public final class RepositoryFactory {
                 if (res.getType() == null || res.getType().length() == 0) {
                     res.setType(res.getClass().getSimpleName());
                 }
+
+                // If this repository displays tags only for files changed by tagged
+                // revision, we need to prepare list of all tags in advance.
+                if (env.isTagsEnabled() && res.hasFileBasedTags()) {
+                    res.buildTagList(file);
+                }
+
                 break;
             }
         }

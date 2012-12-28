@@ -222,7 +222,8 @@ public class JDBCHistoryCacheTest extends TestCase {
         HistoryEntry newEntry = new HistoryEntry(
                 "3:78649c3ec6cb",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
-                "xyz", "Return failure when executed with no arguments", true);
+                "xyz", null, "Return failure when executed with no arguments",
+                true);
         newEntry.addFile("/mercurial/main.c");
 
         LinkedList<HistoryEntry> updatedEntries = new LinkedList<HistoryEntry>(
@@ -424,7 +425,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         Repository r = RepositoryFactory.getRepository(reposRoot);
         // Create an entry where author is null
         HistoryEntry e = new HistoryEntry(
-                "1", new Date(), null, "Initial revision", true);
+                "1", new Date(), null, null, "Initial revision", true);
         e.addFile("/svn/file.txt");
         List<HistoryEntry> entries = Collections.singletonList(e);
         cache.store(new History(entries), r);

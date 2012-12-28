@@ -73,6 +73,7 @@ public final class Configuration {
      * Should the history cache be stored in a database?
      */
     private boolean historyCacheInDB;
+
     private List<Project> projects;
     private String sourceRoot;
     private String dataRoot;
@@ -87,7 +88,10 @@ public final class Configuration {
     private Project defaultProject;
     private int indexWordLimit;
     private boolean verbose;
-    //if below is set, then we count how many files per project we need to process and print percentage of completion per project
+    /**
+     * If below is set, then we count how many files per project we need
+     * to process and print percentage of completion per project.
+     */
     private boolean printProgress;
     private boolean allowLeadingWildcard;
     private IgnoredNames ignoredNames;
@@ -104,6 +108,7 @@ public final class Configuration {
     private boolean useLuceneLocking;
     private boolean compressXref;
     private boolean indexVersionedFilesOnly;
+    private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
     private String databaseDriver;
@@ -189,6 +194,7 @@ public final class Configuration {
         setUsingLuceneLocking(false);
         setCompressXref(true);
         setIndexVersionedFilesOnly(false);
+        setTagsEnabled(false);
         setHitsPerPage(25);
         setCachePages(5);
         setScanningDepth(3); // default depth of scanning for repositories
@@ -406,6 +412,7 @@ public final class Configuration {
     public boolean isAllowLeadingWildcard() {
         return allowLeadingWildcard;
     }
+
     private boolean quickContextScan;
 
     public boolean isQuickContextScan() {
@@ -527,6 +534,15 @@ public final class Configuration {
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
     }
+    
+    public boolean isTagsEnabled() {
+        return this.tagsEnabled;
+    }
+    
+    public void setTagsEnabled(boolean tagsEnabled) {
+        this.tagsEnabled = tagsEnabled;
+    }
+
     private transient Date lastModified;
 
     /**
@@ -584,11 +600,13 @@ public final class Configuration {
         }
         return "";
     }
+
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the footer of generated web pages.
      */
     public static final String FOOTER_INCLUDE_FILE = "footer_include";
+    
     private transient String footer = null;
 
     /**
@@ -603,11 +621,13 @@ public final class Configuration {
         }
         return footer;
     }
+
     /**
      * The name of the file relative to the <var>DATA_ROOT</var>, which should
      * be included into the footer of generated web pages.
      */
     public static final String HEADER_INCLUDE_FILE = "header_include";
+
     private transient String header = null;
 
     /**
@@ -622,6 +642,7 @@ public final class Configuration {
         }
         return header;
     }
+
     /**
      * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
      * contains definition tags.
@@ -747,4 +768,5 @@ public final class Configuration {
         }
         return (Configuration) ret;
     }
+
 }

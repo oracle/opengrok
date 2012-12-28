@@ -16,8 +16,12 @@
  *
  * CDDL HEADER END
  */
+
 /*
- * Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+ */
+
+/*
  * Portions Copyright 2011 Jens Elkner.
  */
 document.pageReady = [];
@@ -329,6 +333,31 @@ function toggle_filelist() {
             } else if (this.className == "filelist-hidden") {
                 this.setAttribute("style", "display: inline;");
                 this.className = "filelist";
+            }
+        }
+    );
+}
+
+function toggle_revtags() {
+    $("tr").each(
+        function() {
+            if (this.className == "revtags") {
+                this.setAttribute("style", "display: none;");
+                this.className = "revtags-hidden";
+            } else if (this.className == "revtags-hidden") {
+                this.setAttribute("style", "display: table-row;");
+                this.className = "revtags";
+            }
+        }
+    );
+    $("span").each(
+        function() {
+            if (this.className == "revtags") {
+                this.setAttribute("style", "display: none;");
+                this.className = "revtags-hidden";
+            } else if (this.className == "revtags-hidden") {
+                this.setAttribute("style", "display: inline;");
+                this.className = "revtags";
             }
         }
     );

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.management.client;
@@ -158,6 +158,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         this.compressXRefsCB.setSelected(config.isCompressXref());
         this.cTagsField.setText(config.getCtags());
         this.generateHtmlCB.setSelected(config.isGenerateHtml());
+        this.tagsEnabledCB.setSelected(config.isTagsEnabled());
         this.historyCacheCB.setSelected(config.isHistoryCache());
         this.indexWordLimitField.setText(Integer.toString(config.getIndexWordLimit()));
         this.allowLeadingWildCardsCB.setSelected(config.isAllowLeadingWildcard());
@@ -255,6 +256,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         compressXRefsCB = new javax.swing.JCheckBox();
         jLabel18 = new javax.swing.JLabel();
         indexWordLimitField = new javax.swing.JTextField();
+        tagsEnabledCB = new javax.swing.JCheckBox();
         projectsPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         projectsTable = new javax.swing.JTable();
@@ -414,6 +416,8 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
 
         indexWordLimitField.setText("jTextField1"); // NOI18N
 
+        tagsEnabledCB.setText("Assign Tags in History"); // NOI18N
+
         javax.swing.GroupLayout indexerPanelLayout = new javax.swing.GroupLayout(indexerPanel);
         indexerPanel.setLayout(indexerPanelLayout);
         indexerPanelLayout.setHorizontalGroup(
@@ -448,6 +452,11 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                                 .addComponent(historyReaderTimelimitField, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE))
                             .addComponent(optimizedDatabaseCB)
                             .addComponent(indexVersionedFilesOnlyCB)))
+                    .addGroup(indexerPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(indexWordLimitField, 0, 1, Short.MAX_VALUE)
+                        .addGap(325, 325, 325))
                     .addGroup(indexerPanelLayout.createSequentialGroup()
                         .addComponent(jLabel16)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -825,6 +834,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
        config.setCompressXref(this.compressXRefsCB.isSelected());
        config.setCtags(this.cTagsField.getText());
        config.setGenerateHtml(this.generateHtmlCB.isSelected());
+       config.setTagsEnabled(this.tagsEnabledCB.isSelected());
        config.setHistoryCache(this.historyCacheCB.isSelected());
        config.setHistoryCacheTime(Integer.parseInt(this.historyReaderTimelimitField.getText()));
        config.setIndexWordLimit(Integer.parseInt(this.indexWordLimitField.getText()));
@@ -918,6 +928,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
     private javax.swing.JTextField reviewPageField;
     private javax.swing.JTextField reviewPatternField;
     private javax.swing.JTextField sourceRootField;
+    private javax.swing.JCheckBox tagsEnabledCB;
     private javax.swing.JButton updateBtn;
     private javax.swing.JTextField urlPrefixField;
     private javax.swing.JTextField userPageField;

@@ -18,9 +18,10 @@
  */
 
 /*
- * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ */
+/*
  * Copyright 2006 Trond Norbye.  All rights reserved.
- * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.history;
 
@@ -42,6 +43,7 @@ public class HistoryEntry {
     private String revision;
     private Date date;
     private String author;
+    private String tags;
 
     @SuppressWarnings("PMD.AvoidStringBufferField")
     private final StringBuffer message;
@@ -56,12 +58,25 @@ public class HistoryEntry {
         files = new TreeSet<String>();
         changeRequests = new ArrayList<String>();
     }
+    
+    /** Copy constructor */
+    public HistoryEntry(HistoryEntry that) {
+        this.revision = that.revision;
+        this.date = that.date;
+        this.author = that.author;
+        this.tags = that.tags;
+        this.message = that.message;
+        this.active = that.active;
+        this.files = that.files;
+        this.changeRequests = that.changeRequests;
+    }
 
     public HistoryEntry(String revision, Date date, String author,
-            String message, boolean active) {
+            String tags, String message, boolean active) {
         this.revision = revision;
         setDate(date);
         this.author = author;
+        this.tags = tags;
         this.message = new StringBuffer(message);
         this.active = active;
         this.files = new TreeSet<String>();
@@ -76,6 +91,7 @@ public class HistoryEntry {
         Logger log = OpenGrokLogger.getLogger();
 
         log.log(Level.FINE, "HistoryEntry : revision       = {0}", revision);
+        log.log(Level.FINE, "HistoryEntry : tags           = {0}", tags);
         log.log(Level.FINE, "HistoryEntry : date           = {0}", date);
         log.log(Level.FINE, "HistoryEntry : author         = {0}", author);
         log.log(Level.FINE, "HistoryEntry : active         = {0}", (active ? "True" : "False"));
@@ -100,6 +116,10 @@ public class HistoryEntry {
     public String getAuthor() {
         return author;
     }
+    
+    public String getTags() {
+        return tags;
+    }
 
     public Date getDate() {
         return (date == null) ? null : (Date) date.clone();
@@ -115,6 +135,10 @@ public class HistoryEntry {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+    
+    public void setTags(String tags) {
+        this.tags = tags;
     }
 
     public final void setDate(Date date) {
@@ -183,5 +207,6 @@ public class HistoryEntry {
      */
     public void strip() {
         files.clear();
+        tags = null;
     }
 }

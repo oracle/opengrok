@@ -30,14 +30,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Git repository.
@@ -393,7 +394,129 @@ public class GitRepository extends Repository {
     @Override
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
-        return new GitHistoryParser().parse(file, this, sinceRevision);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        History result = new GitHistoryParser().parse(file, this, sinceRevision);
+        // Assign tags to changesets they represent
+        // We don't need to check if this repository supports tags, because we know it:-)
+        if (env.isTagsEnabled()) {
+            assignTagsInHistory(result);
+        }
+        return result;
+    }
+
+    @Override
+    boolean hasFileBasedTags() {
+        return true;
+    }
+
+    private TagEntry buildTagEntry(File directory, String tags) throws HistoryException, IOException {
+        String hash = null;
+        Date date = null;
+
+        ArrayList<String> argv = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
+        argv.add("log");
+        argv.add("--format=commit:%H" + System.getProperty("line.separator")
+                + "Date:%at");
+        argv.add("-r");
+        argv.add(tags + "^.." + tags);
+        ProcessBuilder pb = new ProcessBuilder(argv);
+        pb.directory(directory);
+        Process process = null;
+        BufferedReader in = null;
+
+        process = pb.start();
+        in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = in.readLine()) != null) {
+            if (line.startsWith("commit")) {
+                String parts[] = line.split(":");
+                if (parts.length < 2) {
+                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                }
+                hash = parts[1];
+            }
+            if (line.startsWith("Date")) {
+                String parts[] = line.split(":");
+                if (parts.length < 2) {
+                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                }
+                date = new Date((long)(Integer.parseInt(parts[1])) * 1000);
+            }
+        }
+
+        IOUtils.close(in);
+        if (process != null) {
+            try {
+                process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                // the process is still running??? just kill it..
+                process.destroy();
+            }
+        }
+
+        // Git can have tags not pointing to any commit, but tree instead
+        // Lets use Unix timestamp of 0 for such commits
+        if (date == null) {
+            date = new Date(0);
+        }
+        TagEntry result = new GitTagEntry(hash, date, tags);
+        return result;
+    }
+
+    @Override
+    protected void buildTagList(File directory) {
+        this.tagList = new TreeSet<TagEntry>();
+        ArrayList<String> argv = new ArrayList<String>();
+        LinkedList<String> tagsList = new LinkedList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        argv.add(cmd);
+        argv.add("tag");
+        ProcessBuilder pb = new ProcessBuilder(argv);
+        pb.directory(directory);
+        Process process = null;
+        BufferedReader in = null;
+
+        try {
+            // First we have to obtain list of all tags, and put it asside
+            // Otherwise we can't use git to get date & hash for each tag
+            process = pb.start();
+            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                tagsList.add(line);
+            }
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
+            this.tagList = null;
+        }
+
+        // Make sure this git instance is not running any more
+        IOUtils.close(in);
+        if (process != null) {
+            try {
+                process.exitValue();
+            } catch (IllegalThreadStateException e) {
+                // the process is still running??? just kill it..
+                process.destroy();
+            }
+        }
+
+        try {
+            // Now get hash & date for each tag
+            for (String tags : tagsList) {
+                TagEntry tagEntry = buildTagEntry(directory, tags);
+                // Reverse the order of the list
+                this.tagList.add(tagEntry);
+            }
+        } catch (HistoryException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse tag list: {0}", e.getMessage());
+            this.tagList = null;
+        } catch (IOException e) {
+            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
+            this.tagList = null;
+        }
     }
 }
 

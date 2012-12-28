@@ -299,10 +299,12 @@ public final class RuntimeEnvironment {
         executor.exec(false);
         String output = executor.getOutputString();
         if (output == null || output.indexOf("Exuberant Ctags") == -1) {
-            log.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH!\n"
+            log.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
                     + "(tried running " + "{0}" + ")\n"
-                    + "Please use option -c to specify path to a good Exuberant Ctags program\n"
-                    + "Or set it in java property org.opensolaris.opengrok.analysis.Ctags", getCtags());
+                    + "Please use option -c to specify path to a good "
+                    + "Exuberant Ctags program.\n"
+                    + "Or set it in java property "
+                    + "org.opensolaris.opengrok.analysis.Ctags", getCtags());
             ret = false;
         }
 
@@ -713,6 +715,14 @@ public final class RuntimeEnvironment {
 
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
+    }
+    
+    public boolean isTagsEnabled() {
+        return threadConfig.get().isTagsEnabled();
+    }
+    
+    public void setTagsEnabled(boolean tagsEnabled) {
+        threadConfig.get().setTagsEnabled(tagsEnabled);
     }
 
     public Date getDateForLastIndexRun() {

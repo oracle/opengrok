@@ -40,7 +40,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "SH",
         "KSH",
-        "KSHLIB",	// RFE #17849
+        "KSHLIB", // RFE #17849
         "CSH",
         "BASH",
         "RUBY",
@@ -52,7 +52,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
         "COM",
         "SPEC",
         "FLG",
-        "XCL",		// message
+        "XCL", // message
     };
 
     private static final String[] MAGICS = {

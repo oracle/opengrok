@@ -186,6 +186,9 @@ public final class Indexer {
                         case 'n':
                             runIndex = false;
                             break;
+                        case 'G':
+                            cfg.setTagsEnabled(true);
+                            break;
                         case 'H':
                             refreshHistory = true;
                             break;

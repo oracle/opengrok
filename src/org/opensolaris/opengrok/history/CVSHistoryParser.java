@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -32,6 +31,7 @@ import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
@@ -42,7 +42,7 @@ import org.opensolaris.opengrok.util.Executor;
 class CVSHistoryParser implements Executor.StreamHandler {
 
     private enum ParseState {
-        REVISION, METADATA, COMMENT
+        NAMES, TAG, REVISION, METADATA, COMMENT
     }
 
     private History history;
@@ -64,9 +64,35 @@ class CVSHistoryParser implements Executor.StreamHandler {
 
         history = new History();
         HistoryEntry entry = null;
-        ParseState state = ParseState.REVISION;
+        HashMap<String, String> tags = null;
+        ParseState state = ParseState.NAMES;
         String s = in.readLine();
         while (s != null) {
+            if (state == ParseState.NAMES && s.startsWith("symbolic names:")) {
+                tags = new HashMap<String, String>();
+                state = ParseState.TAG;
+                s = in.readLine();
+            }
+            if (state == ParseState.TAG) {
+                if (s.startsWith("\t")) {
+                    String[] pair = s.trim().split(": ");
+                    if (pair.length != 2) {
+                        OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse tag: ''{0}''", s);
+                    } else {
+                        if (tags.containsKey(pair[1])) {
+                            // Join multiple tags for one revision
+                            String oldtag = tags.get(pair[1]);
+                            tags.remove(pair[1]);
+                            tags.put(pair[1], oldtag + " " + pair[0]);
+                        } else {
+                            tags.put(pair[1], pair[0]);
+                        }
+                    }
+                } else {
+                    state = ParseState.REVISION;
+                    s = in.readLine();
+                }             
+            }
             if (state == ParseState.REVISION && s.startsWith("revision")) {
                 if (entry != null) {
                     entries.add(entry);
@@ -75,6 +101,9 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 entry.setActive(true);
                 String commit = s.substring("revision".length()).trim();
                 entry.setRevision(commit);
+                if (tags.containsKey(commit)) {
+                    entry.setTags(tags.get(commit));
+                }
                 state = ParseState.METADATA;
                 s = in.readLine();
             }
@@ -100,8 +129,10 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 s = in.readLine();
             }
             if (state == ParseState.COMMENT) {
-                if (s.startsWith("--------") || s.startsWith("========")) {
+                if (s.startsWith("--------")) {
                     state = ParseState.REVISION;
+                } else if (s.startsWith("========")) {
+                    state = ParseState.NAMES;
                 } else {
                     if (entry != null) {
                         entry.appendMessage(s);
