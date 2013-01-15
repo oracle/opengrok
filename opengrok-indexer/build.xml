@@ -34,6 +34,7 @@ Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
     <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
     <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
+    <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
     <property name="test.razor.repo" value="../ext/SampleRazorRepository/"/>
@@ -48,41 +49,41 @@ Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
 	<pathelement path="../lib"/>
     </path>
     
-    <property name="hg" value="hg"/>
+    <property name="git" value="git"/>
 
     <!-- Get the id of the changeset we're building from using a
          Mercurial command.
       -->
     <target name="-get-changeset-from-command"
-            depends="-check-is-hg-repo" if="build.from.repo">
-        <exec executable="${hg}"
+            depends="-check-is-git-repo" if="build.from.repo">
+        <exec executable="${git}"
               failifexecutionfails="no"
               outputproperty="changeset">
-            <arg value="identify"/>
-            <arg value="--id"/>
+            <arg value="rev-parse"/>
+            <arg value="HEAD"/>
         </exec>
     </target>
 
     <!-- Check if we build from a checked out copy of the repository,
-         so that we have history information from Mercurial available.
+         so that we have history information from git available.
       -->
-    <target name="-check-is-hg-repo">
-      <available property="build.from.repo" file=".hg" filepath=".." type="dir"/>
+    <target name="-check-is-git-repo">
+      <available property="build.from.repo" file=".git" filepath=".." type="dir"/>
     </target>
 
     <!-- Get the id of the changeset we're building from by reading
-         .hg_archival.txt file created by hg archive. This will only
+         .git_archival.txt file created by git archive. This will only
          be used when we're not building from a checked out copy of
          the repository, for example the source distribution.
       -->
     <target name="-get-changeset-from-file"
-            depends="-check-is-hg-repo" unless="build.from.repo">
-        <tempfile property="hg.archival.temp" deleteonexit="true"/>
-        <copy file="../.hg_archival.txt" tofile="${hg.archival.temp}"/>
-        <replaceregexp file="${hg.archival.temp}" flags="s"
+            depends="-check-is-git-repo" unless="build.from.repo">
+        <tempfile property="git.archival.temp" deleteonexit="true"/>
+        <copy file="../.git_archival.txt" tofile="${git.archival.temp}"/>
+        <replaceregexp file="${g.archival.temp}" flags="s"
                      match=".*node: ([0-9a-f]{12}).*"
                      replace="\1"/>
-        <loadfile srcFile="${hg.archival.temp}" property="changeset"/>
+        <loadfile srcFile="${git.archival.temp}" property="changeset"/>
     </target>
 
     <target name="-update-build-info"
@@ -107,6 +108,10 @@ Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="${test.hg}/hg"/>
         </copy>
         <copy file="${test.hg}/hgignore" tofile="${test.hg}/.hgignore"/>
+        <!-- same for git -->
+        <copy todir="${test.git}/.git">
+            <fileset dir="${test.git}/git"/>
+        </copy>
         
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
               basedir="${test.sources}"
@@ -114,7 +119,7 @@ Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
               defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
                 basedir="${test.repositories}"
-                excludes="mercurial/hg/**, mercurial/hgignore"
+                excludes="mercurial/hg/**, mercurial/hgignore, git/git"
                 update="false"
                 defaultexcludes="no"/>
 
@@ -174,6 +179,7 @@ Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
     <target name="-delete-generated-repository-files">
       <delete dir="${test.hg}/.hg"/>
       <delete file="${test.hg}/.hgignore"/>
+      <delete dir="${test.git}/.git"/>
       <delete dir="${test.svn}"/>
       <delete dir="${test.razor}"/>
       <delete file="${test.cvs.repo}/CVS/Root"/>
