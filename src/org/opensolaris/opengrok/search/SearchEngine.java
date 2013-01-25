@@ -54,7 +54,7 @@ import org.opensolaris.opengrok.search.context.HistoryContext;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * This is an encapsulation of the details on how to seach in the index
+ * This is an encapsulation of the details on how to search in the index
  * database.
  *
  * @author Trond Norbye 2005
@@ -75,7 +75,7 @@ public class SearchEngine {
     /**
      * version of lucene index common for whole app
      */
-    public static final Version LUCENE_VERSION = Version.LUCENE_40;
+    public static final Version LUCENE_VERSION = Version.LUCENE_41;
     /**
      * Holds value of property definition.
      */

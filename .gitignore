@@ -1,5 +1,6 @@
-syntax: glob
 *~
+nbproject/*~
+opengrok-web-nbproject/nbproject/*~
 tags
 TAGS
 build
@@ -27,6 +28,7 @@ lib/derby.jar
 lib/jrcs.jar
 lib/lucene-*
 derby.log
+opengrok*.log
 nbproject/genfiles.properties
 glassfish
 webrev
