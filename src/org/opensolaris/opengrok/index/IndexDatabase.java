@@ -93,6 +93,7 @@ public class IndexDatabase {
     static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
     private Ctags ctags;
     private LockFactory lockfact;
+    private final BytesRef emptyBR = new BytesRef("");
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you
@@ -358,22 +359,13 @@ public class IndexDatabase {
                 if (numDocs > 0) {
                     Fields uFields = MultiFields.getFields(reader);//reader.getTermVectors(0);
                     terms = uFields.terms(QueryBuilder.U);
-                }
-                Terms termsa;
-                //terms.
-                termsa = SlowCompositeReaderWrapper.wrap(reader).terms("u"); //new Term("u", startuid)
+                }                
+                
                 try {
                     if (numDocs > 0) {
-                        uidIter = terms.iterator(null);
-                        uidIter.seekExact(new BytesRef(startuid), true); // init uid iterator
+                        uidIter = terms.iterator(null);                        
+                        uidIter.seekCeil(new BytesRef(startuid), true); //init uid
                     }
-                    //TODO above and below probably breaks removing old docIDs from index ... REWRITE !
-/*                    else {
-                     //Term xx = new Term("u", startuid);
-                     uidIter=new SingleTermsEnum(uidIter, new BytesRef(startuid) );                        
-                     }
-                     */
-
                     //TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;
                     if (RuntimeEnvironment.getInstance().isPrintProgress()) {
@@ -397,6 +389,8 @@ public class IndexDatabase {
         } finally {
             if (writer != null) {
                 try {
+                    writer.prepareCommit();
+                    writer.commit();
                     writer.close();
                 } catch (IOException e) {
                     log.log(Level.WARNING, "An error occured while closing writer", e);
@@ -488,7 +482,7 @@ public class IndexDatabase {
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             wrt = new IndexWriter(indexDirectory, conf);
-            wrt.forceMerge(1); // this is deprecated and not needed anymore
+            wrt.forceMerge(1); // this is deprecated and not needed anymore            
             log.info("done");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
@@ -580,8 +574,10 @@ public class IndexDatabase {
         for (IndexChangedListener listener : listeners) {
             listener.fileRemove(path);
         }
-        writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));
-
+        writer.deleteDocuments(new Term(QueryBuilder.U, uidIter.term()));        
+        writer.prepareCommit();
+        writer.commit();
+        
         File xrefFile;
         if (RuntimeEnvironment.getInstance().isCompressXref()) {
             xrefFile = new File(xrefDir, path + ".gz");
@@ -854,8 +850,9 @@ public class IndexDatabase {
 
                     if (uidIter != null) {
                         String uid = Util.path2uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
-                        BytesRef buid = new BytesRef(uid);
-                        while (uidIter.term() != null
+                        BytesRef buid = new BytesRef(uid);                        
+                        while (uidIter.term() != null 
+                                && uidIter.term().compareTo(emptyBR) !=0
                                 && uidIter.term().compareTo(buid) < 0) {
                             removeFile();
                             uidIter.next();
