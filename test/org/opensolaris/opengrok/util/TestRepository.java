@@ -76,7 +76,7 @@ public class TestRepository {
         if (dataRoot != null) {
             FileUtilities.removeDirs(dataRoot);
         }
-    }
+    }    
 
     public String getSourceRoot() {
         return sourceRoot.getAbsolutePath();
@@ -85,4 +85,18 @@ public class TestRepository {
     public String getDataRoot() {
         return dataRoot.getAbsolutePath();
     }
+        
+    private final static String dummyS="dummy";
+    public void addDummyFile(String project) throws IOException {
+        File dummy = new File(getSourceRoot()+File.separator+project+File.separator+dummyS);
+        if (!dummy.exists() ) { 
+            dummy.createNewFile();
+        }        
+    }
+    
+    public void removeDummyFile(String project) {
+        File dummy = new File(getSourceRoot()+File.separator+project+File.separator+dummyS);
+        dummy.delete();        
+    }
+    
 }

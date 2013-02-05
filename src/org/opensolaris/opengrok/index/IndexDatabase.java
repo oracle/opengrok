@@ -324,8 +324,7 @@ public class IndexDatabase {
             }
         }
 
-        try {
-            //TODO we might need to add writer.commit after certain phases of index generation, right now it will only happen in the end
+        try {            
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -364,7 +363,8 @@ public class IndexDatabase {
                 try {
                     if (numDocs > 0) {
                         uidIter = terms.iterator(null);                        
-                        uidIter.seekCeil(new BytesRef(startuid), true); //init uid
+                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid), true); //init uid                        
+                        if (stat==TermsEnum.SeekStatus.END || stat==TermsEnum.SeekStatus.NOT_FOUND) { uidIter=null; }
                     }
                     //TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;

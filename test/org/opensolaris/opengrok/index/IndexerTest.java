@@ -193,7 +193,7 @@ public class IndexerTest {
         }
 
         @Override
-        public void fileRemove(String path) {
+        public void fileRemove(String path) {            
         }
 
         @Override
@@ -202,6 +202,11 @@ public class IndexerTest {
 
         @Override
         public void fileRemoved(String path) {
+            files.remove(path);
+        }
+        
+        public void reset() {
+            this.files = new ArrayList<String>();
         }
     }
 
@@ -281,6 +286,36 @@ public class IndexerTest {
             idb.addIndexChangedListener(listener);
             idb.update();
             assertEquals(1, listener.files.size());
+        } else {
+            System.out.println("Skipping test. Could not find a ctags I could use in path.");
+        }
+    }
+    
+    @Test
+    public void testIncrementalIndexAddRemoveFile() throws Exception {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
+        env.setSourceRoot(repository.getSourceRoot());
+        env.setDataRoot(repository.getDataRoot());
+
+        if (env.validateExuberantCtags()) {
+            Project project = new Project();
+            String ppath="bug3430";
+            project.setPath("/"+ppath);            
+            IndexDatabase idb = new IndexDatabase(project);
+            assertNotNull(idb);
+            MyIndexChangeListener listener = new MyIndexChangeListener();
+            idb.addIndexChangedListener(listener);
+            idb.update();
+            assertEquals(1, listener.files.size());
+            listener.reset();
+            repository.addDummyFile(ppath);            
+            idb.update();
+            assertEquals("No new file added",2, listener.files.size());            
+            listener.reset();
+            repository.removeDummyFile(ppath);            
+            idb.update();
+            assertEquals("Didn't remove the dummy file",1, listener.files.size());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }
