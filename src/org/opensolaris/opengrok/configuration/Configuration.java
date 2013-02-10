@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
@@ -722,11 +721,8 @@ public final class Configuration {
      * @throws IOException if an error occurs
      */
     public void write(File file) throws IOException {
-        final FileOutputStream out = new FileOutputStream(file);
-        try {
+        try (FileOutputStream out = new FileOutputStream(file)) {
             this.encodeObject(out);
-        } finally {
-            IOUtils.close(out);
         }
     }
 
@@ -737,17 +733,14 @@ public final class Configuration {
     }
 
     private void encodeObject(OutputStream out) {
-        XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out));
-        e.writeObject(this);
-        e.close();
+        try (XMLEncoder e = new XMLEncoder(new BufferedOutputStream(out))) {
+            e.writeObject(this);
+        }
     }
 
     public static Configuration read(File file) throws IOException {
-        final FileInputStream in = new FileInputStream(file);
-        try {
+        try (FileInputStream in = new FileInputStream(file)) {
             return decodeObject(in);
-        } finally {
-            IOUtils.close(in);
         }
     }
 
@@ -759,9 +752,10 @@ public final class Configuration {
     }
 
     private static Configuration decodeObject(InputStream in) throws IOException {
-        XMLDecoder d = new XMLDecoder(new BufferedInputStream(in));
-        final Object ret = d.readObject();
-        d.close();
+        final Object ret;
+        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in))) {
+            ret = d.readObject();
+        }
 
         if (!(ret instanceof Configuration)) {
             throw new IOException("Not a valid config file");

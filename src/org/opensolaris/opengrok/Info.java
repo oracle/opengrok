@@ -18,14 +18,13 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Utility class to get information of the OpenGrok version.
@@ -40,9 +39,7 @@ public final class Info {
     private static final String REVISION;
 
     static {
-        InputStream in = null;
-        try {
-            in = Info.class.getResourceAsStream("info.properties");
+        try (InputStream in = Info.class.getResourceAsStream("info.properties")) {
             if (in != null) {
                 properties.load(in);
             }
@@ -50,8 +47,6 @@ public final class Info {
             REVISION = properties.getProperty("changeset", "unknown");
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
-        } finally {
-            IOUtils.close(in);
         }
     }
 

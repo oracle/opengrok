@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to an AccuRev repository (here an actual user workspace)
@@ -112,31 +111,30 @@ public class AccuRevRepository extends Repository {
 
         Executor executor = new Executor(cmd, file.getParentFile());
         executor.exec();
+        try (BufferedReader reader = new BufferedReader(executor.getOutputReader())) {
+            String line;
+            int lineno = 0;
+            try {
+                while ((line = reader.readLine()) != null) {
+                    ++lineno;
+                    Matcher matcher = annotationPattern.matcher(line);
 
-        BufferedReader reader = new BufferedReader(executor.getOutputReader());
-        String line;
-        int lineno = 0;
-        try {
-            while ((line = reader.readLine()) != null) {
-                ++lineno;
-                Matcher matcher = annotationPattern.matcher(line);
-
-                if (matcher.find()) {
-                    String version = matcher.group(1);
-                    String author = matcher.group(2);
-                    a.addLine(version, author, true);
-                } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                            "Did not find annotation in line "
-                            + lineno + ": [" + line + "]");
+                    if (matcher.find()) {
+                        String version = matcher.group(1);
+                        String author = matcher.group(2);
+                        a.addLine(version, author, true);
+                    } else {
+                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                                "Did not find annotation in line "
+                                + lineno + ": [" + line + "]");
+                    }
                 }
+            } catch (IOException e) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        "Could not read annotations for " + file, e);
             }
-        } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Could not read annotations for " + file, e);
         }
 
-        IOUtils.close(reader);
         return a;
     }
 

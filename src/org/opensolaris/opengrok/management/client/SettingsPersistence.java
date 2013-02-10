@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.management.client;
@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.management.Constants;
 import org.opensolaris.opengrok.management.OGAgent;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  *
@@ -59,28 +58,20 @@ public class SettingsPersistence {
      * @throws java.io.IOException
      */
     public SettingsPersistence(String cfgfile) throws IOException {
-        InputStream in = null;
-        try {
-            in = OGAgent.class.getResourceAsStream("oga.properties");
+        try (InputStream in = OGAgent.class.getResourceAsStream("oga.properties")) {
             if (in != null) {
                 ogcProperties.load(in);
             }
         } catch (IOException ioe) { //NOPMD
             throw ioe; //do we need to propagate this up ?
-        } finally {
-            IOUtils.close(in);
         }
 
         if (cfgfile != null) {
             propertyFile = new File(cfgfile);
-            FileInputStream is = null;
-            try {
-                is = new FileInputStream(propertyFile);
+            try (FileInputStream is = new FileInputStream(propertyFile)) {
                 ogcProperties.load(is);
             } catch (IOException ioe) { //NOPMD
                 throw ioe; //do we need to propagate this up ?
-            } finally { //NOPMD
-                IOUtils.close(is);
             }
         }
     }

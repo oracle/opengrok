@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -216,25 +216,23 @@ public Annotation annotate(File file, String revision) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getParentFile());
         Process process = null;
-        BufferedReader in = null;
         try {
             process = pb.start();
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Annotation a = new Annotation(file.getName());
             String line;
-            int lineno = 0;
-            while ((line = in.readLine()) != null) {
-                ++lineno;
-                String parts[] = line.split("\\|");
-                String aAuthor = parts[0];
-                String aRevision = parts[1];
-                aRevision = aRevision.replace('\\', '/');
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                while ((line = in.readLine()) != null) {
+                    String parts[] = line.split("\\|");
+                    String aAuthor = parts[0];
+                    String aRevision = parts[1];
+                    aRevision = aRevision.replace('\\', '/');
 
-                a.addLine(aRevision, aAuthor, true);
+                    a.addLine(aRevision, aAuthor, true);
+                }
             }
             return a;
         } finally {
-            IOUtils.close(in);
             if (process != null) {
                 try {
                     process.exitValue();
@@ -264,7 +262,6 @@ public Annotation annotate(File file, String revision) throws IOException {
     @Override
     public void update() throws IOException {
         Process process = null;
-        BufferedReader in = null;
         try {
             File directory = new File(getDirectoryName());
 
@@ -272,26 +269,27 @@ public Annotation annotate(File file, String revision) throws IOException {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String[] argv = {cmd, "catcs"};
             process = Runtime.getRuntime().exec(argv, null, directory);
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             boolean snapshot = false;
             String line;
-            while (!snapshot && (line = in.readLine()) != null) {
-                snapshot = line.startsWith("load");
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                while (!snapshot && (line = in.readLine()) != null) {
+                    snapshot = line.startsWith("load");
+                }
+                if (waitFor(process) != 0) {
+                    return;
+                }
             }
-            if (waitFor(process) != 0) {
-                return;
-            }
-            IOUtils.close(in);
-            in = null; // To avoid double close in finally clause
             if (snapshot) {
                 // It is a snapshot view, we need to update it manually
                 ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
                 argv = new String[]{cmd, "update", "-overwrite", "-f"};
                 process = Runtime.getRuntime().exec(argv, null, directory);
-                in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                // consume output
-                while ((line = in.readLine()) != null) {
-                    // do nothing
+                try (BufferedReader in = new BufferedReader(
+                        new InputStreamReader(process.getInputStream()))) {
+                    while ((line = in.readLine()) != null) {
+                        // do nothing
+                    }
                 }
 
                 if (waitFor(process) != 0) {
@@ -299,8 +297,6 @@ public Annotation annotate(File file, String revision) throws IOException {
                 }
             }
         } finally {
-            IOUtils.close(in);
-            
             if (process != null) {
                 try {
                     process.exitValue();

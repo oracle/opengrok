@@ -19,14 +19,12 @@
 
 /*
  * Copyright (c) 2011 Trond Norbye
- * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,26 +48,6 @@ public final class IOUtils {
                 c.close();
             } catch (IOException e) {
                 log.log(Level.WARNING, "Failed to close resource: ", e);
-            }
-        }
-    }
-
-    public static void close(ServerSocket sock) {
-        if (sock != null) {
-            try {
-                sock.close();
-            } catch (IOException e) {
-                log.log(Level.WARNING, "Failed to close socket: ", e);
-            }
-        }
-    }
-
-    public static void close(Socket sock) {
-        if (sock != null) {
-            try {
-                sock.close();
-            } catch (IOException e) {
-                log.log(Level.WARNING, "Failed to close socket: ", e);
             }
         }
     }

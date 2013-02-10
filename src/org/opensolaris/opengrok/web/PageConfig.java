@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -184,7 +184,6 @@ public final class PageConfig {
 
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
-            BufferedReader br = null;
             try {
                 for (int i = 0; i < 2; i++) {
                     File f = new File(srcRoot + filepath[i]);
@@ -213,22 +212,21 @@ public final class PageConfig {
                 ArrayList<String> lines = new ArrayList<String>();
                 Project p = getProject();
                 for (int i = 0; i < 2; i++) {
-                    br = new BufferedReader(ExpandTabsReader.wrap(new InputStreamReader(in[i]), p));
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        lines.add(line);
+                    try (BufferedReader br = new BufferedReader(
+                            ExpandTabsReader.wrap(new InputStreamReader(in[i]), p))) {
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            lines.add(line);
+                        }
+                        data.file[i] = lines.toArray(new String[lines.size()]);
+                        lines.clear();
                     }
-                    data.file[i] = lines.toArray(new String[lines.size()]);
-                    lines.clear();
-                    IOUtils.close(br);
                     in[i] = null;
-                    br = null;
                 }
             } catch (Exception e) {
                 data.errorMsg = "Error reading revisions: "
                         + Util.htmlize(e.getMessage());
             } finally {
-                IOUtils.close(br);
                 for (int i = 0; i < 2; i++) {
                     IOUtils.close(in[i]);
                 }

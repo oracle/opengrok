@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -50,7 +50,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Class for useful functions.
@@ -812,26 +811,15 @@ public final class Util {
         if (!file.exists()) {
             return false;
         }
-        FileInputStream fis = null;
-        GZIPInputStream gis = null;
-        Reader in = null;
-        try {
-            if (compressed) {
-                fis = new FileInputStream(file);
-                gis = new GZIPInputStream(fis);
-                in = new InputStreamReader(gis);
-            } else {
-                in = new FileReader(file);
-            }
+        try (Reader in = compressed ?
+                new InputStreamReader(new GZIPInputStream(
+                        new FileInputStream(file))) :
+                new FileReader(file)) {
             dump(out, in);
             return true;
         } catch(IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING,
                 "An error occured while piping file " + file + ": ", e);
-        } finally {
-            IOUtils.close(in);
-            IOUtils.close(gis);
-            IOUtils.close(fis);
         }
         return false;
     }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -38,7 +38,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -296,14 +295,12 @@ public class SubversionRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getParentFile());
         Process process = null;
-        BufferedInputStream in = null;
         Annotation ret = null;
         try {
             process = pb.start();
-            in = new BufferedInputStream(process.getInputStream());
-
             AnnotateHandler handler = new AnnotateHandler(file.getName());
-            try {
+            try (BufferedInputStream in =
+                    new BufferedInputStream(process.getInputStream())) {
                 saxParser.parse(in, handler);
                 ret = handler.annotation;
             } catch (Exception e) {
@@ -311,7 +308,6 @@ public class SubversionRepository extends Repository {
                     "An error occurred while parsing the xml output", e);
             }
         } finally {
-            IOUtils.close(in);
             if (process != null) {
                 try {
                     process.exitValue();

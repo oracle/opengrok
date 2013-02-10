@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -37,7 +36,6 @@ import org.apache.commons.jrcs.rcs.Node;
 import org.apache.commons.jrcs.rcs.ParseException;
 import org.apache.commons.jrcs.rcs.Version;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.util.IOUtils;
 
 
 /**
@@ -156,11 +154,8 @@ class RCSHistoryParser {
      * @throws IOException if an I/O error occurs while reading the file
      */
     private static String readFirstLine(File file) throws IOException {
-        final BufferedReader in = new BufferedReader(new FileReader(file));
-        try {
+        try (BufferedReader in = new BufferedReader(new FileReader(file))) {
             return in.readLine();
-        } finally {
-            IOUtils.close(in);
         }
     }
 }

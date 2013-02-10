@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -51,7 +51,6 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * This is an encapsulation of the details on how to search in the index
@@ -353,16 +352,10 @@ public class SearchEngine {
                                     tags, nhits > 100, ret);
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l = 0;
-                            Reader r;
-                            if (RuntimeEnvironment.getInstance().isCompressXref()) {
-                                r = new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + "/xref" + filename + ".gz")))));
-                            } else {
-                                r = new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename)));
-                            }
-                            try {
+                            try (Reader r = RuntimeEnvironment.getInstance().isCompressXref() ?
+                                     new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + "/xref" + filename + ".gz"))))) :
+                                     new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename)))) {
                                 l = r.read(content);
-                            } finally {
-                                IOUtils.close(r);
                             }
                             //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
                             Summary sum = summarizer.getSummary(new String(content, 0, l));

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -608,9 +608,7 @@ public class IndexDatabase {
      * @throws java.io.IOException if an error occurs
      */
     private void addFile(File file, String path) throws IOException {
-        final InputStream in =
-                new BufferedInputStream(new FileInputStream(file));
-        try {
+        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
             FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
             for (IndexChangedListener listener : listeners) {
                 listener.fileAdd(path, fa.getClass().getSimpleName());
@@ -657,8 +655,6 @@ public class IndexDatabase {
             for (IndexChangedListener listener : listeners) {
                 listener.fileAdded(path, fa.getClass().getSimpleName());
             }
-        } finally {
-            in.close();
         }
     }
 

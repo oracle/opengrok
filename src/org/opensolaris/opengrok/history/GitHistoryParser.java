@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -35,7 +35,6 @@ import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.StringUtils;
 
 /**
@@ -60,12 +59,8 @@ class GitHistoryParser implements Executor.StreamHandler {
      */
     @Override
     public void processStream(InputStream input) throws IOException {
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(repository.newLogReader(input));
+        try (BufferedReader in = new BufferedReader(repository.newLogReader(input))) {
             process(in);
-        } finally {
-            IOUtils.close(in);
         }
     }
     

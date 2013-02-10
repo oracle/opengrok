@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 /* Portions Copyright 2008 Peter Bray */
 package org.opensolaris.opengrok.history;
@@ -35,7 +35,6 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.StringUtils;
 
 /**
@@ -77,12 +76,8 @@ class RazorHistoryParser {
             parseProblem("History File Mapping is a DIRECTORY (" + mappedFile.getAbsolutePath() + ")");
             return null;
         }
-
-        FileReader contents = new FileReader(mappedFile.getAbsoluteFile());
-        try {
+        try (FileReader contents = new FileReader(mappedFile.getAbsoluteFile())) {
             return parseContents(new BufferedReader(contents));
-        } finally {
-            IOUtils.close(contents);
         }
     }
 

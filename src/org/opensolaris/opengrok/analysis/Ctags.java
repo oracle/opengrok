@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -112,13 +112,12 @@ public class Ctags {
         ctagsIn = new OutputStreamWriter(ctags.getOutputStream());
         ctagsOut = new BufferedReader(new InputStreamReader(ctags.getInputStream()));
 
-        final BufferedReader error = new BufferedReader(new InputStreamReader(ctags.getErrorStream()));
-
         Thread errThread = new Thread(new Runnable() {
 
             public void run() {
                 StringBuilder sb = new StringBuilder();
-                try {
+                try (BufferedReader error = new BufferedReader(
+                        new InputStreamReader(ctags.getErrorStream()))) {
                     String s;
                     while ((s = error.readLine()) != null) {
                         sb.append(s);
@@ -126,8 +125,6 @@ public class Ctags {
                     }
                 } catch (IOException exp) {
                      log.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
-                } finally {
-                    IOUtils.close(error);
                 }
                 if (sb.length() > 0) {
                      log.warning("Error from ctags: " + sb.toString());

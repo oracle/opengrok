@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.web;
@@ -37,7 +36,6 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File System
@@ -56,7 +54,6 @@ public class EftarFile {
 
     public static final int RECORD_LENGTH = 14;
     private long offset;
-    private DataOutputStream out;
 
     class Node {
 
@@ -150,7 +147,7 @@ public class EftarFile {
         return hash;
     }
 
-    private void write(Node n) throws IOException {
+    private void write(Node n, DataOutputStream out) throws IOException {
         if (n.tag != null) {
             out.write(n.tag.getBytes());
             offset += n.tag.length();
@@ -176,7 +173,7 @@ public class EftarFile {
             offset += RECORD_LENGTH;
         }
         for (Node childnode : n.children.values()) {
-            write(childnode);
+            write(childnode, out);
         }
     }
 
@@ -200,11 +197,8 @@ public class EftarFile {
     private Node root;
 
     public void readInput(String tagsPath) throws IOException {
-        BufferedReader r = new BufferedReader(new FileReader(tagsPath));
-        try {
+        try (BufferedReader r = new BufferedReader(new FileReader(tagsPath))) {
             readInput(r);
-        } finally {
-            IOUtils.close(r);
         }
     }
 
@@ -231,14 +225,15 @@ public class EftarFile {
     public void write(String outPath) throws FileNotFoundException, IOException {
         offset = RECORD_LENGTH;
         traverse(root);
-        out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outPath)));
-        out.writeLong(0x5e33);
-        out.writeShort(RECORD_LENGTH);
-        out.writeShort(root.children.size());
-        out.writeShort(0);
-        offset = RECORD_LENGTH;
-        write(root);
-        IOUtils.close(out);
+        try (DataOutputStream out = new DataOutputStream(
+                new BufferedOutputStream(new FileOutputStream(outPath)))) {
+            out.writeLong(0x5e33);
+            out.writeShort(RECORD_LENGTH);
+            out.writeShort(root.children.size());
+            out.writeShort(0);
+            offset = RECORD_LENGTH;
+            write(root, out);
+        }
     }
 
     public void create(String[] args) throws IOException, FileNotFoundException {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -42,7 +42,6 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
-import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -85,14 +84,11 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
         } else {
             String fullpath = doc.get("fullpath");
-            final FileInputStream fin = new FileInputStream(fullpath);
-            try {
+            try (FileInputStream fin = new FileInputStream(fullpath)) {
                 parseELF(fin);
                 if (content.length() > 0) {
                     doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
                 }
-            } finally {
-                IOUtils.close(fin);
             }
         }
     }

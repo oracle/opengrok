@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -47,7 +47,6 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
@@ -93,34 +92,27 @@ public final class Results {
 
     private static String getTags(File basedir, String path, boolean compressed) {
         char[] content = new char[1024 * 8];
-        FileInputStream fis = null;
-        GZIPInputStream gis = null;
-        FileReader fr = null;
-        Reader r = null;
-        // Grrrrrrrrrrrrr - TagFilter takes Readers, only!!!!
-        // Why? Is it CS sensible?
-        try {
-            if (compressed) {
-                fis = new FileInputStream(new File(basedir, path + ".gz"));
-                gis = new GZIPInputStream(fis);
-                r = new TagFilter(new BufferedReader(new InputStreamReader(gis)));
-            } else {
-                fr = new FileReader(new File(basedir, path));
-                r = new TagFilter(new BufferedReader(fr));
-            }
+        try (TagFilter r = new TagFilter(getXrefReader(basedir, path, compressed))) {
             int len = r.read(content);
             return new String(content, 0, len);
         } catch (Exception e) {
             OpenGrokLogger.getLogger().log(
                     Level.WARNING, "An error reading tags from " + basedir + path
                     + (compressed ? ".gz" : ""), e);
-        } finally {
-            IOUtils.close(r);
-            IOUtils.close(gis);
-            IOUtils.close(fis);
-            IOUtils.close(fr);
         }
         return "";
+    }
+
+    /** Return a reader for the specified xref file. */
+    private static Reader getXrefReader(
+                    File basedir, String path, boolean compressed)
+            throws IOException {
+        if (compressed) {
+            return new BufferedReader(new InputStreamReader(new GZIPInputStream(
+                    new FileInputStream(new File(basedir, path + ".gz")))));
+        } else {
+            return new BufferedReader(new FileReader(new File(basedir, path)));
+        }
     }
 
     /**

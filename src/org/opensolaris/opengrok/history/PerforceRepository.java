@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Perforce repository
@@ -81,10 +80,9 @@ public class PerforceRepository extends Repository {
         Executor executor = new Executor(cmd, file.getParentFile());
         executor.exec();
 
-        BufferedReader reader = new BufferedReader(executor.getOutputReader());
         String line;
         int lineno = 0;
-        try {
+        try (BufferedReader reader = new BufferedReader(executor.getOutputReader())) {
             while ((line = reader.readLine()) != null) {
                 ++lineno;
                 Matcher matcher = annotation_pattern.matcher(line);
@@ -102,7 +100,6 @@ public class PerforceRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                     "Error: Could not read annotations for " + file, e);
         }
-        IOUtils.close(reader);
         return a;
     }
 

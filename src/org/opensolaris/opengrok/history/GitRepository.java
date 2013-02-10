@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Git repository.
@@ -87,8 +86,7 @@ public class GitRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list in resolving correct path");
             return path;
         }
-        BufferedReader in = new BufferedReader(exec.getOutputReader());
-        try {
+        try (BufferedReader in = new BufferedReader(exec.getOutputReader())) {
             String pattern = "^\\W*" + revision + " (.+?) .*$";
             Pattern commitPattern = Pattern.compile(pattern);
             String line = "";
@@ -100,8 +98,6 @@ public class GitRepository extends Repository {
                     break;
                 }
             }
-        } finally {
-            in.close();
         }
 
         return path;
@@ -255,8 +251,7 @@ public class GitRepository extends Repository {
             if (status != 0) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list");
             }
-            BufferedReader in = new BufferedReader(exec.getOutputReader());
-            try {
+            try (BufferedReader in = new BufferedReader(exec.getOutputReader())) {
                 String pattern = "^\\W*" + revision + " (.+?) .*$";
                 Pattern commitPattern = Pattern.compile(pattern);
                 String line = "";
@@ -284,8 +279,6 @@ public class GitRepository extends Repository {
                         break;
                     }
                 }
-            } finally {
-                in.close();
             }
         }
 
@@ -424,29 +417,29 @@ public class GitRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
         Process process = null;
-        BufferedReader in = null;
 
         process = pb.start();
-        in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-        while ((line = in.readLine()) != null) {
-            if (line.startsWith("commit")) {
-                String parts[] = line.split(":");
-                if (parts.length < 2) {
-                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("commit")) {
+                    String parts[] = line.split(":");
+                    if (parts.length < 2) {
+                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                    }
+                    hash = parts[1];
                 }
-                hash = parts[1];
-            }
-            if (line.startsWith("Date")) {
-                String parts[] = line.split(":");
-                if (parts.length < 2) {
-                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                if (line.startsWith("Date")) {
+                    String parts[] = line.split(":");
+                    if (parts.length < 2) {
+                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                    }
+                    date = new Date((long)(Integer.parseInt(parts[1])) * 1000);
                 }
-                date = new Date((long)(Integer.parseInt(parts[1])) * 1000);
             }
         }
 
-        IOUtils.close(in);
         if (process != null) {
             try {
                 process.exitValue();
@@ -476,16 +469,16 @@ public class GitRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
         Process process = null;
-        BufferedReader in = null;
 
         try {
             // First we have to obtain list of all tags, and put it asside
             // Otherwise we can't use git to get date & hash for each tag
             process = pb.start();
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                tagsList.add(line);
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    tagsList.add(line);
+                }
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
@@ -493,7 +486,6 @@ public class GitRepository extends Repository {
         }
 
         // Make sure this git instance is not running any more
-        IOUtils.close(in);
         if (process != null) {
             try {
                 process.exitValue();

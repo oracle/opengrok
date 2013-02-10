@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -823,11 +823,10 @@ public final class RuntimeEnvironment {
      * @throws IOException if an error occurs
      */
     public void writeConfiguration(InetAddress host, int port) throws IOException {
-        Socket sock = new Socket(host, port);
-        XMLEncoder e = new XMLEncoder(sock.getOutputStream());
-        e.writeObject(threadConfig.get());
-        e.close();
-        IOUtils.close(sock);
+        try (Socket sock = new Socket(host, port);
+                XMLEncoder e = new XMLEncoder(sock.getOutputStream())) {
+            e.writeObject(threadConfig.get());
+        }
     }
 
     protected void writeConfiguration() throws IOException {
@@ -872,14 +871,11 @@ public final class RuntimeEnvironment {
                 public void run() {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 13);
                     while (!sock.isClosed()) {
-                        Socket s = null;
-                        BufferedInputStream in = null;
-                        try {
-                            s = sock.accept();
+                        try (Socket s = sock.accept();
+                                BufferedInputStream in = new BufferedInputStream(s.getInputStream())) {
                             bos.reset();
                             log.log(Level.FINE, "OpenGrok: Got request from {0}",
                                     s.getInetAddress().getHostAddress());
-                            in = new BufferedInputStream(s.getInputStream());
                             byte[] buf = new byte[1024];
                             int len;
                             while ((len = in.read(buf)) != -1) {
@@ -889,9 +885,10 @@ public final class RuntimeEnvironment {
                             if (log.isLoggable(Level.FINE)) {
                                 log.log(Level.FINE, "new config:{0}", new String(buf));
                             }
-                            XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf));
-                            Object obj = d.readObject();
-                            d.close();
+                            Object obj;
+                            try (XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf))) {
+                                obj = d.readObject();
+                            }
 
                             if (obj instanceof Configuration) {
                                 setConfiguration((Configuration) obj);
@@ -901,9 +898,6 @@ public final class RuntimeEnvironment {
                             log.log(Level.SEVERE, "Error reading config file: ", e);
                         } catch (RuntimeException e) {
                             log.log(Level.SEVERE, "Error parsing config file: ", e);
-                        } finally {
-                            IOUtils.close(s);
-                            IOUtils.close(in);
                         }
                     }
                 }

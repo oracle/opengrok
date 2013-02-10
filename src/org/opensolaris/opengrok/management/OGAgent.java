@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.management;
@@ -50,7 +50,6 @@ import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
 
 // PMD thinks this import is unused (confused because it's static?)
-import org.opensolaris.opengrok.util.IOUtils;
 import static org.opensolaris.opengrok.management.Constants.*; // NOPMD
 
 /**
@@ -69,19 +68,14 @@ final public class OGAgent {
     @SuppressWarnings("PMD.SystemPrintln")
     private static boolean loadProperties(File file, InputStream in, Properties props) {
         boolean ret = false;
-        InputStream stream = in;
-        try {
-            if (file != null) {
-                stream = new FileInputStream(file);
-            }
+        try (InputStream stream = (file == null) ?
+                in : new FileInputStream(file)) {
             props.load(stream);
             ret = true;
         } catch (IOException e) {
             System.err.println("Failed to read configuration");
             e.printStackTrace(System.err);
             ret = false;
-        } finally {
-            IOUtils.close(stream);
         }
         return ret;
     }

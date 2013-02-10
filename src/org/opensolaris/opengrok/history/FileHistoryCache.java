@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -45,7 +45,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.IOUtils;
 
 class FileHistoryCache implements HistoryCache {
     private final Object lock = new Object();
@@ -106,15 +105,10 @@ class FileHistoryCache implements HistoryCache {
      * Read history from a file.
      */
     private static History readCache(File file) throws IOException {
-        final FileInputStream in = new FileInputStream(file);
-        try {
-            XMLDecoder d = new XMLDecoder(
-                    new BufferedInputStream(new GZIPInputStream(in)));
-            Object obj = d.readObject();
-            d.close();
-            return (History) obj;
-        } finally {
-            IOUtils.close(in);
+        try (FileInputStream in = new FileInputStream(file);
+                XMLDecoder d = new XMLDecoder(
+                        new BufferedInputStream(new GZIPInputStream(in)))) {
+            return (History) d.readObject();
         }
     }
 
@@ -139,15 +133,11 @@ class FileHistoryCache implements HistoryCache {
         final File output;
         try {
             output = File.createTempFile("oghist", null, dir);
-            final FileOutputStream out = new FileOutputStream(output);
-            try {
-                XMLEncoder e = new XMLEncoder(
-                        new BufferedOutputStream(new GZIPOutputStream(out)));
+            try (FileOutputStream out = new FileOutputStream(output);
+                    XMLEncoder e = new XMLEncoder(
+                            new BufferedOutputStream(new GZIPOutputStream(out)))) {
                 e.setPersistenceDelegate(File.class, new FilePersistenceDelegate());
                 e.writeObject(history);
-                e.close();
-            } finally {
-                IOUtils.close(out);
             }
         } catch (IOException ioe) {
             throw new HistoryException("Failed to write history", ioe);

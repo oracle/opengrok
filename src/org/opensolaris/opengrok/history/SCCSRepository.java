@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -35,7 +35,6 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * This class gives access to repositories built on top of SCCS (including
@@ -91,28 +90,27 @@ public class SCCSRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getCanonicalFile().getParentFile());
         Process process = null;
-        BufferedReader in = null;
         try {
             process = pb.start();
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            int lineno = 0;
-            while ((line = in.readLine()) != null) {
-                ++lineno;
-                Matcher matcher = AUTHOR_PATTERN.matcher(line);
-                if (matcher.find()) {
-                    String rev = matcher.group(1);
-                    String auth = matcher.group(2);
-                    authors_cache.put(rev, auth);
-                } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                        "Error: did not find authors in line {0}: [{1}]",
-                        new Object[]{lineno, line});
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+                int lineno = 0;
+                while ((line = in.readLine()) != null) {
+                    ++lineno;
+                    Matcher matcher = AUTHOR_PATTERN.matcher(line);
+                    if (matcher.find()) {
+                        String rev = matcher.group(1);
+                        String auth = matcher.group(2);
+                        authors_cache.put(rev, auth);
+                    } else {
+                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Error: did not find authors in line {0}: [{1}]",
+                            new Object[]{lineno, line});
+                    }
                 }
             }
         } finally {
-            IOUtils.close(in);
-
             if (process != null) {
                 try {
                     process.exitValue();
@@ -153,33 +151,33 @@ public class SCCSRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getCanonicalFile().getParentFile());
         Process process = null;
-        BufferedReader in = null;
         try {
             process = pb.start();
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Annotation a = new Annotation(file.getName());
-            String line;
-            int lineno = 0;
-            while ((line = in.readLine()) != null) {
-                ++lineno;
-                Matcher matcher = ANNOTATION_PATTERN.matcher(line);
-                if (matcher.find()) {
-                    String rev = matcher.group(1);
-                    String author = authors_cache.get(rev);
-                    if (author == null) {
-                        author = "unknown";
-                    }
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+                int lineno = 0;
+                while ((line = in.readLine()) != null) {
+                    ++lineno;
+                    Matcher matcher = ANNOTATION_PATTERN.matcher(line);
+                    if (matcher.find()) {
+                        String rev = matcher.group(1);
+                        String author = authors_cache.get(rev);
+                        if (author == null) {
+                            author = "unknown";
+                        }
 
-                    a.addLine(rev, author, true);
-                } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                        "Error: did not find annotations in line {0}: [{1}]",
-                        new Object[]{lineno, line});
+                        a.addLine(rev, author, true);
+                    } else {
+                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Error: did not find annotations in line {0}: [{1}]",
+                            new Object[]{lineno, line});
+                    }
                 }
             }
             return a;
         } finally {
-            IOUtils.close(in);
             if (process != null) {
                 try {
                     process.exitValue();

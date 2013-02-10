@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import org.opensolaris.opengrok.util.IOUtils;
 
 public class CommandLineOptions {
 
@@ -148,15 +147,14 @@ public class CommandLineOptions {
 
     public String getUsage() {
         StringWriter wrt = new StringWriter();
-        PrintWriter out = new PrintWriter(wrt);
+        try (PrintWriter out = new PrintWriter(wrt)) {
+            out.println("Usage: opengrok.jar [options]");
+            for (Option o : options) {
+                out.println(o.getUsage());
+            }
 
-        out.println("Usage: opengrok.jar [options]");
-        for (Option o : options) {
-            out.println(o.getUsage());
+            out.flush();
         }
-
-        out.flush();
-        IOUtils.close(out);
 
         return wrt.toString();
     }
@@ -164,39 +162,37 @@ public class CommandLineOptions {
     public String getManPage() throws IOException {
         StringWriter wrt = new StringWriter();
         PrintWriter out = new PrintWriter(wrt);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                     getClass().getResourceAsStream("opengrok.xml"), "US-ASCII"))) {
+            spool(reader, out, "___INSERT_DATE___");
+            out.print("<refmiscinfo class=\"date\">");
+            out.print(DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));
+            out.println("</refmiscinfo>");
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-                getClass().getResourceAsStream("opengrok.xml"), "US-ASCII"));
-
-        spool(reader, out, "___INSERT_DATE___");
-        out.print("<refmiscinfo class=\"date\">");
-        out.print(DateFormat.getDateInstance(DateFormat.MEDIUM).format(new Date()));
-        out.println("</refmiscinfo>");
-
-        spool(reader, out, "___INSERT_USAGE___");
-        for (Option o : options) {
-            out.println("<optional><option>");
-            out.print(o.option);
-            if (o.argument != null) {
-                out.print(" <replaceable>");
-                out.print(o.argument);
-                out.print("</replaceable>");
+            spool(reader, out, "___INSERT_USAGE___");
+            for (Option o : options) {
+                out.println("<optional><option>");
+                out.print(o.option);
+                if (o.argument != null) {
+                    out.print(" <replaceable>");
+                    out.print(o.argument);
+                    out.print("</replaceable>");
+                }
+                out.println("</option></optional>");
             }
-            out.println("</option></optional>");
-        }
 
-        spool(reader, out, "___INSERT_OPTIONS___");
-        for (Option o : options) {
-            out.print("<varlistentry><term><option>");
-            out.print(o.option);
-            out.print("</option></term><listitem><para>");
-            out.print(o.description);
-            out.println("</para></listitem></varlistentry>");
-        }
+            spool(reader, out, "___INSERT_OPTIONS___");
+            for (Option o : options) {
+                out.print("<varlistentry><term><option>");
+                out.print(o.option);
+                out.print("</option></term><listitem><para>");
+                out.print(o.description);
+                out.println("</para></listitem></varlistentry>");
+            }
 
-        spool(reader, out, "___END_OF_FILE___");
-        out.flush();
-        IOUtils.close(reader);
+            spool(reader, out, "___END_OF_FILE___");
+            out.flush();
+        }
 
         return wrt.toString();
     }

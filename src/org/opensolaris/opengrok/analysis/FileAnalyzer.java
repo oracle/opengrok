@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -39,7 +39,6 @@ import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Base class for all different File Analyzers
@@ -174,16 +173,11 @@ public class FileAnalyzer extends Analyzer {
 
         final boolean compressed = env.isCompressXref();
         final File file = new File(xrefDir, path + (compressed ? ".gz" : ""));
-        OutputStream out = new FileOutputStream(file);
-        try {
-            if (compressed) {
-                out = new GZIPOutputStream(out);
-            }
-            Writer w = new BufferedWriter(new OutputStreamWriter(out));
+        try (OutputStream out = compressed ?
+                    new GZIPOutputStream(new FileOutputStream(file)) :
+                    new FileOutputStream(file);
+                Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
             writeXref(w);
-            IOUtils.close(w);
-        } finally {
-            IOUtils.close(out);
         }
     }
 }

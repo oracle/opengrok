@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -127,7 +126,6 @@ public class MercurialRepository extends Repository {
         File directory = new File(directoryName);
 
         Process process = null;
-        InputStream in = null;
         String revision = rev;
 
         if (rev.indexOf(':') != -1) {
@@ -142,12 +140,13 @@ public class MercurialRepository extends Repository {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            in = process.getInputStream();
-            int len;
+            try (InputStream in = process.getInputStream()) {
+                int len;
 
-            while ((len = in.read(buffer)) != -1) {
-                if (len > 0) {
-                    out.write(buffer, 0, len);
+                while ((len = in.read(buffer)) != -1) {
+                    if (len > 0) {
+                        out.write(buffer, 0, len);
+                    }
                 }
             }
 
@@ -156,7 +155,6 @@ public class MercurialRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
         } finally {
-            IOUtils.close(in);
             // Clean up zombie-processes...
             if (process != null) {
                 try {
@@ -201,7 +199,6 @@ public class MercurialRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(file.getParentFile());
         Process process = null;
-        BufferedReader in = null;
         Annotation ret = null;
         HashMap<String,HistoryEntry> revs = new HashMap<String,HistoryEntry>();
 
@@ -224,30 +221,31 @@ public class MercurialRepository extends Repository {
 
         try {
             process = pb.start();
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            ret = new Annotation(file.getName());
-            String line;
-            int lineno = 0;
-            Matcher matcher = ANNOTATION_PATTERN.matcher("");
-            while ((line = in.readLine()) != null) {
-                ++lineno;
-                matcher.reset(line);
-                if (matcher.find()) {
-                    String rev = matcher.group(1);
-                    String author = "N/A";
-                    // Use the history index hash map to get the author.
-                    if (revs.get(rev) != null) {
-                         author = revs.get(rev).getAuthor();
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                ret = new Annotation(file.getName());
+                String line;
+                int lineno = 0;
+                Matcher matcher = ANNOTATION_PATTERN.matcher("");
+                while ((line = in.readLine()) != null) {
+                    ++lineno;
+                    matcher.reset(line);
+                    if (matcher.find()) {
+                        String rev = matcher.group(1);
+                        String author = "N/A";
+                        // Use the history index hash map to get the author.
+                        if (revs.get(rev) != null) {
+                             author = revs.get(rev).getAuthor();
+                        }
+                        ret.addLine(rev, Util.getEmail(author.trim()), true);
+                    } else {
+                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Error: did not find annotation in line "
+                            + lineno + ": [" + line + "]");
                     }
-                    ret.addLine(rev, Util.getEmail(author.trim()), true);
-                } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                        "Error: did not find annotation in line "
-                        + lineno + ": [" + line + "]");
                 }
             }
         } finally {
-            IOUtils.close(in);
             if (process != null) {
                 try {
                     process.exitValue();
@@ -368,30 +366,30 @@ public class MercurialRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
         Process process = null;
-        BufferedReader in = null;
 
         try {
             process = pb.start();
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                String parts[] = line.split("  *");
-                if (parts.length < 2) {
-                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    String parts[] = line.split("  *");
+                    if (parts.length < 2) {
+                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                    }
+                    // Grrr, how to parse tags with spaces inside?
+                    // This solution will loose multiple spaces;-/
+                    String tag = parts[0];
+                    for (int i = 1; i < parts.length - 1; ++i) {
+                        tag += " " + parts[i];
+                    }
+                    String revParts[] = parts[parts.length - 1].split(":");
+                    if (revParts.length != 2) {
+                        throw new HistoryException("Mercurial revision parsing error: " + parts[parts.length - 1]);
+                    }
+                    TagEntry tagEntry = new MercurialTagEntry(Integer.parseInt(revParts[0]), tag);
+                    // Reverse the order of the list
+                    this.tagList.add(tagEntry);
                 }
-                // Grrr, how to parse tags with spaces inside?
-                // This solution will loose multiple spaces;-/
-                String tag = parts[0];
-                for (int i = 1; i < parts.length - 1; ++i) {
-                    tag += " " + parts[i];
-                }
-                String revParts[] = parts[parts.length - 1].split(":");
-                if (revParts.length != 2) {
-                    throw new HistoryException("Mercurial revision parsing error: " + parts[parts.length - 1]);
-                }
-                TagEntry tagEntry = new MercurialTagEntry(Integer.parseInt(revParts[0]), tag);
-                // Reverse the order of the list
-                this.tagList.add(tagEntry);
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
@@ -401,7 +399,6 @@ public class MercurialRepository extends Repository {
             this.tagList = null;
         }
         
-        IOUtils.close(in);
         if (process != null) {
             try {
                 process.exitValue();

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -36,7 +36,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Monotone repository.
@@ -65,7 +64,6 @@ public class MonotoneRepository extends Repository {
         File directory = new File(directoryName);
 
         Process process = null;
-        InputStream in = null;
         String revision = rev;
 
         try {
@@ -77,12 +75,13 @@ public class MonotoneRepository extends Repository {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            in = process.getInputStream();
-            int len;
+            try (InputStream in = process.getInputStream()) {
+                int len;
 
-            while ((len = in.read(buffer)) != -1) {
-                if (len > 0) {
-                    out.write(buffer, 0, len);
+                while ((len = in.read(buffer)) != -1) {
+                    if (len > 0) {
+                        out.write(buffer, 0, len);
+                    }
                 }
             }
 
@@ -91,7 +90,6 @@ public class MonotoneRepository extends Repository {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
         } finally {
-            IOUtils.close(in);
             // Clean up zombie-processes...
             if (process != null) {
                 try {
@@ -161,17 +159,13 @@ public class MonotoneRepository extends Repository {
             throw new IOException(executor.getErrorString());
         }
 
-        BufferedReader in = null;
         Annotation ret = null;
-        try {
-            in = new BufferedReader(executor.getOutputReader());
+        try (BufferedReader in = new BufferedReader(executor.getOutputReader())) {
             ret = new Annotation(file.getName());
             String line;
-            int lineno = 0;
             String author = null;
             String rev = null;
             while ((line = in.readLine()) != null) {
-                ++lineno;
                 Matcher matcher = ANNOTATION_PATTERN.matcher(line);
                 if (matcher.find()) {
                     rev = matcher.group(1);
@@ -181,8 +175,6 @@ public class MonotoneRepository extends Repository {
                     ret.addLine(rev, author, true);
                 }
             }
-        } finally {
-            IOUtils.close(in);
         }
         return ret;
     }

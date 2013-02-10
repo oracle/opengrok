@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.IOUtils;
 
 /**
  * Access to a Bazaar repository.
@@ -287,32 +286,32 @@ public class BazaarRepository extends Repository {
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
         Process process = null;
-        BufferedReader in = null;
 
         try {
             process = pb.start();
-            in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                String parts[] = line.split("  *");
-                if (parts.length < 2) {
-                    throw new HistoryException("Tag line contains more than 2 columns: " + line);
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    String parts[] = line.split("  *");
+                    if (parts.length < 2) {
+                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                    }
+                    // Grrr, how to parse tags with spaces inside?
+                    // This solution will loose multiple spaces;-/
+                    String tag = parts[0];
+                    for (int i = 1; i < parts.length - 1; ++i) {
+                        tag += " " + parts[i];
+                    }
+                    TagEntry tagEntry = new BazaarTagEntry(Integer.parseInt(parts[parts.length - 1]), tag);
+                    // Bazaar lists multiple tags on more lines. We need to merge those into single TagEntry
+                    TagEntry higher = this.tagList.ceiling(tagEntry);
+                    if (higher != null && higher.equals(tagEntry)) {
+                        // Found in the tree, merge tags
+                        this.tagList.remove(higher);
+                        tagEntry.setTags(higher.getTags() + ", " + tag);
+                    }
+                    this.tagList.add(tagEntry);
                 }
-                // Grrr, how to parse tags with spaces inside?
-                // This solution will loose multiple spaces;-/
-                String tag = parts[0];
-                for (int i = 1; i < parts.length - 1; ++i) {
-                    tag += " " + parts[i];
-                }
-                TagEntry tagEntry = new BazaarTagEntry(Integer.parseInt(parts[parts.length - 1]), tag);
-                // Bazaar lists multiple tags on more lines. We need to merge those into single TagEntry
-                TagEntry higher = this.tagList.ceiling(tagEntry);
-                if (higher != null && higher.equals(tagEntry)) {
-                    // Found in the tree, merge tags
-                    this.tagList.remove(higher);
-                    tagEntry.setTags(higher.getTags() + ", " + tag);
-                }
-                this.tagList.add(tagEntry);
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
@@ -322,7 +321,6 @@ public class BazaarRepository extends Repository {
             this.tagList = null;
         }
 
-        IOUtils.close(in);
         if (process != null) {
             try {
                 process.exitValue();

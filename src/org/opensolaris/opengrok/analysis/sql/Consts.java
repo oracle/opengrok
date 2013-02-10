@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.sql;
 
@@ -53,10 +53,8 @@ public final class Consts {
             throws IOException
     {
         String line,lline;
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(
-                    Consts.class.getResourceAsStream(file), "US-ASCII"));
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    Consts.class.getResourceAsStream(file), "US-ASCII"))) {
             while ((line = reader.readLine()) != null) {
                 line=line.trim();
                 lline = line.toLowerCase(Locale.US);
@@ -65,8 +63,6 @@ public final class Consts {
                     set.add(lline);
                 }
             }
-        } finally {
-            reader.close();
         }
     }
 
