@@ -1,7 +1,9 @@
  Chandan B N, Dec 2005
 
 This blog entry will act as the --paper-- story of [[OpenGrok>>Project opengrok.WebHome]] the wicked fast source browser that powers the [[OpenSolaris source browser>>http://src.opensolaris.org/source/]]. 
+
 [[/images/OpenGrok-screenshot.png]]
+
 This would be explaining the technology behind it in more detail. It would be a living blog entry. i.e I would keep updating as and when there are updates. There would no other technical documentation, if you are fond of reading in postscript or PDF formats, I'll try to make one available sooner.
 
 === The Revenge of the Binaries
