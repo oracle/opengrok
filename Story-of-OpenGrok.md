@@ -1,0 +1,107 @@
+ Chandan B N, Dec 2005
+
+This blog entry will act as the --paper-- story of [[OpenGrok>>Project opengrok.WebHome]] the wicked fast source browser that powers the [[OpenSolaris source browser>>http://src.opensolaris.org/source/]]. 
+[[[[image:http://static.flickr.com/35/71852240_d42e0556fe_m.jpg||alt="OpenGrok on OpenSolaris.org"width="240"height="167"]]>>http://mediacast.sun.com/share/chandan/OpenGrok-screenshot.png]] 
+This would be explaining the technology behind it in more detail. It would be a living blog entry. i.e I would keep updating as and when there are updates. There would no other technical documentation, if you are fond of reading in postscript or PDF formats, I'll try to make one available sooner.
+
+=== The Revenge of the Binaries
+
+ Being a security sentry of all Sun products, I keep a watch on reports of newly discovered security holes and then check if any Sun software is affected by them. Typically I would use [[cscope>>http://docs.sun.com/source/806-3567/cscope.html]] to find any fragments of code that I suspect to be vulnerable. In Solaris land, most of the ON(OS/Net) gate has [[cscope>>http://docs.sun.com/source/806-3567/cscope.html]] indexes pre-built nightly. Solaris is not just ON, it is a WOS (Wad Of Stuff); code and binaries flowing in from a dozen or so gates; and there are many more software products which I had no ready access to cscope indexes or sources.
+
+ I gathered Solaris Install images, JES install images, Sun Cluster and N1 software and many other good and great things under Sun. I wrote a Perl script, that would go down recursively on files and directory content. It would extract as much textual information as it could. For example it would convert stream packages to directories, uncompresses and extract tar, zip, gz, bzip files or run [[dis(1)>>http://docs.sun.com/app/docs/doc/816-5165/6mbb0m9en?a=view]] on [[ELF (3)>>http://docs.sun.com/app/docs/doc/816-5172/6mbb7btp9?a=view]] files, [[strings(1)>>http://docs.sun.com/app/docs/doc/816-5165/6mbb0m9t8?a=view]] on binary files. All this textual information was stored in a separate directory. This was gigabytes of characters. The initial perl script was named rob.pl (**r**evenge **o**f the **b**inaries). It took more than a day to complete the process; but it worked.
+
+ Then to be able to search through all the text files rob.pl generated, I needed a really good text search engine. I evaluated a number of them, most were meant for searching generic plain text or html documents. They either had a poor performance or did not give accurate results. [[Lucene>>http://lucene.apache.org/java]] won the race. It is not a search engine as such. It is a library to create an inverted index and search it. You can use it to build your own search engine to suite your own domain of files. Initially I just used the example search engine that came with Lucene, and was amazed at its speed. Then I looked at the Lucene website and found that [[Doug Cutting>>http://nutch.sourceforge.net/blog/cutting.html]] was the author of Lucene. To any student of information retrieval (aka study of search engines) it is a familiar name. I took it for granted that Lucene is the right software to use.
+
+=== The Search Engines
+
+ The search engine technology is no rocket science. It has been there, much before modern computers arrived. Take a book and turn the last few pages. Most likely you will find an "Index" section. That is an alphabetically sorted list of special terms and corresponding page numbers. If you are looking for some word in the whole book, (1) you would first look up the page numbers in the index, and then (2) look up the page and (3) scan through the page looking for your word. This is much faster than going page by page reading each line searching for your word.
+
+[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-index.png]]
+
+ All modern search engines to the same thing. For google, yahoo etc., the internet is a big book, each webpage is a page. They generate an Index, that for a given word gives you a list of pages that contain that word. It is called an inverted index since unlike seeing a document as a set of words, it sees as a set of documents for a given word.
+
+===  The Program
+
+ The good thing about Lucene, is that it does not understand document content. You will have to write analyzers for your own content. So you have the control and freedom to interpret different kinds of files the way you want. Lucene does a good job storing your interpretation and searching it. To interpret a variety of languages under common terms, I came up with a very simple idea which fits all programming languages and executables. Programs have "symbol definitions", "symbol references", "human readable text", "path" and may be "revision history". Be it java class files starting with 0xcafebabe or C programs, it is possible to extract definitions, symbols, text, path and history.
+
+[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-program.png]]
+
+ The initial version of OpenGrok was a perl script named rob.pl that extracted the above 5 streams and piped them to a lucene search engine. rob.pl had become more intelligent. It was now running each file through ctags and extracting definitions. It also parsed out program identifiers. It would run **dis(1)** on ELF files and extract labels and call statement symbols.
+
+ I called it the //Universal Program Search Engine//. I was using this on my machine for quite some time. This system was used to confirm or deny existence of several vulnerabilities. For example I used it to confirm that no code in Solaris 7 was calling gzprintf() which was the cause of [[CVE-2003-0107>>http://www.cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2003-0107]] Now I could pinpoint affected areas in Solaris for each newly discovered security hole.
+
+===  Perl to Java
+
+ I choose Perl because it was very easy and quick to code. I could use its efficient data structures. It was really quick to prototype a design and make sure it actually worked. I realized choosing perl for a long term solution was a mistake. Perl is great for onetime //use and throw// type of applications. When I profiled the processes, java process was mostly waiting for perl to parse the text. Processing the entire program tree source and binaries took a almost half a day. After some profiling the perl code and some optimizations, I could reduce the time to about 8-9 hours. Perl was consuming too many compute cycles, despite my script being only couple of hundred lines.
+
+[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-then.png]]
+
+ Then I realized that I can write custom [[Analyzers>>http://lucene.apache.org/java/docs/api/org/apache/lucene/analysis/Analyzer.html]] in Lucene that analyzed each type of program giving out token streams to the Lucene indexer. It was very efficient and much faster. It now takes about 20 minutes to both decompose the ON gate sources into 5 streams and then index them.
+
+[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-now.png]]
+
+ The other reason for choosing Java was that after the release of 1.5 it is much like Perl in terms of data structures (aka [[Collections>>http://java.sun.com/j2se/1.5.0/docs/guide/collections/overview.html]]) and ease of programming, but more efficient and faster.
+
+===  OpenSolaris
+
+ Initially a LXR based solution was in mind for hosting OpenSolaris code. Due to many issues with LXR, a web front end for cscope was also prototyped. Internally we use cscope extensively. **cscope** has a good feature that is [[missing>>http://sourceforge.net/tracker/index.php?func=detail&aid=742274&group_id=27350&atid=390120]] in many other code searching tools like LXR. When search results are shown, LXR dumps line number and gives no clue as to what matched. Where as cscope can show lines where a symbol or function is used. Ctags [[does not show>>http://ctags.sourceforge.net/faq.html#12]] symbol references, cscope does. Cscope works perfectly for a small project, but wasn't scalable for something as big as OpenSolaris.
+
+ Cscope had a number of minor dificiencies; its full text search is too slow. Giving the book analogy above, it is does something like linearly searching through each page looking for your words. It could not AND two search conditions, which was a severe limitation if you wanted to search only with in a hierarchy of source tree. To work around this limitation, we had pre-built cscope index in each major tree branch (like library or kernel code), which is very expensive and inefficient. Also it understood only C or C like languages, and could not search for definitions in Makefiles for example.
+
+ At that time, this summarizes the state of the art in code lookup and version control web interfaces that were deployed for large open source projects (like [[http://lxr.mozilla.org/>>http://lxr.mozilla.org/]] or [[http://cvs.gnome.org/>>http://cvs.gnome.org/]])
+
+|=Feature|= LXR |= ctags |= cscope |= CVSview/web
+|Full text Search| Y| | #| 
+|Definition Search| #| Y| Y| 
+|Identifier Search| Y| | Y| 
+|Path search| Y| | Y| 
+|History Search| | | | 
+|Shows matching lines| | Y| Y| 
+|Hierarchical Search| | | | 
+|query syntax like **AND**, **OR**, **field:**| | | | 
+|Incremental update| | | | 
+|Syntax highlighting-Xref| Y| | | #
+|Interface for SCM| | | | Y
+|open source | | Y| Y| Y
+|Usable URLs | Y| -| -| 
+|Individual file download| | -| -| Y
+|Changes at directory level| | -| -| #
+|Multi language support|#| Y| #| -
+
+ Legend:
+**Y** : Yes the feature is present
+**#** : the feature may be partly present
+**-** : not applicable
+ Note: OpenGrok provides all the above features.
+
+ The Lucene based program search engine readily had all the missing search features above. It did the correct way of doing full text searches. It could identify definitions in any language that ctags understood. It could limit searches to a branch of the source tree (aka hierarchical search). It showed the matching lines for a search instead of just line numbers. And it did an incremental update of its index.
+
+ At that time the only thing missing in OpenGrok was good color-coding of source and displaying version control information, which was not much difficult to implement. I evaluated a number of Lex like code generators and [[JFlex>>http://jflex.de/]] turned out be the fastest. Jflex is now used for tokenizing and hyper-text cross reference.
+
+ Early this year it was deployed to host the OpenSolaris source code on [[opensolaris.org>>http://cvs.opensolaris.org/source/]] and accessible only to OpenSolaris pilot community members. Many things improved with the comments and feedback received from community members. By June 14th this year it was ready for broadcasting millions of lines of OpenSolaris source code to the world. Now some consider OpenGrok as one of the [[10 most important things about OpenSolaris>>http://www.opensolaris.org/jive/thread.jspa?messageID=11593]].
+
+===  "Make the common case faster and easier"
+
+ Before being considered for OpenSolaris it was just a program written for my own use. If it is going to be deployed for OpenSolaris, and publicly available, there will be hundreds of people and robots hitting it all the time. It had to be secure, fast and efficient and well as usable. OpenGrok then aimed to be a complete integrated and usable solution to source code search and browsing.
+
+ The secret behind OpenGrok is the principle "make the common case faster and easier". Call it Chandan's law. (Since Google says I am the first one to say so!). It combines a fundamental principle in Computer Architecture (i.e "//make the common case fast//" (also known as [[Amdahl's law>>http://en.wikipedia.org/wiki/Amdahl's_law]]) with a fundamental principle in Human Computer Interaction (i.e "//make the common case easier//"). To build your software pick the best tools available like Lucene and Java. The result is what you now see on [[http://src.opensolaris.org>>http://src.opensolaris.org/source/]]. Believe me, it takes lot more effort to make things simple than to make things complicated.
+
+ There are more smaller features and attention to detail that make big difference in usability and speed.
+
+===  Refactoring
+
+ The initial working prototype was available to OpenSolaris pilot community members. It also easily withstood the [[slashdotting>>http://en.wikipedia.org/wiki/Slashdotted]] on the day OpenSolaris was launched. Allen who owns the webservers said the CPU usage was quite low even when we had tens of thousands of hits on that day. That was a sigh of relief for me, my efforts in making fast, secure and scalable did not go waste.
+
+ Then I started refactoring the code, to keep code organized, to help others extend the functionalities or easily add support for more language types and version control systems. I used [[Netbeans>>http://www.netbeans.org]] to do the refactoring. Netbeans has changed a lot since the very first time I used it, many years ago. It makes Java programing a more pleasant experience. I could easily move code around; safely delete unused methods and classes; rename things in more logical way and do much more. Refactoring took time, the core analysis engine changed beyond comparison. Once finished, it was open sourced under the name OpenGrok.
+ It is available for [[download here>>Project opengrok.WebHome]]. The logo has a opening flower bracket. Which is a common block start symbol in languages like C and Java. It has no closing bracket to signify open source.
+[[[[image:Project opengrok.WebHome@logo.png||alt="logo.png"]]>>Project opengrok.WebHome]]
+
+===  OpenGrok Internals
+
+ Some details of OpenGrok internal workings can be found on [[OpenGrok Internals>>Project opengrok.internals]] page.
+
+===  In Retrospect
+
+ If people can not easily understand how a piece of software source code works, or if people cannot easily and accurately search through it, then it is as bad as any proprietary software or data formats which are difficult for general public to understand.
+
+ OpenGrok in that sense is a true enabler for source code that is open source. It lets people easily and quickly find the source code, look at it, understand the history and changes made to the source. It makes a developers life easy. It certainly has made my life easy when I am looking for security holes in software.
