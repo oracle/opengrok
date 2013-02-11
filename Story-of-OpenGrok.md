@@ -1,6 +1,6 @@
  Chandan B N, Dec 2005
 
-This blog entry will act as the --paper-- story of OpenGrok the wicked fast source browser.
+This blog entry will act as the paper story of OpenGrok the wicked fast source browser.
 
 [[/images/OpenGrok-screenshot.png]]
 
