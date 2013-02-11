@@ -1,5 +1,16 @@
 OpenGrok supports a lot of different source code repositories. Since not all repositories are built in the same way, they can not all support the same functionality. This page summarizes which repositories supports which functionality in OpenGrok.
 
+{|
+|Orange
+|Apple
+|-
+|Bread
+|Pie
+|-
+|Butter
+|Ice cream 
+|}
+
 Columns
 
     Engine – Name of revision control system (repository)
