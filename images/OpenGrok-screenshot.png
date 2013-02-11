@@ -1,0 +1,701 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+
+<html lang="en-US">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />		
+<script type="text/javascript">
+   var _U = "undefined";
+   var g_HttpRelativeWebRoot = "/ocom/";
+   var SSContributor = false;
+   var SSForceContributor = false;
+   var SSHideContributorUI = false;
+   var ssUrlPrefix = "/us/";
+   var ssUrlType = "2";
+   
+   var g_navNode_Path = new Array();
+       g_navNode_Path[0] = '8';
+       g_navNode_Path[1] = 'ocomen_sun';
+   var g_ssSourceNodeId = "ocomen_sun";
+   var g_ssSourceSiteId = "ocomen";
+</script>
+<script id="SSNavigationFunctionsScript" type="text/javascript" src="/ocom/websites/ocomen/sitenavigationfunctions.js"></script>
+<script id="SSNavigationScript" type="text/javascript" src="/ocom/websites/ocomen/sitenavigation.js"></script>
+
+<script type="text/javascript">
+	var g_strLanguageId = "en";
+</script>
+	<script type="text/javascript" src="/ocom/resources/wcm/sitestudio/wcm.toggle.js"></script>
+	<script type="text/javascript" src="/ocom/resources/sitestudio/ssajax/ssajax.js"></script>
+
+
+  <script id="ssInfo" type="text/xml" warning="DO NOT MODIFY!">
+  <ssinfo >
+    <fragmentinstance  id="fragment8" fragmentid="ocom-footer-infocompany" library="server:UNIVERSAL-FRAGMENTS">
+      
+    </fragmentinstance>
+    <fragmentinstance  id="fragment9" fragmentid="ocom-footer-links" library="server:UNIVERSAL-FRAGMENTS">
+      
+    </fragmentinstance>
+    <fragmentinstance  id="fragment16" fragmentid="ocom-horinav" library="server:OCOM-FRAGMENT-LIBRARAY">
+      
+    </fragmentinstance>
+    <fragmentinstance  id="fragment31" fragmentid="universal-addthis-print-email" library="server:UNIVERSAL-FRAGMENTS">
+      
+    </fragmentinstance>
+    <fragmentinstance  id="fragment33" fragmentid="ocom-commonassets" library="server:OCOM-FRAGMENT-LIBRARAY">
+      
+    </fragmentinstance>
+    <fragmentinstance  id="fragment41" fragmentid="UniversalSiteStudioManager" library="server:UNIVERSAL_SITE_STUDIO_MANAGER">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment45" fragmentid="Universal_Localization_Fragment" library="server:UNIVERSAL_LOCALIZATION_FRAG">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment46" fragmentid="universal-metatag" library="server:UNIVERSAL-FRAGMENTS">
+    </fragmentinstance>
+    <fragmentinstance id="fragment50" fragmentid="Universal_Localization_Fragment" library="server:UNIVERSAL_LOCALIZATION_FRAG">
+    </fragmentinstance>
+    <fragmentinstance id="fragment51" fragmentid="Universal_Localization_Fragment" library="server:UNIVERSAL_LOCALIZATION_FRAG">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment52" fragmentid="Universal_Localization_Fragment" library="server:UNIVERSAL_LOCALIZATION_FRAG">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment53" fragmentid="Universal_Localization_Fragment" library="server:UNIVERSAL_LOCALIZATION_FRAG">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment54" fragmentid="Universal_Localization_Fragment" library="server:UNIVERSAL_LOCALIZATION_FRAG">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment55" fragmentid="universal-search-fragment" library="server:UNIVERSAL-SEARCH-FRAGMET-LIB">
+      
+    </fragmentinstance>
+    <fragmentinstance  id="fragment56" fragmentid="ExternalNavigationHorizontal" library="server:EXTERNALNAVHORIZONTALLIB">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment57" fragmentid="ExternalBreadCrumb" library="server:EXTERNAL_BREADCRUMB">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment58" fragmentid="Universal_Localization_Fragment" library="server:UNIVERSAL_LOCALIZATION_FRAG">
+    </fragmentinstance>
+    <fragmentinstance  id="fragment59" fragmentid="sitecatalyst-ocom-standard" library="server:SITECATALYST-OCOM-STANDARD">
+      
+    </fragmentinstance>
+      <fragmentinstance  id="fragment60" fragmentid="mosaic-header-content" library="server:MOSAIC-HEADER-CONTENT">
+        
+      </fragmentinstance>
+    <region  id="region1" name="contribution" flags="111000110000" metadata="" dccommand="ssIncDynamicConversionByRulesEngine(SS_DATAFILE)">
+      <switchregioncontent  createnewxml="false" createnewnative="false" choosemanaged="true" chooselocal="false" choosenone="false">
+        <choosemanagedquerytext  corecontentonly="FALSE">
+          <![CDATA[xWebsiteObjectType <Matches> `Data
+File` <OR> xWebsiteObjectType <Matches> `Native
+Document`]]>
+        </choosemanagedquerytext>
+      </switchregioncontent>
+    </region>
+  </ssinfo>
+  </script>
+  
+  
+    <link rel="stylesheet" type="text/css" href="/us/assets/ocom-mosaic.css" />
+  <link rel="stylesheet" type="text/css" href="/us/assets/master-mosaic.css" />
+  <script language="JavaScript" type="text/javascript" src="/us/assets/jquery.js">
+  </script>
+  <script language="JavaScript" type="text/javascript" src="/us/assets/oraclelib-mosaic.js">
+  </script>
+  
+  
+<!--SS_BEGIN_SNIPPET(fragment41,includes)-->			<!--SS_END_SNIPPET(fragment41,includes)-->
+
+<!--SS_BEGIN_SNIPPET(fragment46,head_tags)-->	
+<title>Oracle and Sun</title>
+<meta name="Title" content="Oracle and Sun">
+<meta name="Description" content="Oracle announces it has entered into an agreement to acquire Sun Microsystems (Sun)">
+<meta name="Keywords" content="sun, microsystems">
+<meta name="robots" content="INDEX, FOLLOW">
+<meta name="country" content="">
+<meta name="Language" content="en">
+<meta name="Updated Date" content="9/4/12 8:15 PM">
+
+
+
+
+			<!--SS_END_SNIPPET(fragment46,head_tags)-->
+
+  <style type="text/css">
+  .sitefinder_content {position:absolute;right:50%; margin-right:-495px; z-index:100002;overflow: auto; top:5px;}
+  #Wrapper_FixedWidth { min-width:974px;margin-top:15px }
+  .header{height:140px; *height:130px;}
+  </style>
+  <style type="text/css">
+  #Wrapper_FixedWidth_Maincontent {width:774px !important; padding-left:0px; margin-left:0px;}
+  </style>
+
+  <title></title>
+</head>
+<body class="f01 f01v0 f01bg">
+<a name="top"></a>
+	<div class="f01bg"></div>
+	<div class="f01v0w1">
+<!--SS_BEGIN_SNIPPET(fragment46,code)-->			<!--SS_END_SNIPPET(fragment46,code)-->
+
+
+<!-- SS_BEGIN_SNIPPET(fragment60,mosaic-header-content)-->
+<!-- U01v0 -->
+
+<div class="u01" id="u01" data-menusrc="/us/menucontent-us-en.html">
+	<div class="u01tools" data-trackas="header">
+
+		<div class="u01logo"><a href="http://www.oracle.com" data-lbl="logo">Oracle</a></div>
+
+		<ul class="u01navtools">
+			<li><a href="javascript:void(0);#menu-countryselect" data-lbl="country">Select Country/Region</a></li>
+			<li><a href="/us/community/index.html#menu-communities" data-lbl="communities">Communities</a></li>
+			<li><a href="javascript:void(0);#menu-iam" data-lbl="i-am-a">I am a...</a></li>
+			<li><a href="javascript:void(0);#menu-iwant" data-lbl="i-want-to">I want to...</a></li>
+		</ul>
+
+		<ul class="u01pfile" data-lbl="welcome">
+			<li id="pfile-wlcm">Welcome</li>
+			<li id="pfile-acct"><a href="https://myprofile.oracle.com/EndUser/faces/profile/sso/updateUser.jspx?tid=complete&showRegions=primaryAddress|shippingAddress|communities|newsletters&amp;nextURL=" data-lbl="account">Account</a></li>
+			<li id="pfile-sout"><a href="javascript:sso_sign_out();" data-lbl="signout">Sign Out</a></li>
+			<li id="pfile-regs"><a href="http://www.oracle.com/webapps/redirect/signon?nexturl=" data-lbl="signin">Sign In/Register for Account</a></li>
+			<li id="pfile-help"><a href="/us/corporate/contact/about-your-account-070507.html" data-lbl="help">Help</a></li>
+		</ul>
+
+		<div class="u01search">
+			<form class="u01searchform" name="searchForm" method="get" action="http://search.oracle.com/search/search" data-errormsg="No Search Term Entered. Please Try Again">
+				<input name="start" value="1" type="hidden">
+				<input type="hidden" value="all" name="search_p_main_operator">
+				<input id="txtSearch" class="textcnt autoclear" name="q" value="Search" />
+				<input class="u01searchbttn" type="submit" value="Submit Search" />
+			</form>
+		</div>
+	</div>
+
+	<ul class="u01nav" data-trackas="hnav">
+		<li><a class="u01nav" data-trackas="hnav" href="http://www.oracle.com/us/products/index.html#menu-products-n-services" data-lbl="productsandservices"><h3>Products and Services</h3></a></li>
+		<li><a class="u01nav" data-trackas="hnav" href="http://www.oracle.com/us/solutions/index.html#menu-solutions" data-lbl="solutions"><h3>Solutions</h3></a></li>
+		<li><a class="u01nav" data-trackas="hnav" href="http://www.oracle.com/technetwork/indexes/downloads/index.html#menu-downloads" data-lbl="downloads"><h3>Downloads</h3></a></li>
+		<li><a class="u01nav" data-trackas="hnav" href="https://shop.oracle.com/#menu-store" data-lbl="store"><h3>Store</h3></a></li>
+		<li><a class="u01nav" data-trackas="hnav" href="http://www.oracle.com/us/support/index.html#menu-support" data-lbl="support"><h3>Support</h3></a></li>
+		<li><a class="u01nav" data-trackas="hnav" href="http://education.oracle.com/#menu-training" data-lbl="training"><h3>Training</h3></a></li>
+		<li><a class="u01nav" data-trackas="hnav" href="http://www.oracle.com/partners/index.html#menu-partners" data-lbl="partners"><h3>Partners</h3></a></li>
+		<li><a class="u01nav" data-trackas="hnav" href="http://www.oracle.com/us/corporate/index.html#menu-about" data-lbl="about"><h3>About</h3></a></li>
+		<li><a class="u01btn" data-trackas="hnav" href="http://www.oracle.com/technetwork/index.html#menu-otn" data-lbl="oracletechnologynetwork"><h3><span>Oracle</span> Technology Network</h3></a></li>
+	</ul>
+</div>
+<!-- /U01v0 -->
+ 
+
+			<!-- SS_END_SNIPPET(fragment60,mosaic-header-content)-->
+<!--SS_BEGIN_SNIPPET(fragment57,2)-->
+	
+	<!--**override root for testing purposes:**-->
+	<!--** Header Logo ** -->
+	<!--** Header Search ** -->
+	<!--** Welcome SignIn ** -->
+	 
+	
+	<!--** Footer ** -->
+	
+<!--** Header Logo ** -->
+                
+    
+
+  <!-- MOSAIC -->
+<!-- Communities-->
+
+<!-- User Category -->
+ 
+<!-- User Intrest -->
+<!-- Navigation starts here -->
+     
+          
+                    
+        
+        
+          
+
+        
+      
+      
+     
+    
+     
+        
+            
+            
+       
+        
+      
+     
+     
+        
+<!-- User Community SC code -->
+
+<!-- User Category SC code -->
+
+ 
+<!-- User Interest SC code -->
+
+
+	
+	    <div id="breadCrumb">
+	    <div class="breadCrumb_Left"></div>
+	    <div class="breadCrumb_Center">
+	    <div style="position:relative;">
+	    <span class="breadCrumb_Content">
+			    <span class="active">sun</span>
+	    </span>
+	    </div>
+	    </div>
+	    <div class="breadCrumb_Right"></div>
+	    </div>
+
+			<!--SS_END_SNIPPET(fragment57,2)-->
+    <div id="wrapper_lnav_maincont_rcol_foot">
+      <!--Start of Center Content--><!--Contribution Region Starts Here --><script type="text/javascript">
+window['MULTIDDOCNAMECONFIG'] = { 
+show_addrowbutton: false, 
+primaryurl: 'ocom-lt-2col?MainContent=030018&RHS1=018930&RHS2=522587&RHS3=044487&RHS4=030021&RHS5=&RHS6=&RHS7=&RHS8=&RHS9=&RHS10=&RHS11=&RHS12=&RHS13=&RHS14=&RHS15=&RHS16=&RHS17=', 
+rows: [ 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}, 
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+},
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+},  
+{ 
+createnewxml_defaultmetadata_default: 'dDocTitle%3DRHS', 
+browse_querytext_default: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_default: true, 
+show_browsebutton_default: true, 
+
+createnewxml_defaultmetadata_override: 'dDocTitle%3DRHS', 
+browse_querytext_override: 'xWebsiteObjectType <Matches> `Data File`', 
+show_createnewxmlbutton_override: true, 
+show_browsebutton_override: true, 
+
+show_deletebutton: true 
+}                    
+] 
+}; 
+</script>
+
+<div id="Wrapper_FixedWidth_Maincontent">
+<table width="100%" cellspacing="0" cellpadding="0" border="0">     <tbody>         <tr>             <td width="3">&nbsp;</td>             <td valign="top"><!-- Begin Page Header -->             <h1><span class="contents">Hardware and Software. Engineered to Work Together.</span></h1>             <!-- End Page Header --><!-- Begin Page Content -->             <table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0" class="fifteenpxBotMargin">                 <tbody>                     <tr>                         <td width="2" class="genericBoxBgLftTop"><!--spacer--></td>                         <td nowrap="nowrap" class="genericBoxBgRptTop"><!--spacer--></td>                         <td width="2" class="genericBoxBgRtTop"><!--spacer--></td>                     </tr>                     <tr>                         <td width="2" class="genericBoxSideLft"><!--spacer--></td>                         <td class="innerBoxContent"><!-- Begin Section Content-->                         <table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0">                             <tbody>                                 <tr>                                     <td valign="top"><p>Oracle acquired Sun in 2010, and since that time Oracle's hardware and software engineers have worked side-by-side to build fully integrated systems and <a href="ssLINK/171609" target="">optimized solutions</a> designed to achieve performance levels that are unmatched in the industry. Early examples include the <a target="" href="/us/products/database/exadata-database-machine/overview/index.html">Oracle Exadata Database Machine X2-8</a>, and the first <a target="" href="/us/products/middleware/exalogic/overview/index.html">Oracle Exalogic Elastic Cloud</a>, both introduced in late 2010. During 2011, Oracle introduced the <a href="/us/corporate/features/sparc-supercluster-t4-4-489157.html">SPARC SuperCluster  T4-4</a>, a general-purpose, engineered system with Oracle Solaris that delivered record-breaking performance on a series of enterprise benchmarks. Oracle's SPARC-based systems are some of the most scalable, reliable, and secure products available today. Sun's prized software portfolio has continued to develop as well, with new releases of <a href="/us/products/servers-storage/solaris/index.html" target="">Oracle Solaris</a>, <a href="/us/products/mysql/index.html" target="">MySQL</a>, and the recent introduction of <a href="/us/technologies/java/index.html" target="">Java 7</a>. Oracle invests in innovation by designing hardware and software systems that are engineered to work together.</p>                                     <table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0" class="innerPgSignpost">                                         <tbody>                                             <tr>                                                 <td width="100%" valign="top"><!-- Begin Section Content--><!-- Begin Three Column Signpost-->                                                 <ul>                                                     <li><strong>Benchmarks: </strong><a href="/us/solutions/performance-scalability/index.html" target="">Oracle Hardware Benchmarks</a></li>                                                     <li><a href="ssLINK/171609" target="">Oracle Optimized Solutions</a></li>                                                 </ul></td>                                                 <td valign="top"><!-- Begin Section Content-->&nbsp; <!-- Begin Three Column Signpost--></td>                                             </tr>                                         </tbody>                                     </table></td>                                 </tr>                             </tbody>                         </table>                         <!-- End Section Content--></td>                         <td width="2" class="genericBoxSideRt"><!--spacer--></td>                     </tr>                     <tr>                         <td class="genericBoxBgLftBot"><img height="1" width="2" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                         <td nowrap="nowrap" class="genericBoxBgRptBot"><!--spacer--></td>                         <td width="3" class="genericBoxBgRtBot"><img height="1" width="2" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                     </tr>                 </tbody>             </table>             <!-- End Page Content --><!-- Begin Products Information Section -->             <table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0" class="fifteenpxBotMargin">                 <tbody>                     <tr>                         <td width="3" class="innerBoxHeaderBgLft"><!--spacer--></td>                         <td nowrap="nowrap" class="innerBoxHeaderBgRpt"><h2>PRODUCT INFORMATION ON <b>ORACLE.COM</b></h2></td>                         <!-- Edit Section Header Here -->                         <td width="3" class="innerBoxHeaderBgRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxSideLft"><!--spacer--></td>                         <td class="innerBoxContent"><table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0">                             <tbody>                                 <tr>                                     <td width="50%" valign="top"><!-- Begin Section Content--><!-- Begin Three Column Signpost-->                                     <ul>                                         <li><a href="/us/products/servers-storage/servers/index.html" target="">Sun Servers</a></li>                                         <li><a href="/us/products/servers-storage/storage/index.html" target="">Sun Storage and Tape</a></li>                                         <li><a href="/us/products/servers-storage/solaris/index.html" target="">Solaris</a></li>                                         <li><a href="/us/technologies/java/index.html" target="">Java</a></li>                                         <li><a href="/us/products/mysql/index.html" target="">MySQL</a></li>                                     </ul></td>                                     <td width="50%" valign="top"><ul>                                         <li><a href="/us/products/engineered-systems/index.html" target="">Engineered Systems</a></li>                                         <li><a href="/us/products/servers-storage/desktop-workstations/index.html" target="">Desktops</a></li>                                         <li><a href="/us/products/servers-storage/networking/index.html" target="">Networking</a></li>                                     </ul>                                     <div class="viewAllMargin2"><a href="/us/sun/sun-products-map-075562.html" target="">Find Sun Software Products</a></div></td>                                 </tr>                             </tbody>                         </table></td>                         <td width="3" class="innerBoxSideRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxBgLftBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                         <td nowrap="nowrap" class="innerBoxBgRptBot"><!--spacer--></td>                         <td width="3" class="innerBoxBgRtBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                     </tr>                 </tbody>             </table>             <!-- End Product Information Section --><!-- Begin Downloads Section -->             <table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0" class="fifteenpxBotMargin">                 <tbody>                     <tr>                         <td width="3" class="innerBoxHeaderBgLft"><!--spacer--></td>                         <td nowrap="nowrap" class="innerBoxHeaderBgRpt"><h2>DOWNLOAD <b>INFORMATION</b></h2></td>                         <!-- Edit Section Header Here -->                         <td width="3" class="innerBoxHeaderBgRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxSideLft"><!--spacer--></td>                         <td class="innerBoxContent"><table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0">                             <tbody>                                 <tr>                                     <td width="32%" valign="top"><!-- Begin Section Content--><!-- Begin Three Column Signpost-->                                     <ul>                                         <li><a href="/technetwork/indexes/downloads/index.html" target="_blank">Product downloads for Developers</a></li>                                         <li><a href="http://edelivery.oracle.com/" target="_blank">Latest licensed Sun product downloads</a></li>                                     </ul></td>                                 </tr>                             </tbody>                         </table></td>                         <td width="3" class="innerBoxSideRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxBgLftBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                         <td nowrap="nowrap" class="innerBoxBgRptBot"><!--spacer--></td>                         <td width="3" class="innerBoxBgRtBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                     </tr>                 </tbody>             </table>             <!-- End Downloads Section --><!-- Begin Information for Customers and Partners Section -->             <table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0" class="fifteenpxBotMargin">                 <tbody>                     <tr>                         <td width="3" class="innerBoxHeaderBgLft"><!--spacer--></td>                         <td nowrap="nowrap" class="innerBoxHeaderBgRpt"><h2>INFORMATION FOR <b>CUSTOMERS AND PARTNERS</b></h2></td>                         <!-- Edit Section Header Here -->                         <td width="3" class="innerBoxHeaderBgRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxSideLft"><!--spacer--></td>                         <td class="innerBoxContent"><table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0">                             <tbody>                                 <tr>                                     <td width="50%" valign="top"><!-- Begin Section Content--><!-- Begin Three Column Signpost-->                                     <ul>                                         <li><a href="/us/038563.pdf" target="_blank">Oracle and Sun Overview and FAQ</a> <span class="legalese">(PDF)</span> for customers and partners</li>                                         <li><a href="/us/sun/042646.pdf" target="_blank">Oracle and Sun Overview and FAQ for partners</a> <span class="legalese">(PDF)</span></li>                                     </ul></td>                                     <td width="50%" valign="top">&nbsp;</td>                                 </tr>                             </tbody>                         </table></td>                         <td width="3" class="innerBoxSideRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxBgLftBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                         <td nowrap="nowrap" class="innerBoxBgRptBot"><!--spacer--></td>                         <td width="3" class="innerBoxBgRtBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                     </tr>                 </tbody>             </table>             <!-- End Information for Customers and Partners Section --><!-- Begin Sun Community Section -->             <table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0" class="fifteenpxBotMargin">                 <tbody>                     <tr>                         <td width="3" class="innerBoxHeaderBgLft"><!--spacer--></td>                         <td nowrap="nowrap" class="innerBoxHeaderBgRpt"><h2>COMMUNITIES</h2></td>                         <!-- Edit Section Header Here -->                         <td width="3" class="innerBoxHeaderBgRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxSideLft"><!--spacer--></td>                         <td class="innerBoxContent"><table width="100%" cellspacing="0" cellpadding="0" border="0" padding="0">                             <tbody>                                 <tr>                                     <td width="50%" valign="top"><!-- Begin Section Content--><!-- Begin Three Column Signpost-->                                     <ul>                                         <li><a href="http://java.sun.com/" target="_blank">Oracle Technology Network for Java Developers</a></li>                                         <li><a href="http://java.net/" target="_blank">Java.net</a></li>                                     </ul></td>                                     <td width="50%" valign="top"><ul>                                         <li><a href="http://www.oracle.com/technetwork/index.html?ssSourceSiteId=ocomen" target="_blank">Oracle Technology Network</a></li>                                         <li><a href="http://www.oracle.com/technetwork/systems/index.html?ssSourceSiteId=ocomen" target="_blank">Oracle Technology Network for SysAdmins</a></li>                                     </ul></td>                                 </tr>                             </tbody>                         </table></td>                         <td width="3" class="innerBoxSideRt"><!--spacer--></td>                     </tr>                     <tr>                         <td width="3" class="innerBoxBgLftBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                         <td nowrap="nowrap" class="innerBoxBgRptBot"><!--spacer--></td>                         <td width="3" class="innerBoxBgRtBot"><img height="1" width="3" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>                     </tr>                 </tbody>             </table>             <!-- End Sun Community Section --></td>             <td width="11"><img height="1" width="11" src="/ocom/groups/public/documents/digitalasset/spacer.gif" alt="" /></td>         </tr>     </tbody> </table></div>
+   
+  
+
+  
+<div id="Wrapper_FixedWidth_Rightnav">
+<div style="background-color:#FFFFFF;">
+    
+                                      
+       <div class="contactboxTop"><!--spacer--></div> <div class="contactboxMiddle"><div class="paddingTen"><div class="phonenumber"><b>Oracle 1-650-633-4490</b></div> <div class="icons"><img height="16" width="16" alt="Toll free in the United States" src="/ocom/groups/public/@otn/documents/digitalasset/116670.gif" /><span style="font-weight: bold; font-size: 11px; color: rgb(85, 85, 85); text-decoration: none;">1-800-633-0925<br /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Toll Free in the U.S.)</span></div> <div class="icons"><a href="mailto:acquisition-inquiries_ww@oracle.com"><img height="16" border="0" width="16" alt="E-Mail Inquiries" src="/ocom/groups/public/@ocom/documents/digitalasset/contact_box_email.gif" /></a><a href="mailto:acquisition-inquiries_ww@oracle.com">Acquisition inquiries</a></div></div></div> <div class="contactboxBottom"><!--spacer--></div>
+
+                   
+                                      
+       <div class="sidebox"><!--[if IE 6]><div class="sideboxIE"><![endif]--><!--[if IE 7]><div class="sideboxIE"><![endif]-->
+<h4><a href="javascript:toggleSidebox('');">Stay Connected</a></h4>
+<div class="contents">
+<ul class="sidelistSocial">
+    <li><a href="https://mix.oracle.com/" target="_blank"><img height="16" border="0" width="16" alt="" src="/ocom/groups/public/@ocom/documents/digitalasset/334046.png" /></a><a href="https://mix.oracle.com/" target="_blank">OracleMix</a></li>
+    <li><a href="http://twitter.com/oracle" target="_blank"><img height="16" border="0" width="16" alt="" src="/ocom/groups/public/@ocom/documents/digitalasset/325156.png" /></a><a href="http://twitter.com/oracle" target="_blank">Twitter</a></li>
+    <li><a href="http://www.facebook.com/Oracle" target="_blank"><img height="16" border="0" width="16" alt="" src="/ocom/groups/public/@ocom/documents/digitalasset/325157.png" /></a><a href="http://www.facebook.com/Oracle" target="_blank">Facebook</a></li>
+    <li><a href="http://www.youtube.com/user/OracleVideo" target="_blank"><img height="16" border="0" width="16" alt="" src="/ocom/groups/public/@ocom/documents/digitalasset/328602.png" /></a><a href="http://www.youtube.com/user/OracleVideo" target="_blank">YouTube</a></li>
+</ul>
+</div>
+<div class="sideboxbottom"><!--spacer--></div>
+<!--[if IE]></div><![endif]--></div>
+
+                   
+                                      
+       <!-- OpenWorld 2012 Banner start -->
+<!--
+<div class="BannerBelowContact"><a href="/openworld/register/packages/index.html?Src=7328808&amp;Act=203&amp;pcode=WWMK11054239MPP001" target="_blank"><img alt="Oracle OpenWorld - Register Now" src="/ocom/groups/public/@ocom/documents/digitalasset/1837847.jpg" /></a>
+<div style="padding-top: 5px;"><a href="/us/corporate/events/oracleconferences/index.html?Src=7328808&amp;Act=203&amp;pcode=WWMK11054239MPP001" target=""><img alt="All Oracle Conferences" src="/ocom/groups/public/@ocom/documents/digitalasset/1837846.jpg" /></a></div>
+</div>
+-->
+<!-- OpenWorld 2012 Banner end -->
+
+                   
+                                      
+           
+     
+    
+     
+         
+	
+    	
+  
+	<div class="sidebox">
+   	<h4><a href="javascript:toggleSidebox('sidebody1');" class="rhstoggle">News</a></h4>                 
+		
+     	<div id="sidebody1" class="contents">     	     
+        	  <ul class="sidelist">
+    <li><a href="/us/corporate/press/1505484" target="">Oracle's SPARC T4 Server Momentum Expands Demand for SPARC Systems</a></li>
+    <li><a href="/us/corporate/press/1505462" target="">Oracle Ships Over 1 Exabyte of Media for StorageTek T10000C Tape Drives</a></li>
+    <li><a href="/us/corporate/press/1485280" target="">Oracle Extends Performance Leadership with x86 World Record on TPC-C Benchmark</a></li>
+    <li><a href="/us/corporate/press/1467589" target="">Oracle Introduces Netra SPARC T4 Servers for Next Generation Communications Networks</a></li>
+</ul>
+	
+        		<div class="viewall"><a href="http://pressroom.oracle.com/search/search?group=PressReleases&amp;keyword=">View all press releases</a></div>
+        	<div class="close"><a class="close" href="javascript:toggleSidebox('sidebody1');">Close</a></div>
+     	</div>
+     	<div class="sideboxbottom"><!-- Spacer --></div>
+	</div>
+	<script>
+			DisplayElements(getElementsByPrefix('sidebody',document.documentElement));
+			DisplayRightNav();
+	</script>                   
+                                      
+           	     
+    
+    	
+  
+	<div class="sidebox">
+   	<h4><a href="javascript:toggleSidebox('sidebody2');" class="rhstoggle">Executive News</a></h4>                 
+		
+     	<div id="sidebody2" class="contents">     	     
+        	  <ul class="sidelist">     <li><a target="_blank" href="http://enterpriseapplications.cbronline.com/features/oracle-ellison-and-hurd-the-dream-team-270612">Oracle, Ellison and Hurd&mdash;the Dream Team?</a></li>     <li><a target="_blank" href="http://allthingsd.com/20120627/a-dozen-questions-for-oracle-president-mark-hurd/">A Dozen Questions for Oracle President Mark Hurd</a></li>     <li><a href="http://allthingsd.com/video/?video_id=909E5610-BBBC-47F4-A056-D96203CBD038" target="_blank">Larry Ellison at the D10 Conference: Session Highlights</a></li>     <li><a href="http://video.allthingsd.com/video/d10-video-steve-jobs-career-lessons/AA982932-DB8B-440A-99DA-66B04E4BDBC7" target="_blank">Larry Ellison Talks About Career Lessons from Steve Jobs</a></li>     <li><a href="http://video.allthingsd.com/video/d10-video-steve-jobs-panel-highlights/450473D6-2170-4761-BEB6-486D5313E28A" target="_blank">Larry Ellison on the Steve Jobs Panel at the D10 Conference</a></li>     <li><a target="_blank" href="http://www.businesscloud9.com/content/interview-oracles-marc-hurd-how-larry-ellison-got-it-right-about-cloud/10605">Oracle's Mark Hurd on How Larry Ellison Got It Right About the Cloud</a></li>     <li><a target="" href="/us/corporate/profit/features/010312-mhurd-1446078.html">Mark Hurd: The Road Ahead</a></li>     <li><a target="_blank" href="http://www.informationweek.com/news/global-cio/interviews/228900228?pgno=1">Global CIO: Larry Ellison's 10-Point Plan For World Domination (InformationWeek)</a></li>     <li><a target="_blank" href="http://www.crn.com/news/data-center/232200114/mark-hurd-the-oracle-of-oracle.htm">Mark Hurd: The Oracle of the Channel</a></li>     <li><a target="_blank" href="http://www.crn.com/slide-shows/applications-os/231903522/10-questions-for-oracle-president-mark-hurd.htm">10 Questions for Oracle President Mark Hurd</a></li>     <li><a target="_blank" href="http://www.crn.com/news/cloud/232200062/q-a-oracle-s-hurd-on-public-cloud-salesforce-com-and-sales-strategies.htm">Oracle's Hurd on Public Cloud, Salesforce.com, and Sales Strategies</a></li>     <li><a target="_blank" href="http://www.crn.com/blogs-op-ed/the-final-cut/231903418/hurd-has-done-it-again.htm">Hurd Has Done It Again</a></li>     <li><a target="_blank" href="http://www.informationweek.com/news/global-cio/interviews/231901776">Oracle's Mark Hurd: We Know CIOs (InformationWeek)</a></li>     <li><a target="_blank" href="http://bits.blogs.nytimes.com/2011/10/04/mark-hurd-is-still-intense/">Mark Hurd is Still Intense (The New York Times)</a></li>     <li><a target="_blank" href="http://www.marketwatch.com/story/hurd-oracle-now-a-one-stop-tech-company-2011-10-04">Hurd: Oracle Now a &quot;One-Stop&quot; Tech Company (The Wall Street Journal: MarketWatch)</a></li>     <li><a target="_blank" href="http://www.informationweek.com/news/global-cio/interviews/231601975">The Oracle Mark Hurd Wants You to Know (InformationWeek)</a></li> </ul>
+	
+        	<div class="close"><a class="close" href="javascript:toggleSidebox('sidebody2');">Close</a></div>
+     	</div>
+     	<div class="sideboxbottom"><!-- Spacer --></div>
+	</div>
+	<script>
+			DisplayElements(getElementsByPrefix('sidebody',document.documentElement));
+			DisplayRightNav();
+	</script>                   
+                                      
+           	     
+    
+    	
+  
+	<div class="sidebox">
+   	<h4><a href="javascript:toggleSidebox('sidebody3');" class="rhstoggle">Events</a></h4>                 
+		
+     	<div id="sidebody3" class="contents">     	     
+        	  <ul class="sidelist">
+<li><a href="http://events.oracle.com/search/search?group=Events&keyword=" target="">See all events</a></li>
+</ul>
+	
+        	<div class="close"><a class="close" href="javascript:toggleSidebox('sidebody3');">Close</a></div>
+     	</div>
+     	<div class="sideboxbottom"><!-- Spacer --></div>
+	</div>
+	<script>
+			DisplayElements(getElementsByPrefix('sidebody',document.documentElement));
+			DisplayRightNav();
+	</script>                   
+</div>
+</div>
+
+<!--Contribution Region Ends Here --><!--End of Center Content--><!--RIGHT NAV START--><!--coming from Region definition --><!--RIGHT NAV END-->
+
+      <div id="Wrapper_FixedWidth_Footer">
+        <div class="addThisPrintEmail">
+          
+<!--SS_BEGIN_SNIPPET(fragment31,1)--> &nbsp;&nbsp;&nbsp;
+	<a href="javascript:mailpage()"><img height="16" src="/ocom/groups/systemobject/@mktg_admin/@ocom_admin/documents/digitalasset/email.gif" width="19" border="0" /></a> <span style="MARGIN-BOTTOM: 2px">
+	<a href="javascript:mailpage()">E-mail this page</a></span>&nbsp;&nbsp;&nbsp;
+	<a onclick="printerView()" href="javascript: void 0;"><img height="16" alt="Printer View" src="/ocom/groups/systemobject/@mktg_admin/@ocom_admin/documents/digitalasset/print_icon.gif" width="19" border="0" />&nbsp;Printer View</a>
+			<!--SS_END_SNIPPET(fragment31,1)-->
+
+        </div>
+
+        <div class="footer">
+          
+<!--SS_BEGIN_SNIPPET(fragment45,ocom translation)-->				<!--** retrieve cache lifespan parameter: **-->
+
+	
+	<!--**override root for testing purposes:**-->
+	<!--** Header Logo ** -->
+	<!--** Header Search ** -->
+	<!--** Welcome SignIn ** -->
+	 
+	
+	<!--** Footer ** -->
+	
+<!--** Header Logo ** -->
+                
+    
+
+  <!-- MOSAIC -->
+<!-- Communities-->
+
+<!-- User Category -->
+ 
+<!-- User Intrest -->
+<!-- Navigation starts here -->
+     
+          
+                    
+        
+        
+          
+
+        
+      
+      
+     
+    
+     
+        
+            
+            
+       
+        
+      
+     
+     
+        
+<!-- User Community SC code -->
+
+<!-- User Category SC code -->
+
+ 
+<!-- User Interest SC code -->
+
+	<div id='u06'><hr><h3><a href='/us/corporate/index.html'  onclick="navTrack('ocom','en','footer','Hardware and Software Engineered to Work Together');">Hardware and Software, Engineered to Work Together</a></h3>
+  <ul class='u06-links'>
+    <li><a href='/us/syndication/subscribe/index.html' onClick="navTrack('ocom','en','footer','subscribe');">Subscribe</a></li>
+    <li><a href='/us/corporate/index.html' onClick="navTrack('ocom','en','footer','about oracle');">About Oracle</a> </li>
+    <li><a href='/us/corporate/careers/index.html' onClick="navTrack('ocom','en','footer','careers');">Careers</a> </li>
+    <li><a href='/us/corporate/contact/index.html' onClick="navTrack('ocom','en','footer','contact us');">Contact Us</a> </li>
+    <li><a href='/us/sitemaps/index.html' onClick="navTrack('ocom','en','footer','site maps');">Site Maps</a> </li>
+    <li><a href='/us/legal/index.html' onClick="navTrack('ocom','en','footer','legal notices');">Legal Notices</a> </li>
+    <li><a href='/us/legal/terms/index.html' onClick="navTrack('ocom','en','footer','terms of use');">Terms of Use</a> </li>
+    <li><a href='/us/legal/privacy/index.html' onClick="navTrack('ocom','en','footer','privacy rights');">Your Privacy Rights</a></li>
+    <li><div id='teconsent' style='padding-top:3px;'><script type='text/javascript' src='http://consent.truste.com/notice?domain=oracle.com&c=teconsent&language=en'></script></div></li>
+    <li class='u06-mobile'><a href='/us/corporate/mobile-application/index.html' onClick="navTrack('ocom','en','footer','oracle mobile');"><span>&nbsp;</span> Oracle Mobile</a></li>
+  </ul>
+  <ul class='scl-icons'>
+    <li class='scl-facebook'><a title='Oracle on Facebook' href='/us/social-media/facebook/index.html' onClick="navTrack('ocom','en','footer','facebook');" >Facebook</a></li>
+    <li class='scl-linkedin'><a title='Oracle on LinkedIn' href='/us/social-media/linkedin/index.html' onClick="navTrack('ocom','en','footer','linkedin');">LinkedIn</a></li>
+    <li class='scl-twitter'><a title='Follow Oracle on Twitter' href='/us/social-media/twitter/index.html' onClick="navTrack('ocom','en','footer','twitter');">Twitter</a></li>
+    <li class='scl-youtube'><a title='Watch Oracle on YouTube' href='http://www.youtube.com/oracle/' onClick="navTrack('ocom','en','footer','youtube');">YouTube</a></li>
+    <li class='scl-feed'><a title='Oracle RSS Feeds' href='/us/syndication/feeds/index.html' onClick="navTrack('ocom','en','footer','oracle rss feed');">Oracle RSS Feed</a></li>
+  </ul>
+</div>
+
+			<!--SS_END_SNIPPET(fragment45,ocom translation)-->
+
+<!--SS_BEGIN_SNIPPET(fragment59,1)-->
+				<!-- Start SiteCatalyst code -->
+<script language="JavaScript" src="http://www.oracleimg.com/us/assets/metrics/ora_ocom.js"></script>
+<!-- End SiteCatalyst code --> 
+
+			<!--SS_END_SNIPPET(fragment59,1)-->
+
+        </div>
+      </div>
+    </div>
+
+    <div class="sitefinder_content" id="light">
+      <!--spacer-->
+    </div>
+
+    <div class="lightbox_overlay" id="fade">
+      <!--spacer-->
+    </div>
+<!--SS_BEGIN_SNIPPET(fragment41,ui)-->			<!--SS_END_SNIPPET(fragment41,ui)-->
+
+  </div>
+</body>
+</html>
