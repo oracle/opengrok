@@ -1,0 +1,33 @@
+OpenGrok supports a lot of different source code repositories. Since not all repositories are built in the same way, they can not all support the same functionality. This page summarizes which repositories supports which functionality in OpenGrok.
+
+Columns
+
+    Engine – Name of revision control system (repository)
+    File History – We can get history about a single file from this system
+    Directory History – We can get history about a complete directory from this system
+    Annotations – We can get information about who changed each line in the file from this system
+    Cacheable – revision control data is cached to file
+    Updateable – We can update the source directory for this revision control system from OpenGrok
+    Change sets – This revision control system supports change sets – several files are committed together
+
+Engine	File History	Directory History	Annotations	Cacheable	Updateable	Change sets
+Bazaar	Y	Y	Y	Y	Y	n/i
+ClearCase	Y	Y	Y	Y	Y	n/i
+CVS	Y	N	Y	Y	Y[1]	N
+Git	Y	Y	Y	Y	Y	n/i
+Mercurial	Y	Y	Y	Y	Y	n/i
+Monotone	Y	Y	Y	Y	Y	n/i
+Perforce	Y	Y	Y	Y	Y	n/i
+Razor	Y	Y	Y	Y	N	N
+RCS	Y	N	Y	Y	N	N
+SCCS	Y	N	Y	Y	N	N
+Subversion	Y	Y	Y	Y	Y	n/i
+Teamware	Y	N	Y	Y	n/i	N
+
+Legend
+
+    Y – This is implemented
+    N – The repository does not support this, can not be implemented in OpenGrok
+    n/i – Not implemented (yet)
+    [1] – Needs external cvs program
+
