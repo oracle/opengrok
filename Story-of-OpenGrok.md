@@ -52,23 +52,112 @@ This would be explaining the technology behind it in more detail. It would be a 
 
  At that time, this summarizes the state of the art in code lookup and version control web interfaces that were deployed for large open source projects (like [[http://lxr.mozilla.org/>>http://lxr.mozilla.org/]] or [[http://cvs.gnome.org/>>http://cvs.gnome.org/]])
 
-|=Feature|= LXR |= ctags |= cscope |= CVSview/web
-|Full text Search| Y| | #| 
-|Definition Search| #| Y| Y| 
-|Identifier Search| Y| | Y| 
-|Path search| Y| | Y| 
-|History Search| | | | 
-|Shows matching lines| | Y| Y| 
-|Hierarchical Search| | | | 
-|query syntax like **AND**, **OR**, **field:**| | | | 
-|Incremental update| | | | 
-|Syntax highlighting-Xref| Y| | | #
-|Interface for SCM| | | | Y
-|open source | | Y| Y| Y
-|Usable URLs | Y| -| -| 
-|Individual file download| | -| -| Y
-|Changes at directory level| | -| -| #
-|Multi language support|#| Y| #| -
+{|
+|Feature
+|LXR
+|ctags
+|cscope
+|CVSview/web
+|-
+|Full
+|text
+|Search
+|Y
+|#
+|
+|-
+|Definition
+|Search
+|#
+|Y
+|Y
+|
+|-
+|Identifier
+|Search
+|Y
+|Y
+|
+|-
+|Path
+|search
+|Y
+|Y
+|
+|-
+|History
+|Search
+|
+|-
+|Shows
+|matching
+|lines
+|Y
+|Y
+|
+|-
+|Hierarchical
+|Search
+|
+|-
+|query
+|syntax
+|like
+|AND,
+|OR,
+|field:
+|
+|-
+|Incremental
+|update
+|
+|-
+|Syntax
+|highlightingN/AXref
+|Y
+|#
+|-
+|Interface
+|for
+|SCM
+|Y
+|-
+|open
+|source
+|Y
+|Y
+|Y
+|-
+|Usable
+|URLs
+|Y
+|N/A
+|N/A
+|
+|-
+|Individual
+|file
+|download
+|N/A
+|N/A
+|Y
+|-
+|Changes
+|at
+|directory
+|level
+|N/A
+|N/A
+|#
+|-
+|Multi
+|language
+|support
+|#
+|Y
+|#
+|N/A
+|}
 
  Legend:
 **Y** : Yes the feature is present
