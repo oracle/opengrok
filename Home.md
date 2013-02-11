@@ -1,1 +1,3 @@
-Welcome to the OpenGrok wiki!
+"A wicked fast source browser"
+
+OpenGrok is a fast and usable source code search and cross reference engine. It helps you search, cross-reference and navigate your source tree. It can understand various program file formats and version control histories like Mercurial, Git, SCCS, RCS, CVS, Subversion, Teamware, ClearCase, Perforce, Monotone and Bazaar. In other words it lets you grok (profoundly understand) source code and is developed in the open, hence the name OpenGrok. It is written in Java.
