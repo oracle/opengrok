@@ -1,6 +1,6 @@
  Chandan B N, Dec 2005
 
-This blog entry will act as the --paper-- story of [[OpenGrok>>Project opengrok.WebHome]] the wicked fast source browser that powers the [[OpenSolaris source browser>>http://src.opensolaris.org/source/]]. 
+This blog entry will act as the --paper-- story of OpenGrok the wicked fast source browser.
 
 [[/images/OpenGrok-screenshot.png]]
 
