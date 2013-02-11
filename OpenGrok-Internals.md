@@ -16,7 +16,7 @@
 
 Central to analysis, is the Analyzer Guru. He knows all the Analyzers by name. Most analyzers sit in static offices. Hiring a new Analyzer for each analysis work was a bit expensive.
 
-[[/opengrok-analysis.png]]
+[[/images/opengrok-analysis.png]]
 
  When the indexer thinks he needs to analyze a file to be indexed, he calls Analyzer Guru. Analyzer Guru knows exactly who to send the file to. He creates a blank [[Lucene Document>>http://lucene.apache.org/java/docs/api/org/apache/lucene/document/Document.html]] and a [[FileInputStream>>http://java.sun.com/j2se/1.5.0/docs/api/java/io/FileInputStream.html]] and gives it to the appropriate Analyzer. He knows the Analyzers by name, because they would initially tell him the file extensions and magic numbers of file types they are experts in.
 
