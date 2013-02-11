@@ -40,14 +40,14 @@ Central to analysis, is the Analyzer Guru. He knows all the Analyzers by name. M
 
  It boils down to finding the diffs between two sorted lists (list of files on disk Vs list of files in the index). Left hand side is the file tree whose index on the right side needs to be updated. To begin with assume we had a correctly indexed tree Yesterday.
 
-[[/opengrok-index1.png]]
+[[/images/opengrok-index1.png]]
 
  Let us say Today we removed a makefile and added a new file foo.c and modified frotz.c. During first pass we see that makefile-yesterday and frotz.c-today on our index-list did not match tree-traversal list. So we delete those lines (i.e documents) from the index.
 
-[[/opengrok-index2.png]]
+[[/images/opengrok-index2.png]]
 
  During second pass we see that foo.c-today and frotzc-today are new and we add the documents to the index.
 
-[[/opengrok-index3.png]]
+[[/images/opengrok-index3.png]]
 
  The Lucene inverted index can be either opened to add more documents or delete existing documents at a time. To update a document you must delete it first, close the index and add it again. To optimize for faster updates, we first delete in the index all the changed or deleted files in the source tree. In the second pass we add all the documents not in the index.
