@@ -1,7 +1,7 @@
  Chandan B N, Dec 2005
 
 This blog entry will act as the --paper-- story of [[OpenGrok>>Project opengrok.WebHome]] the wicked fast source browser that powers the [[OpenSolaris source browser>>http://src.opensolaris.org/source/]]. 
-[[[[image:http://static.flickr.com/35/71852240_d42e0556fe_m.jpg||alt="OpenGrok on OpenSolaris.org"width="240"height="167"]]>>http://mediacast.sun.com/share/chandan/OpenGrok-screenshot.png]] 
+[[/images/OpenGrok-screenshot.png]]
 This would be explaining the technology behind it in more detail. It would be a living blog entry. i.e I would keep updating as and when there are updates. There would no other technical documentation, if you are fond of reading in postscript or PDF formats, I'll try to make one available sooner.
 
 === The Revenge of the Binaries
@@ -16,7 +16,7 @@ This would be explaining the technology behind it in more detail. It would be a 
 
  The search engine technology is no rocket science. It has been there, much before modern computers arrived. Take a book and turn the last few pages. Most likely you will find an "Index" section. That is an alphabetically sorted list of special terms and corresponding page numbers. If you are looking for some word in the whole book, (1) you would first look up the page numbers in the index, and then (2) look up the page and (3) scan through the page looking for your word. This is much faster than going page by page reading each line searching for your word.
 
-[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-index.png]]
+[[/images/ogstory-index.png]]
 
  All modern search engines to the same thing. For google, yahoo etc., the internet is a big book, each webpage is a page. They generate an Index, that for a given word gives you a list of pages that contain that word. It is called an inverted index since unlike seeing a document as a set of words, it sees as a set of documents for a given word.
 
@@ -24,7 +24,7 @@ This would be explaining the technology behind it in more detail. It would be a 
 
  The good thing about Lucene, is that it does not understand document content. You will have to write analyzers for your own content. So you have the control and freedom to interpret different kinds of files the way you want. Lucene does a good job storing your interpretation and searching it. To interpret a variety of languages under common terms, I came up with a very simple idea which fits all programming languages and executables. Programs have "symbol definitions", "symbol references", "human readable text", "path" and may be "revision history". Be it java class files starting with 0xcafebabe or C programs, it is possible to extract definitions, symbols, text, path and history.
 
-[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-program.png]]
+[[/images/ogstory-program.png]]
 
  The initial version of OpenGrok was a perl script named rob.pl that extracted the above 5 streams and piped them to a lucene search engine. rob.pl had become more intelligent. It was now running each file through ctags and extracting definitions. It also parsed out program identifiers. It would run **dis(1)** on ELF files and extract labels and call statement symbols.
 
@@ -34,11 +34,11 @@ This would be explaining the technology behind it in more detail. It would be a 
 
  I choose Perl because it was very easy and quick to code. I could use its efficient data structures. It was really quick to prototype a design and make sure it actually worked. I realized choosing perl for a long term solution was a mistake. Perl is great for onetime //use and throw// type of applications. When I profiled the processes, java process was mostly waiting for perl to parse the text. Processing the entire program tree source and binaries took a almost half a day. After some profiling the perl code and some optimizations, I could reduce the time to about 8-9 hours. Perl was consuming too many compute cycles, despite my script being only couple of hundred lines.
 
-[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-then.png]]
+[[/images/ogstory-then.png]]
 
  Then I realized that I can write custom [[Analyzers>>http://lucene.apache.org/java/docs/api/org/apache/lucene/analysis/Analyzer.html]] in Lucene that analyzed each type of program giving out token streams to the Lucene indexer. It was very efficient and much faster. It now takes about 20 minutes to both decompose the ON gate sources into 5 streams and then index them.
 
-[[image:http://blogs.oracle.com/roller/resources/chandan/ogstory-now.png]]
+[[/images/ogstory-now.png]]
 
  The other reason for choosing Java was that after the release of 1.5 it is much like Perl in terms of data structures (aka [[Collections>>http://java.sun.com/j2se/1.5.0/docs/guide/collections/overview.html]]) and ease of programming, but more efficient and faster.
 
@@ -94,7 +94,8 @@ This would be explaining the technology behind it in more detail. It would be a 
 
  Then I started refactoring the code, to keep code organized, to help others extend the functionalities or easily add support for more language types and version control systems. I used [[Netbeans>>http://www.netbeans.org]] to do the refactoring. Netbeans has changed a lot since the very first time I used it, many years ago. It makes Java programing a more pleasant experience. I could easily move code around; safely delete unused methods and classes; rename things in more logical way and do much more. Refactoring took time, the core analysis engine changed beyond comparison. Once finished, it was open sourced under the name OpenGrok.
  It is available for [[download here>>Project opengrok.WebHome]]. The logo has a opening flower bracket. Which is a common block start symbol in languages like C and Java. It has no closing bracket to signify open source.
-[[[[image:Project opengrok.WebHome@logo.png||alt="logo.png"]]>>Project opengrok.WebHome]]
+
+[[/images/logo.png]]
 
 ===  OpenGrok Internals
 
