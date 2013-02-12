@@ -115,21 +115,21 @@ This would be explaining the technology behind it in more detail. It would be a 
 |-
 |Syntax highlighting-Xref
 |Y
+|
+|
 |\#
-|
-|
 |-
 |Interface for SCM
+|
+|
+|
 |Y
-|
-|
-|
 |-
 |open source
-|Y
-|Y
-|Y
 |
+|Y
+|Y
+|Y
 |-
 |Usable URLs
 |Y
@@ -138,16 +138,16 @@ This would be explaining the technology behind it in more detail. It would be a 
 |
 |-
 |Individual file download
+|
 |N/A
 |N/A
 |Y
-|
 |-
 |Changes at directory level
+|
 |N/A
 |N/A
 |\#
-|
 |-
 |Multi language support
 |\#
