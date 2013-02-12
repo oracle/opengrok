@@ -79,8 +79,8 @@ This would be explaining the technology behind it in more detail. It would be a 
 |-
 |Path search
 |Y
-|Y
 |
+|Y
 |
 |-
 |History Search
