@@ -59,109 +59,106 @@ This would be explaining the technology behind it in more detail. It would be a 
 |cscope
 |CVSview/web
 |-
-|Full
-|text
-|Search
+|Full text Search
 |Y
-|#
+|\#
+|
 |
 |-
-|Definition
-|Search
-|#
-|Y
-|Y
-|
-|-
-|Identifier
-|Search
+|Definition Search
+|\#
 |Y
 |Y
 |
 |-
-|Path
-|search
+|Identifier Search
+|Y
+|Y
+|
+|
+|-
+|Path search
+|Y
+|Y
+|
+|
+|-
+|History Search
+|
+|
+|
+|
+|-
+|Shows matching lines
+|Y
+|Y
+|
+|
+|-
+|Hierarchical Search
+|
+|
+|
+|
+|-
+|query syntax like AND,OR,field
+|
+|
+|
+|
+|-
+|Incremental update
+|
+|
+|
+|
+|-
+|Syntax highlighting-Xref
+|Y
+|\#
+|
+|
+|-
+|Interface for SCM
+|Y
+|
+|
+|
+|-
+|open source
+|Y
 |Y
 |Y
 |
 |-
-|History
-|Search
-|
-|-
-|Shows
-|matching
-|lines
-|Y
-|Y
-|
-|-
-|Hierarchical
-|Search
-|
-|-
-|query
-|syntax
-|like
-|AND,
-|OR,
-|field:
-|
-|-
-|Incremental
-|update
-|
-|-
-|Syntax
-|highlightingN/AXref
-|Y
-|#
-|-
-|Interface
-|for
-|SCM
-|Y
-|-
-|open
-|source
-|Y
-|Y
-|Y
-|-
-|Usable
-|URLs
+|Usable URLs
 |Y
 |N/A
 |N/A
 |
 |-
-|Individual
-|file
-|download
+|Individual file download
 |N/A
 |N/A
 |Y
+|
 |-
-|Changes
-|at
-|directory
-|level
+|Changes at directory level
 |N/A
 |N/A
-|#
+|\#
+|
 |-
-|Multi
-|language
-|support
-|#
+|Multi language support
+|\#
 |Y
-|#
+|\#
 |N/A
 |}
 
  Legend:
 **Y** : Yes the feature is present
-**#** : the feature may be partly present
+**\#** : the feature may be partly present
 **-** : not applicable
  Note: OpenGrok provides all the above features.
 
