@@ -2,7 +2,7 @@
 
 This blog entry will act as the paper story of OpenGrok the wicked fast source browser.
 
-[[/images/OpenGrok-screenshot.png]]
+[[/images/OpenGrok-screenshot.jpg]]
 
 This would be explaining the technology behind it in more detail. It would be a living blog entry. i.e I would keep updating as and when there are updates. There would no other technical documentation, if you are fond of reading in postscript or PDF formats, I'll try to make one available sooner.
 
