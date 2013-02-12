@@ -61,20 +61,20 @@ This would be explaining the technology behind it in more detail. It would be a 
 |-
 |Full text Search
 |Y
-|\#
 |
+|\#
 |
 |-
 |Definition Search
 |\#
 |Y
-|Y
 |
+|Y
 |-
 |Identifier Search
 |Y
-|Y
 |
+|Y
 |
 |-
 |Path search
