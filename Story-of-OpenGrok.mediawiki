@@ -90,9 +90,9 @@ This would be explaining the technology behind it in more detail. It would be a 
 |
 |-
 |Shows matching lines
-|Y
-|Y
 |
+|Y
+|Y
 |
 |-
 |Hierarchical Search
