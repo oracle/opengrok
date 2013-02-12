@@ -68,8 +68,8 @@ This would be explaining the technology behind it in more detail. It would be a 
 |Definition Search
 |\#
 |Y
-|
 |Y
+|
 |-
 |Identifier Search
 |Y
