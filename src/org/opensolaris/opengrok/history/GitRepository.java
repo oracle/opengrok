@@ -75,7 +75,6 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
-        cmd.add("-l");
         cmd.add("-C");
         cmd.add(fileName);
         File directory = new File(directoryName);
@@ -83,7 +82,8 @@ public class GitRepository extends Repository {
 
         int status = exec.exec();
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list in resolving correct path");
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+	        "Failed to get blame list in resolving correct path");
             return path;
         }
         BufferedReader in = new BufferedReader(exec.getOutputReader());
@@ -126,6 +126,7 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("log");
+        cmd.add("--abbrev-commit");
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
 
@@ -231,7 +232,6 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
-        cmd.add("-l");
         if (revision != null) {
             cmd.add(revision);
         }
@@ -246,13 +246,13 @@ public class GitRepository extends Repository {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             cmd.add(this.cmd);
             cmd.add(BLAME);
-            cmd.add("-l");
             cmd.add("-C");
             cmd.add(file.getName());
             exec = new Executor(cmd, file.getParentFile());
             status = exec.exec();
             if (status != 0) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list");
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
+		    "Failed to get blame list");
             }
             BufferedReader in = new BufferedReader(exec.getOutputReader());
             try {
@@ -268,7 +268,6 @@ public class GitRepository extends Repository {
                         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
                         cmd.add(this.cmd);
                         cmd.add(BLAME);
-                        cmd.add("-l");
                         if (revision != null) {
                             cmd.add(revision);
                         }
@@ -278,7 +277,8 @@ public class GitRepository extends Repository {
                         exec = new Executor(cmd, directory);
                         status = exec.exec();
                         if (status != 0) {
-                            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame details for modified file path");
+                            OpenGrokLogger.getLogger().log(Level.SEVERE,
+			        "Failed to get blame details for modified file path");
                         }
                         break;
                     }
