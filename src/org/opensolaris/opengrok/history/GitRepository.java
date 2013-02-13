@@ -75,7 +75,6 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
-        cmd.add("-l");
         cmd.add("-C");
         cmd.add(fileName);
         File directory = new File(directoryName);
@@ -83,7 +82,8 @@ public class GitRepository extends Repository {
 
         int status = exec.exec();
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list in resolving correct path");
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+	        "Failed to get blame list in resolving correct path");
             return path;
         }
         try (BufferedReader in = new BufferedReader(exec.getOutputReader())) {
@@ -123,6 +123,7 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("log");
+        cmd.add("--abbrev-commit");
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
 
@@ -228,7 +229,6 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
-        cmd.add("-l");
         if (revision != null) {
             cmd.add(revision);
         }
@@ -243,13 +243,13 @@ public class GitRepository extends Repository {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             cmd.add(this.cmd);
             cmd.add(BLAME);
-            cmd.add("-l");
             cmd.add("-C");
             cmd.add(file.getName());
             exec = new Executor(cmd, file.getParentFile());
             status = exec.exec();
             if (status != 0) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame list");
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
+		    "Failed to get blame list");
             }
             try (BufferedReader in = new BufferedReader(exec.getOutputReader())) {
                 String pattern = "^\\W*" + revision + " (.+?) .*$";
@@ -264,7 +264,6 @@ public class GitRepository extends Repository {
                         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
                         cmd.add(this.cmd);
                         cmd.add(BLAME);
-                        cmd.add("-l");
                         if (revision != null) {
                             cmd.add(revision);
                         }
@@ -274,7 +273,8 @@ public class GitRepository extends Repository {
                         exec = new Executor(cmd, directory);
                         status = exec.exec();
                         if (status != 0) {
-                            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get blame details for modified file path");
+                            OpenGrokLogger.getLogger().log(Level.SEVERE,
+			        "Failed to get blame details for modified file path");
                         }
                         break;
                     }
@@ -390,7 +390,8 @@ public class GitRepository extends Repository {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         History result = new GitHistoryParser().parse(file, this, sinceRevision);
         // Assign tags to changesets they represent
-        // We don't need to check if this repository supports tags, because we know it:-)
+        // We don't need to check if this repository supports tags,
+	// because we know it :-)
         if (env.isTagsEnabled()) {
             assignTagsInHistory(result);
         }
@@ -481,7 +482,8 @@ public class GitRepository extends Repository {
                 }
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+	        "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
 
@@ -503,10 +505,12 @@ public class GitRepository extends Repository {
                 this.tagList.add(tagEntry);
             }
         } catch (HistoryException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse tag list: {0}", e.getMessage());
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+	        "Failed to parse tag list: {0}", e.getMessage());
             this.tagList = null;
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+	        "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
     }
