@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -33,9 +33,9 @@ Offical page of the project is on:
 2. Requirements
 ---------------
 
-    * Latest Java (At least 1.6)
+    * Latest Java (At least 1.7)
       http://www.oracle.com/technetwork/java/
-    * A servlet container like Tomcat (6.x or later)
+    * A servlet container like Tomcat (7.x or later)
       supporting Servlet 2.4 and JSP 2.0
       http://tomcat.apache.org/
     * Exuberant Ctags
@@ -45,11 +45,11 @@ Offical page of the project is on:
     * Mercurial 0.9.3 or later if Mercurial support is needed
       http://www.selenic.com/mercurial/wiki/
     * If you want to build OpenGrok:
-      - Ant (1.7 and later)
+      - Ant (1.8 and later)
         http://ant.apache.org/
       - JFlex
         http://www.jflex.de/
-      - Netbeans (optional, at least 7.1, will need Ant 1.8.1)
+      - Netbeans (optional, at least 7.2, will need Ant 1.8.1)
         http://netbeans.org/
 
 3. Usage
