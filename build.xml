@@ -434,7 +434,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
                     <include name="*.jar"/>
                 </fileset>
             </auxClasspath>
-            <sourcePath path="src" />
+            <sourcePath path="${src.dir}"/>
+            <sourcePath path="${src.generatedsrc.dir}"/>
             <class location="${dist.dir}/opengrok.jar" />
         </findbugs>
     </target>
@@ -452,7 +453,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
                     <include name="*.jar"/>
                 </fileset>
             </auxClasspath>
-            <sourcePath path="src" />
+            <sourcePath path="${src.dir}"/>
+            <sourcePath path="${src.generatedsrc.dir}"/>
             <class location="${dist.dir}/opengrok.jar" />
         </findbugs>
     </target>
@@ -490,7 +492,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
         <mkdir dir="pmd"/>
         <pmd failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
-            <version>java 1.7</version>
+	    <sourcelanguage name="java" version="1.7" />
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>

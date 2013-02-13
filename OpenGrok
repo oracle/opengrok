@@ -426,7 +426,7 @@ FindJavaHome()
 {
     javaHome=""
     case "${OS_NAME}:${OS_VERSION}" in
-        SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.6.0" ;;
+        SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
         SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
         Linux:*)
             if [ -f /etc/alternatives/java ]
@@ -434,24 +434,13 @@ FindJavaHome()
                javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
                javaHome=`dirname $javaHome`
                javaHome=`dirname $javaHome`
-            else
-               for dir in /usr/lib/jvm/sun-jdk-1.6 \
-                          /usr/lib/jvm/sun-jre-1.6 \
-                          /usr/lib/jvm/java-6-sun
-               do
-                  if [ -f ${dir}/bin/java ]
-                  then
-                     javaHome=$dir
-                     break;
-                  fi
-               done
             fi
             ;;
     esac
 
     if [ -z "${javaHome}" ]
     then
-        Error "Unable to determine Java 6 Home" \
+        Error "Unable to determine Java 7 Home" \
               "for ${OS_NAME} ${OS_VERSION}"
         return
     fi
