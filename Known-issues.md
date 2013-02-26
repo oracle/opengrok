@@ -11,4 +11,4 @@ Edit
 OpenGrok Issues, Bugs and Requests for Enhancements
 Edit
 
- Please log bugs and requests for enhancements here: XXX
+ Please log bugs and requests for enhancements here: https://github.com/OpenGrok/OpenGrok/issues
