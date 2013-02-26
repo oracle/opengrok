@@ -1,0 +1,18 @@
+Features
+
+ OpenGrok provides
+
+    A fast search engine for programs, that can:
+        search for full text, definitions, symbols, path and revision history
+        limit searches to any subtree (hierarchical search)
+        incrementally update its index. i.e update only the changed files since last time it was updated
+        search query with Google like syntax (eg. path:Makefile defs:target)
+        search for files modified within a date range
+        search using wild cards like * (many characters) or ? (one character)
+        show the matching lines in search results
+    A read-only web interface for version control systems like Mercurial, CVS, SVN, SCCS or TeamWare that provides:
+        history log of a file
+        diffs between any two revision in formats like udiffs, sdiffs
+        cumulative history of a given directory (putback-log) also in RSS format
+    Online cross-reference with syntax high lighting, highly customizable look and feel using CSS stylesheets
+    Plugins can be written for new programing language or revision control systems
