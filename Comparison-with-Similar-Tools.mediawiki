@@ -1,0 +1,289 @@
+Disclaimer: this table might be obsolete, if you think it needs adjusting, please let us know and modify the wiki page.
+
+{|
+|Feature
+|LXR
+|ctags
+|cscope
+|ViewVC
+|GNU GLOBAL
+|OpenGrok
+|-
+|Full text Search
+|Y
+| 
+|Y
+| 
+|Y
+|Y
+|-
+|Definition Search
+|P
+|Y
+|Y
+| 
+|Y
+|Y
+|-
+|Identifier Search
+|Y
+| 
+|Y
+| 
+|Y
+|Y
+|-
+|Path search
+|Y
+| 
+|Y
+| 
+|Y
+|Y
+|-
+|History Search
+| 
+| 
+| 
+| 
+| 
+|Y
+|-
+|Caller/Callee Search
+| 
+| 
+|Y
+| 
+|P
+|
+|-
+|RegExp Search
+| 
+| 
+|Y
+| 
+|Y
+|P (only wildcards)
+|-
+|Shows matching lines
+| 
+|Y
+|Y
+| 
+|Y
+|Y
+|-
+|Hierarchical Search
+| 
+| 
+| 
+| 
+|Y
+|Y
+|-
+|query syntax like AND, OR, field:
+| 
+| 
+| 
+| 
+| 
+|Y
+|-
+|Incremental update
+| 
+| 
+|P
+| 
+|Y
+|Y
+|-
+|RSS Feed
+| 
+| 
+| 
+|Y
+| 
+|Y
+|-
+|Syntax highlightingN/AXref
+|Y
+| 
+| 
+|P
+|Y
+|Y
+|-
+|Interface for SCM
+| 
+| 
+| 
+|Y
+|Y
+|Y
+|-
+|open source
+|Y
+|Y
+|Y
+|Y
+|Y
+|Y
+|-
+|Usable URLs
+|Y
+|N/A
+|N/A
+| 
+|Y
+|Y
+|-
+|Individual file download
+| 
+|N/A
+|N/A
+|Y
+|N/A
+|Y
+|-
+|Changes at directory level
+| 
+|N/A
+|N/A
+|P
+|N/A
+|Y
+|-
+|Multi language support
+|P
+|Y
+|P
+|N/A
+|Y
+|Y
+|-
+|User interface
+|WEB
+|CLI
+|CLI
+|WEB
+|WEB / CLI
+|WEB / CLI
+|-
+|Static HTML
+| 
+| 
+| 
+| 
+|Y
+|P (for xrefs)
+|-
+|Input completion
+| 
+| 
+| 
+| 
+|Y
+|P (with greasemonkey script)
+|-
+|BuiltN/Ain parser
+| 
+|Y
+|Y
+| 
+|Y
+|P (lexical analysis)
+|-
+|PlugN/Ain parser
+| 
+| 
+| 
+| 
+|Y
+|
+|-
+|Integration with (exuberant) ctags
+| 
+|N/A
+| 
+| 
+|Y
+|Y
+|-
+|Integration with cscope
+| 
+| 
+|N/A
+| 
+|Y
+|
+|-
+|Integration with emacs
+| 
+|Y
+|Y
+| 
+|Y
+|
+|-
+|Integration with vim
+| 
+|Y
+|Y
+| 
+|Y
+|P (through https://github.com/jdevera/vimN/AopengrokN/Asearch)
+|-
+|Integration with doxygen
+| 
+| 
+| 
+| 
+|Y
+|
+|-
+|Integration with Netbeans
+| 
+| 
+| 
+| 
+| 
+|
+|-
+|Integration with less
+| 
+|Y
+| 
+| 
+|Y
+|
+|-
+|Integration with bash
+| 
+| 
+| 
+| 
+|Y
+|
+|-
+|Integration with idutils
+| 
+| 
+| 
+| 
+|Y
+|
+|-
+|Integration with Elvis
+| 
+|Y
+| 
+| 
+|Y
+|
+|-
+|}
+
+Legend:
+Y : Yes the feature is present
+P : the feature may be partly present
+N/A : not applicable
