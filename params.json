@@ -1,0 +1,1 @@
+{"name":"Opengrok","tagline":"Main {OpenGrok git repository","body":"### OpenGrok\r\nXXX\r\n\r\n```\r\n$ cd your_repo_root/repo_name\r\n$ git fetch origin\r\n$ git checkout gh-pages\r\n```\r\n\r\n","google":"UA-3665334-1","note":"Don't delete this file! It's used internally to help with page regeneration."}
