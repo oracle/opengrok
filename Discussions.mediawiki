@@ -1,0 +1,10 @@
+=== Chat ===
+
+IRC channel #opengrok on irc.freenode.net
+
+=== Old archives ===
+
+Archives of mailing lists prior to moving the project to github:
+
+* opengrok-dev@opensolaris.org http://mail.opensolaris.org/pipermail/opengrok-dev/
+* opengrok-discuss@opensolaris.org http://mail.opensolaris.org/pipermail/opengrok-discuss/
