@@ -19,7 +19,7 @@ $ git clone https://github.com/OpenGrok/OpenGrok
 
 User scripts
 
- Firefox Greasemonkey auto-complete script for opengrok - courtesy of Jim Wilson
+ Firefox Greasemonkey [http://userscripts.org/scripts/show/4758 auto-complete script] for opengrok - courtesy of Jim Wilson
 
  VIM plugin from Jacobo de Vera - github jdevera
 
