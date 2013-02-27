@@ -1,11 +1,10 @@
 This package was debianized by Lubos Kosco <tarzanek@gmail.com> on
 Sun, 15 Apr 2007 20:21:29 +0200.
 
-It was downloaded from http://www.opensolaris.org/os/project/opengrok/files/
-(http://hub.opensolaris.org/bin/view/Project+opengrok/files)
+It was downloaded from http://opengrok.github.com/OpenGrok/
 
 Upstream Author: OpenGrok Project Leaders & community
-http://www.opensolaris.org/os/project/opengrok/leaders/
+https://github.com/OpenGrok/OpenGrok/network/members
 
 Copyright: Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
            Copyright 2011 Oracle Corporation All rights reserved.
