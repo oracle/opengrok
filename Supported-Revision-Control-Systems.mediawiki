@@ -11,13 +11,13 @@ OpenGrok supports a lot of different source code repositories. Since not all rep
 * Change sets – This revision control system supports change sets – several files are committed together
 
 {|
-|Engine
-|File history
-|Directory history
-|Annotations
-|Cacheable
-|Updateable
-|Change sets
+|'''Engine'''
+|'''File history'''
+|'''Directory history'''
+|'''Annotations'''
+|'''Cacheable'''
+|'''Updateable'''
+|'''Change sets'''
 |-
 |Bazaar	
 |Y
