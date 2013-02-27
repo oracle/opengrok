@@ -14,4 +14,5 @@ How to get a local clone:
 * Firefox Greasemonkey [http://userscripts.org/scripts/show/4758 auto-complete script] for opengrok - courtesy of Jim Wilson
 * VIM plugin from Jacobo de Vera - [https://github.com/jdevera/vim-opengrok-search github jdevera]
 
+
 Old binary & source releases can be downloaded from files directory.
