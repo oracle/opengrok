@@ -156,10 +156,11 @@ At that time, this summarizes the state of the art in code lookup and version co
 |N/A
 |}
 
- Legend:
-**Y** : Yes the feature is present
-**\#** : the feature may be partly present
-**N/A** : not applicable
+Legend:
+* Y : Yes the feature is present
+* \# : the feature may be partly present
+* N/A : not applicable
+
 Note: OpenGrok provides all the above features.
 
 The Lucene based program search engine readily had all the missing search features above. It did the correct way of doing full text searches. It could identify definitions in any language that ctags understood. It could limit searches to a branch of the source tree (aka hierarchical search). It showed the matching lines for a search instead of just line numbers. And it did an incremental update of its index.
