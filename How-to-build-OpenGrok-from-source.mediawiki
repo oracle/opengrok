@@ -1,26 +1,24 @@
 = How to build {OpenGrok =
 
-The easiest way to build (or modify) {OpenGrok is by using [[NetBeans>>http://www.netbeans.org]](v7.2.1 and up preferred), but you can also build {OpenGrok from the command line.
+The easiest way to build (or modify) {OpenGrok is by using [http://www.netbeans.org NetBeans] (v7.2.1 and up preferred), but you can also build {OpenGrok from the command line.
 
 == Requirements ==
 
 You need the following:
 
-* [[JDK>>http://java.sun.com/javase/downloads/index.jsp]] 1.7 or higher
-* [[Apache Ant>>http://ant.apache.org/]] 1.8 or later
-* The source code is located in a [[git>>http://git-scm.com/]] --[[Mercurial>>http://www.selenic.com/mercurial/wiki/]]-- repository
-* The analyzers are generated from lex by using [[JFlex>>http://jflex.de/]]
-* [[Junit>>http://www.junit.org/]] 4.x for testing if you don't have Netbeans
+* [http://java.sun.com/javase/downloads/index.jsp JDK] 1.7 or higher
+* [http://ant.apache.org/ Apache Ant] 1.8 or later
+* The source code is located in a [http://git-scm.com/ git] repository
+* The analyzers are generated from lex by using [http://jflex.de/ JFlex]
+* [http://www.junit.org/ Junit] 4.x for testing if you don't have [http://www.netbeans.org/ Netbeans]
 
 == Check out the source ==
 
 The first thing you need to do is to check out the source code. You might do this from within NetBeans if you have the Mercurial plugin installed, or you can check out the source with the following command:
 
-{{{
  git clone https://github.com/OpenGrok/OpenGrok
-}}}
+
 (or clone any of your forks)
---hg clone ssh://anon@hg.opensolaris.org/hg/opengrok/trunk opengrok-dev--
 
 == Prepare the source for compilation ==
 
@@ -30,43 +28,28 @@ Copy {{code}}JFlex.jar{{/code}} into the {{code}}lib{{/code}} directory in the O
 
 If you use NetBeans you should be able to open OpenGrok as a project and build it from there. If you want to build from the command line, execute the following command:
 
-{{{
-ant
-}}}
+ ant
 
 If the build is successful, you should now find the binaries under the {{code}}dist{{/code}} directory.
 
 Or if you want to use junit testing + javadoc generation target, you can try:
 
-{{{
-ant default
-}}}
+ ant default
+
 
 If the build is successful, you should have javadoc in {{code}}dist/javadoc{{/code}} directory & junit test results in {{code}}build/test/results/*.xml{{/code}} directory.
 
- For other setup & development tools like findbugs, checkstyle, pmd, ... please refer to [[README.txt>>http://src.opensolaris.org/source/xref/opengrok/trunk/README.txt]] in the downloaded/cloned sources.
+For other setup & development tools like findbugs, checkstyle, pmd, ... please refer to [https://github.com/OpenGrok/OpenGrok/blob/master/README.txt README.txt] in the downloaded/cloned sources.
 
 Note that there is an experimental maven build system being implemented. If you want to help with it, we'd only be glad.
 
 = Continuous Integration (hudson) for OpenGrok =
 
--- Hudson is hosted on [[http://www.norbye.org/jenkins/job/OpenGrok/>>http://www.norbye.org/jenkins/job/OpenGrok/]].
- You can find open tasks there, or different bug checkers. Some of these are good for getting acquainted with the code and can be a "low hanging fruit" fixes.--
+-- Hudson is hosted on http://www.norbye.org/jenkins/job/OpenGrok/
+
+You can find open tasks there, or different bug checkers. Some of these are good for getting acquainted with the code and can be a "low hanging fruit" fixes.--
 We have only internal jenkins servers for now, but refer to readme and create your own with findbugs, pmd, checkstyle, etc.
 
-= Usefull Tools =
+= Useful Tools =
 
-Inspecting indexes: [[Luke>>http://code.google.com/p/luke/]]
-
-= Development Facts =
-
-
-{{html}}
-
-<script type="text/javascript" src="http://www.ohloh.net/p/25484/widgets/project_languages.js"></script>
-
-</br>
-
-<script type="text/javascript" src="http://www.ohloh.net/p/25484/widgets/project_basic_stats.js"></script>
-
-{{/html}}
+Inspecting indexes: [http://code.google.com/p/luke/ Luke]
