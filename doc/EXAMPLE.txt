@@ -111,7 +111,7 @@ OpenGrok to serve. E.g. to create your own "mirror" of the OpenGrok sources you
 would execute:
 
 $ cd /opengrok/stage1/source
-$ hg clone ssh://anon@opensolaris.org/hg/opengrok/trunk opengrok
+$ git clone git@github.com:OpenGrok/OpenGrok.git opengrok
 $ cp -pr opengrok /opengrok/stage2/source
 
 If you are going to host source from multiple projects in your OpenGrok server,

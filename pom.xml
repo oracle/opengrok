@@ -7,18 +7,18 @@
     <packaging>pom</packaging>
     <version>0.10-SNAPSHOT</version>
     <name>OpenGrok</name>
-    <url>http://hub.opensolaris.org/bin/view/Project+opengrok/</url>
+    <url>http://opengrok.github.com/OpenGrok/</url>
 
     <scm>
-        <connection>scm:hg:ssh://anon@hg.opensolaris.org/hg/opengrok/trunk</connection>
-        <developerConnection>scm:hg:ssh://hg.opensolaris.org/hg/opengrok/trunk</developerConnection>
-        <url>ssh://anon@hg.opensolaris.org/hg/opengrok/trunk</url>
+        <connection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:OpenGrok/OpenGrok.git</developerConnection>
+        <url>ssh://git@github.com:OpenGrok/OpenGrok.git</url>
     </scm>
 
     <licenses>
         <license>
             <name>CDDL 1</name>
-            <url>http://www.sun.com/cddl/cddl.html</url>
+            <url>http://opensource.org/licenses/CDDL-1.0</url>
             <distribution>repo</distribution>
         </license>
     </licenses>

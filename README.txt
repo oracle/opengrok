@@ -28,7 +28,7 @@ version control histories like SCCS, RCS, CVS, Subversion, Mercurial etc.
 
 Offical page of the project is on:
 
-  http://hub.opensolaris.org/bin/view/Project+opengrok/
+  http://opengrok.github.com/OpenGrok/
 
 2. Requirements
 ---------------
@@ -797,19 +797,19 @@ Output is stored in the jdepend directory:
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
 
-Chandan B.N, Oracle. http://blogs.oracle.com/chandan/
+Chandan B.N, (originally Sun Microsystems) http://blogs.oracle.com/chandan/
 Trond Norbye, norbye.org
 Knut Pape, eBriefkasten.de
-Martin Englund, Sun Microsystems
+Martin Englund, (originally Sun Microsystems)
 Knut Anders Hatlen, Oracle. http://blogs.oracle.com/kah/
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 
 10. Contact us
 --------------
 
-Feel free to participate in discussion on opengrok-discuss@opensolaris.org.
+Feel free to participate in discussion on discuss@opengrok.java.net.
 
 You can subscribe via web interface on:
 
-  http://mail.opensolaris.org/mailman/listinfo/opengrok-discuss
+  http://java.net/projects/opengrok/lists
 
