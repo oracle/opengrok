@@ -797,10 +797,10 @@ Output is stored in the jdepend directory:
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
 
-Chandan B.N, (nee Sun Microsystems) http://blogs.oracle.com/chandan/
+Chandan B.N, (originally Sun Microsystems) http://blogs.oracle.com/chandan/
 Trond Norbye, norbye.org
 Knut Pape, eBriefkasten.de
-Martin Englund, (nee Sun Microsystems)
+Martin Englund, (originally Sun Microsystems)
 Knut Anders Hatlen, Oracle. http://blogs.oracle.com/kah/
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 
