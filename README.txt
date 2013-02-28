@@ -807,9 +807,9 @@ Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 10. Contact us
 --------------
 
-Feel free to participate in discussion on opengrok-discuss@opensolaris.org.
+Feel free to participate in discussion on discuss@opengrok.java.net.
 
 You can subscribe via web interface on:
 
-  http://mail.opensolaris.org/mailman/listinfo/opengrok-discuss
+  http://java.net/projects/opengrok/lists
 
