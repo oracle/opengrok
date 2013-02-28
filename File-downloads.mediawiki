@@ -15,4 +15,4 @@ How to get a local clone:
 * VIM plugin from Jacobo de Vera - [https://github.com/jdevera/vim-opengrok-search github jdevera]
 
 
-Old binary & source releases can be downloaded from files directory.
+Old binary & source releases can be downloaded from http://java.net/projects/opengrok/downloads/directory/archive
