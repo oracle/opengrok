@@ -2,7 +2,11 @@
 
 IRC channel #opengrok on irc.freenode.net
 
-=== Old archives ===
+=== Mailing lists ===
+
+There are 3 mailing lists on http://java.net/projects/opengrok/lists
+
+==== Old archives ====
 
 Archives of mailing lists prior to moving the project to github:
 
