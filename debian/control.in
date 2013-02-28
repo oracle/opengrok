@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Lubos Kosco <tarzanek@gmail.com>
 Build-Depends: @cdbs@, sun-java6-jdk , ant-optional, junit4, jflex (>= 1.4.3-1), liblucene3-java, libbcel-java(>= 5.2-6), libservlet2.4-java, exuberant-ctags
 Standards-Version: 3.7.3
-Homepage: http://www.opensolaris.org/os/project/opengrok
+Homepage: http://opengrok.github.com/OpenGrok/
 
 Package: opengrok
 Architecture: all
