@@ -7,7 +7,8 @@ The main repository is here: https://github.com/OpenGrok/OpenGrok
 How to get a local clone:
 
   $ git clone https://github.com/OpenGrok/OpenGrok
-  (similar way for any of your forks, ev. use ssh)
+
+Similarly for any of your forks, ev. use ssh.
 
 === Distribution ===
 
