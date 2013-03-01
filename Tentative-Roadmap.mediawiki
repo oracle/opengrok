@@ -20,4 +20,5 @@ Feature	Status
 * Lucene 0.4 (Lubos Kosco) 	 done, in trunk
 * ??? 	
 
-Please send your ideas for improvement or contributions to OpenGrok-discuss Forum. Bugs or feature requests should be reported in the Issues.
+
+Please send your ideas for improvement or contributions to discuss forum. Bugs or feature requests should be reported in the Issues.
