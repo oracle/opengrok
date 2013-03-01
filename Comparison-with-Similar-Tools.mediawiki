@@ -284,6 +284,6 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |}
 
 Legend:
-Y : Yes the feature is present
-P : the feature may be partly present
-N/A : not applicable
+* Y : Yes the feature is present
+* P : the feature may be partly present
+* N/A : not applicable
