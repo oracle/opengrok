@@ -9,6 +9,10 @@ How to get a local clone:
   $ git clone https://github.com/OpenGrok/OpenGrok
   (similar way for any of your forks, ev. use ssh)
 
+=== Distribution ===
+
+Current distribution is available on http://java.net/projects/opengrok/downloads/directory/
+
 === User scripts ===
 
 * Firefox Greasemonkey [http://userscripts.org/scripts/show/4758 auto-complete script] for opengrok - courtesy of Jim Wilson
