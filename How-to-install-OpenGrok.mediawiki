@@ -9,7 +9,7 @@ You need the following:
 * [http://java.sun.com/javase/downloads/index.jsp JDK] 1.6 ("1.6.0_17") or higher
 * {OpenGrok **binaries** from [XXX] (either the package for Solaris, or .tar.gz with binaries, NOT the src !)
 * [http://ctags.sourceforge.net Exuberant Ctags] for analysis
-* A servlet container like [[GlassFish>>https://glassfish.dev.java.net/]] or [[Tomcat>>http://tomcat.apache.org]] (5.x or later) also running with java at least 1.6
+* A servlet container like [https://glassfish.dev.java.net/ GlassFish] or [http://tomcat.apache.org Tomcat] (5.x or later) also running with java at least 1.6
 * If history is needed, appropriate binary (in some cases also cvs/svn repository) must be present on the system (e.g. [http://subversion.tigris.org Subversion] or [http://www.selenic.com/mercurial/wiki/index.cgi Mercurial] or [http://dlc.sun.com/osol/devpro/downloads/current/ SCCS] or ... )
 * 2GB of memory for indexing process using OpenGrok script (can use less, this is scaled for bigger deployments)
 * a recent browser for clients - IE, Firefox, recent Chrome or Safari
