@@ -1,13 +1,13 @@
 Disclaimer: this table might be obsolete, if you think it needs adjusting, please let us know and modify the wiki page.
 
 {|
-|Feature
-|LXR
-|ctags
-|cscope
-|ViewVC
-|GNU GLOBAL
-|OpenGrok
+|'''Feature'''
+|'''LXR'''
+|'''ctags'''
+|'''cscope'''
+|'''ViewVC'''
+|'''GNU GLOBAL'''
+|'''OpenGrok'''
 |-
 |Full text Search
 |Y
