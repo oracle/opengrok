@@ -143,16 +143,16 @@ If you need to change name of the web application from source to something else 
 On some linux distribution you need to setup permissions for SRC_ROOT and DATA_ROOT. Please check your [http://tomcat.apache.org/tomcat-5.5-doc/security-manager-howto.html Tomcat documentation] on this, or simply disable (your risk!) <u>security manager</u> for Tomcat (e.g. in debian/ubuntu : in file <code>/etc/default/tomcat5.5</code> set <code>TOMCAT5_SECURITY=no</code>).
 A sample approach is to <u>edit</u> <code>/etc/tomcat5.5/04webapps.policy</code> (or <code>/var/apache/tomcat/conf/catalina.policy</code>) and set this (it will give opengrok all permissions) for your opengrok webapp instance:
 
-<pre>
+<code>
 grant codeBase "file:${catalina.home}/webapps/source/-" {     
 permission java.security.AllPermission;};
 grant codeBase "file:${catalina.home}/webapps/source/WEB-INF/lib/-" {     
 permission java.security.AllPermission;};
-</pre>
+</code>
 
 Alternatively you can be more restrictive (haven't tested below with a complex setup(e.g. some versioning system which needs local access as cvs), if it will not work, please report through [[Discussions]].
 
-<pre>
+<code>
 grant codeBase "file:${catalina.home}/webapps/source/-" {  
 permission java.util.PropertyPermission "subversion.native.library", "read";  
 permission java.lang.RuntimePermission "loadLibrary.svnjavahl-1?;  
@@ -182,6 +182,6 @@ permission java.lang.RuntimePermission "loadLibrary.svnjavahl-1?;
 permission java.util.PropertyPermission "disableLuceneLocks", "read";  
 permission java.util.PropertyPermission "catalina.home", "read";  
 permission java.util.PropertyPermission "java.io.tmpdir", "read";};
-</pre>
+</code>
 
 Thanks to Vincent Liu & Flo.
