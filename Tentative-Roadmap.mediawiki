@@ -1,6 +1,6 @@
 Disclaimer: This is an open source project, it's not funded and it's driven only by people who work on it in their spare time and enthusiasts testing it and filing bugs or sending patches. Thereby we cannot commit to any dates and data in this roadmap is unstable. We'd rather call it a wishlist, but roadmap may it be.
-Release criteria
-Edit
+
+=== Release criteria ===
 
 The following minimum criteria must be fulfilled before a new version may be released:
 
