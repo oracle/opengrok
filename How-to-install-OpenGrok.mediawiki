@@ -34,8 +34,8 @@ OpenGrok's command line use is a typical case where OpenGrok is deployed as inde
 
 ==== <u>Step.0</u> - Setting up the Sources. Having the web application container ready. ====
 
-Source base must be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the **checked out source** tree under SRC_ROOT.
-'''Note:''' A local CVSROOT (or SVN if opengrok version less than 0.7) repository must be available. File history will not be fetched from a remote server for CVS (& SVN if opengrok version less than 0.7) !. For newer opengrok versions you must use option <code>-r on</code> for remote repositories history to be indexed, also note this can be more resource(time,cpu,network) demanding.
+Source base must be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under SRC_ROOT.
+'''Note:''' A local CVSROOT (or SVN if opengrok version less than 0.7) repository must be available. File history will not be fetched from a remote server for CVS (& SVN if opengrok version less than 0.7) !. For newer opengrok versions you must use option <code>-r on</code> for remote repositories history to be indexed, also note this can be more resource (time,cpu,network) demanding.
 Note also that OpenGrok ignores symbolic links.
 
 Please install web application container of your choice (e.g. [http://tomcat.apache.org/ Tomcat],[https://glassfish.dev.java.net/ GlassFish] or [http://www.sun.com/software/products/appsrvr Sun Java Application Server]) before going to the next step and make sure it's started.
@@ -85,11 +85,11 @@ Congratulations, you should now be able to point your browser to http://<YOUR_WE
 At this time we'd like to point out some customization to OpenGrok script for advanced users.
 A common case would be, that you want the data in some other directory than /var/opengrok.
 This can be easily achieved by using environment variable OPENGROK_INSTANCE_BASE .
-E.g. if my opengrok data directory is /tank/opengrok and my source root is in /tank/source and I'd like to get more verbosity I'd run the indexer as:
+E.g. if my opengrok data directory is <code>/tank/opengrok</code> and my source root is in <code>/tank/source</code> and I'd like to get more verbosity I'd run the indexer as:
 
  # OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source
 
-Since above will also change default location of config file, beforehands(or restart your web container after creating this symlink) I suggest doing below for our case of having opengrok instance in /tank/opengrok :
+Since above will also change default location of config file, beforehands(or restart your web container after creating this symlink) I suggest doing below for our case of having opengrok instance in <code>/tank/opengrok</code> :
 
  # ln -s /tank/opengrok/etc/configuration.xml /var/opengrok/etc/configuration.xml
 
