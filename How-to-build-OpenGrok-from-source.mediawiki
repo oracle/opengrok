@@ -43,13 +43,6 @@ For other setup & development tools like findbugs, checkstyle, pmd, ... please r
 
 Note that there is an experimental maven build system being implemented. If you want to help with it, we'd only be glad.
 
-= Continuous Integration (hudson) for OpenGrok =
-
-Hudson is hosted on http://www.norbye.org/jenkins/job/OpenGrok/
-
-You can find open tasks there, or different bug checkers. Some of these are good for getting acquainted with the code and can be a "low hanging fruit" fixes.
-We have only internal jenkins servers for now, but refer to readme and create your own with findbugs, pmd, checkstyle, etc.
-
 = Useful Tools =
 
 Inspecting indexes: [http://code.google.com/p/luke/ Luke]
