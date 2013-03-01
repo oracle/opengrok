@@ -31,7 +31,7 @@ OpenGrok's command line use is a typical case where OpenGrok is deployed as inde
 **Project concept** - one project is one directory underneath SRC_ROOT and usually contains a checkout of a project(or it's branch, version, ...) sources, it can have several attributes (in its XML description), note that interface of projects is being stabilized so it can change. Projects effectively replace need for more web applications with opengrok .war and leave you with one indexer and one web application serving MORE source code repositories - projects. A nice concept is to have directories underneath SRC_ROOT with a naming convention, thereby creating a good overview of projects (e.g. name-version-branch). Then you have a simple update script & simple index refresher script in place, which simplifies management of more repositories.
  [[image:setup-project.png]]
 
-==== __Step.0__ - Setting up the Sources. Having the web application container ready. ====
+==== <u>Step.0</u> - Setting up the Sources. Having the web application container ready. ====
 
 Source base must be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the **checked out source** tree under SRC_ROOT.
 **Note:** A local CVSROOT (or SVN if opengrok version less than 0.7) repository must be available. File history will not be fetched from a remote server for CVS (& SVN if opengrok version less than 0.7) !. For newer opengrok versions you must use option <code>-r on</code> for remote repositories history to be indexed, also note this can be more resource(time,cpu,network) demanding.
@@ -39,7 +39,7 @@ Note also that OpenGrok ignores symbolic links.
 
 Please install web application container of your choice (e.g. [http://tomcat.apache.org/ Tomcat],[https://glassfish.dev.java.net/ GlassFish] or [http://www.sun.com/software/products/appsrvr Sun Java Application Server]) before going to the next step and make sure it's started.
 
-==== __Step.1__ - Deploy the web application ====
+==== <u>Step.1</u> - Deploy the web application ====
 
 We provided you with OpenGrok wrapper script, which should aid in deploying the web application.
 Please change to opengrok directory (can vary on your system)
@@ -59,7 +59,7 @@ Alternatively use OPENGROK_TOMCAT_BASE environment variable, e.g.
 
 Note that OpenGrok script expects the directory <code>/var/opengrok</code> to be available to user running opengrok with all permissions. In root user case it will create all the directories needed, otherwise you have to manually create the directory and grant all permissions to the user used.
 
-==== __Step.2__ - Populate DATA_ROOT Directory, let the indexer generate the project XML config file, update configuration.xml to your web app ====
+==== <u>Step.2</u> - Populate DATA_ROOT Directory, let the indexer generate the project XML config file, update configuration.xml to your web app ====
 
 Second step is to just run the indexing (can take a lot of time). After this is done, indexer automatically attempts to upload newly generated configuration to the web application. Most probably you will not be able to use {Opengrok before this is done.
 
