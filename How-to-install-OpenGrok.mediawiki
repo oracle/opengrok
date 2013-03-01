@@ -2,7 +2,7 @@
 Note, that you **need** the **index setup** no matter what use case you plan to use. Without indexes {Opengrok will be simply useless.
 This document is a live document, we are updating it as the new versions/changes come out (note the date at the right bottom of the page).
 
-=== Requirements ===
+== Requirements ==
 
 You need the following:
 
@@ -14,7 +14,7 @@ You need the following:
 * 2GB of memory for indexing process using OpenGrok script (can use less, this is scaled for bigger deployments)
 * a recent browser for clients - IE, Firefox, recent Chrome or Safari
 
-=== Recommended links to read for advanced users ===
+== Recommended links to read for advanced users ==
 
 * [https://github.com/OpenGrok/OpenGrok/blob/master/OpenGrok Opengrok script trunk source]
 * [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt Sample setup]
