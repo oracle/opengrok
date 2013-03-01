@@ -22,7 +22,7 @@ The first thing you need to do is to check out the source code. You might do thi
 
 == Prepare the source for compilation ==
 
-Copy {{code}}JFlex.jar{{/code}} into the {{code}}lib{{/code}} directory in the OpenGrok source. (If you are using NetBeans, you could alternatively add JFlex.jar to Ant's classpath at Tools->Options->Miscellaneous->Ant. If you are running Ant from the command line, it should also work if you put JFlex.jar into your {{code}}~/.ant/lib{{/code}} directory.) Optionally you need junit*.jar there too.
+Copy <code>JFlex.jar</code> into the <code>lib</code> directory in the OpenGrok source. (If you are using NetBeans, you could alternatively add JFlex.jar to Ant's classpath at Tools->Options->Miscellaneous->Ant. If you are running Ant from the command line, it should also work if you put JFlex.jar into your <code>~/.ant/lib</code> directory.) Optionally you need junit*.jar there too.
 
 == Compile the source ==
 
@@ -30,14 +30,14 @@ If you use NetBeans you should be able to open OpenGrok as a project and build i
 
  ant
 
-If the build is successful, you should now find the binaries under the {{code}}dist{{/code}} directory.
+If the build is successful, you should now find the binaries under the <code>dist</code> directory.
 
 Or if you want to use junit testing + javadoc generation target, you can try:
 
  ant default
 
 
-If the build is successful, you should have javadoc in {{code}}dist/javadoc{{/code}} directory & junit test results in {{code}}build/test/results/*.xml{{/code}} directory.
+If the build is successful, you should have javadoc in <code>dist/javadoc</code> directory & junit test results in <code>build/test/results/*.xml</code> directory.
 
 For other setup & development tools like findbugs, checkstyle, pmd, ... please refer to [https://github.com/OpenGrok/OpenGrok/blob/master/README.txt README.txt] in the downloaded/cloned sources.
 
@@ -45,9 +45,9 @@ Note that there is an experimental maven build system being implemented. If you 
 
 = Continuous Integration (hudson) for OpenGrok =
 
--- Hudson is hosted on http://www.norbye.org/jenkins/job/OpenGrok/
+Hudson is hosted on http://www.norbye.org/jenkins/job/OpenGrok/
 
-You can find open tasks there, or different bug checkers. Some of these are good for getting acquainted with the code and can be a "low hanging fruit" fixes.--
+You can find open tasks there, or different bug checkers. Some of these are good for getting acquainted with the code and can be a "low hanging fruit" fixes.
 We have only internal jenkins servers for now, but refer to readme and create your own with findbugs, pmd, checkstyle, etc.
 
 = Useful Tools =
