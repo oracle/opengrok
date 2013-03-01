@@ -30,7 +30,7 @@ After installing the package (e.g. <code>pkgadd -d ./OSOLopengrok-0.?.pkg</code>
 OpenGrok's command line use is a typical case where OpenGrok is deployed as indexing service on a webserver for an active source repository, which is updated automatically using scheduled cron jobs.
 '''Project concept''' - one project is one directory underneath <code>SRC_ROOT</code> and usually contains a checkout of a project (or it's branch, version, ...) sources, it can have several attributes (in its XML description), note that interface of projects is being stabilized so it can change. Projects effectively replace need for more web applications with opengrok <code>.war</code> and leave you with one indexer and one web application serving MORE source code repositories - projects. A nice concept is to have directories underneath <code>SRC_ROOT</code> with a naming convention, thereby creating a good overview of projects (e.g. name-version-branch). Then you have a simple update script & simple index refresher script in place, which simplifies management of more repositories.
 
- [[image:setup-project.png]]
+[[/images/setup-project.png]]
 
 ==== <u>Step.0</u> - Setting up the Sources. Having the web application container ready. ====
 
@@ -110,7 +110,7 @@ For quick help run:
 
 Sample search:
 
-[[image:CLI-search.png]]
+[[/images/CLI-search.png]]
 
 ==== Optional need to change web application properties or name ====
 
