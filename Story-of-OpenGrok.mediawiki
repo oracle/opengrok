@@ -54,11 +54,11 @@ Cscope had a number of minor dificiencies; its full text search is too slow. Giv
 At that time, this summarizes the state of the art in code lookup and version control web interfaces that were deployed for large open source projects (like http://lxr.mozilla.org/ or http://cvs.gnome.org/)
 
 {|
-|Feature
-|LXR
-|ctags
-|cscope
-|CVSview/web
+|'''Feature'''
+|'''LXR'''
+|'''ctags'''
+|'''cscope'''
+|'''CVSview/web'''
 |-
 |Full text Search
 |Y
