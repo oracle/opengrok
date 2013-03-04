@@ -3,9 +3,9 @@ This page lists which file formats are supported by OpenGrok. This largely depen
 The following table lists all currently (as of OpenGrok pre-0.12) supported formats and OpenGrok version in which they have been introduced:
 
 {|
-|File format
-|Version
-|File suffixes
+|'''File format'''
+|'''Version'''
+|'''File suffixes'''
 |-
 |bzip2
 |0.3.1
