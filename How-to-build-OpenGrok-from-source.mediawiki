@@ -22,7 +22,7 @@ The first thing you need to do is to check out the source code. You might do thi
 
 == Prepare the source for compilation ==
 
-Copy <code>JFlex.jar</code> into the <code>lib</code> directory in the OpenGrok source. (If you are using NetBeans, you could alternatively add JFlex.jar to Ant's classpath at Tools->Options->Miscellaneous->Ant. If you are running Ant from the command line, it should also work if you put JFlex.jar into your <code>~/.ant/lib</code> directory.) Optionally you need junit*.jar there too.
+Copy <code>JFlex.jar</code> into the <code>lib</code> directory in the OpenGrok source. (If you are using NetBeans, you could alternatively add <code>JFlex.jar</code> to Ant's classpath at Tools->Options->Miscellaneous->Ant. If you are running Ant from the command line, it should also work if you put <code>JFlex.jar</code> into your <code>~/.ant/lib</code> directory.) Optionally you need junit*.jar there too.
 
 == Compile the source ==
 
