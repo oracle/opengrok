@@ -1,6 +1,6 @@
 === Chat ===
 
-IRC channel #opengrok on [www.freenode.net Freenode]
+IRC channel #opengrok on [http://www.freenode.net Freenode]
 
 === Mailing lists ===
 
