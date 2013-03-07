@@ -10,5 +10,5 @@ The mailing lists are available on http://java.net/projects/opengrok/lists
 
 Archives of mailing lists prior to moving the project to github:
 
-* opengrok-dev@opensolaris.org http://mail.opensolaris.org/pipermail/opengrok-dev/
-* opengrok-discuss@opensolaris.org http://mail.opensolaris.org/pipermail/opengrok-discuss/
+* opengrok-dev@opensolaris.org is archived off-line, please let us know if you need the contents
+* opengrok-discuss@opensolaris.org is archived at [http://marc.info/?l=opensolaris-opengrok-discuss&r=1&w=2 marc.info]
