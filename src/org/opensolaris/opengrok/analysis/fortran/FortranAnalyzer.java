@@ -18,15 +18,16 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.fortran;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -38,12 +39,18 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 public class FortranAnalyzer extends AbstractSourceCodeAnalyzer {
 
-    private final FortranSymbolTokenizer fref = new FortranSymbolTokenizer(AnalyzerGuru.dummyR);
-    private final FortranXref xref = new FortranXref(AnalyzerGuru.dummyR);
-
     FortranAnalyzer(FortranAnalyzerFactory factory) {
         super(factory);
-        super.setAnalyzers(fref, xref);
+    }
+
+    @Override
+    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
+        return new FortranSymbolTokenizer(reader);
+    }
+
+    @Override
+    protected JFlexXref newXref(Reader reader) {
+        return new FortranXref(reader);
     }
 
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {

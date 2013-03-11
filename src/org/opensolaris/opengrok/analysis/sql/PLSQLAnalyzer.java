@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.sql;
 
@@ -46,7 +46,7 @@ public class PLSQLAnalyzer extends PlainAnalyzer {
      */
     @Override
     public void writeXref(Writer out) throws IOException {
-        xref.reInit(content, len);
+        xref.reInit(getContentReader());
         xref.project = project;
         xref.setDefs(defs);
         xref.write(out);

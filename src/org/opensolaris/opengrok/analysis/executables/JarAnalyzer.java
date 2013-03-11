@@ -18,26 +18,24 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 /**
  * Analyzes JAR, WAR, EAR (Java Archive) files. Created on September 22, 2005
@@ -61,7 +59,7 @@ public class JarAnalyzer extends FileAnalyzer {
         while ((entry = zis.getNextEntry()) != null) {
             String ename = entry.getName();
             String xref = null;
-            doc.add(new TextField("full", new StringReader(ename)));
+            doc.add(new TextField("full", ename, Store.NO));
             FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
             if (fac instanceof JavaClassAnalyzerFactory) {
                 JavaClassAnalyzer jca =
@@ -71,22 +69,6 @@ public class JarAnalyzer extends FileAnalyzer {
             }
             xrefs.put(ename, xref);
         }
-    }
-
-    @Override
-    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
-        if ("full".equals(fieldName)) {
-            final PlainFullTokenizer plainfull = new PlainFullTokenizer(reader);
-            TokenStreamComponents tsc_pf = new TokenStreamComponents(plainfull) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plainfull.reInit(reader);
-                    super.setReader(reader);
-                }
-            };
-            return tsc_pf;
-        }
-        return super.createComponents(fieldName, reader);
     }
 
     /**

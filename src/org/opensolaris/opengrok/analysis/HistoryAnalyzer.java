@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.IOException;
 import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.StopFilter;
@@ -68,14 +67,6 @@ public final class HistoryAnalyzer extends Analyzer {
         stopWords = StopFilter.makeStopSet(SearchEngine.LUCENE_VERSION, ENGLISH_STOP_WORDS);
         final PlainFullTokenizer plainfull = new PlainFullTokenizer(reader);
         //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
-        TokenStreamComponents tsc = new TokenStreamComponents(plainfull, new StopFilter(SearchEngine.LUCENE_VERSION, plainfull, stopWords)) {
-            @Override
-            protected void setReader(final Reader reader) throws IOException {
-                plainfull.reInit(reader);
-                super.setReader(reader);
-            }
-        };
-        return tsc;
-
+        return new TokenStreamComponents(plainfull, new StopFilter(SearchEngine.LUCENE_VERSION, plainfull, stopWords));
     }
 }
