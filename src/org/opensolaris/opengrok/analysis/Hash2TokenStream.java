@@ -27,14 +27,14 @@ import java.util.Set;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-public final class Hash2Tokenizer extends TokenStream {
+public final class Hash2TokenStream extends TokenStream {
     int i=0;
     String term;
     String terms[];
     Iterator<String> keys;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
-    public Hash2Tokenizer(Set<String> symbols){
+    public Hash2TokenStream(Set<String> symbols){
         keys=symbols.iterator();
     }
 

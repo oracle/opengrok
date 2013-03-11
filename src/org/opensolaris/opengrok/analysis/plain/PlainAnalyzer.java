@@ -33,7 +33,7 @@ import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.Hash2Tokenizer;
+import org.opensolaris.opengrok.analysis.Hash2TokenStream;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -82,7 +82,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         if (fullpath != null && ctags != null) {
             defs = ctags.doCtags(fullpath + "\n");
             if (defs != null && defs.numberOfSymbols() > 0) {
-                doc.add(new TextField("defs", new Hash2Tokenizer(defs.getSymbols())));
+                doc.add(new TextField("defs", new Hash2TokenStream(defs.getSymbols())));
                 doc.add(new TextField("refs", getContentReader()));
                 byte[] tags = defs.serialize();
                 doc.add(new StoredField("tags", tags));
