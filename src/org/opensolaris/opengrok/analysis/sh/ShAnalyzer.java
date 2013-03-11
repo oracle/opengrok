@@ -18,16 +18,17 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.sh;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -42,12 +43,18 @@ public class ShAnalyzer extends AbstractSourceCodeAnalyzer {
     /**
      * Creates a new instance of ShAnalyzer
      */
-    private final ShSymbolTokenizer shref = new ShSymbolTokenizer(AnalyzerGuru.dummyR);
-    private final ShXref xref = new ShXref(AnalyzerGuru.dummyR);
-
     protected ShAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        super.setAnalyzers(shref, xref);
+    }
+
+    @Override
+    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
+        return new ShSymbolTokenizer(reader);
+    }
+
+    @Override
+    protected JFlexXref newXref(Reader reader) {
+        return new ShXref(reader);
     }
 
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {

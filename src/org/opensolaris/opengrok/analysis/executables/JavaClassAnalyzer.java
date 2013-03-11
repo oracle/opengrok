@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -51,12 +49,12 @@ import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.List2TokenStream;
 import org.opensolaris.opengrok.analysis.TagFilter;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -105,8 +103,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         doc.add(new TextField("defs", new List2TokenStream(defs)));
         doc.add(new TextField("refs", new List2TokenStream(refs)));
-        doc.add(new TextField("full", new StringReader(xref)));
-        doc.add(new TextField("full", new StringReader(constants)));
+        // TODO could be improved, lucene has xhtml parsers/readers
+        doc.add(new TextField("full", new TagFilter(xref)));
+        doc.add(new TextField("full", constants, Store.NO));
     }
 
     public String getXref() {
@@ -114,22 +113,6 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     }
     private int[] v;
     private ConstantPool cp;
-
-    @Override
-    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
-        if ("full".equals(fieldName)) {
-            final PlainFullTokenizer plainfull = new PlainFullTokenizer(new TagFilter(reader));
-            TokenStreamComponents tc = new TokenStreamComponents(plainfull) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plainfull.reInit(new TagFilter(reader)); //TODO could be improved, lucene has xhtml parsers/readers
-                    super.setReader(reader);
-                }
-            };
-            return tc;
-        }
-        return super.createComponents(fieldName, reader);
-    }
 
     protected String linkPath(String path) {
         return "<a href=\"" + urlPrefix + "path=" + path + "\">" + path + "</a>";

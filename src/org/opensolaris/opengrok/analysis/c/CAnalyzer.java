@@ -18,16 +18,17 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.c;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -44,13 +45,18 @@ public class CAnalyzer extends AbstractSourceCodeAnalyzer {
     /**
      * Creates a new instance of CAnalyzer
      */
-    private final CSymbolTokenizer cref = new CSymbolTokenizer(AnalyzerGuru.dummyR);
-    ;
-    private final CXref xref = new CXref(AnalyzerGuru.dummyR);
-
     protected CAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        super.setAnalyzers(cref, xref);
+    }
+
+    @Override
+    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
+        return new CSymbolTokenizer(reader);
+    }
+
+    @Override
+    protected JFlexXref newXref(Reader reader) {
+        return new CXref(reader);
     }
 
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {

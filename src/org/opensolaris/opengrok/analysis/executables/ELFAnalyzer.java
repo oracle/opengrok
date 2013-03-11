@@ -25,7 +25,6 @@ package org.opensolaris.opengrok.analysis.executables;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -35,13 +34,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.OpenGrokLogger;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -79,17 +76,15 @@ public class ELFAnalyzer extends FileAnalyzer {
     public void analyze(Document doc, InputStream in) throws IOException {
         if (in instanceof FileInputStream) {
             parseELF((FileInputStream) in);
-            if (content.length() > 0) {
-                doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
-            }
         } else {
             String fullpath = doc.get("fullpath");
             try (FileInputStream fin = new FileInputStream(fullpath)) {
                 parseELF(fin);
-                if (content.length() > 0) {
-                    doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
-                }
             }
+        }
+
+        if (content.length() > 0) {
+            doc.add(new TextField("full", content.toString(), Store.NO));
         }
     }
 
@@ -172,23 +167,6 @@ public class ELFAnalyzer extends FileAnalyzer {
             sb.append((char) c);
         }
         return sb.toString();
-    }
-
-    @Override
-    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
-        if ("full".equals(fieldName)) {
-            final PlainFullTokenizer plainfull = new PlainFullTokenizer(reader);
-            plainfull.reInit(content.toString());
-            TokenStreamComponents tc = new TokenStreamComponents(plainfull) {
-            @Override
-            protected void setReader(final Reader reader) throws IOException {                
-                plainfull.reInit(content.toString());
-                super.setReader(reader);
-            }
-        };
-            return tc;
-        }
-        return super.createComponents(fieldName, reader);
     }
 
     /**

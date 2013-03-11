@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.IOException;
 import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
@@ -36,47 +35,20 @@ public class CompatibleAnalyser extends Analyzer {
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
-        if ("full".equals(fieldName)) {
-            final PlainFullTokenizer plainfull = new PlainFullTokenizer(reader);
-            TokenStreamComponents tsc_pf = new TokenStreamComponents(plainfull) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plainfull.reInit(reader);
-                    super.setReader(reader);
-                }
-            };
-            return tsc_pf;
-        } else if ("refs".equals(fieldName)) {
-            final PlainSymbolTokenizer plainref = new PlainSymbolTokenizer(reader);
-            TokenStreamComponents tsc_pr = new TokenStreamComponents(plainref) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plainref.reInit(reader);
-                    super.setReader(reader);
-                }
-            };
-            return tsc_pr;
-        } else if ("defs".equals(fieldName)) {
-            final PlainSymbolTokenizer plaindef = new PlainSymbolTokenizer(reader);
-            TokenStreamComponents tsc_pd = new TokenStreamComponents(plaindef) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plaindef.reInit(reader);
-                    super.setReader(reader);
-                }
-            };
-            return tsc_pd;
-        } else if ("path".equals(fieldName)) {
-            final PathTokenizer pathtokenizer = new PathTokenizer(reader);
-            TokenStreamComponents tsc_path = new TokenStreamComponents(pathtokenizer);
-            return tsc_path;
-        } else if ("project".equals(fieldName)) {
-            final PathTokenizer projecttokenizer = new PathTokenizer(reader);
-            TokenStreamComponents tsc_project = new TokenStreamComponents(projecttokenizer);
-            return tsc_project;
-        } else if ("hist".equals(fieldName)) {
-            return new HistoryAnalyzer().createComponents(fieldName, reader);
+        switch (fieldName) {
+            case "full":
+                return new TokenStreamComponents(new PlainFullTokenizer(reader));
+            case "refs":
+                return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
+            case "defs":
+                return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
+            case "path":
+            case "project":
+                return new TokenStreamComponents(new PathTokenizer(reader));
+            case "hist":
+                return new HistoryAnalyzer().createComponents(fieldName, reader);
+            default:
+                return new TokenStreamComponents(new PlainFullTokenizer(reader));
         }
-        return new TokenStreamComponents(new PlainFullTokenizer(reader));
     }
 }
