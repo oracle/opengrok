@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
@@ -258,11 +259,10 @@ public class AnalyzerGuru {
         }    
         doc.add(new Field("date", date, string_ft_stored_nanalyzed_norms));
         if (path != null) {
-            doc.add(new Field("path", path, TextField.TYPE_STORED));
+            doc.add(new TextField("path", path, Store.YES));
             Project project = Project.getProject(path);
             if (project != null) {
-                doc.add(new Field("project", project.getPath(), 
-                        TextField.TYPE_STORED));
+                doc.add(new TextField("project", project.getPath(), Store.YES));
             }
         }
 

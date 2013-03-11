@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.document;
 
+import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,7 +30,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -74,22 +74,13 @@ public class TroffAnalyzer extends FileAnalyzer {
             }
         } while (true);
 
-        doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
+        doc.add(new TextField("full", new CharArrayReader(content, 0, len)));
     }
 
     @Override
     public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
-            final TroffFullTokenizer troffull = new TroffFullTokenizer(reader);
-            troffull.reInit(content, len);
-            TokenStreamComponents tc = new TokenStreamComponents(troffull) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    troffull.reInit(content, len);
-                    super.setReader(reader);
-                }
-            };
-            return tc;
+            return new TokenStreamComponents(new TroffFullTokenizer(reader));
         }
         return super.createComponents(fieldName, reader);
     }

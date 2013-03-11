@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -27,9 +27,7 @@ import java.io.Reader;
 import java.io.Writer;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.TextField;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
@@ -43,8 +41,7 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
 
-    JFlexTokenizer symbolTokenizer;
-    JFlexXref xref;
+    private JFlexXref xref;
 
     /**
      * Creates a new instance of abstract analyzer
@@ -54,31 +51,29 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
     }
 
     /**
-     * sets the tokenizer and lexer
+     * Create a symbol tokenizer for the language supported by this analyzer.
+     * @param reader the data to tokenize
+     * @return a symbol tokenizer
      */
-    protected void setAnalyzers(JFlexTokenizer psymbolTokenizer, JFlexXref pxref) {
-        symbolTokenizer = psymbolTokenizer;
-        xref = pxref;
-    }
+    protected abstract JFlexTokenizer newSymbolTokenizer(Reader reader);
+
+    /**
+     * Create an xref for the language supported by this analyzer.
+     * @param reader the data to produce xref for
+     * @return an xref instance
+     */
+    protected abstract JFlexXref newXref(Reader reader);
 
     @Override
     public void analyze(Document doc, Reader in) throws IOException {
         super.analyze(doc, in);
-        doc.add(new Field("refs", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
+        doc.add(new TextField("refs", getContentReader()));
     }
 
     @Override
     public Analyzer.TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if ("refs".equals(fieldName)) {
-            symbolTokenizer.reInit(content, len);
-            TokenStreamComponents tc = new TokenStreamComponents(symbolTokenizer) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    symbolTokenizer.reInit(content, len);
-                    super.setReader(reader);
-                }
-            };
-            return tc;
+            return new TokenStreamComponents(newSymbolTokenizer(reader));
         }
         return super.createComponents(fieldName, reader);
     }
@@ -90,7 +85,11 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
      */
     @Override
     public void writeXref(Writer out) throws IOException {
-        xref.reInit(content, len);
+        if (xref == null) {
+            xref = newXref(getContentReader());
+        } else {
+            xref.reInit(getContentReader());
+        }
         xref.setDefs(defs);
         xref.project = project;
         xref.write(out);

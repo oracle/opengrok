@@ -18,19 +18,18 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
+import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
@@ -46,8 +45,8 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 public class PlainAnalyzer extends TextAnalyzer {
 
-    protected char[] content;
-    protected int len;
+    private char[] content;
+    private int len;
     protected PlainXref xref = new PlainXref((Reader) null);
     protected Definitions defs;
 
@@ -78,13 +77,13 @@ public class PlainAnalyzer extends TextAnalyzer {
             }
         } while (true);
 
-        doc.add(new Field("full", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
-        String fullpath;
-        if ((fullpath = doc.get("fullpath")) != null && ctags != null) {
+        doc.add(new TextField("full", getContentReader()));
+        String fullpath = doc.get("fullpath");
+        if (fullpath != null && ctags != null) {
             defs = ctags.doCtags(fullpath + "\n");
             if (defs != null && defs.numberOfSymbols() > 0) {
-                doc.add(new Field("defs", AnalyzerGuru.dummyS, TextField.TYPE_STORED));
-                doc.add(new Field("refs", AnalyzerGuru.dummyS, TextField.TYPE_STORED)); //@FIXME adding a refs field only if it has defs?
+                doc.add(new TextField("defs", new Hash2Tokenizer(defs.getSymbols())));
+                doc.add(new TextField("refs", getContentReader()));
                 byte[] tags = defs.serialize();
                 doc.add(new StoredField("tags", tags));
             }
@@ -93,41 +92,17 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     @Override
     public TokenStreamComponents createComponents(String fieldName, Reader reader) {
-        if ("full".equals(fieldName)) {
-            final PlainFullTokenizer plainfull = new PlainFullTokenizer(AnalyzerGuru.dummyR);
-            plainfull.reInit(content, len);
-            TokenStreamComponents tsc_pf = new TokenStreamComponents(plainfull) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plainfull.reInit(content, len);
-                    super.setReader(reader);
-                }
-            };
-            return tsc_pf;
-        } else if ("refs".equals(fieldName)) {
-            final PlainSymbolTokenizer plainref = new PlainSymbolTokenizer(AnalyzerGuru.dummyR);
-            plainref.reInit(content, len);
-            TokenStreamComponents tsc_pr = new TokenStreamComponents(plainref) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plainref.reInit(content, len);
-                    super.setReader(reader);
-                }
-            };
-            return tsc_pr;
-        } else if ("defs".equals(fieldName)) {
-            final Hash2Tokenizer hash2Tokenizer = new Hash2Tokenizer(AnalyzerGuru.dummyR);
-            hash2Tokenizer.reInit(defs.getSymbols());
-            TokenStreamComponents tsc_h2t = new TokenStreamComponents(hash2Tokenizer) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    hash2Tokenizer.reInit(defs.getSymbols());
-                    super.setReader(reader);
-                }
-            };
-            return tsc_h2t;
+        if ("refs".equals(fieldName)) {
+            return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
         }
         return super.createComponents(fieldName, reader);
+    }
+
+    /**
+     * Get a reader that reads from the {@link #content} array.
+     */
+    protected Reader getContentReader() {
+        return new CharArrayReader(content, 0, len);
     }
 
     /**
@@ -137,7 +112,7 @@ public class PlainAnalyzer extends TextAnalyzer {
      */
     @Override
     public void writeXref(Writer out) throws IOException {
-        xref.reInit(content, len);
+        xref.reInit(getContentReader());
         xref.project = project;
         xref.write(out);
     }
