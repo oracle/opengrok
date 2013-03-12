@@ -27,21 +27,21 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.lucene-analyzers-common-4.1.0.jar}</file>
+                    <file>${file.reference.lucene-analyzers-common.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.lucene-core-4.1.0.jar}</file>
+                    <file>${file.reference.lucene-core.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.lucene-queryparser-4.1.0.jar}</file>
+                    <file>${file.reference.lucene-queryparser.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.lucene-suggest-4.1.0.jar}</file>
+                    <file>${file.reference.lucene-suggest.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
-                </library>
+                </library>		
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots/>
