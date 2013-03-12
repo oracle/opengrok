@@ -24,8 +24,6 @@
 
 package org.opensolaris.opengrok.history;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -125,13 +123,13 @@ public class MercurialRepositoryTest {
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr =
                 (MercurialRepository) RepositoryFactory.getRepository(root);
-        String exp_str = new String("This will be a first novel of mine.\n" +
-"\n" +
-"Chapter 1.\n" +
-"\n" +
-"Let's write some words. It began like this:\n" +
-"\n" +
-"...\n");
+        String exp_str = "This will be a first novel of mine.\n" +
+            "\n" +
+            "Chapter 1.\n" +
+            "\n" +
+            "Let's write some words. It began like this:\n" +
+            "\n" +
+            "...\n";
         byte[] buffer = new byte[1024];
         
         InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
@@ -153,7 +151,7 @@ public class MercurialRepositoryTest {
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr =
                 (MercurialRepository) RepositoryFactory.getRepository(root);
-        String exp_str = new String("This is totally plaintext file.\n");
+        String exp_str = "This is totally plaintext file.\n";
         byte[] buffer = new byte[1024];
         
         /* 
