@@ -80,9 +80,9 @@ public class History {
      *
      * @return {@code true} if at least one of the entries has a non-empty
      * tag list, {@code false} otherwise
-     * @todo Use a private variable instead of for loop?
      */
     public boolean hasTags() {
+        // TODO Use a private variable instead of for loop?
         for (HistoryEntry entry : entries) {
             if (entry.getTags() != null) {
                 return true;
