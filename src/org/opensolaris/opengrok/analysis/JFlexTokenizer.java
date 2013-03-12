@@ -54,7 +54,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     abstract public int yystate();
 
-    public JFlexTokenizer(java.io.Reader input) {
+    public JFlexTokenizer(Reader input) {
         super(input);
     }
 
@@ -82,10 +82,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
      * end of input Reader ...
      *
      * @return false if no more tokens, otherwise true
-     * @throws java.io.IOException
+     * @throws IOException
      */
     @Override
-    public final boolean incrementToken() throws java.io.IOException {
+    public final boolean incrementToken() throws IOException {
         return this.yylex();
     }
 

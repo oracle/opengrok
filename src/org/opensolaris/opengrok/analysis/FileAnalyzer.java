@@ -151,11 +151,11 @@ public class FileAnalyzer extends Analyzer {
                 return new TokenStreamComponents(new PathTokenizer(reader));
             case "hist":
                 return new HistoryAnalyzer().createComponents(fieldName, reader);
+            default:
+                OpenGrokLogger.getLogger().log(
+                        Level.WARNING, "Have no analyzer for: {0}", fieldName);
+                return null;
         }
-
-        OpenGrokLogger.getLogger().log(Level.WARNING, "Have no analyzer for: {0}", fieldName);        
-        return null;
-
     }
 
     /**

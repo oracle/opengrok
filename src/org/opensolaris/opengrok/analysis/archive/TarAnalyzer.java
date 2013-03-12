@@ -32,7 +32,6 @@ import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -43,8 +42,6 @@ import org.opensolaris.opengrok.web.Util;
 public class TarAnalyzer extends FileAnalyzer {
 
     private final StringBuilder content;
-    private PlainFullTokenizer plainfull;
-    TokenStreamComponents tsc_pf;
 
     protected TarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);

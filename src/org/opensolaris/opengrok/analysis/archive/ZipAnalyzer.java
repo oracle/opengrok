@@ -32,7 +32,6 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -43,8 +42,6 @@ import org.opensolaris.opengrok.web.Util;
 public class ZipAnalyzer extends FileAnalyzer {
 
     private final StringBuilder content;
-    private PlainFullTokenizer plainfull;
-    TokenStreamComponents tc;
 
     protected ZipAnalyzer(FileAnalyzerFactory factory) {
         super(factory);

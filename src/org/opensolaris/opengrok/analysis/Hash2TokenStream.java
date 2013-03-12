@@ -22,16 +22,16 @@
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 public final class Hash2TokenStream extends TokenStream {
-    int i=0;
-    String term;
-    String terms[];
-    Iterator<String> keys;
+    private Iterator<String> terms = Collections.emptyIterator();
+    private final Iterator<String> keys;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
     public Hash2TokenStream(Set<String> symbols){
@@ -41,23 +41,22 @@ public final class Hash2TokenStream extends TokenStream {
     @Override
     public final boolean incrementToken() throws java.io.IOException {
         clearAttributes();
-        while (i <= 0) {            
+
+        // Loop until we have found terms or there are no more keys to read.
+        while (!terms.hasNext()) {
             if (keys.hasNext()) {
-                term = keys.next();
-                terms = term.split("[^a-zA-Z_0-9]+");
-                i = terms.length;
-                if (i > 0) {
-                    termAtt.setEmpty();
-                    termAtt.append(terms[--i]);
-                    return true;
-                }
-                // no tokens found in this key, try next
-                continue;
+                String term = keys.next();
+                terms = Arrays.asList(term.split("[^a-zA-Z_0-9]+")).iterator();
+            } else {
+                // No more keys to read. Signal that there are no more
+                // tokens in the stream.
+                return false;
             }
-            return false;
         }
+
+        // Terms is non-empty when we get here. Pick one.
         termAtt.setEmpty();
-        termAtt.append(terms[--i]);
+        termAtt.append(terms.next());
         return true;
     }
 }
