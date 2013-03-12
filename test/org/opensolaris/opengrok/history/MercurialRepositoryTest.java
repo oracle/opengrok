@@ -102,7 +102,6 @@ public class MercurialRepositoryTest {
         MercurialRepository mr =
                 (MercurialRepository) RepositoryFactory.getRepository(root);
         // Get all but the oldest revision 
-        // XXX is this true ? REVISIONS.length - 1 ? really ?
         History hist = mr.getHistory(root, REVISIONS[REVISIONS.length - 1]);
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length - 1, entries.size());
