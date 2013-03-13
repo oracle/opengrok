@@ -216,7 +216,8 @@ public class MercurialRepository extends Repository {
                while ((line = in.readLine()) != null) {
                     matcher.reset(line);
                     if (!matcher.find()) {
-                        // XXX print error
+                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Failed to match: {0}", line);
                         return (null);
                     }
                     String rev = matcher.group(1);
