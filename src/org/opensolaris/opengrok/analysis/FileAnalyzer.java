@@ -37,6 +37,7 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -142,21 +143,19 @@ public class FileAnalyzer extends Analyzer {
         
     @Override
     public TokenStreamComponents createComponents(String fieldName, Reader reader) {                        
-        if ("path".equals(fieldName)) {
-            PathTokenizer pathtokenizer = new PathTokenizer(reader);
-            TokenStreamComponents tsc_path = new TokenStreamComponents(pathtokenizer);
-            return tsc_path;
-        } else if ("project".equals(fieldName)) {
-            PathTokenizer projecttokenizer = new PathTokenizer(reader);
-            TokenStreamComponents tsc_project = new TokenStreamComponents(projecttokenizer);
-            return tsc_project;
-        } else if ("hist".equals(fieldName)) {                        
-                return new HistoryAnalyzer().createComponents(fieldName, reader);            
+        switch (fieldName) {
+            case "full":
+                return new TokenStreamComponents(new PlainFullTokenizer(reader));
+            case "path":
+            case "project":
+                return new TokenStreamComponents(new PathTokenizer(reader));
+            case "hist":
+                return new HistoryAnalyzer().createComponents(fieldName, reader);
+            default:
+                OpenGrokLogger.getLogger().log(
+                        Level.WARNING, "Have no analyzer for: {0}", fieldName);
+                return null;
         }
-        
-        OpenGrokLogger.getLogger().log(Level.WARNING, "Have no analyzer for: {0}", fieldName);        
-        return null;
-               
     }
 
     /**

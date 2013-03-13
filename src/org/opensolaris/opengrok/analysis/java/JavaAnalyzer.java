@@ -18,16 +18,17 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.java;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -38,16 +39,21 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 public class JavaAnalyzer extends AbstractSourceCodeAnalyzer {
 
-    private final JavaSymbolTokenizer jref = new JavaSymbolTokenizer(AnalyzerGuru.dummyR);
-    ;
-    private final JavaXref xref = new JavaXref(AnalyzerGuru.dummyR);
-
     /**
      * Creates a new instance of JavaAnalyzer
      */
     protected JavaAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        super.setAnalyzers(jref, xref);
+    }
+
+    @Override
+    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
+        return new JavaSymbolTokenizer(reader);
+    }
+
+    @Override
+    protected JFlexXref newXref(Reader reader) {
+        return new JavaXref(reader);
     }
 
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {

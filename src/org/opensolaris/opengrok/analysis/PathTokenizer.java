@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 import org.apache.lucene.analysis.Tokenizer;
@@ -38,9 +39,15 @@ public class PathTokenizer extends Tokenizer {
     public PathTokenizer(Reader input) {
         super(input);        
     }
-                
+
     @Override
-    public final boolean incrementToken() throws java.io.IOException {
+    public void reset() throws IOException {
+        super.reset();
+        dot = false;
+    }
+
+    @Override
+    public final boolean incrementToken() throws IOException {
         clearAttributes();
         if (dot) {
             dot = false;

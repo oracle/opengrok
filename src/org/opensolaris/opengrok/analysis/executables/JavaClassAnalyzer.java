@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -51,12 +49,12 @@ import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.List2TokenStream;
 import org.opensolaris.opengrok.analysis.TagFilter;
-import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
@@ -68,6 +66,10 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 public class JavaClassAnalyzer extends FileAnalyzer {
 
     private final String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
+    private List<String> defs;
+    private List<String> refs;
+    private List<String> full;
+    private String xref;
 
     /**
      * Creates a new instance of JavaClassAnalyzer
@@ -77,11 +79,6 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     protected JavaClassAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
-    private List<String> defs;
-    private List<String> refs;
-    private List<String> full;
-    private String xref;
-    private JavaClass c;
 
     @Override
     public void analyze(Document doc, InputStream in) throws IOException {
@@ -91,9 +88,8 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         xref = null;
 
         ClassParser classparser = new ClassParser(in, doc.get("path"));
-        c = classparser.parse();
         StringWriter out = new StringWriter();
-        getContent(out);
+        getContent(out, classparser.parse());
         xref = out.toString();
 
         out.getBuffer().setLength(0); // clear the buffer
@@ -105,30 +101,13 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         doc.add(new TextField("defs", new List2TokenStream(defs)));
         doc.add(new TextField("refs", new List2TokenStream(refs)));
-        doc.add(new TextField("full", new StringReader(xref)));
-        doc.add(new TextField("full", new StringReader(constants)));
+        // TODO could be improved, lucene has xhtml parsers/readers
+        doc.add(new TextField("full", new TagFilter(xref)));
+        doc.add(new TextField("full", constants, Store.NO));
     }
 
     public String getXref() {
         return xref;
-    }
-    private int[] v;
-    private ConstantPool cp;
-
-    @Override
-    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
-        if ("full".equals(fieldName)) {
-            final PlainFullTokenizer plainfull = new PlainFullTokenizer(new TagFilter(reader));
-            TokenStreamComponents tc = new TokenStreamComponents(plainfull) {
-                @Override
-                protected void setReader(final Reader reader) throws IOException {
-                    plainfull.reInit(new TagFilter(reader)); //TODO could be improved, lucene has xhtml parsers/readers
-                    super.setReader(reader);
-                }
-            };
-            return tc;
-        }
-        return super.createComponents(fieldName, reader);
     }
 
     protected String linkPath(String path) {
@@ -144,10 +123,10 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     }
 
 //TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
-    private void getContent(Writer out) throws IOException {
+    private void getContent(Writer out, JavaClass c) throws IOException {
         String t;
-        cp = c.getConstantPool();
-        v = new int[cp.getLength() + 1];
+        ConstantPool cp = c.getConstantPool();
+        int[] v = new int[cp.getLength() + 1];
         out.write(linkPath(t = c.getSourceFileName()));
         defs.add(t);
         refs.add(t);
@@ -193,7 +172,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 for (Attribute ca : ((Code) a).getAttributes()) {
                     if (ca.getTag() == org.apache.bcel.Constants.ATTR_LOCAL_VARIABLE_TABLE) {
                         for (LocalVariable l : ((LocalVariableTable) ca).getLocalVariableTable()) {
-                            printLocal(out, l);
+                            printLocal(out, l, v);
                         }
                     }
                 }
@@ -273,7 +252,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             if (!locals.isEmpty()) {
                 for (LocalVariable[] ls : locals) {
                     for (LocalVariable l : ls) {
-                        printLocal(out, l);
+                        printLocal(out, l, v);
                     }
                 }
             }
@@ -283,7 +262,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             if (v[i] != 1) {
                 Constant constant = cp.getConstant(i);
                 if (constant != null) {
-                    full.add(constantToString(constant));
+                    full.add(constantToString(constant, cp, v));
                 }
             }
         }
@@ -301,7 +280,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
     }
 
-    private void printLocal(Writer out, LocalVariable l) throws IOException {
+    private void printLocal(Writer out, LocalVariable l, int[] v) throws IOException {
         v[l.getIndex()] = 1;
         v[l.getNameIndex()] = 1;
         v[l.getSignatureIndex()] = 1;
@@ -317,7 +296,8 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
     }
 
-    public String constantToString(Constant c) throws ClassFormatException {
+    public String constantToString(Constant c, ConstantPool cp, int[] v)
+            throws ClassFormatException {
         String str;
         int i, j;
         byte tag = c.getTag();
@@ -358,11 +338,13 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 v[i] = 1;
                 j = ((ConstantNameAndType) c).getSignatureIndex();
                 v[j] = 1;
-                String sig = constantToString(cp.getConstant(j));
+                String sig = constantToString(cp.getConstant(j), cp, v);
                 if (sig.charAt(0) == '(') {
-                    str = Utility.methodSignatureToString(sig, constantToString(cp.getConstant(i)), " ");
+                    str = Utility.methodSignatureToString(sig,
+                            constantToString(cp.getConstant(i), cp, v), " ");
                 } else {
-                    str = Utility.signatureToString(sig) + ' ' + constantToString(cp.getConstant(i));
+                    str = Utility.signatureToString(sig) + ' ' +
+                            constantToString(cp.getConstant(i), cp, v);
                 }
                 //str = constantToString(cp.getConstant(i)) +' ' + sig;
 
@@ -375,7 +357,8 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 v[i] = 1;
                 j = ((ConstantCP) c).getNameAndTypeIndex();
                 v[j] = 1;
-                str = (constantToString(cp.getConstant(i)) + " " + constantToString(cp.getConstant(j)));
+                str = (constantToString(cp.getConstant(i), cp, v) + ' ' +
+                        constantToString(cp.getConstant(j), cp, v));
                 break;
 
             default: // Never reached

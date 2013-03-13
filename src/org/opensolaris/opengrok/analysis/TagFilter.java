@@ -18,12 +18,13 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.FilterReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +51,10 @@ public class TagFilter extends FilterReader {
         escs.put("&gt", Character.valueOf('>'));
         escs.put("&lt", Character.valueOf('<'));
         escs.put("&amp", Character.valueOf('&'));
+    }
+
+    public TagFilter(String input) {
+        this(new StringReader(input));
     }
 
     @Override

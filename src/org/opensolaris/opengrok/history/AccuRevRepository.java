@@ -197,13 +197,10 @@ public class AccuRevRepository extends Repository {
         Executor executor = new Executor(cmd, directory);
         executor.exec();
 
-        BufferedReader info = new BufferedReader(executor.getOutputReader());
         String elementID = null;
-        String line;
 
-        try {
-            line = info.readLine();
-
+        try (BufferedReader info = new BufferedReader(executor.getOutputReader())) {
+            String line = info.readLine();
             String[] statInfo = line.split("\\s+");
             elementID = statInfo[1].substring(2); // skip over 'e:'
 
@@ -273,10 +270,8 @@ public class AccuRevRepository extends Repository {
             Executor executor = new Executor(cmd, wsPath);
             executor.exec(true);
 
-            BufferedReader info = new BufferedReader(executor.getOutputReader());
-            String line;
-
-            try {
+            try (BufferedReader info = new BufferedReader(executor.getOutputReader())) {
+                String line;
                 while ((line = info.readLine()) != null) {
 
                     Matcher depotMatch = depotPattern.matcher(line);

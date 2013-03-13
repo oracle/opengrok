@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.Stack;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -56,31 +54,18 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     abstract public int yystate();
 
-    public JFlexTokenizer(java.io.Reader input) {
+    public JFlexTokenizer(Reader input) {
         super(input);
     }
 
     /**
-     * Reinitialize the tokenizer with new contents.
-     *
-     * @param contents a char buffer with text to tokenize
-     * @param length the number of characters to use from the char buffer
-     */
-    public final void reInit(char[] contents, int length) {
-        this.yyreset(new CharArrayReader(contents, 0, length));
-    }
-
-    public final void reInit(String s) {
-        this.yyreset(new StringReader(s));
-    }
-
-    /**
      * Reinitialize the tokenizer with new reader.
-     *
-     * @param reader new reader for this tokenizer
      */
-    public final void reInit(Reader reader) {
-        this.yyreset(reader);
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        stack.clear();
+        this.yyreset(input);
     }
 
     @Override
@@ -97,10 +82,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
      * end of input Reader ...
      *
      * @return false if no more tokens, otherwise true
-     * @throws java.io.IOException
+     * @throws IOException
      */
     @Override
-    public final boolean incrementToken() throws java.io.IOException {
+    public final boolean incrementToken() throws IOException {
         return this.yylex();
     }
 

@@ -18,60 +18,45 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.Reader;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-public final class Hash2Tokenizer extends Tokenizer {
-    int i=0;
-    String term;
-    String terms[];
-    Iterator<String> keys;
+public final class Hash2TokenStream extends TokenStream {
+    private Iterator<String> terms = Collections.emptyIterator();
+    private final Iterator<String> keys;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
-    private int finalOffset;
 
-    public Hash2Tokenizer(Reader reader){
-        super(reader);
-        keys=new HashSet<String>().iterator();
-    }
-    
-    public Hash2Tokenizer(Set<String> symbols){
-        super(AnalyzerGuru.dummyR);
+    public Hash2TokenStream(Set<String> symbols){
         keys=symbols.iterator();
-    }
-    
-    public void reInit(Set<String> symbols) {
-        keys = symbols.iterator();
     }
 
     @Override
     public final boolean incrementToken() throws java.io.IOException {
         clearAttributes();
-        while (i <= 0) {            
+
+        // Loop until we have found terms or there are no more keys to read.
+        while (!terms.hasNext()) {
             if (keys.hasNext()) {
-                term = keys.next();
-                terms = term.split("[^a-zA-Z_0-9]+");
-                i = terms.length;
-                if (i > 0) {
-                    termAtt.setEmpty();
-                    termAtt.append(terms[--i]);
-                    return true;
-                }
-                // no tokens found in this key, try next
-                continue;
+                String term = keys.next();
+                terms = Arrays.asList(term.split("[^a-zA-Z_0-9]+")).iterator();
+            } else {
+                // No more keys to read. Signal that there are no more
+                // tokens in the stream.
+                return false;
             }
-            return false;
         }
-        finalOffset=0;
+
+        // Terms is non-empty when we get here. Pick one.
         termAtt.setEmpty();
-        termAtt.append(terms[--i]);
+        termAtt.append(terms.next());
         return true;
     }
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis;
@@ -162,8 +162,7 @@ public abstract class JFlexXref {
      * @param length the number of characters to use from the char buffer
      */
     public void reInit(char[] contents, int length) {
-        yyreset(new CharArrayReader(contents, 0, length));
-        annotation = null;
+        reInit(new CharArrayReader(contents, 0, length));
     }
 
     /**
@@ -173,6 +172,7 @@ public abstract class JFlexXref {
      */
     public final void reInit(Reader reader) {
         this.yyreset(reader);
+        annotation = null;
     }
 
     public void setDefs(Definitions defs) {
