@@ -223,10 +223,10 @@ public class MercurialRepository extends Repository {
                     String content = matcher.group(2);
 
                     if (!content.isEmpty()) {
-		        /*
-			 * Split string of 'newfile1 (oldfile1)newfile2
-			 * (oldfile2) ...' into pairs of renames.
-			 */
+                        /*
+                         * Split string of 'newfile1 (oldfile1)newfile2
+                         * (oldfile2) ...' into pairs of renames.
+                         */
                         String[] splitArray = content.split("\\)");
                         for (String s: splitArray) {
                             /*

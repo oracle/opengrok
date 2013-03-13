@@ -99,7 +99,7 @@ public class MercurialRepositoryTest {
         File root = new File(repository.getSourceRoot(), "mercurial");
         MercurialRepository mr =
                 (MercurialRepository) RepositoryFactory.getRepository(root);
-        // Get all but the oldest revision 
+        // Get all but the oldest revision.
         History hist = mr.getHistory(root, REVISIONS[REVISIONS.length - 1]);
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length - 1, entries.size());
