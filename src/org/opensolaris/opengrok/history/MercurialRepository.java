@@ -189,14 +189,13 @@ public class MercurialRepository extends Repository {
      * @param rev_to_find revision number
      * @returns original filename
      */
-    private String FindOriginalName(String fullpath, String rev_to_find) 
+    private String findOriginalName(String fullpath, String rev_to_find) 
             throws IOException {
         Matcher matcher = LOG_COPIES_PATTERN.matcher("");
         String file = fullpath.substring(directoryName.length() + 1);
         ArrayList<String> argv = new ArrayList<String>();
-        
-        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(cmd);
+ 
+        argv.add(ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK));
         argv.add("log");
         argv.add("-f");
         argv.add("-r");
@@ -282,7 +281,7 @@ public class MercurialRepository extends Repository {
             */
            String origpath;
            try {
-            origpath = FindOriginalName(fullpath, rev);
+            origpath = findOriginalName(fullpath, rev);
            } catch (IOException exp) {
                OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get original revision: {0}",
