@@ -232,7 +232,7 @@ public class MercurialRepository extends Repository {
                             /*
                              * This will fail for file names containing ' ('.
                              */
-                            String[] move = s.split(" (");
+                            String[] move = s.split(" \\(");
 
                             if (file.equals(move[0])) {
                                 file = move[1];
