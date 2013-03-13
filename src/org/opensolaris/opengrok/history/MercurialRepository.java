@@ -199,6 +199,8 @@ public class MercurialRepository extends Repository {
         argv.add(cmd);
         argv.add("log");
         argv.add("-f");
+        argv.add("-r");
+        argv.add("reverse(" + rev_to_find + ":)");
         argv.add("--template");
         argv.add("{rev}:{file_copies}\\n");
         argv.add(fullpath);
