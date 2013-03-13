@@ -223,15 +223,16 @@ public class MercurialRepository extends Repository {
                     String content = matcher.group(2);
 
                     if (!content.isEmpty()) {
+		        /*
+			 * Split string of 'newfile1 (oldfile1)newfile2
+			 * (oldfile2) ...' into pairs of renames.
+			 */
                         String[] splitArray = content.split("\\)");
                         for (String s: splitArray) {
                             /*
-                             * Choose a value which is not probable
-                             * to form a substring of the file names.
+                             * This will fail for file names containing ' ('.
                              */
-                            String splitter = "-opengroksplitter-";
-                            s = s.replace(" (", splitter);
-                            String[] move = s.split(splitter);
+                            String[] move = s.split(" (");
 
                             if (file.equals(move[0])) {
                                 file = move[1];
