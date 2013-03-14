@@ -134,11 +134,15 @@ public class MercurialRepositoryTest {
         
         InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
                 "novel.txt", REVISIONS[0]);
-        assert(input != null);
-        int len = input.read(buffer);
-        assert(len != -1);
-        String str = new String(buffer, 0, len);
-        assert(str.compareTo(exp_str) == 0);
+        assertNotNull(input);
+
+        String str = "";
+        int len;
+        while ((len = input.read(buffer)) > 0) {
+            str += new String(buffer, 0, len);
+        }
+        assertNotSame(str.length(), 0);
+        assertEquals(exp_str, str);
     }
     
     /**

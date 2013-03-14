@@ -46,10 +46,16 @@ import org.opensolaris.opengrok.web.Util;
 public class MercurialRepository extends Repository {
     private static final long serialVersionUID = 1L;
 
-    /** The property name used to obtain the client command for thisrepository. */
+    /**
+     * the property name used to obtain the client command for
+     * this repository
+     */
     public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Mercurial";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * the command to use to access the repository if none was given
+     * explicitly
+     */
     public static final String CMD_FALLBACK = "hg";
 
     /**
@@ -74,6 +80,13 @@ public class MercurialRepository extends Repository {
         type = "Mercurial";
         datePattern = "yyyy-MM-dd hh:mm ZZZZ";
     }
+
+    /** Pattern used to extract author/revision from hg annotate. */
+    private static final Pattern ANNOTATION_PATTERN =
+        Pattern.compile("^\\s*(\\d+):");
+
+    private static final Pattern LOG_COPIES_PATTERN =
+        Pattern.compile("^(\\d+):(.*)");
 
     /**
      * Get an executor to be used for retrieving the history log for the
@@ -146,22 +159,25 @@ public class MercurialRepository extends Repository {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[32 * 1024];
-            int total_len = 0;
             try (InputStream in = process.getInputStream()) {
                 int len;
 
                 while ((len = in.read(buffer)) != -1) {
                     if (len > 0) {
                         out.write(buffer, 0, len);
-                        total_len += len;
                     }
                 }
             }
 
-            if (total_len > 0)
+            /*
+             * If exit value of the process was not 0 then the file did
+             * not exist or internal hg error occured.
+             */
+            if (process.waitFor() == 0) {
                 ret = new ByteArrayInputStream(out.toByteArray());
-            else
+            } else {
                 ret = null;
+            }
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
@@ -180,9 +196,6 @@ public class MercurialRepository extends Repository {
         return ret;
     }
 
-    private static final Pattern LOG_COPIES_PATTERN =
-        Pattern.compile("^(\\d+):(.*)");
-    
     /**
      * Get the name of file in revision rev
      * @param fullpath file path
@@ -241,8 +254,9 @@ public class MercurialRepository extends Repository {
                         }
                     }
 
-                    if (rev.equals(rev_to_find))
+                    if (rev.equals(rev_to_find)) {
                         break;
+                    }
                }
            }
          } finally {
@@ -258,11 +272,10 @@ public class MercurialRepository extends Repository {
         
         return (fullpath.substring(0, directoryName.length() + 1) + file);
     }
-    
+
     @Override
     public InputStream getHistoryGet(String parent, String basename, String rev)
     {
-       InputStream ret;
        String fullpath;
        
        try {
@@ -273,7 +286,7 @@ public class MercurialRepository extends Repository {
            return null;
        }
 
-       ret = getHistoryRev(fullpath, rev);
+       InputStream ret = getHistoryRev(fullpath, rev);
        if (ret == null) {
            /*
             * If we failed to get the contents it might be that the file was
@@ -289,17 +302,14 @@ public class MercurialRepository extends Repository {
                 exp.getClass().toString());
                return null;
            }
-           if (origpath != null)
+           if (origpath != null) {
                ret = getHistoryRev(origpath, rev);
+           }
        }
        
        return ret;
     }
     
-    /** Pattern used to extract author/revision from hg annotate. */
-    private static final Pattern ANNOTATION_PATTERN =
-        Pattern.compile("^\\s*(\\d+):");
-
     /**
      * Annotate the specified file/revision.
      *
@@ -464,9 +474,11 @@ public class MercurialRepository extends Repository {
     History getHistory(File file, String sinceRevision)
             throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        History result = new MercurialHistoryParser(this).parse(file, sinceRevision);
+        History result = new MercurialHistoryParser(this).parse(file,
+            sinceRevision);
         // Assign tags to changesets they represent
-        // We don't need to check if this repository supports tags, because we know it:-)
+        // We don't need to check if this repository supports tags,
+        // because we know it :-)
         if (env.isTagsEnabled()) {
             assignTagsInHistory(result);
         }
@@ -496,33 +508,44 @@ public class MercurialRepository extends Repository {
 
         try {
             process = pb.start();
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = in.readLine()) != null) {
                     String parts[] = line.split("  *");
                     if (parts.length < 2) {
-                        throw new HistoryException("Tag line contains more than 2 columns: " + line);
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "Failed to parse tag list: {0}",
+                            "Tag line contains more than 2 columns: " + line);
+                        this.tagList = null;
+                        break;
                     }
                     // Grrr, how to parse tags with spaces inside?
-                    // This solution will loose multiple spaces;-/
+                    // This solution will lose multiple spaces ;-/
                     String tag = parts[0];
                     for (int i = 1; i < parts.length - 1; ++i) {
-                        tag += " " + parts[i];
+                        tag.concat(" ");
+                        tag.concat(parts[i]);
                     }
                     String revParts[] = parts[parts.length - 1].split(":");
                     if (revParts.length != 2) {
-                        throw new HistoryException("Mercurial revision parsing error: " + parts[parts.length - 1]);
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "Failed to parse tag list: {0}",
+                            "Mercurial revision parsing error: " +
+                            parts[parts.length - 1]);
+                        this.tagList = null;
+                        break;
                     }
-                    TagEntry tagEntry = new MercurialTagEntry(Integer.parseInt(revParts[0]), tag);
+                    TagEntry tagEntry =
+                        new MercurialTagEntry(Integer.parseInt(revParts[0]),
+                        tag);
                     // Reverse the order of the list
                     this.tagList.add(tagEntry);
                 }
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to read tag list: {0}", e.getMessage());
-            this.tagList = null;
-        } catch (HistoryException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse tag list: {0}", e.getMessage());
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+                "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
         
