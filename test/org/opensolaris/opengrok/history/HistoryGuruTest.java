@@ -54,8 +54,10 @@ public class HistoryGuruTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
-        repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
-        FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, true);
+        repository.create(HistoryGuru.class.getResourceAsStream(
+            "repositories.zip"));
+        FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
+            files, true);
         RuntimeEnvironment.getInstance().setVerbose(true);
     }
 
@@ -92,7 +94,7 @@ public class HistoryGuruTest {
         repos.add("bazaar");
         repos.add("mercurial");
         repos.add("teamware");
-        repos.add("rcs");
+        repos.add("rcs_test");
         repos.add("nonexistent");
         instance.createCache(repos);
     }

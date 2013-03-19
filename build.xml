@@ -102,7 +102,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     <property name="test.repositories" value="testdata/repositories"/>
     <property name="test.sources" value="testdata/sources"/>
-    <property name="test.cvs" value="${test.repositories}/cvs"/>
+    <property name="test.cvs" value="${test.repositories}/cvs_test"/>
     <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
     <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
     <property name="test.hg" value="${test.repositories}/mercurial"/>
