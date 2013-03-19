@@ -153,7 +153,14 @@ public class SubversionRepository extends Repository {
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision) {
-        String abs = file.getAbsolutePath();
+        String abs;
+        try {
+            abs = file.getCanonicalPath();
+        } catch (IOException exp) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "Failed to get canonical path: {0}", exp.getClass().toString());
+            return null;
+        } 
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
@@ -175,7 +182,9 @@ public class SubversionRepository extends Repository {
             // fetch the unneeded revision and remove it later.
             cmd.add("BASE:" + sinceRevision);
         }
-        cmd.add(escapeFileName(filename));
+        if (filename.length() > 0) {
+            cmd.add(escapeFileName(filename));
+        }
 
         return new Executor(cmd, new File(directoryName));
     }
@@ -186,9 +195,16 @@ public class SubversionRepository extends Repository {
         InputStream ret = null;
 
         File directory = new File(directoryName);
-
-        String filename = (new File(parent, basename)).getAbsolutePath()
-            .substring(directoryName.length() + 1);
+        
+        String filepath;
+        try {
+            filepath = (new File(parent, basename)).getCanonicalPath();
+        } catch (IOException exp) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "Failed to get canonical path: {0}", exp.getClass().toString());
+            return null;
+        }
+        String filename = filepath.substring(directoryName.length() + 1);
 
         List<String> cmd = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
