@@ -221,7 +221,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         History updatedHistory = cache.get(reposRoot, repos, true);
 
         HistoryEntry newEntry = new HistoryEntry(
-                "3:78649c3ec6cb",
+                "9:41e110bfdfb9",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
                 "xyz", "Return failure when executed with no arguments", true);
         newEntry.addFile("/mercurial/main.c");
@@ -269,7 +269,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         importHgChangeset(
                 reposRoot, getClass().getResource("hg-export.txt").getPath());
         repos.createCache(cache, latestRevision);
-        assertEquals("3:78649c3ec6cb", cache.getLatestCachedRevision(repos));
+        assertEquals("9:41e110bfdfb9", cache.getLatestCachedRevision(repos));
     }
 
     /**

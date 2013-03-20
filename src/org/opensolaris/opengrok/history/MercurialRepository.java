@@ -48,10 +48,16 @@ import org.opensolaris.opengrok.web.Util;
 public class MercurialRepository extends Repository {
     private static final long serialVersionUID = 1L;
 
-    /** The property name used to obtain the client command for thisrepository. */
+    /**
+     * the property name used to obtain the client command for
+     * this repository
+     */
     public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Mercurial";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * the command to use to access the repository if none was given
+     * explicitly
+     */
     public static final String CMD_FALLBACK = "hg";
 
     /** The boolean property and environment variable name to indicate
@@ -74,6 +80,13 @@ public class MercurialRepository extends Repository {
         type = "Mercurial";
         datePattern = "yyyy-MM-dd hh:mm ZZZZ";
     }
+
+    /** Pattern used to extract author/revision from hg annotate. */
+    private static final Pattern ANNOTATION_PATTERN =
+        Pattern.compile("^\\s*(\\d+):");
+
+    private static final Pattern LOG_COPIES_PATTERN =
+        Pattern.compile("^(\\d+):(.*)");
 
     /**
      * Get an executor to be used for retrieving the history log for the
@@ -118,8 +131,14 @@ public class MercurialRepository extends Repository {
         return new Executor(cmd, new File(directoryName));
     }
 
-    @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
+    /**
+     * Try to get file contents for given revision.
+     * 
+     * @param fullpath full pathname of the file
+     * @param rev revision
+     * @return contents of the file in revision rev
+     */
+    private InputStream getHistoryRev(String fullpath, String rev)
     {
         InputStream ret = null;
 
@@ -133,8 +152,8 @@ public class MercurialRepository extends Repository {
             revision = rev.substring(0, rev.indexOf(':'));
         }
         try {
-            String filename =  (new File(parent, basename)).getCanonicalPath()
-                .substring(directoryName.length() + 1);
+            String filename = 
+                fullpath.substring(directoryName.length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {cmd, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
@@ -150,7 +169,15 @@ public class MercurialRepository extends Repository {
                 }
             }
 
-            ret = new ByteArrayInputStream(out.toByteArray());
+            /*
+             * If exit value of the process was not 0 then the file did
+             * not exist or internal hg error occured.
+             */
+            if (process.waitFor() == 0) {
+                ret = new ByteArrayInputStream(out.toByteArray());
+            } else {
+                ret = null;
+            }
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
                 "Failed to get history: " + exp.getClass().toString());
@@ -170,10 +197,120 @@ public class MercurialRepository extends Repository {
         return ret;
     }
 
-    /** Pattern used to extract author/revision from hg annotate. */
-    private static final Pattern ANNOTATION_PATTERN =
-        Pattern.compile("^\\s*(\\d+):");
+    /**
+     * Get the name of file in revision rev
+     * @param fullpath file path
+     * @param rev_to_find revision number
+     * @returns original filename
+     */
+    private String findOriginalName(String fullpath, String rev_to_find) 
+            throws IOException {
+        Matcher matcher = LOG_COPIES_PATTERN.matcher("");
+        String file = fullpath.substring(directoryName.length() + 1);
+        ArrayList<String> argv = new ArrayList<String>();
+ 
+        argv.add(ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK));
+        argv.add("log");
+        argv.add("-f");
+        argv.add("-r");
+        argv.add("reverse(" + rev_to_find + ":)");
+        argv.add("--template");
+        argv.add("{rev}:{file_copies}\\n");
+        argv.add(fullpath);
+        
+        ProcessBuilder pb = new ProcessBuilder(argv);
+        Process process = null;
+        
+        try {
+           process = pb.start();
+           try (BufferedReader in = new BufferedReader(
+                   new InputStreamReader(process.getInputStream()))) {
+               String line;
+               while ((line = in.readLine()) != null) {
+                    matcher.reset(line);
+                    if (!matcher.find()) {
+                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            "Failed to match: {0}", line);
+                        return (null);
+                    }
+                    String rev = matcher.group(1);
+                    String content = matcher.group(2);
 
+                    if (!content.isEmpty()) {
+                        /*
+                         * Split string of 'newfile1 (oldfile1)newfile2
+                         * (oldfile2) ...' into pairs of renames.
+                         */
+                        String[] splitArray = content.split("\\)");
+                        for (String s: splitArray) {
+                            /*
+                             * This will fail for file names containing ' ('.
+                             */
+                            String[] move = s.split(" \\(");
+
+                            if (file.equals(move[0])) {
+                                file = move[1];
+                                break;
+                            }
+                        }
+                    }
+
+                    if (rev.equals(rev_to_find)) {
+                        break;
+                    }
+               }
+           }
+         } finally {
+            if (process != null) {
+                try {
+                    process.exitValue();
+                } catch (IllegalThreadStateException e) {
+                    // the process is still running??? just kill it..
+                    process.destroy();
+                }
+            }
+        }
+        
+        return (fullpath.substring(0, directoryName.length() + 1) + file);
+    }
+
+    @Override
+    public InputStream getHistoryGet(String parent, String basename, String rev)
+    {
+       String fullpath;
+       
+       try {
+           fullpath = new File(parent, basename).getCanonicalPath();
+       } catch (IOException exp) {
+           OpenGrokLogger.getLogger().log(Level.SEVERE,
+               "Failed to get canonical path: {0}", exp.getClass().toString());
+           return null;
+       }
+
+       InputStream ret = getHistoryRev(fullpath, rev);
+       if (ret == null) {
+           /*
+            * If we failed to get the contents it might be that the file was
+            * renamed so we need to find its original name in that revision
+            * and retry with the original name.
+            */
+           String origpath;
+           try {
+            origpath = findOriginalName(fullpath, rev);
+           } catch (IOException exp) {
+               OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "Failed to get original revision: {0}",
+                exp.getClass().toString());
+               return null;
+           }
+           if (origpath != null) {
+               ret = getHistoryRev(origpath, rev);
+           }
+       }
+       
+       return ret;
+    }
+    
     /**
      * Annotate the specified file/revision.
      *
