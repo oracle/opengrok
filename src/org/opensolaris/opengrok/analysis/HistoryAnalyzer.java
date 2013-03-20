@@ -18,7 +18,8 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -28,7 +29,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
-import org.opensolaris.opengrok.search.SearchEngine;
 
 public final class HistoryAnalyzer extends Analyzer {
     private final Set<Object> stopWords;
@@ -46,24 +46,18 @@ public final class HistoryAnalyzer extends Analyzer {
 
     /** Builds an analyzer which removes words in ENGLISH_STOP_WORDS. */
     public HistoryAnalyzer() {
-        stopWords = StopFilter.makeStopSet(SearchEngine.LUCENE_VERSION,ENGLISH_STOP_WORDS);
+        stopWords = StopFilter.makeStopSet(ENGLISH_STOP_WORDS);
     }
 
     /** Builds an analyzer which removes words in the provided array. */
     public HistoryAnalyzer(String[] stopWords) {
-        this.stopWords = StopFilter.makeStopSet(SearchEngine.LUCENE_VERSION,stopWords);
+        this.stopWords = StopFilter.makeStopSet(stopWords);
     }
 
     /** Filters LowerCaseTokenizer with StopFilter. */
     @Override
-    public final TokenStream tokenStream(String fieldName, Reader reader) {
+    public TokenStream tokenStream(String fieldName, Reader reader) {
         //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
-        return new StopFilter(SearchEngine.LUCENE_VERSION,new PlainFullTokenizer(reader), stopWords);
-    }
-    
-    @Override
-    public final TokenStream reusableTokenStream(String fieldName, Reader reader) {
-        //TODO needs refactoring to get more speed and less ram usage for indexer
-        return this.tokenStream(fieldName, reader);
+        return new StopFilter(true,new PlainFullTokenizer(reader), stopWords);
     }
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.c;
 
@@ -60,13 +60,12 @@ public class CAnalyzer extends PlainAnalyzer {
         doc.add(new Field("refs", dummy));
     }
 
-    @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStream tokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
             cref.reInit(super.content, super.len);
             return cref;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.tokenStream(fieldName, reader);
     }
 
     /**

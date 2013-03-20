@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.tcl;
 
@@ -36,10 +36,6 @@ import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-/**
- *
- * @author Hemang Lavana
- */
 public class TclAnalyzer extends PlainAnalyzer {
 
     TclSymbolTokenizer cref;
@@ -58,20 +54,18 @@ public class TclAnalyzer extends PlainAnalyzer {
         doc.add(new Field("refs", dummy));
     }
 
-    @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStream tokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
             cref.reInit(super.content, super.len);
             return cref;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.tokenStream(fieldName, reader);
     }
 
     /**
      * Write a cross referenced HTML file.
      * @param out Writer to write HTML cross-reference
      */
-    @Override
     public void writeXref(Writer out) throws IOException {
         xref.reInit(content, len);
         xref.project = project;

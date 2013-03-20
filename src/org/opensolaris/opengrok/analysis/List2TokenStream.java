@@ -18,28 +18,28 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.util.Iterator;
 import java.util.List;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 public final class List2TokenStream extends TokenStream {
 
     private Iterator<String> it;
     private String[] subTokens;
     private int si;
-    private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    private final TermAttribute termAtt = addAttribute(TermAttribute.class);
 
     public List2TokenStream(List<String> l) {
         it = l.iterator();
     }
 
     @Override
-    public final boolean incrementToken() {
+    public boolean incrementToken() {
         if (!it.hasNext()) {
             // reached end of stream
             return false;
@@ -54,15 +54,13 @@ public final class List2TokenStream extends TokenStream {
                 subTokens = tok.split("[^a-z0-9A-Z_]+");
             } else {
                 subTokens = null;
-                termAtt.setEmpty();
-                termAtt.append(tok);
+                termAtt.setTermBuffer(tok);
                 return true;
             }
             si = 0;
         }
         if (si < subTokens.length) {
-            termAtt.setEmpty();
-            termAtt.append(subTokens[si++]);
+            termAtt.setTermBuffer(subTokens[si++]);
             return true;
         }
         return false;

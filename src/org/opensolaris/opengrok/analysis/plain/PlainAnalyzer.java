@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -90,13 +90,13 @@ public class PlainAnalyzer extends TextAnalyzer {
                 doc.add(new Field("defs", dummy));
                 doc.add(new Field("refs", dummy)); //@FIXME adding a refs field only if it has defs?
                 byte[] tags = defs.serialize();
-                doc.add(new Field("tags", tags));
+                doc.add(new Field("tags", tags, Field.Store.YES));
             }
         }
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStream tokenStream(String fieldName, Reader reader) {
         if ("full".equals(fieldName)) {
             plainfull.reInit(content, len);
             return plainfull;
@@ -106,7 +106,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         } else if ("defs".equals(fieldName)) {
             return new Hash2TokenStream(defs.getSymbols());
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.tokenStream(fieldName, reader);
     }
 
     /**

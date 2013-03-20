@@ -25,7 +25,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.Reader;
 import java.util.Arrays;
 import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 public class PathTokenizer extends Tokenizer {
 
@@ -33,7 +33,7 @@ public class PathTokenizer extends Tokenizer {
     private static final char dirSep = '/';
     private boolean dot = false;
     private static final char ADOT[]={'.'};
-    private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    private final TermAttribute termAtt = addAttribute(TermAttribute.class);
 
     public PathTokenizer(Reader input) {
         super(input);
@@ -43,7 +43,7 @@ public class PathTokenizer extends Tokenizer {
     public final boolean incrementToken() throws java.io.IOException {
         if (dot) {
             dot = false;
-            termAtt.copyBuffer(ADOT,0,1);
+            termAtt.setTermBuffer(ADOT,0,1);
             return true;
         }
 
@@ -67,7 +67,7 @@ public class PathTokenizer extends Tokenizer {
         if (c == '.') {
             dot = true;
         }
-        termAtt.copyBuffer(buf, 0, i);
+        termAtt.setTermBuffer(buf, 0, i);
         return true;
     }
 }

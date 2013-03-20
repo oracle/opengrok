@@ -18,36 +18,35 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.util.Iterator;
 import java.util.Set;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 
 public final class Hash2TokenStream extends TokenStream {
     int i=0;
     String term;
     String terms[];
     Iterator<String> keys;
-    private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    private final TermAttribute termAtt = addAttribute(TermAttribute.class);
 
     public Hash2TokenStream(Set<String> symbols){
         keys = symbols.iterator();
     }
 
     @Override
-    public final boolean incrementToken() throws java.io.IOException {
+    public boolean incrementToken() throws java.io.IOException {
         while (i <= 0) {
             if (keys.hasNext()) {
                 term = keys.next();
                 terms = term.split("[^a-zA-Z_0-9]+");
                 i = terms.length;
                 if (i > 0) {
-                    termAtt.setEmpty();
-                    termAtt.append(terms[--i]);
+                    termAtt.setTermBuffer(terms[--i]);
                     return true;
                 }
                 // no tokens found in this key, try next
@@ -56,8 +55,7 @@ public final class Hash2TokenStream extends TokenStream {
             return false;
         }
 
-        termAtt.setEmpty();
-        termAtt.append(terms[--i]);
+        termAtt.setTermBuffer(terms[--i]);
         return true;
     }
 

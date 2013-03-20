@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.index;
@@ -36,13 +36,13 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.*;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -53,7 +53,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.SimpleFSLockFactory;
-import org.apache.lucene.util.Version;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -64,7 +63,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.search.SearchEngine;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.web.Util;
 
@@ -315,22 +313,10 @@ public class IndexDatabase {
             log.severe("Unable to run ctags! searching definitions will not work!");
         }
 
-        if (ctags != null) {
-            String filename = RuntimeEnvironment.getInstance().getCTagsExtraOptionsFile();
-            if (filename != null) {
-                ctags.setCTagsExtraOptionsFile(filename);
-            }
-        }
-
         try {
             //TODO we might need to add writer.commit after certain phases of index generation, right now it will only happen in the end
-            Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer); 
-            iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);            
-            //iwc.setRAMBufferSizeMB(256.0);  //TODO check what is the sweet spot
-            writer = new IndexWriter(indexDirectory, iwc);            
-            writer.commit(); // to make sure index exists on the disk
-            //writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
+            writer = new IndexWriter(indexDirectory, AnalyzerGuru.getAnalyzer(),IndexWriter.MaxFieldLength.UNLIMITED);
+            writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
 
             if (directories.isEmpty()) {
                 if (project == null) {
@@ -464,12 +450,8 @@ public class IndexDatabase {
         IndexWriter wrt = null;
         try {
             log.info("Optimizing the index ... ");
-            Analyzer analyzer = new StandardAnalyzer(SearchEngine.LUCENE_VERSION);            
-            IndexWriterConfig conf = new IndexWriterConfig(SearchEngine.LUCENE_VERSION,analyzer);
-            conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            
-            wrt = new IndexWriter(indexDirectory, conf);
-            wrt.forceMerge(1); // this is deprecated and not needed anymore
+            wrt = new IndexWriter(indexDirectory, null, false,IndexWriter.MaxFieldLength.UNLIMITED);
+            wrt.optimize();
             log.info("done");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
@@ -505,10 +487,7 @@ public class IndexDatabase {
             indexReader = IndexReader.open(indexDirectory,false);
             checker = new SpellChecker(spellDirectory);
             //TODO below seems only to index "defs" , possible bug ?
-            Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer); 
-            iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            checker.indexDictionary(new LuceneDictionary(indexReader, "defs"),iwc,false);
+            checker.indexDictionary(new LuceneDictionary(indexReader, "defs"));
             log.info("done");
         } catch (IOException e) {
             log.log(Level.SEVERE, "ERROR: Generating spelling: {0}", e);

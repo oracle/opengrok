@@ -18,7 +18,8 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -69,14 +70,14 @@ public class ZipAnalyzer extends FileAnalyzer {
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStream tokenStream(String fieldName, Reader reader) {
         if("full".equals(fieldName)) {
             char[] cs = new char[content.length()];
             content.getChars(0, cs.length, cs, 0);
             plainfull.reInit(cs, cs.length);
             return plainfull;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.tokenStream(fieldName, reader);
     }
 
     /**

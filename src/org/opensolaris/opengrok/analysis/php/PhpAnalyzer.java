@@ -17,9 +17,6 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
- */
 package org.opensolaris.opengrok.analysis.php;
 
 import java.io.IOException;
@@ -36,10 +33,6 @@ import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
-/**
- *
- * @author Miroslav Osladil
- */
 public class PhpAnalyzer extends PlainAnalyzer {
 
     PhpSymbolTokenizer cref;
@@ -60,12 +53,12 @@ public class PhpAnalyzer extends PlainAnalyzer {
     }
 
     @Override
-    public TokenStream overridableTokenStream(String fieldName, Reader reader) {
+    public TokenStream tokenStream(String fieldName, Reader reader) {
         if("refs".equals(fieldName)) {
             cref.reInit(super.content, super.len);
             return cref;
         }
-        return super.overridableTokenStream(fieldName, reader);
+        return super.tokenStream(fieldName, reader);
     }
 
     /**

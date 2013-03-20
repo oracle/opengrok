@@ -18,7 +18,8 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
+ * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -27,13 +28,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 
 public final class PathAnalyzer extends Analyzer {
-    @Override
-    public final TokenStream tokenStream(String fieldName, Reader reader) {
+    public TokenStream tokenStream(String fieldName, Reader reader) {
         return new PathTokenizer(reader);
-    }
-    @Override
-    public final TokenStream reusableTokenStream(String fieldName, Reader reader) {
-        //TODO needs refactoring to get more speed and less ram usage for indexer
-        return this.tokenStream(fieldName, reader);
     }
 }

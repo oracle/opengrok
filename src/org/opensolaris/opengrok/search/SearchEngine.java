@@ -24,20 +24,27 @@
 
 package org.opensolaris.opengrok.search;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MultiSearcher;
+import org.apache.lucene.search.ParallelMultiSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -60,7 +67,6 @@ import org.opensolaris.opengrok.util.IOUtils;
  *
  * @author Trond Norbye 2005
  * @author Lubos Kosco 2010 - upgrade to lucene 3.0.0
- * @author Lubos Kosco 2011 - upgrade to lucene 3.5.0
  */
 public class SearchEngine {
     /** Message text used when logging exceptions thrown when searching. */
@@ -70,7 +76,7 @@ public class SearchEngine {
     //increase the version - every change of below makes us incompatible with the
     //old index and we need to ask for reindex
     /** version of lucene index common for whole app*/
-    public static final Version LUCENE_VERSION=Version.LUCENE_35;
+    public static final Version LUCENE_VERSION=Version.LUCENE_30;
 
     /**
      * Holds value of property definition.
@@ -118,7 +124,7 @@ public class SearchEngine {
 
     private ScoreDoc[] hits;
     private TopScoreDocCollector collector;
-    private IndexSearcher searcher;
+    private Searcher searcher;
     boolean allCollected;
 
     /**
@@ -163,11 +169,11 @@ public class SearchEngine {
      */
     private void searchSingleDatabase(File root,boolean paging) throws IOException {
         IndexReader ireader = IndexReader.open(FSDirectory.open(root),true);
-        searcher = new IndexSearcher(ireader);        
+        searcher = new IndexSearcher(ireader);
         collector = TopScoreDocCollector.create(hitsPerPage*cachePages,docsScoredInOrder);
         searcher.search(query,collector);
         totalHits=collector.getTotalHits();
-        if (!paging && totalHits>0) {
+        if (!paging) {
                collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
                searcher.search(query,collector);
         }
@@ -185,24 +191,21 @@ public class SearchEngine {
      * @param root list of projects to search
      * @throws IOException
      */
-    private void searchMultiDatabase(List<Project> root,boolean paging) throws IOException {        
-        IndexReader[] subreaders=new IndexReader[root.size()];
+    private void searchMultiDatabase(List<Project> root,boolean paging) throws IOException {
+        IndexSearcher[] searchables=new IndexSearcher[root.size()];
         File droot=new File(RuntimeEnvironment.getInstance().getDataRootFile(), "index");
         int ii=0;
         for (Project project : root) {
         IndexReader ireader = (IndexReader.open(FSDirectory.open(new File(droot,project.getPath()) ),true));
-        subreaders[ii++]=ireader;
+        searchables[ii++]=new IndexSearcher(ireader);
         }
-        MultiReader searchables=new MultiReader(subreaders, true);
         if (Runtime.getRuntime().availableProcessors()>1) {
-            int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this - or we should honor the command line option here too!
-            ExecutorService executor=Executors.newFixedThreadPool(noThreads);                              
-            searcher = new IndexSearcher(searchables,executor); }
-        else { searcher = new IndexSearcher(searchables); }
+            searcher = new ParallelMultiSearcher(searchables); }
+        else { searcher = new MultiSearcher(searchables); }
         collector = TopScoreDocCollector.create(hitsPerPage*cachePages,docsScoredInOrder);
         searcher.search(query,collector);
         totalHits=collector.getTotalHits();
-        if (!paging && totalHits>0) {
+        if (!paging) {
                collector = TopScoreDocCollector.create(totalHits,docsScoredInOrder);
                searcher.search(query,collector);
         }
@@ -276,8 +279,7 @@ public class SearchEngine {
                 OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting history context", e);
             }
         }
-        int count=hits==null?0:hits.length;
-        return count;                
+        return hits.length;
     }
 
     /**
