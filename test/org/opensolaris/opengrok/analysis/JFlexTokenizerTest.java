@@ -26,7 +26,7 @@ package org.opensolaris.opengrok.analysis;
 import java.io.Reader;
 import java.io.StringReader;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.c.CxxSymbolTokenizer;
@@ -93,14 +93,14 @@ public class JFlexTokenizerTest {
         JFlexTokenizer tokenizer = klass.getConstructor(Reader.class)
                 .newInstance(new StringReader(inputText));
 
-        CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
+        TermAttribute term = tokenizer.addAttribute(TermAttribute.class);
         OffsetAttribute offset = tokenizer.addAttribute(OffsetAttribute.class);
 
         int count = 0;
         while (tokenizer.incrementToken()) {
             assertTrue("too many tokens", count < expectedTokens.length);
             String expected = expectedTokens[count];
-            assertEquals("term", expected, term.toString());
+            assertEquals("term", expected, term.term());
             assertEquals("start",
                     inputText.indexOf(expected), offset.startOffset());
             assertEquals("end",
