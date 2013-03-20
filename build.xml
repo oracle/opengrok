@@ -122,6 +122,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <pathelement path="${java.class.path}"/>
         <pathelement path="lib"/>
         <pathelement path="../lib"/>
+	<pathelement location="lib/JFlex.jar"/>
     </path>
 
     <path id="findbugs.lib.search.path">
@@ -141,13 +142,24 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <pathelement path="lib/pmd/lib/"/>
     </path>
 
-    <available file="JFlex.jar" type="file" property="JFlex.present">
-        <filepath refid="lib.search.path"/>
-    </available>
-    <fail unless="JFlex.present" message="Please download JFlex (http://jflex.de/) and put JFlex.jar it into ./lib directory (or in ant classpath)."/>
+    <target name="-check-jflex" description="Check that jflex jar file is present">
+        <available file="JFlex.jar" type="file" property="JFlex.present">
+            <filepath refid="lib.search.path"/>
+        </available>
+        <condition property="jflex_not_downloaded">
+            <not>
+                <isset property="JFlex.present"/>
+            </not>
+        </condition>         
+    </target>
+ 
+    <target name="download-jflex" depends="-check-jflex" if="jflex_not_downloaded">
+        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/1.4.3/jflex-1.4.3.jar"
+        dest="lib/JFlex.jar" verbose="true" usetimestamp="true"/>
+    </target>
 
-    <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path"/>    
-    <target name="jflex">
+    <target name="jflex" depends="download-jflex">
+        <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path" />
         <mkdir dir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
