@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.After;
@@ -33,13 +34,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Do basic testing of the List2TokenStream class
+ * Do basic testing of the Iterable2TokenStream class.
  *
  * @author Trond Norbye
  */
-public class List2TokenStreamTest {
+public class Iterable2TokenStreamTest {
 
-    public List2TokenStreamTest() {
+    public Iterable2TokenStreamTest() {
     }
 
     @BeforeClass
@@ -64,7 +65,7 @@ public class List2TokenStreamTest {
     @Test
     public void testBug3094() throws IOException {
         List<String> empty = Collections.emptyList();
-        List2TokenStream instance = new List2TokenStream(empty);
+        Iterable2TokenStream instance = new Iterable2TokenStream(empty);
         assertNotNull(instance);
         assertFalse(instance.incrementToken());        
         instance.close();
@@ -77,10 +78,30 @@ public class List2TokenStreamTest {
     @Test
     public void testFailfastOnNull() {
         try {
-            new List2TokenStream(null);
+            new Iterable2TokenStream(null);
             fail("expected an exception");
         } catch (NullPointerException npe) {
             // expected
+        }
+    }
+
+    /**
+     * Test that we see all tokens when the last element of the list
+     * contains multiple tokens. List2TokenStream used to see only the
+     * first token in the last element. Hash2TokenStream used to see all
+     * tokens.
+     */
+    @Test
+    public void testReadAllTokens() throws IOException {
+        try (Iterable2TokenStream instance = new Iterable2TokenStream(
+                     Arrays.asList("abc.def", "ghi.jkl"))) {
+            int count = 0;
+            while (instance.incrementToken()) {
+                count++;
+            }
+
+            // List2TokenStream used to find only 3 tokens.
+            assertEquals(4, count);
         }
     }
 }

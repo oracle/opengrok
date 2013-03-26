@@ -25,21 +25,26 @@ package org.opensolaris.opengrok.analysis;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Set;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
-public final class Hash2TokenStream extends TokenStream {
+/**
+ * Class that converts an {@code Iterable} to a {@code TokenStream}. The
+ * {@code TokenStream} may return a different number of tokens than there are
+ * elements in the {@code Iterable} if some of the elements are empty or
+ * contain more than one token.
+ */
+public final class Iterable2TokenStream extends TokenStream {
     private Iterator<String> terms = Collections.emptyIterator();
     private final Iterator<String> keys;
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
-    public Hash2TokenStream(Set<String> symbols){
-        keys=symbols.iterator();
+    public Iterable2TokenStream(Iterable<String> symbols) {
+        keys = symbols.iterator();
     }
 
     @Override
-    public final boolean incrementToken() throws java.io.IOException {
+    public final boolean incrementToken() {
         clearAttributes();
 
         // Loop until we have found terms or there are no more keys to read.
