@@ -38,6 +38,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
+import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -151,6 +152,9 @@ public class FileAnalyzer extends Analyzer {
                 return new TokenStreamComponents(new PathTokenizer(reader));
             case "hist":
                 return new HistoryAnalyzer().createComponents(fieldName, reader);
+            case "refs":
+            case "defs":
+                return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
             default:
                 OpenGrokLogger.getLogger().log(
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);
