@@ -22,19 +22,16 @@
  */
 package org.opensolaris.opengrok.analysis.document;
 
-import java.io.CharArrayReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Arrays;
+import org.apache.lucene.analysis.Analyzer.TokenStreamComponents;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
-import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
-import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -43,38 +40,26 @@ import org.opensolaris.opengrok.history.Annotation;
  *
  * @author Chandan
  */
-public class TroffAnalyzer extends FileAnalyzer {
+public class TroffAnalyzer extends TextAnalyzer {
 
-    private char[] content;
-    private int len;
-    private final TroffXref xref;
+    private TroffXref xref;
 
     /**
      * Creates a new instance of TroffAnalyzer
      */
     protected TroffAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        xref = new TroffXref(AnalyzerGuru.dummyR);
-        content = new char[12 * 1024];
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        len = 0;
-        do {
-            InputStreamReader inReader = new InputStreamReader(in);
-            int rbytes = inReader.read(content, len, content.length - len);
-            if (rbytes > 0) {
-                if (rbytes == (content.length - len)) {
-                    content = Arrays.copyOf(content, content.length * 2);
-                }
-                len += rbytes;
-            } else {
-                break;
-            }
-        } while (true);
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        doc.add(new TextField("full", getReader(src.getStream())));
 
-        doc.add(new TextField("full", new CharArrayReader(content, 0, len)));
+        if (xrefOut != null) {
+            try (Reader in = getReader(src.getStream())) {
+                writeXref(in, xrefOut);
+            }
+        }
     }
 
     @Override
@@ -88,11 +73,15 @@ public class TroffAnalyzer extends FileAnalyzer {
     /**
      * Write a cross referenced HTML file.
      *
+     * @param in Input source
      * @param out Writer to write HTML cross-reference
      */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        xref.reInit(content, len);
+    private void writeXref(Reader in, Writer out) throws IOException {
+        if (xref == null) {
+            xref = new TroffXref(in);
+        } else {
+            xref.reInit(in);
+        }
         xref.project = project;
         out.write("</pre><div id=\"man\">");
         xref.write(out);

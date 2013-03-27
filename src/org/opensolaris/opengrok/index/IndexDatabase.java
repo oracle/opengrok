@@ -23,11 +23,15 @@
 package org.opensolaris.opengrok.index;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -35,6 +39,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
@@ -608,53 +613,43 @@ public class IndexDatabase {
      * @throws java.io.IOException if an error occurs
      */
     private void addFile(File file, String path) throws IOException {
+        FileAnalyzer fa;
         try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-            FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
-            for (IndexChangedListener listener : listeners) {
-                listener.fileAdd(path, fa.getClass().getSimpleName());
-            }
-            fa.setCtags(ctags);
-            fa.setProject(Project.getProject(path));
+            fa = AnalyzerGuru.getAnalyzer(in, path);
+        }
 
-            Document d;
-            try {
-                d = analyzerGuru.getDocument(file, in, path, fa);
-            } catch (Exception e) {
-                log.log(Level.INFO,
-                        "Skipped file ''{0}'' because the analyzer didn''t "
-                        + "understand it.",
-                        path);
-                StringBuilder stack = new StringBuilder();
-                for (StackTraceElement ste : e.getStackTrace()) {
-                    stack.append(ste.toString()).append(System.lineSeparator());
-                }
-                StringBuilder sstack = new StringBuilder();
-                for (Throwable t : e.getSuppressed()) {
-                    for (StackTraceElement ste : t.getStackTrace()) {
-                        sstack.append(ste.toString()).append(System.lineSeparator());
-                    }
-                }
-                log.log(Level.FINE, "Exception from analyzer {0}: {1} {2}{3}{4}{5}{6}", new String[]{fa.getClass().getName(), e.toString(), System.lineSeparator(), stack.toString(), System.lineSeparator(), sstack.toString()});
-                return;
-            }
+        for (IndexChangedListener listener : listeners) {
+            listener.fileAdd(path, fa.getClass().getSimpleName());
+        }
+        fa.setCtags(ctags);
+        fa.setProject(Project.getProject(path));
 
-            writer.addDocument(d, fa);
-            Genre g = fa.getFactory().getGenre();
-            if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-                File xrefFile = new File(xrefDir, path);
-                // If mkdirs() returns false, the failure is most likely
-                // because the file already exists. But to check for the
-                // file first and only add it if it doesn't exists would
-                // only increase the file IO...
-                if (!xrefFile.getParentFile().mkdirs()) {
-                    assert xrefFile.getParentFile().exists();
+        Document d;
+        try (Writer xrefOut = getXrefWriter(fa, path)) {
+            d = analyzerGuru.getDocument(file, path, fa, xrefOut);
+        } catch (Exception e) {
+            log.log(Level.INFO,
+                    "Skipped file ''{0}'' because the analyzer didn''t "
+                    + "understand it.",
+                    path);
+            StringBuilder stack = new StringBuilder();
+            for (StackTraceElement ste : e.getStackTrace()) {
+                stack.append(ste.toString()).append(System.lineSeparator());
+            }
+            StringBuilder sstack = new StringBuilder();
+            for (Throwable t : e.getSuppressed()) {
+                for (StackTraceElement ste : t.getStackTrace()) {
+                    sstack.append(ste.toString()).append(System.lineSeparator());
                 }
-                fa.writeXref(xrefDir, path);
             }
-            setDirty();
-            for (IndexChangedListener listener : listeners) {
-                listener.fileAdded(path, fa.getClass().getSimpleName());
-            }
+            log.log(Level.FINE, "Exception from analyzer {0}: {1} {2}{3}{4}{5}{6}", new String[]{fa.getClass().getName(), e.toString(), System.lineSeparator(), stack.toString(), System.lineSeparator(), sstack.toString()});
+            return;
+        }
+
+        writer.addDocument(d, fa);
+        setDirty();
+        for (IndexChangedListener listener : listeners) {
+            listener.fileAdded(path, fa.getClass().getSimpleName());
         }
     }
 
@@ -1152,5 +1147,35 @@ public class IndexDatabase {
         int hash = 7;
         hash = 41 * hash + (this.project == null ? 0 : this.project.hashCode());
         return hash;
+    }
+
+    /**
+     * Get a writer to which the xref can be written, or null if no xref
+     * should be produced for files of this type.
+     */
+    private Writer getXrefWriter(FileAnalyzer fa, String path) throws IOException {
+        Genre g = fa.getFactory().getGenre();
+        if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
+            File xrefFile = new File(xrefDir, path);
+            // If mkdirs() returns false, the failure is most likely
+            // because the file already exists. But to check for the
+            // file first and only add it if it doesn't exists would
+            // only increase the file IO...
+            if (!xrefFile.getParentFile().mkdirs()) {
+                assert xrefFile.getParentFile().exists();
+            }
+
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+            boolean compressed = env.isCompressXref();
+            File file = new File(xrefDir, path + (compressed ? ".gz" : ""));
+            return new BufferedWriter(new OutputStreamWriter(
+                    compressed ?
+                        new GZIPOutputStream(new FileOutputStream(file)) :
+                        new FileOutputStream(file)));
+        }
+
+        // no Xref for this analyzer
+        return null;
     }
 }

@@ -22,9 +22,8 @@
  */
 package org.opensolaris.opengrok.analysis.executables;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -39,6 +38,7 @@ import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -49,8 +49,6 @@ import org.opensolaris.opengrok.web.Util;
  * @author Trond Norbye
  */
 public class ELFAnalyzer extends FileAnalyzer {
-
-    private StringBuilder content;    
 
     private static final List<String> READABLE_SECTIONS;
     static {
@@ -69,33 +67,33 @@ public class ELFAnalyzer extends FileAnalyzer {
      */
     protected ELFAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        content = new StringBuilder();        
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        if (in instanceof FileInputStream) {
-            parseELF((FileInputStream) in);
-        } else {
-            String fullpath = doc.get("fullpath");
-            try (FileInputStream fin = new FileInputStream(fullpath)) {
-                parseELF(fin);
-            }
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        String fullpath = doc.get("fullpath");
+        String content;
+        try (RandomAccessFile raf = new RandomAccessFile(fullpath, "r")) {
+            content = parseELF(raf.getChannel());
         }
 
-        if (content.length() > 0) {
-            doc.add(new TextField("full", content.toString(), Store.NO));
+        if (content != null && !content.isEmpty()) {
+            doc.add(new TextField("full", content, Store.NO));
+            if (xrefOut != null) {
+                xrefOut.append("</pre>");
+                Util.htmlize(content, xrefOut);
+                xrefOut.append("<pre>");
+            }
         }
     }
 
-    public void parseELF(FileInputStream f) throws IOException {
-        FileChannel fch = f.getChannel();
+    public String parseELF(FileChannel fch) throws IOException {
         MappedByteBuffer fmap = fch.map(FileChannel.MapMode.READ_ONLY, 0, fch.size());
         ELFHeader eh = new ELFHeader(fmap);
 
         if (eh.e_shnum <= 0) {
             OpenGrokLogger.getLogger().log(Level.FINE, "Skipping file, no section headers");
-            return;
+            return null;
         }
 
         fmap.position(eh.e_shoff + (eh.e_shstrndx * eh.e_shentsize));
@@ -103,7 +101,7 @@ public class ELFAnalyzer extends FileAnalyzer {
 
         if (stringSection.sh_size == 0) {
             OpenGrokLogger.getLogger().log(Level.FINE, "Skipping file, no section name string table");
-            return ;
+            return null;
         }
 
         HashMap<String, Integer> sectionMap = new HashMap<String, Integer>();
@@ -145,8 +143,7 @@ public class ELFAnalyzer extends FileAnalyzer {
             }
             sb.append('\n');
         }
-        sb.trimToSize();
-        content = sb;
+        return sb.toString();
     }
 
     private boolean isReadable(int c) {
@@ -167,18 +164,6 @@ public class ELFAnalyzer extends FileAnalyzer {
             sb.append((char) c);
         }
         return sb.toString();
-    }
-
-    /**
-     * Write a cross referenced HTML file.
-     * @param out Writer to write
-     */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        out.write("</pre>");
-        String html = Util.htmlize(content);
-        out.write(html);
-        out.write("<pre>");
     }
 
     private static class ELFHeader {

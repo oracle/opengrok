@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Locale;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -52,7 +53,7 @@ public class UtilTest {
     }
 
     @Test
-    public void htmlize() {
+    public void htmlize() throws IOException {
         String[][] input_output = {
             {"This is a test", "This is a test" },
             {"Newline\nshould become <br/>",

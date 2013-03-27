@@ -22,16 +22,15 @@
  */
 package org.opensolaris.opengrok.analysis.plain;
 
-import java.io.CharArrayReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Arrays;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -43,8 +42,6 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 public class XMLAnalyzer extends TextAnalyzer {
 
-    private char[] content;
-    private int len;
     private final XMLXref xref = new XMLXref(AnalyzerGuru.dummyR);
 
     /**
@@ -52,36 +49,27 @@ public class XMLAnalyzer extends TextAnalyzer {
      */
     protected XMLAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        content = new char[64 * 1024];
-        len = 0;
     }
 
     @Override
-    public void analyze(Document doc, Reader in) throws IOException {
-        len = 0;
-        do {
-            int rbytes = in.read(content, len, content.length - len);
-            if (rbytes > 0) {
-                if (rbytes == (content.length - len)) {
-                    content = Arrays.copyOf(content, content.length * 2);
-                }
-                len += rbytes;
-            } else {
-                break;
-            }
-        } while (true);
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        doc.add(new TextField("full", getReader(src.getStream())));
 
-        doc.add(new TextField("full", new CharArrayReader(content, 0, len)));
+        if (xrefOut != null) {
+            try (Reader in = getReader(src.getStream())) {
+                writeXref(in, xrefOut);
+            }
+        }
     }
 
     /**
      * Write a cross referenced HTML file.
      *
+     * @param in Input source
      * @param out Writer to write HTML cross-reference
      */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        xref.reInit(content, len);
+    private void writeXref(Reader in, Writer out) throws IOException {
+        xref.reInit(in);
         xref.project = project;
         xref.write(out);
     }

@@ -232,14 +232,16 @@ public class AnalyzerGuru {
     /**
      * Create a Lucene document and fill in the required fields
      * @param file The file to index
-     * @param in The data to generate the index for
      * @param path Where the file is located (from source root)
+     * @param fa The analyzer to use on the file
+     * @param xrefOut Where to write the xref (possibly {@code null})
      * @return The Lucene document to add to the index database
      * @throws java.io.IOException If an exception occurs while collecting the
      *                             datas
      */
-    public Document getDocument(File file, InputStream in, String path,
-                                FileAnalyzer fa) throws IOException {
+    public Document getDocument(File file, String path,
+                                FileAnalyzer fa, Writer xrefOut)
+            throws IOException {
         Document doc = new Document();
         String date = DateTools.timeToString(file.lastModified(),
             DateTools.Resolution.MILLISECOND);
@@ -272,7 +274,7 @@ public class AnalyzerGuru {
                 doc.add(new Field("t", g.typeName(), string_ft_stored_nanalyzed_norms
                     ));
             }                   
-            fa.analyze(doc, in);
+            fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
         }
 
         return doc;
