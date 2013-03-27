@@ -53,7 +53,7 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.Iterable2TokenStream;
+import org.opensolaris.opengrok.analysis.IteratorReader;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -99,8 +99,8 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
         String constants = out.toString();
 
-        doc.add(new TextField("defs", new Iterable2TokenStream(defs)));
-        doc.add(new TextField("refs", new Iterable2TokenStream(refs)));
+        doc.add(new TextField("defs", new IteratorReader(defs)));
+        doc.add(new TextField("refs", new IteratorReader(refs)));
         // TODO could be improved, lucene has xhtml parsers/readers
         doc.add(new TextField("full", new TagFilter(xref)));
         doc.add(new TextField("full", constants, Store.NO));
