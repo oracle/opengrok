@@ -18,16 +18,16 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -42,10 +42,19 @@ public class TextAnalyzerTest {
     private String encoding;
     private String contents;
 
+    private static StreamSource getStreamSource(final byte[] bytes) {
+        return new StreamSource() {
+            @Override
+            public InputStream getStream() throws IOException {
+                return new ByteArrayInputStream(bytes);
+            }
+        };
+    }
+
     @Test
     public void defaultEncoding() throws IOException {
         new TestableTextAnalyzer().analyze(new Document(),
-                new ByteArrayInputStream("hello".getBytes()));
+                getStreamSource("hello".getBytes()), null);
 
         Assert.assertEquals(defaultEncoding, encoding);
 
@@ -55,7 +64,7 @@ public class TextAnalyzerTest {
     @Test
     public void resetsStreamOnShortInput() throws IOException {
         new TestableTextAnalyzer().analyze(new Document(),
-                new ByteArrayInputStream("hi".getBytes()));
+                getStreamSource("hi".getBytes()), null);
 
         Assert.assertEquals(defaultEncoding, encoding);
 
@@ -66,7 +75,7 @@ public class TextAnalyzerTest {
     public void utf8WithBOM() throws IOException {
         byte[] buffer = new byte[]{(byte) 239, (byte) 187, (byte) 191, 'h', 'e', 'l', 'l', 'o'};
         new TestableTextAnalyzer().analyze(new Document(),
-                new ByteArrayInputStream(buffer));
+                getStreamSource(buffer), null);
 
         Assert.assertEquals("hello", contents);
         Assert.assertEquals("UTF8", encoding);
@@ -79,7 +88,7 @@ public class TextAnalyzerTest {
         utf16str.get(bytes, 0, bytes.length);
 
         new TestableTextAnalyzer().analyze(new Document(),
-                new ByteArrayInputStream(bytes));
+                getStreamSource(bytes), null);
 
         Assert.assertEquals("UTF-16", encoding);
 
@@ -99,7 +108,7 @@ public class TextAnalyzerTest {
         }
 
         new TestableTextAnalyzer().analyze(new Document(),
-                new ByteArrayInputStream(bytes));
+                getStreamSource(bytes), null);
 
         Assert.assertEquals("UTF-16", encoding);
 
@@ -113,13 +122,18 @@ public class TextAnalyzerTest {
         }
 
         @Override
-        protected void analyze(Document doc, Reader r) throws IOException {
-            encoding = ((InputStreamReader) r).getEncoding();
+        public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+            try (Reader r = getReader(src.getStream())) {
+                encoding = ((InputStreamReader) r).getEncoding();
 
-            char[] buf = new char[1024];
-            int br = r.read(buf);
+                StringBuilder sb = new StringBuilder();
+                int c;
+                while ((c = r.read()) != -1) {
+                    sb.append((char) c);
+                }
 
-            contents = new String(buf, 0, br);
+                contents = sb.toString();
+            }
         }
     }
 }

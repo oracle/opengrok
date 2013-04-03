@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -36,6 +36,7 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.StreamSource;
 
 /**
  * Analyzes GZip files Created on September 22, 2005
@@ -60,14 +61,16 @@ public class GZIPAnalyzer extends FileAnalyzer {
     private FileAnalyzer fa;
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        BufferedInputStream gzis = new BufferedInputStream(new GZIPInputStream(in));
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        StreamSource gzSrc = wrap(src);
         String path = doc.get("path");
         if (path != null
                 && (path.endsWith(".gz") || path.endsWith(".GZ") || path.endsWith(".Gz"))) {
             String newname = path.substring(0, path.length() - 3);
             //System.err.println("GZIPPED OF = " + newname);
-            fa = AnalyzerGuru.getAnalyzer(gzis, newname);
+            try (InputStream gzis = gzSrc.getStream()) {
+                fa = AnalyzerGuru.getAnalyzer(gzis, newname);
+            }
             if (fa == null) {
                 this.g = Genre.DATA;
                 OpenGrokLogger.getLogger().log(Level.WARNING, "Did not analyze {0}, detected as data.", newname);
@@ -79,7 +82,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
                 } else {
                     this.g = Genre.DATA;
                 }
-                fa.analyze(doc, gzis);
+                fa.analyze(doc, gzSrc, xrefOut);
                 if (doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
@@ -91,23 +94,24 @@ public class GZIPAnalyzer extends FileAnalyzer {
         }
     }
 
+    /**
+     * Wrap the raw stream source in one that returns the uncompressed stream.
+     */
+    private static StreamSource wrap(final StreamSource src) {
+        return new StreamSource() {
+            @Override
+            public InputStream getStream() throws IOException {
+                return new BufferedInputStream(
+                        new GZIPInputStream(src.getStream()));
+            }
+        };
+    }
+
     @Override
     public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if (fa != null) {
             return fa.createComponents(fieldName, reader);
         }
         return super.createComponents(fieldName, reader);
-    }
-
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param out Writer to store HTML cross-reference
-     */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
-            fa.writeXref(out);
-        }
     }
 }

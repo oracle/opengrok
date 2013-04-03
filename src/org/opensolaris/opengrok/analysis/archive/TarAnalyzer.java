@@ -23,15 +23,16 @@
 package org.opensolaris.opengrok.analysis.archive;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
+import java.util.ArrayList;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarInputStream;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.IteratorReader;
+import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -41,33 +42,26 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class TarAnalyzer extends FileAnalyzer {
 
-    private final StringBuilder content;
-
     protected TarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        content = new StringBuilder(64 * 1024);
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        content.setLength(0);
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        ArrayList<String> names = new ArrayList<>();
 
-        TarInputStream zis = new TarInputStream(in);
-        TarEntry entry;
-        while ((entry = zis.getNextEntry()) != null) {
-            content.append(entry.getName()).append('\n');
+        try (TarInputStream zis = new TarInputStream(src.getStream())) {
+            TarEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                names.add(name);
+                if (xrefOut != null) {
+                    Util.htmlize(name, xrefOut);
+                    xrefOut.append("<br/>");
+                }
+            }
         }
-        content.trimToSize();
-        doc.add(new TextField("full", content.toString(), Store.NO));
-    }
 
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param out Writer to store HTML cross-reference
-     */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        out.write(Util.htmlize(content));
+        doc.add(new TextField("full", new IteratorReader(names)));
     }
 }

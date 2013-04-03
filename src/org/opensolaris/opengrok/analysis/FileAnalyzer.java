@@ -23,24 +23,16 @@
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.logging.Level;
-import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  * Base class for all different File Analyzers
@@ -138,7 +130,15 @@ public class FileAnalyzer extends Analyzer {
                         
     }
 
-    public void analyze(Document doc, InputStream in) throws IOException {
+    /**
+     * Analyze the contents of a source file. This includes populating the
+     * Lucene document with fields to add to the index, and writing the
+     * cross-referenced data to the specified destination.
+     * @param doc the Lucene document
+     * @param src the input data source
+     * @param xrefOut where to write the xref (may be {@code null})
+     */
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         // not used
     }
         
@@ -159,28 +159,6 @@ public class FileAnalyzer extends Analyzer {
                 OpenGrokLogger.getLogger().log(
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);
                 return null;
-        }
-    }
-
-    /**
-     * Write a cross referenced HTML file.
-     * @param out to writer HTML cross-reference
-     * @throws java.io.IOException if an error occurs
-     */
-    public void writeXref(Writer out) throws IOException {
-        out.write("Error General File X-Ref writer!");
-    }
-
-    public void writeXref(File xrefDir, String path) throws IOException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
-        final boolean compressed = env.isCompressXref();
-        final File file = new File(xrefDir, path + (compressed ? ".gz" : ""));
-        try (OutputStream out = compressed ?
-                    new GZIPOutputStream(new FileOutputStream(file)) :
-                    new FileOutputStream(file);
-                Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
-            writeXref(w);
         }
     }
 }

@@ -24,10 +24,7 @@ package org.opensolaris.opengrok.analysis.executables;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Writer;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apache.lucene.document.Document;
@@ -36,6 +33,8 @@ import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * Analyzes JAR, WAR, EAR (Java Archive) files. Created on September 22, 2005
@@ -44,50 +43,39 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
  */
 public class JarAnalyzer extends FileAnalyzer {
 
-    private Map<String, String> xrefs;
-
     protected JarAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        xrefs = new LinkedHashMap<String, String>();
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(src.getStream())) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String ename = entry.getName();
 
-        ZipInputStream zis = new ZipInputStream(in);
-        ZipEntry entry;
-        while ((entry = zis.getNextEntry()) != null) {
-            String ename = entry.getName();
-            String xref = null;
-            doc.add(new TextField("full", ename, Store.NO));
-            FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
-            if (fac instanceof JavaClassAnalyzerFactory) {
-                JavaClassAnalyzer jca =
-                        (JavaClassAnalyzer) fac.getAnalyzer();
-                jca.analyze(doc, new BufferedInputStream(zis));
-                xref = jca.getXref();
-            }
-            xrefs.put(ename, xref);
-        }
-    }
+                if (xrefOut != null) {
+                    xrefOut.append("<br/><b>");
+                    Util.htmlize(ename, xrefOut);
+                    xrefOut.append("</b>");
+                }
 
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param out Writer to write HTML cross-reference
-     */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        for (Map.Entry<String, String> entry : xrefs.entrySet()) {
-            out.write("<br/><b>");
-            out.write(entry.getKey());
-            out.write("</b>");
-            if (entry.getValue() != null) {
-                out.write("<pre>");
-                out.write(entry.getValue());
-                out.write("</pre>");
+                doc.add(new TextField("full", ename, Store.NO));
+                FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
+                if (fac instanceof JavaClassAnalyzerFactory) {
+                    if (xrefOut != null) {
+                        xrefOut.append("<pre>");
+                    }
+
+                    JavaClassAnalyzer jca =
+                            (JavaClassAnalyzer) fac.getAnalyzer();
+                    jca.analyze(doc, new BufferedInputStream(zis), xrefOut);
+
+                    if (xrefOut != null) {
+                        xrefOut.append("</pre>");
+                    }
+                }
             }
         }
-        xrefs = null;
     }
 }

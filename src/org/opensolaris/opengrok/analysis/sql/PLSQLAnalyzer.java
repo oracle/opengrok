@@ -27,29 +27,20 @@ import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class PLSQLAnalyzer extends PlainAnalyzer {
 
-    private final PLSQLXref xref = new PLSQLXref((Reader) null);
-
     public PLSQLAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
     }
 
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param out Writer to write HTML cross-reference
-     */
     @Override
-    public void writeXref(Writer out) throws IOException {
-        xref.reInit(getContentReader());
-        xref.project = project;
-        xref.setDefs(defs);
-        xref.write(out);
+    protected JFlexXref newXref(Reader reader) {
+        return new PLSQLXref(reader);
     }
 
     /**
