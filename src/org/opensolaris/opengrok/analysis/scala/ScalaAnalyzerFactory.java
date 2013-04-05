@@ -44,7 +44,7 @@ public class ScalaAnalyzerFactory extends FileAnalyzerFactory {
         "SCALA"
     };
     private static final String[] MAGICS = {
-        "/*"
+        "/"
     };
 
     public ScalaAnalyzerFactory() {
