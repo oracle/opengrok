@@ -181,7 +181,8 @@ public class IndexerTest {
 
     private class MyIndexChangeListener implements org.opensolaris.opengrok.index.IndexChangedListener {
 
-        List<String> files = new ArrayList<String>();
+        List<String> files = new ArrayList<>();
+        List<String> removedFiles = new ArrayList<>();
 
         @Override
         public void fileAdd(String path, String analyzer) {
@@ -203,10 +204,11 @@ public class IndexerTest {
         @Override
         public void fileRemoved(String path) {
             files.remove(path);
+            removedFiles.add(path);
         }
         
         public void reset() {
-            this.files = new ArrayList<String>();
+            this.files = new ArrayList<>();
         }
     }
 
@@ -311,11 +313,11 @@ public class IndexerTest {
             listener.reset();
             repository.addDummyFile(ppath);            
             idb.update();
-            assertEquals("No new file added",2, listener.files.size());            
-            listener.reset();
+            assertEquals("No new file added",1, listener.files.size());            
             repository.removeDummyFile(ppath);            
             idb.update();
-            assertEquals("Didn't remove the dummy file",1, listener.files.size());
+            assertEquals("Didn't remove the dummy file",0, listener.files.size());
+            assertEquals("Didn't remove the dummy file",1, listener.removedFiles.size());
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
         }

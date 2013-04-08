@@ -75,7 +75,7 @@ import org.opensolaris.opengrok.web.Util;
  * one index database per project.
  *
  * @author Trond Norbye
- * @author Lubos Kosco , update for lucene 4.0.0
+ * @author Lubos Kosco , update for lucene 4.2.0
  */
 public class IndexDatabase {
 
@@ -345,7 +345,7 @@ public class IndexDatabase {
                     directories.add(project.getPath());
                 }
             }
-
+            
             for (String dir : directories) {
                 File sourceRoot;
                 if ("".equals(dir)) {
@@ -367,9 +367,11 @@ public class IndexDatabase {
                 
                 try {
                     if (numDocs > 0) {
-                        uidIter = terms.iterator(null);                        
-                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid), true); //init uid                        
-                        if (stat==TermsEnum.SeekStatus.END || stat==TermsEnum.SeekStatus.NOT_FOUND) { uidIter=null; }
+                        uidIter = terms.iterator(uidIter);                        
+                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
+                        if (stat==TermsEnum.SeekStatus.END) { uidIter=null; 
+                         log.log(Level.WARNING, "Couldn't find a start term for {0}, empty u field?", startuid);
+                        }
                     }
                     //TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;
@@ -385,7 +387,8 @@ public class IndexDatabase {
 
                     while (uidIter != null && uidIter.term() != null && uidIter.term().utf8ToString().startsWith(startuid)) {
                         removeFile();
-                        uidIter.next();
+                        BytesRef next = uidIter.next();
+                        if (next==null) {uidIter=null;}
                     }
                 } finally {
                     reader.close();
@@ -802,7 +805,7 @@ public class IndexDatabase {
      *
      */
     private int indexDown(File dir, String parent, boolean count_only, int cur_count, int est_total) throws IOException {
-        int lcur_count = cur_count;
+        int lcur_count = cur_count;        
         if (isInterrupted()) {
             return lcur_count;
         }
@@ -842,16 +845,18 @@ public class IndexDatabase {
                     if (uidIter != null) {
                         String uid = Util.path2uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         BytesRef buid = new BytesRef(uid);                        
-                        while (uidIter.term() != null 
+                        while (uidIter != null && uidIter.term() != null 
                                 && uidIter.term().compareTo(emptyBR) !=0
                                 && uidIter.term().compareTo(buid) < 0) {
                             removeFile();
-                            uidIter.next();
+                            BytesRef next = uidIter.next();
+                            if (next==null) {uidIter=null;}
                         }
 
-                        if (uidIter.term() != null
+                        if (uidIter != null && uidIter.term() != null
                                 && uidIter.term().bytesEquals(buid)) {
-                            uidIter.next(); // keep matching docs
+                            BytesRef next = uidIter.next(); // keep matching docs
+                            if (next==null) {uidIter=null;}
                             continue;
                         }
                     }
@@ -953,8 +958,8 @@ public class IndexDatabase {
      */
     public void listFiles() throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter;
-        Terms terms = null;
+        TermsEnum iter=null;
+        Terms terms = null;        
 
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
@@ -963,10 +968,11 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.U);
             }
-            iter = terms.iterator(null); // init uid iterator
-            while (iter.term() != null) {
+            iter = terms.iterator(iter); // init uid iterator
+            while (iter != null && iter.term() != null) {
                 log.fine(Util.uid2url(iter.term().utf8ToString()));
-                iter.next();
+                BytesRef next=iter.next();
+                if (next==null) {iter=null;}
             }
         } finally {
 
@@ -1014,7 +1020,7 @@ public class IndexDatabase {
     public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
         TermsEnum iter = null;
-        Terms terms = null;
+        Terms terms = null;         
 
         try {
             ireader = DirectoryReader.open(indexDirectory);
@@ -1023,13 +1029,14 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.DEFS);
             }
-            iter = terms.iterator(null); // init uid iterator            
-            while (iter.term() != null) {
+            iter = terms.iterator(iter); // init uid iterator            
+            while (iter != null && iter.term() != null) {
                 //if (iter.term().field().startsWith("f")) {
                 if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
                     log.warning(iter.term().utf8ToString());
                 }
-                iter.next();
+                BytesRef next = iter.next();
+                if (next==null) {iter=null;}
                 /*} else {
                  break;
                  }*/
