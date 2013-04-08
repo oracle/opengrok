@@ -722,7 +722,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <!-- Build our patched JRCS library. -->
     <target name="jrcs" depends="-pre-pre-compile">
         <mkdir dir="${build.dir}/jrcs"/>
-        <javac srcdir="jrcs/src" destdir="${build.dir}/jrcs"
+        <javac srcdir="jrcs/src/main/java" destdir="${build.dir}/jrcs"
              nowarn="on" source="1.4"/>
         <jar destfile="${file.reference.jrcs.jar}">
             <fileset dir="${build.dir}/jrcs" includes="**/*.class"/>
