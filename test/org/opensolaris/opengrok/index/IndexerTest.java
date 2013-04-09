@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -117,10 +117,10 @@ public class IndexerTest {
         p2.setDescription("Project 2");
 
         // Make the runtime environment aware of these two projects.
-        List<Project> projects = new ArrayList<Project>();
+        List<Project> projects = new ArrayList<>();
         projects.add(p1);
         projects.add(p2);
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();        
         env.setProjects(projects);
 
         // Do a rescan of the projects, and only that (we don't care about
@@ -253,7 +253,7 @@ public class IndexerTest {
 
     @Test
     public void testXref() throws IOException {
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()), files, false);
         for (File f : files) {
             FileAnalyzerFactory factory = AnalyzerGuru.find(f.getAbsolutePath());
@@ -296,7 +296,7 @@ public class IndexerTest {
     @Test
     public void testIncrementalIndexAddRemoveFile() throws Exception {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
+        env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));        
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 

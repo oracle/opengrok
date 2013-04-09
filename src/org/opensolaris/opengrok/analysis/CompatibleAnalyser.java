@@ -26,6 +26,7 @@ import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 public class CompatibleAnalyser extends Analyzer {
 
@@ -36,16 +37,16 @@ public class CompatibleAnalyser extends Analyzer {
     @Override
     protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
         switch (fieldName) {
-            case "full":
+            case QueryBuilder.FULL:
                 return new TokenStreamComponents(new PlainFullTokenizer(reader));
-            case "refs":
+            case QueryBuilder.REFS:
                 return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
-            case "defs":
+            case QueryBuilder.DEFS:
                 return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
-            case "path":
-            case "project":
+            case QueryBuilder.PATH:
+            case QueryBuilder.PROJECT:
                 return new TokenStreamComponents(new PathTokenizer(reader));
-            case "hist":
+            case QueryBuilder.HIST:
                 return new HistoryAnalyzer().createComponents(fieldName, reader);
             default:
                 return new TokenStreamComponents(new PlainFullTokenizer(reader));

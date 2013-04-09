@@ -27,31 +27,54 @@ import java.io.Reader;
 import java.util.Arrays;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
+/**
+ * Tokenizer for paths filenames and extensions Input:
+ *
+ * <pre>
+ *  /topdir/subdir/filename.ext
+ * </pre>
+ *
+ * Output:
+ *
+ * <pre>
+ *  topdir
+ *  subdir
+ *  filename
+ *  .
+ *  ext
+ * </pre>
+ */
 public class PathTokenizer extends Tokenizer {
 
-    // below should be '/' since we try to convert even windows file separators to unix ones
-    private static final char dirSep = '/';
-    private boolean dot = false;
-    private static final char ADOT[]={'.'};
+    // below should be '/' since we try to convert even windows file separators 
+    // to unix ones
+    public static final char DEFAULT_DELIMITER = '/';
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
+    private final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);    
+    private int startPosition = 0;
+    private final char delimiter;
+    private int charsRead = 0;
+    private boolean dot = false;
+    private static final char cdot = '.';
 
     public PathTokenizer(Reader input) {
-        super(input);        
-    }
-
-    @Override
-    public void reset() throws IOException {
-        super.reset();
-        dot = false;
+        super(input);
+        this.delimiter = DEFAULT_DELIMITER;        
     }
 
     @Override
     public final boolean incrementToken() throws IOException {
         clearAttributes();
         if (dot) {
-            dot = false;
-            termAtt.copyBuffer(ADOT,0,1);
+            dot = false;            
+            termAtt.setEmpty();
+            termAtt.append(cdot);
+            termAtt.setLength(1);
+            offsetAtt.setOffset(correctOffset(startPosition), correctOffset(startPosition + 1));
+            startPosition++;
             return true;
         }
 
@@ -60,10 +83,11 @@ public class PathTokenizer extends Tokenizer {
         int i = 0;
         do {
             c = input.read();
+            charsRead++;
             if (c == -1) {
                 return false;
             }
-        } while (c == dirSep);
+        } while (c == delimiter);
 
         do {
             if (i >= buf.length) {
@@ -71,11 +95,30 @@ public class PathTokenizer extends Tokenizer {
             }
             buf[i++] = Character.toLowerCase((char) c);
             c = input.read();
-        } while (c != dirSep && c != '.' && !Character.isWhitespace(c) && c != -1);
-        if (c == '.') {
+            charsRead++;
+        } while ( c != delimiter && c != cdot && !Character.isWhitespace(c) && c != -1);
+        if (c == cdot) {
             dot = true;
-        }
+        }        
         termAtt.copyBuffer(buf, 0, i);
+        termAtt.setLength(i);
+        offsetAtt.setOffset(correctOffset(startPosition), correctOffset(startPosition + i));
+        startPosition = startPosition + i + 1;
         return true;
+    }
+
+    @Override
+    public final void end() {
+        // set final offset
+        int finalOffset = correctOffset(charsRead);
+        offsetAtt.setOffset(finalOffset, finalOffset);
+    }
+
+    @Override
+    public void reset() throws IOException {
+        super.reset();
+        dot=false;
+        charsRead = 0;
+        startPosition = 0;
     }
 }
