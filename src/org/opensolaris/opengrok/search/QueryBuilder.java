@@ -263,13 +263,19 @@ public class QueryBuilder {
      * @return the escaped query string
      */
     private String escapeQueryString(String field, String query) {
-        return FULL.equals(field)
+        switch (field) {
+            case FULL:
                 // The free text field may contain terms qualified with other
                 // field names, so we don't escape single colons.
-                ? query.replace("::", "\\:\\:")
-                // Other fields shouldn't use qualified terms, so escape colons
-                // so that we can search for them.
-                : query.replace(":", "\\:");
+                return query.replace("::", "\\:\\:");
+            case PATH:
+                // workaround for replacing / with escaped / - needed since lucene 4.x
+                return (query.replace(":", "\\:")).replace("/", "\\/");
+            // Other fields shouldn't use qualified terms, so escape colons
+            // so that we can search for them.
+            default:
+                return query.replace(":", "\\:");
+        }
     }
 
     /**

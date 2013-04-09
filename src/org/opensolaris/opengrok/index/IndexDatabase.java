@@ -99,6 +99,9 @@ public class IndexDatabase {
     private Ctags ctags;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
+    
+    //Directory where we store indexes
+    private static final String INDEX_DIR="index";
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you
@@ -143,7 +146,7 @@ public class IndexDatabase {
      */
     static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+        List<IndexDatabase> dbs = new ArrayList<>();
 
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
@@ -182,7 +185,7 @@ public class IndexDatabase {
      */
     public static void update(ExecutorService executor, IndexChangedListener listener, List<String> paths) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+        List<IndexDatabase> dbs = new ArrayList<>();
 
         for (String path : paths) {
             Project project = Project.getProject(path);
@@ -236,7 +239,7 @@ public class IndexDatabase {
     private void initialize() throws IOException {
         synchronized (this) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            File indexDir = new File(env.getDataRootFile(), "index");
+            File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
             File spellDir = new File(env.getDataRootFile(), "spellIndex");
             if (project != null) {
                 indexDir = new File(indexDir, project.getPath());
@@ -267,10 +270,10 @@ public class IndexDatabase {
             if (env.isGenerateHtml()) {
                 xrefDir = new File(env.getDataRootFile(), "xref");
             }
-            listeners = new ArrayList<IndexChangedListener>();
+            listeners = new ArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
-            directories = new ArrayList<String>();
+            directories = new ArrayList<>();
         }
     }
 
@@ -363,7 +366,7 @@ public class IndexDatabase {
                 if (numDocs > 0) {
                     Fields uFields = MultiFields.getFields(reader);//reader.getTermVectors(0);
                     terms = uFields.terms(QueryBuilder.U);
-                }                
+                }
                 
                 try {
                     if (numDocs > 0) {
@@ -444,7 +447,7 @@ public class IndexDatabase {
      * @throws IOException if an error occurs
      */
     static void optimizeAll(ExecutorService executor) throws IOException {
-        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+        List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
@@ -805,7 +808,7 @@ public class IndexDatabase {
      *
      */
     private int indexDown(File dir, String parent, boolean count_only, int cur_count, int est_total) throws IOException {
-        int lcur_count = cur_count;        
+        int lcur_count = cur_count;
         if (isInterrupted()) {
             return lcur_count;
         }
@@ -959,7 +962,7 @@ public class IndexDatabase {
     public void listFiles() throws IOException {
         IndexReader ireader = null;
         TermsEnum iter=null;
-        Terms terms = null;        
+        Terms terms = null;
 
         try {
             ireader = DirectoryReader.open(indexDirectory); // open existing index
@@ -1064,7 +1067,7 @@ public class IndexDatabase {
         IndexReader ret = null;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        File indexDir = new File(env.getDataRootFile(), "index");
+        File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
 
         if (env.hasProjects()) {
             Project p = Project.getProject(path);
