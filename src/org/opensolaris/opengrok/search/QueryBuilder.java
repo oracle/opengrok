@@ -270,7 +270,8 @@ public class QueryBuilder {
                 return query.replace("::", "\\:\\:");
             case PATH:
                 // workaround for replacing / with escaped / - needed since lucene 4.x
-                return (query.replace(":", "\\:")).replace("/", "\\/");
+                if (!(query.startsWith("/") && query.endsWith("/"))) {
+                return (query.replace(":", "\\:")).replace("/", "\\/"); }
             // Other fields shouldn't use qualified terms, so escape colons
             // so that we can search for them.
             default:
