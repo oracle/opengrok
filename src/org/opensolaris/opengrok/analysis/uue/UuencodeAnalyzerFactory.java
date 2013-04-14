@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2012 Constantine A. Murenin <mureninc++@gmail.com>
+ * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  */
 
 package org.opensolaris.opengrok.analysis.uue;
