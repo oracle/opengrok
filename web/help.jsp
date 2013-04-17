@@ -75,14 +75,19 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
         <b>OR</b>(<b>||</b>), <b>NOT</b>(<b>!</b>) and "<b>-</b>" (Note: they
         must be ALL CAPS).</li>
 </ul>
-<p>Wildcard, Fuzzy, Proximity &amp; Range Searches:</p>
+<p>Regular Expression, Wildcard, Fuzzy, Proximity &amp; Range Searches:</p>
 <ul>
+    <li>to perform a regular expression search use the "<b>/</b>" enclosure,
+        e.g.  /[mb]an/ - will search for man or for ban;
+        NOTE: path field search escapes "/" by default, so it only supports 
+        regexps when the search string <u>starts and ends</u> with "/"
+    </li>
     <li>to perform a single character wildcard search use the "<b>?</b>" symbol,
         e.g.  te?t</li>
     <li>to perform a multiple character wildcard search use the "<b>*</b>"
         symbol, e.g. test* or te*t</li>
-    <li>you cannot use a * or ? symbol as the first character of a search
-        (unless enabled using indexer option -a).</li>
+    <li>you can use a * or ? symbol as the first character of a search
+        (unless not enabled using indexer option -a).</li>
     <li>to do a fuzzy search(find words similar in spelling, based on the
         Levenshtein Distance, or Edit Distance algorithm) use the tilde,
         "<b>~</b>", e.g. rcs~ </li>
@@ -101,7 +106,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
 <a id="escaping"><dfn>Escaping special characters:</dfn></a>
 <p>Opengrok supports escaping special characters that are part of the query
     syntax. Current special characters are:<br/>
-    <b>+ - &amp;&amp; || ! ( ) { } [ ] ^ " ~ * ? : \ </b><br/>
+    <b>+ - &amp;&amp; || ! ( ) { } [ ] ^ " ~ * ? : \ / </b><br/>
 To escape these character use the \ before the character. For example to search
 for <b>(1+1):2</b> use the query: <b>\(1\+1\)\:2</b>
 </p>

@@ -18,16 +18,16 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
-import org.apache.lucene.document.Document;
 
 public abstract class TextAnalyzer extends FileAnalyzer {
 
@@ -35,8 +35,10 @@ public abstract class TextAnalyzer extends FileAnalyzer {
         super(factory);
     }
 
-    @Override
-    public final void analyze(Document doc, InputStream in) throws IOException {
+    protected Reader getReader(InputStream stream) throws IOException {
+        InputStream in = stream.markSupported() ?
+                stream : new BufferedInputStream(stream);
+
         String charset = null;
 
         in.mark(3);
@@ -61,8 +63,6 @@ public abstract class TextAnalyzer extends FileAnalyzer {
             charset = Charset.defaultCharset().name();
         }
 
-        analyze(doc, new InputStreamReader(in, charset));
+        return new InputStreamReader(in, charset);
     }
-
-    protected abstract void analyze(Document doc, Reader reader) throws IOException;
 }

@@ -70,7 +70,15 @@ public final class Util {
      */
     public static String htmlize(CharSequence q) {
         StringBuilder sb = new StringBuilder(q.length() * 2);
-        htmlize(q, sb);
+        try {
+            htmlize(q, sb);
+        } catch (IOException ioe) {
+            // IOException cannot happen when the destination is a
+            // StringBuilder. Wrap in an AssertionError so that callers
+            // don't have to check for an IOException that should never
+            // happen.
+            throw new AssertionError("StringBuilder threw IOException", ioe);
+        }
         return sb.toString();
     }
 
@@ -80,8 +88,10 @@ public final class Util {
      *
      * @param q     a character sequence to esacpe
      * @param dest  where to append the character sequence to
+     * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(CharSequence q, StringBuilder dest) {
+    public static void htmlize(CharSequence q, Appendable dest)
+            throws IOException {
         for (int i = 0; i < q.length(); i++ ) {
             htmlize(q.charAt(i), dest);
         }
@@ -91,11 +101,13 @@ public final class Util {
      * Append a character array to the given destination whereby
      * special characters for HTML are escaped accordingly.
      *
-     * @param cs    characters to esacpe
+     * @param cs    characters to escape
      * @param length max. number of characters to append, starting from index 0.
      * @param dest  where to append the character sequence to
+     * @throws IOException if an error occurred when writing to {@code dest}
      */
-    public static void htmlize(char[] cs, int length, StringBuilder dest) {
+    public static void htmlize(char[] cs, int length, Appendable dest)
+            throws IOException {
         int len = length;
         if (cs.length < length) {
             len = cs.length;
@@ -111,8 +123,9 @@ public final class Util {
      *
      * @param c the character to append
      * @param dest where to append the character to
+     * @throws IOException if an error occurred when writing to {@code dest}
      */
-    private static void htmlize(char c, StringBuilder dest) {
+    private static void htmlize(char c, Appendable dest) throws IOException {
         switch (c) {
             case '&':
                 dest.append("&amp;");
@@ -145,7 +158,7 @@ public final class Util {
     }
 
     /**
-     * Convinience method for {@code breadcrumbPath(urlPrefix, path, '/')}.
+     * Convenience method for {@code breadcrumbPath(urlPrefix, path, '/')}.
      * @param urlPrefix prefix to add to each url
      * @param path path to crack
      * @return HTML markup fro the breadcrumb or the path itself.

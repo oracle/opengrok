@@ -53,7 +53,8 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.Iterable2TokenStream;
+import org.opensolaris.opengrok.analysis.IteratorReader;
+import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -66,10 +67,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 public class JavaClassAnalyzer extends FileAnalyzer {
 
     private final String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
-    private List<String> defs;
-    private List<String> refs;
-    private List<String> full;
-    private String xref;
 
     /**
      * Creates a new instance of JavaClassAnalyzer
@@ -81,16 +78,25 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     }
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        defs = new ArrayList<String>();
-        refs = new ArrayList<String>();
-        full = new ArrayList<String>();
-        xref = null;
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        try (InputStream in = src.getStream()) {
+            analyze(doc, in, xrefOut);
+        }
+    }
+
+    void analyze(Document doc, InputStream in, Writer xrefOut) throws IOException {
+        List<String> defs = new ArrayList<>();
+        List<String> refs = new ArrayList<>();
+        List<String> full = new ArrayList<>();
 
         ClassParser classparser = new ClassParser(in, doc.get("path"));
         StringWriter out = new StringWriter();
-        getContent(out, classparser.parse());
-        xref = out.toString();
+        getContent(out, classparser.parse(), defs, refs, full);
+        String xref = out.toString();
+
+        if (xrefOut != null) {
+            xrefOut.append(xref);
+        }
 
         out.getBuffer().setLength(0); // clear the buffer
         for (String fl : full) {
@@ -99,15 +105,11 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
         String constants = out.toString();
 
-        doc.add(new TextField("defs", new Iterable2TokenStream(defs)));
-        doc.add(new TextField("refs", new Iterable2TokenStream(refs)));
+        doc.add(new TextField("defs", new IteratorReader(defs)));
+        doc.add(new TextField("refs", new IteratorReader(refs)));
         // TODO could be improved, lucene has xhtml parsers/readers
         doc.add(new TextField("full", new TagFilter(xref)));
         doc.add(new TextField("full", constants, Store.NO));
-    }
-
-    public String getXref() {
-        return xref;
     }
 
     protected String linkPath(String path) {
@@ -123,7 +125,9 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     }
 
 //TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
-    private void getContent(Writer out, JavaClass c) throws IOException {
+    private void getContent(Writer out, JavaClass c,
+            List<String> defs, List<String> refs, List<String> full)
+            throws IOException {
         String t;
         ConstantPool cp = c.getConstantPool();
         int[] v = new int[cp.getLength() + 1];
@@ -172,7 +176,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                 for (Attribute ca : ((Code) a).getAttributes()) {
                     if (ca.getTag() == org.apache.bcel.Constants.ATTR_LOCAL_VARIABLE_TABLE) {
                         for (LocalVariable l : ((LocalVariableTable) ca).getLocalVariableTable()) {
-                            printLocal(out, l, v);
+                            printLocal(out, l, v, defs, refs);
                         }
                     }
                 }
@@ -252,7 +256,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             if (!locals.isEmpty()) {
                 for (LocalVariable[] ls : locals) {
                     for (LocalVariable l : ls) {
-                        printLocal(out, l, v);
+                        printLocal(out, l, v, defs, refs);
                     }
                 }
             }
@@ -268,19 +272,8 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
     }
 
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param out Writer to write HTML cross-reference
-     */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        if (xref != null) {
-            out.write(xref);
-        }
-    }
-
-    private void printLocal(Writer out, LocalVariable l, int[] v) throws IOException {
+    private void printLocal(Writer out, LocalVariable l,
+            int[] v, List<String> defs, List<String> refs) throws IOException {
         v[l.getIndex()] = 1;
         v[l.getNameIndex()] = 1;
         v[l.getSignatureIndex()] = 1;

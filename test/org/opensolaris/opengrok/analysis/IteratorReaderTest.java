@@ -22,42 +22,21 @@
  */
 package org.opensolaris.opengrok.analysis;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Do basic testing of the Iterable2TokenStream class.
+ * Do basic testing of the IteratorReader class.
  *
  * @author Trond Norbye
  */
-public class Iterable2TokenStreamTest {
-
-    public Iterable2TokenStreamTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
+public class IteratorReaderTest {
 
     /**
      * Test that we don't get an error when the list is empty.
@@ -65,24 +44,28 @@ public class Iterable2TokenStreamTest {
     @Test
     public void testBug3094() throws IOException {
         List<String> empty = Collections.emptyList();
-        Iterable2TokenStream instance = new Iterable2TokenStream(empty);
-        assertNotNull(instance);
-        assertFalse(instance.incrementToken());        
-        instance.close();
+        try (IteratorReader instance = new IteratorReader(empty)) {
+            assertNotNull(instance);
+            assertEquals(-1, instance.read());
+        }
     }
 
     /**
      * Test that we get an error immediately when constructing a token stream
      * where the list is {@code null}.
      */
-    @Test
+    @Test(expected= NullPointerException.class)
     public void testFailfastOnNull() {
-        try {
-            new Iterable2TokenStream(null);
-            fail("expected an exception");
-        } catch (NullPointerException npe) {
-            // expected
-        }
+        new IteratorReader((List<String>) null);
+    }
+
+    /**
+     * Test that a {@code NullPointerException} is thrown immediately also
+     * when using the constructor that takes an {@code Iterator}.
+     */
+    @Test(expected= NullPointerException.class)
+    public void testFailfastOnNullIterator() {
+        new IteratorReader((Iterator<String>) null);
     }
 
     /**
@@ -93,15 +76,11 @@ public class Iterable2TokenStreamTest {
      */
     @Test
     public void testReadAllTokens() throws IOException {
-        try (Iterable2TokenStream instance = new Iterable2TokenStream(
-                     Arrays.asList("abc.def", "ghi.jkl"))) {
-            int count = 0;
-            while (instance.incrementToken()) {
-                count++;
-            }
-
-            // List2TokenStream used to find only 3 tokens.
-            assertEquals(4, count);
+        try (BufferedReader instance = new BufferedReader(new IteratorReader(
+                     Arrays.asList("abc.def", "ghi.jkl")))) {
+            assertEquals("abc.def", instance.readLine());
+            assertEquals("ghi.jkl", instance.readLine());
+            assertNull(instance.readLine());
         }
     }
 }

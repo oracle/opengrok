@@ -72,11 +72,12 @@ import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
+import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Util;
 
 /**
  * Manages and provides Analyzers as needed. Please see
- * <a href="http://www.opensolaris.org/os/project/opengrok/manual/internals/">
+ * <a href="https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Internals">
  * this</a> page for a great description of the purpose of the AnalyzerGuru.
  *
  * Created on September 22, 2005
@@ -90,27 +91,27 @@ public class AnalyzerGuru {
 
     /** Map from file names to analyzer factories. */
     private static final Map<String, FileAnalyzerFactory>
-        FILE_NAMES = new HashMap<String, FileAnalyzerFactory>();
+        FILE_NAMES = new HashMap<>();
 
     /** Map from file extensions to analyzer factories. */
     private static final Map<String, FileAnalyzerFactory>
-        ext = new HashMap<String, FileAnalyzerFactory>();
+        ext = new HashMap<>();
 
     // @TODO: have a comparator
     /** Map from magic strings to analyzer factories. */
     private static final SortedMap<String, FileAnalyzerFactory>
-        magics = new TreeMap<String, FileAnalyzerFactory>();
+        magics = new TreeMap<>();
 
     /**
      * List of matcher objects which can be used to determine which analyzer
      * factory to use.
      */
     private static final List<FileAnalyzerFactory.Matcher>
-        matchers = new ArrayList<FileAnalyzerFactory.Matcher>();
+        matchers = new ArrayList<>();
 
     /** List of all registered {@code FileAnalyzerFactory} instances. */
     private static final List<FileAnalyzerFactory>
-        factories = new ArrayList<FileAnalyzerFactory>();
+        factories = new ArrayList<>();
         
     public static final Reader dummyR = new StringReader("");
     public static final String dummyS = "";
@@ -234,47 +235,49 @@ public class AnalyzerGuru {
     /**
      * Create a Lucene document and fill in the required fields
      * @param file The file to index
-     * @param in The data to generate the index for
      * @param path Where the file is located (from source root)
+     * @param fa The analyzer to use on the file
+     * @param xrefOut Where to write the xref (possibly {@code null})
      * @return The Lucene document to add to the index database
      * @throws java.io.IOException If an exception occurs while collecting the
-     *                             datas
+     *                             data
      */
-    public Document getDocument(File file, InputStream in, String path,
-                                FileAnalyzer fa) throws IOException {
+    public Document getDocument(File file, String path,
+                                FileAnalyzer fa, Writer xrefOut)
+            throws IOException {
         Document doc = new Document();
         String date = DateTools.timeToString(file.lastModified(),
             DateTools.Resolution.MILLISECOND);
-        doc.add(new Field("u", Util.path2uid(path, date),
+        doc.add(new Field(QueryBuilder.U, Util.path2uid(path, date),
             string_ft_stored_nanalyzed_norms));
-        doc.add(new Field("fullpath", file.getAbsolutePath(),
+        doc.add(new Field(QueryBuilder.FULLPATH, file.getAbsolutePath(),
             string_ft_nstored_nanalyzed_norms));
 
         try {
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
             if (hr != null) {
-                doc.add(new TextField("hist", hr));
+                doc.add(new TextField(QueryBuilder.HIST, hr));
                 // date = hr.getLastCommentDate() //RFE
             }
         } catch (HistoryException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occurred while reading history: ", e);
         }    
-        doc.add(new Field("date", date, string_ft_stored_nanalyzed_norms));
+        doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
         if (path != null) {
-            doc.add(new TextField("path", path, Store.YES));
+            doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
             Project project = Project.getProject(path);
             if (project != null) {
-                doc.add(new TextField("project", project.getPath(), Store.YES));
+                doc.add(new TextField(QueryBuilder.PROJECT, project.getPath(), Store.YES));
             }
         }
 
         if (fa != null) {
             Genre g = fa.getGenre();
             if (g == Genre.PLAIN || g == Genre.XREFABLE || g == Genre.HTML) {
-                doc.add(new Field("t", g.typeName(), string_ft_stored_nanalyzed_norms
+                doc.add(new Field(QueryBuilder.T, g.typeName(), string_ft_stored_nanalyzed_norms
                     ));
             }                   
-            fa.analyze(doc, in);
+            fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
         }
 
         return doc;
@@ -301,9 +304,9 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Write a browsable version of the file
+     * Write a browse-able version of the file
      *
-     * @param factory The analyzer factory for this filetype
+     * @param factory The analyzer factory for this file type
      * @param in The input stream containing the data
      * @param out Where to write the result
      * @param defs definitions for the source file, if available
@@ -329,7 +332,7 @@ public class AnalyzerGuru {
     /**
      * Get the genre of a file
      *
-     * @param file The file to inpect
+     * @param file The file to inspect
      * @return The genre suitable to decide how to display the file
      */
     public static Genre getGenre(String file) {
@@ -440,7 +443,7 @@ public class AnalyzerGuru {
      */
     public static FileAnalyzerFactory find(String file) {
         String path = file;
-        int i = 0;
+        int i;
         if (((i = path.lastIndexOf('/')) > 0 || (i = path.lastIndexOf('\\')) > 0)
             && (i + 1 < path.length())) {
             path = path.substring(i + 1);
@@ -458,7 +461,7 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Finds a suitable analyser class for the data in this stream
+     * Finds a suitable analyzer class for the data in this stream
      *
      * @param in The stream containing the data to analyze
      * @return the analyzer factory to use
@@ -497,7 +500,7 @@ public class AnalyzerGuru {
     }
 
     /**
-     * Finds a suitable analyser class for a magic signature
+     * Finds a suitable analyzer class for a magic signature
      *
      * @param signature the magic signature look up
      * @return the analyzer factory to use
@@ -536,7 +539,7 @@ public class AnalyzerGuru {
 
     /** Byte-order markers. */
     private static final Map<String, byte[]> BOMS =
-            new HashMap<String, byte[]>();
+            new HashMap<>();
     static {
         BOMS.put("UTF-8", new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
         BOMS.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF});

@@ -40,10 +40,8 @@ Offical page of the project is on:
       http://tomcat.apache.org/
     * Exuberant Ctags
       http://ctags.sourceforge.net/
-    * Subversion 1.3.0 or later if SVN support is needed
-      http://subversion.tigris.org/
-    * Mercurial 0.9.3 or later if Mercurial support is needed
-      http://www.selenic.com/mercurial/wiki/
+    * Source Code Management installation
+      depending on type of repositories indexed
     * If you want to build OpenGrok:
       - Ant (1.8 and later)
         http://ant.apache.org/
@@ -108,10 +106,14 @@ By itself OpenGrok does not perform the setup of the source code repositories
 or sychronization of the source code with its origin. This is to be done by
 the user or automatic scripts.
 
-It is possible for some SCM systems to use a remote repository (Subversion,
-CVS), but this is not recommended due to the performance penalty. Special
-option when running the OpenGrok indexer is needed to enable remote repository
-support ("-r on").
+It is possible for SCM systems which are not distributed (Subversion, CVS)
+to use a remote repository but this is not recommended due to the performance
+penalty. Special option when running the OpenGrok indexer is needed to enable
+remote repository support ("-r on").
+
+In order for history indexing to work for any SCM system it is necessary
+to have environment for given SCM systems installed and in a path accessible
+by OpenGrok.
 
 Note that OpenGrok ignores symbolic links.
 

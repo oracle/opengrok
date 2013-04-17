@@ -23,11 +23,15 @@
 package org.opensolaris.opengrok.index;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -35,6 +39,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
@@ -70,7 +75,7 @@ import org.opensolaris.opengrok.web.Util;
  * one index database per project.
  *
  * @author Trond Norbye
- * @author Lubos Kosco , update for lucene 4.0.0
+ * @author Lubos Kosco , update for lucene 4.2.0
  */
 public class IndexDatabase {
 
@@ -94,6 +99,9 @@ public class IndexDatabase {
     private Ctags ctags;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
+    
+    //Directory where we store indexes
+    private static final String INDEX_DIR="index";
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you
@@ -138,7 +146,7 @@ public class IndexDatabase {
      */
     static void updateAll(ExecutorService executor, IndexChangedListener listener) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+        List<IndexDatabase> dbs = new ArrayList<>();
 
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
@@ -177,7 +185,7 @@ public class IndexDatabase {
      */
     public static void update(ExecutorService executor, IndexChangedListener listener, List<String> paths) throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+        List<IndexDatabase> dbs = new ArrayList<>();
 
         for (String path : paths) {
             Project project = Project.getProject(path);
@@ -231,7 +239,7 @@ public class IndexDatabase {
     private void initialize() throws IOException {
         synchronized (this) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            File indexDir = new File(env.getDataRootFile(), "index");
+            File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
             File spellDir = new File(env.getDataRootFile(), "spellIndex");
             if (project != null) {
                 indexDir = new File(indexDir, project.getPath());
@@ -262,10 +270,10 @@ public class IndexDatabase {
             if (env.isGenerateHtml()) {
                 xrefDir = new File(env.getDataRootFile(), "xref");
             }
-            listeners = new ArrayList<IndexChangedListener>();
+            listeners = new ArrayList<>();
             dirtyFile = new File(indexDir, "dirty");
             dirty = dirtyFile.exists();
-            directories = new ArrayList<String>();
+            directories = new ArrayList<>();
         }
     }
 
@@ -340,7 +348,7 @@ public class IndexDatabase {
                     directories.add(project.getPath());
                 }
             }
-
+            
             for (String dir : directories) {
                 File sourceRoot;
                 if ("".equals(dir)) {
@@ -358,13 +366,15 @@ public class IndexDatabase {
                 if (numDocs > 0) {
                     Fields uFields = MultiFields.getFields(reader);//reader.getTermVectors(0);
                     terms = uFields.terms(QueryBuilder.U);
-                }                
+                }
                 
                 try {
                     if (numDocs > 0) {
-                        uidIter = terms.iterator(null);                        
-                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid), true); //init uid                        
-                        if (stat==TermsEnum.SeekStatus.END || stat==TermsEnum.SeekStatus.NOT_FOUND) { uidIter=null; }
+                        uidIter = terms.iterator(uidIter);                        
+                        TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
+                        if (stat==TermsEnum.SeekStatus.END) { uidIter=null; 
+                         log.log(Level.WARNING, "Couldn't find a start term for {0}, empty u field?", startuid);
+                        }
                     }
                     //TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;
@@ -380,7 +390,8 @@ public class IndexDatabase {
 
                     while (uidIter != null && uidIter.term() != null && uidIter.term().utf8ToString().startsWith(startuid)) {
                         removeFile();
-                        uidIter.next();
+                        BytesRef next = uidIter.next();
+                        if (next==null) {uidIter=null;}
                     }
                 } finally {
                     reader.close();
@@ -436,7 +447,7 @@ public class IndexDatabase {
      * @throws IOException if an error occurs
      */
     static void optimizeAll(ExecutorService executor) throws IOException {
-        List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+        List<IndexDatabase> dbs = new ArrayList<>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
             for (Project project : env.getProjects()) {
@@ -608,53 +619,43 @@ public class IndexDatabase {
      * @throws java.io.IOException if an error occurs
      */
     private void addFile(File file, String path) throws IOException {
+        FileAnalyzer fa;
         try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-            FileAnalyzer fa = AnalyzerGuru.getAnalyzer(in, path);
-            for (IndexChangedListener listener : listeners) {
-                listener.fileAdd(path, fa.getClass().getSimpleName());
-            }
-            fa.setCtags(ctags);
-            fa.setProject(Project.getProject(path));
+            fa = AnalyzerGuru.getAnalyzer(in, path);
+        }
 
-            Document d;
-            try {
-                d = analyzerGuru.getDocument(file, in, path, fa);
-            } catch (Exception e) {
-                log.log(Level.INFO,
-                        "Skipped file ''{0}'' because the analyzer didn''t "
-                        + "understand it.",
-                        path);
-                StringBuilder stack = new StringBuilder();
-                for (StackTraceElement ste : e.getStackTrace()) {
-                    stack.append(ste.toString()).append(System.lineSeparator());
-                }
-                StringBuilder sstack = new StringBuilder();
-                for (Throwable t : e.getSuppressed()) {
-                    for (StackTraceElement ste : t.getStackTrace()) {
-                        sstack.append(ste.toString()).append(System.lineSeparator());
-                    }
-                }
-                log.log(Level.FINE, "Exception from analyzer {0}: {1} {2}{3}{4}{5}{6}", new String[]{fa.getClass().getName(), e.toString(), System.lineSeparator(), stack.toString(), System.lineSeparator(), sstack.toString()});
-                return;
-            }
+        for (IndexChangedListener listener : listeners) {
+            listener.fileAdd(path, fa.getClass().getSimpleName());
+        }
+        fa.setCtags(ctags);
+        fa.setProject(Project.getProject(path));
 
-            writer.addDocument(d, fa);
-            Genre g = fa.getFactory().getGenre();
-            if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
-                File xrefFile = new File(xrefDir, path);
-                // If mkdirs() returns false, the failure is most likely
-                // because the file already exists. But to check for the
-                // file first and only add it if it doesn't exists would
-                // only increase the file IO...
-                if (!xrefFile.getParentFile().mkdirs()) {
-                    assert xrefFile.getParentFile().exists();
+        Document d;
+        try (Writer xrefOut = getXrefWriter(fa, path)) {
+            d = analyzerGuru.getDocument(file, path, fa, xrefOut);
+        } catch (Exception e) {
+            log.log(Level.INFO,
+                    "Skipped file ''{0}'' because the analyzer didn''t "
+                    + "understand it.",
+                    path);
+            StringBuilder stack = new StringBuilder();
+            for (StackTraceElement ste : e.getStackTrace()) {
+                stack.append(ste.toString()).append(System.lineSeparator());
+            }
+            StringBuilder sstack = new StringBuilder();
+            for (Throwable t : e.getSuppressed()) {
+                for (StackTraceElement ste : t.getStackTrace()) {
+                    sstack.append(ste.toString()).append(System.lineSeparator());
                 }
-                fa.writeXref(xrefDir, path);
             }
-            setDirty();
-            for (IndexChangedListener listener : listeners) {
-                listener.fileAdded(path, fa.getClass().getSimpleName());
-            }
+            log.log(Level.FINE, "Exception from analyzer {0}: {1} {2}{3}{4}{5}{6}", new String[]{fa.getClass().getName(), e.toString(), System.lineSeparator(), stack.toString(), System.lineSeparator(), sstack.toString()});
+            return;
+        }
+
+        writer.addDocument(d, fa);
+        setDirty();
+        for (IndexChangedListener listener : listeners) {
+            listener.fileAdded(path, fa.getClass().getSimpleName());
         }
     }
 
@@ -847,16 +848,18 @@ public class IndexDatabase {
                     if (uidIter != null) {
                         String uid = Util.path2uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         BytesRef buid = new BytesRef(uid);                        
-                        while (uidIter.term() != null 
+                        while (uidIter != null && uidIter.term() != null 
                                 && uidIter.term().compareTo(emptyBR) !=0
                                 && uidIter.term().compareTo(buid) < 0) {
                             removeFile();
-                            uidIter.next();
+                            BytesRef next = uidIter.next();
+                            if (next==null) {uidIter=null;}
                         }
 
-                        if (uidIter.term() != null
+                        if (uidIter != null && uidIter.term() != null
                                 && uidIter.term().bytesEquals(buid)) {
-                            uidIter.next(); // keep matching docs
+                            BytesRef next = uidIter.next(); // keep matching docs
+                            if (next==null) {uidIter=null;}
                             continue;
                         }
                     }
@@ -958,7 +961,7 @@ public class IndexDatabase {
      */
     public void listFiles() throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter;
+        TermsEnum iter=null;
         Terms terms = null;
 
         try {
@@ -968,10 +971,11 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.U);
             }
-            iter = terms.iterator(null); // init uid iterator
-            while (iter.term() != null) {
+            iter = terms.iterator(iter); // init uid iterator
+            while (iter != null && iter.term() != null) {
                 log.fine(Util.uid2url(iter.term().utf8ToString()));
-                iter.next();
+                BytesRef next=iter.next();
+                if (next==null) {iter=null;}
             }
         } finally {
 
@@ -1019,7 +1023,7 @@ public class IndexDatabase {
     public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
         TermsEnum iter = null;
-        Terms terms = null;
+        Terms terms = null;         
 
         try {
             ireader = DirectoryReader.open(indexDirectory);
@@ -1028,13 +1032,14 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.DEFS);
             }
-            iter = terms.iterator(null); // init uid iterator            
-            while (iter.term() != null) {
+            iter = terms.iterator(iter); // init uid iterator            
+            while (iter != null && iter.term() != null) {
                 //if (iter.term().field().startsWith("f")) {
                 if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
                     log.warning(iter.term().utf8ToString());
                 }
-                iter.next();
+                BytesRef next = iter.next();
+                if (next==null) {iter=null;}
                 /*} else {
                  break;
                  }*/
@@ -1062,7 +1067,7 @@ public class IndexDatabase {
         IndexReader ret = null;
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        File indexDir = new File(env.getDataRootFile(), "index");
+        File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
 
         if (env.hasProjects()) {
             Project p = Project.getProject(path);
@@ -1152,5 +1157,35 @@ public class IndexDatabase {
         int hash = 7;
         hash = 41 * hash + (this.project == null ? 0 : this.project.hashCode());
         return hash;
+    }
+
+    /**
+     * Get a writer to which the xref can be written, or null if no xref
+     * should be produced for files of this type.
+     */
+    private Writer getXrefWriter(FileAnalyzer fa, String path) throws IOException {
+        Genre g = fa.getFactory().getGenre();
+        if (xrefDir != null && (g == Genre.PLAIN || g == Genre.XREFABLE)) {
+            File xrefFile = new File(xrefDir, path);
+            // If mkdirs() returns false, the failure is most likely
+            // because the file already exists. But to check for the
+            // file first and only add it if it doesn't exists would
+            // only increase the file IO...
+            if (!xrefFile.getParentFile().mkdirs()) {
+                assert xrefFile.getParentFile().exists();
+            }
+
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+            boolean compressed = env.isCompressXref();
+            File file = new File(xrefDir, path + (compressed ? ".gz" : ""));
+            return new BufferedWriter(new OutputStreamWriter(
+                    compressed ?
+                        new GZIPOutputStream(new FileOutputStream(file)) :
+                        new FileOutputStream(file)));
+        }
+
+        // no Xref for this analyzer
+        return null;
     }
 }

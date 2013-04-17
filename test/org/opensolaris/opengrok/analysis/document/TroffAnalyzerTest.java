@@ -19,6 +19,7 @@
 
 /*
  * Copyright 2009 - 2011 Jens Elkner.
+ * Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.document;
 
@@ -27,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 
 import org.apache.lucene.document.Document;
@@ -38,6 +40,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.opensolaris.opengrok.web.Util;
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.analysis.StreamSource;
 
 /**
  * @author  Jens Elkner
@@ -99,19 +102,13 @@ public class TroffAnalyzerTest {
     @Test
     public void testAnalyze() throws IOException {
         Document doc = new Document();
-        analyzer.analyze(doc, new ByteArrayInputStream(content.getBytes()));
-    }
-
-    /**
-     * Test method for {@link org.opensolaris.opengrok.analysis.document
-     * .TroffAnalyzer#writeXref(java.io.Writer)}.
-     * @throws IOException 
-     */
-    @Test
-    public void testWriteXrefWriter() throws IOException {
-        testAnalyze();
-        StringWriter out = new StringWriter(content.length() + 1024);
-        analyzer.writeXref(out);
+        StringWriter xrefOut = new StringWriter();
+        analyzer.analyze(doc, new StreamSource() {
+            @Override
+            public InputStream getStream() throws IOException {
+                return new ByteArrayInputStream(content.getBytes());
+            }
+        }, xrefOut);
     }
 
     /**

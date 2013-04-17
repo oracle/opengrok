@@ -32,6 +32,7 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
@@ -40,8 +41,6 @@ import org.opensolaris.opengrok.history.Annotation;
  * @author Lubos Kosco
  */
 public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
-
-    private JFlexXref xref;
 
     /**
      * Creates a new instance of abstract analyzer
@@ -62,12 +61,13 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
      * @param reader the data to produce xref for
      * @return an xref instance
      */
+    @Override
     protected abstract JFlexXref newXref(Reader reader);
 
     @Override
-    public void analyze(Document doc, Reader in) throws IOException {
-        super.analyze(doc, in);
-        doc.add(new TextField("refs", getContentReader()));
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        super.analyze(doc, src, xrefOut);
+        doc.add(new TextField("refs", getReader(src.getStream())));
     }
 
     @Override
@@ -76,23 +76,6 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
             return new TokenStreamComponents(newSymbolTokenizer(reader));
         }
         return super.createComponents(fieldName, reader);
-    }
-
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param out Writer to write HTML cross-reference
-     */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        if (xref == null) {
-            xref = newXref(getContentReader());
-        } else {
-            xref.reInit(getContentReader());
-        }
-        xref.setDefs(defs);
-        xref.project = project;
-        xref.write(out);
     }
 
     /**

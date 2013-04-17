@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -33,6 +33,7 @@ import org.apache.tools.bzip2.CBZip2InputStream;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.StreamSource;
 
 /**
  * Analyzes a BZip2 file Created on September 22, 2005
@@ -57,20 +58,16 @@ public class BZip2Analyzer extends FileAnalyzer {
     private FileAnalyzer fa;
 
     @Override
-    public void analyze(Document doc, InputStream in) throws IOException {
-        if (in.read() != 'B') {
-            throw new IOException("Not BZIP2 format");
-        }
-        if (in.read() != 'Z') {
-            throw new IOException("Not BZIP2 format");
-        }
-        BufferedInputStream gzis = new BufferedInputStream(new CBZip2InputStream(in));
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        StreamSource bzSrc = wrap(src);
         String path = doc.get("path");
         if (path != null
                 && (path.endsWith(".bz2") || path.endsWith(".BZ2") || path.endsWith(".bz"))) {
             String newname = path.substring(0, path.lastIndexOf('.'));
             //System.err.println("BZIPPED OF = " + newname);
-            fa = AnalyzerGuru.getAnalyzer(gzis, newname);
+            try (InputStream in = bzSrc.getStream()) {
+                fa = AnalyzerGuru.getAnalyzer(in, newname);
+            }
             if (fa instanceof BZip2Analyzer) {
                 fa = null;
             } else {
@@ -79,7 +76,7 @@ public class BZip2Analyzer extends FileAnalyzer {
                 } else {
                     this.g = Genre.DATA;
                 }
-                fa.analyze(doc, gzis);
+                fa.analyze(doc, bzSrc, xrefOut);
                 if (doc.get("t") != null) {
                     doc.removeField("t");
                     if (g == Genre.XREFABLE) {
@@ -90,23 +87,30 @@ public class BZip2Analyzer extends FileAnalyzer {
         }
     }
 
+    /**
+     * Wrap the raw stream source in one that returns the uncompressed stream.
+     */
+    private static StreamSource wrap(final StreamSource src) {
+        return new StreamSource() {
+            @Override
+            public InputStream getStream() throws IOException {
+                InputStream raw = src.getStream();
+                // A BZip2 file starts with "BZ", but CBZip2InputStream
+                // expects the magic bytes to be stripped off first.
+                if (raw.read() == 'B' && raw.read() == 'Z') {
+                    return new BufferedInputStream(new CBZip2InputStream(raw));
+                } else {
+                    throw new IOException("Not BZIP2 format");
+                }
+            }
+        };
+    }
+
     @Override
     public TokenStreamComponents createComponents(String fieldName, Reader reader) {
         if (fa != null) {
             return fa.createComponents(fieldName, reader);
         }
         return super.createComponents(fieldName, reader);
-    }
-
-    /**
-     * Write a cross referenced HTML file.
-     *
-     * @param out Writer to store HTML cross-reference
-     */
-    @Override
-    public void writeXref(Writer out) throws IOException {
-        if ((fa != null) && (fa.getGenre() == Genre.PLAIN || fa.getGenre() == Genre.XREFABLE)) {
-            fa.writeXref(out);
-        }
     }
 }
