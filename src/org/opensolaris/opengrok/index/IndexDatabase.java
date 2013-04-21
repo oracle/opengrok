@@ -44,6 +44,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.index.*;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -68,6 +69,7 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.search.SearchEngine;
+import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -630,9 +632,9 @@ public class IndexDatabase {
         fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
 
-        Document d;
+        Document doc = new Document();
         try (Writer xrefOut = getXrefWriter(fa, path)) {
-            d = analyzerGuru.getDocument(file, path, fa, xrefOut);
+            analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
         } catch (Exception e) {
             log.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "
@@ -649,13 +651,41 @@ public class IndexDatabase {
                 }
             }
             log.log(Level.FINE, "Exception from analyzer {0}: {1} {2}{3}{4}{5}{6}", new String[]{fa.getClass().getName(), e.toString(), System.lineSeparator(), stack.toString(), System.lineSeparator(), sstack.toString()});
+            cleanupResources(doc);
             return;
         }
 
-        writer.addDocument(d, fa);
+        try {
+            writer.addDocument(doc, fa);
+        } catch (Throwable t) {
+            cleanupResources(doc);
+            throw t;
+        }
+
         setDirty();
         for (IndexChangedListener listener : listeners) {
             listener.fileAdded(path, fa.getClass().getSimpleName());
+        }
+    }
+
+    /**
+     * Do a best effort to clean up all resources allocated when populating
+     * a Lucene document. On normal execution, these resources should be
+     * closed automatically by the index writer once it's done with them, but
+     * we may not get that far if something fails.
+     *
+     * @param doc the document whose resources to clean up
+     */
+    private void cleanupResources(Document doc) {
+        for (IndexableField f : doc) {
+            // If the field takes input from a reader, close the reader.
+            IOUtils.close(f.readerValue());
+
+            // If the field takes input from a token stream, close the
+            // token stream.
+            if (f instanceof Field) {
+                IOUtils.close(((Field) f).tokenStreamValue());
+            }
         }
     }
 
