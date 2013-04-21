@@ -231,19 +231,17 @@ public class AnalyzerGuru {
     }
         
     /**
-     * Create a Lucene document and fill in the required fields
+     * Populate a Lucene document with the required fields.
+     * @param doc The document to populate
      * @param file The file to index
      * @param path Where the file is located (from source root)
      * @param fa The analyzer to use on the file
      * @param xrefOut Where to write the xref (possibly {@code null})
-     * @return The Lucene document to add to the index database
-     * @throws java.io.IOException If an exception occurs while collecting the
-     *                             data
+     * @throws IOException If an exception occurs while collecting the data
      */
-    public Document getDocument(File file, String path,
-                                FileAnalyzer fa, Writer xrefOut)
+    public void populateDocument(Document doc, File file, String path,
+                                 FileAnalyzer fa, Writer xrefOut)
             throws IOException {
-        Document doc = new Document();
         String date = DateTools.timeToString(file.lastModified(),
             DateTools.Resolution.MILLISECOND);
         doc.add(new Field(QueryBuilder.U, Util.path2uid(path, date),
@@ -277,8 +275,6 @@ public class AnalyzerGuru {
             }                   
             fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
         }
-
-        return doc;
     }
 
     /**
