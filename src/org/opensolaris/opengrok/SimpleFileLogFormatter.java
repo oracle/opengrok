@@ -18,14 +18,15 @@
  */
 
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.logging.Formatter;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -38,11 +39,10 @@ final public class SimpleFileLogFormatter extends Formatter {
 
    private final java.text.SimpleDateFormat formatter =
       new java.text.SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss.SSSZ");
-   private static final String lineSeparator = System.
-      getProperty("line.separator");
-   Date dat = new Date();
 
-   private String ts(Date date) {
+   // Format the time stamp. Must be synchronized since SimpleDateFormatter
+   // isn't thread safe.
+   private synchronized String ts(Date date) {
       return formatter.format(date);
    }
 
@@ -52,30 +52,28 @@ final public class SimpleFileLogFormatter extends Formatter {
    }
 
     @Override
-   public String format(LogRecord record) {
-      StringBuilder sb = new StringBuilder();
-      dat.setTime(record.getMillis());
-      sb.append(ts(dat));
-      sb.append(" ");
-      String loglevel = record.getLevel().getName();
-      sb.append(loglevel);
-      sb.append(" ");
-      sb.append("t");
-      sb.append(record.getThreadID());
-      sb.append(" ");
-      sb.append(classNameOnly(record.getSourceClassName()));
-      sb.append('.');
-      sb.append(record.getSourceMethodName());
-      sb.append(": ");
-      sb.append(formatMessage(record));
-      Throwable thrown = record.getThrown();
-      if (null != thrown && record.getLevel().intValue() > Level.CONFIG.intValue()) {
-         sb.append(lineSeparator);
-         java.io.ByteArrayOutputStream ba=new java.io.ByteArrayOutputStream();
-         thrown.printStackTrace(new java.io.PrintStream(ba, true));
-         sb.append(ba.toString());
-      }
-      sb.append(lineSeparator);
-      return sb.toString();
-   }
+    public String format(LogRecord record) {
+        StringWriter sw = new StringWriter();
+
+        try (PrintWriter pw = new PrintWriter(sw)) {
+            pw.print(ts(new Date(record.getMillis())));
+            pw.print(' ');
+            pw.print(record.getLevel().getName());
+            pw.print(" t");
+            pw.print(record.getThreadID());
+            pw.print(' ');
+            pw.print(classNameOnly(record.getSourceClassName()));
+            pw.print('.');
+            pw.print(record.getSourceMethodName());
+            pw.print(": ");
+            pw.print(formatMessage(record));
+            pw.println();
+            Throwable thrown = record.getThrown();
+            if (thrown != null) {
+                thrown.printStackTrace(pw);
+            }
+        }
+
+        return sw.toString();
+    }
 }

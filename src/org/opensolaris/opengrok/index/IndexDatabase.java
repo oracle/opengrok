@@ -640,17 +640,8 @@ public class IndexDatabase {
                     "Skipped file ''{0}'' because the analyzer didn''t "
                     + "understand it.",
                     path);
-            StringBuilder stack = new StringBuilder();
-            for (StackTraceElement ste : e.getStackTrace()) {
-                stack.append(ste.toString()).append(System.lineSeparator());
-            }
-            StringBuilder sstack = new StringBuilder();
-            for (Throwable t : e.getSuppressed()) {
-                for (StackTraceElement ste : t.getStackTrace()) {
-                    sstack.append(ste.toString()).append(System.lineSeparator());
-                }
-            }
-            log.log(Level.FINE, "Exception from analyzer {0}: {1} {2}{3}{4}{5}{6}", new String[]{fa.getClass().getName(), e.toString(), System.lineSeparator(), stack.toString(), System.lineSeparator(), sstack.toString()});
+            log.log(Level.FINE,
+                    "Exception from analyzer " + fa.getClass().getName(), e);
             cleanupResources(doc);
             return;
         }
