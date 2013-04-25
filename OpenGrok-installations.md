@@ -3,6 +3,7 @@
 * http://nxr.netbsd.org/ &mdash; NetBSD src and xsrc, FreeBSD, DragonFly, Linux etc
 * http://BXR.SU/ &mdash; Super User's BSD Cross Reference &mdash; FreeBSD, NetBSD, OpenBSD, DragonFly _(very fast)_
 * http://www.midnightbsd.org/opengrok/ &mdash; MidnightBSD, MirBSD and other BSDs
+* http://opengrok.quantumachine.net/ &mdash; DragonFly, FreeBSD, OpenBSD and Linux
 
 ## Programming languages:
 * http://lxr.php.net/ &mdash; PHP
