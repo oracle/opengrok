@@ -4,6 +4,7 @@
 * http://BXR.SU/ &mdash; Super User's BSD Cross Reference &mdash; FreeBSD, NetBSD, OpenBSD, DragonFly _(very fast)_
 * http://www.midnightbsd.org/opengrok/ &mdash; MidnightBSD, MirBSD and other BSDs
 * http://opengrok.quantumachine.net/ &mdash; DragonFly, FreeBSD, OpenBSD and Linux
+* http://sauce.bbqdroid.org/ &mdash; CyanogenMod Android-related projects
 
 ## Programming languages:
 * http://lxr.php.net/ &mdash; PHP
