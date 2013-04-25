@@ -10,6 +10,7 @@
 ## Office and IDE:
 * http://svn.services.openoffice.org/opengrok/ &mdash; OpenOffice
 * http://grok.openkomodo.com/source/ &mdash; Open Komodo, Mozilla
+* http://opengrok.libreoffice.org/ &mdash; LibreOffice
 
 ## Miscellaneous:
 * http://lingrok.org/ &mdash; assorted Linux-related projects _(fast)_
