@@ -37,6 +37,7 @@ import org.opensolaris.opengrok.analysis.lisp.LispSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.perl.PerlSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
+import org.opensolaris.opengrok.analysis.scala.ScalaSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.sh.ShSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.tcl.TclSymbolTokenizer;
 import static org.junit.Assert.*;
@@ -61,6 +62,7 @@ public class JFlexTokenizerTest {
         testOffsetAttribute(CSymbolTokenizer.class);
         testOffsetAttribute(CxxSymbolTokenizer.class);
         testOffsetAttribute(JavaSymbolTokenizer.class);
+		testOffsetAttribute(ScalaSymbolTokenizer.class);
         testOffsetAttribute(LispSymbolTokenizer.class);
         testOffsetAttribute(TclSymbolTokenizer.class);
 

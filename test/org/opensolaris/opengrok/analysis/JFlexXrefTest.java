@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.analysis.lisp.LispXref;
 import org.opensolaris.opengrok.analysis.perl.PerlXref;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.analysis.plain.XMLXref;
+import org.opensolaris.opengrok.analysis.scala.ScalaXref;
 import org.opensolaris.opengrok.analysis.sh.ShXref;
 import org.opensolaris.opengrok.analysis.sql.SQLXref;
 import org.opensolaris.opengrok.analysis.tcl.TclXref;
@@ -103,6 +104,7 @@ public class JFlexXrefTest {
         bug15890LineCount(new CxxXref(new StringReader(fileContents)));
         bug15890LineCount(new LispXref(new StringReader(fileContents)));
         bug15890LineCount(new JavaXref(new StringReader(fileContents)));
+		bug15890LineCount(new ScalaXref(new StringReader(fileContents)));
         bug15890LineCount(new FortranXref(new StringReader(fileContents)));
         bug15890LineCount(new XMLXref(new StringReader(fileContents)));
         bug15890LineCount(new ShXref(new StringReader(fileContents)));
