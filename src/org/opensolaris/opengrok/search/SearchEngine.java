@@ -74,7 +74,7 @@ public class SearchEngine {
     /**
      * version of lucene index common for whole app
      */
-    public static final Version LUCENE_VERSION = Version.LUCENE_42;
+    public static final Version LUCENE_VERSION = Version.LUCENE_43;
     /**
      * Holds value of property definition.
      */
