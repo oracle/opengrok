@@ -134,7 +134,7 @@ public class CtagsTest {
         // Expected method names found in the file
         String[] names = {"foo", "bar", "_fce", "__fce"};
         // Expected line numbers for the methods
-        int[] lines = {28, 51, 71, 71};
+        int[] lines = {26, 49, 69, 69};
 
         /* Perform the actual test. */
         Definitions result = getDefs("bug19195/test.s");

@@ -257,7 +257,7 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testUserPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "http://www.opensolaris.org/viewProfile.jspa?username=";
+        String page = "http://www.myserver.org/viewProfile.jspa?username=";
         assertEquals(page, instance.getUserPage());
         instance.setUserPage(page.substring(5));
         assertEquals(page.substring(5), instance.getUserPage());
@@ -266,7 +266,7 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testBugPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=";
+        String page = "http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=";
         assertEquals(page, instance.getBugPage());
         instance.setBugPage(page.substring(5));
         assertEquals(page.substring(5), instance.getBugPage());
@@ -284,7 +284,7 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testReviewPage() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        String page = "http://arc.opensolaris.org/caselog/PSARC/";
+        String page = "http://arc.myserver.org/caselog/PSARC/";
         assertEquals(page, instance.getReviewPage());
         instance.setReviewPage(page.substring(5));
         assertEquals(page.substring(5), instance.getReviewPage());
@@ -412,7 +412,7 @@ public class RuntimeEnvironmentTest {
             throws IOException {
         assertEquals(expected, env.isObfuscatingEMailAddresses());
 
-        String address = "opengrok-discuss@opensolaris.org";
+        String address = "discuss@opengrok.java.net";
 
         PlainXref xref = new PlainXref(new StringReader(address));
         StringWriter out = new StringWriter();
