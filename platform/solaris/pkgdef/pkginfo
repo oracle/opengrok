@@ -5,10 +5,8 @@
 # Common Development and Distribution License (the "License").
 # You may not use this file except in compliance with the License.
 #
-# You can obtain a copy of the license at usr/src/OPENSOLARIS.LICENSE
-# or http://www.opensolaris.org/os/licensing.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# See LICENSE.txt included in this distribution for the specific
+# language governing permissions and limitations under the License.
 #
 # When distributing Covered Code, include this CDDL HEADER in each
 # file and include the License file at usr/src/OPENSOLARIS.LICENSE.
@@ -25,7 +23,7 @@ PKG=OSOLopengrok
 BASEDIR=/
 NAME=OpenGrok
 VENDOR=http://opengrok.github.com/OpenGrok/
-EMAIL=opengrok-discuss@opensolaris.org
+EMAIL=discuss@opengrok.java.net
 CATEGORY=application
 CLASSES=none manifest
 ARCH=generic

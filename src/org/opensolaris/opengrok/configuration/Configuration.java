@@ -182,10 +182,10 @@ public final class Configuration {
         setQuickContextScan(true);
         setIgnoredNames(new IgnoredNames());
         setIncludedNames(new Filter());
-        setUserPage("http://www.opensolaris.org/viewProfile.jspa?username=");
-        setBugPage("http://bugs.opensolaris.org/bugdatabase/view_bug.do?bug_id=");
+        setUserPage("http://www.myserver.org/viewProfile.jspa?username=");
+        setBugPage("http://bugs.myserver.org/bugdatabase/view_bug.do?bug_id=");
         setBugPattern("\\b([12456789][0-9]{6})\\b");
-        setReviewPage("http://arc.opensolaris.org/caselog/PSARC/");
+        setReviewPage("http://arc.myserver.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
         setWebappLAF("default");
         setRemoteScmSupported(false);
