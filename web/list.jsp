@@ -110,7 +110,7 @@ document.pageReady.push(function() { pageReadyList();});
                     continue;
                 }
 %><h3><%= readMes.get(i) %></h3>
-<div id="src">
+<div id="src<%=i%>">
     <pre><%
                 Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
     %></pre>
