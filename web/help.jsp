@@ -78,9 +78,10 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
 <p>Regular Expression, Wildcard, Fuzzy, Proximity &amp; Range Searches:</p>
 <ul>
     <li>to perform a regular expression search use the "<b>/</b>" enclosure,
-        e.g.  /[mb]an/ - will search for man or for ban;
+        e.g.  /[mb]an/ - will search for man or for ban;<br>
         NOTE: path field search escapes "/" by default, so it only supports 
-        regexps when the search string <u>starts and ends</u> with "/"
+        regexps when the search string <u>starts and ends</u> with "/".<br>
+        More info can be found on <a href="http://lucene.apache.org/core/4_3_0/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
     </li>
     <li>to perform a single character wildcard search use the "<b>?</b>" symbol,
         e.g.  te?t</li>
@@ -148,15 +149,15 @@ the term(phrases) can be boosted (making it more relevant) using a caret
 <dfn><b>Examples:</b></dfn>
 <pre class="example">
 
-To find where setResourceMonitors is defined: <a
-href="search?q=&amp;defs=setResourceMonitors">defs:setResourceMonitors</a>
+To find where setResourceMonitors is defined: 
+<a href="search?q=&amp;defs=setResourceMonitors">defs:setResourceMonitors</a>
 
 To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:
 <a href="search?refs=sprintf&amp;path=usr%2Fsrc%2Fcmd%2Fcmd-inet%2Fusr.sbin%2F"
 >refs:sprintf path:usr/src/cmd/cmd-inet/usr.sbin</a>
 
-To find assignments to variable Asign:
-<a href="search?q=%22asign+%3D+%22">"Asign="</a>
+To find assignments to variable foo:
+<a href="search?q=%22foo+%3D%22">"foo ="</a>
 
 To find Makefiles where pstack binary is being built:
 <a href="search?q=pstack&amp;path=Makefile">pstack path:Makefile</a>
@@ -169,15 +170,19 @@ To find perl files that do not use /usr/bin/perl but something else:
 >-"/usr/bin/perl" +"/bin/perl"</a>
 
 To find all strings begining with foo use the wildcard:
-<a href="search?q=foo*">foo*</a>
+<a href="search?q=foo*">sefoo*</a>
 
 To find all files which have . c in their name(dot is a token!):
 <a href="search?path=%22. c%22">". c"</a>
 
+To find all files which start with "ma" and then have only alphabet characters do:
+<a href="search?path=/ma[a-zA-Z]*/">/ma[a-zA-Z]*/</a>
+
 </pre>
 
 <p>Opengrok search is powered by <a href="http://lucene.apache.org/"
->lucene</a>, for more detail on query syntax refer to lucene docs.</p>
+>lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_3_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
+</p>
         </div>
 <%
 }
