@@ -49,6 +49,7 @@ public class QueryBuilder {
     public static final String REFS = "refs";
     public static final String PATH = "path";
     public static final String HIST = "hist";
+    public static final String FILETYPE = "fileType";
     /**
      * Fields we use in lucene internal ones
      */
@@ -159,6 +160,25 @@ public class QueryBuilder {
      */
     public String getHist() {
         return getQueryText(HIST);
+    }
+    
+    /**
+     * Set search string for the "fileType" field.
+     *
+     * @param fileType query string to set
+     * @return this instance
+     */
+    public QueryBuilder setFileType(String fileType) {
+        return addQueryText(FILETYPE, fileType);
+    }
+
+    /**
+     * Get search string for the "fileType" field.
+     *
+     * @return {@code null} if not set, the query string otherwise.
+     */
+    public String getFileType() {
+        return getQueryText(FILETYPE);
     }
 
     /**

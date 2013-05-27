@@ -278,6 +278,9 @@ public class AnalyzerGuru {
                     ));
             }                   
             fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
+            
+            String fileType = fa.getFileTypeName();
+            doc.add(new StringField(QueryBuilder.FILETYPE, fileType, Store.YES));
         }
     }
 
