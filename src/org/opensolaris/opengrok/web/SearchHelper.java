@@ -29,7 +29,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -162,12 +165,53 @@ public class SearchHelper {
      */
     public HistoryContext historyContext;
     /**
+     * User readable description for file types.
+     * Only those listed in fileTypeDescription will be shown
+     * to the user.
+     */
+    private static final Map<String, String> fileTypeDescription;
+    /**
      * Default query parse error message prefix
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
     private ExecutorService executor = null;
     private static final Logger log = Logger.getLogger(SearchHelper.class.getName());
 
+    static {
+        fileTypeDescription = new TreeMap<>();
+        
+        fileTypeDescription.put("xml", "XML");
+        fileTypeDescription.put("troff", "Troff");
+        fileTypeDescription.put("elf", "ELF");
+        fileTypeDescription.put("javaclass", "Java class");
+        fileTypeDescription.put("image", "Image file");
+        fileTypeDescription.put("c", "C");
+        fileTypeDescription.put("csharp", "C#");
+        fileTypeDescription.put("vb", "Visual Basic");
+        fileTypeDescription.put("cxx", "C++");
+        fileTypeDescription.put("sh", "Shell script");
+        fileTypeDescription.put("java", "Java");
+        fileTypeDescription.put("javascript", "JavaScript");
+        fileTypeDescription.put("python", "Python");
+        fileTypeDescription.put("perl", "Perl");
+        fileTypeDescription.put("php", "PHP");
+        fileTypeDescription.put("lisp", "Lisp");
+        fileTypeDescription.put("tcl", "Tcl");
+        fileTypeDescription.put("scala", "Scala");
+        fileTypeDescription.put("sql", "SQL");
+        fileTypeDescription.put("plsql", "PL/SQL");
+        fileTypeDescription.put("fortran", "Fortran");
+    }
+    
+    /**
+     * Returns a set of file type descriptions to be used for a
+     * search form.
+     * @return Set of tuples with file type and description.
+     */
+    public static Set<Map.Entry<String, String>> getFileTypeDescirptions() {
+        return fileTypeDescription.entrySet();
+    }
+    
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
