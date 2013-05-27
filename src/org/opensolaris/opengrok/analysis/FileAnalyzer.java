@@ -129,6 +129,23 @@ public class FileAnalyzer extends Analyzer {
         this.factory = factory;        
                         
     }
+    
+    /**
+     * Returns the normalized name of the analyzer,
+     * which should corresponds to the file type.
+     * Example: The analyzer for the C language (CAnalyzer) would return “c”.
+     * @return Normalized name of the analyzer.
+     */
+    public String getFileTypeName() {
+        String name = this.getClass().getSimpleName().toLowerCase();
+        String suffix = "analyzer";
+        
+        if (name.endsWith(suffix)) {
+            return name.substring(0, name.length() - suffix.length());
+        }
+        
+        return name.toLowerCase();
+    }
 
     /**
      * Analyze the contents of a source file. This includes populating the

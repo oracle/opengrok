@@ -461,7 +461,12 @@ public final class PageConfig {
      */
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
-            queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q")).setDefs(req.getParameter("defs")).setRefs(req.getParameter("refs")).setPath(req.getParameter("path")).setHist(req.getParameter("hist"));
+            queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q"))
+                    .setDefs(req.getParameter("defs"))
+                    .setRefs(req.getParameter("refs"))
+                    .setPath(req.getParameter("path"))
+                    .setHist(req.getParameter("hist"))
+                    .setFileType(req.getParameter("type"));
 
             // This is for backward compatibility with links created by OpenGrok
             // 0.8.x and earlier. We used to concatenate the entire query into a

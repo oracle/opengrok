@@ -36,13 +36,14 @@ import org.opensolaris.opengrok.util.Getopt;
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 final class Search {
 
-    private static final String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f] 'query string' ..\n" +
+    private static final String usage = "USAGE: Search -R <configuration.xml> [-d | -r | -p | -h | -f | -t] 'query string' ..\n" +
             "\t -R <configuration.xml> Read configuration from the specified file\n" +
             "\t -d Symbol Definitions\n" +
             "\t -r Symbol References\n" +
             "\t -p Path\n" +
             "\t -h History\n" +
-            "\t -f Full text";
+            "\t -f Full text\n" +
+            "\t -t File Type";
 
     private SearchEngine engine;
     final List<Hit> results = new ArrayList<Hit>();
@@ -52,7 +53,7 @@ final class Search {
     @SuppressWarnings({"PMD.SwitchStmtsShouldHaveDefault"})
     protected boolean parseCmdLine(String[] argv) {
         engine = new SearchEngine();
-        Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:");
+        Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:t:");
         try {
             getopt.parse();
         } catch (Exception e) {
@@ -87,6 +88,9 @@ final class Search {
                     break;
                 case 'f':
                     engine.setFreetext(getopt.getOptarg());
+                    break;
+                case 't':
+                    engine.setFileType(getopt.getOptarg());
                     break;
             }
         }

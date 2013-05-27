@@ -23,7 +23,9 @@ Use is subject to license terms.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%><%@page import="org.opensolaris.opengrok.web.SearchHelper"%>
+<%@page import="java.util.Map"%>
+<%@page import="
 java.util.SortedSet,
 java.util.TreeMap,
 java.util.Map.Entry,
@@ -100,6 +102,24 @@ org.opensolaris.opengrok.web.Util"
         <td><label for="s5">History</label></td>
         <td><input class="q" tabindex="5" name="hist" id="hist" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
+    </tr>
+    <tr>
+        <td><label for="s5">Type</label></td>
+        <td><select class="q" tabindex="6" name="type" id="type"><%
+                String selection = queryParams.getFileType();  
+                %>
+                <option value="">Any</option><%
+                for (Map.Entry<String, String> d : SearchHelper.getFileTypeDescirptions()) {
+                    %>
+                <option value="<%= d.getKey() %>"<% 
+                    if (d.getKey().equals(selection)) {
+                        %> selected="selected"<%
+                    }
+                    %>><%= Util.formQuoteEscape(d.getValue()) %></option><%
+                }
+            %>
+            </select>
+        </td>
     </tr>
 <%-- TODO  Bug 11749
 <%
