@@ -154,6 +154,8 @@ input.submit { /* start search button */
 
 /* ############### start of content ############## */
 #content {
+  position: static;
+  overflow-x: hidden;
 }
 
 
