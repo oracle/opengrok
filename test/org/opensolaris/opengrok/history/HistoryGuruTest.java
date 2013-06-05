@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -46,7 +45,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 public class HistoryGuruTest {
 
     private static TestRepository repository = new TestRepository();
-    private static List<File> files = new ArrayList<File>();
+    private static List<File> files = new ArrayList<>();
 
     public HistoryGuruTest() {
     }
@@ -59,6 +58,19 @@ public class HistoryGuruTest {
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
             files, true);
         RuntimeEnvironment.getInstance().setVerbose(true);
+        
+        HistoryGuru instance = HistoryGuru.getInstance();
+        instance.addRepositories(repository.getSourceRoot());
+                
+        instance.createCache();
+        Collection<String> repos = new ArrayList<>();
+        repos.add("git");
+        repos.add("bazaar");
+        repos.add("mercurial");
+        repos.add("teamware");
+        repos.add("rcs_test");
+        repos.add("nonexistent");
+        instance.createCache(repos);
     }
 
     @AfterClass
@@ -77,26 +89,6 @@ public class HistoryGuruTest {
     @Test
     public void testGetInstance() {
         assertNotNull(HistoryGuru.getInstance());
-    }
-
-    @Test
-    public void testAddRepositories() throws IOException {
-        HistoryGuru instance = HistoryGuru.getInstance();
-        instance.addRepositories(repository.getSourceRoot());
-    }
-
-    @Test
-    public void testCreateCache() {
-        HistoryGuru instance = HistoryGuru.getInstance();
-        instance.createCache();
-        Collection<String> repos = new ArrayList<String>();
-        repos.add("git");
-        repos.add("bazaar");
-        repos.add("mercurial");
-        repos.add("teamware");
-        repos.add("rcs_test");
-        repos.add("nonexistent");
-        instance.createCache(repos);
     }
 
     @Test

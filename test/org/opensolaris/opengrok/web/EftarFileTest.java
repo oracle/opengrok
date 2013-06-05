@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -65,6 +65,13 @@ public class EftarFileTest {
         } finally {
             try { out.close(); } catch (Exception e) { }
         }
+        //create eftar files
+        String[] args = new String[2];
+        args[0] = tsv.getAbsolutePath();
+        args[1] = eftar.getAbsolutePath();
+
+        EftarFile ef = new EftarFile();
+        ef.create(args);
     }
 
     @AfterClass
@@ -84,21 +91,6 @@ public class EftarFileTest {
 
     @After
     public void tearDown() throws Exception {
-    }
-
-    /**
-     * Test creation of an EftarFile
-     * @throws java.lang.Exception if an error occurs while creating the
-     *                             eftar file
-     */
-    @Test
-    public void createEftarFile() throws Exception {
-        String[] args = new String[2];
-        args[0] = tsv.getAbsolutePath();
-        args[1] = eftar.getAbsolutePath();
-
-        EftarFile ef = new EftarFile();
-        ef.create(args);
     }
 
     /**
