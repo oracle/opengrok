@@ -439,6 +439,7 @@ FindJavaHome()
     case "${OS_NAME}:${OS_VERSION}" in
         SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
         SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
+        SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
         Linux:*)
             if [ -f /etc/alternatives/java ]
             then
@@ -491,8 +492,7 @@ FindApplicationServerType()
 
     if [    -d "/var/tomcat6/webapps"        \
          -o -d "/var/lib/tomcat6/webapps"    \
-         -o -d "/var/lib/tomcat5/webapps"    \
-         -o -d "/var/lib/tomcat5.5/webapps"  \
+         -o -d "/var/lib/tomcat7/webapps"    \
        ]
     then
         echo "Tomcat"
@@ -525,8 +525,7 @@ DetermineWarDirectoryTomcat()
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
         /var/lib/tomcat6        \
-        /var/lib/tomcat5        \
-        /var/lib/tomcat5.5
+        /var/lib/tomcat7
     do
         if [ -d "${prefix}/webapps" ]
         then
