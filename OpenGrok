@@ -492,7 +492,7 @@ FindApplicationServerType()
 
     if [    -d "/var/tomcat6/webapps"        \
          -o -d "/var/lib/tomcat6/webapps"    \
-         -o -d "/var/lib/tomcat7/webapps"
+         -o -d "/var/lib/tomcat7/webapps"    \
        ]
     then
         echo "Tomcat"
