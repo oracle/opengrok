@@ -580,7 +580,8 @@ public final class Util {
             return q == null ? "" : URLEncoder.encode(q, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             // Should not happen. UTF-8 must be supported by JVMs.
-            Logger.getLogger(EftarFileReader.class.getName()).log(Level.WARNING, "Failed to URL-encode UTF-8: ", e);            
+            Logger.getLogger(Util.class.getName()).log(
+                    Level.WARNING, "Failed to URL-encode UTF-8: ", e);
         }
         return null;
     }
@@ -649,8 +650,8 @@ public final class Util {
     }
 
     /**
-     * Replace all quote characters (ASCI 0x22) with the corresponding html
-     * entity (&amp;quot;).
+     * Escape a string for use as in an HTML attribute value. The returned
+     * value is not enclosed in double quotes. The caller needs to add those.
      * @param q string to escape.
      * @return an empty string if a parameter is {@code null}, the mangled
      *  string otherwise.
@@ -665,6 +666,8 @@ public final class Util {
             c = q.charAt(i);
             if (c == '"') {
                 sb.append("&quot;");
+            } else if (c == '&') {
+                sb.append("&amp;");
             } else {
                 sb.append(c);
             }
