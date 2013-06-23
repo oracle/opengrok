@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page session="false" errorPage="error.jsp" import="
@@ -134,18 +134,23 @@ include file="menu.jspf"
         for (Suggestion hint : hints) {
         %><p><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
             for (String word : hint.freetext) {
-            %> <a href=search?q=<%= word %>><%= word %></a> &nbsp;  <%
+            %> <a href="search?q=<%= Util.URIEncode(word) %>"><%=
+                Util.htmlize(word) %></a> &nbsp; <%
             }
             for (String word : hint.refs) {
-            %> <a href=search?refs=<%= word %>><%= word %></a> &nbsp;  <%
+            %> <a href="search?refs=<%= Util.URIEncode(word) %>"><%=
+                Util.htmlize(word) %></a> &nbsp; <%
             }
             for (String word : hint.defs) {
-            %> <a href=search?defs=<%= word %>><%= word %></a> &nbsp;  <%
+            %> <a href="search?defs=<%= Util.URIEncode(word) %>"><%=
+                Util.htmlize(word) %></a> &nbsp; <%
             }
         %></p><%
         }
         %>
-        <p> Your search <b><%= searchHelper.query %></b> did not match any files.
+        <p> Your search <b><%
+            Util.htmlize(searchHelper.query.toString(), out); %></b>
+            did not match any files.
             <br/> Suggestions:<br/>
         </p>
         <ul>
@@ -198,7 +203,8 @@ include file="menu.jspf"
             thispage = totalHits - start;
         }
         %>
-        <p class="pagetitle">Searched <b><%= searchHelper.query
+        <p class="pagetitle">Searched <b><%
+            Util.htmlize(searchHelper.query.toString(), out);
             %></b> (Results <b> <%= start + 1 %> - <%= thispage + start
             %></b> of <b><%= totalHits %></b>) sorted by <%=
             searchHelper.order.getDesc() %></p><%

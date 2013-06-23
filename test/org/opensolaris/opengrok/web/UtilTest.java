@@ -179,6 +179,7 @@ public class UtilTest {
         assertEquals("", Util.formQuoteEscape(null));
         assertEquals("abc", Util.formQuoteEscape("abc"));
         assertEquals("&quot;abc&quot;", Util.formQuoteEscape("\"abc\""));
+        assertEquals("&amp;aring;", Util.formQuoteEscape("&aring;"));
     }
 
     @Test
