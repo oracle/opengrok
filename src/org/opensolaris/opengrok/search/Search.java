@@ -43,7 +43,7 @@ final class Search {
             "\t -p Path\n" +
             "\t -h History\n" +
             "\t -f Full text\n" +
-            "\t -t File Type";
+            "\t -t Type";
 
     private SearchEngine engine;
     final List<Hit> results = new ArrayList<Hit>();
@@ -90,7 +90,7 @@ final class Search {
                     engine.setFreetext(getopt.getOptarg());
                     break;
                 case 't':
-                    engine.setFileType(getopt.getOptarg());
+                    engine.setType(getopt.getOptarg());
                     break;
             }
         }

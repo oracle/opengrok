@@ -53,6 +53,44 @@ include file="menu.jspf"
         </div>
         <div id="help">
 <p>
+
+<dfn><b>Examples:</b></dfn>
+<pre class="example">
+
+To find where setResourceMonitors is defined: 
+<a href="search?q=&amp;defs=setResourceMonitors">defs:setResourceMonitors</a>
+
+To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:
+<a href="search?refs=sprintf&amp;path=usr%2Fsrc%2Fcmd%2Fcmd-inet%2Fusr.sbin%2F"
+>refs:sprintf path:usr/src/cmd/cmd-inet/usr.sbin</a>
+
+To find assignments to variable foo:
+<a href="search?q=%22foo+%3D%22">"foo ="</a>
+
+To find Makefiles where pstack binary is being built:
+<a href="search?q=pstack&amp;path=Makefile">pstack path:Makefile</a>
+
+to search for phrase "Bill Joy":
+<a href="search?q=%22Bill+Joy%22">"Bill Joy"</a>
+
+To find perl files that do not use /usr/bin/perl but something else:
+<a href="search?q=-%22%2Fusr%2Fbin%2Fperl%22+%2B%22%2Fbin%2Fperl%22"
+>-"/usr/bin/perl" +"/bin/perl"</a>
+
+To find all strings begining with foo use the wildcard:
+<a href="search?q=foo*">foo*</a>
+
+To find all files which have . c in their name(dot is a token!):
+<a href="search?path=%22. c%22">". c"</a>
+
+To find all files which start with "ma" and then have only alphabet characters do:
+<a href="search?path=/ma[a-zA-Z]*/">path:/ma[a-zA-Z]*/</a>
+
+To find all main methods in all files analyzed by C analyzer (so .c, .h, ...) do:
+<a href="search?q=main&type=c">main type:c</a>
+</pre>
+<br/>
+<dfn><b>More info:</b></dfn><br/><br/>
 A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
 <ul>
     <li>a plus "<b>+</b>" or a minus "<b>-</b>" sign, indicating that the clause
@@ -81,7 +119,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
         e.g.  /[mb]an/ - will search for man or for ban;<br>
         NOTE: path field search escapes "/" by default, so it only supports 
         regexps when the search string <u>starts and ends</u> with "/".<br>
-        More info can be found on <a href="http://lucene.apache.org/core/4_3_0/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
+        More info can be found on <a href="http://lucene.apache.org/core/4_3_1/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
     </li>
     <li>to perform a single character wildcard search use the "<b>?</b>" symbol,
         e.g.  te?t</li>
@@ -129,16 +167,20 @@ So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</
 <dd>Search through all text tokens(words,strings,identifiers,numbers) in index.</dd>
 
 <dt>defs</dt>
-<dd>Only finds symbol definitions.</dd>
+<dd>Only finds symbol definitions(where e.g. a variable(function, ...) is defined).</dd>
 
 <dt>refs</dt>
-<dd>Only finds symbols.</dd>
+<dd>Only finds symbols(e.g. methods, classes, functions, variables).</dd>
 
 <dt>path</dt>
-<dd>path of the source file.</dd>
+<dd>path of the source file(no need to use dividers).</dd>
 
 <dt>hist</dt>
 <dd>History log comments.</dd>
+
+<dt>type</dt>
+<dd>Type of analyzer used to scope down to certain file types(e.g. just C sources).<br/>Current mappings: <%=SearchHelper.getFileTypeDescirptions().toString()%></dd>
+
     </dl>
 
 <p>
@@ -146,42 +188,8 @@ the term(phrases) can be boosted (making it more relevant) using a caret
 <b>^</b> , e.g. help^4 opengrok - will make term help boosted
 </p>
 
-<dfn><b>Examples:</b></dfn>
-<pre class="example">
-
-To find where setResourceMonitors is defined: 
-<a href="search?q=&amp;defs=setResourceMonitors">defs:setResourceMonitors</a>
-
-To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:
-<a href="search?refs=sprintf&amp;path=usr%2Fsrc%2Fcmd%2Fcmd-inet%2Fusr.sbin%2F"
->refs:sprintf path:usr/src/cmd/cmd-inet/usr.sbin</a>
-
-To find assignments to variable foo:
-<a href="search?q=%22foo+%3D%22">"foo ="</a>
-
-To find Makefiles where pstack binary is being built:
-<a href="search?q=pstack&amp;path=Makefile">pstack path:Makefile</a>
-
-to search for phrase "Bill Joy":
-<a href="search?q=%22Bill+Joy%22">"Bill Joy"</a>
-
-To find perl files that do not use /usr/bin/perl but something else:
-<a href="search?q=-%22%2Fusr%2Fbin%2Fperl%22+%2B%22%2Fbin%2Fperl%22"
->-"/usr/bin/perl" +"/bin/perl"</a>
-
-To find all strings begining with foo use the wildcard:
-<a href="search?q=foo*">sefoo*</a>
-
-To find all files which have . c in their name(dot is a token!):
-<a href="search?path=%22. c%22">". c"</a>
-
-To find all files which start with "ma" and then have only alphabet characters do:
-<a href="search?path=/ma[a-zA-Z]*/">/ma[a-zA-Z]*/</a>
-
-</pre>
-
 <p>Opengrok search is powered by <a href="http://lucene.apache.org/"
->lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_3_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
+>lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_3_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
 </p>
         </div>
 <%

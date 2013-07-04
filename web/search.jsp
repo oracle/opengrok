@@ -45,7 +45,7 @@ include file="projects.jspf"
             Util.appendQuery(url, "refs", qb.getRefs());
             Util.appendQuery(url, "path", qb.getPath());
             Util.appendQuery(url, "hist", qb.getHist());
-            Util.appendQuery(url, "type", qb.getFileType());
+            Util.appendQuery(url, "type", qb.getType());
         }
         if (sh.projects != null && sh.projects.size() != 0) {
             Util.appendQuery(url, "project", cfg.getRequestedProjectsAsString());

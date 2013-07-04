@@ -78,34 +78,34 @@ org.opensolaris.opengrok.web.Util"
 <div id="qtbl">
 <table>
     <tr>
-        <td><label for="s1">Full&nbsp;Search</label></td>
+        <td><label for="s1" title="The text token(s) or other fields to be found(lucene query, this is not full text!)">Full&nbsp;Search</label></td>
         <td><input tabindex="1" class="q" name="q" id="q" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="s2">Definition</label></td>
+	    <td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
         <td><input class="q" tabindex="2" name="defs" id="defs" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="s3">Symbol</label></td>
+        <td><label for="s3" title="Usage of function/variable/class">Symbol</label></td>
         <td><input class="q" tabindex="3" name="refs" id="refs" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="s4">File&nbsp;Path</label></td>
+        <td><label for="s4" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
         <td><input class="q" tabindex="4" name="path" id="path" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
     <tr>
-        <td><label for="s5">History</label></td>
+        <td><label for="s5" title="Search in log messages">History</label></td>
         <td><input class="q" tabindex="5" name="hist" id="hist" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s5">Type</label></td>
         <td><select class="q" tabindex="6" name="type" id="type"><%
-                String selection = queryParams.getFileType();  
+                String selection = queryParams.getType();  
                 %>
                 <option value="">Any</option><%
                 for (Map.Entry<String, String> d : SearchHelper.getFileTypeDescirptions()) {
@@ -186,12 +186,12 @@ org.opensolaris.opengrok.web.Util"
     }
     %>
 
-<p><input
-    tabindex="9" class="submit" type="submit" value="Search"/> <input
-    tabindex="10" class="submit" onclick="javascript: clearSearchFrom();" type="button"
-    value=" Clear "/> <button class="help"
-    tabindex="11" onclick="window.open('help.jsp')">Help</button>
-</p>
+    <p><input tabindex="9" class="submit" type="submit" value="Search"/> 
+    <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();" 
+	   type="button" value=" Clear "/> 
+    <button class="help" tabindex="11" onclick="window.open('help.jsp');">Help
+    </button>
+    </p>
 </form>
 <%
 }

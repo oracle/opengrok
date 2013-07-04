@@ -279,8 +279,8 @@ public class AnalyzerGuru {
             }                   
             fa.analyze(doc, StreamSource.fromFile(file), xrefOut);
             
-            String fileType = fa.getFileTypeName();
-            doc.add(new StringField(QueryBuilder.FILETYPE, fileType, Store.YES));
+            String type = fa.getFileTypeName();
+            doc.add(new StringField(QueryBuilder.TYPE, type, Store.YES));
         }
     }
 

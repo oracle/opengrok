@@ -96,9 +96,9 @@ public class SearchEngine {
      */
     private String symbol;
     /**
-     * Holds value of property fileType
+     * Holds value of property type
      */
-    private String fileType;
+    private String type;
     /**
      * Holds value of property indexDatabase.
      */
@@ -141,7 +141,7 @@ public class SearchEngine {
                 .setRefs(symbol)
                 .setPath(file)
                 .setHist(history)
-                .setFileType(fileType);
+                .setType(type);
     }
 
     public boolean isValidQuery() {
@@ -495,20 +495,20 @@ public class SearchEngine {
     }
     
     /**
-     * Getter for property fileType.
+     * Getter for property type.
      *
-     * @return Value of property fileType.
+     * @return Value of property type.
      */
-    public String getFileType() {
-        return this.fileType;
+    public String getType() {
+        return this.type;
     }
 
     /**
-     * Setter for property fileType.
+     * Setter for property type.
      *
-     * @param fileType New value of property fileType.
+     * @param type New value of property type.
      */
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
+    public void setType(String fileType) {
+        this.type = fileType;
     }
 }
