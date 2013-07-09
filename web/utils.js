@@ -423,13 +423,6 @@ function clearSearchFrom() {
         }
     );    
     $("#type :selected").removeAttr("selected");
-//    $("#project *").each(
-//        function() {
-//            if ($(this).attr("selected")) {
-//                $(this).removeAttr("selected");
-//            } 
-//        }
-//    );
 }
 
 function checkEnter(event) {
