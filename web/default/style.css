@@ -45,7 +45,7 @@ tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
 }
 
 input, button {
-	border: 1px #bbbbff #755;
+	border: 1px solid #bbbbff;
 	border-radius: 0.75ex;
 	-moz-border-radius: 0.75ex;
 	background-color: #a3b8cb;
@@ -465,7 +465,7 @@ table#dirlist { /* the "Name" column */
 	display: inline-block;
 	width: 6ex;
 	text-align: right;
-	padding-right: 0 1ex;
+	padding-right: 0;
 	margin-right: .5ex;
 	background-color: #dddddd;
 	color: #666;

@@ -46,7 +46,7 @@ tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
 }
 
 input, button {
-	border: 1px solid #bbb #755;
+	border: 1px solid #bbb;
 	border-radius: 0.75ex;
 	-moz-border-radius: 0.75ex;
 	background-image: -webkit-gradient(

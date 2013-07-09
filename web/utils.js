@@ -401,7 +401,7 @@ function invertAllProjects() {
     $("#project *").each(
         function() {
             if ($(this).attr("selected")) {
-                $(this).removeAttr("selected")
+                $(this).removeAttr("selected");
             } else {
                 $(this).attr("selected", "true");
             }
@@ -422,13 +422,7 @@ function clearSearchFrom() {
                 $(this).attr("value", "");            
         }
     );    
-    $("#project *").each(
-        function() {
-            if ($(this).attr("selected")) {
-                $(this).removeAttr("selected")
-            } 
-        }
-    );
+    $("#type :selected").removeAttr("selected");
 }
 
 function checkEnter(event) {

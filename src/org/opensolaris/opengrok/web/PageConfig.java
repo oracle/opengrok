@@ -466,7 +466,7 @@ public final class PageConfig {
                     .setRefs(req.getParameter("refs"))
                     .setPath(req.getParameter("path"))
                     .setHist(req.getParameter("hist"))
-                    .setFileType(req.getParameter("type"));
+                    .setType(req.getParameter("type"));
 
             // This is for backward compatibility with links created by OpenGrok
             // 0.8.x and earlier. We used to concatenate the entire query into a
