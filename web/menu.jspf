@@ -78,7 +78,7 @@ org.opensolaris.opengrok.web.Util"
 <div id="qtbl">
 <table>
     <tr>
-        <td><label for="s1" title="The text token(s) or other fields to be found(lucene query, this is not full text!)">Full&nbsp;Search</label></td>
+        <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
         <td><input tabindex="1" class="q" name="q" id="q" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>

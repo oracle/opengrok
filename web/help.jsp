@@ -80,7 +80,7 @@ To find perl files that do not use /usr/bin/perl but something else:
 To find all strings begining with foo use the wildcard:
 <a href="search?q=foo*">foo*</a>
 
-To find all files which have . c in their name(dot is a token!):
+To find all files which have . c in their name (dot is a token!):
 <a href="search?path=%22. c%22">". c"</a>
 
 To find all files which start with "ma" and then have only alphabet characters do:
@@ -127,7 +127,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
         symbol, e.g. test* or te*t</li>
     <li>you can use a * or ? symbol as the first character of a search
         (unless not enabled using indexer option -a).</li>
-    <li>to do a fuzzy search(find words similar in spelling, based on the
+    <li>to do a fuzzy search (find words similar in spelling, based on the
         Levenshtein Distance, or Edit Distance algorithm) use the tilde,
         "<b>~</b>", e.g. rcs~ </li>
     <li>to do a proximity search use the tilde, "~", symbol at the end of a
@@ -151,8 +151,8 @@ for <b>(1+1):2</b> use the query: <b>\(1\+1\)\:2</b>
 </p>
 <p>NOTE on analyzers: Indexed words are made up of Alpha-Numeric and Underscore
 characters. One letter words are usually not indexed as symbols!<br/>
-Most other characters(including single and double quotes) are treated as
-"spaces/whitespace"(so even if you escape them, they will not be found, since
+Most other characters (including single and double quotes) are treated as
+"spaces/whitespace" (so even if you escape them, they will not be found, since
 most analyzers ignore them). <br/>
 The exceptions are: <b>@ $ % ^ &amp; = ? . :</b> which are mostly indexed as
 separate words.<br/>
@@ -164,27 +164,27 @@ So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</
 <p>valid <dfn>FIELDs</dfn> are</p>
     <dl class="fields">
 <dt>full</dt>
-<dd>Search through all text tokens(words,strings,identifiers,numbers) in index.</dd>
+<dd>Search through all text tokens (words,strings,identifiers,numbers) in index.</dd>
 
 <dt>defs</dt>
-<dd>Only finds symbol definitions(where e.g. a variable(function, ...) is defined).</dd>
+<dd>Only finds symbol definitions (where e.g. a variable (function, ...) is defined).</dd>
 
 <dt>refs</dt>
-<dd>Only finds symbols(e.g. methods, classes, functions, variables).</dd>
+<dd>Only finds symbols (e.g. methods, classes, functions, variables).</dd>
 
 <dt>path</dt>
-<dd>path of the source file(no need to use dividers).</dd>
+<dd>path of the source file (no need to use dividers).</dd>
 
 <dt>hist</dt>
 <dd>History log comments.</dd>
 
 <dt>type</dt>
-<dd>Type of analyzer used to scope down to certain file types(e.g. just C sources).<br/>Current mappings: <%=SearchHelper.getFileTypeDescirptions().toString()%></dd>
+<dd>Type of analyzer used to scope down to certain file types (e.g. just C sources).<br/>Current mappings: <%=SearchHelper.getFileTypeDescirptions().toString()%></dd>
 
     </dl>
 
 <p>
-the term(phrases) can be boosted (making it more relevant) using a caret
+the term (phrases) can be boosted (making it more relevant) using a caret
 <b>^</b> , e.g. help^4 opengrok - will make term help boosted
 </p>
 
