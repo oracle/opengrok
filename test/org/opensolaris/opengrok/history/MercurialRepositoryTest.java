@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -44,6 +43,7 @@ public class MercurialRepositoryTest {
      * that is latest changeset first.
      */
     private static final String[] REVISIONS = {
+        "9:8b340409b3a8",
         "8:6a8c423f5624", "7:db1394c05268", "6:e386b51ddbcc",
         "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470",
         "2:585a1b3f2efb", "1:f24a5fd7a85d", "0:816b6279ae9c"

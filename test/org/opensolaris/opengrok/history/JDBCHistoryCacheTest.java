@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -37,6 +37,8 @@ import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.opensolaris.opengrok.configuration.Configuration;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -100,6 +102,9 @@ public class JDBCHistoryCacheTest extends TestCase {
                 throw sqle;
             }
         }
+
+        // Reset any changes the test made to the runtime environment.
+        RuntimeEnvironment.getInstance().setConfiguration(new Configuration());
     }
 
     /**
@@ -220,7 +225,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         History updatedHistory = cache.get(reposRoot, repos, true);
 
         HistoryEntry newEntry = new HistoryEntry(
-                "9:41e110bfdfb9",
+                "10:1e392ef0b0ed",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
                 "xyz", null, "Return failure when executed with no arguments",
                 true);
@@ -269,7 +274,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         importHgChangeset(
                 reposRoot, getClass().getResource("hg-export.txt").getPath());
         repos.createCache(cache, latestRevision);
-        assertEquals("9:41e110bfdfb9", cache.getLatestCachedRevision(repos));
+        assertEquals("10:1e392ef0b0ed", cache.getLatestCachedRevision(repos));
     }
 
     /**
@@ -432,5 +437,41 @@ public class JDBCHistoryCacheTest extends TestCase {
         assertSameEntries(
                 entries,
                 cache.get(reposRoot, r, true).getHistoryEntries());
+    }
+
+    /**
+     * Test that tags work. Issue #101.
+     */
+    public void testTags() throws Exception {
+        // Enable tags
+        RuntimeEnvironment.getInstance().setTagsEnabled(true);
+
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository repos = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repos.getHistory(reposRoot);
+        cache.store(historyToStore, repos);
+        cache.optimize();
+
+        List<HistoryEntry> dirHistory =
+                cache.get(reposRoot, repos, false).getHistoryEntries();
+        assertEquals("Size of history", 10, dirHistory.size());
+        assertEquals("tip", dirHistory.get(0).getTags());
+        assertNull(dirHistory.get(1).getTags());
+        assertEquals("start_of_novel", dirHistory.get(2).getTags());
+        assertNull(dirHistory.get(3).getTags());
+
+        List<HistoryEntry> novelHistory =
+                cache.get(new File(reposRoot, "novel.txt"),
+                          repos, false).getHistoryEntries();
+        assertEquals("Size of history", 2, novelHistory.size());
+        assertEquals("tip", novelHistory.get(0).getTags());
+        assertEquals("start_of_novel", novelHistory.get(1).getTags());
+
+        List<HistoryEntry> maincHistory =
+                cache.get(new File(reposRoot, "main.c"),
+                          repos, false).getHistoryEntries();
+        assertEquals("Size of history", 2, maincHistory.size());
+        assertEquals("tip, start_of_novel", maincHistory.get(0).getTags());
+        assertNull(maincHistory.get(1).getTags());
     }
 }
