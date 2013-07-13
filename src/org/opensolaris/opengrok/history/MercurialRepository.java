@@ -74,7 +74,7 @@ public class MercurialRepository extends Repository {
 
     /** Template for formatting hg log output for directories. */
     private static final String DIR_TEMPLATE = TEMPLATE
-        + "files: {files}{file_copies}\\n";
+        + "files: {files} {file_copies}\\n";
 
     public MercurialRepository() {
         type = "Mercurial";
