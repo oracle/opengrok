@@ -231,7 +231,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 | 
 |Y
-|P (through https://github.com/jdevera/vimN/AopengrokN/Asearch)
+|P (through https://github.com/jdevera/vim-opengrok-search)
 |-
 |Integration with doxygen
 | 
