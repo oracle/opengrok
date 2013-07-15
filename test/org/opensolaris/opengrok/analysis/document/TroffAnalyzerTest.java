@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.opensolaris.opengrok.web.Util;
 import static org.junit.Assert.*;
 import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  * @author  Jens Elkner
@@ -50,19 +51,24 @@ public class TroffAnalyzerTest {
     private static TroffAnalyzerFactory factory;
     private static TroffAnalyzer analyzer;
     private static String content;
+    private static TestRepository repository;
     
     /**
      * Test method for {@link org.opensolaris.opengrok.analysis.document
      * .TroffAnalyzer#TroffAnalyzer(org.opensolaris.opengrok.analysis.FileAnalyzerFactory)}.
      */
     @BeforeClass
-    public static void setUpBeforeClass() {
+    public static void setUpBeforeClass() throws Exception {
         factory = new TroffAnalyzerFactory();
         assertNotNull(factory);
         analyzer = new TroffAnalyzer(factory);
         assertNotNull(analyzer);
+        repository = new TestRepository();
+        repository.create(TroffAnalyzerTest.class.getResourceAsStream(
+                "/org/opensolaris/opengrok/index/source.zip"));
+
         String file = System.getProperty("opengrok.test.troff.doc",
-            "testdata/sources/document/foobar.1");
+                repository.getSourceRoot() + "/document/foobar.1");
         File f = new File(file);
         if (!(f.canRead() && f.isFile())) {
             fail("troff testfile " + f + " not found");
@@ -77,6 +83,11 @@ public class TroffAnalyzerTest {
      */
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
+        factory = null;
+        analyzer = null;
+        content = null;
+        repository.destroy();
+        repository = null;
     }
 
     /**

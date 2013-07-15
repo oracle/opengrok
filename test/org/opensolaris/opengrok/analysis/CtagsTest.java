@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -50,20 +50,22 @@ public class CtagsTest {
         ctags = new Ctags();
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
+        repository = new TestRepository();
+        repository.create(CtagsTest.class.getResourceAsStream(
+                "/org/opensolaris/opengrok/index/source.zip"));
+
         /*
          * This setting is only needed for bug19195 but it does not seem
          * that it is possible to specify it just for single test case.
          * The config file contains assembly specific settings so it should
          * not be harmful to other test cases.
          */
-        String extraOptionsFile = "testdata/sources/bug19195/ctags.config";
+        String extraOptionsFile =
+                repository.getSourceRoot() + "/bug19195/ctags.config";
         ctags.setCTagsExtraOptionsFile(extraOptionsFile);
 
         assertTrue("No point in running ctags tests without valid ctags",
                 RuntimeEnvironment.getInstance().validateExuberantCtags());
-        repository = new TestRepository();
-        repository.create(CtagsTest.class.getResourceAsStream(
-                "/org/opensolaris/opengrok/index/source.zip"));
     }
 
     @AfterClass
@@ -71,6 +73,7 @@ public class CtagsTest {
         ctags.close();
         ctags = null;
         repository.destroy();
+        repository = null;
     }
 
     @Before
