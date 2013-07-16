@@ -923,4 +923,33 @@ public final class Util {
         sb.append('"');
         return sb.toString();
     }
+
+    /**
+     * Make a path relative by stripping off a prefix. If the path does not
+     * have the given prefix, return the full path unchanged.
+     *
+     * @param prefix the prefix to strip off
+     * @param fullPath the path from which to remove the prefix
+     * @return a path relative to {@code prefix} if {@code prefix} is a
+     *     parent directory of {@code fullPath}; otherwise, {@code fullPath}
+     */
+    public static String stripPathPrefix(String prefix, String fullPath) {
+        // Find the length of the prefix to strip off. The prefix should
+        // represent a directory, so it could end with a slash. In case it
+        // doesn't end with a slash, increase the length by one so that we
+        // strip off the leading slash from the relative path.
+        int prefixLength = prefix.length();
+        if (!prefix.endsWith("/")) {
+            prefixLength++;
+        }
+
+        // If the full path starts with the prefix, strip off the prefix.
+        if (fullPath.length() > prefixLength && fullPath.startsWith(prefix)
+                && fullPath.charAt(prefixLength - 1) == '/') {
+            return fullPath.substring(prefixLength);
+        }
+
+        // Otherwise, return the full path.
+        return fullPath;
+    }
 }

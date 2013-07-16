@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -204,14 +204,7 @@ document.domReady.push(function() {domReadyHistory();});
                 if (files != null) {
                 %><span class="filelist-hidden"><br/><%
                     for (String ifile : files) {
-                        String jfile = ifile;
-                        if ("/".equals(path)) {
-                            jfile = ifile.substring(1);
-                        } else if (ifile.startsWith(path)
-                            && ifile.length() > (path.length() + 1))
-                        {
-                            jfile = ifile.substring(path.length() + 1);
-                        }
+                        String jfile = Util.stripPathPrefix(path, ifile);
                         if (rev == "") {
                 %>
 <a class="h" href="<%= context + Prefix.XREF_P + ifile %>"><%= jfile %></a><br/><%
