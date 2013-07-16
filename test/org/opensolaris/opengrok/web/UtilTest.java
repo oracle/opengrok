@@ -246,5 +246,22 @@ public class UtilTest {
         assertEquals("\"abc\\n\\r\\\"\\\\\"",
                      Util.jsStringLiteral("abc\n\r\"\\"));
     }
+
+    @Test
+    public void stripPathPrefix() {
+        assertEquals("/", Util.stripPathPrefix("/", "/"));
+        assertEquals("/abc", Util.stripPathPrefix("/abc", "/abc"));
+        assertEquals("/abc/", Util.stripPathPrefix("/abc", "/abc/"));
+        assertEquals("/abc", Util.stripPathPrefix("/abc/", "/abc"));
+        assertEquals("/abc/", Util.stripPathPrefix("/abc/", "/abc/"));
+        assertEquals("abc", Util.stripPathPrefix("/", "/abc"));
+        assertEquals("abc/def", Util.stripPathPrefix("/", "/abc/def"));
+        assertEquals("def", Util.stripPathPrefix("/abc", "/abc/def"));
+        assertEquals("def", Util.stripPathPrefix("/abc/", "/abc/def"));
+        assertEquals("/abcdef", Util.stripPathPrefix("/abc", "/abcdef"));
+        assertEquals("/abcdef", Util.stripPathPrefix("/abc/", "/abcdef"));
+        assertEquals("def/ghi", Util.stripPathPrefix("/abc", "/abc/def/ghi"));
+        assertEquals("def/ghi", Util.stripPathPrefix("/abc/", "/abc/def/ghi"));
+    }
 }
 
