@@ -117,10 +117,9 @@ public class AnalyzerGuruTest {
                    AnalyzerGuru.find("unlikely_prefix.foo").getClass());
 
         // remove the mapping and verify that it is gone
-        AnalyzerGuru.addExtension("UNLIKELY_PREFIX", null);
+        AnalyzerGuru.addPrefix("UNLIKELY_PREFIX", null);
         assertNull(AnalyzerGuru.find("unlikely_prefix.foo"));
     }
-
 
     @Test
     public void testZip() throws IOException {
