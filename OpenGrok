@@ -52,6 +52,9 @@
 #   - OPENGROK_DERBY              if set, then indexer tries to use derby as
 #                                 historycache (see derby command of this
 #                                 script)
+#   - OPENGROK_DERBY_URL          Use specific URL to JavaDB, e.g.
+#                                 "jdbc:derby://localhost:1528/cachedb;create=true"
+#                                 (default port is 1527)
 #   - OPENGROK_TAG                Enable parsing of revision tags into the History
 #                                 view
 #   - READ_XML_CONFIGURATION      file with read only configuration
@@ -305,7 +308,10 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     #
     if [ -n "${OPENGROK_DERBY}" ]
     then
-        DERBY_HISTORY_CACHE="-D"
+        DERBY_OPTIONS="-D"
+	if [ -n "${OPENGROK_DERBY_URL}" ]; then
+		DERBY_OPTIONS="${DERBY_OPTIONS} -u ${OPENGROK_DERBY_URL}"
+	fi
     fi
 
     # OPTIONAL: Show revision tags in History view.
@@ -657,8 +663,23 @@ ValidateConfiguration()
 
     if [ -n "${OPENGROK_DERBY}" ]
     then
-        Warning "CHECK: derbyclient.jar needs to be in where the rest of " \
-	    "opengrok used jars are and in unpacked source.war in WEB-INF/lib !"
+        if [ `uname -s` == "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
+	then
+	    if [ -d "/var/tomcat6" -a \
+	        ! -r "/var/tomcat6/webapps/source/WEB-INF/lib/derbyclient.jar" ];
+	    then
+	        FatalError "JavaDB on but no derbyclient.jar under" \
+		    "/var/tomcat6/webapps/source/WEB-INF/lib"
+	    fi
+	    if [ ! -r "/usr/opengrok/lib/derbyclient.jar" ]; then
+	        FatalError "JavaDB on but no derbyclient.jar under" \
+		    "/usr/opengrok/lib"
+	    fi
+	else
+            Warning "CHECK: derbyclient.jar needs to be in where the rest of " \
+	        "opengrok used jars are and in unpacked source.war in " \
+		"WEB-INF/lib !"
+	fi
     fi
 }
 
@@ -730,7 +751,7 @@ StdInvocation()
         ${JAVA_DEBUG}                                           \
         -jar ${OPENGROK_JAR}                                    \
         ${IGNORE_PATTERNS} ${ENABLE_PROJECTS}                   \
-        ${DERBY_HISTORY_CACHE}                                  \
+        ${DERBY_OPTIONS}					\
         ${HISTORY_TAGS}						\
         ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOSITORIES}           \
         ${SCAN_DEPTH}                                           \

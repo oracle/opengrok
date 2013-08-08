@@ -443,11 +443,13 @@ Copy it over from:
   Solaris 11: /opt/SUNWjavadb/lib/derbyclient.jar
   Debian: /usr/lib/jvm/java-6-sun/db/lib/derbyclient.jar
 
-  For example on Solaris 11 with bundled Java DB and Tomcat the command
-  will be:
+  For example on Solaris 11 with bundled Java DB and Tomcat and OpenGrok
+  installed from the OSOLopengrok package the command will be:
 
     # cp /opt/SUNWjavadb/lib/derbyclient.jar \
           /var/tomcat6/webapps/source/WEB-INF/lib/
+    # cp /opt/SUNWjavadb/lib/derbyclient.jar \
+          /usr/opengrok/lib
 
 3) Use these options with indexer when indexing/generating the configuration:
    -D -H
