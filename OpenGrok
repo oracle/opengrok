@@ -52,6 +52,7 @@
 #   - OPENGROK_DERBY              if set, then indexer tries to use derby as
 #                                 historycache (see derby command of this
 #                                 script)
+#   - OPENGROK_DERBY_URL          Use specific URL to JavaDB
 #   - OPENGROK_TAG                Enable parsing of revision tags into the History
 #                                 view
 #   - READ_XML_CONFIGURATION      file with read only configuration
@@ -305,7 +306,10 @@ ${BZR:+-Dorg.opensolaris.opengrok.history.Bazaar=$BZR} \
     #
     if [ -n "${OPENGROK_DERBY}" ]
     then
-        DERBY_HISTORY_CACHE="-D"
+        DERBY_OPTIONS="-D"
+	if [ -n "${OPENGROK_DERBY_URL}" ]; then
+		DERBY_OPTIONS="${DERBY_OPTIONS} -u ${OPENGROK_DERBY_URL}"
+	fi
     fi
 
     # OPTIONAL: Show revision tags in History view.
@@ -730,7 +734,7 @@ StdInvocation()
         ${JAVA_DEBUG}                                           \
         -jar ${OPENGROK_JAR}                                    \
         ${IGNORE_PATTERNS} ${ENABLE_PROJECTS}                   \
-        ${DERBY_HISTORY_CACHE}                                  \
+        ${DERBY_OPTIONS}					\
         ${HISTORY_TAGS}						\
         ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOSITORIES}           \
         ${SCAN_DEPTH}                                           \
