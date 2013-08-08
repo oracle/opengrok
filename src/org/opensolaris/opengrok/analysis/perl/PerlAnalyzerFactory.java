@@ -48,11 +48,12 @@ public class PerlAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] MAGICS = {
         "#!/usr/bin/env perl",
         "#!/usr/bin/perl",
+        "#!/usr/local/bin/perl",
         "#!/bin/perl"
     };
 
     public PerlAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

@@ -45,7 +45,7 @@ public class CxxAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public CxxAnalyzerFactory() {
-        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

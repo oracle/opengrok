@@ -48,7 +48,7 @@ public class ScalaAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ScalaAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

@@ -58,7 +58,7 @@ public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
     // http://bxr.su/s?q="begin+644"+OR+"begin+755"+OR+"begin+744"+OR+"begin+444"+OR+"begin+666"+OR+"begin+664"+OR+"begin+600"+OR+"begin-base64"&path=-fnt+-uu+-uue
 
     public UuencodeAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

@@ -44,7 +44,7 @@ public class VBAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public VBAnalyzerFactory() {
-        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

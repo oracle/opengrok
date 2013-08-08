@@ -46,7 +46,7 @@ public class TclAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public TclAnalyzerFactory() {
-        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

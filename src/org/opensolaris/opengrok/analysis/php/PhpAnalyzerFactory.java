@@ -45,7 +45,7 @@ public class PhpAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PhpAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
