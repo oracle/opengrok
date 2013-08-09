@@ -473,7 +473,7 @@ public class AnalyzerGuru {
         String path = file;
         int i;
 
-	// Get basename of the file first.
+        // Get basename of the file first.
         if (((i = path.lastIndexOf(File.separatorChar)) > 0)
             && (i + 1 < path.length())) {
             path = path.substring(i + 1);
@@ -483,18 +483,18 @@ public class AnalyzerGuru {
         if (dotpos >= 0) {
             FileAnalyzerFactory factory;
 
-	    // Try matching the prefix.
+            // Try matching the prefix.
             if (dotpos > 0) {
-	        factory =
-	            pre.get(path.substring(0, dotpos).toUpperCase(Locale.getDefault()));
+                factory =
+                    pre.get(path.substring(0, dotpos).toUpperCase(Locale.getDefault()));
                 if (factory != null) {
                     return factory;
                 }
-	    }
+            }
 
-	    // Now try matching the suffix. We kind of consider this order (first
-	    // prefix then suffix) to be workable although for sure there can be
-	    // cases when this does not work.
+            // Now try matching the suffix. We kind of consider this order (first
+            // prefix then suffix) to be workable although for sure there can be
+            // cases when this does not work.
             factory =
                 ext.get(path.substring(dotpos + 1).toUpperCase(Locale.getDefault()));
             if (factory != null) {

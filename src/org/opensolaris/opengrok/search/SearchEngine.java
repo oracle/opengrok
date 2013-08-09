@@ -506,7 +506,7 @@ public class SearchEngine {
     /**
      * Setter for property type.
      *
-     * @param type New value of property type.
+     * @param fileType New value of property type.
      */
     public void setType(String fileType) {
         this.type = fileType;
