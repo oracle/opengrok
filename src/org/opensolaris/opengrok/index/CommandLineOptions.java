@@ -39,6 +39,7 @@ public class CommandLineOptions {
 
     private static final String ON_OFF = "on/off";
     private static final String NUMBER = "number";
+    private final List<Option> options;
 
     static class Option {
 
@@ -66,7 +67,6 @@ public class CommandLineOptions {
             return sb.toString();
         }
     }
-    private final List<Option> options;
 
     public CommandLineOptions() {
         options = new ArrayList<Option>();

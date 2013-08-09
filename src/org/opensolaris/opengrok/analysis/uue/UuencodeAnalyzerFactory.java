@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
-	/**
+       /**
 	 * XXX:
 	 * FreeBSD and DragonFly .fnt files are uuencoded;
 	 * Minix3 .fnt files are binary. -- 2013-04 cnst

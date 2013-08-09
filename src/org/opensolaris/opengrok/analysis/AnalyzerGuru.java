@@ -145,7 +145,7 @@ public class AnalyzerGuru {
             new CxxAnalyzerFactory(),
             new ShAnalyzerFactory(),
             PlainAnalyzerFactory.DEFAULT_INSTANCE,
-	    new UuencodeAnalyzerFactory(),
+            new UuencodeAnalyzerFactory(),
             new GZIPAnalyzerFactory(),
             new JavaAnalyzerFactory(),
             new JavaScriptAnalyzerFactory(),

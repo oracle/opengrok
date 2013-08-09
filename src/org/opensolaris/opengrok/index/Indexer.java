@@ -341,10 +341,11 @@ public final class Indexer {
 
                         case 'A': {
                             String[] arg = getopt.getOptarg().split(":");
-			    boolean prefix = false;
+                            boolean prefix = false;
 
-                            if (arg.length != 2)
+                            if (arg.length != 2) {
                                 A_usage();
+                            }
 
                             if (arg[0].endsWith(".")) {
                                 arg[0] = arg[0].substring(0, arg[0].lastIndexOf('.')).toUpperCase();
@@ -356,10 +357,11 @@ public final class Indexer {
 			    }
 
                             if (arg[1].equals("-")) {
-                                if (prefix)
+                                if (prefix) {
                                     AnalyzerGuru.addPrefix(arg[0], null);
-				else
+				} else {
                                     AnalyzerGuru.addExtension(arg[0], null);
+                                }
                                 break;
                             }
 

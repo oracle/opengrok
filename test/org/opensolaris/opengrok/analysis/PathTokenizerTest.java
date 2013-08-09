@@ -62,6 +62,4 @@ public class PathTokenizerTest {
         }
         assertEquals("wrong number of tokens", expectedTokens.length, count+dots);
     }
-
-
 }

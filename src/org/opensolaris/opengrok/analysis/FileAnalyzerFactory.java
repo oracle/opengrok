@@ -83,7 +83,7 @@ public class FileAnalyzerFactory {
      */
     protected FileAnalyzerFactory(
             String[] names, String[] prefixes, String[] suffixes,
-	    String[] magics, Matcher matcher, String contentType,
+            String[] magics, Matcher matcher, String contentType,
             Genre genre) {
         cachedAnalyzer = new ThreadLocal<FileAnalyzer>();
         this.names = asList(names);

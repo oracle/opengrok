@@ -104,7 +104,7 @@ public class JFlexXrefTest {
         bug15890LineCount(new CxxXref(new StringReader(fileContents)));
         bug15890LineCount(new LispXref(new StringReader(fileContents)));
         bug15890LineCount(new JavaXref(new StringReader(fileContents)));
-		bug15890LineCount(new ScalaXref(new StringReader(fileContents)));
+        bug15890LineCount(new ScalaXref(new StringReader(fileContents)));
         bug15890LineCount(new FortranXref(new StringReader(fileContents)));
         bug15890LineCount(new XMLXref(new StringReader(fileContents)));
         bug15890LineCount(new ShXref(new StringReader(fileContents)));

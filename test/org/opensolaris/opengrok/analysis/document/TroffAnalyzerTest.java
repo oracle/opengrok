@@ -38,10 +38,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.opensolaris.opengrok.web.Util;
 import static org.junit.Assert.*;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.util.TestRepository;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * @author  Jens Elkner
