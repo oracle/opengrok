@@ -349,7 +349,7 @@ public final class Indexer {
                             if (arg[0].lastIndexOf('.') == arg[0].length() - 1) {
                                 arg[0] = arg[0].substring(0, arg[0].lastIndexOf('.')).toUpperCase();
 				prefix = true;
-			    } else if (arg[0].indexOf('.') == 0) {
+			    } else if (arg[0].startsWith(".")) {
                                 arg[0] = arg[0].substring(arg[0].lastIndexOf('.') + 1).toUpperCase();
                             } else {
                                 A_usage();
