@@ -346,7 +346,7 @@ public final class Indexer {
                             if (arg.length != 2)
                                 A_usage();
 
-                            if (arg[0].lastIndexOf('.') == arg[0].length() - 1) {
+                            if (arg[0].endsWith(".")) {
                                 arg[0] = arg[0].substring(0, arg[0].lastIndexOf('.')).toUpperCase();
 				prefix = true;
 			    } else if (arg[0].startsWith(".")) {
