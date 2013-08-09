@@ -76,6 +76,17 @@ public final class Indexer {
         return index;
     }
 
+    private static void A_usage() {
+        System.err.println("ERROR: You must specify: -A .extension:class or -A prefix.:class");
+        System.err.println("       Ex: -A .foo:org.opensolaris.opengrok.analysis.c.CAnalyzer");
+        System.err.println("           will use the C analyzer for all files ending with .foo");
+        System.err.println("       Ex: -A bar.:org.opensolaris.opengrok.analysis.c.CAnalyzer");
+        System.err.println("           will use the C analyzer for all files starting with bar.");
+        System.err.println("       Ex: -A .c:-");
+        System.err.println("           will disable the c-analyzer for for all files ending with .c");
+        System.exit(1);
+    }
+
     /**
      * Program entry point
      *
@@ -88,6 +99,7 @@ public final class Indexer {
         boolean optimizedChanged = false;
         ArrayList<String> zapCache = new ArrayList<String>();
         CommandLineOptions cmdOptions = new CommandLineOptions();
+
 
         if (argv.length == 0) {
             System.err.println(cmdOptions.getUsage());
@@ -329,30 +341,51 @@ public final class Indexer {
 
                         case 'A': {
                             String[] arg = getopt.getOptarg().split(":");
+                            boolean prefix = false;
+
                             if (arg.length != 2) {
-                                System.err.println("ERROR: You must specify: -A extension:class");
-                                System.err.println("       Ex: -A foo:org.opensolaris.opengrok.analysis.c.CAnalyzer");
-                                System.err.println("           will use the C analyzer for all files ending with .foo");
-                                System.err.println("       Ex: -A c:-");
-                                System.err.println("           will disable the c-analyzer for for all files ending with .c");
-                                System.exit(1);
+                                A_usage();
                             }
 
-                            arg[0] = arg[0].substring(arg[0].lastIndexOf('.') + 1).toUpperCase();
+                            if (arg[0].endsWith(".")) {
+                                arg[0] = arg[0].substring(0, arg[0].lastIndexOf('.')).toUpperCase();
+                                prefix = true;
+			    } else if (arg[0].startsWith(".")) {
+                                arg[0] = arg[0].substring(arg[0].lastIndexOf('.') + 1).toUpperCase();
+                            } else {
+                                A_usage();
+			    }
+
                             if (arg[1].equals("-")) {
-                                AnalyzerGuru.addExtension(arg[0], null);
+                                if (prefix) {
+                                    AnalyzerGuru.addPrefix(arg[0], null);
+				} else {
+                                    AnalyzerGuru.addExtension(arg[0], null);
+                                }
                                 break;
                             }
 
-                            try {
-                                AnalyzerGuru.addExtension(
-                                        arg[0],
-                                        AnalyzerGuru.findFactory(arg[1]));
-                            } catch (Exception e) {
-                                log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
-                                log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
-                                System.exit(1);
-                            }
+                            if (prefix) {
+                                try {
+                                    AnalyzerGuru.addPrefix(
+                                            arg[0],
+                                            AnalyzerGuru.findFactory(arg[1]));
+                                } catch (Exception e) {
+                                    log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
+                                    log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
+                                    System.exit(1);
+                                }
+			    } else {
+                                try {
+                                    AnalyzerGuru.addExtension(
+                                            arg[0],
+                                            AnalyzerGuru.findFactory(arg[1]));
+                                } catch (Exception e) {
+                                    log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
+                                    log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
+                                    System.exit(1);
+                                }
+			    }
                         }
                         break;
                         case 'L':

@@ -43,7 +43,7 @@ public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public CSharpAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

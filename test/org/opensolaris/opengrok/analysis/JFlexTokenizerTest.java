@@ -62,7 +62,7 @@ public class JFlexTokenizerTest {
         testOffsetAttribute(CSymbolTokenizer.class);
         testOffsetAttribute(CxxSymbolTokenizer.class);
         testOffsetAttribute(JavaSymbolTokenizer.class);
-		testOffsetAttribute(ScalaSymbolTokenizer.class);
+        testOffsetAttribute(ScalaSymbolTokenizer.class);
         testOffsetAttribute(LispSymbolTokenizer.class);
         testOffsetAttribute(TclSymbolTokenizer.class);
 

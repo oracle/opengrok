@@ -89,7 +89,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             new PlainAnalyzerFactory();
 
     private PlainAnalyzerFactory() {
-        super(null, null, null, MATCHER, "text/plain", Genre.PLAIN);
+        super(null, null, null, null, MATCHER, "text/plain", Genre.PLAIN);
     }
 
     @Override

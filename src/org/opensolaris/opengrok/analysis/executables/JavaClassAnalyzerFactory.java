@@ -39,7 +39,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public JavaClassAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, null, Genre.XREFABLE);
+        super(null, null, SUFFIXES, MAGICS, null, null, Genre.XREFABLE);
     }
 
     @Override

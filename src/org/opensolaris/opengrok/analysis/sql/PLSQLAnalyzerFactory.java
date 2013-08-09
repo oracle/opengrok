@@ -42,7 +42,7 @@ public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PLSQLAnalyzerFactory() {
-        super(null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

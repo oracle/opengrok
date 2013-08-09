@@ -43,7 +43,7 @@ public class IgnorantAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public IgnorantAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, null, null);
+        super(null, null, SUFFIXES, MAGICS, null, null, null);
     }
 
     @Override

@@ -40,25 +40,23 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
-	/**
-	 * XXX:
-	 * FreeBSD and DragonFly .fnt files are uuencoded;
-	 * Minix3 .fnt files are binary. -- 2013-04 cnst
-	 */
-	"UU", "UUE", /*"FNT",*/ "BASE64"
+       /**
+         * XXX:
+         * FreeBSD and DragonFly .fnt files are uuencoded;
+         * Minix3 .fnt files are binary. -- 2013-04 cnst
+         */
+        "UU", "UUE", /*"FNT",*/ "BASE64"
     };
 
     private static final String[] MAGICS = {
-	"begin 4",
-	"begin 6",
-	"begin 7",
-	"begin-b" /* XXX: Should be "begin-base64 ", but there seems to be a bug somewhere... */
+        "begin 4",
+        "begin 6",
+        "begin 7",
+        "begin-b" /* XXX: Should be "begin-base64 ", but there seems to be a bug somewhere... */
     };
-    // http://bxr.su/s?q=-"begin+644"+-"begin+755"+-"begin+744"+-"begin+444"+-"begin+666"+-"begin+664"+-"begin+600"+-"begin-base64"&path=fnt+OR+uu+OR+uue
-    // http://bxr.su/s?q="begin+644"+OR+"begin+755"+OR+"begin+744"+OR+"begin+444"+OR+"begin+666"+OR+"begin+664"+OR+"begin+600"+OR+"begin-base64"&path=-fnt+-uu+-uue
 
     public UuencodeAnalyzerFactory() {
-        super(null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

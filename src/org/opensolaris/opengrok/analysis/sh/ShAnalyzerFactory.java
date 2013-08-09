@@ -34,7 +34,11 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class ShAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] NAMES = {
-        "MAKEFILE", "GNUMAKEFILE"
+        "GNUMAKEFILE", "MAKEFILE"
+    };
+
+    private static final String[] PREFIXES = {
+        "MAKEFILE"
     };
 
     private static final String[] SUFFIXES = {
@@ -60,7 +64,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ShAnalyzerFactory() {
-        super(NAMES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
     }
 
     @Override

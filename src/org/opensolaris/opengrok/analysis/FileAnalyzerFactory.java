@@ -44,6 +44,9 @@ public class FileAnalyzerFactory {
     private final ThreadLocal<FileAnalyzer> cachedAnalyzer;
     /** List of file names on which this kind of analyzer should be used. */
     private final List<String> names;
+    /** List of file prefixes on which this kind of analyzer should be
+     * used. */
+    private final List<String> prefixes;
     /** List of file extensions on which this kind of analyzer should be
      * used. */
     private final List<String> suffixes;
@@ -62,7 +65,7 @@ public class FileAnalyzerFactory {
      * Create an instance of {@code FileAnalyzerFactory}.
      */
     FileAnalyzerFactory() {
-        this(null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null);
     }
 
     /**
@@ -70,6 +73,7 @@ public class FileAnalyzerFactory {
      * should be used by subclasses to override default values.
      *
      * @param names list of file names to recognize (possibly {@code null})
+     * @param prefixes list of prefixes to recognize (possibly {@code null})
      * @param suffixes list of suffixes to recognize (possibly {@code null})
      * @param magics list of magic strings to recognize (possibly {@code null})
      * @param matcher a matcher for this analyzer (possibly {@code null})
@@ -78,11 +82,12 @@ public class FileAnalyzerFactory {
      * Genre.DATA} is used)
      */
     protected FileAnalyzerFactory(
-            String[] names, String[] suffixes, String[] magics,
-            Matcher matcher, String contentType,
+            String[] names, String[] prefixes, String[] suffixes,
+            String[] magics, Matcher matcher, String contentType,
             Genre genre) {
         cachedAnalyzer = new ThreadLocal<FileAnalyzer>();
         this.names = asList(names);
+        this.prefixes = asList(prefixes);
         this.suffixes = asList(suffixes);
         this.magics = asList(magics);
         if (matcher == null) {
@@ -115,6 +120,14 @@ public class FileAnalyzerFactory {
      */
     final List<String> getFileNames() {
         return names;
+    }
+
+    /**
+     * Get the list of file prefixes recognized by this analyzer.
+     * @return list of prefixes
+     */
+    final List<String> getPrefixes() {
+        return prefixes;
     }
 
     /**

@@ -192,7 +192,7 @@ public class SearchTest {
         assertTrue(instance.parseCmdLine(new String[]{"-p", "?akefile"}));
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
-	
+
 	RuntimeEnvironment.getInstance().setAllowLeadingWildcard(true);
         assertTrue(instance.parseCmdLine(new String[]{"-f", "********in argv"}));
         assertTrue(instance.search());

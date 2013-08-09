@@ -95,7 +95,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
      */
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
         UuencodeXref xref = new UuencodeXref(in);
-	xref.annotation = annotation;
+        xref.annotation = annotation;
         xref.project = project;
         xref.setDefs(defs);
         xref.write(out);
