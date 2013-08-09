@@ -663,8 +663,23 @@ ValidateConfiguration()
 
     if [ -n "${OPENGROK_DERBY}" ]
     then
-        Warning "CHECK: derbyclient.jar needs to be in where the rest of " \
-	    "opengrok used jars are and in unpacked source.war in WEB-INF/lib !"
+        if [ `uname -s` == "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
+	then
+	    if [ -d "/var/tomcat6" -a \
+	        ! -r "/var/tomcat6/webapps/source/WEB-INF/lib/derbyclient.jar" ];
+	    then
+	        FatalError "JavaDB on but no derbyclient.jar under" \
+		    "/var/tomcat6/webapps/source/WEB-INF/lib"
+	    fi
+	    if [ ! -r "/usr/opengrok/lib/derbyclient.jar" ]; then
+	        FatalError "JavaDB on but no derbyclient.jar under" \
+		    "/usr/opengrok/lib"
+	    fi
+	else
+            Warning "CHECK: derbyclient.jar needs to be in where the rest of " \
+	        "opengrok used jars are and in unpacked source.war in " \
+		"WEB-INF/lib !"
+	fi
     fi
 }
 
