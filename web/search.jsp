@@ -133,18 +133,24 @@ include file="menu.jspf"
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
         %><p><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
-            for (String word : hint.freetext) {
+	  if (hint.freetext!=null) { 
+	    for (String word : hint.freetext) {
             %> <a href="search?q=<%= Util.URIEncode(word) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
-            }
-            for (String word : hint.refs) {
+	    }
+	  }
+	  if (hint.refs!=null)  {
+	    for (String word : hint.refs) {
             %> <a href="search?refs=<%= Util.URIEncode(word) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
-            }
-            for (String word : hint.defs) {
+	    }
+	  }
+	  if (hint.defs!=null) {
+	    for (String word : hint.defs) {
             %> <a href="search?defs=<%= Util.URIEncode(word) %>"><%=
                 Util.htmlize(word) %></a> &nbsp; <%
             }
+	  }
         %></p><%
         }
         %>

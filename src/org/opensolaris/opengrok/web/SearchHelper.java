@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,9 +41,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.spell.SpellChecker;
+import org.apache.lucene.search.spell.DirectSpellChecker;
+import org.apache.lucene.search.spell.SuggestMode;
+import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
@@ -64,6 +66,10 @@ import org.opensolaris.opengrok.util.IOUtils;
  */
 public class SearchHelper {
 
+    /**
+     * max number of words to suggest for spellcheck
+     */
+    public int SPELLCHECK_SUGGEST_WORD_COUNT=5;
     /**
      * opengrok's data root: used to find the search index file
      */
@@ -128,7 +134,7 @@ public class SearchHelper {
      * the searcher used to open/search the index. Automatically set via
      * {@link #prepareExec(SortedSet)}.
      */
-    public IndexSearcher searcher;
+    public IndexSearcher searcher;    
     /**
      * list of docs which result from the executing the query
      */
@@ -147,6 +153,10 @@ public class SearchHelper {
      * {@link #prepareExec(SortedSet)}.
      */
     protected Sort sort;
+    /**
+     * the spellchecker object
+     */
+    protected DirectSpellChecker checker;    
     /**
      * projects to use to setup indexer searchers. Usually setup via
      * {@link #prepareExec(SortedSet)}.
@@ -211,7 +221,8 @@ public class SearchHelper {
     public static Set<Map.Entry<String, String>> getFileTypeDescirptions() {
         return fileTypeDescription.entrySet();
     }
-    
+        
+    File indexDir;
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
@@ -235,13 +246,13 @@ public class SearchHelper {
         }
         // the Query created by the QueryBuilder
         try {
+	    indexDir=new File(dataRoot, "index");
             query = builder.build();
             if (projects == null) {
                 errorMsg = "No project selected!";
                 return this;
             }
-            this.projects = projects;
-            File indexDir = new File(dataRoot, "index");
+            this.projects = projects;            
             if (projects.isEmpty()) {
                 //no project setup
                 FSDirectory dir = FSDirectory.open(indexDir);
@@ -285,6 +296,7 @@ public class SearchHelper {
                     sort = Sort.RELEVANCE;
                     break;
             }
+	    checker=new DirectSpellChecker();
         } catch (ParseException e) {
             errorMsg = PARSE_ERROR_MSG + e.getMessage();
         } catch (FileNotFoundException e) {
@@ -357,17 +369,20 @@ public class SearchHelper {
     }
     private static final Pattern TABSPACE = Pattern.compile("[\t ]+");
 
-    private static void getSuggestion(String term, SpellChecker checker,
+    private void getSuggestion(Term term, IndexReader ir,
             List<String> result) throws IOException {
         if (term == null) {
             return;
         }
-        String[] toks = TABSPACE.split(term, 0);
+        String[] toks = TABSPACE.split(term.text(), 0);
         for (int j = 0; j < toks.length; j++) {
-            if (toks[j].length() <= 3) {
-                continue;
-            }
-            result.addAll(Arrays.asList(checker.suggestSimilar(toks[j].toLowerCase(), 5)));
+         //TODO below seems to be case insensitive ... for refs/defs this is bad
+	    SuggestWord[] words=checker.suggestSimilar(
+		    new Term(term.field(),toks[j]), SPELLCHECK_SUGGEST_WORD_COUNT, ir, 
+		    SuggestMode.SUGGEST_ALWAYS);	    
+	    for (SuggestWord w: words) {
+              result.add(w.string);
+	    }
         }
     }
 
@@ -379,74 +394,78 @@ public class SearchHelper {
      * <li>{@link #projects}</li> <li>{@link #dataRoot}</li>
      * <li>{@link #builder}</li> </ul>
      *
-     * @return a possible empty list of sugeestions.
+     * @return a possible empty list of suggestions.
      */
     public List<Suggestion> getSuggestions() {
         if (projects == null) {
-            return new ArrayList<Suggestion>(0);
+            return new ArrayList<>(0);
         }
-        File[] spellIndex = null;
+	String name[];
         if (projects.isEmpty()) {
-            spellIndex = new File[]{new File(dataRoot, "spellIndex")};
+            name=new String[]{"/"};
         } else if (projects.size() == 1) {
-            spellIndex = new File[]{
-                new File(dataRoot, "spellIndex/" + projects.first())
-            };
+		name=new String[]{projects.first()};
         } else {
-            spellIndex = new File[projects.size()];
-            int ii = 0;
-            File indexDir = new File(dataRoot, "spellIndex");
+            name = new String[projects.size()];
+            int ii = 0;            
             for (String proj : projects) {
-                spellIndex[ii++] = new File(indexDir, proj);
+                name[ii++] = proj;
             }
         }
-        List<Suggestion> res = new ArrayList<Suggestion>();
-        List<String> dummy = new ArrayList<String>();
-        for (int idx = 0; idx < spellIndex.length; idx++) {
-            if (!spellIndex[idx].exists()) {
-                continue;
-            }
-            FSDirectory spellDirectory = null;
-            SpellChecker checker = null;
-            Suggestion s = new Suggestion(spellIndex[idx].getName());
+        List<Suggestion> res = new ArrayList<>();
+        List<String> dummy = new ArrayList<>();
+	FSDirectory dir;
+	IndexReader ir=null;
+	Term t;
+	for (int idx = 0; idx < name.length; idx++) {
+            Suggestion s = new Suggestion(name[idx]);	    
             try {
-                spellDirectory = FSDirectory.open(spellIndex[idx]);
-                checker = new SpellChecker(spellDirectory);
-                getSuggestion(builder.getFreetext(), checker, dummy);
+	        dir = FSDirectory.open(new File(indexDir, name[idx]));	    
+		ir = DirectoryReader.open(dir);
+		if (builder.getFreetext()!=null && 
+			!builder.getFreetext().isEmpty()) {
+		t=new Term(QueryBuilder.FULL,builder.getFreetext());
+                getSuggestion(t, ir, dummy);
                 s.freetext = dummy.toArray(new String[dummy.size()]);
                 dummy.clear();
-                getSuggestion(builder.getRefs(), checker, dummy);
+		}
+		if (builder.getRefs()!=null && !builder.getRefs().isEmpty()) {
+		t=new Term(QueryBuilder.REFS,builder.getRefs());
+                getSuggestion(t, ir, dummy);
                 s.refs = dummy.toArray(new String[dummy.size()]);
                 dummy.clear();
-                // TODO it seems the only true spellchecker is for
-                // below field, see IndexDatabase
-                // createspellingsuggestions ...
-                getSuggestion(builder.getDefs(), checker, dummy);
+		}
+                if (builder.getDefs()!=null && !builder.getDefs().isEmpty()) {
+		t=new Term(QueryBuilder.DEFS,builder.getDefs());
+                getSuggestion(t, ir, dummy);
                 s.defs = dummy.toArray(new String[dummy.size()]);
                 dummy.clear();
-                if (s.freetext.length > 0 || s.defs.length > 0 || s.refs.length > 0) {
+		}
+		//TODO suggest also for path and history?
+                if ((s.freetext!=null && s.freetext.length > 0) || 
+			(s.defs!=null && s.defs.length > 0) || 
+			(s.refs!=null && s.refs.length > 0) ) {
                     res.add(s);
                 }
             } catch (IOException e) {
-                log.log(Level.WARNING, "Got excption while getting spelling suggestions: ", e);
+                log.log(Level.WARNING, "Got exception while getting "
+			+ "spelling suggestions: ", e);
             } finally {
-                if (spellDirectory != null) {
-                    spellDirectory.close();
-                }
-                if (checker != null) {
-                    try {
-                        checker.close();
-                    } catch (Exception x) {
-                        log.log(Level.WARNING, "Got excption while closing spelling suggestions: ", x);
-                    }
-                }
-            }
-        }
+                if (ir != null) {
+			try {
+				ir.close();
+			} catch (IOException ex) {
+				log.log(Level.WARNING, "Got exception while "
+					+ "getting spelling suggestions: ", ex);
+			}
+               }
+	    }	
+	}    
         return res;
     }
 
     /**
-     * Prepare the fields to support printing a fullblown summary. Does nothing
+     * Prepare the fields to support printing a full blown summary. Does nothing
      * if {@link #redirect} or {@link #errorMsg} have a none-{@code null} value.
      *
      * <p> Parameters which should be populated/set at this time: <ul>
