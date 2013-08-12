@@ -51,8 +51,6 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.spell.LuceneDictionary;
-import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
@@ -82,8 +80,7 @@ import org.opensolaris.opengrok.web.Util;
 public class IndexDatabase {
 
     private Project project;
-    private FSDirectory indexDirectory;
-    private FSDirectory spellDirectory;
+    private FSDirectory indexDirectory;    
     private IndexWriter writer;
     private TermsEnum uidIter;
     private IgnoredNames ignoredNames;
@@ -241,11 +238,9 @@ public class IndexDatabase {
     private void initialize() throws IOException {
         synchronized (this) {
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-            File indexDir = new File(env.getDataRootFile(), INDEX_DIR);
-            File spellDir = new File(env.getDataRootFile(), "spellIndex");
+            File indexDir = new File(env.getDataRootFile(), INDEX_DIR);            
             if (project != null) {
-                indexDir = new File(indexDir, project.getPath());
-                spellDir = new File(spellDir, project.getPath());
+                indexDir = new File(indexDir, project.getPath());                
             }
 
             if (!indexDir.exists() && !indexDir.mkdirs()) {
@@ -253,19 +248,12 @@ public class IndexDatabase {
                 if (!indexDir.exists()) {
                     throw new FileNotFoundException("Failed to create root directory [" + indexDir.getAbsolutePath() + "]");
                 }
-            }
-
-            if (!spellDir.exists() && !spellDir.mkdirs()) {
-                if (!spellDir.exists()) {
-                    throw new FileNotFoundException("Failed to create root directory [" + spellDir.getAbsolutePath() + "]");
-                }
-            }
+            }            
 
             if (!env.isUsingLuceneLocking()) {
                 lockfact = NoLockFactory.getNoLockFactory();
             }
-            indexDirectory = FSDirectory.open(indexDir, lockfact);
-            spellDirectory = FSDirectory.open(spellDir, lockfact);
+            indexDirectory = FSDirectory.open(indexDir, lockfact);            
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
@@ -426,8 +414,7 @@ public class IndexDatabase {
         if (!isInterrupted() && isDirty()) {
             if (RuntimeEnvironment.getInstance().isOptimizeDatabase()) {
                 optimize();
-            }
-            createSpellingSuggestions();
+            }            
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             File timestamp = new File(env.getDataRootFile(), "timestamp");
             if (timestamp.exists()) {
@@ -518,40 +505,7 @@ public class IndexDatabase {
             }
         }
     }
-
-    /**
-     * Generate a spelling suggestion for the definitions stored in defs
-     */
-    public void createSpellingSuggestions() {
-        IndexReader indexReader = null;
-        SpellChecker checker;
-
-        try {
-            log.info("Generating spelling suggestion index ... ");
-            indexReader = DirectoryReader.open(indexDirectory);
-            checker = new SpellChecker(spellDirectory);
-            //TODO below seems only to index "defs" , possible bug ?
-            Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
-            iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            checker.indexDictionary(new LuceneDictionary(indexReader, QueryBuilder.DEFS), iwc, false);
-            log.info("done");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "ERROR: Generating spelling: {0}", e);
-        } finally {
-            if (indexReader != null) {
-                try {
-                    indexReader.close();
-                } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing reader", e);
-                }
-            }
-            if (spellDirectory != null) {
-                spellDirectory.close();
-            }
-        }
-    }
-
+    
     private boolean isDirty() {
         synchronized (lock) {
             return dirty;
