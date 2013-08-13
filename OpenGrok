@@ -47,6 +47,8 @@
 #                                 (by default 3 directories from SRC_ROOT)
 #   - OPENGROK_WEBAPP_CFGADDR     Web app address to send configuration to
 #                                 (use "none" to avoid sending it to web app)
+#   - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
+#                                 (by default /source)
 #   - OPENGROK_WPREFIX            Disable wildcard prefix search query
 #                                 support (*)
 #   - OPENGROK_DERBY              if set, then indexer tries to use derby as
@@ -269,6 +271,13 @@ DefaultInstanceConfiguration()
 
     if [ -n "${WEBAPP_CONFIG_ADDRESS}" ]; then
         WEBAPP_CONFIG="-U ${WEBAPP_CONFIG_ADDRESS}"
+    fi
+
+    # OPTIONAL: Context URL of the OpenGrok webapp
+    #           (default is /source)
+    WEBAPP_CONTEXT=""
+    if [ -n "${OPENGROK_WEBAPP_CONTEXT}" ]; then
+        WEBAPP_CONTEXT="-w ${OPENGROK_WEBAPP_CONTEXT}"
     fi
 
     # OPTIONAL: JVM Options
@@ -763,6 +772,7 @@ StdInvocation()
         ${READ_XML_CONF}                                        \
         -W ${XML_CONFIGURATION}                                 \
         ${WEBAPP_CONFIG}                                        \
+        ${WEBAPP_CONTEXT}                                       \
         -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
         "${@}"
 }
