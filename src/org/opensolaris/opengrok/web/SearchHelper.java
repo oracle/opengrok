@@ -246,7 +246,7 @@ public class SearchHelper {
         }
         // the Query created by the QueryBuilder
         try {
-	    indexDir=new File(dataRoot, "index");
+            indexDir=new File(dataRoot, "index");
             query = builder.build();
             if (projects == null) {
                 errorMsg = "No project selected!";

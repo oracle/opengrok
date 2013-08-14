@@ -21,7 +21,6 @@
 package org.opensolaris.opengrok.search;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;

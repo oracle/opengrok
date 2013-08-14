@@ -55,6 +55,15 @@ public class GitRepository extends Repository {
     /** git blame command */
     private static final String BLAME = "blame";
 
+    /** arguments to shorten git IDs */
+    private static final int CSET_LEN = 8;
+    private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
+    private static final String ABBREV_BLAME = "--abbrev=" + (CSET_LEN - 1);
+
+    /** Pattern used to extract author/revision from git blame. */
+    private static final Pattern BLAME_PATTERN =
+            Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
+
     public GitRepository() {
         type = "git";
         datePattern = "EEE MMM dd hh:mm:ss yyyy ZZZZ";
@@ -75,6 +84,7 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
+        cmd.add(ABBREV_BLAME);
         cmd.add("-C");
         cmd.add(fileName);
         File directory = new File(directoryName);
@@ -124,6 +134,7 @@ public class GitRepository extends Repository {
         cmd.add(this.cmd);
         cmd.add("log");
         cmd.add("--abbrev-commit");
+        cmd.add(ABBREV_LOG);
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
 
@@ -212,9 +223,6 @@ public class GitRepository extends Repository {
 
         return ret;
     }
-    /** Pattern used to extract author/revision from git blame. */
-    private static final Pattern BLAME_PATTERN =
-            Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
 
     /**
      * Annotate the specified file/revision.
@@ -229,6 +237,7 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
+        cmd.add(ABBREV_BLAME);
         if (revision != null) {
             cmd.add(revision);
         }
@@ -243,6 +252,7 @@ public class GitRepository extends Repository {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             cmd.add(this.cmd);
             cmd.add(BLAME);
+            cmd.add(ABBREV_BLAME);
             cmd.add("-C");
             cmd.add(file.getName());
             exec = new Executor(cmd, file.getParentFile());
@@ -264,6 +274,7 @@ public class GitRepository extends Repository {
                         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
                         cmd.add(this.cmd);
                         cmd.add(BLAME);
+                        cmd.add(ABBREV_BLAME);
                         if (revision != null) {
                             cmd.add(revision);
                         }
