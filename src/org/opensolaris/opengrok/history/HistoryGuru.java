@@ -306,6 +306,15 @@ public final class HistoryGuru {
             IgnoredNames ignoredNames, boolean recursiveSearch, int depth) {
         for (File file : files) {
             Repository repository = null;
+            if (file.getName().equals(".opengrok_skip_history")) {
+                log.log(Level.INFO, "Skipping history cache creation for "
+                        + file.getParentFile().getAbsolutePath()
+                        + " and it's subdirectories");
+                return;
+            }
+        }
+        for (File file : files) {
+            Repository repository = null;
             try {
                 repository = RepositoryFactory.getRepository(file);
             } catch (InstantiationException ie) {

@@ -73,6 +73,7 @@ public final class IgnoredNames extends Filter {
         ".sln",
         ".vsmdi",
         ".dll",
+        ".opengrok_skip_history",
     };
 
     public IgnoredNames() {
