@@ -212,6 +212,9 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Ignore these patterns as names of files or directories
     #IGNORE_PATTERNS="-i dummy"
+    # To ignore skipping just the history cache creation for a particular
+    # directory and all of it's subdirectories, touch an empty
+    # .opengrok_skip_history file at the root of that directory
 
     # OPTIONAL: Enable Projects
     #           (Every directory in SRC_ROOT is considered a separate project)

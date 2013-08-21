@@ -117,6 +117,11 @@ by OpenGrok.
 
 Note that OpenGrok ignores symbolic links.
 
+If you want to skip indexing the history of a particular directory
+(and all of it's subdirectories), you can touch .opengrok_skip_history at the root
+of that directory
+
+
 4.2 Using Opengrok wrapper script to create indexes
 ---------------------------------------------------
 
