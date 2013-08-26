@@ -6,8 +6,8 @@ The following minimum criteria must be fulfilled before a new version may be rel
 
 * The code coverage for blocks must be at least 80%
 * No findbugs warnings
-* No P1 or P2 bugs
-* All bugs and RFEs must be evaluated
+* No stoppers
+* All bugs and enhancements must be evaluated
 
 === Release 0.12 (end of 2013) ===
 
