@@ -75,6 +75,10 @@ The following table lists all currently (as of OpenGrok pre-0.12) supported form
 |0.10
 |"PY"
 |-
+|Scala
+|0.12
+|"SCALA"
+|-
 |Shell
 |0.XXX
 |"SH","KSH","KSHLIB","CSH","BASH","RUBY","RB","P5","AWK","GMK","CONF","COM","SPEC","FLG","XCL"
