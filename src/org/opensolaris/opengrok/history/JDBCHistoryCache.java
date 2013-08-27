@@ -500,6 +500,10 @@ class JDBCHistoryCache implements HistoryCache {
     private static final PreparedQuery GET_CS_FILES =
             new PreparedQuery(getQuery("getFilesInChangeset"));
 
+    /** Statement for getting ID of given revision */
+    private static final PreparedQuery GET_REV_ID =
+            new PreparedQuery(getQuery("getChangesetIdForRevision"));
+    
     @Override
     public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException {
@@ -614,6 +618,24 @@ class JDBCHistoryCache implements HistoryCache {
     private static final PreparedQuery ADD_FILECHANGE =
             new PreparedQuery(getQuery("addFilechange"));
 
+    /**
+     * Get ID value for revision string by querying the DB.
+     * @param revision
+     * @return ID
+     */
+    private int getIdForRevision(String revision) throws SQLException {
+        final ConnectionResource conn =
+                connectionManager.getConnectionResource();
+        try {
+            PreparedStatement ps = conn.getStatement(GET_REV_ID);
+            ps.setString(1, revision);
+            ResultSet rs = ps.executeQuery();
+            return rs.next() ? Integer.valueOf(rs.getString(1)).intValue() : -1;
+        } finally {
+            connectionManager.releaseConnection(conn);
+        }
+    }
+    
     private void storeHistory(ConnectionResource conn, History history,
             Repository repository) throws SQLException {
 
@@ -624,6 +646,13 @@ class JDBCHistoryCache implements HistoryCache {
         PreparedStatement addChangeset = null;
         PreparedStatement addDirchange = null;
         PreparedStatement addFilechange = null;
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+        // return immediately when there is nothing to do
+        List<HistoryEntry> entries = history.getHistoryEntries();
+        if (entries.isEmpty()) {
+            return;
+        }
 
         for (int i = 0;; i++) {
             try {
@@ -675,7 +704,6 @@ class JDBCHistoryCache implements HistoryCache {
         // ordering column. Otherwise, incremental updates will make the
         // identity column unusable for chronological ordering. So therefore
         // we walk the list backwards.
-        List<HistoryEntry> entries = history.getHistoryEntries();
         for (ListIterator<HistoryEntry> it =
                 entries.listIterator(entries.size());
                 it.hasPrevious();) {
@@ -704,10 +732,25 @@ class JDBCHistoryCache implements HistoryCache {
                     addDirchange.setInt(1, changesetId);
                     addFilechange.setInt(1, changesetId);
                     for (String file : entry.getFiles()) {
+                        // ignore ignored files
+                        String repodir = "";
+                        try {
+                            repodir = env.getPathRelativeToSourceRoot(
+                                new File(repository.getDirectoryName()), 0);
+                        } catch (IOException ex) {
+                            Logger.getLogger(
+                                JDBCHistoryCache.class.getName()).log(
+                                Level.SEVERE, null, ex);
+                        }
+
                         String fullPath = toUnixPath(file);
-                        int fileId = files.get(fullPath);
-                        addFilechange.setInt(2, fileId);
-                        addFilechange.executeUpdate();
+                        if (!history.isIgnored(
+                            file.substring(repodir.length() + 1))) {
+                                int fileId = files.get(fullPath);
+                                addFilechange.setInt(2, fileId);
+                                addFilechange.setInt(3, 0);
+                                addFilechange.executeUpdate();
+                        }
                         String[] pathElts = splitPath(fullPath);
                         for (int j = 0; j < pathElts.length; j++) {
                             String dir = unsplitPath(pathElts, j);
@@ -729,6 +772,55 @@ class JDBCHistoryCache implements HistoryCache {
                 } catch (SQLException sqle) {
                     handleSQLException(sqle, i);
                     conn.rollback();
+                }
+            }
+        }
+
+        /*
+         * Special handling for certain files - this is mainly for files which
+         * have been renamed in Mercurial repository.
+         * This ensures that their complete history (follow) will be saved.
+         */
+        for (String filename: history.getIgnoredFiles()) {
+            String file_path = repository.getDirectoryName() +
+                    File.separatorChar + filename;
+            File file = new File(file_path);
+            String repo_path = file_path.substring(env.getSourceRootPath().length());
+            History hist;
+            try {
+                hist = repository.getHistory(file);
+            } catch (HistoryException ex) {
+                Logger.getLogger(JDBCHistoryCache.class.getName()).log(
+                        Level.SEVERE, null, ex);
+                continue;
+            }
+            
+            int fileId = files.get(repo_path);
+            for (HistoryEntry entry : hist.getHistoryEntries()) {
+                retry:
+                for (int i = 0;; i++) {
+                    try {
+                        int changesetId = getIdForRevision(entry.getRevision());
+                        addFilechange.setInt(1, changesetId);
+                        addFilechange.setInt(2, fileId);
+                        /*
+                         * If the file exists in the changeset, set its
+                         * moved value to 0 so it can be found when performing
+                         * historyget on directory.
+                         */
+                        if (entry.getFiles().contains(repo_path)) {
+                            addFilechange.setInt(3, 0);
+                        } else {
+                            addFilechange.setInt(3, 1);
+                        }
+                        addFilechange.executeUpdate();
+
+                        conn.commit();
+                        break retry;
+                    } catch (SQLException sqle) {
+                        handleSQLException(sqle, i);
+                        conn.rollback();
+                    }
                 }
             }
         }

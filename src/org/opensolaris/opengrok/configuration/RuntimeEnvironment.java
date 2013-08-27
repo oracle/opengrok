@@ -189,10 +189,12 @@ public final class RuntimeEnvironment {
         for (String allowedSymlink : getAllowedSymlinks()) {
             String allowedTarget = new File(allowedSymlink).getCanonicalPath();
             if (canonicalPath.startsWith(allowedTarget)) {
-                return canonicalPath.substring(allowedTarget.length() + stripCount);
+                return canonicalPath.substring(allowedTarget.length() +
+                        stripCount);
             }
         }
-        throw new FileNotFoundException("Failed to resolve [" + canonicalPath + "] relative to source root [" + sourceRoot + "]");
+        throw new FileNotFoundException("Failed to resolve [" + canonicalPath +
+                "] relative to source root [" + sourceRoot + "]");
     }
 
     /**

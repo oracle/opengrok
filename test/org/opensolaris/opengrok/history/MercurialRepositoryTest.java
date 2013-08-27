@@ -48,6 +48,12 @@ public class MercurialRepositoryTest {
         "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470",
         "2:585a1b3f2efb", "1:f24a5fd7a85d", "0:816b6279ae9c"
     };
+    // novel.txt (or its ancestors) existed only since revision 3
+    private static final String[] REVISIONS_novel = {
+        "9:8b340409b3a8",
+        "8:6a8c423f5624", "7:db1394c05268", "6:e386b51ddbcc",
+        "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470"
+    };
 
     private TestRepository repository;
 
@@ -144,7 +150,21 @@ public class MercurialRepositoryTest {
         assertNotSame(str.length(), 0);
         assertEquals(exp_str, str);
     }
-    
+
+    @Test
+    public void testgetHistoryGetForAll() throws Exception {
+        setUpTestRepository();
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        MercurialRepository mr =
+                (MercurialRepository) RepositoryFactory.getRepository(root);
+
+        for (String rev : REVISIONS_novel) {
+            InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
+                "novel.txt", rev);
+            assertNotNull(input);
+        }
+    }
+
     /**
      * Test that {@code getHistoryGet()} returns historical contents of 
      * renamed file.

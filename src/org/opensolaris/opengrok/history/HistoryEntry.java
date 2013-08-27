@@ -94,21 +94,25 @@ public class HistoryEntry {
         log.log(Level.FINE, "HistoryEntry : tags           = {0}", tags);
         log.log(Level.FINE, "HistoryEntry : date           = {0}", date);
         log.log(Level.FINE, "HistoryEntry : author         = {0}", author);
-        log.log(Level.FINE, "HistoryEntry : active         = {0}", (active ? "True" : "False"));
+        log.log(Level.FINE, "HistoryEntry : active         = {0}", (active ?
+                "True" : "False"));
         String[] lines = message.toString().split("\n");
         String separator = "=";
         for (String line : lines) {
-            log.log(Level.FINE, "HistoryEntry : message        {0} {1}", new Object[]{separator, line});
+            log.log(Level.FINE, "HistoryEntry : message        {0} {1}",
+                    new Object[]{separator, line});
             separator = ">";
         }
         separator = "=";
         for (String cr : changeRequests) {
-            log.log(Level.FINE, "HistoryEntry : changeRequests {0} {1}", new Object[]{separator, cr});
+            log.log(Level.FINE, "HistoryEntry : changeRequests {0} {1}",
+                    new Object[]{separator, cr});
             separator = ">";
         }
         separator = "=";
         for (String file : files) {
-            log.log(Level.FINE, "HistoryEntry : files          {0} {1}", new Object[]{separator, file});
+            log.log(Level.FINE, "HistoryEntry : files          {0} {1}",
+                    new Object[]{separator, file});
             separator = ">";
         }
    }

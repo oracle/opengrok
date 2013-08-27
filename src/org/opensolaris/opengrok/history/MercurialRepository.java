@@ -67,19 +67,17 @@ public class MercurialRepository extends Repository {
         "org.opensolaris.opengrok.history.mercurial.disableForest";
 
     /** Template for formatting hg log output for files. */
-    private static final String TEMPLATE = "changeset: {rev}:{node|short}\\n"
+    private static final String FILE_TEMPLATE =
+        "changeset: {rev}:{node|short}\\n"
         + "{branches}{tags}{parents}\\n"
         + "user: {author}\\ndate: {date|isodate}\\n"
+        + "files: {files}\\n"
         + "description: {desc|strip|obfuscate}\\n";
+    static final String FILE_COPIES_ = "file_copies: ";
 
     /** Template for formatting hg log output for directories. */
-    private static final String DIR_TEMPLATE = TEMPLATE
-        + "files: {files} {file_copies}\\n";
-
-    public MercurialRepository() {
-        type = "Mercurial";
-        datePattern = "yyyy-MM-dd hh:mm ZZZZ";
-    }
+    private static final String DIR_TEMPLATE = FILE_TEMPLATE
+        + FILE_COPIES_ + "{file_copies}\\n";
 
     /** Pattern used to extract author/revision from hg annotate. */
     private static final Pattern ANNOTATION_PATTERN =
@@ -88,11 +86,16 @@ public class MercurialRepository extends Repository {
     private static final Pattern LOG_COPIES_PATTERN =
         Pattern.compile("^(\\d+):(.*)");
 
+    public MercurialRepository() {
+        type = "Mercurial";
+        datePattern = "yyyy-MM-dd hh:mm ZZZZ";
+    }
+
     /**
      * Get an executor to be used for retrieving the history log for the
-     * named file.
+     * named file or directory.
      *
-     * @param file The file to retrieve history for
+     * @param file The file or directory to retrieve history for
      * @param changeset the oldest changeset to return from the executor,
      * or {@code null} if all changesets should be returned
      * @return An Executor ready to be started
@@ -125,8 +128,10 @@ public class MercurialRepository extends Repository {
         }
 
         cmd.add("--template");
-        cmd.add(file.isDirectory() ? DIR_TEMPLATE : TEMPLATE);
-        cmd.add(filename);
+        cmd.add(file.isDirectory() ? DIR_TEMPLATE : FILE_TEMPLATE);
+        if (!filename.isEmpty()) {
+            cmd.add(filename);
+        }
 
         return new Executor(cmd, new File(directoryName));
     }
@@ -197,17 +202,32 @@ public class MercurialRepository extends Repository {
     }
 
     /**
-     * Get the name of file in revision rev
+     * Get the name of file in given revision
      * @param fullpath file path
-     * @param rev_to_find revision number
+     * @param full_rev_to_find revision number (in the form of {rev}:{node|short})
      * @returns original filename
      */
-    private String findOriginalName(String fullpath, String rev_to_find) 
+    private String findOriginalName(String fullpath, String full_rev_to_find) 
             throws IOException {
         Matcher matcher = LOG_COPIES_PATTERN.matcher("");
         String file = fullpath.substring(directoryName.length() + 1);
         ArrayList<String> argv = new ArrayList<String>();
- 
+
+        // Extract {rev} from the full revision specification string.
+        String[] rev_array = full_rev_to_find.split(":");
+        String rev_to_find = rev_array[0];
+        if (rev_to_find.isEmpty()) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "Invalid revision string: {0}", full_rev_to_find);
+            return null;
+        }
+
+        /*
+         * Get the list of file renames for given file to the specified
+         * revision. We need to get them from the newest to the oldest
+         * (hence the reverse()) so that we can follow the renames down
+         * to the revision we are after.
+         */
         argv.add(ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK));
         argv.add("log");
         argv.add("-f");
@@ -234,6 +254,10 @@ public class MercurialRepository extends Repository {
                     }
                     String rev = matcher.group(1);
                     String content = matcher.group(2);
+
+                    if (rev.equals(rev_to_find)) {
+                        break;
+                    }
 
                     if (!content.isEmpty()) {
                         /*
