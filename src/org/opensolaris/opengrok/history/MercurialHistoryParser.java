@@ -50,7 +50,9 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     private List<HistoryEntry> entries = new ArrayList<HistoryEntry>();
     private final MercurialRepository repository;
     private final String mydir;
-
+    private boolean isDir;
+    private final List<String> ignoredFiles = new ArrayList<String>();
+        
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
         mydir = repository.getDirectoryName() + File.separator;
@@ -68,13 +70,15 @@ class MercurialHistoryParser implements Executor.StreamHandler {
      * @throws HistoryException if an error happens when parsing the history
      */
     History parse(File file, String changeset) throws HistoryException {
+        isDir = file.isDirectory();
         try {
             Executor executor = repository.getHistoryLogExecutor(file, changeset);
             int status = executor.exec(true, this);
 
             if (status != 0) {
                 throw new HistoryException("Failed to get history for: \"" +
-                                           file.getAbsolutePath() + "\" Exit code: " + status);
+                                           file.getAbsolutePath() +
+                                           "\" Exit code: " + status);
             }
         } catch (IOException e) {
             throw new HistoryException("Failed to get history for: \"" +
@@ -89,7 +93,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             repository.removeAndVerifyOldestChangeset(entries, changeset);
         }
 
-        return new History(entries);
+        return new History(entries, ignoredFiles);
     }
 
     /**
@@ -120,7 +124,8 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                 try {
                     date = df.parse(s.substring("date:".length()).trim());
                 } catch (ParseException pe) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + s, pe);
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                        "Could not parse date: " + s, pe);
                 }
                 entry.setDate(date);
             } else if (s.startsWith("files:") && entry != null) {
@@ -136,6 +141,25 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         }
                     }
                 }
+            } else if (s.startsWith(MercurialRepository.FILE_COPIES_) &&
+                entry != null && isDir) {
+                /* 
+                 * 'file_copies:' should be present only for directories but
+                 * we use isDir to be on the safe side.
+                 */
+                s = s.replaceFirst(MercurialRepository.FILE_COPIES_, "");
+                String[] splitArray = s.split("\\)");
+                for (String part: splitArray) {
+                     /*
+                      * This will fail for file names containing ' ('.
+                      */
+                     String[] move = part.split(" \\(");
+                     File f = new File(mydir + move[0]);
+                     if (!move[0].isEmpty() && f.exists()) {
+                        ignoredFiles.add(move[0]);
+                     }
+                }
+
             } else if (s.startsWith(DESC_PREFIX) && entry != null) {
                 entry.setMessage(decodeDescription(s));
             }

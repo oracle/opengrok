@@ -34,7 +34,7 @@ import java.io.Serializable;
 public class RepositoryInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    protected String directoryName;
+    protected String directoryName; // absolute path
     protected Boolean working;
     protected String type;
     protected boolean remote;

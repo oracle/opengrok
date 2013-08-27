@@ -32,7 +32,12 @@ import java.util.List;
 public class History {
     /** Entries in the log. The first entry is the most recent one. */
     private List<HistoryEntry> entries;
-
+    /** 
+     * files to ignore during cache creation.
+     * These are relative to repository root.
+     */
+    private List<String> ignoredFiles = new ArrayList<String>();
+    
     public History() {
         this(new ArrayList<HistoryEntry>());
     }
@@ -41,6 +46,11 @@ public class History {
         this.entries = entries;
     }
 
+    History(List<HistoryEntry> entries, List<String> ignored) {
+        this.entries = entries;
+        this.ignoredFiles = ignored;
+    }
+    
     /**
      * Set the list of log entries for the file. The first entry is the most
      * recent one.
@@ -89,5 +99,13 @@ public class History {
             }
         }
         return false;
+    }
+    
+    public boolean isIgnored(String file) {
+        return ignoredFiles.contains(file);
+    }
+    
+    public List<String> getIgnoredFiles() {
+        return ignoredFiles;
     }
 }

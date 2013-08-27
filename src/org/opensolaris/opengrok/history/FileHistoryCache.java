@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -100,7 +101,7 @@ class FileHistoryCache implements HistoryCache {
             sb.append(".gz");
         } catch (IOException e) {
             throw new HistoryException("Failed to get path relative to " +
-                 "source root for " + file, e);
+                    "source root for " + file, e);
         }
 
         return new File(sb.toString());
@@ -147,8 +148,8 @@ class FileHistoryCache implements HistoryCache {
             output = File.createTempFile("oghist", null, dir);
             try (FileOutputStream out = new FileOutputStream(output);
                     XMLEncoder e = new XMLEncoder(
-                            new BufferedOutputStream(
-                            new GZIPOutputStream(out)))) {
+                        new BufferedOutputStream(
+                        new GZIPOutputStream(out)))) {
                 e.setPersistenceDelegate(File.class,
                     new FilePersistenceDelegate());
                 e.writeObject(history);
@@ -230,11 +231,49 @@ class FileHistoryCache implements HistoryCache {
          */
         File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (Map.Entry<String, List<HistoryEntry>> e : map.entrySet()) {
-            for (HistoryEntry ent : e.getValue()) {
-                ent.strip();
+            History hist = null;
+            
+            /*
+             * We do not want to generate history cache for files which
+             * do not currently exist in the repository.
+             */
+            File test = new File(env.getSourceRootPath() + e.getKey());
+            if (!test.exists()) {
+                continue;
             }
-            History hist = new History();
-            hist.setHistoryEntries(e.getValue());
+
+            /*
+             * Certain files require special handling - this is mainly for
+             * files which have been renamed in Mercurial repository.
+             * This ensures that their complete history (follow) will be
+             * saved.
+             */
+            String fullfile = e.getKey();
+            try {
+                String repodir = env.getPathRelativeToSourceRoot(
+                    new File(repository.getDirectoryName()), 0);
+                String shortestfile = fullfile.substring(repodir.length() + 1);
+                if (history.isIgnored(shortestfile)) {
+                    hist = repository.getHistory(test);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(FileHistoryCache.class.getName()).log(
+                    Level.SEVERE, null, ex);
+            }
+            
+            if (hist == null) {
+                hist = new History();
+                        
+                for (HistoryEntry ent : e.getValue()) {
+                    ent.strip();
+                }
+                // add all history entries
+                hist.setHistoryEntries(e.getValue());
+            } else {
+                for (HistoryEntry ent : hist.getHistoryEntries()) {
+                    ent.strip();
+                }
+            }
 
             // Assign tags to changesets they represent
             if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
@@ -321,10 +360,10 @@ class FileHistoryCache implements HistoryCache {
         dir = new File(dir, "historycache");
         try {
             dir = new File(dir, env.getPathRelativeToSourceRoot(
-                 new File(repos.getDirectoryName()), 0));
+                new File(repos.getDirectoryName()), 0));
         } catch (IOException e) {
             throw new HistoryException("Could not resolve " +
-                 repos.getDirectoryName()+" relative to source root", e);
+                    repos.getDirectoryName()+" relative to source root", e);
         }
         return dir.exists();
     }

@@ -354,12 +354,12 @@ public final class Indexer {
                                 arg[0] = arg[0].substring(arg[0].lastIndexOf('.') + 1).toUpperCase();
                             } else {
                                 A_usage();
-			    }
+                            }
 
                             if (arg[1].equals("-")) {
                                 if (prefix) {
                                     AnalyzerGuru.addPrefix(arg[0], null);
-				} else {
+                                } else {
                                     AnalyzerGuru.addExtension(arg[0], null);
                                 }
                                 break;
@@ -375,7 +375,7 @@ public final class Indexer {
                                     log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
                                 }
-			    } else {
+                            } else {
                                 try {
                                     AnalyzerGuru.addExtension(
                                             arg[0],

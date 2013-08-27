@@ -34,6 +34,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -180,6 +183,12 @@ public class JDBCHistoryCacheTest extends TestCase {
         cache.store(historyToStore, repos);
         cache.optimize();
 
+        // test reindex
+
+        History historyNull = new History();
+        cache.store(historyNull, repos);
+        cache.optimize();
+
         // test get history for single file
 
         File makefile = new File(reposRoot, "Makefile");
@@ -206,6 +215,17 @@ public class JDBCHistoryCacheTest extends TestCase {
         assertEquals(3, e2.getFiles().size());
 
         assertFalse(entryIt.hasNext());
+
+        // test get history for renamed file
+
+        File novel = new File(reposRoot, "novel.txt");
+        assertTrue(novel.exists());
+
+        retrievedHistory = cache.get(novel, repos, true);
+
+        entries = retrievedHistory.getHistoryEntries();
+
+        assertEquals("Unexpected number of entries", 6, entries.size());
 
         // test get history for directory
 
@@ -431,7 +451,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         // Create an entry where author is null
         HistoryEntry e = new HistoryEntry(
                 "1", new Date(), null, null, "Initial revision", true);
-        e.addFile("/svn/file.txt");
+        e.addFile("/svn/c/main.c");
         List<HistoryEntry> entries = Collections.singletonList(e);
         cache.store(new History(entries), r);
         assertSameEntries(
@@ -463,7 +483,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         List<HistoryEntry> novelHistory =
                 cache.get(new File(reposRoot, "novel.txt"),
                           repos, false).getHistoryEntries();
-        assertEquals("Size of history", 2, novelHistory.size());
+        assertEquals("Size of history", 6, novelHistory.size());
         assertEquals("tip", novelHistory.get(0).getTags());
         assertEquals("start_of_novel", novelHistory.get(1).getTags());
 
