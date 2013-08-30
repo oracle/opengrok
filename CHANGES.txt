@@ -1,3 +1,102 @@
+August 2013 release 0.12
+-------------------------------------------------
+
+This is a major release and uses lucene 4.4.
+{OpenGrok was moved to github and java.net , since opensolaris.org is no more.
+
+http://opengrok.github.com/OpenGrok
+https://github.com/OpenGrok/OpenGrok
+http://java.net/projects/opengrok
+
+Features:
+
+ JDK7 + tomcat7 tested, JDK6 unsupported!
+ lucene 4.4 -> A LOT faster engine, no spellindex needed, regexp search supported (see help)
+ pl/sql, scala, uuencode languages/analyzers support
+ php analyzers improved
+ monotone, mercurial SCM support improved
+ AccuRev SCM added to supported SCMs
+ new config options in OpenGrok script
+ new search by analyzer/language
+
+Bug fixes:
+
+ introduce OPENGROK_WEBAPP_CONTEXT for setting the webapp context
+ #637 cleanup spellchecker code, use Direct spellchecker to avoid another index creation
+ #641 , #604 introduce prefix matching
+ #656 , #529 introduce OPENGROK_DERBY_URL for selecting JavaDB instance
+ lucene 4.4.0 + new wildcard test
+ #649 Make sure history.jsp doesn't strip off too much when creating a relative path name.
+ Fix tags when using JDBCHistoryCache.
+ Improve escaping of strings in webapp.
+ netbeans 7.3.1
+ add support for tomcat7, Solaris 12 (dev)
+ scala support for ctags
+ #59 Added support for printing multi-page soure code by disabling scrolling in print media's CSS.
+ Added a new field “fileType” to the Lucene index. - search by type feature
+ #57 div src not unique when multiple readmes
+ #5 opensolaris.org cleanup
+ add scala support (just for xrefs, defs and refs are not in there)
+ introducing uuencode(5) support
+ Improve log formatters
+ #8 Improve cleanup of resources opened by the analyze() methods.
+ #9 fixes for FilePath searches being broken (in QueryBuilder)
+ #7 fix duplicate documents and tests for add/remove files to index
+ #8 Change the analyzers so that they don't keep the entire file in memory. 
+ #4 , #13 allow to fetch contents of renamed files in Mercurial 
+ #15 fix automatic JFlex download 
+ rename rcs/cvs test directories to prevent failures when running history guru tests
+ Make sure AccuRevRepository closes readers
+ netbeans 7.3 config file modifications
+ update maven builds to use java 1.7
+ new mailing lists
+ change first batch of links from opensolaris.org to github project pages
+ shorten git changeset IDs
+ fix OpenGrok to support JDK 7 in Solaris
+ Bug 12963 - use tags in History view
+ Don't use String.intern() in the fix for bug #809.
+ Test both of the EftarFileReader constructors in EftarFileTest
+ Bug 19242 - clearcase isWorking method does not work
+ Bug 19201 - OpenGrok shell script should load custom config before setting the defaults
+ Bug 19232 - NPE when the query has a syntax error
+ Bug 19230 - JDBCHistoryCache.hasCacheForDirectory is buggy
+ fix evaluation of OPENGROK_CTAGS_OPTIONS_FILE
+ Bug 19228 - changeset shorter than 8 bytes is detected in wrong way
+ Bug 19221 - diff does not work for plaintext files with colon in their filename (redo)
+ Bug #3174: Last-modified-time should reflect the modification for the revision
+ Bug 6163 - ShAnalyzer magic strings should be more strict to match only valid shell scripts
+ Bug 19221 - diff does not work for plaintext files with colon in their filename
+ Log why cache creation is skipped when repository doesn't support history for directories
+ Bug 19217 Improve PHP scanners
+     Added 'instanceof' and PHP 5.4 keywords
+     Better phpDoc, HTML comments and PHP casts.
+ Bug 19215 - OpenGrok leaks file descriptors - temporary fix
+ Update the monotone support for 1.0 (org.opensolaris.opengrok.history.monotone.deprecated)
+ Support for AccuRev repository introduced
+ Bug 19208 - Need support for Oracle PLSQL in opengrok
+     update plugins for mvn , add "help" to OpenGrok
+ Bug 19200 - search only in - needs more work
+ Bug 19198 - Inadequate indentation
+ fix description of default location of ctags.config
+ Bug 19195 - it should be possible to supply extra command line options to ctags
+ rename OPENGROK_REMOTE_REPOS to reflect reality
+ steps on how to set path descriptions should be better documented
+ enable asserts for the project and fix testing for asserts (will fix maven tests)
+ fix the clear button (take2) + fix the enter button in project field to work again
+ Bug 19184 - README file contents are not displayed anymore in directory listing
+ Bug 19188: if filename has ":" in its name, the link to it from xref will be wrong
+ Allow the user to override the number of threads to use to generate history cache
+ Simplify database code by using JDBC 4.0/Java 6 features
+ check of mkfifo in PATH for testBug11896 should avoid using executor
+ Bug 19181 - ignored list should not contain bin,lib entries
+ Bug 19177 - JAVA_OPTS should be configurable in OpenGrok shell script
+ Bug 19175 - OpenGrok shell script does not merge configuration with default when using OPENGROK_CONFIGURATION
+ Bug 19164 - OpenGrok shell script should have a way to tell not to send config to webapp
+ fix clean button
+ avoid eftar file test and exception on every page access
+ avoid unecessary I/O - cache contents of timestamp/{header,footer}_include until reconfiguration occures
+ 
+
 March 2012 update 0.11.1
 -------------------------------------------------
 
@@ -14,7 +113,7 @@ Bug fixes
  Bug #19184: - README file contents are not displayed anymore in directory listing
 
 
-February 2012 update 0.11
+February 2012 release 0.11
 -------------------------------------------------
 
 This is a major update. It is advised that you cleanup your old DATA_ROOT

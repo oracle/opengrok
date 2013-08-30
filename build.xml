@@ -91,7 +91,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
     -->
 
-    <property name="version" value="0.12-dev"/>
+    <property name="version" value="0.12-rc1"/>
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
@@ -417,15 +417,16 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="dist-src" depends="init">
-        <mkdir dir="${dist.dir}"/>
-        <exec executable="hg">
+	<mkdir dir="${dist.dir}"/>
+	<echo message="Creating archive for tag ${version}"/>
+	<exec executable="${git}">
             <arg value="archive"/>
-            <arg value="-t"/>
-            <arg value="tgz"/>
-<!--	<arg value="-p"/>
-	<arg value="${distname}-${version}-src"/> -->
-            <arg value="${dist.dir}/${distname}-${version}-src.tar.gz"/>
+	    <!--<arg value="-v"/>-->
+	    <arg value="--prefix=${distname}-${version}-src/"/>
+	    <arg value="-o${dist.dir}/${distname}-${version}-src.zip"/>
+	    <arg value="${version}"/>
         </exec>
+	<echo message="If above suceeds, output is in ${dist.dir}/${distname}-${version}-src.zip"/>
     </target>
     
     <target name="-check_findbugs" description="Check that findbugs jar files are present">
