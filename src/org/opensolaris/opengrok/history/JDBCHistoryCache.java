@@ -225,6 +225,10 @@ class JDBCHistoryCache implements HistoryCache {
             s.execute(getQuery("createTableFilechanges"));
         }
 
+        if (!tableExists(dmd, SCHEMA, "FILEMOVES")) {
+            s.execute(getQuery("createTableFilemoves"));
+        }
+        
         // Derby has some performance problems with auto-generated identity
         // columns when multiple threads insert into the same table
         // concurrently. Therefore, we have our own light-weight id generators
@@ -617,6 +621,9 @@ class JDBCHistoryCache implements HistoryCache {
 
     private static final PreparedQuery ADD_FILECHANGE =
             new PreparedQuery(getQuery("addFilechange"));
+    
+    private static final PreparedQuery ADD_FILEMOVE =
+            new PreparedQuery(getQuery("addFilemove"));
 
     /**
      * Get ID value for revision string by querying the DB.
@@ -646,6 +653,7 @@ class JDBCHistoryCache implements HistoryCache {
         PreparedStatement addChangeset = null;
         PreparedStatement addDirchange = null;
         PreparedStatement addFilechange = null;
+        PreparedStatement addFilemove = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         // return immediately when there is nothing to do
@@ -687,6 +695,10 @@ class JDBCHistoryCache implements HistoryCache {
                     addFilechange = conn.getStatement(ADD_FILECHANGE);
                 }
 
+                if (addFilemove == null) {
+                    addFilemove = conn.getStatement(ADD_FILEMOVE);
+                }
+                
                 // Success! Break out of the loop.
                 break;
 
@@ -748,7 +760,6 @@ class JDBCHistoryCache implements HistoryCache {
                             file.substring(repodir.length() + 1))) {
                                 int fileId = files.get(fullPath);
                                 addFilechange.setInt(2, fileId);
-                                addFilechange.setInt(3, 0);
                                 addFilechange.executeUpdate();
                         }
                         String[] pathElts = splitPath(fullPath);
@@ -801,19 +812,22 @@ class JDBCHistoryCache implements HistoryCache {
                 for (int i = 0;; i++) {
                     try {
                         int changesetId = getIdForRevision(entry.getRevision());
-                        addFilechange.setInt(1, changesetId);
-                        addFilechange.setInt(2, fileId);
+
                         /*
-                         * If the file exists in the changeset, set its
-                         * moved value to 0 so it can be found when performing
-                         * historyget on directory.
+                         * If the file exists in the changeset, store it in
+                         * the table tracking moves of the file when it had
+                         * one of its precedent names so it can be found
+                         * when performing historyget on directory.
                          */
                         if (entry.getFiles().contains(repo_path)) {
-                            addFilechange.setInt(3, 0);
+                            addFilechange.setInt(1, changesetId);
+                            addFilechange.setInt(2, fileId);
+                            addFilechange.executeUpdate();
                         } else {
-                            addFilechange.setInt(3, 1);
+                            addFilemove.setInt(1, changesetId);
+                            addFilemove.setInt(2, fileId);
+                            addFilemove.executeUpdate();
                         }
-                        addFilechange.executeUpdate();
 
                         conn.commit();
                         break retry;
