@@ -105,7 +105,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |-
-|Syntax highlightingN/AXref
+|Syntax highlighting-Xref
 |Y
 | 
 | 
@@ -185,7 +185,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 |P (with greasemonkey script)
 |-
-|BuiltN/Ain parser
+|Built-in parser
 | 
 |Y
 |Y
@@ -193,7 +193,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 |P (lexical analysis)
 |-
-|PlugN/Ain parser
+|Plug-in parser
 | 
 | 
 | 
