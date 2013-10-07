@@ -32,7 +32,7 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 
 /**
  *
- * Generally this is a "template" for all new Tokenizers, so be carefull when
+ * Generally this is a "template" for all new Tokenizers, so be careful when
  * changing it, it will impact almost ALL symbol tokenizers in OpenGrok ...
  *
  * Created on August 24, 2009
@@ -41,7 +41,7 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
  */
 public abstract class JFlexTokenizer extends Tokenizer {
 
-    protected Stack<Integer> stack = new Stack<Integer>();
+    protected Stack<Integer> stack = new Stack<>();
 
     // default jflex scanner methods and variables
     abstract public boolean yylex() throws IOException;

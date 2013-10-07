@@ -31,7 +31,7 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 public class CompatibleAnalyser extends Analyzer {
 
     public CompatibleAnalyser() {
-        super(new Analyzer.PerFieldReuseStrategy());
+        super(Analyzer.PER_FIELD_REUSE_STRATEGY);
     }
 
     @Override

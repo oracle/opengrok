@@ -125,7 +125,7 @@ public class FileAnalyzer extends Analyzer {
 
     /** Creates a new instance of FileAnalyzer */
     public FileAnalyzer(FileAnalyzerFactory factory) {
-        super(new Analyzer.PerFieldReuseStrategy());
+        super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         this.factory = factory;        
                         
     }

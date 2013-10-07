@@ -55,7 +55,7 @@ public final class HistoryAnalyzer extends Analyzer {
      * Builds an analyzer which removes words in the provided array.
      */
     public HistoryAnalyzer(String[] stopWords) {
-        super(new Analyzer.PerFieldReuseStrategy());
+        super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         this.stopWords = StopFilter.makeStopSet(SearchEngine.LUCENE_VERSION, stopWords);
     }
 
