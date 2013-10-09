@@ -20,6 +20,7 @@
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +60,13 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
     
     private History history;
     
+    /**
+     * Process the output from the history command and insert the HistoryEntries
+     * into the history field.
+     *
+     * @param input The output from the process
+     * @throws java.io.IOException If an error occurs while reading the stream
+     */
     @Override
     public void processStream(InputStream input) throws IOException {
         DateFormat df = repository.getDateFormat();
@@ -139,6 +147,18 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
                                        file.getAbsolutePath() + "\"", e);
         }
 
+        return history;
+    }
+
+    /**
+     * Parse the given string.
+     *
+     * @param buffer The string to be parsed
+     * @return The parsed history
+     * @throws IOException if we fail to parse the buffer
+     */
+    History parse(String buffer) throws IOException {
+        processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return history;
     }
 }
