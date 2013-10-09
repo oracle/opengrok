@@ -46,13 +46,12 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
         this.repository = repository;
     }
 
-    private static final String FILTER_ACTION_PATTERN = "^add to branch$";
-    private static final String ACTION_PATTERN = "[a-z ]+";
+    private static final String ACTION_PATTERN = "[a-z][a-z ]+";
     private static final String USER_PATTERN = "\\w+";
     private static final String VERSION_PATTERN = "\\d+";
     private static final String TIME_PATTERN = "\\d{1,2}/\\d{1,2}/\\d{4} \\d{1,2}:\\d{2} [AP]M";
     private static final String COMMENT_START_PATTERN = "Comments - ";
-    // ^([a-z ]+)(?:\[.*?\])?\s+(\w+)\s+(\d+)\s+(\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2} [AP]M)$\s*(?:Comments - )?
+    // ^([a-z][a-z ]+)(?:\[(.*?)\])?\s+(\w+)\s+(\d+)\s+(\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2} [AP]M)$\s*(?:Comments - )?
     private static final Pattern HISTORY_PATTERN = Pattern.compile("^(" + ACTION_PATTERN + ")(?:\\[(.*?)\\])?\\s+(" + USER_PATTERN + ")\\s+(" + VERSION_PATTERN + ")\\s+(" + TIME_PATTERN + ")$\\s*(?:" + COMMENT_START_PATTERN + ")?",
                                                     Pattern.MULTILINE);
     
@@ -95,29 +94,34 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
                 entries.add(0, entry);
                 entry = null;
             }
-            if (!matcher.group(1).matches(FILTER_ACTION_PATTERN)) {
-                String revision = matcher.group(4);
-                String author = matcher.group(3);
-                String branch = matcher.group(2);
+            String revision = matcher.group(4);
+            String author = matcher.group(3);
+            String context = matcher.group(2);
+            String date = matcher.group(5);
 
-                long currentRevision = Long.parseLong(revision);
-                if (revisionCounter < currentRevision) {
-                    revisionCounter = currentRevision;
-                    
-                    entry = new HistoryEntry();
-                    // Add branch name to message.  Helps when branch name is used
-                    //   as indicator of why promote was made.
-                    if (branch != null)
-                        entry.appendMessage("[" + branch + "] ");
-                    entry.setAuthor(author);
-                    entry.setRevision(revision);
-                    try {
-                        entry.setDate(df.parse(matcher.group(5)));
-                    } catch (ParseException ex) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse date: '" + matcher.group(5) + "'", ex);
-                    }
-                    entry.setActive(true);
+            long currentRevision = 0;
+            try {
+                currentRevision = Long.parseLong(revision);
+            } catch (NumberFormatException ex) {
+                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse revision: '" + revision + "'", ex);
+            }
+            // We're only interested in history entries that change file content
+            if (revisionCounter < currentRevision) {
+                revisionCounter = currentRevision;
+
+                entry = new HistoryEntry();
+                // Add context of action to message.  Helps when branch name is used
+                //   as indicator of why promote was made.
+                if (context != null)
+                    entry.appendMessage("[" + context + "] ");
+                entry.setAuthor(author);
+                entry.setRevision(revision);
+                try {
+                    entry.setDate(df.parse(date));
+                } catch (ParseException ex) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse date: '" + date + "'", ex);
                 }
+                entry.setActive(true);
             }
             prevEntryEnd = matcher.end();
         }
