@@ -53,6 +53,7 @@ public final class RepositoryFactory {
         new RCSRepository(),
         new CVSRepository(),
         new RepoRepository(),
+        new SSCMRepository(),
     };
 
     private RepositoryFactory() {
