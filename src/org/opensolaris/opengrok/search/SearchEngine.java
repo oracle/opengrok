@@ -354,7 +354,7 @@ public class SearchEngine {
                         if (Genre.PLAIN == genre && (source != null)) {
                             hasContext = sourceContext.getContext(new InputStreamReader(new FileInputStream(source
                                     + filename)), null, null, null, filename,
-                                    tags, nhits > 100, ret);
+                                    tags, nhits > 100, false, ret);
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l = 0;
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref() ?
@@ -377,11 +377,11 @@ public class SearchEngine {
                             }
                         } else {
                             OpenGrokLogger.getLogger().log(Level.WARNING, "Unknown genre: {0} for {1}", new Object[]{genre, filename});
-                            hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, ret);
+                            hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret);
                         }
                     } catch (FileNotFoundException exp) {
                         OpenGrokLogger.getLogger().log(Level.WARNING, "Couldn''t read summary from {0} ({1})", new Object[]{filename, exp.getMessage()});
-                        hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, ret);
+                        hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret);
                     }
                 }
                 if (historyContext != null) {
