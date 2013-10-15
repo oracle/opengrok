@@ -202,8 +202,9 @@ public final class Results {
                         FileReader r = genre == Genre.PLAIN
                                 ? new FileReader(new File(sh.sourceRoot, rpath))
                                 : null;
+                        boolean isDefSearch = (sh.builder.getDefs() != null) ? true : false;
                         sh.sourceContext.getContext(r, out, xrefPrefix,
-                                morePrefix, rpath, tags, true, null);
+                                morePrefix, rpath, tags, true, isDefSearch, null);
                     }
                 }
                 if (sh.historyContext != null) {

@@ -50,7 +50,7 @@ file="mast.jsp"
     <pre><%
             sourceContext.getContext(new FileReader(cfg.getResourceFile()), out,
                 request.getContextPath() + Prefix.XREF_P, null, cfg.getPath(),
-                null, false, null);
+                null, false, false, null);
     %></pre>
 </div><%
         }
