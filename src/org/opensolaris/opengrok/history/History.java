@@ -33,10 +33,11 @@ public class History {
     /** Entries in the log. The first entry is the most recent one. */
     private List<HistoryEntry> entries;
     /** 
-     * files to ignore during cache creation.
+     * track renamed files so they can be treated in special way (for some
+     * SCMs) during cache creation.
      * These are relative to repository root.
      */
-    private List<String> ignoredFiles = new ArrayList<String>();
+    private List<String> renamedFiles = new ArrayList<String>();
     
     public History() {
         this(new ArrayList<HistoryEntry>());
@@ -46,9 +47,9 @@ public class History {
         this.entries = entries;
     }
 
-    History(List<HistoryEntry> entries, List<String> ignored) {
+    History(List<HistoryEntry> entries, List<String> renamed) {
         this.entries = entries;
-        this.ignoredFiles = ignored;
+        this.renamedFiles = renamed;
     }
     
     /**
@@ -101,11 +102,11 @@ public class History {
         return false;
     }
     
-    public boolean isIgnored(String file) {
-        return ignoredFiles.contains(file);
+    public boolean isRenamed(String file) {
+        return renamedFiles.contains(file);
     }
     
-    public List<String> getIgnoredFiles() {
-        return ignoredFiles;
+    public List<String> getRenamedFiles() {
+        return renamedFiles;
     }
 }

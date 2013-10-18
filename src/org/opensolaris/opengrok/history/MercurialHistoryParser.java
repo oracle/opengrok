@@ -51,7 +51,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     private final MercurialRepository repository;
     private final String mydir;
     private boolean isDir;
-    private final List<String> ignoredFiles = new ArrayList<String>();
+    private final List<String> renamedFiles = new ArrayList<String>();
         
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
@@ -93,7 +93,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
             repository.removeAndVerifyOldestChangeset(entries, changeset);
         }
 
-        return new History(entries, ignoredFiles);
+        return new History(entries, renamedFiles);
     }
 
     /**
@@ -156,7 +156,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                      String[] move = part.split(" \\(");
                      File f = new File(mydir + move[0]);
                      if (!move[0].isEmpty() && f.exists()) {
-                        ignoredFiles.add(move[0]);
+                        renamedFiles.add(move[0]);
                      }
                 }
 
