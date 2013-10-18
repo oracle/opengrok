@@ -253,7 +253,7 @@ class FileHistoryCache implements HistoryCache {
                 String repodir = env.getPathRelativeToSourceRoot(
                     new File(repository.getDirectoryName()), 0);
                 String shortestfile = fullfile.substring(repodir.length() + 1);
-                if (history.isIgnored(shortestfile)) {
+                if (history.isRenamed(shortestfile)) {
                     hist = repository.getHistory(test);
                 }
             } catch (IOException ex) {

@@ -744,7 +744,7 @@ class JDBCHistoryCache implements HistoryCache {
                     addDirchange.setInt(1, changesetId);
                     addFilechange.setInt(1, changesetId);
                     for (String file : entry.getFiles()) {
-                        // ignore ignored files
+                        // ignore non-existent files
                         String repodir = "";
                         try {
                             repodir = env.getPathRelativeToSourceRoot(
@@ -753,10 +753,11 @@ class JDBCHistoryCache implements HistoryCache {
                             Logger.getLogger(
                                 JDBCHistoryCache.class.getName()).log(
                                 Level.SEVERE, null, ex);
+                            continue;
                         }
 
                         String fullPath = toUnixPath(file);
-                        if (!history.isIgnored(
+                        if (!history.isRenamed(
                             file.substring(repodir.length() + 1))) {
                                 int fileId = files.get(fullPath);
                                 addFilechange.setInt(2, fileId);
@@ -792,7 +793,7 @@ class JDBCHistoryCache implements HistoryCache {
          * have been renamed in Mercurial repository.
          * This ensures that their complete history (follow) will be saved.
          */
-        for (String filename: history.getIgnoredFiles()) {
+        for (String filename: history.getRenamedFiles()) {
             String file_path = repository.getDirectoryName() +
                     File.separatorChar + filename;
             File file = new File(file_path);
