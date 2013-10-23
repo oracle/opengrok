@@ -119,7 +119,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
         e.g.  /[mb]an/ - will search for man or for ban;<br>
         NOTE: path field search escapes "/" by default, so it only supports 
         regexps when the search string <u>starts and ends</u> with "/".<br>
-        More info can be found on <a href="http://lucene.apache.org/core/4_3_1/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
+        More info can be found on <a href="http://lucene.apache.org/core/4_5_0/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
     </li>
     <li>to perform a single character wildcard search use the "<b>?</b>" symbol,
         e.g.  te?t</li>
@@ -173,7 +173,7 @@ So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</
 <dd>Only finds symbols (e.g. methods, classes, functions, variables).</dd>
 
 <dt>path</dt>
-<dd>path of the source file (no need to use dividers).</dd>
+<dd>path of the source file (no need to use dividers, or if, then use "/" - Windows users, "\" is an escape key in lucene query syntax! Please don't use "\", or replace it with "/".).</dd>
 
 <dt>hist</dt>
 <dd>History log comments.</dd>
@@ -189,7 +189,7 @@ the term (phrases) can be boosted (making it more relevant) using a caret
 </p>
 
 <p>Opengrok search is powered by <a href="http://lucene.apache.org/"
->lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_3_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
+>lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
 </p>
         </div>
 <%

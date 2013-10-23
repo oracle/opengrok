@@ -77,6 +77,15 @@ public class IndexDatabaseTest {
         assertTrue(defs1.hasSymbol("a"));
         assertFalse(defs1.hasSymbol("b"));
         assertTrue(defs1.hasDefinitionAt("foobar", 1, new String[1]));
+        
+        //same for windows delimiters
+        f1 = new File(repository.getSourceRoot() + "\\c\\foobar.c");
+        defs1 = IndexDatabase.getDefinitions(f1);
+        assertNotNull(defs1);
+        assertTrue(defs1.hasSymbol("foobar"));
+        assertTrue(defs1.hasSymbol("a"));
+        assertFalse(defs1.hasSymbol("b"));
+        assertTrue(defs1.hasDefinitionAt("foobar", 1, new String[1]));
 
         // Test that we get null back if we request definitions for a file
         // that's not in the repository.

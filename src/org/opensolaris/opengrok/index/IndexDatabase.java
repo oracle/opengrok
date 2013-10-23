@@ -1078,6 +1078,9 @@ public class IndexDatabase {
             throws IOException, ParseException, ClassNotFoundException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         String path = env.getPathRelativeToSourceRoot(file, 0);
+        //sanitize windows path delimiters
+        //in order not to conflict with Lucene escape character
+        path=path.replace("\\", "/");
 
         IndexReader ireader = getIndexReader(path);
 
