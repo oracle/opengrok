@@ -1,27 +1,48 @@
 Checklist for releasing OpenGrok:
---------------------------------------
-../ext_lib - is a directory where we keep latest JFlex.jar and all necessary jars/dirs for tests
+---------------------------------
 
-0) set proper version in build.xml , <property name="version" value="???"/>
+../ext_lib - is a directory where we keep latest JFlex.jar and all necessary
+jars/dirs for tests
 
-1) tag the build used for release in the versioning system so we can get back to it
+0) set proper version in build.xml
+
+   <property name="version" value="???"/>
+
+   and put some stuff into CHANGES.txt
+
+   Then commit the change:
+
+     git commit
+
+1) tag the build used for release so we can get back to it:
+
+   git tag 0.XYZ
+   git push origin --tags
 
 2) build must be clean
-ant clean
-ant 
-(defaults to jar currently)
 
-3) check all tests, tests code coverage: junit, pmd, findbugs, checkstyle, emma, jdepend
-(they should be ok, currently only checkstyle has 8 warnings, the rest is clean;
-emma reports should be based according to what is set for the release, usually it's overall coverage above 80%)
+   ant clean
+   ant # defaults to jar currently
+
+3) check all tests, tests code coverage:
+   junit, pmd, findbugs, checkstyle, emma, jdepend
+
+They should be ok, currently only checkstyle has 8 warnings, the rest is
+clean; emma reports should be based according to what is set for the release,
+usually it's overall coverage above 80%)
+
 (jenkins can help here, see README.txt on setup)
 
-4) produce proper distributions, check them before upload, always try to build on Solaris, since
-gnu tar might create a non-standard compliant .tgz
-version and tag from 0) will be used to produce the archive
-ant dist
-ant dist-src
-ant package
+4) produce proper distributions
 
-the release is OK, once above is fullfilled to our satisfaction
+Check them before upload, always try to build on Solaris, since gnu tar might
+create a non-standard compliant .tgz version and tag from step 0) will be used
+to produce the archive
 
+  ant dist
+  ant dist-src
+  ant package
+
+5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
+
+The release is OK, once above is fullfilled to our satisfaction.
