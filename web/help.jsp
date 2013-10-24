@@ -173,7 +173,7 @@ So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</
 <dd>Only finds symbols (e.g. methods, classes, functions, variables).</dd>
 
 <dt>path</dt>
-<dd>path of the source file (no need to use dividers, or if, then use "/" - Windows users, "\" is an escape key in lucene query syntax! Please don't use "\", or replace it with "/".).</dd>
+<dd>path of the source file (no need to use dividers, or if, then use "/" - Windows users, "\" is an escape key in lucene query syntax! <br/>Please don't use "\", or replace it with "/").<br/>Also note that if you want just exact path, enclose it in "", e.g. "src/mypath", otherwise dividers will be removed and you get more hits.</dd>
 
 <dt>hist</dt>
 <dd>History log comments.</dd>
