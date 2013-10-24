@@ -145,8 +145,8 @@ include file="pageheader.jspf"
             <input type="submit" value="Search" class="submit" /></li><%
     Project proj = cfg.getProject();
     String[] vals = cfg.getSearchOnlyIn();
-        %><li><input type="checkbox" name="path" value="<%= vals[0]
-            %>" <%= vals[2] %>/> only in <b><%= vals[1] %></b></li>
+        %><li><input type="checkbox" name="path" value='"<%= vals[0]
+            %>"' <%= vals[2] %>/> only in <b><%= vals[1] %></b></li>
     </ul><%
     if (proj != null) {
     %>
