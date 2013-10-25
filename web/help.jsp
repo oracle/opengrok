@@ -77,7 +77,7 @@ To find perl files that do not use /usr/bin/perl but something else:
 <a href="search?q=-%22%2Fusr%2Fbin%2Fperl%22+%2B%22%2Fbin%2Fperl%22"
 >-"/usr/bin/perl" +"/bin/perl"</a>
 
-To find all strings begining with foo use the wildcard:
+To find all strings beginning with foo use the wildcard:
 <a href="search?q=foo*">foo*</a>
 
 To find all files which have . c in their name (dot is a token!):
@@ -119,7 +119,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
         e.g.  /[mb]an/ - will search for man or for ban;<br>
         NOTE: path field search escapes "/" by default, so it only supports 
         regexps when the search string <u>starts and ends</u> with "/".<br>
-        More info can be found on <a href="http://lucene.apache.org/core/4_5_0/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
+        More info can be found on <a href="http://lucene.apache.org/core/4_5_1/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
     </li>
     <li>to perform a single character wildcard search use the "<b>?</b>" symbol,
         e.g.  te?t</li>
@@ -189,7 +189,7 @@ the term (phrases) can be boosted (making it more relevant) using a caret
 </p>
 
 <p>Opengrok search is powered by <a href="http://lucene.apache.org/"
->lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_5_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
+>lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_5_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
 </p>
         </div>
 <%
