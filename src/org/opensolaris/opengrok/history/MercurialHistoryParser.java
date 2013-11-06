@@ -155,8 +155,9 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                       */
                      String[] move = part.split(" \\(");
                      File f = new File(mydir + move[0]);
-                     if (!move[0].isEmpty() && f.exists()) {
-                        renamedFiles.add(move[0]);
+                     if (!move[0].isEmpty() && f.exists() &&
+                         !renamedFiles.contains(move[0])) {
+                             renamedFiles.add(move[0]);
                      }
                 }
 
