@@ -6,10 +6,10 @@ Install:
 
 0. create Github account (of course !)
 1. Solaris 11+
-2. JDK7
-3. Exuberant ctags
-4. Git
-5. Netbeans 
+2. JDK7 (`pkg install developer/java/jdk`)
+3. Exuberant ctags (from source, no IPS package yet)
+4. Git (`pkg install git`)
+5. Netbeans
 
 ### Setting up your code repository
 
