@@ -3,6 +3,7 @@ If you wanted to make a change to OpenGrok code base (small fix, new feature, an
 ### Before we begin
 
 Install:
+
 1. Solaris 11+
 2. JDK7
 3. Exuberant ctags
