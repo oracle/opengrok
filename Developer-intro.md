@@ -1,0 +1,1 @@
+If you wanted to make a change to OpenGrok code base (small fix, new feature, anything) here's couple of steps to get you started.
