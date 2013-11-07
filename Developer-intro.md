@@ -2,9 +2,10 @@ If you wanted to make a change to OpenGrok code base (small fix, new feature, an
 
 ### Before we begin
 
-Install:
+Firstly, create Github account (of course !).
 
-0. create Github account (of course !)
+Then install:
+
 1. Solaris 11+
 2. JDK7 (`pkg install developer/java/jdk`)
 3. Exuberant ctags (from source, no IPS package yet)
