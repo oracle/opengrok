@@ -9,7 +9,7 @@ Install:
 2. JDK7 (`pkg install developer/java/jdk`)
 3. Exuberant ctags (from source, no IPS package yet)
 4. Git (`pkg install git`)
-5. Netbeans (with Tomcat)
+5. Netbeans (with bundled Tomcat)
 
 ### Setting up your code repository
 
