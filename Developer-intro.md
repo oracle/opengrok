@@ -8,8 +8,8 @@ Here's an example on getting the source from command line (assuming your fork is
 
 You'll want to setup remotes (mainly the path to the upstream repo) using the steps on https://help.github.com/articles/fork-a-repo For OpenGrok it would be:
 
-`
+```
 cd opengrok-git-foo
 git remote add upstream git@github.com:OpenGrok/OpenGrok.git
-`
+```
 
