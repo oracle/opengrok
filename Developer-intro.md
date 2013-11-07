@@ -47,3 +47,7 @@ Now right-click on the opengrok project and select Properties. Under the dialog 
 This is assuming the `ctags` binary of your Exuberant ctags installation resides in `/usr/local/bin/ctags`.
 
 Now select the opengrok project in the left column and go to Run -> Run Project (F6). To reindex from scratch simply do `rm -rf /var/opengrok/data/*` and Run Project again.
+
+### Publish changes
+
+Once done with your changes, `git commit` and `push` them to your repository. From there it is possible to create new pull request to the origin master branch using the standard Github process (https://help.github.com/articles/creating-a-pull-request - again Github help describes this in detail).
