@@ -46,7 +46,11 @@ Now right-click on the opengrok project and select Properties. Under the dialog 
 
 This is assuming the `ctags` binary of your Exuberant ctags installation resides in `/usr/local/bin/ctags`.
 
-Now select the opengrok project in the left column and go to Run -> Run Project (F6). To reindex from scratch simply do `rm -rf /var/opengrok/data/*` and Run Project again.
+Now select the opengrok project in the left column and go to Run -> Run Project (F6). To reindex from scratch simply do `rm -rf /var/opengrok/data/*` and Run Project again. If you now refresh the web page mentioned above it will reflect the reindex and you can do searches etc.
+
+### Debugging
+
+Simply insert a breakpoint either in the Indexer code or the webapp and Run it. Then it is possible to single step, observe the variables etc.
 
 ### Publish changes
 
