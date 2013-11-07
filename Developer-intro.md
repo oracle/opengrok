@@ -11,6 +11,8 @@ Install:
 4. Git (`pkg install git`)
 5. Netbeans (with bundled Tomcat)
 
+Also, it would not hurt if you created an issue (https://github.com/OpenGrok/OpenGrok/issues) and mentioned that you will be working on it.
+
 ### Setting up your code repository
 
 You'll want to create a fork of the OpenGrok/OpenGrok repo. On Github this is as simple as clicking '**Fork**' on the main project page. Getting the source code of your fork is easy, just use the instructions on the front page of the project and select the right method for you for getting the source (https://help.github.com/articles/which-remote-url-should-i-use).
