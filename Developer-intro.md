@@ -30,6 +30,10 @@ To build the code from command line, just run `ant`. It will download all necess
 
 ![fresh OpenGrok build](https://github.com/OpenGrok/OpenGrok/wiki/images/opengrok-build.png)
 
+### Deploy the web app to the web server
+
+Right click on the `opengrok-web-nbproject` and select 'Deploy'. It should start the Tomcat shipped with the Netbeans and deploy the web app to it. By default the OpenGrok instance will be accessible on `http://127.0.0.1:8084/source/` - use your browser to see it.
+
 ### Setup sources and index
 
 Now setup the sources to be indexed under e.g. `/var/opengrok/src` and create data directory for storing indexes under e.g. `/var/opengrok/data`. Make sure both directories have correct permissions so that the user running the Netbeans process can read and write to them.
