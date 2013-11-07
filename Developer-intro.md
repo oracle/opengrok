@@ -4,6 +4,7 @@ If you wanted to make a change to OpenGrok code base (small fix, new feature, an
 
 Install:
 
+0. create Github account (of course !)
 1. Solaris 11+
 2. JDK7
 3. Exuberant ctags
