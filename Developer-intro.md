@@ -29,3 +29,16 @@ git checkout myfix
 To build the code from command line, just run `ant`. It will download all necessary pre-requisites. When using IDE such as Netbeans, there is already prepared project which can be loaded. So, start Netbeans and open the project via File -> Open Project (Ctrl+Shift+O), navigate to the `opengrok-git-mine` directory and simply press the 'Open Project' button. You do not have to resolve the missing dependencies as they will be automatically installed during first build. Then there is a sub-project which contains the web part of OpenGrok. Go to File -> Open Project, navigate to the `opengrok-git-mine` directory contents and select the `opengrok-web-nbproject`. If you are behind a proxy, make sure to setup proxy in Tools -> Options -> Proxy Settings so that builds done during the build can succeed. To build the project select the project in the first column and go to Run -> Build (F11). The build should be successful, it will be visible in the Output tab:
 
 ![fresh OpenGrok build](https://github.com/OpenGrok/OpenGrok/wiki/images/opengrok-build.png)
+
+### Setup sources and index
+
+Now setup the sources to be indexed under e.g. `/var/opengrok/src` and create data directory for storing indexes under e.g. `/var/opengrok/data`. Make sure both directories have correct permissions so that the user running the Netbeans process can read and write to them.
+
+Now right-click on the opengrok project and select Properties. Under the dialog window go to Run and populate the 'Arguments' text field with arguments to the opengrok.jar, e.g. for our case it would be:
+
+```
+-s /var/opengrok/src -d /var/opengrok/data -c /usr/local/bin/ctags -H -S -D -U localhost:2424
+```
+
+This is assuming the `ctags` binary of your Exuberant ctags installation resides in `/usr/local/bin/ctags`.
+
