@@ -4,7 +4,9 @@ You'll want to create a fork of the OpenGrok/OpenGrok repo. On Github this is as
 
 Here's an example on getting the source from command line (assuming your fork is called 'foo/OpenGrok' (where 'foo' is your username on Github)
 
-`git clone git@github.com:foo/OpenGrok.git opengrok-git-foo`
+```
+git clone git@github.com:foo/OpenGrok.git opengrok-git-foo
+```
 
 You'll want to setup remotes (mainly the path to the upstream repo) using the steps on https://help.github.com/articles/fork-a-repo For OpenGrok it would be:
 
