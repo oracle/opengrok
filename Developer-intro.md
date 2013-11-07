@@ -41,8 +41,9 @@ Now setup the sources to be indexed under e.g. `/var/opengrok/src` and create da
 Now right-click on the opengrok project and select Properties. Under the dialog window go to Run and populate the 'Arguments' text field with arguments to the opengrok.jar, e.g. for our case it would be:
 
 ```
--s /var/opengrok/src -d /var/opengrok/data -c /usr/local/bin/ctags -H -S -D -U localhost:2424
+-s /var/opengrok/src -d /var/opengrok/data -c /usr/local/bin/ctags -H -S -U localhost:2424
 ```
 
 This is assuming the `ctags` binary of your Exuberant ctags installation resides in `/usr/local/bin/ctags`.
 
+Now select the opengrok project in the left column and go to Run -> Run Project (F6). To reindex from scratch simply do `rm -rf /var/opengrok/data/*` and Run Project again.
