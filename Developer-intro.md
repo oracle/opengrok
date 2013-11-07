@@ -65,4 +65,4 @@ Simply insert a breakpoint either in the Indexer code or the webapp and Run it. 
 
 ### Publish changes
 
-Once done with your changes, `git commit` and `push` them to your repository. From there it is possible to create new pull request to the origin master branch using the standard Github process (https://help.github.com/articles/creating-a-pull-request - again Github help describes this in detail).
+Once done with your changes, save them in Netbeans, `git commit` and `push` them to your repository (or you can do the Git dance directly from Netbeans using the Team -> Git menu). From there it is possible to create new pull request to the origin master branch using the standard Github process (https://help.github.com/articles/creating-a-pull-request - again Github help describes this in detail).
