@@ -1,6 +1,6 @@
 If you wanted to make a change to OpenGrok code base (small fix, new feature, anything) here's couple of steps to get you started.
 
-# Setting up your code repository
+### Setting up your code repository
 
 You'll want to create a fork of the OpenGrok/OpenGrok repo. On Github this is as simple as clicking '**Fork**' on the main project page. Getting the source code of your fork is easy, just use the instructions on the front page of the project and select the right method for you for getting the source (https://help.github.com/articles/which-remote-url-should-i-use).
 
@@ -24,5 +24,8 @@ git branch myfix
 git checkout myfix
 ```
 
-# Building
+### Building
+
+To build the code from command line, just run `ant`. It will download all necessary pre-requisites. When using IDE such as Netbeans, there is already prepared project which can be loaded. So, start Netbeans and select the project:
+
 
