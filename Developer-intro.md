@@ -26,4 +26,4 @@ git checkout myfix
 
 ### Building
 
-To build the code from command line, just run `ant`. It will download all necessary pre-requisites. When using IDE such as Netbeans, there is already prepared project which can be loaded. So, start Netbeans and open the project (Ctrl+o), navigate to the `opengrok-git-foo` directory and simply press 'Open'.
+To build the code from command line, just run `ant`. It will download all necessary pre-requisites. When using IDE such as Netbeans, there is already prepared project which can be loaded. So, start Netbeans and open the project via File -> Open Project (Ctrl+Shift+O), navigate to the `opengrok-git-foo` directory and simply press 'Open'.
