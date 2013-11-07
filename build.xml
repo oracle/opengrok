@@ -588,7 +588,19 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <property name="test-sys-prop.emma.coverage.out.merge" value="true"/>
     </target>
 
-    <target name="-post-compile-test">
+    <target name="check_repositories_zip" description="check if repositores.zip was generated">
+        <available
+	    file="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
+	    type="file" property="repos_exists">
+        </available>
+        <condition property="repos_missing">
+            <not>
+                <isset property="repos_exists"/>
+            </not>
+        </condition>
+    </target>
+
+    <target depends="check_repositories_zip" name="-post-compile-test" if="repos_missing">
         <antcall target="-create-svn-repository"/>
         <antcall target="-create-razor-repository"/>
         <!-- Change root in CVS test repository -->
