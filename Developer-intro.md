@@ -28,4 +28,4 @@ git checkout myfix
 
 To build the code from command line, just run `ant`. It will download all necessary pre-requisites. When using IDE such as Netbeans, there is already prepared project which can be loaded. So, start Netbeans and open the project via File -> Open Project (Ctrl+Shift+O), navigate to the `opengrok-git-mine` directory and simply press the 'Open Project' button. You do not have to resolve the missing dependencies as they will be automatically installed during first build. Then there is a sub-project which contains the web part of OpenGrok. Go to File -> Open Project, navigate to the `opengrok-git-mine` directory contents and select the `opengrok-web-nbproject`. If you are behind a proxy, make sure to setup proxy in Tools -> Options -> Proxy Settings so that builds done during the build can succeed. To build the project select the project in the first column and go to Run -> Build (F11). The build should be successful, it will be visible in the Output tab:
 
-[[/images/opengrok-build.jpg]]
+![aa](https://github.com/OpenGrok/OpenGrok/wiki/images/opengrok-build.jpg)
