@@ -68,7 +68,7 @@ Simply insert a breakpoint either in the Indexer code or the webapp and Run it. 
 
 ### Test
 
-XXX
+To run tests in single file, open the file from the left column which contains the projects (e.g. opengrok -> Test Packages -> org.opensolaris.opengrok.history -> MercurialRepositoryTest.java) and right-click on it and select Test File (Ctrl+F6). Sometimes it is necessary to run 'Debug Test File' first so that the test files are correctly produced.
 
 ### Publish changes
 
