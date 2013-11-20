@@ -803,7 +803,7 @@ public final class Indexer {
             if (cfg.length == 2) {
                 try {
                     InetAddress host = InetAddress.getByName(cfg[0]);
-                    RuntimeEnvironment.getInstance().writeConfiguration(host, Integer.parseInt(cfg[1]));
+                    env.writeConfiguration(host, Integer.parseInt(cfg[1]));
                 } catch (Exception ex) {
                     log.log(Level.SEVERE, "Failed to send configuration to " + configHost + " (is web application server running with opengrok deployed?)", ex);
                 }
