@@ -230,14 +230,14 @@ class FileHistoryCache implements HistoryCache {
          * hash map entry for the file) in a file.
          */
         File root = RuntimeEnvironment.getInstance().getSourceRootFile();
-        for (Map.Entry<String, List<HistoryEntry>> e : map.entrySet()) {
+        for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             History hist = null;
             
             /*
              * We do not want to generate history cache for files which
              * do not currently exist in the repository.
              */
-            File test = new File(env.getSourceRootPath() + e.getKey());
+            File test = new File(env.getSourceRootPath() + map_entry.getKey());
             if (!test.exists()) {
                 continue;
             }
@@ -248,7 +248,7 @@ class FileHistoryCache implements HistoryCache {
              * This ensures that their complete history (follow) will be
              * saved.
              */
-            String fullfile = e.getKey();
+            String fullfile = map_entry.getKey();
             try {
                 String repodir = env.getPathRelativeToSourceRoot(
                     new File(repository.getDirectoryName()), 0);
@@ -264,11 +264,11 @@ class FileHistoryCache implements HistoryCache {
             if (hist == null) {
                 hist = new History();
                         
-                for (HistoryEntry ent : e.getValue()) {
+                for (HistoryEntry ent : map_entry.getValue()) {
                     ent.strip();
                 }
                 // add all history entries
-                hist.setHistoryEntries(e.getValue());
+                hist.setHistoryEntries(map_entry.getValue());
             } else {
                 for (HistoryEntry ent : hist.getHistoryEntries()) {
                     ent.strip();
@@ -280,7 +280,7 @@ class FileHistoryCache implements HistoryCache {
                 repository.assignTagsInHistory(hist);
             }
 
-            File file = new File(root, e.getKey());
+            File file = new File(root, map_entry.getKey());
             if (!file.isDirectory()) {
                 storeFile(hist, file);
             }
