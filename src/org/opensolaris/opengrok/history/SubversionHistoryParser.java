@@ -94,7 +94,11 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to parse: " + s, ex);
                 }
             } else if ("path".equals(qname)) {
-                if (s.startsWith(prefix)) {
+                /*
+                 * We only want valid files in the repository, not the
+                 * top-level directory itself, hence the check for inequivality.
+                 */
+                if (s.startsWith(prefix) && !s.equals(prefix)) {
                     File file = new File(home, s.substring(prefix.length()));
                     String path = file.getAbsolutePath().substring(length);
                     // The same file names may be repeated in many commits,
