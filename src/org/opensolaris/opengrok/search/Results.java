@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
+import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
@@ -45,7 +46,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
@@ -92,7 +92,7 @@ public final class Results {
 
     private static String getTags(File basedir, String path, boolean compressed) {
         char[] content = new char[1024 * 8];
-        try (TagFilter r = new TagFilter(getXrefReader(basedir, path, compressed))) {
+        try (HTMLStripCharFilter r = new HTMLStripCharFilter(getXrefReader(basedir, path, compressed))) {
             int len = r.read(content);
             return new String(content, 0, len);
         } catch (Exception e) {
