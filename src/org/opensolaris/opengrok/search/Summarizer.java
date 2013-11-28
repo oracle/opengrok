@@ -284,13 +284,16 @@ public class Summarizer {
         //FIXME somehow integrate below cycle to getSummary to save the cloning and memory,
         //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
         ArrayList<Token> result = new ArrayList<Token>();
-        TokenStream ts = analyzer.tokenStream("full", text);
+        TokenStream ts = analyzer.tokenStream("full", text);        
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
-        OffsetAttribute offset = ts.addAttribute(OffsetAttribute.class);
+        OffsetAttribute offset = ts.addAttribute(OffsetAttribute.class);        
+        ts.reset();
         while(ts.incrementToken()) {
             Token t=new Token(term.buffer(),0,term.length(),offset.startOffset(),offset.endOffset());
             result.add(t);
         }
+        ts.end();
+        ts.close();        
         return result.toArray(new Token[result.size()]);
     }
 

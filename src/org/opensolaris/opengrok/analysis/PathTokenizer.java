@@ -121,4 +121,9 @@ public class PathTokenizer extends Tokenizer {
         charsRead = 0;
         startPosition = 0;
     }
+    
+    @Override
+    public final void close() throws IOException {
+        super.close();
+    }
 }

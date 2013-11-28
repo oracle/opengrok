@@ -60,6 +60,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     /**
      * Reinitialize the tokenizer with new reader.
+     * @throws java.io.IOException
      */
     @Override
     public void reset() throws IOException {
@@ -70,6 +71,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     @Override
     public final void close() throws IOException {
+        super.close();
         this.yyclose();
     }
     protected CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);

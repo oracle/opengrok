@@ -194,9 +194,9 @@ public class SearchTest {
         assertEquals(1, instance.results.size());
 
 	RuntimeEnvironment.getInstance().setAllowLeadingWildcard(true);
-        assertTrue(instance.parseCmdLine(new String[]{"-f", "********in argv"}));
+        assertTrue(instance.parseCmdLine(new String[]{"-f", "********in argv path:main.c"}));
         assertTrue(instance.search());
-        assertEquals(21, instance.results.size());
+        assertEquals(4, instance.results.size());
 	
     }
 
