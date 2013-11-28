@@ -48,6 +48,7 @@ public class PathTokenizerTest {
 
         int count = 0;
         int dots = 0;
+        tokenizer.reset();
         while (tokenizer.incrementToken()) {
             if ( term.toString().equals(".") ) { dots++;break; }
             assertTrue("too many tokens", count < expectedTokens.length);
@@ -60,6 +61,8 @@ public class PathTokenizerTest {
                     offset.endOffset());
             count++;
         }
+        tokenizer.end();
+        tokenizer.close();
         assertEquals("wrong number of tokens", expectedTokens.length, count+dots);
     }
 }
