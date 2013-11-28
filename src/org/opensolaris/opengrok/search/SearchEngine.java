@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
+import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -44,7 +45,6 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
-import org.opensolaris.opengrok.analysis.TagFilter;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
@@ -358,8 +358,8 @@ public class SearchEngine {
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l = 0;
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref() ?
-                                     new TagFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + "/xref" + filename + ".gz"))))) :
-                                     new TagFilter(new BufferedReader(new FileReader(data + "/xref" + filename)))) {
+                                     new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + "/xref" + filename + ".gz"))))) :
+                                     new HTMLStripCharFilter(new BufferedReader(new FileReader(data + "/xref" + filename)))) {
                                 l = r.read(content);
                             }
                             //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
