@@ -639,7 +639,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <arg value="${build.test.reposroots}/svn"/>
         </exec>
       
-      <!-- need absolute path for svn url -->
+        <!-- need absolute path for svn url -->
         <pathconvert property="test.svn.url">
             <map from="" to="file://"/>
             <path location="${build.test.reposroots}/svn"/>
@@ -652,6 +652,41 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <arg value="-m"/>
             <arg value="Initial import"/>
         </exec>
+
+        <!-- Unit test for issue #694 -->
+        <exec executable="svn" failifexecutionfails="false">
+            <arg value="checkout"/>
+            <arg value="${test.svn.url}"/>
+            <arg value="${build.test.reposroots}/svn-working"/>
+        </exec>
+	<mkdir dir="${build.test.reposroots}/svn-working/parent"/>
+	<mkdir dir="${build.test.reposroots}/svn-working/parent/module1"/>
+	<mkdir dir="${build.test.reposroots}/svn-working/parent/module2"/>
+	<touch file="${build.test.reposroots}/svn-working/parent/module1/file1.txt"/>
+	<touch file="${build.test.reposroots}/svn-working/parent/module1/file2.txt"/>
+	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+            <arg value="add"/>
+            <arg value="parent"/>
+        </exec>
+	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="files in 2 modules"/>
+        </exec>
+	<!-- move the file1 from module1 to module2, and commit to finish our test case -->
+	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+            <arg value="move"/>
+            <arg value="parent/module1/file1.txt"/>
+            <arg value="parent/module2"/>
+        </exec>
+	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="move file1.txt from module1 to module2"/>
+        </exec>
+	<delete dir="${build.test.reposroots}/svn-working"/>
+	<!-- end of unit test for issue #694 -->
+
         <exec executable="svn" failifexecutionfails="false">
             <arg value="checkout"/>
             <arg value="${test.svn.url}"/>
