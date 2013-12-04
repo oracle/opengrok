@@ -11,7 +11,7 @@ http://java.net/projects/opengrok
 Features:
 
  JDK7 + tomcat7 tested, JDK6 unsupported!
- lucene 4.5 -> A LOT faster engine, no spellindex needed, regexp search supported (see help)
+ lucene 4.6.0 -> A LOT faster engine, no spellindex needed, regexp search supported (see help)
  pl/sql, scala, uuencode languages/analyzers support
  php analyzers improved
  monotone, mercurial SCM support improved
