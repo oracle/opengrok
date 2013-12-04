@@ -40,7 +40,6 @@ create a non-standard compliant .tgz version and tag from step 0) will be used
 to produce the archive
 
   ant dist
-  ant dist-src
   ant package
 
 5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
