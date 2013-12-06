@@ -33,9 +33,12 @@ import java.io.Reader;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.OpenGrokLogger;
 
 /**
@@ -110,12 +113,21 @@ public class Executor {
      */
     public int exec(final boolean reportExceptions, StreamHandler handler) {
         int ret = -1;
-
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
+        final String cmd_str = processBuilder.command().toString();
+        final String dir_str;
+        File cwd = processBuilder.directory();
+        if (cwd == null) {
+            dir_str = System.getProperty("user.dir");
+        } else {
+            dir_str = cwd.toString();
+        }
+      
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
             if (processBuilder.environment().containsKey("PWD")) {
-                processBuilder.environment().put("PWD", workingDirectory.getAbsolutePath());
+                processBuilder.environment().put("PWD",
+                    workingDirectory.getAbsolutePath());
             }
         }
 
@@ -129,6 +141,7 @@ public class Executor {
         Process process = null;
         try {
             process = processBuilder.start();
+            final Process proc = process;
 
             final InputStream errorStream = process.getErrorStream();
             final SpoolHandler err = new SpoolHandler();
@@ -148,9 +161,24 @@ public class Executor {
             });
             thread.start();
 
+            /*
+             * Setup timer so if the process get stuck we can terminate it and
+             * make progress instead of hanging the whole indexer.
+             */
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override public void run() {
+                    OpenGrokLogger.getLogger().log(Level.INFO,
+                        "Terminating process of command {0} in directory {1} " +
+                        "due to timeout", new Object[]{cmd_str, dir_str});
+                    proc.destroy();
+                }
+            }, RuntimeEnvironment.getInstance().getCommandTimeout() * 1000);
+            
             handler.processStream(process.getInputStream());
 
             ret = process.waitFor();
+            t.cancel();
             process = null;
             thread.join();
             stderr = err.getBytes();
@@ -175,17 +203,12 @@ public class Executor {
         }
 
         if (ret != 0 && reportExceptions) {
-            int MAX_MSG_SZ = 512; /* limit to avoid floodding the logs */
+            int MAX_MSG_SZ = 512; /* limit to avoid flooding the logs */
             StringBuilder msg = new StringBuilder("Non-zero exit status ")
                     .append(ret).append(" from command ")
-                    .append(processBuilder.command().toString())
-                    .append(" in directory ");
-            File cwd = processBuilder.directory();
-            if (cwd == null) {
-                msg.append(System.getProperty("user.dir"));
-            } else {
-                msg.append(cwd.toString());
-            }
+                    .append(cmd_str)
+                    .append(" in directory ")
+                    .append(dir_str);
             if (stderr != null && stderr.length > 0) {
                     msg.append(": ");
                     if (stderr.length > MAX_MSG_SZ) {
