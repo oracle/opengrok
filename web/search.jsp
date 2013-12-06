@@ -164,7 +164,10 @@ include file="menu.jspf"
             <li>Try different keywords.</li>
             <li>Try more general keywords.</li>
             <li>Use 'wil*' cards if you are looking for partial match.</li>
-        </ul><%
+        </ul>
+        <p><b>Completed in <%= System.currentTimeMillis() - starttime
+            %> milliseconds</b></p>
+	<%
     } else {
         // We have a lots of results to show: create a slider for
         String slider = "";
