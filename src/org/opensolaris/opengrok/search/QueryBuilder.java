@@ -201,6 +201,21 @@ public class QueryBuilder {
     }
 
     /**
+     * Used to tell if this search only has the "definitions" field filled in
+     *
+     * @return whether above statement is true or false
+     */
+    public boolean isDefSearch() {
+
+        return ((getQueryText(FULL) == null) &&
+            (getQueryText(REFS) == null) &&
+            (getQueryText(PATH) == null) &&
+            (getQueryText(HIST) == null) &&
+            (getQueryText(DEFS) != null))
+            ? true : false;
+    }    
+
+    /**
      * Build a new query based on the query text that has been passed in to this
      * builder.
      *

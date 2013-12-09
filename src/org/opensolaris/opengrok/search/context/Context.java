@@ -127,7 +127,7 @@ public class Context {
      */
     public boolean getContext(Reader in, Writer out, String urlPrefix,
             String morePrefix, String path, Definitions tags,
-            boolean limit, List<Hit> hits) {
+            boolean limit, boolean isDefSearch, List<Hit> hits) {
         alt = !alt;
         if (m == null) {
             IOUtils.close(in);
@@ -250,7 +250,9 @@ public class Context {
                 for (int i = 0; i < m.length; i++) {
                     matchState = m[i].match(token);
                     if (matchState == LineMatcher.MATCHED) {
-                        tokens.printContext();
+                        if (!isDefSearch) {
+                            tokens.printContext();
+                        }
                         matchedLines++;
                         //out.write("<br> <i>Matched " + token + " maxlines = " + matchedLines + "</i><br>");
                         break;
