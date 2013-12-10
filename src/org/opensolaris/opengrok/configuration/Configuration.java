@@ -119,6 +119,7 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String, String> cmds;
     private int tabSize;
+    private int command_timeout;
     private static final Logger logger = Logger.getLogger(Configuration.class.getName());
 
     /**
@@ -161,6 +162,14 @@ public final class Configuration {
         this.scanningDepth = scanningDepth;
     }
 
+    public int getCommandTimeout() {
+        return command_timeout;
+    }
+
+    public void setCommandTimeout(int timeout) {
+        this.command_timeout = timeout;
+    }
+    
     /**
      * Creates a new instance of Configuration
      */
@@ -202,6 +211,7 @@ public final class Configuration {
         cmds = new HashMap<String, String>();
         setSourceRoot(null);
         setDataRoot(null);
+        setCommandTimeout(600); // 10 minutes
     }
 
     public String getRepoCmd(String clazzName) {

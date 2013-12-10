@@ -103,6 +103,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setScanningDepth(scanningDepth);
     }
 
+    public int getCommandTimeout() {
+        return threadConfig.get().getCommandTimeout();
+    }
+
+    public void setCommandTimeout(int timeout) {
+        threadConfig.get().setCommandTimeout(timeout);
+    }
+
     /**
      * Get the path to the where the index database is stored
      *
@@ -894,7 +902,8 @@ public final class RuntimeEnvironment {
 
                             if (obj instanceof Configuration) {
                                 setConfiguration((Configuration) obj);
-                                log.log(Level.INFO, "Configuration updated: {0}", configuration.getSourceRoot());
+                                log.log(Level.INFO, "Configuration updated: {0}",
+                                    configuration.getSourceRoot());
                             }
                         } catch (IOException e) {
                             log.log(Level.SEVERE, "Error reading config file: ", e);
