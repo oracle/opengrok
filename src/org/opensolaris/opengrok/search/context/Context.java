@@ -253,6 +253,9 @@ public class Context {
                         if (!isDefSearch) {
                             tokens.printContext();
                         }
+                        if (isDefSearch && tokens.tags.containsKey(tokens.markedLine)) {
+                            tokens.printContext();
+                        }
                         matchedLines++;
                         //out.write("<br> <i>Matched " + token + " maxlines = " + matchedLines + "</i><br>");
                         break;

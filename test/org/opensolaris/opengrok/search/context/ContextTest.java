@@ -132,7 +132,7 @@ public class ContextTest {
         // Search freetext for the term "def"
         QueryBuilder qb = new QueryBuilder().setFreetext("def");
         Context c = new Context(qb.build(), qb.getQueries());
-        assertTrue(c.getContext(in, out, "", "", "", null, limit, hits));
+        assertTrue(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
             assertEquals(1, hits.size());
@@ -156,7 +156,7 @@ public class ContextTest {
         hits = hitList ? new ArrayList<Hit>() : null;
         qb = new QueryBuilder().setDefs("def");
         c = new Context(qb.build(), qb.getQueries());
-        assertTrue(c.getContext(in, out, "", "", "", defs, limit, hits));
+        assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
             assertEquals(1, hits.size());
@@ -170,13 +170,30 @@ public class ContextTest {
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
 
+        in = new StringReader("abc def ghi\n");
+        out = hitList ? null : new StringWriter();
+        hits = hitList ? new ArrayList<Hit>() : null;
+        assertTrue(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
+
+        if (hitList) {
+            assertEquals(0, hits.size());            
+        }
+
+        expectedOutput = hitList
+                ? ""
+                : "";                
+        actualOutput = hitList ? "" : out.toString();
+        //test case - if this is def search, don't show false results (defs
+        // weren't defined)
+        assertEquals(expectedOutput, actualOutput);        
+
         // Search with no input (will search definitions)
         in = null;
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<Hit>() : null;
         qb = new QueryBuilder().setDefs("def");
         c = new Context(qb.build(), qb.getQueries());
-        assertTrue(c.getContext(in, out, "", "", "", defs, limit, hits));
+        assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
             assertEquals(1, hits.size());
@@ -196,7 +213,7 @@ public class ContextTest {
         hits = hitList ? new ArrayList<Hit>() : null;
         qb = new QueryBuilder().setFreetext("no_match");
         c = new Context(qb.build(), qb.getQueries());
-        assertFalse(c.getContext(in, out, "", "", "", null, limit, hits));
+        assertFalse(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
         if (hitList) {
             assertEquals(0, hits.size());
         } else {
@@ -209,7 +226,7 @@ public class ContextTest {
         hits = hitList ? new ArrayList<Hit>() : null;
         qb = new QueryBuilder().setHist("abc");
         c = new Context(qb.build(), qb.getQueries());
-        assertFalse(c.getContext(in, out, "", "", "", null, limit, hits));
+        assertFalse(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
         if (hitList) {
             assertEquals(0, hits.size());
         } else {
@@ -235,7 +252,7 @@ public class ContextTest {
         Context c = new Context(qb.build(), qb.getQueries());
         StringWriter out = new StringWriter();
         boolean match =
-                c.getContext(in, out, "", "", "", null, true, null);
+                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(),null);
         assertTrue("No match found", match);
         String s = out.toString();
         assertTrue("Match not written to Writer",
@@ -263,7 +280,7 @@ public class ContextTest {
         Context c = new Context(qb.build(), qb.getQueries());
 
         boolean match =
-                c.getContext(in, out, "", "", "", null, true, null);
+                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
         assertTrue("No match found", match);
         String s = out.toString();
         assertTrue("No [all...] link", s.contains(">[all...]</a>"));
@@ -290,7 +307,7 @@ public class ContextTest {
         Context c = new Context(qb.build(), qb.getQueries());
 
         boolean match =
-                c.getContext(in, out, "", "", "", null, true, null);
+                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
         assertTrue("No match found", match);
         String s = out.toString();
         assertTrue("Match not listed", s.contains("<b>search_for_me</b>"));
@@ -318,7 +335,7 @@ public class ContextTest {
         Context c = new Context(qb.build(), qb.getQueries());
         assertTrue(
                 "No match found",
-                c.getContext(in, out, "", "", "", null, true, null));
+                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null));
 
         // Close the XML document body
         out.append("\n</document>");
@@ -353,7 +370,7 @@ public class ContextTest {
         StringWriter out = new StringWriter();
         QueryBuilder qb = new QueryBuilder().setFreetext("mixed");
         Context c = new Context(qb.build(), qb.getQueries());
-        assertTrue(c.getContext(in, out, "", "", "", null, false, null));
+        assertTrue(c.getContext(in, out, "", "", "", null, false, qb.isDefSearch(), null));
         assertEquals("<a class=\"s\" href=\"#0\"><span class=\"l\">0</span> "
                 + "<b>Mixed</b> case: abc AbC dEf</a><br/>",
                 out.toString());
@@ -410,7 +427,7 @@ public class ContextTest {
         Context context = new Context(builder.build(), builder.getQueries());
         ArrayList<Hit> hits = new ArrayList<Hit>();
         assertEquals(lines.length != 0,
-                context.getContext(in, null, "", "", "", defs, false, hits));
+                context.getContext(in, null, "", "", "", defs, false, builder.isDefSearch(), hits));
         assertEquals("Unexpected number of hits", lines.length, hits.size());
         for (int i = 0; i < lines.length; i++) {
             assertEquals(Integer.toString(lines[i]), hits.get(i).getLineno());
