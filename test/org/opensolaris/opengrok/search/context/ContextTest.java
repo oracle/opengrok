@@ -169,24 +169,21 @@ public class ContextTest {
                 + "abc <b>def</b> ghi</a> <i> type</i> <br/>";
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
-
-        in = new StringReader("abc def ghi\n");
+        
+        in = new StringReader("abc def ghi\nbah def foobar");
         out = hitList ? null : new StringWriter();
         hits = hitList ? new ArrayList<Hit>() : null;
-        assertTrue(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
+        assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
-            assertEquals(0, hits.size());            
+            assertEquals(1, hits.size());
+            assertEquals("1", hits.get(0).getLineno());
         }
-
-        expectedOutput = hitList
-                ? ""
-                : "";                
-        actualOutput = hitList ? "" : out.toString();
+        
         //test case - if this is def search, don't show false results (defs
         // weren't defined)
         assertEquals(expectedOutput, actualOutput);        
-
+                        
         // Search with no input (will search definitions)
         in = null;
         out = hitList ? null : new StringWriter();
@@ -204,6 +201,27 @@ public class ContextTest {
                 ? "text"
                 : "<a class=\"s\" href=\"#1\"><span class=\"l\">1</span> "
                 + "text</a> <i>type</i><br/>";
+        actualOutput = hitList ? hits.get(0).getLine() : out.toString();
+        assertEquals(expectedOutput, actualOutput);
+        
+        defs = new Definitions();
+        defs.addTag(2, "def", "type", "text");
+        in = new StringReader("abc1 def ghi\nabc def ghi\nabc3 def ghi\n");
+        out = hitList ? null : new StringWriter();
+        hits = hitList ? new ArrayList<Hit>() : null;
+        qb = new QueryBuilder().setDefs("def");
+        c = new Context(qb.build(), qb.getQueries());
+        assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
+
+        if (hitList) {
+            assertEquals(1, hits.size());
+            assertEquals("2", hits.get(0).getLineno());
+        }
+
+        expectedOutput = hitList
+                ? "abc <b>def</b> ghi"
+                : "<a class=\"s\" href=\"#2\"><span class=\"l\">2</span> "
+                + "abc <b>def</b> ghi</a> <i> type</i> <br/>";
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
 
