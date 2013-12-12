@@ -475,6 +475,12 @@ table#dirlist { /* the "Name" column */
 	color: #000;
 }
 
+/* highlight line number with anchor */
+#src a.l:target, #src a.hl:target {
+	background: orange;
+	color:yellow;
+}
+
 .blame .r { /* revision number "column" (annotation) */
 	text-align: right;
 }
