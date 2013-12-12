@@ -252,8 +252,7 @@ public class Context {
                     if (matchState == LineMatcher.MATCHED) {
                         if (!isDefSearch) {
                             tokens.printContext();
-                        }
-                        if (isDefSearch && tokens.tags.containsKey(tokens.markedLine)) {
+                        } else if (tokens.tags.containsKey(tokens.markedLine)) {
                             tokens.printContext();
                         }
                         matchedLines++;
