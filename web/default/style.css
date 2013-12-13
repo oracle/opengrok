@@ -194,7 +194,7 @@ label {
 	display: inline-block;
 }
 
-#history::before, #bar .annotate::before, #line::before, #defbox::before, #download::before {
+#history::before, #bar .annotate::before, #line::before, #defbox::before, #download::before, #raw::before {
 	content: "|";
 	padding: 0.5ex;
 	color: black;

@@ -32,7 +32,8 @@ java.io.OutputStream,
 
 org.opensolaris.opengrok.configuration.RuntimeEnvironment,
 org.opensolaris.opengrok.history.HistoryGuru,
-org.opensolaris.opengrok.web.PageConfig"
+org.opensolaris.opengrok.web.PageConfig,
+org.opensolaris.opengrok.web.Prefix"
 %><%@
 
 include file="pageconfig.jspf"
@@ -58,6 +59,7 @@ include file="pageconfig.jspf"
     }
     InputStream in = null;
     try {
+        Prefix prefix;
         if (revision != null) {
             in = HistoryGuru.getInstance().getRevision(f.getParent(),
                 f.getName(), revision.substring(2));
@@ -79,8 +81,12 @@ include file="pageconfig.jspf"
     response.setContentType(mimeType);
 
     try {
-        response.setHeader("content-disposition", "attachment; filename="
-            + f.getName());
+        if (cfg.getPrefix() == Prefix.DOWNLOAD_P) {
+            response.setHeader("content-disposition", "attachment; filename="
+                + f.getName());
+        } else {
+            response.setHeader("content-type", "text/plain");
+        }
         OutputStream o = response.getOutputStream();
         byte[] buffer = new byte[8192];
         int nr;
