@@ -41,7 +41,7 @@
     <jsp-file>/list.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
     <servlet-name>diff</servlet-name>
@@ -49,7 +49,7 @@
     <jsp-file>/diff.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
     <servlet-name>more</servlet-name>
@@ -62,7 +62,7 @@
     <jsp-file>/rss.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
     <servlet-name>opensearch</servlet-name>
@@ -70,7 +70,7 @@
     <jsp-file>/opensearch.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
     <servlet-name>raw</servlet-name>
@@ -78,7 +78,15 @@
     <jsp-file>/raw.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
+  </servlet>
+  <servlet>
+    <servlet-name>download</servlet-name>
+    <display-name>Download source</display-name>
+    <jsp-file>/raw.jsp</jsp-file>
+<init-param>
+<param-name>keepgenerated</param-name><param-value>true</param-value>
+</init-param>
   </servlet>
   <servlet>
     <servlet-name>error</servlet-name>
@@ -115,6 +123,10 @@
   <servlet-mapping>
     <servlet-name>raw</servlet-name>
     <url-pattern>/raw/*</url-pattern> 		<!-- RAW_P -->
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>download</servlet-name>
+    <url-pattern>/download/*</url-pattern> 	<!-- DOWNLOAD_P -->
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>search</servlet-name>

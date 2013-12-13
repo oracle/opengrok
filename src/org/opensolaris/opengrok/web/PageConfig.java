@@ -311,8 +311,9 @@ public final class PageConfig {
                         && !getRequestedRevision().isEmpty() && !hasHistory()) {
                     return null;
                 }
-            } else if (getPrefix() == Prefix.RAW_P) {
-                return null;
+            } else if ((getPrefix() == Prefix.RAW_P) ||
+                (getPrefix() == Prefix.DOWNLOAD_P)) {
+                    return null;
             }
         }
         return redir == null ? "" : redir;

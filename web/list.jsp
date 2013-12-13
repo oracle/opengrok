@@ -77,7 +77,7 @@ document.pageReady.push(function() { pageReadyList();});
     File resourceFile = cfg.getResourceFile();
     String path = cfg.getPath();
     String basename = resourceFile.getName();
-    String rawPath = request.getContextPath() + Prefix.RAW_P + path;
+    String rawPath = request.getContextPath() + Prefix.DOWNLOAD_P + path;
     Reader r = null;
     if (cfg.isDir()) {
         // valid resource is requested

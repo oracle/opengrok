@@ -144,7 +144,7 @@ public final class Results {
         String morePrefix = sh.contextPath + Prefix.MORE_P;
         String xrefPrefixE = ctxE + Prefix.XREF_P;
         String histPrefixE = ctxE + Prefix.HIST_L;
-        String rawPrefixE = ctxE + Prefix.RAW_P;
+        String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
         File xrefDataDir = new File(sh.dataRoot, Prefix.XREF_P.toString());
 
         for (Map.Entry<String, ArrayList<Document>> entry :
@@ -172,7 +172,7 @@ public final class Results {
                 out.write(xrefPrefixE);
                 out.write(rpathE);
                 out.write("?a=true\" title=\"Annotate\">A</a> <a href=\"");
-                out.write(rawPrefixE);
+                out.write(downloadPrefixE);
                 out.write(rpathE);
                 out.write("\" title=\"Download\">D</a>");
                 out.write("</td>");

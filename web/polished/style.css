@@ -241,7 +241,7 @@ label {
 	margin-right: 1ex;
 }
 
-#home, #history, #download { /* menu item icons */
+#home, #history, #download, #raw { /* menu item icons */
 	display: inline-block;
 	width: 18px;
 	height: 18px;
@@ -259,7 +259,7 @@ label {
 	background-position: -18px 0;
 }
 
-#download { /* w.gif */
+#download, #raw { /* w.gif */
 	background-position: -36px 0;
 }
 
