@@ -194,7 +194,7 @@ label {
 	display: inline-block;
 }
 
-#history::before, #bar .annotate::before, #line::before, #defbox::before, #download::before {
+#history::before, #bar .annotate::before, #line::before, #defbox::before, #download::before, #raw::before {
 	content: "|";
 	padding: 0.5ex;
 	color: black;
@@ -438,14 +438,20 @@ table#dirlist { /* the "Name" column */
 	margin: 0 0 0 1em;
 }
 
-#dirlist td:nth-child(n+2) { /* all but the first column */
+#dirlist td:nth-child(n+3) { /* all but the first 2 columns */
 	padding-right: 1em;
 }
 
-#dirlist tbody td:nth-child(4) {
+#dirlist tbody td:nth-child(5) {
 	text-align: right; /* CSS3 may allow " " (single space char) */
 }
 
+#dirlist td.q { /* 2nd column: H A D */
+	white-space: nowrap;
+	font-size: small;
+	padding-left: 16px;
+	width: 3em;
+}
 
 /* file display */
 #src {

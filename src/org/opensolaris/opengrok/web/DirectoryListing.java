@@ -90,6 +90,7 @@ public class DirectoryListing {
     /**
      * Write a htmlized listing of the given directory to the given destination.
      *
+     * @param contextPath path used for link prefixes
      * @param dir the directory to list
      * @param out write destination
      * @param path virtual path of the directory (usually the path name of
@@ -103,7 +104,7 @@ public class DirectoryListing {
      * @throws NullPointerException if a parameter except <var>files</var>
      *  is {@code null}
      */
-    public List<String> listTo(File dir, Writer out, String path, List<String> files)
+    public List<String> listTo(String contextPath, File dir, Writer out, String path, List<String> files)
             throws HistoryException, IOException {
         // TODO this belongs to a jsp, not here
         ArrayList<String> readMes = new ArrayList<String>();
@@ -117,7 +118,7 @@ public class DirectoryListing {
         }
 
         out.write("<table id=\"dirlist\">\n");
-        out.write("<thead>\n<tr><th/><th>Name</th><th>Date</th><th>Size</th>");
+        out.write("<thead>\n<tr><th/><th>Name</th><th></th><th>Date</th><th>Size</th>");
         if (offset > 0) {
             out.write("<th><tt>Description</tt></th>");
         }
@@ -129,7 +130,7 @@ public class DirectoryListing {
         // print the '..' entry even for empty directories
         if (path.length() != 0) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
-            out.write("<b><a href=\"..\">..</a></b></td>");
+            out.write("<b><a href=\"..\">..</a></b></td><td></td>");
             PrintDateSize(out, dir.getParentFile(), null, dateFormatter);
             out.write("</tr>\n");
         }
@@ -152,9 +153,11 @@ public class DirectoryListing {
                     readMes.add(file);
                 }
                 boolean isDir = child.isDirectory();
-                out.write("<tr><td><p class=\"");
+                out.write("<tr><td>");
+                out.write("<p class=\"");
                 out.write(isDir ? 'r' : 'p');
-                out.write("\"/></td><td><a href=\"");
+                out.write("\"/>");
+                out.write("</td><td><a href=\"");
                 out.write(Util.URIEncodePath(file));
                 if (isDir) {
                     out.write("/\"><b>");
@@ -166,6 +169,7 @@ public class DirectoryListing {
                     out.write("</a>");
                 }
                 out.write("</td>");
+                Util.writeHAD(out, contextPath, path + file, isDir);
                 PrintDateSize(out, child, modTimes.get(file), dateFormatter);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, file);

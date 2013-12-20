@@ -55,11 +55,16 @@ import org.opensolaris.opengrok.history.HistoryGuru;
  * Class for useful functions.
  */
 public final class Util {
+    private static final Charset UTF8 = Charset.forName("UTF-8");
+
+    private static final String SPAN_D = "<span class=\"d\">";
+    private static final String SPAN_A = "<span class=\"a\">";
+    private static final String SPAN_E = "</span>";
+    private static final int SPAN_LEN = SPAN_D.length() + SPAN_E.length();
+
     private Util() {
         // singleton
     }
-
-    private static final Charset UTF8 = Charset.forName("UTF-8");
 
     /**
      * Return a string which represents a <code>CharSequence</code> in HTML.
@@ -568,6 +573,42 @@ public final class Util {
     }
 
     /**
+     * Write the 'H A D' links. This is used for search results and directory
+     * listings.
+     *
+     * @param out   writer for producing output
+     * @param ctxE  URI encoded prefix
+     * @param entry file/directory name to write
+     * @param is_dir is directory
+     * @throws IOException depends on the destination (<var>out</var>).
+     */
+    public static void writeHAD(Writer out, String ctxE, String entry,
+        boolean is_dir) throws IOException {
+
+        String histPrefixE = ctxE + Prefix.HIST_L;
+        String downloadPrefixE = ctxE + Prefix.DOWNLOAD_P;
+        String xrefPrefixE = ctxE + Prefix.XREF_P;
+
+        out.write("<td class=\"q\"><a href=\"");
+        out.write(histPrefixE);
+        out.write(entry);
+        out.write("\" title=\"History\">H</a>");
+
+        if (!is_dir) {
+            out.write(" <a href=\"");
+            out.write(xrefPrefixE);
+            out.write(entry);
+            out.write("?a=true\" title=\"Annotate\">A</a> ");
+            out.write("<a href=\"");
+            out.write(downloadPrefixE);
+            out.write(entry);
+            out.write("\" title=\"Download\">D</a>");
+        }
+
+        out.write("</td>");
+    }
+
+    /**
      * wrapper arround UTF-8 URL encoding of a string
      *
      * @param q     query to be encoded. If {@code null}, an empty string will
@@ -674,11 +715,6 @@ public final class Util {
         }
         return sb.toString();
     }
-
-    private static final String SPAN_D = "<span class=\"d\">";
-    private static final String SPAN_A = "<span class=\"a\">";
-    private static final String SPAN_E = "</span>";
-    private static final int SPAN_LEN = SPAN_D.length() + SPAN_E.length();
 
     /**
      * Tag changes in the given <var>line1</var> and <var>line2</var>

@@ -60,6 +60,8 @@ public enum Prefix {
     /** RSS XML Feed of latest changes (link prefix) */
     RSS_P("/rss"),
     /** Download file (link prefix) */
+    DOWNLOAD_P("/download"),
+    /** Raw file display (link prefix) */
     RAW_P("/raw"),
     /** full blown search from main page or top bar (link prefix) */
     SEARCH_P("/search"),

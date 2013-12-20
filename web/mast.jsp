@@ -137,9 +137,14 @@ include file="pageheader.jspf"
             title="Show or hide symbol list."><%--
             --%><span id="defbox"></span>Navigate</a></li><%
         }
-        %><li><a href="<%= context + Prefix.RAW_P + uriEncodedPath
+        %>
+	<li><a href="<%= context + Prefix.RAW_P + uriEncodedPath
             + (rev.length() == 0 ? "" : "?") + rev
-            %>"><span id="download"></span>Download</a></li><%
+            %>"><span id="raw"></span>Raw</a></li>
+	<li><a href="<%= context + Prefix.DOWNLOAD_P + uriEncodedPath
+            + (rev.length() == 0 ? "" : "?") + rev
+            %>"><span id="download"></span>Download</a></li>
+	<%
     }
         %><li><input type="text" id="search" name="q" class="q" />
             <input type="submit" value="Search" class="submit" /></li><%

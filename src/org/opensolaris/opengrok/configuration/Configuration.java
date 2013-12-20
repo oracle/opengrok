@@ -657,7 +657,7 @@ public final class Configuration {
      * contains definition tags.
      */
     public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
-    private transient String dtagsEftar = null;
+    private transient File dtagsEftar = null;
 
     /**
      * Get the eftar file, which contains definition tags.
@@ -668,12 +668,10 @@ public final class Configuration {
         if (dtagsEftar == null) {
             File tmp = new File(getDataRoot() + "/" + EFTAR_DTAGS_FILE);
             if (tmp.canRead()) {
-                dtagsEftar = tmp.getName();
-            } else {
-                dtagsEftar = "";
+                dtagsEftar = tmp;
             }
         }
-        return dtagsEftar.isEmpty() ? null : new File(dtagsEftar);
+        return dtagsEftar;
     }
 
     public String getDatabaseDriver() {

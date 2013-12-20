@@ -68,7 +68,7 @@ include file="mast.jsp"
 
     } else if (data.genre == Genre.IMAGE) {
 
-        String link = request.getContextPath() + Prefix.RAW_P
+        String link = request.getContextPath() + Prefix.DOWNLOAD_P
             + Util.htmlize(cfg.getPath());
 %>
 <div id="difftable">
@@ -88,7 +88,7 @@ include file="mast.jsp"
 
     } else if (data.genre != Genre.PLAIN && data.genre != Genre.HTML) {
 
-        String link = request.getContextPath() + Prefix.RAW_P
+        String link = request.getContextPath() + Prefix.DOWNLOAD_P
             + Util.htmlize(cfg.getPath());
 %>
 <div id="src">Diffs for binary files cannot be displayed! Files are <a
