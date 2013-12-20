@@ -200,15 +200,15 @@ public class DirectoryListingTest {
         FileEntry entry = new FileEntry();
         NodeList nl = element.getElementsByTagName("td");
         int len = nl.getLength();
-        if (len < 4) {
+        if (len < 5) {
             return;
         }
-        assertEquals(4, len);
+        assertEquals(5, len);
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
-        entry.lastModified = getLastModified(nl.item(2));
-        entry.size = getSize(nl.item(3));
+        entry.lastModified = getLastModified(nl.item(3));
+        entry.size = getSize(nl.item(4));
 
         // Try to look it up in the list of files
         for (int ii = 0; ii < entries.length; ++ii) {
@@ -232,7 +232,7 @@ public class DirectoryListingTest {
         out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<start>\n");
 
         DirectoryListing instance = new DirectoryListing();
-        instance.listTo(directory, out, directory.getPath(),
+        instance.listTo("ctx", directory, out, directory.getPath(),
                         Arrays.asList(directory.list()));
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
