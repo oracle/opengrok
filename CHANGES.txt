@@ -1,7 +1,7 @@
-October 2013 release 0.12
+January 2014 release 0.12
 -------------------------------------------------
 
-This is a major release and uses lucene 4.5.
+This is a major release and uses lucene 4.6.0.
 {OpenGrok was moved to github and java.net, since opensolaris.org is no more.
 
 http://opengrok.github.com/OpenGrok
@@ -18,6 +18,8 @@ Features:
  AccuRev SCM added to supported SCMs
  new config options in OpenGrok script
  new search by analyzer/language
+ full history tracking for files renamed in Mercurial repository
+ small UI enhancements
 
 Bug fixes:
 
