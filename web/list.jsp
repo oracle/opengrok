@@ -103,7 +103,9 @@ document.pageReady.push(function() { pageReadyList();});
         DirectoryListing dl = new DirectoryListing(cfg.getEftarReader());
         List<String> files = cfg.getResourceFileList();
         if (!files.isEmpty()) {
-            List<String> readMes = dl.listTo(resourceFile, out, path, files);
+            List<String> readMes = dl.listTo(
+                    Util.URIEncodePath(request.getContextPath()),
+                    resourceFile, out, path, files);
             File[] catfiles = cfg.findDataFiles(readMes);
             for (int i=0; i < catfiles.length; i++) {
                 if (catfiles[i] == null) {
