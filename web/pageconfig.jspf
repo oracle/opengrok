@@ -26,11 +26,4 @@ Portions Copyright 2011 Jens Elkner.
 org.opensolaris.opengrok.web.PageConfig"
 %><%!
     private PageConfig cfg;
-    /** Just cleanup cached objects */
-
-    public void jspDestroy() {
-        if (cfg != null) {
-            cfg.cleanup();
-        }
-    }
 %>
