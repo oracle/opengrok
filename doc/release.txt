@@ -14,17 +14,12 @@ jars/dirs for tests
 
      git commit
 
-1) tag the build used for release so we can get back to it:
-
-   git tag 0.XYZ
-   git push origin --tags
-
-2) build must be clean
+1) build must be clean
 
    ant clean
    ant # defaults to jar currently
 
-3) check all tests, tests code coverage:
+2) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
 
 They should be ok, currently only checkstyle has 8 warnings, the rest is
@@ -32,6 +27,11 @@ clean; emma reports should be based according to what is set for the release,
 usually it's overall coverage above 80%)
 
 (jenkins can help here, see README.txt on setup)
+
+3) tag the build used for release so we can get back to it:
+
+   git tag 0.XYZ
+   git push origin --tags
 
 4) produce proper distributions
 
