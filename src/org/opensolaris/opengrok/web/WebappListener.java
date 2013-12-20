@@ -32,6 +32,8 @@ import java.util.logging.Level;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -40,7 +42,8 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  *
  * @author Trond Norbye
  */
-public final class WebappListener implements ServletContextListener {
+public final class WebappListener
+    implements ServletContextListener, ServletRequestListener {
 
     @Override
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
@@ -85,5 +88,21 @@ public final class WebappListener implements ServletContextListener {
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void requestDestroyed(ServletRequestEvent e) {
+        PageConfig.cleanup(e.getServletRequest());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void requestInitialized(ServletRequestEvent e) {
+        // pass through
     }
 }
