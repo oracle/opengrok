@@ -70,15 +70,15 @@ Second step is to just run the indexing (can take a lot of time). After this is 
 
 Please change to opengrok directory (can vary on your system)
 
- # cd /usr/opengrok/bin
+ $ cd /usr/opengrok/bin
 
 and run, if your SRC_ROOT is prepared under <code>/var/opengrok/src</code>
 
- # ./OpenGrok index
+ $ ./OpenGrok index
 
 otherwise (if SRC_ROOT is in different directory) run:
 
- # ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
+ $ ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
 
 Above command should try to upload latest index status reflected into configuration.xml to a running source web application.
 Once above command finishes without errors(e.g. SEVERE: Failed to send configuration to localhost:2424
