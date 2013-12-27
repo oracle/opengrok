@@ -186,6 +186,11 @@ Once above command finishes without errors
 you should be able to enjoy your opengrok and search your sources using
 latest indexes and setup.
 
+It is assumed that any SCM commands are reachable in one of the components
+of the PATH environment variable (e.g. 'git' command for Git repositories).
+Likewise, this should be maintained in the environment of the user which runs
+the web server instance.
+
 Congratulations, you should now be able to point your browser to
 http://<YOUR_WEBAPP_SERVER>:<WEBAPPSRV_PORT>/source to work with your fresh
 OpenGrok installation! :-)
@@ -282,10 +287,10 @@ To configure the webapp source.war, look into the parameters defined in
 web.xml of source.war file and change them (see note1) appropriately.
 
     * HEADER: is the fragment of HTML that will be used to display title or
-    logo of your project
+              logo of your project
     * SRC_ROOT: absolute path name of the root directory of your source tree
     * DATA_ROOT: absolute path of the directory where OpenGrok data
-    files are stored
+                 files are stored
        - Header file 'header_include' can be created under DATA_ROOT.
 	 The contents of this file file will be appended to the header of each
 	 web page after the OpenGrok logo element.
@@ -580,7 +585,7 @@ E.g. $ ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
 
 
 8.0.1 Package build
------------------
+-------------------
 
 Run 'ant package' to create package (specific for the operating system this is
 being executed on) under the dist/ directory.
