@@ -96,7 +96,7 @@ A common case would be, that you want the data in some other directory than /var
 This can be easily achieved by using environment variable OPENGROK_INSTANCE_BASE .
 E.g. if my opengrok data directory is <code>/tank/opengrok</code> and my source root is in <code>/tank/source</code> and I'd like to get more verbosity I'd run the indexer as:
 
- # OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source
+ $ OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok ./OpenGrok index /tank/source
 
 Since above will also change default location of config file, beforehands(or restart your web container after creating this symlink) I suggest doing below for our case of having opengrok instance in <code>/tank/opengrok</code> :
 
