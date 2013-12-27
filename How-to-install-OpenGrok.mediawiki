@@ -30,6 +30,7 @@ It is also necessary to install SCM environment accessible by OpenGrok for your 
 === Creating the index ===
 
 OpenGrok's command line use is a typical case where OpenGrok is deployed as indexing service on a webserver for an active source repository, which is updated automatically using scheduled cron jobs.
+
 '''Project concept''' - one project is one directory underneath <code>SRC_ROOT</code> and usually contains a checkout of a project (or it's branch, version, ...) sources, it can have several attributes (in its XML description), note that interface of projects is being stabilized so it can change. Projects effectively replace need for more web applications with opengrok <code>.war</code> and leave you with one indexer and one web application serving MORE source code repositories - projects. A nice concept is to have directories underneath <code>SRC_ROOT</code> with a naming convention, thereby creating a good overview of projects (e.g. name-version-branch). Then you have a simple update script & simple index refresher script in place, which simplifies management of more repositories.
 
 [[/images/setup-project.png]]
@@ -37,6 +38,7 @@ OpenGrok's command line use is a typical case where OpenGrok is deployed as inde
 ==== <u>Step.0</u> - Setting up the Sources. Having the web application container ready. ====
 
 Source base must be available locally for OpenGrok to work efficiently. No changes are required to your source tree. If the code is under CVS or SVN, OpenGrok requires the '''checked out source''' tree under SRC_ROOT.
+
 '''Note:''' A local CVSROOT (or SVN if opengrok version less than 0.7) repository must be available. File history will not be fetched from a remote server for CVS (& SVN if opengrok version less than 0.7) !. For newer opengrok versions you must use option <code>-r on</code> for remote repositories history to be indexed, also note this can be more resource (time,cpu,network) demanding.
 Note also that OpenGrok ignores symbolic links.
 
