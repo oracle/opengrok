@@ -84,6 +84,11 @@ Above command should try to upload latest index status reflected into configurat
 Once above command finishes without errors(e.g. SEVERE: Failed to send configuration to localhost:2424
 ), you should be able to enjoy your opengrok and search your sources using latest indexes and setup.
 
+It is assumed that any SCM commands are reachable in one of the components
+of the PATH environment variable (e.g. 'git' command for Git repositories).
+Likewise, this should be maintained in the environment of the user which runs
+the web server instance.
+
 Congratulations, you should now be able to point your browser to http://<YOUR_WEBAPP_SERVER>:<WEBAPPSRV_PORT>/source to work with your fresh opengrok installation! :-)
 
 At this time we'd like to point out some customization to OpenGrok script for advanced users.
