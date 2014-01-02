@@ -105,10 +105,10 @@ document.domReady.push(function() {domReadyHistory();});
             <th>Comments <%
             if (hist.hasFileList()) {
                 %><a href="#" onclick="javascript: toggle_filelist(); return false;">
-                    <span class="filelist-hidden">
-                    (&lt;&lt;&lt; Hide modified files)</span>
-                    <span class="filelist">
-                    (Show modified files &gt;&gt;&gt;)</span></a><%
+                    <div class="filelist-hidden">
+                    (&lt;&lt;&lt; Hide modified files)</div>
+                    <div class="filelist">
+                    (Show modified files &gt;&gt;&gt;)</div></a><%
             }
             %>
             </th>
@@ -189,7 +189,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %><%= author %><%
                 }
                 %></td>
-            <td><%
+            <td><p><%
                 String cout = Util.htmlize(entry.getMessage());
                 if (bugPage != null && bugPage.length() > 0) {
                     cout = bugPattern.matcher(cout).replaceAll("<a href=\""
@@ -199,10 +199,10 @@ document.domReady.push(function() {domReadyHistory();});
                     cout = reviewPattern.matcher(cout).replaceAll("<a href=\""
                         + reviewPage + "$1\">$1</a>");
                 }
-                %><%= cout %><%
+                %><%= cout %></p><%
                 Set<String> files = entry.getFiles();
                 if (files != null) {
-                %><span class="filelist-hidden"><br/><%
+                %><div class="filelist-hidden"><br/><%
                     for (String ifile : files) {
                         String jfile = Util.stripPathPrefix(path, ifile);
                         if (rev == "") {
@@ -213,7 +213,7 @@ document.domReady.push(function() {domReadyHistory();});
 <a class="h" href="<%= context + Prefix.XREF_P + ifile %>?r=<%= rev %>"><%= jfile %></a><br/><%
                         }
                     }
-                %></span><%
+                %></div><%
                 }
                 %></td>
         </tr><%
