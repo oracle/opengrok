@@ -208,7 +208,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <property name="git" value="git"/>
 
     <!-- Get the id of the changeset we're building from using a
-         Mercurial command.
+         git command.
       -->
     <target name="-get-changeset-from-command"
             depends="-check-is-git-repo" if="build.from.repo">
@@ -226,6 +226,11 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <target name="-check-is-git-repo">
         <available property="build.from.repo" file=".git" type="dir"/>
     </target>
+    <target name="-check-is-archived-git-repo">
+        <available property="build.from.archived.repo"
+	    file=".git_archival.txt"
+	     type="file"/>
+    </target>
 
     <!-- Get the id of the changeset we're building from by reading
          .git_archival.txt file created by git archive. This will only
@@ -233,7 +238,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
          the repository, for example the source distribution.
       -->
     <target name="-get-changeset-from-file"
-            depends="-check-is-git-repo" unless="build.from.repo">
+            depends="-check-is-archived-git-repo" if="build.from.archived.repo">
         <tempfile property="git.archival.temp" deleteonexit="true"/>
         <copy file=".git_archival.txt" tofile="${git.archival.temp}"/>
         <replaceregexp file="${git.archival.temp}" flags="s"
@@ -242,8 +247,12 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <loadfile srcFile="${git.archival.temp}" property="changeset"/>
     </target>
 
+    <target name="-set-changeset" unless="changeset">
+        <property name="changeset" value="unknown"/>
+    </target>
+
     <target name="-update-build-info"
-            depends="-get-changeset-from-command,-get-changeset-from-file">
+            depends="-get-changeset-from-command,-get-changeset-from-file,-set-changeset">
         <mkdir dir="${build.classes.dir}/org/opensolaris/opengrok"/>
         <propertyfile
             file="${build.classes.dir}/org/opensolaris/opengrok/info.properties">
@@ -251,7 +260,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <entry  key="changeset" value="${changeset}"/>
         </propertyfile>        
     </target>
-        
+
     <property name="coverage.dir" value="${basedir}/coverage"/>
     <target name="-pre-compile" depends="jrcs,jflex,download-lucene"/>
 	<target name="eclipse" depends="-pre-compile" 
