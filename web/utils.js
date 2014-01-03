@@ -325,7 +325,7 @@ function add_highlight() {
 }
 
 function toggle_filelist() {
-    $("span").each(
+    $("div").each(
         function() {
             if (this.className == "filelist") {
                 this.setAttribute("style", "display: none;");

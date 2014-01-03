@@ -318,10 +318,6 @@ table#revisions {
 	margin-left: 2em;
 }
 
-#revisions .filelist { /* "Show modified files" */
-	display: inline;
-}
-
 #revisions .filelist-hidden { /* "Hide modified files" */
 	display: none;
 }
@@ -338,20 +334,28 @@ table#revisions {
 	display: none;
 }
 
+#revisions td {
+	padding: 0.5ex;
+	text-align: center;
+}
+
 #revisions tbody td:first-child {
 	/* rev number - git/mercurial revs numbers look bad with prop. fonts */
 	font-family: monospace;
 	text-align: right;
 }
 
-#revisions tbody td:nth-child(2), #revisions tbody td:nth-child(3) {
-	/* Compare and Date column */
-	text-align: center;
+#revisions td > p {
+	/* log message in comment column */
+	margin: 0;
+	text-align: left;
 }
 
-#revisions tbody td:nth-child(4) { /* author column */
-	padding: 0 1ex;
-	text-align: center;
+#revisions td > div {
+	/* modified file list in comment column */
+	font-family: monospace;
+	text-align: left;
+	float: left;
 }
 
 #revisions tbody td.revtags { /* tags row */
