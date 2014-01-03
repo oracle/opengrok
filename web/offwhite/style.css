@@ -496,18 +496,18 @@ table#dirlist { /* the "Name" column */
 
 
 /* file display */
-#src {
+div[id^='src'] {
 }
 
-#src pre {
+div[id^='src'] pre {
 	margin: 0;
 }
 
-#src .l-hide, #src .hl-hide, .blame-hidden { /* hidden line number/annotation block */
+div[id^='src'] .l-hide, div[id^='src'] .hl-hide, .blame-hidden { /* hidden line number/annotation block */
 	display: none
 }
 
-#src .l, #src .hl, .blame .r, .blame .a,
+div[id^='src'] .l, div[id^='src'] .hl, .blame .r, .blame .a,
 #results .l, #more .l,
 #difftable i, del.d { /* line number/annotation block */
 	display: inline-block;
@@ -520,12 +520,12 @@ table#dirlist { /* the "Name" column */
 	color: #888;
 }
 
-#src .hl { /* highlighted line number */
+div[id^='src'] .hl { /* highlighted line number */
 	color: #000;
 }
 
 /* highlight line number with anchor */
-#src a.l:target, #src a.hl:target {
+div[id^='src'] a.l:target, div[id^='src'] a.hl:target {
 	background: orange;
 	color:yellow;
 }
@@ -539,12 +539,12 @@ table#dirlist { /* the "Name" column */
 }
 
 /* source code highlighting - see org/opengrok/analysis/$lang/*Xref.lex */
-#src .n		{ /* numbers/label */	color: #a52a2a; } 
-#src .s		{ /* strings */			color: green; } 
-#src .c		{ /* comment */			color: #666; }
-#src .b		{ /* heading/title/bold */	color: #000; font-weight: bold; }
-#src .k		{ /* block display */ 	color: #000; font-family: monospace; }
-#src a.d	{ /* symbol definition */	color: #909; font-weight: bold; }
+div[id^='src'] .n		{ /* numbers/label */	color: #a52a2a; }
+div[id^='src'] .s		{ /* strings */			color: green; }
+div[id^='src'] .c		{ /* comment */			color: #666; }
+div[id^='src'] .b		{ /* heading/title/bold */	color: #000; font-weight: bold; }
+div[id^='src'] .k		{ /* block display */ 	color: #000; font-family: monospace; }
+div[id^='src'] a.d	{ /* symbol definition */	color: #909; font-weight: bold; }
 
 a.xm	{ /* macro */			color: #c66; font-weight: bold; }
 a.xa	{ /* argument */		color: #60c; font-weight: bold; }
