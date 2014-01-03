@@ -51,7 +51,7 @@ function resizeContent() {
 }
 
 function domReadyMast() {
-    var h = document.locHash;
+    var h = document.hash;
     if (!window.location.hash) {
         if (h != null && h != "null")  {
             window.location.hash=h
