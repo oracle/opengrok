@@ -404,7 +404,6 @@ table#revisions {
 #revisions td > p {
 	/* log message in comment column */
 	margin: 0;
-	white-space: pre;
 	text-align: left;
 }
 
