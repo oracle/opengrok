@@ -123,6 +123,13 @@ public final class Configuration {
     private static final Logger logger = Logger.getLogger(Configuration.class.getName());
 
     /**
+     * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
+     * contains definition tags.
+     */
+    public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
+    private transient File dtagsEftar = null;
+
+    /**
      * Get the default tab size (number of space characters per tab character)
      * to use for each project. If {@code <= 0} tabs are read/write as is.
      *
@@ -651,13 +658,6 @@ public final class Configuration {
         }
         return header;
     }
-
-    /**
-     * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
-     * contains definition tags.
-     */
-    public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
-    private transient File dtagsEftar = null;
 
     /**
      * Get the eftar file, which contains definition tags.

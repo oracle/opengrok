@@ -106,6 +106,9 @@ public final class PageConfig {
     private StringBuilder headLines;
     private static final Logger log = Logger.getLogger(PageConfig.class.getName());
 
+    private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
+    private HttpServletRequest req;
+
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
      * generate.
@@ -1204,9 +1207,6 @@ public final class PageConfig {
         return pcfg;
     }
     
-    private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
-    private HttpServletRequest req;
-
     private PageConfig(HttpServletRequest req) {
         this.req = req;
     }
