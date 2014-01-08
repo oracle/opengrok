@@ -728,48 +728,43 @@ public final class Util {
      * @throws NullPointerException if one of the given parameters is {@code null}.
      */
     public static String[] diffline(StringBuilder line1, StringBuilder line2) {
-        int m = line1.length();
-        int n = line2.length();
-        if (n == 0 || m == 0) {
-            return new String[] {line1.toString(), line2.toString()};
-        }
-
-        int s = 0;
-        char[] csl1 = new char[m + SPAN_LEN];
-        line1.getChars(0, m--, csl1, 0);
-        char[] csl2 = new char[n + SPAN_LEN];
-        line2.getChars(0, n--, csl2, 0);
-        while (s <= m && s <= n && csl1[s] == csl2[s]) {
-            s++ ;
-        }
-        while (s <= m && s <= n && csl1[m] == csl2[n]) {
-            m-- ;
-            n-- ;
-        }
-
         String[] ret = new String[2];
-        // deleted
+        int s = 0;
+        int m = line1.length() - 1;
+        int n = line2.length() - 1;
+        while (s <= m && s <= n && (line1.charAt(s) == line2.charAt(s))) {
+            s++;
+        }
+
+        while (s <= m && s <= n && (line1.charAt(m) == line2.charAt(n))) {
+            m--;
+            n--;
+        }
+
         if (s <= m) {
-            m++;
-            System.arraycopy(csl1, m, csl1, m + SPAN_LEN, line1.length() - m);
-            System.arraycopy(csl1, s, csl1, s + SPAN_D.length(), m - s);
-            SPAN_E.getChars(0, SPAN_E.length(), csl1, m + SPAN_D.length());
-            SPAN_D.getChars(0, SPAN_D.length(), csl1, s);
-            ret[0] = new String(csl1);
+            StringBuilder sb = new StringBuilder();
+            sb.append(Util.htmlize(line1.substring(0, s)));
+            sb.append(SPAN_D);
+            sb.append(Util.htmlize(line1.substring(s, m + 1)));
+            sb.append(SPAN_E);
+            sb.append(Util.htmlize(line1.substring(m + 1, line1.length())));
+            ret[0] = sb.toString();
         } else {
-            ret[0] = line1.toString();
+            ret[0] = line1.toString(); // no change
         }
-        // added
+
         if (s <= n) {
-            n++;
-            System.arraycopy(csl2, n, csl2, n + SPAN_LEN, line2.length() - n);
-            System.arraycopy(csl2, s, csl2, s + SPAN_A.length(), n - s);
-            SPAN_E.getChars(0, SPAN_E.length(), csl2, n + SPAN_A.length());
-            SPAN_A.getChars(0, SPAN_A.length(), csl2, s);
-            ret[1] = new String(csl2);
+            StringBuilder sb = new StringBuilder();
+            sb.append(Util.htmlize(line2.substring(0, s)));
+            sb.append(SPAN_A);
+            sb.append(Util.htmlize(line2.substring(s, n + 1)));
+            sb.append(SPAN_E);
+            sb.append(Util.htmlize(line2.substring(n + 1, line2.length())));
+            ret[1] = sb.toString();
         } else {
-            ret[1] = line2.toString();
+            ret[1] = line2.toString(); // no change
         }
+
         return ret;
     }
 
