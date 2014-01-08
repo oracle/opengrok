@@ -741,7 +741,7 @@ public final class Util {
             n--;
         }
 
-        // added
+        // deleted
         if (s <= m) {
             StringBuilder sb = new StringBuilder();
             sb.append(Util.htmlize(line1.substring(0, s)));
@@ -754,7 +754,7 @@ public final class Util {
             ret[0] = line1.toString(); // no change
         }
 
-        // deleted
+        // added
         if (s <= n) {
             StringBuilder sb = new StringBuilder();
             sb.append(Util.htmlize(line2.substring(0, s)));
