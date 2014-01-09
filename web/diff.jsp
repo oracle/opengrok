@@ -191,13 +191,11 @@ include file="mast.jsp"
                 StringBuilder bl1 = new StringBuilder(80);
                 StringBuilder bl2 = new StringBuilder(80);
                 for (; i1 <= cl1 && i2 <= cl2; i1++, i2++) {
-                    Util.htmlize(file1[i1], bl1);
-                    Util.htmlize(file2[i2], bl2);
-                    String[] ss = Util.diffline(bl1, bl2);
+                    String[] ss = Util.diffline(
+                            new StringBuilder(file1[i1]),
+                            new StringBuilder(file2[i2]));
                     file1[i1] = ss[0];
                     file2[i2] = ss[1];
-                    bl1.setLength(0);
-                    bl2.setLength(0);
                 }
                 // deleted
                 for (; i1 <= cl1; i1++) {
