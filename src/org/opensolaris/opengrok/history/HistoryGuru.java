@@ -126,18 +126,18 @@ public final class HistoryGuru {
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation ret = null;
 
-        Repository repos = getRepository(file);
-        if (repos != null) {
-            ret = repos.annotate(file, rev);
+        Repository repo = getRepository(file);
+        if (repo != null) {
+            ret = repo.annotate(file, rev);
             History hist = null;
             try {
-                hist = repos.getHistory(file);
+                hist = repo.getHistory(file);
             } catch (HistoryException ex) {
                 Logger.getLogger(HistoryGuru.class.getName()).log(Level.FINEST,
                     "Cannot get messages for tooltip: ", ex);
             }
             if (hist != null && ret != null) {
-             Set<String> revs=ret.getRevisions();
+             Set<String> revs = ret.getRevisions();
              // !!! cannot do this because of not matching rev ids (keys)
              // first is the most recent one, so we need the position of "rev"
              // until the end of the list
@@ -145,15 +145,12 @@ public final class HistoryGuru {
              //     hent = hent.subList(hent.indexOf(rev), hent.size());
              //}
              for (HistoryEntry he : hist.getHistoryEntries()) {
-                String cmr=he.getRevision();
-                //TODO this is only for mercurial, for other SCMs it might also
-                // be a problem, we need to revise how we shorten the rev # for
-                // annotate
-                String[] brev=cmr.split(":");
-                if (revs.contains(brev[0])) {
-                    ret.addDesc(brev[0], "changeset: "+he.getRevision()
-                        +"\nsummary: "+he.getMessage()+"\nuser: "
-                        +he.getAuthor()+"\ndate: "+he.getDate());
+                String hist_rev = he.getRevision();
+                String short_rev = repo.getRevisionForAnnotate(hist_rev);
+                if (revs.contains(short_rev)) {
+                    ret.addDesc(short_rev, "changeset: " + he.getRevision() +
+                        "\nsummary: " + he.getMessage() + "\nuser: " +
+                        he.getAuthor() + "\ndate: " + he.getDate());
                 }
              }
             }

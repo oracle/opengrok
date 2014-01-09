@@ -84,7 +84,8 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
-        cmd.add(ABBREV_BLAME);
+        cmd.add("-c"); // to get correctly formed changeset IDs
+        cmd.add(ABBREV_LOG);
         cmd.add("-C");
         cmd.add(fileName);
         File directory = new File(directoryName);
@@ -237,6 +238,7 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add(BLAME);
+        cmd.add("-c"); // to get correctly formed changeset IDs
         cmd.add(ABBREV_BLAME);
         if (revision != null) {
             cmd.add(revision);
@@ -252,6 +254,7 @@ public class GitRepository extends Repository {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             cmd.add(this.cmd);
             cmd.add(BLAME);
+            cmd.add("-c"); // to get correctly formed changeset IDs
             cmd.add(ABBREV_BLAME);
             cmd.add("-C");
             cmd.add(file.getName());
@@ -274,6 +277,7 @@ public class GitRepository extends Repository {
                         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
                         cmd.add(this.cmd);
                         cmd.add(BLAME);
+                        cmd.add("-c"); // to get correctly formed changeset IDs
                         cmd.add(ABBREV_BLAME);
                         if (revision != null) {
                             cmd.add(revision);
