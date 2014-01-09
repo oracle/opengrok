@@ -521,11 +521,14 @@ public final class Util {
             out.write(buf.toString());
             buf.setLength(0);
             if (enabled) {
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
                 out.write(anchorEnd);
 
                 // Write link to search the revision.
                 out.write(anchorClassStart);
-                out.write("search\" href=\"/source/search?q=&defs=&refs=&path=&hist="); // XXX do not hardcode source
+                out.write("search\" href=\"" + env.getUrlPrefix() +
+                    "defs=&refs=&path=&hist=");
                 out.write(URIEncode(r));
                 out.write("&type=\" title=\"Search history for this changeset");
                 out.write(closeQuotedTag);
