@@ -720,7 +720,7 @@ public final class Util {
      * Tag changes in the given <var>line1</var> and <var>line2</var>
      * for highlighting. Removed parts are tagged with CSS class {@code d},
      * new parts are tagged with CSS class {@code a} using a {@code span}
-     * element.
+     * element. The input parameters must not have any HTML escapes in them.
      *
      * @param line1 line of the original file
      * @param line2 line of the changed/new file
