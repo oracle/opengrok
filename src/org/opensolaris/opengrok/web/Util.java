@@ -505,11 +505,11 @@ public final class Util {
             out.write("<span class=\"blame\">");
             if (enabled) {
                 out.write(anchorClassStart);
-                out.write("r\" href=\"" );
+                out.write("r\" href=\"");
                 out.write(URIEncode(annotation.getFilename()));
                 out.write("?a=true&amp;r=");
                 out.write(URIEncode(r));
-                String msg = annotation.getDesc(r);
+		String msg = annotation.getDesc(r);
                 if (msg != null) {
                     out.write("\" title=\"");
                     out.write(msg);
@@ -521,6 +521,18 @@ public final class Util {
             out.write(buf.toString());
             buf.setLength(0);
             if (enabled) {
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+                out.write(anchorEnd);
+
+                // Write link to search the revision.
+                out.write(anchorClassStart);
+                out.write("search\" href=\"" + env.getUrlPrefix() +
+                    "defs=&refs=&path=&hist=");
+                out.write(URIEncode(r));
+                out.write("&type=\" title=\"Search history for this changeset");
+                out.write(closeQuotedTag);
+                out.write("S");
                 out.write(anchorEnd);
             }
             String a = annotation.getAuthor(num);
