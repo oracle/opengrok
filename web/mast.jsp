@@ -158,6 +158,7 @@ include file="pageheader.jspf"
     <input type="hidden" name="project" value="<%=proj.getDescription()%>" /><%
     }
 %>
+    <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
 </div>
         </form>
     </div>

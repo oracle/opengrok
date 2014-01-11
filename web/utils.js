@@ -418,17 +418,17 @@ function goFirstProject() {
 
 function clearSearchFrom() {
     $("#sbox :input[type=text]").each(
-        function() {            
-                $(this).attr("value", "");            
+        function() {
+                $(this).attr("value", "");
         }
-    );    
+    );
     $("#type :selected").removeAttr("selected");
 }
 
 function checkEnter(event) {
     concat='';
     $("#sbox :input[type=text]").each(
-        function() {            
+        function() {
                 concat+=$.trim($(this).val());
         }
     );
@@ -438,4 +438,9 @@ function checkEnter(event) {
     } else if (event.keyCode == '13') {
         $("#sbox").submit();
     }
+}
+
+// intelligence window code starting from here
+function onMouseOverSymbol(symbol, symbolType) {
+    var contextPath = $("#contextpath").val();
 }
