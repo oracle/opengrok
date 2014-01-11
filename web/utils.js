@@ -440,7 +440,150 @@ function checkEnter(event) {
     }
 }
 
-// intelligence window code starting from here
-function onMouseOverSymbol(symbol, symbolType) {
+// Intelligence Window code starts from here
+document.onmousemove = function(event) {
+    document.intelliWindowMouseX = event.clientX;
+    document.intelliWindowMouseY = event.clientY;
+};
+
+$(document).keypress(function(e) {
+    if (e.which == 126 && document.intelliWindow) { // '~' pressed
+        if (document.intelliWindow.className == "intelli_window_style") {
+            hideIntelliWindow();
+        } else if (document.intelliWindow.className == "intelli_window_style_hide") {
+            showIntelliWindow();
+        }
+    }
+    return true;
+});
+
+function onMouseOverSymbol(symbol, symbolType)
+{
+    updateIntelliWindow(symbol, symbolType);
+}
+
+function updateIntelliWindow(symbol, symbolType)
+{
+    if (!document.intelliWindow) {
+        createIntelliWindow();
+    }
+    var header = [
+        createCapitionHTML(),
+        createSymbolHTML(symbol),
+        createDescriptionHTML(symbolType),
+    ].join("");
+
+    document.intelliWindow.innerHTML = header + createActionHTML(symbol, symbolType);
+}
+
+function showIntelliWindow(symbol, symbolType)
+{
+    document.intelliWindow.className = "intelli_window_style";
+    document.intelliWindow.style.top = document.intelliWindowMouseY + "px";
+    document.intelliWindow.style.left = document.intelliWindowMouseX + "px";
+}
+
+function createIntelliWindow()
+{
+    document.intelliWindow = document.createElement("div");
+    document.intelliWindow.id = "intelli_win";
+    document.body.appendChild(document.intelliWindow);
+    hideIntelliWindow();
+}
+
+function hideIntelliWindow()
+{
+    document.intelliWindow.className = "intelli_window_style_hide";
+}
+
+function createCapitionHTML()
+{
+    return "<a onclick='hideIntelliWindow()'>[Close]</a><br/><b>Intelligence Window</b><br/>";
+}
+
+function createSymbolHTML(symbol)
+{
+    return "<i><h2>" + symbol + "</h2></i>";
+}
+
+function createDescriptionHTML(symbolType)
+{
+    switch (symbolType) {
+        case "def":
+            return "A declaration or definition.<hr/>";
+        case "defined-in-file":
+            return "A symbol declared or defined in this file.<hr/>";
+        case "undefined-in-file":
+            return "A symbol declared or defined elsewhere.<hr/>";
+        default:
+            // should not happen
+            return "Something I have no idea about.<hr/>";
+    }
+}
+
+function createActionHTML(symbol, symbolType)
+{
+    var project = $("input[name='project']").val();
+    return [
+        "In current file:<br/><ul>",
+        "<li><a onclick='highlightSymbol(\"", symbol, "\")'>Highlight <b><i>", symbol,
+            "</i></b></a>.</li>",
+        "<li><a onclick='unhighlightSymbol(\"", symbol, "\")'>Unhighlight <b><i>", symbol,
+            "</i></b></a>.</li>",
+        "<li><a onclick='unhighlightAll(\"", symbol, "\")'>Unhighlight all.</li></ul>",
+        "In project ", project, ":<br/><ul>",
+        "<li><a onclick='intelliWindowSearch(\"defs=\", \"", symbol, "\", \"", symbolType,
+            "\")'>Search for definitions of <i><b>", symbol,
+            "</b></i>.</a></li>",
+        "<li><a onclick='intelliWindowSearch(\"refs=\", \"", symbol, "\", \"", symbolType,
+            "\")'>Search for references of <i><b>", symbol,
+            "</b></i>.</a></li>",
+        "<li><a onclick='intelliWindowSearch(\"q=\", \"", symbol, "\", \"", symbolType,
+            "\")'>Do a full search with <i><b>", symbol,
+            "</b></i>.</a></li>",
+        "<li><a onclick='intelliWindowSearch(\"path=\", \"", symbol, "\", \"", symbolType,
+            "\")'>Search for file names that contain <i><b>", symbol,
+            "</b></i>.</a></li></ul>",
+        "<a onclick='googleSymbol(\"", symbol, "\")'>Google <b><i>", symbol, "</i></b>.</a>"
+    ].join("");
+}
+
+function highlightSymbol(symbol)
+{
+    var symbols_with_same_name = $("a").filter(function(index) {
+        return $(this).text() === symbol;
+    })
+    symbols_with_same_name.css("border", "2px solid red");
+    return false;
+}
+
+function unhighlightSymbol(symbol)
+{
+    var symbols_with_same_name = $("a").filter(function(index) {
+        return $(this).text() === symbol;
+    })
+    symbols_with_same_name.css("border", "0px");
+    return false;
+}
+
+function unhighlightAll(symbol)
+{
+    symbols_with_same_name = $("a").css("border", "0px");
+    return false;
+}
+
+function intelliWindowSearch(param, symbol, symbolType)
+{
     var contextPath = $("#contextpath").val();
+    var project = $("input[name='project']").val();
+    var url = contextPath + "/s?" + param + symbol + "&project=" + project;
+    window.open(url, '_blank');
+    return false;
+}
+
+function googleSymbol(symbol)
+{
+    var url = "https://www.google.com/search?q=" + symbol;
+    window.open(url, '_blank');
+    return false;
 }
