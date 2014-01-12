@@ -475,22 +475,23 @@ function updateIntelliWindow(symbol, symbolType) {
 }
 
 function showIntelliWindow(symbol, symbolType) {
-    document.intelliWindow.className = "intelli_window_style";
+    var iw = document.intelliWindow;
+    iw.className = "intelli_window_style";
 
     var top;
     var left;
-    if (document.intelliWindowMouseY + document.intelliWindow.offsetHeight + 20 > $(window).height()) {
-        top = $(window).height() - document.intelliWindow.offsetHeight - 20;
+    if (document.intelliWindowMouseY + iw.offsetHeight + 20 > $(window).height()) {
+        top = $(window).height() - iw.offsetHeight - 20;
     } else {
         top = document.intelliWindowMouseY;
     }
-    if (document.intelliWindowMouseX + document.intelliWindow.offsetWidth + 20 > $(window).width()) {
-        left = $(window).width() - document.intelliWindow.offsetWidth - 20;
+    if (document.intelliWindowMouseX + iw.offsetWidth + 20 > $(window).width()) {
+        left = $(window).width() - iw.offsetWidth - 20;
     } else {
         left = document.intelliWindowMouseX;
     }
-    document.intelliWindow.style.top = top + "px";
-    document.intelliWindow.style.left = left + "px";
+    iw.style.top = top + "px";
+    iw.style.left = left + "px";
 }
 
 function createIntelliWindow() {
@@ -556,7 +557,7 @@ function highlightSymbol(symbol) {
     var symbols_with_same_name = $("a").filter(function(index) {
         return $(this).text() === symbol;
     })
-    symbols_with_same_name.css("border", "2px solid red");
+    symbols_with_same_name.css("background-color", "gold");
     return false;
 }
 
@@ -564,12 +565,12 @@ function unhighlightSymbol(symbol) {
     var symbols_with_same_name = $("a").filter(function(index) {
         return $(this).text() === symbol;
     })
-    symbols_with_same_name.css("border", "0px");
+    symbols_with_same_name.css("background-color", "white");
     return false;
 }
 
 function unhighlightAll(symbol) {
-    symbols_with_same_name = $("a").css("border", "0px");
+    symbols_with_same_name = $("a").css("background-color", "white");
     return false;
 }
 
