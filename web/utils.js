@@ -457,13 +457,11 @@ $(document).keypress(function(e) {
     return true;
 });
 
-function onMouseOverSymbol(symbol, symbolType)
-{
+function onMouseOverSymbol(symbol, symbolType) {
     updateIntelliWindow(symbol, symbolType);
 }
 
-function updateIntelliWindow(symbol, symbolType)
-{
+function updateIntelliWindow(symbol, symbolType) {
     if (!document.intelliWindow) {
         createIntelliWindow();
     }
@@ -476,38 +474,45 @@ function updateIntelliWindow(symbol, symbolType)
     document.intelliWindow.innerHTML = header + createActionHTML(symbol, symbolType);
 }
 
-function showIntelliWindow(symbol, symbolType)
-{
+function showIntelliWindow(symbol, symbolType) {
     document.intelliWindow.className = "intelli_window_style";
-    document.intelliWindow.style.top = document.intelliWindowMouseY + "px";
-    document.intelliWindow.style.left = document.intelliWindowMouseX + "px";
+
+    var top;
+    var left;
+    if (document.intelliWindowMouseY + document.intelliWindow.offsetHeight + 20 > $(window).height()) {
+        top = $(window).height() - document.intelliWindow.offsetHeight - 20;
+    } else {
+        top = document.intelliWindowMouseY;
+    }
+    if (document.intelliWindowMouseX + document.intelliWindow.offsetWidth + 20 > $(window).width()) {
+        left = $(window).width() - document.intelliWindow.offsetWidth - 20;
+    } else {
+        left = document.intelliWindowMouseX;
+    }
+    document.intelliWindow.style.top = top + "px";
+    document.intelliWindow.style.left = left + "px";
 }
 
-function createIntelliWindow()
-{
+function createIntelliWindow() {
     document.intelliWindow = document.createElement("div");
     document.intelliWindow.id = "intelli_win";
     document.body.appendChild(document.intelliWindow);
     hideIntelliWindow();
 }
 
-function hideIntelliWindow()
-{
+function hideIntelliWindow() {
     document.intelliWindow.className = "intelli_window_style_hide";
 }
 
-function createCapitionHTML()
-{
+function createCapitionHTML() {
     return "<a onclick='hideIntelliWindow()'>[Close]</a><br/><b>Intelligence Window</b><br/>";
 }
 
-function createSymbolHTML(symbol)
-{
+function createSymbolHTML(symbol) {
     return "<i><h2>" + symbol + "</h2></i>";
 }
 
-function createDescriptionHTML(symbolType)
-{
+function createDescriptionHTML(symbolType) {
     switch (symbolType) {
         case "def":
             return "A declaration or definition.<hr/>";
@@ -521,8 +526,7 @@ function createDescriptionHTML(symbolType)
     }
 }
 
-function createActionHTML(symbol, symbolType)
-{
+function createActionHTML(symbol, symbolType) {
     var project = $("input[name='project']").val();
     return [
         "In current file:<br/><ul>",
@@ -548,8 +552,7 @@ function createActionHTML(symbol, symbolType)
     ].join("");
 }
 
-function highlightSymbol(symbol)
-{
+function highlightSymbol(symbol) {
     var symbols_with_same_name = $("a").filter(function(index) {
         return $(this).text() === symbol;
     })
@@ -557,8 +560,7 @@ function highlightSymbol(symbol)
     return false;
 }
 
-function unhighlightSymbol(symbol)
-{
+function unhighlightSymbol(symbol) {
     var symbols_with_same_name = $("a").filter(function(index) {
         return $(this).text() === symbol;
     })
@@ -566,14 +568,12 @@ function unhighlightSymbol(symbol)
     return false;
 }
 
-function unhighlightAll(symbol)
-{
+function unhighlightAll(symbol) {
     symbols_with_same_name = $("a").css("border", "0px");
     return false;
 }
 
-function intelliWindowSearch(param, symbol, symbolType)
-{
+function intelliWindowSearch(param, symbol, symbolType) {
     var contextPath = $("#contextpath").val();
     var project = $("input[name='project']").val();
     var url = contextPath + "/s?" + param + symbol + "&project=" + project;
@@ -581,8 +581,7 @@ function intelliWindowSearch(param, symbol, symbolType)
     return false;
 }
 
-function googleSymbol(symbol)
-{
+function googleSymbol(symbol) {
     var url = "https://www.google.com/search?q=" + symbol;
     window.open(url, '_blank');
     return false;
