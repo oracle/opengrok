@@ -447,11 +447,23 @@ document.onmousemove = function(event) {
 };
 
 $(document).keypress(function(e) {
-    if (e.which == 126 && document.intelliWindow) { // '~' pressed
-        if (document.intelliWindow.className == "intelli_window_style") {
+    if (e.which === 49 && document.intelliWindow) { // '1' pressed
+        if (document.intelliWindow.className === "intelli_window_style") {
             hideIntelliWindow();
-        } else if (document.intelliWindow.className == "intelli_window_style_hide") {
+        } else if (document.intelliWindow.className === "intelli_window_style_hide") {
             showIntelliWindow();
+        }
+    }
+    if (e.which === 50 && document.intelliWindow) { // '2' pressed
+        var symbol = document.intelliWindow.symbol;
+        var highlighted_symbols_with_same_name = $("a").filter(function(index) {
+            return $(this).text() === symbol &&
+                $(this).css("background-color") === "rgb(255, 215, 0)"; // gold
+        })
+        if (highlighted_symbols_with_same_name.length === 0) {
+            highlightSymbol(symbol);
+        } else {
+            unhighlightSymbol(symbol);
         }
     }
     return true;
@@ -472,9 +484,10 @@ function updateIntelliWindow(symbol, symbolType) {
     ].join("");
 
     document.intelliWindow.innerHTML = header + createActionHTML(symbol, symbolType);
+    document.intelliWindow.symbol = symbol;
 }
 
-function showIntelliWindow(symbol, symbolType) {
+function showIntelliWindow() {
     var iw = document.intelliWindow;
     iw.className = "intelli_window_style";
 
@@ -535,7 +548,7 @@ function createActionHTML(symbol, symbolType) {
             "</i></b></a>.</li>",
         "<li><a onclick='unhighlightSymbol(\"", symbol, "\")'>Unhighlight <b><i>", symbol,
             "</i></b></a>.</li>",
-        "<li><a onclick='unhighlightAll(\"", symbol, "\")'>Unhighlight all.</li></ul>",
+        "<li><a onclick='unhighlightAll()'>Unhighlight all.</li></ul>",
         "In project ", project, ":<br/><ul>",
         "<li><a onclick='intelliWindowSearch(\"defs=\", \"", symbol, "\", \"", symbolType,
             "\")'>Search for definitions of <i><b>", symbol,
@@ -569,7 +582,7 @@ function unhighlightSymbol(symbol) {
     return false;
 }
 
-function unhighlightAll(symbol) {
+function unhighlightAll() {
     $("a").filter(function(index) {
         return $(this).css("background-color") === "rgb(255, 215, 0)"; // gold
     }).css("background-color", "white");
