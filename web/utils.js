@@ -570,7 +570,9 @@ function unhighlightSymbol(symbol) {
 }
 
 function unhighlightAll(symbol) {
-    symbols_with_same_name = $("a").css("background-color", "white");
+    $("a").filter(function(index) {
+        return $(this).css("background-color") === "rgb(255, 215, 0)"; // gold
+    }).css("background-color", "white");
     return false;
 }
 
