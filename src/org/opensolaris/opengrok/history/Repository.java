@@ -250,6 +250,16 @@ public abstract class Repository extends RepositoryInfo {
     abstract Annotation annotate(File file, String revision) throws IOException;
 
     /**
+     * Return revision for annotate view.
+     *
+     * @param history_revision full revision
+     * @return revision string suitable for matching into annotation
+     */
+    protected String getRevisionForAnnotate(String history_revision) {
+        return history_revision;
+    }
+
+    /**
      * Create a history log cache for all of the files in this repository.
      * {@code getHistory()} is used to fetch the history for the entire
      * repository. If {@code hasHistoryForDirectories()} returns {@code false},

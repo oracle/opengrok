@@ -420,6 +420,14 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
+    protected String getRevisionForAnnotate(String history_revision)
+    {
+        String[] brev = history_revision.split(":");
+
+        return brev[0];
+    }
+
+    @Override
     public boolean fileHasAnnotation(File file) {
         return true;
     }

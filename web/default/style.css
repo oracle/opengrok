@@ -476,9 +476,16 @@ div[id^='src'] .l, div[id^='src'] .hl, .blame .r, .blame .a,
 	width: 6ex;
 	text-align: right;
 	padding-right: 0;
-	margin-right: .5ex;
 	background-color: #dddddd;
 	color: #666;
+	margin-right: .5ex;
+}
+
+.blame .search {
+	/* font-size: small; */
+        padding-left: .5ex;
+	background-color: #dddddd;
+        margin-right: .5ex;
 }
 
 div[id^='src'] .hl { /* highlighted line number */

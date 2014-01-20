@@ -588,7 +588,7 @@ public final class PageConfig {
     }
 
     /**
-     * Get the annotation for the reqested resource.
+     * Get the annotation for the requested resource.
      *
      * @return {@code null} if not available or annotation was not requested,
      * the cached annotation otherwise.
