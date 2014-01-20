@@ -146,7 +146,7 @@ document.domReady.push(function() {domReadyHistory();});
                     if (entry.isActive()) {
                         String rp = uriEncodedName;
             %>
-            <td><a name="<%= rev %>" href="<%=
+            <td><a href="<%= context + Prefix.HIST_L + rp %>#<%= rev %>">#</a> <a href="<%=
                 context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
             <td>
@@ -189,7 +189,7 @@ document.domReady.push(function() {domReadyHistory();});
                 %><%= author %><%
                 }
                 %></td>
-            <td><p><%
+            <td><a name="<%= rev %>"></a><p><%
                 String cout = Util.htmlize(entry.getMessage());
                 if (bugPage != null && bugPage.length() > 0) {
                     cout = bugPattern.matcher(cout).replaceAll("<a href=\""
