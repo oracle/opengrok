@@ -170,7 +170,9 @@ public class Executor {
                 @Override public void run() {
                     OpenGrokLogger.getLogger().log(Level.INFO,
                         "Terminating process of command {0} in directory {1} " +
-                        "due to timeout", new Object[]{cmd_str, dir_str});
+                        "due to timeout {2} seconds",
+                        new Object[]{cmd_str, dir_str,
+                        RuntimeEnvironment.getInstance().getCommandTimeout()});
                     proc.destroy();
                 }
             }, RuntimeEnvironment.getInstance().getCommandTimeout() * 1000);
