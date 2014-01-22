@@ -146,8 +146,9 @@ document.domReady.push(function() {domReadyHistory();});
                     if (entry.isActive()) {
                         String rp = uriEncodedName;
             %>
-            <td><a href="<%= context + Prefix.HIST_L + rp %>#<%= rev %>">#</a> <a href="<%=
-                context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
+            <td><a href="<%= context + Prefix.HIST_L + rp %>#<%= rev %>"
+                title="link to revision line">#</a>
+                <a href="<%= context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
             <td>
                 <input type="radio"<%
