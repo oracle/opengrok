@@ -29,6 +29,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.bcel.classfile.Attribute;
 import org.apache.bcel.classfile.ClassFormatException;
 import org.apache.bcel.classfile.ClassParser;
@@ -49,7 +51,6 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.LocalVariable;
 import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Utility;
-import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
@@ -92,91 +93,141 @@ public class JavaClassAnalyzer extends FileAnalyzer {
 
         ClassParser classparser = new ClassParser(in, doc.get("path"));
         StringWriter out = new StringWriter();
-        getContent(out, classparser.parse(), defs, refs, full);
+        StringWriter fout = new StringWriter();
+        getContent(out, fout, classparser.parse(), defs, refs, full);
+        String fullt = fout.toString();
         String xref = out.toString();
 
         if (xrefOut != null) {
             xrefOut.append(xref);
-        }
+            try { 
+                xrefOut.flush();
+            } catch (IOException ex) {
+                Logger.getLogger(JavaClassAnalyzer.class.getName()).log(Level.WARNING, "Couldn't flush xref, will retry once added to doc", ex);
+            }
+        }        
+        xref = null; //flush the xref        
 
-        out.getBuffer().setLength(0); // clear the buffer
+        StringWriter cout=new StringWriter();
         for (String fl : full) {
-            out.write(fl);
-            out.write('\n');
+            cout.write(fl);
+            cout.write('\n');
         }
-        String constants = out.toString();
+        String constants = cout.toString();
+        
+        StringReader fullout=new StringReader(fullt);
 
         doc.add(new TextField("defs", new IteratorReader(defs)));
         doc.add(new TextField("refs", new IteratorReader(refs)));
-        doc.add(new TextField("full", new HTMLStripCharFilter(new StringReader(xref))));
+        doc.add(new TextField("full", fullout));
         doc.add(new TextField("full", constants, Store.NO));
     }
 
+    
+    private static final String AHREF="<a href=\"";
+    private static final String AHREFT_END="\">";
+    private static final String AHREFEND="</a>";
+    private static final String ADEFS="defs=";
+    private static final String APATH="path=";
+    private static final String AIHREF="\" href=\"";
+    private static final String ADHREF="<a class=\"d\" name=\"";
+    private final StringBuffer rstring=new StringBuffer(512);
     protected String linkPath(String path) {
-        return "<a href=\"" + urlPrefix + "path=" + path + "\">" + path + "</a>";
+        rstring.setLength(0);
+        return rstring.append(AHREF).append(urlPrefix).append(APATH).append(path).append(AHREFT_END).append(path).append(AHREFEND).toString();
     }
 
     protected String linkDef(String def) {
-        return "<a href=\"" + urlPrefix + "defs=" + def + "\">" + def + "</a>";
+        rstring.setLength(0);
+        return rstring.append(AHREF).append(urlPrefix).append(ADEFS).append(def).append(AHREFT_END).append(def).append(AHREFEND).toString();
     }
 
     protected String tagDef(String def) {
-        return "<a class=\"d\" name=\"" + def + "\" href=\"" + urlPrefix + "defs=" + def + "\">" + def + "</a>";
+        rstring.setLength(0);
+        return rstring.append(ADHREF).append(def).append(AIHREF).append(urlPrefix).append(ADEFS).append(def).append(AHREFT_END).append(def).append(AHREFEND).toString();
     }
 
+private static final String PACKAGE="package ";
+private static final char EOL='\n';
+private static final char TAB='\t';
+private static final char SPACE=' ';
+private static final String EXTENDS=" extends ";
+private static final String IMPLEMENTS=" implements ";
+private static final String THROWS=" throws ";
+private static final String THIS="this";
+private static final String LCBREOL=" {\n";
+private static final String LBRA=" (";
+private static final String COMMA=", ";
+private static final String RBRA=") ";
+private static final String RCBREOL="}\n";
+    
 //TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
-    private void getContent(Writer out, JavaClass c,
+    private void getContent(Writer out, Writer fout, JavaClass c,
             List<String> defs, List<String> refs, List<String> full)
-            throws IOException {
+            throws IOException {        
         String t;
         ConstantPool cp = c.getConstantPool();
         int[] v = new int[cp.getLength() + 1];
         out.write(linkPath(t = c.getSourceFileName()));
         defs.add(t);
         refs.add(t);
-        out.write('\n');
+        fout.write(t);
+        out.write(EOL);
+        fout.write(EOL);
 
-        out.write("package ");
+        out.write(PACKAGE);
+        fout.write(PACKAGE);
         out.write(linkDef(t = c.getPackageName()));
         defs.add(t);
         refs.add(t);
+        fout.write(t);
 
-        out.write('\n');
+        out.write(EOL);
+        fout.write(EOL);
         String aflg;
-        out.write(aflg = Utility.accessToString(c.getAccessFlags(), true));
-        if (aflg != null) {
-            out.write(' ');
+        out.write(aflg = Utility.accessToString(c.getAccessFlags(), true));        
+        if (aflg != null) {            
+            out.write(SPACE);
+            fout.write(aflg);
+            fout.write(SPACE);
         }
 
         v[c.getClassNameIndex()] = 1;
         out.write(tagDef(t = c.getClassName()));
         defs.add(t);
         refs.add(t);
-        out.write(" extends ");
+        fout.write(t);
+        out.write(EXTENDS);
+        fout.write(EXTENDS);
 
         v[c.getSuperclassNameIndex()] = 1;
         out.write(linkDef(t = c.getSuperclassName()));
         refs.add(t);
+        fout.write(t);
         for (int i : c.getInterfaceIndices()) {
             v[i] = 1;
         }
         String ins[] = c.getInterfaceNames();
         if (ins != null && ins.length > 0) {
-            out.write(" implements ");
+            out.write(IMPLEMENTS);
+            fout.write(IMPLEMENTS);
             for (String in : ins) {
                 out.write(linkDef(t = in));
                 refs.add(t);
-                out.write(' ');
+                fout.write(t);
+                out.write(SPACE);
+                fout.write(SPACE);
             }
         }
-        out.write(" {\n");
+        out.write(LCBREOL);
+        fout.write(LCBREOL);
 
         for (Attribute a : c.getAttributes()) {
             if (a.getTag() == org.apache.bcel.Constants.ATTR_CODE) {
                 for (Attribute ca : ((Code) a).getAttributes()) {
                     if (ca.getTag() == org.apache.bcel.Constants.ATTR_LOCAL_VARIABLE_TABLE) {
                         for (LocalVariable l : ((LocalVariableTable) ca).getLocalVariableTable()) {
-                            printLocal(out, l, v, defs, refs);
+                            printLocal(out, fout, l, v, defs, refs);
                         }
                     }
                 }
@@ -186,50 +237,78 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             }
         }
 
+        String aflgs;
+        String fldsig;
+        String tdef;
         for (org.apache.bcel.classfile.Field fld : c.getFields()) {
-            out.write('\t');
-            String aflgs;
-            out.write(aflgs = Utility.accessToString(fld.getAccessFlags()));
+            out.write(TAB);
+            fout.write(TAB);
+            aflgs = Utility.accessToString(fld.getAccessFlags());            
             if (aflgs != null && aflgs.length() > 0) {
-                out.write(' ');
+                out.write(aflgs);
+                fout.write(aflgs);
+                fout.write(SPACE);
+                out.write(SPACE);
             }
-            out.write(Utility.signatureToString(fld.getSignature()));
-            out.write(' ');
-            out.write(tagDef(t = fld.getName()));
+            fldsig=Utility.signatureToString(fld.getSignature());
+            out.write(fldsig);
+            fout.write(fldsig);
+            out.write(SPACE);
+            fout.write(SPACE);
+            tdef=tagDef(t = fld.getName());
+            out.write(tdef);
+            fout.write(tdef);
             defs.add(t);
             refs.add(t);
-            out.write('\n');
-            // @TODO show Attributes
+            out.write(EOL);
+            fout.write(EOL);
+            //TODO show Attributes
         }
 
+        String sig;
+        String msig;
+        String ltdef;
         for (org.apache.bcel.classfile.Method m : c.getMethods()) {
-            out.write('\t');
-            String aflgs;
-            out.write(aflgs = Utility.accessToString(m.getAccessFlags()));
+            out.write(TAB);
+            fout.write(TAB);
+            aflgs = Utility.accessToString(m.getAccessFlags());            
             if (aflgs != null && aflgs.length() > 0) {
-                out.write(' ');
+                out.write(aflgs);
+                fout.write(aflgs);
+                out.write(SPACE);
+                fout.write(SPACE);
             }
-            String sig = m.getSignature();
-            out.write(Utility.methodSignatureReturnType(sig, false));
-            out.write(' ');
-            out.write(tagDef(t = m.getName()));
+            sig = m.getSignature();
+            msig=Utility.methodSignatureReturnType(sig, false);
+            out.write(msig);
+            fout.write(msig);
+            out.write(SPACE);
+            fout.write(SPACE);
+            ltdef=tagDef(t = m.getName());
+            out.write(ltdef);
+            fout.write(ltdef);
             defs.add(t);
             refs.add(t);
-            out.write(" (");
+            out.write(LBRA);
+            fout.write(LBRA);
             String[] args = Utility.methodSignatureArgumentTypes(sig, false);
             for (int i = 0; i < args.length; i++) {
-                out.write(t = args[i]);
-                int spi = t.indexOf(' ');
+                t = args[i];
+                out.write(t);
+                fout.write(t);
+                int spi = t.indexOf(SPACE);
                 if (spi > 0) {
                     refs.add(t.substring(0, spi));
                     defs.add(t.substring(spi + 1));
                 }
                 if (i < args.length - 1) {
-                    out.write(", ");
+                    out.write(COMMA);
+                    fout.write(COMMA);
                 }
             }
-            out.write(") ");
-            ArrayList<LocalVariable[]> locals = new ArrayList<LocalVariable[]>();
+            out.write(RBRA);
+            fout.write(RBRA);
+            ArrayList<LocalVariable[]> locals = new ArrayList<>();
             for (Attribute a : m.getAttributes()) {
                 if (a.getTag() == org.apache.bcel.Constants.ATTR_EXCEPTIONS) {
                     for (int i : ((ExceptionTable) a).getExceptionIndexTable()) {
@@ -237,11 +316,14 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                     }
                     String[] exs = ((ExceptionTable) a).getExceptionNames();
                     if (exs != null && exs.length > 0) {
-                        out.write(" throws ");
+                        out.write(THROWS);
+                        fout.write(THROWS);
                         for (String ex : exs) {
                             out.write(linkDef(ex));
+                            fout.write(ex);
                             refs.add(ex);
-                            out.write(' ');
+                            out.write(SPACE);
+                            fout.write(SPACE);
                         }
                     }
                 } else if (a.getTag() == org.apache.bcel.Constants.ATTR_CODE) {
@@ -252,16 +334,18 @@ public class JavaClassAnalyzer extends FileAnalyzer {
                     }
                 }
             }
-            out.write("\n");
+            out.write(EOL);
+            fout.write(EOL);
             if (!locals.isEmpty()) {
                 for (LocalVariable[] ls : locals) {
                     for (LocalVariable l : ls) {
-                        printLocal(out, l, v, defs, refs);
+                        printLocal(out, fout, l, v, defs, refs);
                     }
                 }
             }
         }
-        out.write("}\n");
+        out.write(RCBREOL);
+        fout.write(RCBREOL);
         for (int i = 0; i < v.length - 1; i++) {
             if (v[i] != 1) {
                 Constant constant = cp.getConstant(i);
@@ -272,20 +356,26 @@ public class JavaClassAnalyzer extends FileAnalyzer {
         }
     }
 
-    private void printLocal(Writer out, LocalVariable l,
+    private void printLocal(Writer out, Writer fout, LocalVariable l,
             int[] v, List<String> defs, List<String> refs) throws IOException {
         v[l.getIndex()] = 1;
         v[l.getNameIndex()] = 1;
         v[l.getSignatureIndex()] = 1;
-        if (!"this".equals(l.getName())) {
-            out.write("\t\t");
-            out.write(Utility.signatureToString(l.getSignature()));
-            out.write(' ');
+        if (!THIS.equals(l.getName())) {
+            out.write(TAB);out.write(TAB);
+            fout.write(TAB);fout.write(TAB);
+            String sig=Utility.signatureToString(l.getSignature());
+            out.write(sig);
+            fout.write(sig);
+            out.write(SPACE);
+            fout.write(SPACE);
             String t;
             out.write(t = l.getName());
             defs.add(t);
             refs.add(t);
-            out.write('\n');
+            fout.write(t);
+            out.write(EOL);
+            fout.write(EOL);
         }
     }
 
