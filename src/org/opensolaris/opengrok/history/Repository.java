@@ -263,7 +263,7 @@ public abstract class Repository extends RepositoryInfo {
             return;
         }
         if (this.getTagList() == null) {
-            throw new HistoryException("Tag list was not created before assigning tags to changesets!" + this);
+            throw new HistoryException("Tag list was not created before assigning tags to changesets!");
         }
         Iterator<TagEntry> it = this.getTagList().descendingIterator();
         TagEntry lastTagEntry = null;
