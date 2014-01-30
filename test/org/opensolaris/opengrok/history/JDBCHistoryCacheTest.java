@@ -109,7 +109,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         // Reset any changes the test made to the runtime environment.
         RuntimeEnvironment.getInstance().setConfiguration(new Configuration());
 
-        // We really need to destroy the thead pool here since some of the
+        // We really need to destroy the thread pool here since some of the
         // threads might have some thread-local variables cached from previous
         // test runs (like tags enabled) and this makes other tests fail in
         // very nasty fashion (what is caused by fetch of particular thread
