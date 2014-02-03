@@ -49,6 +49,13 @@ public class CVSRepository extends RCSRepository {
     /** The command to use to access the repository if none was given explicitly */
     public static final String CMD_FALLBACK = "cvs";
 
+    private Boolean isBranch = null;
+    private String branch = null;
+
+    /** Pattern used to extract author/revision from cvs annotate. */
+    private static final Pattern ANNOTATE_PATTERN =
+        Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
+
     public CVSRepository() {
         type = "CVS";
         datePattern = "yyyy-MM-dd hh:mm:ss";
@@ -96,8 +103,6 @@ public class CVSRepository extends RCSRepository {
         }
     }
 
-    private Boolean isBranch=null;
-    private String branch=null;
     /**
      * Get an executor to be used for retrieving the history log for the
      * named file.
@@ -117,7 +122,7 @@ public class CVSRepository extends RCSRepository {
         cmd.add(this.cmd);
         cmd.add("log");
 
-        if (isBranch==null) {
+        if (isBranch == null) {
             File tagFile = new File(getDirectoryName(), "CVS/Tag");
             if (tagFile.isFile()) {
                 isBranch = Boolean.TRUE;
@@ -135,14 +140,19 @@ public class CVSRepository extends RCSRepository {
                             "Failed to get revision tag of {0}",
                             getDirectoryName() + ": " + exp.getClass().toString());
                 }
+            } else {
+                isBranch = Boolean.FALSE;
             }
-            else { isBranch=Boolean.FALSE; }
         }
-        if (isBranch.equals(Boolean.TRUE) && branch!=null && !branch.isEmpty())
-        {
-            //just generate THIS branch history, we don't care about the other
-            // branches which are not checked out
+
+        if (isBranch.equals(Boolean.TRUE) && branch != null && !branch.isEmpty()) {
+            // Just generate THIS branch history, we don't care about the other
+            // branches which are not checked out.
             cmd.add("-r"+branch);
+        } else {
+            // Get revisions on this branch only (otherwise the revisions
+            // list produced by the cvs log command would be unsorted).
+            cmd.add("-b");
         }
 
         if (filename.length() > 0) {
@@ -239,10 +249,6 @@ public class CVSRepository extends RCSRepository {
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
     }
-
-    /** Pattern used to extract author/revision from cvs annotate. */
-    private static final Pattern ANNOTATE_PATTERN =
-        Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     protected Annotation parseAnnotation(Reader input, String fileName)
         throws IOException
