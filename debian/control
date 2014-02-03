@@ -3,14 +3,14 @@ Section: contrib/devel
 Priority: optional
 Maintainer: Lubos Kosco <tarzanek@gmail.com>
 Build-Depends: cdbs,
- debhelper, sun-java6-jdk , ant-optional, junit4, jflex (>= 1.4.3-1), liblucene3-java, libbcel-java(>= 5.2-6), libservlet2.4-java, exuberant-ctags
+ debhelper, sun-java7-jdk , ant-optional, junit4, jflex (>= 1.5.0), liblucene4-java, libbcel-java(>= 5.2-6), libservlet2.4-java, exuberant-ctags
 Standards-Version: 3.7.3
 Homepage: http://opengrok.github.com/OpenGrok/
 
 Package: opengrok
 Architecture: all
-Depends: sun-java6-jre | java2-runtime, exuberant-ctags (>= 1:5.6-1), ant, liblucene3-java, libbcel-java(>= 5.2-6)
-Recommends: tomcat6
+Depends: sun-java7-jre | java2-runtime, exuberant-ctags (>= 1:5.6-1), ant, liblucene4-java, libbcel-java(>= 5.2-6)
+Recommends: tomcat7
 Description: Wicked fast source code indexing and search software
  OpenGrok is a fast and usable source code search and cross reference
  engine, written in Java on top of lucene. It helps you search, 

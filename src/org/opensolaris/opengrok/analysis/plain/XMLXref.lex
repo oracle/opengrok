@@ -124,5 +124,5 @@ NameChar = {FileChar}|"."
 "&"     {out.write( "&amp;");}
 {EOL}   {startNewLine(); }
 [ !-~\t\f]      {out.write(yycharat(0));}
-.       { writeUnicodeChar(yycharat(0)); }
+[^\n]       { writeUnicodeChar(yycharat(0)); }
 }

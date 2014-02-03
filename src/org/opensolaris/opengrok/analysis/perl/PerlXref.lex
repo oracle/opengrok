@@ -143,7 +143,7 @@ PodEND = "=cut"
 {WhiteSpace}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+ [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, STRING, QSTRING, POD> {

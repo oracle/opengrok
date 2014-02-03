@@ -321,7 +321,8 @@ public class JFlexXrefTest {
     @Test
     public void bug18586() throws IOException {
         String filename = repository.getSourceRoot() + "/sql/bug18586.sql";
-        SQLXref xref = new SQLXref(new FileInputStream(filename));
+        Reader in = new InputStreamReader(new FileInputStream(filename), "UTF-8");
+        SQLXref xref = new SQLXref(in);
         xref.setDefs(ctags.doCtags(filename + "\n"));
         // The next call used to fail with an ArrayIndexOutOfBoundsException.
         xref.write(new StringWriter());

@@ -284,7 +284,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
  {EOL}  { startNewLine(); }
 {WhiteSpace}+   { out.write(yytext()); }
 [!-~]   { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+[^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, SCOMMENT, QSTRING> {

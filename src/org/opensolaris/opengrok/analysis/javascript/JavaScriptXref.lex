@@ -129,7 +129,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 {WhiteSpace}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+ [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <STRING, COMMENT, SCOMMENT, STRING, QSTRING> {

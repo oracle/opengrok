@@ -121,7 +121,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
                   startNewLine();}
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+ [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 
@@ -132,7 +132,7 @@ Number = ([0-9]+\.[0-9]+|[0-9][0-9]*|"0x" [0-9a-fA-F]+ )([udl]+)?
 {WhiteSpace}*{EOL}      { startNewLine(); }
  {WhiteSpace}   { out.write(yytext()); }
  [!-~]  { out.write(yycharat(0)); }
- .      { }
+ [^\n]      { }
 }
 
 <STRING, COMMENT, SCOMMENT, STRING, QSTRING> {
