@@ -39,7 +39,6 @@ this.finalOffset=zzEndRead;
 return false;
 %eofval}
 %caseless
-%switch
 %char
 
 //WhiteSpace     = [ \t\f\r]+|\n
@@ -51,4 +50,4 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 {Identifier}|{Number}|{Printable} { // below assumes locale from the shell/container, instead of just US
                         setAttribs(yytext().toLowerCase(Locale.getDefault()), yychar, yychar + yylength());
                         return true; }
-.|\n    {}
+[^]    {}

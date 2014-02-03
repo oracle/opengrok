@@ -120,5 +120,5 @@ EOL = \r|\n|\r\n
     {EOL}     { startNewLine(); }
     {Whitespace}  { out.append(yytext()); }
     [ \t\f\r!-~]  { out.append(yycharat(0)); }
-    .      { writeUnicodeChar(yycharat(0)); }
+    [^\n]      { writeUnicodeChar(yycharat(0)); }
 }

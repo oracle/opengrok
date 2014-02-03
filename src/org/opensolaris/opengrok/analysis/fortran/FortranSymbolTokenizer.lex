@@ -79,5 +79,5 @@ Label = [0-9]+
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT, QSTRING> {
 <<EOF>>   { return false;}
-.|\n    {}
+[^]    {}
 }

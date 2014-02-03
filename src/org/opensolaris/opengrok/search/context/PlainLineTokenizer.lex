@@ -42,7 +42,6 @@ import org.opensolaris.opengrok.web.Util;
 %unicode
 %type String 
 %ignorecase
-%switch
 %char
 
 %{
@@ -427,4 +426,4 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                 }
         }
 
-.       { markedContents.append(yycharat(0)); }
+[^\n]       { markedContents.append(yycharat(0)); }

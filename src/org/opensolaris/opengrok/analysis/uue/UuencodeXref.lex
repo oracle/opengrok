@@ -79,7 +79,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
   {EOL}   {startNewLine();}
   {WhiteSpace}+   { out.write(yytext()); }
   [!-~]   { out.write(yycharat(0)); }
-  .      { writeUnicodeChar(yycharat(0)); }
+  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <MODE> {
@@ -89,7 +89,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
     yypushback(1);
     out.write("<i>" + yytext() + "</i>");
   }
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
+  [^] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <NAME>{
@@ -104,7 +104,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
     out.write("\">" + t + "</a>");
     out.write("<span class='c'>");
   }
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
+  [^] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <UUE> {

@@ -117,13 +117,13 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
     </target>
     
-                 
+    <property name="jflex-version" value="1.5.0"/>
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
         <pathelement path="${java.class.path}"/>
         <pathelement path="lib"/>
         <pathelement path="../lib"/>
-        <pathelement location="lib/JFlex.jar"/>
+        <pathelement location="lib/jflex-${jflex-version}.jar"/>
     </path>
 
     <path id="findbugs.lib.search.path">
@@ -144,7 +144,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </path>
 
     <target name="-check-jflex" description="Check that jflex jar file is present">
-        <available file="JFlex.jar" type="file" property="JFlex.present">
+        <available file="jflex-${jflex-version}.jar" type="file" property="JFlex.present">
             <filepath refid="lib.search.path"/>
         </available>
         <condition property="jflex_not_downloaded">
@@ -155,54 +155,54 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
  
     <target name="download-jflex" depends="-check-jflex" if="jflex_not_downloaded">
-        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/1.4.3/jflex-1.4.3.jar"
-        dest="lib/JFlex.jar" verbose="true" usetimestamp="true"/>
+        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/${jflex-version}/jflex-${jflex-version}.jar"
+        dest="lib/jflex-${jflex-version}.jar" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="jflex" depends="download-jflex">
-        <taskdef classname="JFlex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path" />
+        <taskdef classname="jflex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path" />
         <mkdir dir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/scala/ScalaSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/scala/ScalaXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/XMLXref.lex" destdir="${src.generatedsrc.dir}"/>        
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/SQLXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/PLSQLXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/vb/VBSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/vb/VBXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeXref.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeFullTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
-        <jflex file="${src.dir}/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="${src.generatedsrc.dir}"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/scala/ScalaSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/scala/ScalaXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/XMLXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>        
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/SQLXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/PLSQLXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/vb/VBSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/vb/VBXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeFullTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
     </target>
     
     <property name="git" value="git"/>

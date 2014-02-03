@@ -181,7 +181,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 <TBL> {
 tab\(.\) { char tab = yycharat(4); }
 \.$    { yybegin(TBLL); }
-.    {}
+[^\n]    {}
 }
 <TBLL> {
 \007    { cleanup(); out.write("</td><td>"); }
@@ -216,4 +216,4 @@ T[\{\}] {}
 {EOL}   { out.write("\n"); yyline++;}
 {WhiteSpace}+   { out.write(' '); }
 [!-~]   { out.write(yycharat(0)); }
- .      { writeUnicodeChar(yycharat(0)); }
+[^\n]      { writeUnicodeChar(yycharat(0)); }
