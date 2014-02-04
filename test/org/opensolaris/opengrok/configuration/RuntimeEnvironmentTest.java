@@ -225,9 +225,9 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testRamBufferSize() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertEquals(16, instance.getRamBufferSize());  //default is 16
+        assertEquals(16, instance.getRamBufferSize(), 0);  //default is 16
         instance.setRamBufferSize(256);
-        assertEquals(256, instance.getRamBufferSize());
+        assertEquals(256, instance.getRamBufferSize(), 0);
     }
 
     @Test
