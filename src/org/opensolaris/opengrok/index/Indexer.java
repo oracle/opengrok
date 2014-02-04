@@ -318,7 +318,7 @@ public final class Indexer {
                             break;
                         case 'm': {
                             try {
-                                cfg.setIndexWordLimit(Integer.parseInt(getopt.getOptarg()));
+                                cfg.setRamBufferSize(Double.parseDouble(getopt.getOptarg()));
                             } catch (NumberFormatException exp) {
                                 System.err.println("ERROR: Failed to parse argument to \"-m\": " + exp.getMessage());
                                 System.exit(1);

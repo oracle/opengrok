@@ -85,7 +85,12 @@ public final class Configuration {
      * or when you clear your web cookies
      */
     private Project defaultProject;
-    private int indexWordLimit;
+    /**
+     * Default size of memory to be used for flushing of lucene docs
+     * per thread.
+     * Lucene 4.x uses 16MB and 8 threads, so below is a nice tunable.
+     */
+    private double ramBufferSize;
     private boolean verbose;
     /**
      * If below is set, then we count how many files per project we need
@@ -121,6 +126,9 @@ public final class Configuration {
     private int tabSize;
     private int command_timeout;
     private static final Logger logger = Logger.getLogger(Configuration.class.getName());
+    
+    public static final double defaultRamBufferSize=16;
+    public static final int defaultScanningDepth=3;
 
     /**
      * Get the default tab size (number of space characters per tab character)
@@ -184,7 +192,7 @@ public final class Configuration {
         //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
         setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         //below can cause an outofmemory error, since it is defaulting to NO LIMIT
-        setIndexWordLimit(Integer.MAX_VALUE);
+        setRamBufferSize(defaultRamBufferSize); //MB
         setVerbose(false);
         setPrintProgress(false);
         setGenerateHtml(true);
@@ -205,7 +213,7 @@ public final class Configuration {
         setTagsEnabled(false);
         setHitsPerPage(25);
         setCachePages(5);
-        setScanningDepth(3); // default depth of scanning for repositories
+        setScanningDepth(defaultScanningDepth); // default depth of scanning for repositories
         setAllowedSymlinks(new HashSet<String>());
         //setTabSize(4);
         cmds = new HashMap<String, String>();
@@ -390,12 +398,18 @@ public final class Configuration {
         return defaultProject;
     }
 
-    public int getIndexWordLimit() {
-        return indexWordLimit;
+    public double getRamBufferSize() {
+        return ramBufferSize;
     }
 
-    public void setIndexWordLimit(int indexWordLimit) {
-        this.indexWordLimit = indexWordLimit;
+    /**
+     * set size of memory to be used for flushing docs (default 16 MB)
+     * (this can improve index speed a LOT)
+     * note that this is per thread (lucene uses 8 threads by default in 4.x)
+     * @param ramBufferSize new size in MB
+     */
+    public void setRamBufferSize(double ramBufferSize) {
+        this.ramBufferSize = ramBufferSize;
     }
 
     public boolean isVerbose() {

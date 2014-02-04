@@ -812,7 +812,7 @@ public final class Util {
         out.append("<tr><td>Ignored files</td><td>");
         printUnorderedList(out, env.getIgnoredNames().getItems());
         out.append("</td></tr>");
-        printTableRow(out, "Index word limit", env.getIndexWordLimit());
+        printTableRow(out, "lucene RAM_BUFFER_SIZE_MB", env.getRamBufferSize());
         printTableRow(out, "Allow leading wildcard in search",
             env.isAllowLeadingWildcard());
         printTableRow(out, "History cache", HistoryGuru.getInstance()

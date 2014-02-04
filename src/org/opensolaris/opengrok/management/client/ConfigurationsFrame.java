@@ -160,7 +160,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         this.generateHtmlCB.setSelected(config.isGenerateHtml());
         this.tagsEnabledCB.setSelected(config.isTagsEnabled());
         this.historyCacheCB.setSelected(config.isHistoryCache());
-        this.indexWordLimitField.setText(Integer.toString(config.getIndexWordLimit()));
+        this.indexWordLimitField.setText(Double.toString(config.getRamBufferSize()));
         this.allowLeadingWildCardsCB.setSelected(config.isAllowLeadingWildcard());
         this.urlPrefixField.setText(config.getUrlPrefix());
         this.historyReaderTimelimitField.setText(Integer.toString(config.getHistoryCacheTime()));
@@ -412,7 +412,8 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
 
         compressXRefsCB.setText("Compress XRefs"); // NOI18N
 
-        jLabel18.setText("Index Word Limit"); // NOI18N
+        jLabel18.setText("Ram Buffer Size"); // NOI18N
+        jLabel18.setToolTipText("when to flush docs to disk");
 
         indexWordLimitField.setText("jTextField1"); // NOI18N
 
@@ -435,14 +436,9 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                             .addComponent(dataRootField, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)))
                     .addGroup(indexerPanelLayout.createSequentialGroup()
                         .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, indexerPanelLayout.createSequentialGroup()
-                                .addComponent(jLabel18)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(indexWordLimitField, 0, 1, Short.MAX_VALUE))
                             .addComponent(remoteSCMSupportedCB, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(luceneLockingCB, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(historyCacheCB, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(generateHtmlCB, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addComponent(historyCacheCB, javax.swing.GroupLayout.Alignment.LEADING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(compressXRefsCB)
@@ -460,7 +456,12 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                     .addGroup(indexerPanelLayout.createSequentialGroup()
                         .addComponent(jLabel16)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cTagsField, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)))
+                        .addComponent(cTagsField, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE))
+                    .addGroup(indexerPanelLayout.createSequentialGroup()
+                        .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(generateHtmlCB)
+                            .addComponent(tagsEnabledCB))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         indexerPanelLayout.setVerticalGroup(
@@ -488,9 +489,11 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                     .addComponent(jLabel17)
                     .addComponent(historyReaderTimelimitField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(generateHtmlCB)
-                    .addComponent(compressXRefsCB))
+                .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(compressXRefsCB)
+                    .addComponent(generateHtmlCB))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tagsEnabledCB)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(indexerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel18)
@@ -723,7 +726,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jTabPane, javax.swing.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                    .addComponent(jTabPane)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(updateBtn)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -837,7 +840,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
        config.setTagsEnabled(this.tagsEnabledCB.isSelected());
        config.setHistoryCache(this.historyCacheCB.isSelected());
        config.setHistoryCacheTime(Integer.parseInt(this.historyReaderTimelimitField.getText()));
-       config.setIndexWordLimit(Integer.parseInt(this.indexWordLimitField.getText()));
+       config.setRamBufferSize(Double.parseDouble(this.indexWordLimitField.getText()));
        config.setUrlPrefix(this.urlPrefixField.getText());
        /*
        config.setQuickContextScan(rootPaneCheckingEnabled);

@@ -14,8 +14,9 @@ OpenGrok - a wicked fast source browser
 6.  Change web application properties or name
 7.  OpenGrok systray
 8.  Information for developers
-9.  Authors
-10. Contact us
+9.  Tuning OpenGrok for large code bases
+10.  Authors
+11. Contact us
 
 
 1. Introduction
@@ -47,7 +48,7 @@ Offical page of the project is on:
         http://ant.apache.org/
       - JFlex
         http://www.jflex.de/
-      - Netbeans (optional, at least 7.2, will need Ant 1.8.1)
+      - Netbeans (optional, at least 7.4, will need Ant 1.8.1)
         http://netbeans.org/
 
 3. Usage
@@ -580,7 +581,7 @@ This agent is work in progress, so it might not fully work.
 Just run 'ant' from command line in the top-level directory or use build
 process driven by graphical developer environment such as Netbeans.
 
-Note: in case you are behind http proxy, use ANT_OPTS to download lucene
+Note: in case you are behind http proxy, use ANT_OPTS to download jflex, lucene
 E.g. $ ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
 
 
@@ -784,7 +785,7 @@ Which will result in:
   cpd_report.xml cpd_report.txt
 
 8.6 Using JDepend
----------------------
+-----------------
 
 To see dependencies in the source code, you can use JDepend from
 http://clarkware.com/software/JDepend.html.
@@ -806,8 +807,66 @@ Output is stored in the jdepend directory:
   $ ls jdepend/
   report.txt  report.xml
 
-9. Authors
-----------
+9. Tuning OpenGrok for large code bases
+---------------------------------------
+
+While indexing big source repos you might consider using ZFS filesystem to give 
+you advantage of datasets which can be flipped over or cloned when needed.
+If the machine is strong enough it will also give you an option to 
+incrementally index in parallel to having the current sources and index in sync.
+(So tomcat sees certain zfs datasets, then you just stop it, flip datasets to 
+the ones that were updated by SCM/index and start tomcat again - outage is 
+minimal, sources+indexes are ALWAYS in sync, users see the truth)
+
+OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of 
+lucene docs indexing(when to flush to disk).
+It also uses default 32bit JRE.
+This MIGHT NOT be enough. You might need to consider this:
+Lucene 4.x sets indexer defaults:
+ DEFAULT_RAM_PER_THREAD_HARD_LIMIT_MB = 1945;
+ DEFAULT_MAX_THREAD_STATES = 8;
+ DEFAULT_RAM_BUFFER_SIZE_MB = 16.0; 
+ - which might grow as big as 16GB (though DEFAULT_RAM_BUFFER_SIZE_MB shouldn't
+ really allow it, but keep it around 1-2GB)
+
+ - the lucenes RAM_BUFFER_SIZE_MB can be tuned now using the parameter -m, so 
+running a 8GB 64 bit server JDK indexer with tuned docs flushing(on Solaris 11):
+
+ # export JAVA=/usr/java/bin/`isainfo -k`/java
+ (or use /usr/java/bin/amd64/java )
+ # export JAVA_OPTS="-Xmx8192m -server"
+ # OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 256" ./OpenGrok index /source
+
+Tomcat by default also supports only small deployments. For bigger ones you
+MIGHT need to increase its heap which might necessitate the switch to 64-bit 
+Java. It will most probably be the same for other containers as well.
+For tomcat you can easily get this done by creating conf/setenv.sh:
+
+ # cat conf/setenv.sh
+ # 64-bit Java
+ JAVA_OPTS="$JAVA_OPTS -d64 -server"
+
+ # OpenGrok memory boost to cover all-project searches
+ # (7 MB * 247 projects + 300 MB for cache should be enough)
+ # 64-bit Java allows for more so let's use 8GB to be on the safe side.
+ # We might need to allow more for concurrent all-project searches.
+ JAVA_OPTS="$JAVA_OPTS -Xmx8g"
+
+ export JAVA_OPTS
+
+
+For tomcat you might also hit a limit for http header size (we use it to send 
+the project list when requesting search results):
+ - increase(add) in conf/server.xml maxHttpHeaderSize
+  connectionTimeout="20000"
+ maxHttpHeaderSize="65536"
+  redirectPort="8443" />
+
+Refer to docs of other containers for more info on how to achieve the same.
+
+
+10. Authors
+-----------
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
 
@@ -817,8 +876,9 @@ Knut Pape, eBriefkasten.de
 Martin Englund, (originally Sun Microsystems)
 Knut Anders Hatlen, Oracle. http://blogs.oracle.com/kah/
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
+Vladimir Kotal, Oracle. http://blogs.oracle.com/vlad/
 
-10. Contact us
+11. Contact us
 --------------
 
 Feel free to participate in discussion on discuss@opengrok.java.net.
