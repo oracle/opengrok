@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -325,6 +325,22 @@ public class JFlexXrefTest {
         SQLXref xref = new SQLXref(in);
         xref.setDefs(ctags.doCtags(filename + "\n"));
         // The next call used to fail with an ArrayIndexOutOfBoundsException.
+        xref.write(new StringWriter());
+    }
+
+    /**
+     * Test that unterminated heredocs don't cause infinite loop in ShXref.
+     * This originally became a problem after upgrade to JFlex 1.5.0.
+     */
+    @Test
+    public void unterminatedHeredoc() throws IOException {
+        ShXref xref = new ShXref(new StringReader(
+                "#!/bin/sh\n\n"
+                + "cat << EOF\n"
+                + "this heredoc is\n"
+                + "not terminated\n"));
+
+        // The next call used to loop forever.
         xref.write(new StringWriter());
     }
 }
