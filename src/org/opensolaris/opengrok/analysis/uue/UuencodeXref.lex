@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  */
 
@@ -117,5 +117,5 @@ FNameChar = [a-zA-Z0-9_\-\.]
   "<"     {out.write( "&lt;");}
   "&"     {out.write( "&amp;");}
   {EOL}   {startNewLine();}
-  [^\n&<]*   { out.write(yytext()); }
+  [^\n&<]+   { out.write(yytext()); }
 }

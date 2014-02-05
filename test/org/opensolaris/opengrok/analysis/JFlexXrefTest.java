@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.analysis.scala.ScalaXref;
 import org.opensolaris.opengrok.analysis.sh.ShXref;
 import org.opensolaris.opengrok.analysis.sql.SQLXref;
 import org.opensolaris.opengrok.analysis.tcl.TclXref;
+import org.opensolaris.opengrok.analysis.uue.UuencodeXref;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -335,12 +336,39 @@ public class JFlexXrefTest {
     @Test
     public void unterminatedHeredoc() throws IOException {
         ShXref xref = new ShXref(new StringReader(
-                "#!/bin/sh\n\n"
-                + "cat << EOF\n"
-                + "this heredoc is\n"
-                + "not terminated\n"));
+                "cat << EOF\nunterminated heredoc"));
+
+        StringWriter out = new StringWriter();
 
         // The next call used to loop forever.
-        xref.write(new StringWriter());
+        xref.write(out);
+
+        assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+            + "<a href=\"/source/s?defs=cat\">cat</a> &lt;&lt; EOF"
+            + "<span class=\"s\">\n"
+            + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>"
+            + "unterminated heredoc</span>",
+            out.toString());
+    }
+
+    /**
+     * Truncated uuencoded files used to cause infinite loops. Verify that
+     * they work now.
+     */
+    @Test
+    public void truncatedUuencodedFile() throws IOException {
+        UuencodeXref xref = new UuencodeXref(
+                new StringReader("begin 644 test.txt\n"));
+
+        // Generating the xref used to loop forever.
+        StringWriter out = new StringWriter();
+        xref.write(out);
+
+        assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+                + "<strong>begin</strong> <i>644</i> "
+                + "<a href=\"/source/s?q=test.txt\">test.txt</a>"
+                + "<span class='c'>\n"
+                + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>",
+                out.toString());
     }
 }
