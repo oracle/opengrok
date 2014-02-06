@@ -230,7 +230,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <HEREDOC> {
-  .+ {
+  [^\n]+ {
     String line = yytext();
     if (isHeredocStopWord(line)) {
       popstate();
