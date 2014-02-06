@@ -108,6 +108,13 @@ public class JDBCHistoryCacheTest extends TestCase {
 
         // Reset any changes the test made to the runtime environment.
         RuntimeEnvironment.getInstance().setConfiguration(new Configuration());
+
+        // We really need to destroy the thread pool here since some of the
+        // threads might have some thread-local variables cached from previous
+        // test runs (like tags enabled) and this makes other tests fail in
+        // very nasty fashion (what is caused by fetch of particular thread
+        // with cached thread-local value appears like race condition).
+        RuntimeEnvironment.freeHistoryExecutor();
     }
 
     /**
@@ -184,7 +191,6 @@ public class JDBCHistoryCacheTest extends TestCase {
         cache.optimize();
 
         // test reindex
-
         History historyNull = new History();
         cache.store(historyNull, repos);
         cache.optimize();
@@ -261,6 +267,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         History clearedHistory = cache.get(reposRoot, repos, true);
         assertTrue("History should be empty",
                 clearedHistory.getHistoryEntries().isEmpty());
+
         cache.store(historyToStore, repos);
         assertSameEntries(historyToStore.getHistoryEntries(),
                 cache.get(reposRoot, repos, true).getHistoryEntries());
@@ -351,6 +358,10 @@ public class JDBCHistoryCacheTest extends TestCase {
         Repository repos = RepositoryFactory.getRepository(reposRoot);
         History history = repos.getHistory(reposRoot);
         cache.store(history, repos);
+
+        assertSameEntries(
+                history.getHistoryEntries(),
+                cache.get(reposRoot, repos, true).getHistoryEntries());
 
         // Set the lock timeout to one second to make it go faster.
         final Connection c = DriverManager.getConnection(getURL());

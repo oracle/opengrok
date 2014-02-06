@@ -38,6 +38,8 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -58,7 +60,31 @@ public final class RuntimeEnvironment {
     private final ThreadLocal<Configuration> threadConfig;
     private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
+    private static ExecutorService historyExecutor = null;
+            
+    public static synchronized ExecutorService getHistoryExecutor() {
+        if (historyExecutor == null) {
+            int num = Runtime.getRuntime().availableProcessors() * 2;
+            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
+            if (total != null) {
+                try {
+                    num = Integer.valueOf(total);
+                } catch (Throwable t) {
+                    log.log(Level.WARNING, "Failed to parse the number of " +
+                        "cache threads to use for cache creation", t);
+                }
+            }
 
+            historyExecutor = Executors.newFixedThreadPool(num);
+        }
+        
+        return historyExecutor;
+    }
+    
+    public static synchronized void freeHistoryExecutor() {
+        historyExecutor = null;
+    }
+    
     /**
      * Get the one and only instance of the RuntimeEnvironment
      *
@@ -150,7 +176,7 @@ public final class RuntimeEnvironment {
      * @return path to where the sources are located
      */
     public String getSourceRootPath() {
-        return threadConfig.get().getSourceRoot();
+        return configuration.getSourceRoot();
     }
 
     /**
@@ -174,7 +200,7 @@ public final class RuntimeEnvironment {
      * @param sourceRoot the location of the sources
      */
     public void setSourceRoot(String sourceRoot) {
-        threadConfig.get().setSourceRoot(getCanonicalPath(sourceRoot));
+        configuration.setSourceRoot(getCanonicalPath(sourceRoot));
     }
 
     /**

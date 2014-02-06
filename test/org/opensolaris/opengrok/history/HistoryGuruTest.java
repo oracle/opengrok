@@ -61,8 +61,11 @@ public class HistoryGuruTest {
         
         HistoryGuru instance = HistoryGuru.getInstance();
         instance.addRepositories(repository.getSourceRoot());
-                
+        
+        // create cache with initial set of repos
         instance.createCache();
+        
+        // now create cache for more repos
         Collection<String> repos = new ArrayList<>();
         repos.add("git");
         repos.add("bazaar");
