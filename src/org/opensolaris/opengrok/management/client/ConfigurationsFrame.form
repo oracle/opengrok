@@ -8,6 +8,7 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -27,7 +28,7 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jTabPane" alignment="1" pref="539" max="32767" attributes="0"/>
+                  <Component id="jTabPane" alignment="1" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="updateBtn" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -438,7 +439,8 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel18">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Index Word Limit" noResource="true"/>
+                <Property name="text" type="java.lang.String" value="Ram Buffer Size" noResource="true"/>
+                <Property name="toolTipText" type="java.lang.String" value="when to flush docs to disk"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="indexWordLimitField">

@@ -38,6 +38,8 @@ import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -58,7 +60,31 @@ public final class RuntimeEnvironment {
     private final ThreadLocal<Configuration> threadConfig;
     private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
+    private static ExecutorService historyExecutor = null;
+            
+    public static synchronized ExecutorService getHistoryExecutor() {
+        if (historyExecutor == null) {
+            int num = Runtime.getRuntime().availableProcessors() * 2;
+            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
+            if (total != null) {
+                try {
+                    num = Integer.valueOf(total);
+                } catch (Throwable t) {
+                    log.log(Level.WARNING, "Failed to parse the number of " +
+                        "cache threads to use for cache creation", t);
+                }
+            }
 
+            historyExecutor = Executors.newFixedThreadPool(num);
+        }
+        
+        return historyExecutor;
+    }
+    
+    public static synchronized void freeHistoryExecutor() {
+        historyExecutor = null;
+    }
+    
     /**
      * Get the one and only instance of the RuntimeEnvironment
      *
@@ -150,7 +176,7 @@ public final class RuntimeEnvironment {
      * @return path to where the sources are located
      */
     public String getSourceRootPath() {
-        return threadConfig.get().getSourceRoot();
+        return configuration.getSourceRoot();
     }
 
     /**
@@ -174,7 +200,7 @@ public final class RuntimeEnvironment {
      * @param sourceRoot the location of the sources
      */
     public void setSourceRoot(String sourceRoot) {
-        threadConfig.get().setSourceRoot(getCanonicalPath(sourceRoot));
+        configuration.setSourceRoot(getCanonicalPath(sourceRoot));
     }
 
     /**
@@ -456,29 +482,23 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getDefaultProject();
     }
 
-    /**
-     * Chandan wrote the following answer on the opengrok-discuss list:
-     * "Traditionally search engines (specially spiders) think that large files
-     * are junk. Large files tend to be multimedia files etc., which text search
-     * spiders do not want to chew. So they ignore the contents of the file
-     * after a cutoff length. Lucene does this by number of words, which is by
-     * default is 10,000." By default OpenGrok will increase this limit to
-     * 60000, but it may be overridden in the configuration file
+    /**     
      *
-     * @return The maximum words to index
+     * @return at what size (in MB) we should flush the buffer
      */
-    public int getIndexWordLimit() {
-        return threadConfig.get().getIndexWordLimit();
+    public double getRamBufferSize() {
+        return threadConfig.get().getRamBufferSize();
     }
 
     /**
-     * Set the number of words in a file Lucene will index. See
-     * getIndexWordLimit for a better description.
+     * Set the size of buffer which will determine when the docs are flushed to
+     * disk. Specify size in MB please. 16MB is default
+     * note that this is per thread (lucene uses 8 threads by default in 4.x)
      *
-     * @param indexWordLimit the number of words to index in a single file
+     * @param ramBufferSize the size(in MB) when we should flush the docs
      */
-    public void setIndexWordLimit(int indexWordLimit) {
-        threadConfig.get().setIndexWordLimit(indexWordLimit);
+    public void setRamBufferSize(double ramBufferSize) {
+        threadConfig.get().setRamBufferSize(ramBufferSize);
     }
 
     /**
@@ -520,7 +540,7 @@ public final class RuntimeEnvironment {
     /**
      * Specify if a search may start with a wildcard. Note that queries that
      * start with a wildcard will give a significant impact on the search
-     * performace.
+     * performance.
      *
      * @param allowLeadingWildcard set to true to activate (disabled by default)
      */

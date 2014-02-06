@@ -3,13 +3,13 @@
 # OpenGrok Wrapper (initial setup and cron job updating)
 #
 # Supported Operating Systems:
-#   - Solaris 10  (SunOS 5.10)
 #   - Solaris 11  (SunOS 5.11)
+#   - Solaris 12  (SunOS 5.12)
 #   - Debian      (Linux)
 #
 # Supported Deployment Engines:
+#   - Tomcat 7
 #   - Tomcat 6
-#   - Tomcat 5.5
 #   - Glassfish
 #
 # Supported Environment Variables:
@@ -25,8 +25,10 @@
 #                                 options for CTags program (for its --options
 #                                 switch), default is DATA_ROOT/etc/ctags.config
 #   - JAVA_HOME                   Full Path to Java Installation Root
-#   - JAVA                        Full Path to java binary
-#   - JAVA_OPTS                   Java options
+#   - JAVA                        Full Path to java binary (to enable 64bit JDK)
+#   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
+#                                 or enabling server JDK)
+#                                 JAVA_OPTS=-Xmx2048m is the default!
 #   - OPENGROK_APP_SERVER         Application Server ("Tomcat" or "Glassfish")
 #   - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
@@ -61,6 +63,11 @@
 #                                 view
 #   - READ_XML_CONFIGURATION      file with read only configuration
 #                                 - temporary workaround for bug # 327
+#   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing, 
+#                                 default is 16MB per thread, you might try to 
+#                                 increase it to 256MB, but do increase JVM to 
+#                                 4/8/16GB ! Lucene defaults to 8 threads.
+#                                 Increase JVM memory as noted using JAVA_OPTS
 #
 # Notes:
 #   (*) Any Non-Empty String will enable these options
@@ -253,13 +260,6 @@ DefaultInstanceConfiguration()
     #            Note the quoting requirements)
     #SKIN='-L default'
 
-    # OPTIONAL: Set Maximum Indexed Words Per File
-    # Note, that you might run out of memory, then either increase JVM memory
-    # as noted in JAVA_OPTS, or set this limit(if you don't mind opengrok not
-    # indexing the rest of the file, once the limit is reached)
-    #           (default: unlimited)
-    #MAX_INDEXED_WORDS="-m 100000"
-
     # OPTIONAL: Configuration Address (host:port)
     #           (conf/web.xml default is localhost:2424)
     WEBAPP_CONFIG=""
@@ -285,7 +285,7 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: JVM Options
     JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
-
+    
     # OPTIONAL: Full Path to History Utilities
     HG="`Which hg`"
     CVS="`Which cvs`"
@@ -771,7 +771,7 @@ StdInvocation()
         ${PROGRESS}                                             \
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         \
-        ${MAX_INDEXED_WORDS} ${SKIN} ${LEADING_WILDCARD}        \
+        ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}        \
         ${READ_XML_CONF}                                        \
         -W ${XML_CONFIGURATION}                                 \
         ${WEBAPP_CONFIG}                                        \
@@ -855,6 +855,14 @@ DerbyServer()
         SunOS:5.10) Error "unsupported OS" ;;
         SunOS:5.11)
                     /sbin/svcadm enable javadb
+                     ;;
+        SunOS:5.12)
+                    echo "Below might need your socket permission setup"
+                    echo "see JDK1.7_51 release notes"
+                    set -x
+                    mkdir -p $DATA_ROOT/derby
+                    java -Dderby.system.home=$DATA_ROOT/derby \
+		        -jar /usr/jdk/instances/jdk1.7.0/db/lib/derbynet.jar start
                      ;;
         Linux:*)
                     mkdir -p $DATA_ROOT/derby

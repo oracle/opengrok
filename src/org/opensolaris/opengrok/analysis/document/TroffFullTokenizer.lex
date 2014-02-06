@@ -60,4 +60,4 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     return true;
 }
 <<EOF>>   { return false;}
-.|\n    {}
+[^]    {}

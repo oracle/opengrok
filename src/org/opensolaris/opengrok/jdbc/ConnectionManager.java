@@ -74,7 +74,7 @@ public class ConnectionManager {
      * @return a {@code ConnectionResource} object
      * @throws SQLException if a database error occurs
      */
-    public ConnectionResource getConnectionResource() throws SQLException {
+    public synchronized ConnectionResource getConnectionResource() throws SQLException {
         ConnectionResource cr = connections.poll();
         if (cr == null || !cr.isValid()) {
             cr = new ConnectionResource(this);

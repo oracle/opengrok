@@ -35,11 +35,10 @@ import java.util.*;
 %type String 
 %ignorecase
 %char
-
 %{
-  public static final HashSet<String> stopset = new HashSet<String>();
-  static {
-  stopset.add(  "a");
+public static final HashSet<String> stopset = new HashSet<String>();
+static {
+stopset.add(  "a");
 stopset.add( "an");
 stopset.add( "and");
 stopset.add( "are");
@@ -107,4 +106,4 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 {Identifier}|{Number}|{Printable}       {String m = yytext();
                                         if(stopset.contains(m)) { } else { return(m);}}
 <<EOF>>   { return null;}
-.|\n    {}
+[^]    {}

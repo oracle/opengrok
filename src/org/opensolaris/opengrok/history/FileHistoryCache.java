@@ -53,6 +53,69 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 class FileHistoryCache implements HistoryCache {
     private final Object lock = new Object();
 
+    
+    /**
+     * Generate history for single file.
+     * @param map_entry entry mapping filename to list of history entries
+     * @param env runtime environment
+     * @param repository repository object in which the file belongs
+     * @param test file object
+     * @param root root of the source repository
+     * @param renamed true if the files was renamed in the past
+     */
+    private void doFileHistory(Map.Entry<String, List<HistoryEntry>> map_entry,
+            RuntimeEnvironment env, Repository repository,
+            File test, File root, boolean renamed) throws HistoryException {
+
+        History hist = null;
+
+        /*
+         * Certain files require special handling - this is mainly for
+         * files which have been renamed in Mercurial repository.
+         * This ensures that their complete history (follow) will be
+         * saved.
+         */
+        if (renamed) {
+            hist = repository.getHistory(test);
+        }
+
+        if (hist == null) {
+            hist = new History();
+                    
+            for (HistoryEntry ent : map_entry.getValue()) {
+                ent.strip();
+            }
+            // add all history entries
+            hist.setHistoryEntries(map_entry.getValue());
+        } else {
+            for (HistoryEntry ent : hist.getHistoryEntries()) {
+                ent.strip();
+            }
+        }
+
+        // Assign tags to changesets they represent
+        if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
+            repository.assignTagsInHistory(hist);
+        }
+
+        File file = new File(root, map_entry.getKey());
+        if (!file.isDirectory()) {
+            storeFile(hist, file);
+        }
+    }
+
+    private boolean isRenamedFile(Map.Entry<String,
+            List<HistoryEntry>> map_entry, RuntimeEnvironment env, 
+            Repository repository, History history) throws IOException {
+
+        String fullfile = map_entry.getKey();
+        String repodir = env.getPathRelativeToSourceRoot(
+            new File(repository.getDirectoryName()), 0);
+        String shortestfile = fullfile.substring(repodir.length() + 1);
+
+        return (history.isRenamed(shortestfile));
+    }
+
     static class FilePersistenceDelegate extends PersistenceDelegate {
         @Override
         protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -189,7 +252,7 @@ class FileHistoryCache implements HistoryCache {
     @Override
     public void store(History history, Repository repository)
             throws HistoryException {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         if (history.getHistoryEntries() == null) {
             return;
@@ -207,6 +270,15 @@ class FileHistoryCache implements HistoryCache {
          */
         for (HistoryEntry e : history.getHistoryEntries()) {
             for (String s : e.getFiles()) {
+                /*
+                 * We do not want to generate history cache for files which
+                 * do not currently exist in the repository.
+                 */
+                File test = new File(env.getSourceRootPath() + s);
+                if (!test.exists()) {
+                    continue;
+                }
+
                 List<HistoryEntry> list = map.get(s);
                 if (list == null) {
                     list = new ArrayList<HistoryEntry>();
@@ -227,63 +299,48 @@ class FileHistoryCache implements HistoryCache {
         /*
          * Now traverse the list of files from the hash map built above
          * and for each file store its history (saved in the value of the
-         * hash map entry for the file) in a file.
+         * hash map entry for the file) in a file. Skip renamed files
+         * which will be handled separately below.
          */
-        File root = RuntimeEnvironment.getInstance().getSourceRootFile();
+        final File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
-            History hist = null;
-            
-            /*
-             * We do not want to generate history cache for files which
-             * do not currently exist in the repository.
-             */
-            File test = new File(env.getSourceRootPath() + map_entry.getKey());
-            if (!test.exists()) {
-                continue;
-            }
-
-            /*
-             * Certain files require special handling - this is mainly for
-             * files which have been renamed in Mercurial repository.
-             * This ensures that their complete history (follow) will be
-             * saved.
-             */
-            String fullfile = map_entry.getKey();
             try {
-                String repodir = env.getPathRelativeToSourceRoot(
-                    new File(repository.getDirectoryName()), 0);
-                String shortestfile = fullfile.substring(repodir.length() + 1);
-                if (history.isRenamed(shortestfile)) {
-                    hist = repository.getHistory(test);
+                if (isRenamedFile(map_entry, env, repository, history)) {
+                    continue;
                 }
             } catch (IOException ex) {
-                Logger.getLogger(FileHistoryCache.class.getName()).log(
-                    Level.SEVERE, null, ex);
+                Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
             }
             
-            if (hist == null) {
-                hist = new History();
-                        
-                for (HistoryEntry ent : map_entry.getValue()) {
-                    ent.strip();
+            doFileHistory(map_entry, env, repository, null, root, false);
+        }
+
+        /*
+         * Now handle renamed files (in parallel).
+         */
+
+        for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
+            try {
+                if (!isRenamedFile(map_entry, env, repository, history)) {
+                    continue;
                 }
-                // add all history entries
-                hist.setHistoryEntries(map_entry.getValue());
-            } else {
-                for (HistoryEntry ent : hist.getHistoryEntries()) {
-                    ent.strip();
-                }
+            } catch (IOException ex) {
+                Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            // Assign tags to changesets they represent
-            if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
-                repository.assignTagsInHistory(hist);
-            }
-
-            File file = new File(root, map_entry.getKey());
-            if (!file.isDirectory()) {
-                storeFile(hist, file);
-            }
+            final Repository repositoryF = repository;
+            RuntimeEnvironment.getHistoryExecutor().submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doFileHistory(map_entry, env, repositoryF,
+                            new File(env.getSourceRootPath() + map_entry.getKey()),
+                            root, true);
+                    } catch (HistoryException ex) {
+                        Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
         }
     }
 

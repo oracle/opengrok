@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  */
 
@@ -79,7 +79,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
   {EOL}   {startNewLine();}
   {WhiteSpace}+   { out.write(yytext()); }
   [!-~]   { out.write(yycharat(0)); }
-  .      { writeUnicodeChar(yycharat(0)); }
+  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
 <MODE> {
@@ -89,7 +89,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
     yypushback(1);
     out.write("<i>" + yytext() + "</i>");
   }
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
+  [^] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <NAME>{
@@ -104,7 +104,7 @@ FNameChar = [a-zA-Z0-9_\-\.]
     out.write("\">" + t + "</a>");
     out.write("<span class='c'>");
   }
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
+  [^] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <UUE> {
@@ -117,5 +117,5 @@ FNameChar = [a-zA-Z0-9_\-\.]
   "<"     {out.write( "&lt;");}
   "&"     {out.write( "&amp;");}
   {EOL}   {startNewLine();}
-  [^\n&<]*   { out.write(yytext()); }
+  [^\n&<]+   { out.write(yytext()); }
 }

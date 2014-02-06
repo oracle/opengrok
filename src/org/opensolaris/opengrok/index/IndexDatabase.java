@@ -326,10 +326,9 @@ public class IndexDatabase {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
-            //iwc.setRAMBufferSizeMB(256.0);  //TODO check what is the sweet spot
+            iwc.setRAMBufferSizeMB(RuntimeEnvironment.getInstance().getRamBufferSize());
             writer = new IndexWriter(indexDirectory, iwc);
-            writer.commit(); // to make sure index exists on the disk
-            //writer.setMaxFieldLength(RuntimeEnvironment.getInstance().getIndexWordLimit());
+            writer.commit(); // to make sure index exists on the disk            
 
             if (directories.isEmpty()) {
                 if (project == null) {

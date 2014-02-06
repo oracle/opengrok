@@ -16,7 +16,7 @@ Please read EXAMPLE.txt for sample automated setups.
 
 OpenGrok uses Suns java, hence you need to run it with proper JAVA_HOME set
 up and PATH pointing to Suns java (e.g. run 
-/usr/lib/jvm/java-1.6.0-sun/bin/java )
+/usr/lib/jvm/java-1.7.0-sun/bin/java )
 
 For opengrok as standalone java application to work, one needs to have a
 graphical DISPLAY ready and working.

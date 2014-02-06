@@ -83,5 +83,5 @@ Identifier = [\-\+\*\!\@\$\%\&\/\?\.\,\:\{\}\=a-zA-Z0-9_\<\>]+
 
 <YYINITIAL, STRING, COMMENT, SCOMMENT> {
 <<EOF>>   { return false;}
-.|\n    {}
+[^]    {}
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  */
 
@@ -75,7 +75,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     return true;
   }
 
-  .|\n {}
+  [^] {}
 }
 
 <BEGIN> {
@@ -101,7 +101,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
+  [^] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <MODE> {
@@ -111,7 +111,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-  .|\n { yybegin(YYINITIAL); yypushback(1); }
+  [^] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <NAME>{
@@ -126,7 +126,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     setAttribs(yytext().toLowerCase(), yychar, yychar + yylength());
     return true;
   }
-  . { yybegin(YYINITIAL); yypushback(1); }
+  [^\n] { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <UUE> {
@@ -140,6 +140,5 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     } else if (t.equals("====") && b64)
       yybegin(YYINITIAL);
   }
-  [ -~]* {}
-  .|\n {}
+[^]    {}
 }

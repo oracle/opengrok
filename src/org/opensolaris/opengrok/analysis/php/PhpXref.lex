@@ -449,7 +449,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         yypop(); //because "$arr->a[0]" is the same as $arr->a . "[0]"
     }
 
-    . | \n          { yypushback(1); yypop(); }
+    [^]          { yypushback(1); yypop(); }
 }
 
 <STRINGEXPR> {
@@ -521,7 +521,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         yybegin(yystate() == DOCCOM_TYPE_THEN_NAME ? DOCCOM_NAME : DOCCOMMENT);
     }
 
-    .|\n { yybegin(DOCCOMMENT); yypushback(1); }
+    [^] { yybegin(DOCCOMMENT); yypushback(1); }
 }
 
 <DOCCOM_NAME> {
@@ -535,7 +535,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         yybegin(DOCCOMMENT);
     }
 
-    .|\n { yybegin(DOCCOMMENT); yypushback(1); }
+    [^] { yybegin(DOCCOMMENT); yypushback(1); }
 }
 
 <COMMENT, DOCCOMMENT> {
@@ -558,7 +558,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write(yytext());
     }
     [!-~]   { out.write(yycharat(0)); }
-    .       { writeUnicodeChar(yycharat(0)); }
+    [^\n]       { writeUnicodeChar(yycharat(0)); }
 }
 
 <YYINITIAL, HTMLCOMMENT, SCOMMENT, COMMENT, DOCCOMMENT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC> {

@@ -234,7 +234,7 @@ DocParamWithName = "uses"
         return true;
     }
 
-    . | \n          { yypushback(1); yypop(); }
+    [^]          { yypushback(1); yypop(); }
 }
 
 <STRINGEXPR> {
@@ -291,7 +291,7 @@ DocParamWithName = "uses"
         }
     }
 
-    .|\n { yybegin(DOCCOMMENT); yypushback(1); }
+    [^] { yybegin(DOCCOMMENT); yypushback(1); }
 }
 
 <DOCCOM_NAME> {
@@ -301,7 +301,7 @@ DocParamWithName = "uses"
         return true;
     }
 
-    .|\n { yybegin(DOCCOMMENT); yypushback(1); }
+    [^] { yybegin(DOCCOMMENT); yypushback(1); }
 }
 
 <COMMENT, DOCCOMMENT> {
@@ -313,7 +313,7 @@ DocParamWithName = "uses"
     {WhiteSpace}* {EOL} { }
     {WhiteSpace}    { }
     [!-~]   { }
-    .       { }
+    [^\n]       { }
 }
 
 <YYINITIAL, SCOMMENT, COMMENT, DOCCOMMENT, STRING, QSTRING, BACKQUOTE, HEREDOC, NOWDOC> {

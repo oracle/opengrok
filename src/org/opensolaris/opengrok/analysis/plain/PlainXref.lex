@@ -76,4 +76,4 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 ">"     {out.write( "&gt;");}
 {EOL}   {startNewLine(); }
 [ !-~\t\f]      {out.write(yycharat(0));}
-.       { writeUnicodeChar(yycharat(0)); }
+[^\n]       { writeUnicodeChar(yycharat(0)); }
