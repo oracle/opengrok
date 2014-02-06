@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  */
 
@@ -140,6 +140,5 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
     } else if (t.equals("====") && b64)
       yybegin(YYINITIAL);
   }
-  [ -~]* {}
 [^]    {}
 }

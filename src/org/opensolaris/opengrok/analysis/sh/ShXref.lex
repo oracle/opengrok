@@ -18,14 +18,12 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
-import java.io.Writer;
-import java.io.Reader;
 import org.opensolaris.opengrok.web.Util;
 import java.util.Stack;
 
@@ -232,7 +230,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 }
 
 <HEREDOC> {
-  .* {
+  .+ {
     String line = yytext();
     if (isHeredocStopWord(line)) {
       popstate();

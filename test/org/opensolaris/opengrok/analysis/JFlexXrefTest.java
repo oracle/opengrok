@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -46,6 +46,7 @@ import org.opensolaris.opengrok.analysis.scala.ScalaXref;
 import org.opensolaris.opengrok.analysis.sh.ShXref;
 import org.opensolaris.opengrok.analysis.sql.SQLXref;
 import org.opensolaris.opengrok.analysis.tcl.TclXref;
+import org.opensolaris.opengrok.analysis.uue.UuencodeXref;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -326,5 +327,48 @@ public class JFlexXrefTest {
         xref.setDefs(ctags.doCtags(filename + "\n"));
         // The next call used to fail with an ArrayIndexOutOfBoundsException.
         xref.write(new StringWriter());
+    }
+
+    /**
+     * Test that unterminated heredocs don't cause infinite loop in ShXref.
+     * This originally became a problem after upgrade to JFlex 1.5.0.
+     */
+    @Test
+    public void unterminatedHeredoc() throws IOException {
+        ShXref xref = new ShXref(new StringReader(
+                "cat << EOF\nunterminated heredoc"));
+
+        StringWriter out = new StringWriter();
+
+        // The next call used to loop forever.
+        xref.write(out);
+
+        assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+            + "<a href=\"/source/s?defs=cat\">cat</a> &lt;&lt; EOF"
+            + "<span class=\"s\">\n"
+            + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>"
+            + "unterminated heredoc</span>",
+            out.toString());
+    }
+
+    /**
+     * Truncated uuencoded files used to cause infinite loops. Verify that
+     * they work now.
+     */
+    @Test
+    public void truncatedUuencodedFile() throws IOException {
+        UuencodeXref xref = new UuencodeXref(
+                new StringReader("begin 644 test.txt\n"));
+
+        // Generating the xref used to loop forever.
+        StringWriter out = new StringWriter();
+        xref.write(out);
+
+        assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+                + "<strong>begin</strong> <i>644</i> "
+                + "<a href=\"/source/s?q=test.txt\">test.txt</a>"
+                + "<span class='c'>\n"
+                + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>",
+                out.toString());
     }
 }
