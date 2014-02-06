@@ -65,6 +65,19 @@ class JDBCHistoryCache implements HistoryCache {
         "DIRECTORIES", "DIRCHANGES"
     };
 
+    private static final Properties QUERIES = new Properties();
+    /** SQL queries used by this class. */
+    static {
+        Class<?> klazz = JDBCHistoryCache.class;
+        try (InputStream in = klazz.getResourceAsStream(
+                klazz.getSimpleName() + "_queries.properties")) {
+            if ( in != null ) {
+            QUERIES.load(in); }
+        } catch (IOException ioe) {
+            throw new ExceptionInInitializerError(ioe);
+        }
+    }
+ 
     private static final PreparedQuery GET_AUTHORS =
             new PreparedQuery(getQuery("getAuthors"));
 
@@ -121,20 +134,7 @@ class JDBCHistoryCache implements HistoryCache {
     /** Info string to return from {@link #getInfo()}. */
     private String info;
 
-    /** SQL queries used by this class. */
-    private static final Properties QUERIES = new Properties();
-    static {
-        Class<?> klazz = JDBCHistoryCache.class;
-        try (InputStream in = klazz.getResourceAsStream(
-                klazz.getSimpleName() + "_queries.properties")) {
-            if ( in != null ) {
-            QUERIES.load(in); }
-        } catch (IOException ioe) {
-            throw new ExceptionInInitializerError(ioe);
-        }
-    }
-
-    /**
+   /**
      * Create a new cache instance with the default JDBC driver and URL.
      */
     JDBCHistoryCache() {
