@@ -467,7 +467,7 @@ public final class HistoryGuru {
             long start = System.currentTimeMillis();
 
             if (verbose) {
-                log.log(Level.INFO, "Create historycache for {0} ({1})",
+                log.log(Level.INFO, "Creating historycache for {0} ({1})",
                     new Object[]{path, type});
             }
 
@@ -481,7 +481,7 @@ public final class HistoryGuru {
 
             if (verbose) {
                 long stop = System.currentTimeMillis();
-                log.log(Level.INFO, "Creating historycache for {0} took ({1}ms)",
+                log.log(Level.INFO, "Done historycache for {0} took ({1}ms)",
                     new Object[]{path, String.valueOf(stop - start)});
             }
         } else {

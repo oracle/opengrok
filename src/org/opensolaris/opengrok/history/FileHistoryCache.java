@@ -93,7 +93,7 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
-        // Assign tags to changesets they represent
+        // Assign tags to changesets they represent.
         if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
             repository.assignTagsInHistory(hist);
         }
@@ -101,6 +101,11 @@ class FileHistoryCache implements HistoryCache {
         File file = new File(root, map_entry.getKey());
         if (!file.isDirectory()) {
             storeFile(hist, file);
+        }
+
+        // Only renamed files are handled from within a thread.
+        if (renamed) {
+            repository.decrHistoryIndexThreadCount();
         }
     }
 
@@ -323,6 +328,7 @@ class FileHistoryCache implements HistoryCache {
         /*
          * Now handle renamed files (in parallel).
          */
+        final Repository repositoryF = repository;
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
                 if (!isRenamedFile(map_entry, env, repository, history)) {
@@ -332,7 +338,7 @@ class FileHistoryCache implements HistoryCache {
                 Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            final Repository repositoryF = repository;
+            repository.incrHistoryIndexThreadCount();
             RuntimeEnvironment.getHistoryExecutor().submit(new Runnable() {
                 @Override
                 public void run() {
@@ -342,10 +348,14 @@ class FileHistoryCache implements HistoryCache {
                             root, true);
                     } catch (HistoryException ex) {
                         Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
+                        repositoryF.decrHistoryIndexThreadCount();
                     }
                 }
             });
         }
+
+        // wait for the executors to finish
+        repositoryF.waitUntilIndexThreadZero();
     }
 
     @Override
