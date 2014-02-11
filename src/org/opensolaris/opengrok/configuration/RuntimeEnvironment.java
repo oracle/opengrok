@@ -96,7 +96,7 @@ public final class RuntimeEnvironment {
             RenamedEnabled = false;
         }
 
-	return (RenamedEnabled);
+        return (RenamedEnabled);
     }
 
     /**
