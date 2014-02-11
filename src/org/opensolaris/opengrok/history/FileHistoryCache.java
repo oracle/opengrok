@@ -305,8 +305,9 @@ class FileHistoryCache implements HistoryCache {
         final File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (isRenamedFile(map_entry, env, repository, history)) {
-                    continue;
+                if (RuntimeEnvironment.RenamedFilesEnabled() &&
+                    isRenamedFile(map_entry, env, repository, history)) {
+                        continue;
                 }
             } catch (IOException ex) {
                 Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
@@ -315,10 +316,13 @@ class FileHistoryCache implements HistoryCache {
             doFileHistory(map_entry, env, repository, null, root, false);
         }
 
+        if (!RuntimeEnvironment.RenamedFilesEnabled()) {
+            return;
+        }
+
         /*
          * Now handle renamed files (in parallel).
          */
-
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
                 if (!isRenamedFile(map_entry, env, repository, history)) {

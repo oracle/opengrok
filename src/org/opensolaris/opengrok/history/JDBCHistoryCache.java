@@ -790,7 +790,8 @@ class JDBCHistoryCache implements HistoryCache {
 
                         String fullPath = toUnixPath(file);
                         if (!history.isRenamed(
-                            file.substring(repodir.length() + 1))) {
+                            file.substring(repodir.length() + 1)) ||
+                            !RuntimeEnvironment.RenamedFilesEnabled()) {
                                 int fileId = files.get(fullPath);
                                 addFilechange.setInt(2, fileId);
                                 addFilechange.executeUpdate();
@@ -818,6 +819,10 @@ class JDBCHistoryCache implements HistoryCache {
                     conn.rollback();
                 }
             }
+        }
+
+        if (!RuntimeEnvironment.RenamedFilesEnabled()) {
+            return;
         }
 
         /*
