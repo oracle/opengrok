@@ -61,7 +61,8 @@ public final class RuntimeEnvironment {
     private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
-            
+    private static boolean RenamedEnabled = true;
+ 
     public static synchronized ExecutorService getHistoryExecutor() {
         if (historyExecutor == null) {
             int num = Runtime.getRuntime().availableProcessors() * 2;
@@ -80,11 +81,24 @@ public final class RuntimeEnvironment {
         
         return historyExecutor;
     }
-    
+ 
     public static synchronized void freeHistoryExecutor() {
         historyExecutor = null;
     }
-    
+ 
+    /*
+     * Is handling of renamed files turned on ?
+     */
+    public static boolean RenamedFilesEnabled() {
+        String disabled =
+            System.getProperty("org.opensolaris.opengrok.history.RenamedHandlingDisabled");
+        if (disabled != null) {
+            RenamedEnabled = false;
+        }
+
+	return (RenamedEnabled);
+    }
+
     /**
      * Get the one and only instance of the RuntimeEnvironment
      *
