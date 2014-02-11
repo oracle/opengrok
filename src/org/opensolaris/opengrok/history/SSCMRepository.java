@@ -86,10 +86,11 @@ public class SSCMRepository extends Repository {
     private Properties getProperties(File file) {
         Properties props = new Properties();
         File propFile;
-        if (file.isDirectory())
+        if (file.isDirectory()) {
             propFile = new File(file, MYSCMSERVERINFO_FILE);
-        else
+        } else {
             propFile = new File(file.getParent(), MYSCMSERVERINFO_FILE);
+        }
 
         if (propFile.isFile()) {
             try (BufferedReader br = new BufferedReader(new FileReader(propFile))) {
