@@ -66,18 +66,24 @@ public class MercurialRepository extends Repository {
     public static final String NOFOREST_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.mercurial.disableForest";
 
-    /** Template for formatting hg log output for files. */
-    private static final String FILE_TEMPLATE =
+    static final String END_OF_ENTRY =
+        "mercurial_history_end_of_entry";
+
+    private static final String FILE_STUB =
         "changeset: {rev}:{node|short}\\n"
-        + "{branches}{tags}{parents}\\n"
         + "user: {author}\\ndate: {date|isodate}\\n"
         + "files: {files}\\n"
         + "description: {desc|strip|obfuscate}\\n";
+
+    /** Template for formatting hg log output for files. */
+    private static final String FILE_TEMPLATE = FILE_STUB
+        + END_OF_ENTRY + "\\n";
+
     static final String FILE_COPIES_ = "file_copies: ";
 
     /** Template for formatting hg log output for directories. */
-    private static final String DIR_TEMPLATE = FILE_TEMPLATE
-        + FILE_COPIES_ + "{file_copies}\\n";
+    private static final String DIR_TEMPLATE =
+        FILE_STUB + FILE_COPIES_ + "{file_copies}\\n" + END_OF_ENTRY + "\\n";
 
     /** Pattern used to extract author/revision from hg annotate. */
     private static final Pattern ANNOTATION_PATTERN =
