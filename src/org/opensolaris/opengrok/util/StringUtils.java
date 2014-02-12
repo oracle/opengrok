@@ -64,4 +64,43 @@ public final class StringUtils {
     return javaClassPattern.matcher(s).matches();
   }
 
+  /**
+   * Convert value in milliseconds to readable time.
+   * @param time delta in milliseconds
+   * @returns human readable string
+   */
+  public static String getReadableTime(long time_ms) {
+      String output = "";
+      long time_delta = time_ms;
+
+      int milliseconds = (int) (time_delta % 1000);
+      time_delta /= 1000;
+      int seconds = (int) (time_delta % 60);
+      time_delta /= 60;
+      int minutes = (int) (time_delta % 60);
+      time_delta /= 60;
+      int hours = (int) (time_delta % 24);
+      int days = (int) (time_delta / 24);
+
+      if (days != 0) {
+          output += String.format("%d day", days);
+          if (days > 1) {
+              output += "s";
+          }
+          if ((hours != 0) || (minutes != 0) || (seconds != 0)) {
+              output += " ";
+          }
+      }
+      if ((hours != 0) || (minutes != 0)) {
+          return output + String.format("%d:%02d:%02d", hours, minutes, seconds);
+      }
+      if (seconds != 0) {
+          return output + String.format("%d.%d seconds", seconds, milliseconds);
+      }
+      if (milliseconds != 0) {
+          return output + String.format("%d ms", milliseconds);
+      }
+
+      return (output.length() == 0 ? "0" : output);
+  }
 }

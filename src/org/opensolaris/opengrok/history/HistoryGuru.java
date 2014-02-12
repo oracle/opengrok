@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * The HistoryGuru is used to implement an transparent layer to the various
@@ -481,8 +482,9 @@ public final class HistoryGuru {
 
             if (verbose) {
                 long stop = System.currentTimeMillis();
-                log.log(Level.INFO, "Done historycache for {0} took ({1}ms)",
-                    new Object[]{path, String.valueOf(stop - start)});
+                String time_str = StringUtils.getReadableTime(stop - start);
+                log.log(Level.INFO, "Done historycache for {0} (took {1})",
+                    new Object[]{path, time_str});
             }
         } else {
             log.log(Level.WARNING, "Skipping creation of historycache of "
