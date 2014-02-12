@@ -160,9 +160,15 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                              renamedFiles.add(move[0]);
                      }
                 }
-
             } else if (s.startsWith(DESC_PREFIX) && entry != null) {
                 entry.setMessage(decodeDescription(s));
+            } else if (s.equals(MercurialRepository.END_OF_ENTRY)
+                && entry != null) {
+                    entry = null;
+            } else if (s.length() > 0) {
+                OpenGrokLogger.getLogger().log(Level.WARNING,
+                    "Invalid/unexpected output {0} from hg log for repo {1}",
+                    new Object[]{s, repository.getDirectoryName()});
             }
         }
     }
