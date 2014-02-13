@@ -259,9 +259,14 @@ class FileHistoryCache implements HistoryCache {
             throws HistoryException {
         final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
+        // Return immediately when there is nothing to do.
         if (history.getHistoryEntries() == null) {
             return;
         }
+
+        OpenGrokLogger.getLogger().log(Level.FINE,
+            "Storing history for repo {0}",
+            new Object[] {repository.getDirectoryName()});
 
         HashMap<String, List<HistoryEntry>> map =
                 new HashMap<String, List<HistoryEntry>>();
@@ -354,8 +359,11 @@ class FileHistoryCache implements HistoryCache {
             });
         }
 
-        // wait for the executors to finish
+        // Wait for the executors to finish.
         repositoryF.waitUntilIndexThreadZero();
+        OpenGrokLogger.getLogger().log(Level.FINE,
+            "Done storing history for repo {0}",
+            new Object[] {repository.getDirectoryName()});
     }
 
     @Override

@@ -116,13 +116,7 @@ public class Executor {
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         final String cmd_str = processBuilder.command().toString();
         final String dir_str;
-        File cwd = processBuilder.directory();
-        if (cwd == null) {
-            dir_str = System.getProperty("user.dir");
-        } else {
-            dir_str = cwd.toString();
-        }
-      
+
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
             if (processBuilder.environment().containsKey("PWD")) {
@@ -131,12 +125,16 @@ public class Executor {
             }
         }
 
+        File cwd = processBuilder.directory();
+        if (cwd == null) {
+            dir_str = System.getProperty("user.dir");
+        } else {
+            dir_str = cwd.toString();
+        }
+
         OpenGrokLogger.getLogger().log(Level.FINE,
                 "Executing command {0} in directory {1}",
-                new Object[] {
-                    processBuilder.command(),
-                    processBuilder.directory(),
-                });
+                new Object[] {cmd_str,dir_str});
 
         Process process = null;
         try {
@@ -171,7 +169,7 @@ public class Executor {
                     OpenGrokLogger.getLogger().log(Level.INFO,
                         "Terminating process of command {0} in directory {1} " +
                         "due to timeout {2} seconds",
-                        new Object[]{cmd_str, dir_str,
+                        new Object[] {cmd_str, dir_str,
                         RuntimeEnvironment.getInstance().getCommandTimeout()});
                     proc.destroy();
                 }
@@ -180,6 +178,9 @@ public class Executor {
             handler.processStream(process.getInputStream());
 
             ret = process.waitFor();
+            OpenGrokLogger.getLogger().log(Level.FINE,
+                "Finished command {0} in directory {1}",
+                new Object[] {cmd_str,dir_str});
             t.cancel();
             process = null;
             thread.join();

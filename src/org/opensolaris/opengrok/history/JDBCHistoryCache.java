@@ -690,11 +690,15 @@ class JDBCHistoryCache implements HistoryCache {
         PreparedStatement addFilechange = null;
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        // return immediately when there is nothing to do
+        // Return immediately when there is nothing to do.
         List<HistoryEntry> entries = history.getHistoryEntries();
         if (entries.isEmpty()) {
             return;
         }
+
+        OpenGrokLogger.getLogger().log(Level.FINE,
+            "Storing history for repo {0}",
+            new Object[] {repository.getDirectoryName()});
 
         for (int i = 0;; i++) {
             try {
@@ -851,8 +855,11 @@ class JDBCHistoryCache implements HistoryCache {
    
         }
         
-        // wait for the executors to finish
+        // Wait for the executors to finish.
         repository.waitUntilIndexThreadZero();
+        OpenGrokLogger.getLogger().log(Level.FINE,
+            "Done storing history for repo {0}",
+            new Object[] {repository.getDirectoryName()});
     }
 
     /**
