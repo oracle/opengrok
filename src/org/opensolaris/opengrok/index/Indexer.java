@@ -794,6 +794,7 @@ public final class Indexer {
                 log.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
         }
+        log.info("Done indexing");
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
