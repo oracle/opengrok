@@ -88,7 +88,7 @@ public final class RuntimeEnvironment {
     public static synchronized ExecutorService getHistoryRenamedExecutor() {
         if (historyRenamedExecutor == null) {
             int num = Runtime.getRuntime().availableProcessors();
-            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
+            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheRenamedThreads");
             if (total != null) {
                 try {
                     num = Integer.valueOf(total);
