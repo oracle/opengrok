@@ -841,7 +841,7 @@ class JDBCHistoryCache implements HistoryCache {
             final String repo_path = file_path.substring(env.getSourceRootPath().length());
 
             repository.incrHistoryIndexThreadCount();
-            RuntimeEnvironment.getHistoryExecutor().submit(new Runnable() {
+            RuntimeEnvironment.getHistoryRenamedExecutor().submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
