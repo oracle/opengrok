@@ -344,7 +344,7 @@ class FileHistoryCache implements HistoryCache {
             }
 
             repository.incrHistoryIndexThreadCount();
-            RuntimeEnvironment.getHistoryExecutor().submit(new Runnable() {
+            RuntimeEnvironment.getHistoryRenamedExecutor().submit(new Runnable() {
                 @Override
                 public void run() {
                     try {

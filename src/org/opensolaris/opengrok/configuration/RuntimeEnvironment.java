@@ -61,11 +61,13 @@ public final class RuntimeEnvironment {
     private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
+    private static ExecutorService historyRenamedExecutor = null;
     private static boolean RenamedEnabled = true;
  
+    /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
         if (historyExecutor == null) {
-            int num = Runtime.getRuntime().availableProcessors() * 2;
+            int num = Runtime.getRuntime().availableProcessors();
             String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
             if (total != null) {
                 try {
@@ -78,10 +80,30 @@ public final class RuntimeEnvironment {
 
             historyExecutor = Executors.newFixedThreadPool(num);
         }
-        
+
         return historyExecutor;
     }
  
+    /* Get thread pool used for history generation of renamed files. */
+    public static synchronized ExecutorService getHistoryRenamedExecutor() {
+        if (historyRenamedExecutor == null) {
+            int num = Runtime.getRuntime().availableProcessors();
+            String total = System.getProperty("org.opensolaris.opengrok.history.NumCacheThreads");
+            if (total != null) {
+                try {
+                    num = Integer.valueOf(total);
+                } catch (Throwable t) {
+                    log.log(Level.WARNING, "Failed to parse the number of " +
+                        "cache threads to use for cache creation of renamed files", t);
+                }
+            }
+
+            historyRenamedExecutor = Executors.newFixedThreadPool(num);
+        }
+ 
+        return historyRenamedExecutor;
+    }
+
     public static synchronized void freeHistoryExecutor() {
         historyExecutor = null;
     }
