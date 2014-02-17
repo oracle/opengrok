@@ -108,6 +108,10 @@ public final class RuntimeEnvironment {
         historyExecutor = null;
     }
  
+    public static synchronized void freeRenamedHistoryExecutor() {
+        historyRenamedExecutor = null;
+    }
+
     /*
      * Is handling of renamed files turned on ?
      */
