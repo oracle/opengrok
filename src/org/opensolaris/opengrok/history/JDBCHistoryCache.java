@@ -43,6 +43,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -670,7 +671,8 @@ class JDBCHistoryCache implements HistoryCache {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? Integer.valueOf(rs.getString(1)).intValue() : -1;
         } catch (java.sql.SQLException e) {
-            Logger.getLogger(JDBCHistoryCache.class.getName()).log(Level.SEVERE, null, e);
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+                "getIdForRevision exception" + e);
             return -1;
         } finally {
             connectionManager.releaseConnection(conn);
@@ -786,9 +788,8 @@ class JDBCHistoryCache implements HistoryCache {
                             repodir = env.getPathRelativeToSourceRoot(
                                 new File(repository.getDirectoryName()), 0);
                         } catch (IOException ex) {
-                            Logger.getLogger(
-                                JDBCHistoryCache.class.getName()).log(
-                                Level.SEVERE, null, ex);
+                            OpenGrokLogger.getLogger().log(Level.WARNING,
+                                "File exception" + ex);
                             continue;
                         }
 
@@ -834,29 +835,36 @@ class JDBCHistoryCache implements HistoryCache {
          * have been renamed in Mercurial repository.
          * This ensures that their complete history (follow) will be saved.
          */
+        final CountDownLatch latch = new CountDownLatch(history.getRenamedFiles().size());
         for (String filename: history.getRenamedFiles()) {
             String file_path = repository.getDirectoryName() +
                     File.separatorChar + filename;
             final File file = new File(file_path);
             final String repo_path = file_path.substring(env.getSourceRootPath().length());
 
-            repository.incrHistoryIndexThreadCount();
             RuntimeEnvironment.getHistoryRenamedExecutor().submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         doRenamedHistory(repository, file, files, repo_path);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(JDBCHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
-                        repository.decrHistoryIndexThreadCount();
+                    } catch (Exception ex) {
+                        // We want to catch any exception since we are in thread.
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "doRenamedHistory exception" + ex);
+                    } finally {
+                        latch.countDown();
                     }
                 }
             });
-   
         }
-        
+
         // Wait for the executors to finish.
-        repository.waitUntilIndexThreadZero();
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "latch exception" + ex);
+        }
         OpenGrokLogger.getLogger().log(Level.FINE,
             "Done storing history for repo {0}",
             new Object[] {repository.getDirectoryName()});
@@ -1297,9 +1305,8 @@ class JDBCHistoryCache implements HistoryCache {
         try {
             hist = repository.getHistory(file);
         } catch (HistoryException ex) {
-            Logger.getLogger(JDBCHistoryCache.class.getName()).log(
-                    Level.SEVERE, null, ex);
-            repository.decrHistoryIndexThreadCount();
+            OpenGrokLogger.getLogger().log(Level.WARNING,
+                "cannot get history for " +  file + " because of exception " + ex);
             return;
         }
                         
@@ -1344,7 +1351,5 @@ class JDBCHistoryCache implements HistoryCache {
                 }
             }
         }
-        
-        repository.decrHistoryIndexThreadCount();
     }
 }

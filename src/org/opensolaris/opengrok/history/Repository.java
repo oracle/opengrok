@@ -28,9 +28,6 @@ import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -57,18 +54,6 @@ public abstract class Repository extends RepositoryInfo {
      */
     protected TreeSet<TagEntry> tagList = null;
 
-    /*
-     * These are used for HistoryGuru to wait on the history indexer
-     * to finish submitting jobs.
-     */
-    private int HistoryIndexDone = 0;
-    final Lock lockH = new ReentrantLock();
-    final Condition HistoryIndexDoneCond = lockH.newCondition(); 
-
-    private int HistoryIndexThreadCount = 0;
-    final Lock lockT = new ReentrantLock();
-    final Condition HistoryIndexThreadCountChange = lockT.newCondition(); 
-
     abstract boolean fileHasHistory(File file);
 
     /**
@@ -87,56 +72,6 @@ public abstract class Repository extends RepositoryInfo {
      */
     abstract History getHistory(File file) throws HistoryException;
 
-    public void waitUntilHistoryIndexDone() {
-        lockH.lock();
-        try {
-            while (HistoryIndexDone != 1) {
-                HistoryIndexDoneCond.await();
-            }
-        } catch (InterruptedException ex) {
-            Logger.getLogger(RuntimeEnvironment.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            lockH.unlock();
-        }
-    }
-
-    public void setHistoryIndexDone() {
-        lockH.lock();
-        HistoryIndexDone = 1;
-        HistoryIndexDoneCond.signal();
-        lockH.unlock();
-    }
-
-    public void zeroHistoryIndexDone() {
-        HistoryIndexDone = 0;
-    }
-
-    public void waitUntilIndexThreadZero() {
-        lockT.lock();
-        try {
-            while (HistoryIndexThreadCount != 0) {
-                HistoryIndexThreadCountChange.await();
-            }
-        } catch (InterruptedException ex) {
-            Logger.getLogger(RuntimeEnvironment.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            lockT.unlock();
-        }
-    }
-    
-    public void incrHistoryIndexThreadCount() {
-        lockT.lock();
-        HistoryIndexThreadCount++;
-        lockT.unlock();
-    }
-    
-    public void decrHistoryIndexThreadCount() {
-        lockT.lock();
-        HistoryIndexThreadCount--;
-        HistoryIndexThreadCountChange.signal();
-        lockT.unlock();
-    }
-    
     /**
      * <p>
      * Get the history after a specified revision.

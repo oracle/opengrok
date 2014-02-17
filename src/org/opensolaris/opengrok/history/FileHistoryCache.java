@@ -40,8 +40,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -101,11 +101,6 @@ class FileHistoryCache implements HistoryCache {
         File file = new File(root, map_entry.getKey());
         if (!file.isDirectory()) {
             storeFile(hist, file);
-        }
-
-        // Only renamed files are handled from within a thread.
-        if (renamed) {
-            repository.decrHistoryIndexThreadCount();
         }
     }
 
@@ -320,7 +315,8 @@ class FileHistoryCache implements HistoryCache {
                         continue;
                 }
             } catch (IOException ex) {
-                Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
+               OpenGrokLogger.getLogger().log(Level.WARNING,
+                   "isRenamedFile() got exception" + ex);
             }
             
             doFileHistory(map_entry, env, repository, null, root, false);
@@ -333,17 +329,21 @@ class FileHistoryCache implements HistoryCache {
         /*
          * Now handle renamed files (in parallel).
          */
-        final Repository repositoryF = repository;
+        HashMap<String, List<HistoryEntry>> renamed_map =
+                new HashMap<String, List<HistoryEntry>>();
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (!isRenamedFile(map_entry, env, repository, history)) {
-                    continue;
+                if (isRenamedFile(map_entry, env, repository, history)) {
+                    renamed_map.put(map_entry.getKey(), map_entry.getValue());
                 }
             } catch (IOException ex) {
-                Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
+                OpenGrokLogger.getLogger().log(Level.WARNING,
+                    "isRenamedFile() got exception" + ex);
             }
-
-            repository.incrHistoryIndexThreadCount();
+        }
+        final Repository repositoryF = repository;
+        final CountDownLatch latch = new CountDownLatch(renamed_map.size());
+        for (final Map.Entry<String, List<HistoryEntry>> map_entry : renamed_map.entrySet()) {
             RuntimeEnvironment.getHistoryRenamedExecutor().submit(new Runnable() {
                 @Override
                 public void run() {
@@ -351,16 +351,24 @@ class FileHistoryCache implements HistoryCache {
                         doFileHistory(map_entry, env, repositoryF,
                             new File(env.getSourceRootPath() + map_entry.getKey()),
                             root, true);
-                    } catch (HistoryException ex) {
-                        Logger.getLogger(FileHistoryCache.class.getName()).log(Level.SEVERE, null, ex);
-                        repositoryF.decrHistoryIndexThreadCount();
+                    } catch (Exception ex) {
+                        // We want to catch any exception since we are in thread.
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "doFileHistory() got exception" + ex);
+                    } finally {
+                        latch.countDown();
                     }
                 }
             });
         }
 
         // Wait for the executors to finish.
-        repositoryF.waitUntilIndexThreadZero();
+        try {
+            // Wait for the executors to finish.
+            latch.await();
+        } catch (InterruptedException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE, "latch exception" + ex);
+        }
         OpenGrokLogger.getLogger().log(Level.FINE,
             "Done storing history for repo {0}",
             new Object[] {repository.getDirectoryName()});
