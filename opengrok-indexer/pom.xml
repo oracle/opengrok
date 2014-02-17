@@ -49,6 +49,13 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                 </includes>
             </resource>
             <resource>
+                <targetPath>org/opensolaris/opengrok/analysis/vb/</targetPath>
+                <directory>../src/org/opensolaris/opengrok/analysis/vb/</directory>
+                <includes>
+                  <include>*.dat</include>
+                </includes>
+            </resource>
+            <resource>
                 <targetPath>org/opensolaris/opengrok/index/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/index/</directory>
                 <excludes><exclude>*.java</exclude></excludes>
