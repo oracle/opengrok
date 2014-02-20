@@ -108,7 +108,7 @@ public class Ctags {
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
-                log.log(Level.WARNING, "Adding extra options to ctags");
+                log.log(Level.INFO, "Adding extra options to ctags");
                 command.add("--options=" + CTagsExtraOptionsFile);
             }
 

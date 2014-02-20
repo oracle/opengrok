@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -455,11 +456,6 @@ public final class HistoryGuru {
     }
 
     private void createCache(Repository repository, String sinceRevision) {
-        if (!useCache()) {
-            repository.setHistoryIndexDone();
-            return;
-        }
-
         String path = repository.getDirectoryName();
         String type = repository.getClass().getSimpleName();
 
@@ -490,20 +486,15 @@ public final class HistoryGuru {
             log.log(Level.WARNING, "Skipping creation of historycache of "
                 + type + " repository in " + path + ": Missing SCM dependencies?");
         }
-        
-        /*
-         * need to do this for all repos since createCacheReal() will be
-         * waiting for all repos to finish.
-         */
-        repository.setHistoryIndexDone();
     }
 
     private void createCacheReal(Collection<Repository> repositories) {
         ExecutorService executor = RuntimeEnvironment.getHistoryExecutor();
 
+        final CountDownLatch latch = new CountDownLatch(repositories.size());
         for (final Repository repo : repositories) {
             final String latestRev;
-            repo.zeroHistoryIndexDone();
+
             try {
                 latestRev = historyCache.getLatestCachedRevision(repo);
             } catch (HistoryException he) {
@@ -511,20 +502,30 @@ public final class HistoryGuru {
                         String.format(
                         "Failed to retrieve latest cached revision for %s",
                         repo.getDirectoryName()), he);
+                latch.countDown();
                 continue;
             }
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
                     createCache(repo, latestRev);
+                    latch.countDown();
                 }
             });
         }
 
-        for (final Repository repo : repositories) {
-            repo.waitUntilHistoryIndexDone();
+        /*
+         * Wait until the history of all repositories is done. This is necessary
+         * since the next phase of generating index will need the history to
+         * be ready as it is recorded in Lucene index.
+         */
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "latch exception" + ex);
         }
-        
+
         executor.shutdown();
         while (!executor.isTerminated()) {
             try {
