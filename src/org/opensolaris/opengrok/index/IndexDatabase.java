@@ -361,26 +361,35 @@ public class IndexDatabase {
                     if (numDocs > 0) {
                         uidIter = terms.iterator(uidIter);                        
                         TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
-                        if (stat==TermsEnum.SeekStatus.END) { uidIter=null; 
-                         log.log(Level.WARNING, "Couldn't find a start term for {0}, empty u field?", startuid);
+                        if (stat==TermsEnum.SeekStatus.END) {
+                            uidIter=null;
+                            log.log(Level.WARNING,
+                                "Couldn't find a start term for {0}, empty u field?",
+                                startuid);
                         }
                     }
-                    //TODO below should be optional, since it traverses the tree once more to get total count! :(
+                    // TODO below should be optional, since it traverses the tree once more to get total count! :(
                     int file_cnt = 0;
                     if (RuntimeEnvironment.getInstance().isPrintProgress()) {
                         log.log(Level.INFO, "Counting files in {0} ...", dir);
                         file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
                         if (log.isLoggable(Level.INFO)) {
-                            log.log(Level.INFO, "Need to process: {0} files for {1}", new Object[]{file_cnt, dir});
+                            log.log(Level.INFO,
+                                "Need to process: {0} files for {1}",
+                                new Object[]{file_cnt, dir});
                         }
                     }
 
                     indexDown(sourceRoot, dir, false, 0, file_cnt);
 
-                    while (uidIter != null && uidIter.term() != null && uidIter.term().utf8ToString().startsWith(startuid)) {
+                    while (uidIter != null && uidIter.term() != null
+                        && uidIter.term().utf8ToString().startsWith(startuid)) {
+
                         removeFile();
                         BytesRef next = uidIter.next();
-                        if (next==null) {uidIter=null;}
+                        if (next==null) {
+                            uidIter=null;
+                        }
                     }
                 } finally {
                     reader.close();
@@ -401,7 +410,8 @@ public class IndexDatabase {
                 try {
                     ctags.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing ctags process", e);
+                    log.log(Level.WARNING,
+                        "An error occured while closing ctags process", e);
                 }
             }
 
@@ -418,11 +428,15 @@ public class IndexDatabase {
             File timestamp = new File(env.getDataRootFile(), "timestamp");
             if (timestamp.exists()) {
                 if (!timestamp.setLastModified(System.currentTimeMillis())) {
-                    log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
+                    log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', "
+                        + "used for timestamping the index database.",
+                        timestamp.getAbsolutePath());
                 }
             } else {
                 if (!timestamp.createNewFile()) {
-                    log.log(Level.WARNING, "Failed to create file ''{0}'', used for timestamping the index database.", timestamp.getAbsolutePath());
+                    log.log(Level.WARNING, "Failed to create file ''{0}'', "
+                        + "used for timestamping the index database.",
+                        timestamp.getAbsolutePath());
                 }
             }
         }
@@ -454,7 +468,8 @@ public class IndexDatabase {
                         try {
                             db.update();
                         } catch (Throwable e) {
-                            log.log(Level.SEVERE, "Problem updating lucene index database: ", e);
+                            log.log(Level.SEVERE,
+                                "Problem updating lucene index database: ", e);
                         }
                     }
                 });
@@ -485,7 +500,8 @@ public class IndexDatabase {
             log.info("done");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
-                    log.log(Level.FINE, "Failed to remove \"dirty-file\": {0}", dirtyFile.getAbsolutePath());
+                    log.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
+                        dirtyFile.getAbsolutePath());
                 }
                 dirty = false;
             }
@@ -496,7 +512,8 @@ public class IndexDatabase {
                 try {
                     wrt.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing writer", e);
+                    log.log(Level.WARNING,
+                        "An error occured while closing writer", e);
                 }
             }
             synchronized (lock) {
@@ -659,17 +676,22 @@ public class IndexDatabase {
 
         try {
             String canonicalPath = file.getCanonicalPath();
-            if (!absolutePath.equals(canonicalPath) && !acceptSymlink(absolutePath, canonicalPath)) {
-                log.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''", new Object[]{absolutePath, canonicalPath});
+            if (!absolutePath.equals(canonicalPath)
+                && !acceptSymlink(absolutePath, canonicalPath)) {
+
+                log.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
+                    new Object[]{absolutePath, canonicalPath});
                 return false;
             }
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
-                log.log(Level.WARNING, "Warning: ignored special file {0}", absolutePath);
+                log.log(Level.WARNING, "Warning: ignored special file {0}",
+                    absolutePath);
                 return false;
             }
         } catch (IOException exp) {
-            log.log(Level.WARNING, "Warning: Failed to resolve name: {0}", absolutePath);
+            log.log(Level.WARNING, "Warning: Failed to resolve name: {0}",
+                absolutePath);
             log.log(Level.FINE, "Stack Trace: ", exp);
         }
 
@@ -781,7 +803,9 @@ public class IndexDatabase {
      * @param est_total estimate total files to process
      *
      */
-    private int indexDown(File dir, String parent, boolean count_only, int cur_count, int est_total) throws IOException {
+    private int indexDown(File dir, String parent, boolean count_only,
+        int cur_count, int est_total) throws IOException {
+
         int lcur_count = cur_count;
         if (isInterrupted()) {
             return lcur_count;
@@ -793,7 +817,8 @@ public class IndexDatabase {
 
         File[] files = dir.listFiles();
         if (files == null) {
-            log.log(Level.SEVERE, "Failed to get file listing for: {0}", dir.getAbsolutePath());
+            log.log(Level.SEVERE, "Failed to get file listing for: {0}",
+                dir.getAbsolutePath());
             return lcur_count;
         }
         Arrays.sort(files, new Comparator<File>() {
@@ -815,12 +840,17 @@ public class IndexDatabase {
                         continue;
                     }
 
-                    if (RuntimeEnvironment.getInstance().isPrintProgress() && est_total > 0 && log.isLoggable(Level.INFO)) {
-                        log.log(Level.INFO, "Progress: {0} ({1}%)", new Object[]{lcur_count, (lcur_count * 100.0f / est_total)});
+                    if (RuntimeEnvironment.getInstance().isPrintProgress()
+                        && est_total > 0 && log.isLoggable(Level.INFO)) {
+                            log.log(Level.INFO, "Progress: {0} ({1}%)",
+                                new Object[]{lcur_count,
+                                (lcur_count * 100.0f / est_total)});
                     }
 
                     if (uidIter != null) {
-                        String uid = Util.path2uid(path, DateTools.timeToString(file.lastModified(), DateTools.Resolution.MILLISECOND)); // construct uid for doc
+                        String uid = Util.path2uid(path,
+                            DateTools.timeToString(file.lastModified(),
+                            DateTools.Resolution.MILLISECOND)); // construct uid for doc
                         BytesRef buid = new BytesRef(uid);                        
                         while (uidIter != null && uidIter.term() != null 
                                 && uidIter.term().compareTo(emptyBR) !=0

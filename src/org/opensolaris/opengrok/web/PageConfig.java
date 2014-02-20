@@ -564,7 +564,7 @@ public final class PageConfig {
     /**
      * Check, whether annotations are available for the related resource.
      *
-     * @return {@code true} if annotions are available.
+     * @return {@code true} if annotations are available.
      */
     public boolean hasAnnotations() {
         if (hasAnnotation == null) {

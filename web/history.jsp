@@ -69,10 +69,10 @@ include file="mast.jsp"
         Pattern reviewPattern = Pattern.compile(reviewRegex);
         Format df = new SimpleDateFormat("dd-MMM-yyyy");
         File f = cfg.getResourceFile();
-        History hist=null;
+        History hist = null;
         try {
-            hist = HistoryGuru.getInstance().getHistory(f);
-        } catch (Exception e)    {
+            hist = HistoryGuru.getInstance().getHistoryUI(f);
+        } catch (Exception e) {
             // should not happen
             %><h3>Problem</h3><p class="error"><%= e.getMessage() %></p><%
         }

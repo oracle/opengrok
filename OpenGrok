@@ -42,8 +42,12 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_REMOTE_REPOS_OFF   Disable History Cache for (remote)
-#                                 Repositories (*)
+#   - OPENGROK_REMOTE_REPOS       Influence History Cache for (remote)
+#                                 Repositories (*). Following values are
+#                                 recognized:
+#                                   on - enabled (default)
+#                                   off - disabled for indexing and UI
+#                                   uionly - enabled for UI only
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
 #                                 (by default 3 directories from SRC_ROOT)
@@ -74,7 +78,7 @@
 #
 
 #
-# Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
 #
 #
 # Print usage to stdout and exit.
@@ -236,9 +240,9 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Disable remote repository support (CVS or SVN) [on by default]
     REMOTE_REPOSITORIES="-r on"
-    if [ -n "${OPENGROK_REMOTE_REPOS_OFF}" ]
+    if [ -n "${OPENGROK_REMOTE_REPOS}" ]
     then
-        REMOTE_REPOSITORIES=""
+        REMOTE_REPOSITORIES="-r ${OPENGROK_REMOTE_REPOS}"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
