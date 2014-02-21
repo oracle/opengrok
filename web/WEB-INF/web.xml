@@ -28,6 +28,10 @@
 </init-param>  
   </servlet>
   <servlet>
+  <servlet-name>json</servlet-name>
+  <servlet-class>org.opensolaris.opengrok.web.JSONSearchServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>history</servlet-name>
     <display-name>Source History</display-name>
     <jsp-file>/history.jsp</jsp-file>
@@ -107,6 +111,10 @@
   <servlet-mapping>
     <servlet-name>search</servlet-name>
     <url-pattern>/search</url-pattern>		<!-- SEARCH_P -->
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>json</servlet-name>
+    <url-pattern>/json</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>opensearch</servlet-name>
