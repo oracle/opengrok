@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="lib/lucene-suggest-4.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="D:/eclipse-kepler-cloud-appengine/plugins/org.apache.ant_1.8.4.v201303080030/lib/ant.jar"/>
+	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
