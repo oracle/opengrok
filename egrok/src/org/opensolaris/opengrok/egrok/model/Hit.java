@@ -3,6 +3,7 @@ package org.opensolaris.opengrok.egrok.model;
 import org.eclipse.equinox.internal.security.storage.Base64;
 import org.json.simple.JSONObject;
 
+@SuppressWarnings("restriction")
 public class Hit {
   public Hit(JSONObject jsonobj) {
     String directory = (String) jsonobj.get("directory");

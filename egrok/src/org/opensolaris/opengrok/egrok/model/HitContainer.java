@@ -9,7 +9,6 @@ public class HitContainer {
 
   public HitContainer(String name) {
     this.name = name;
-
   }
 
   public void add(Hit hit) {

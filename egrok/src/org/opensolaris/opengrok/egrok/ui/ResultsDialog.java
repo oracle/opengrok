@@ -249,6 +249,11 @@ public class ResultsDialog extends PopupDialog {
 
         String filterText = filter.getText();
 
+        if (element instanceof Hit && parentElement instanceof HitContainer
+            && select(viewer, null, parentElement)) {
+          return true;
+        }
+
         if (filterText != null && !"".equals(filterText)
             && !FILTER_DEFAULT.equals(filterText)) {
 
