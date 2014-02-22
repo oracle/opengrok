@@ -1,5 +1,6 @@
 package org.opensolaris.opengrok.egrok.model;
 
+import org.eclipse.equinox.internal.security.storage.Base64;
 import org.json.simple.JSONObject;
 
 public class Hit {
@@ -7,7 +8,9 @@ public class Hit {
 		String directory = (String) jsonobj.get("directory");
 		setDirectory(directory.replaceAll("\\\\", ""));
 		setFilename((String) jsonobj.get("filename"));
-		setLine((String) jsonobj.get("line"));
+
+		String base64 = (String) jsonobj.get("line");
+		setLine(new String(Base64.decode(base64)));
 
 		String lineno = (String) jsonobj.get("lineno");
 		if (!lineno.isEmpty()) {

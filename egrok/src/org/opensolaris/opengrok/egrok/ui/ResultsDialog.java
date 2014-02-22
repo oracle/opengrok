@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.dialogs.PopupDialog;
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -22,23 +22,20 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.opensolaris.opengrok.egrok.Activator;
@@ -62,10 +59,6 @@ public class ResultsDialog extends PopupDialog {
 
 		@Override
 		public Object[] getElements(Object inputElement) {
-			if (inputElement instanceof Hit) {
-				return null;
-			}
-
 			if (map == null) {
 				return new Object[] { "Searching..." };
 			} else if (map.isEmpty()) {
@@ -76,6 +69,8 @@ public class ResultsDialog extends PopupDialog {
 				String key = ((HitContainer) inputElement).getName();
 
 				return map.get(key).getHits();
+			} else if (inputElement instanceof Hit) {
+				return new Object[] {};
 			}
 
 			return map.values().toArray(new Object[map.values().size()]);
@@ -120,9 +115,38 @@ public class ResultsDialog extends PopupDialog {
 				Hit hit = (Hit) element;
 				StyledString result = new StyledString();
 
-				result.append(hit.getFilename() + ": " + hit.getLineno(),
-						StyledString.COUNTER_STYLER);
+				StyledString.Styler courierNew = new StyledString.Styler() {
+					@Override
+					public void applyStyles(TextStyle textStyle) {
+						textStyle.font = new Font(null, "Courier New",
+								viewer.getControl().getFont().getFontData()[0]
+										.getHeight(), SWT.NORMAL);
+					}
+				};
+				StyledString.Styler courierNewHighlight = new StyledString.Styler() {
+					@Override
+					public void applyStyles(TextStyle textStyle) {
+						textStyle.font = new Font(null, "Courier New",
+								viewer.getControl().getFont().getFontData()[0]
+										.getHeight(), SWT.NORMAL);
+						textStyle.foreground = JFaceResources
+								.getColorRegistry().get(
+										JFacePreferences.QUALIFIER_COLOR);
+					}
+				};
 
+				result.append(hit.getLineno() + " ", courierNew);
+
+				String line = hit.getLine();
+				int startidx = line.indexOf("<b>");
+				int endidx = line.indexOf("</b>");
+				String before = line.substring(0, startidx);
+				String term = line.substring(startidx + "<b>".length(), endidx);
+				String after = line.substring(endidx + "</b>".length());
+
+				result.append(before, courierNewHighlight);
+				result.append(term, courierNew);
+				result.append(after, courierNewHighlight);
 				return result;
 			} else if (element instanceof HitContainer) {
 				HitContainer container = (HitContainer) element;
@@ -144,55 +168,10 @@ public class ResultsDialog extends PopupDialog {
 			return null;
 
 		}
-
-		@Override
-		public String getToolTipText(Object element) {
-			return "";
-		}
-
-	}
-
-	static class ViewColumnViewerToolTipSupport extends
-			ColumnViewerToolTipSupport {
-
-		protected ViewColumnViewerToolTipSupport(ColumnViewer viewer,
-				int style, boolean manualActivation) {
-			super(viewer, style, manualActivation);
-		}
-
-		@Override
-		protected Composite createViewerToolTipContentArea(Event event,
-				ViewerCell cell, Composite parent) {
-			Object element = cell.getElement();
-
-			if (element instanceof Hit) {
-				final Composite composite = new Composite(parent, SWT.NONE);
-				composite.setLayout(new RowLayout(SWT.VERTICAL));
-
-				Browser browser = new Browser(composite, SWT.FILL);
-
-				String line = ((Hit) element).getLine();
-				System.out.println(line);
-				String html = line.replaceAll("\t", "");
-				html = html.replaceAll("\\\\", "");
-				browser.setText(html);
-				browser.setSize(500, 500);
-
-				composite.pack();
-				return composite;
-			}
-
-			return parent;
-		}
-
-		public static final void enableFor(final ColumnViewer viewer) {
-			new ViewColumnViewerToolTipSupport(viewer, ToolTip.NO_RECREATE,
-					false);
-		}
 	}
 
 	public ResultsDialog(Shell parent, Point location) {
-		super(parent, SWT.BORDER, true, true, true, true, true,
+		super(parent, SWT.BORDER, true, true, true, true, false,
 				"{OpenGrok Search Results", "");
 
 		this.location = location;
@@ -351,7 +330,6 @@ public class ResultsDialog extends PopupDialog {
 
 		viewer.refresh();
 
-		ViewColumnViewerToolTipSupport.enableFor(viewer);
 		return composite;
 	}
 
