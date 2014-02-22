@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IOpenListener;
@@ -20,8 +22,11 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyAdapter;
@@ -29,9 +34,11 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.opensolaris.opengrok.egrok.Activator;
@@ -138,6 +145,50 @@ public class ResultsDialog extends PopupDialog {
 
 		}
 
+		@Override
+		public String getToolTipText(Object element) {
+			return "";
+		}
+
+	}
+
+	static class ViewColumnViewerToolTipSupport extends
+			ColumnViewerToolTipSupport {
+
+		protected ViewColumnViewerToolTipSupport(ColumnViewer viewer,
+				int style, boolean manualActivation) {
+			super(viewer, style, manualActivation);
+		}
+
+		@Override
+		protected Composite createViewerToolTipContentArea(Event event,
+				ViewerCell cell, Composite parent) {
+			Object element = cell.getElement();
+
+			if (element instanceof Hit) {
+				final Composite composite = new Composite(parent, SWT.NONE);
+				composite.setLayout(new RowLayout(SWT.VERTICAL));
+
+				Browser browser = new Browser(composite, SWT.FILL);
+
+				String line = ((Hit) element).getLine();
+				System.out.println(line);
+				String html = line.replaceAll("\t", "");
+				html = html.replaceAll("\\\\", "");
+				browser.setText(html);
+				browser.setSize(500, 500);
+
+				composite.pack();
+				return composite;
+			}
+
+			return parent;
+		}
+
+		public static final void enableFor(final ColumnViewer viewer) {
+			new ViewColumnViewerToolTipSupport(viewer, ToolTip.NO_RECREATE,
+					false);
+		}
 	}
 
 	public ResultsDialog(Shell parent, Point location) {
@@ -207,7 +258,12 @@ public class ResultsDialog extends PopupDialog {
 		final ListLabelProvider labelProvider = new ListLabelProvider();
 
 		viewer.setLabelProvider(new DelegatingStyledCellLabelProvider(
-				labelProvider));
+				labelProvider) {
+			@Override
+			public String getToolTipText(Object element) {
+				return "";
+			}
+		});
 
 		viewer.addFilter(new ViewerFilter() {
 			@Override
@@ -295,6 +351,7 @@ public class ResultsDialog extends PopupDialog {
 
 		viewer.refresh();
 
+		ViewColumnViewerToolTipSupport.enableFor(viewer);
 		return composite;
 	}
 
