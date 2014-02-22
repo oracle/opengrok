@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: EGrok
+Bundle-SymbolicName: EGrok
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.opensolaris.opengrok.egrok.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
