@@ -191,7 +191,10 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 							List<Hit> resultList = new ArrayList<>();
 							for (Object obj : array) {
 								JSONObject result = (JSONObject) obj;
-								resultList.add(new Hit(result));
+								Hit hit = new Hit(result);
+								if (hit.isValid()) {
+									resultList.add(hit);
+								}
 							}
 
 							dialog.setResults(resultList);

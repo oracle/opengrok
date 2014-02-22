@@ -4,7 +4,8 @@ import org.json.simple.JSONObject;
 
 public class Hit {
 	public Hit(JSONObject jsonobj) {
-		setDirectory((String) jsonobj.get("directory"));
+		String directory = (String) jsonobj.get("directory");
+		setDirectory(directory.replaceAll("\\\\", ""));
 		setFilename((String) jsonobj.get("filename"));
 		setLine((String) jsonobj.get("line"));
 
@@ -27,7 +28,7 @@ public class Hit {
 
 	private String directory;
 	private String filename;
-	private int lineno;
+	private int lineno = -1;
 	private String line;
 	private String path;
 
@@ -69,5 +70,9 @@ public class Hit {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public boolean isValid() {
+		return lineno > -1;
 	}
 }
