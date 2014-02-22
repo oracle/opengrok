@@ -177,7 +177,7 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
     topLeft = searchBox.getShell().toDisplay(topLeft);
 
     final ResultsDialog dialog = new ResultsDialog(Display.getCurrent()
-        .getActiveShell(), topLeft);
+        .getActiveShell(), searchBox.getText(), topLeft);
     return dialog;
   }
 

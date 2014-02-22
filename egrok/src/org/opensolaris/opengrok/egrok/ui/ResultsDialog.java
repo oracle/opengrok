@@ -167,17 +167,17 @@ public class ResultsDialog extends PopupDialog {
     }
   }
 
-  public ResultsDialog(Shell parent, Point location) {
-    super(parent, SWT.BORDER, true, true, true, true, false,
-        "{OpenGrok Search Results", "");
-
-    this.location = location;
-  }
-
   private ListContentPvider contentProvider = new ListContentPvider();
   private TreeViewer viewer;
   private Text filter;
   private Point location;
+
+  public ResultsDialog(Shell parent, String query, Point location) {
+    super(parent, SWT.BORDER | SWT.RESIZE, true, true, true, true, false,
+        "{OpenGrok search results for '" + query + "'", "");
+
+    this.location = location;
+  }
 
   @Override
   protected Point getInitialSize() {
