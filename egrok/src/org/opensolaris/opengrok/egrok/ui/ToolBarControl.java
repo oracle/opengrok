@@ -2,7 +2,7 @@ package org.opensolaris.opengrok.egrok.ui;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,8 +69,7 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 		searchBox.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
-				System.out.println(e.keyCode);
-				if (e.keyCode == SWT.CR) {
+				if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
 					String text = searchBox.getText();
 
 					if (text != null && !"".equals(text)) {
@@ -78,7 +77,7 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 						historyIndex = 0;
 						doSearch(text);
 					}
-				} else if (e.keyCode == 16777217) {
+				} else if (e.keyCode == SWT.ARROW_UP) {
 					historyIndex++;
 					if (historyIndex > history.size()) {
 						historyIndex = history.size();
@@ -86,7 +85,7 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 					if (historyIndex >= 0 && history.size() >= historyIndex) {
 						searchBox.setText(history.get(historyIndex - 1));
 					}
-				} else if (e.keyCode == 16777218) {
+				} else if (e.keyCode == SWT.ARROW_DOWN) {
 					historyIndex--;
 
 					if (historyIndex < 0) {
@@ -111,111 +110,76 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 
 		try {
 			URL url = new URL(baseUrl + JSON_SUFFIX + "?freetext=" + text);
+			final HttpURLConnection conn = (HttpURLConnection) (baseUrl
+					.startsWith("https") ? createHttpsUrlConnection(url) : url
+					.openConnection());
 
-			try {
-				System.setProperty("jsse.enableSNIExtension", "false");
-
-				TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-
-					@Override
-					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-						return null;
-					}
-
-					@Override
-					public void checkClientTrusted(
-							java.security.cert.X509Certificate[] certs,
-							String authType) {
-					}
-
-					@Override
-					public void checkServerTrusted(
-							java.security.cert.X509Certificate[] certs,
-							String authType) {
-					}
-				} };
-				SSLContext sc = SSLContext.getInstance("SSL");
-				sc.init(null, trustAllCerts, new java.security.SecureRandom());
-				HttpsURLConnection.setDefaultSSLSocketFactory(sc
-						.getSocketFactory());
-				HttpsURLConnection
-						.setDefaultHostnameVerifier(new HostnameVerifier() {
-							@Override
-							public boolean verify(String arg0, SSLSession arg1) {
-								return true;
-							}
-						});
-
-				final HttpsURLConnection conn = (HttpsURLConnection) url
-						.openConnection();
-
-				if (userName != null && password != null) {
-					String base64 = EncodingUtils
-							.encodeBase64((userName + ":" + password)
-									.getBytes());
-					conn.setRequestProperty("Authorization", "Basic " + base64);
-				}
-
-				Rectangle bounds = searchBox.getBounds();
-
-				Point topLeft = new Point(bounds.x, bounds.y + bounds.height);
-				topLeft = searchBox.getShell().toDisplay(topLeft);
-
-				final ResultsDialog dialog = new ResultsDialog(Display
-						.getCurrent().getActiveShell(), topLeft);
-
-				Runnable runnable = new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							conn.connect();
-							BufferedReader br = new BufferedReader(
-									new InputStreamReader(conn.getInputStream()));
-
-							String tmp = null;
-							StringBuffer buffer = new StringBuffer();
-							while ((tmp = br.readLine()) != null) {
-								buffer.append(tmp);
-							}
-
-							System.out.println(buffer.toString());
-
-							JSONParser parser = new JSONParser();
-							JSONObject results = (JSONObject) parser
-									.parse(buffer.toString());
-
-							JSONArray array = (JSONArray) results
-									.get("results");
-
-							List<Hit> resultList = new ArrayList<>();
-							for (Object obj : array) {
-								JSONObject result = (JSONObject) obj;
-								Hit hit = new Hit(result);
-								if (hit.isValid()) {
-									resultList.add(hit);
-								}
-							}
-
-							dialog.setResults(resultList);
-
-						} catch (Exception e) {
-							handleException(e);
-						}
-
-					}
-				};
-
-				new Thread(runnable).start();
-				dialog.open();
-
-			} catch (Exception e) {
-				handleException(e);
+			if (userName != null && password != null && !"".equals(userName)
+					&& !"".equals(password)) {
+				String base64 = EncodingUtils
+						.encodeBase64((userName + ":" + password).getBytes());
+				conn.setRequestProperty("Authorization", "Basic " + base64);
 			}
 
-		} catch (MalformedURLException e) {
+			final ResultsDialog dialog = createResultsDialog();
+
+			Runnable runnable = new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						conn.connect();
+						BufferedReader br = new BufferedReader(
+								new InputStreamReader(conn.getInputStream()));
+
+						String tmp = null;
+						StringBuffer buffer = new StringBuffer();
+						while ((tmp = br.readLine()) != null) {
+							buffer.append(tmp);
+						}
+
+						JSONParser parser = new JSONParser();
+						JSONObject results = (JSONObject) parser.parse(buffer
+								.toString());
+
+						JSONArray array = (JSONArray) results.get("results");
+
+						List<Hit> resultList = new ArrayList<>();
+						for (Object obj : array) {
+							JSONObject result = (JSONObject) obj;
+							Hit hit = new Hit(result);
+							if (hit.isValid()) {
+								resultList.add(hit);
+							}
+						}
+
+						dialog.setResults(resultList);
+
+					} catch (Exception e) {
+						handleException(e);
+					}
+
+				}
+			};
+
+			new Thread(runnable).start();
+			dialog.open();
+
+		} catch (Exception e) {
+			handleException(e);
 		}
 
+	}
+
+	private ResultsDialog createResultsDialog() {
+		Rectangle bounds = searchBox.getBounds();
+
+		Point topLeft = new Point(bounds.x, bounds.y + bounds.height);
+		topLeft = searchBox.getShell().toDisplay(topLeft);
+
+		final ResultsDialog dialog = new ResultsDialog(Display.getCurrent()
+				.getActiveShell(), topLeft);
+		return dialog;
 	}
 
 	private void handleException(final Exception e) {
@@ -227,10 +191,51 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 				MessageDialog dialog = new MessageDialog(Display.getDefault()
 						.getActiveShell(), "Error", null, e.toString(),
 						MessageDialog.ERROR, new String[] { "OK" }, 0);
-				int result = dialog.open();
+				dialog.open();
 			}
 		});
 
+	}
+
+	private HttpsURLConnection createHttpsUrlConnection(URL url) {
+		try {
+			System.setProperty("jsse.enableSNIExtension", "false");
+
+			TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+				@Override
+				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+					return null;
+				}
+
+				@Override
+				public void checkClientTrusted(
+						java.security.cert.X509Certificate[] certs,
+						String authType) {
+				}
+
+				@Override
+				public void checkServerTrusted(
+						java.security.cert.X509Certificate[] certs,
+						String authType) {
+				}
+			} };
+			SSLContext sc = SSLContext.getInstance("SSL");
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection
+					.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			HttpsURLConnection
+					.setDefaultHostnameVerifier(new HostnameVerifier() {
+						@Override
+						public boolean verify(String arg0, SSLSession arg1) {
+							return true;
+						}
+					});
+
+			return (HttpsURLConnection) url.openConnection();
+		} catch (Exception ex) {
+			handleException(ex);
+		}
+		return null;
 	}
 
 }
