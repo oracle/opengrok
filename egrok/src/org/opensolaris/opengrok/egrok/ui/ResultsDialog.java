@@ -64,7 +64,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.opensolaris.opengrok.egrok.Activator;
 import org.opensolaris.opengrok.egrok.model.Hit;
 import org.opensolaris.opengrok.egrok.model.HitContainer;
-import org.opensolaris.opengrok.egrok.model.WorkspaceMatches;
 import org.opensolaris.opengrok.egrok.preferences.EGrokPreferencePage;
 
 public class ResultsDialog extends PopupDialog {
@@ -405,7 +404,7 @@ public class ResultsDialog extends PopupDialog {
         public void run() {
           IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace()
               .getRoot();
-          final Map<HitContainer, WorkspaceMatches> potentialProjects = new HashMap<HitContainer, WorkspaceMatches>();
+          final Map<HitContainer, HashMap<IProject, Integer>> potentialProjects = new HashMap<HitContainer, HashMap<IProject, Integer>>();
 
           final Map<IProject, ArrayList<String>> locationSegments = new HashMap<IProject, ArrayList<String>>();
 
@@ -459,14 +458,15 @@ public class ResultsDialog extends PopupDialog {
                 for (String containerPathSegment : hitcontainerSegments
                     .get(container)) {
                   if (segment.equals(containerPathSegment)) {
-                    WorkspaceMatches matches = potentialProjects.get(container);
+                    HashMap<IProject, Integer> matches = potentialProjects
+                        .get(container);
 
                     if (matches == null) {
-                      matches = new WorkspaceMatches();
+                      matches = new HashMap<IProject, Integer>();
                       potentialProjects.put(container, matches);
                     }
 
-                    matches.add(project, idx);
+                    matches.put(project, idx);
                   }
                 }
               }
@@ -476,10 +476,11 @@ public class ResultsDialog extends PopupDialog {
 
           for (HitContainer container : potentialProjects.keySet()) {
             String fullLocation = container.getName();
-            WorkspaceMatches matches = potentialProjects.get(container);
+            HashMap<IProject, Integer> matches = potentialProjects
+                .get(container);
 
             System.out.println(container.getName());
-            for (Entry<IProject, Integer> match : matches.get()) {
+            for (Entry<IProject, Integer> match : matches.entrySet()) {
               IProject project = match.getKey();
               Integer matchingLocation = match.getValue();
               String matchingString = project.getLocation().segment(
