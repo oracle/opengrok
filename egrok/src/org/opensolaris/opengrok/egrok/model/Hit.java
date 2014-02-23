@@ -5,19 +5,33 @@ import org.json.simple.JSONObject;
 
 @SuppressWarnings("restriction")
 public class Hit {
-  public Hit(JSONObject jsonobj) {
-    String directory = (String) jsonobj.get("directory");
-    setDirectory(directory.replaceAll("\\\\", ""));
-    setFilename((String) jsonobj.get("filename"));
+  private static final String ATTRIBUTE_DIRECTORY = "directory";
+  private static final String ATTRIBUTE_FILENAME = "filename";
+  private static final String ATTRIBUTE_LINENO = "lineno";
+  private static final String ATTRIBUTE_LINE = "line";
+  private static final String ATTRIBUTE_PATH = "path";
 
-    String base64 = (String) jsonobj.get("line");
+  private String directory;
+  private String filename;
+  private int lineno = -1;
+  private String line;
+  private String path;
+
+  public Hit(JSONObject jsonobj) {
+    String directory = (String) jsonobj.get(ATTRIBUTE_DIRECTORY);
+
+    setDirectory(directory.replaceAll("\\\\", ""));
+
+    setFilename((String) jsonobj.get(ATTRIBUTE_FILENAME));
+
+    String base64 = (String) jsonobj.get(ATTRIBUTE_LINE);
     setLine(new String(Base64.decode(base64)));
 
-    String lineno = (String) jsonobj.get("lineno");
+    String lineno = (String) jsonobj.get(ATTRIBUTE_LINENO);
     if (!lineno.isEmpty()) {
       setLineno(Integer.parseInt(lineno));
     }
-    setPath((String) jsonobj.get("path"));
+    setPath((String) jsonobj.get(ATTRIBUTE_PATH));
   }
 
   public Hit(String directory, String filename, int lineno, String line,
@@ -29,12 +43,6 @@ public class Hit {
     this.line = line;
     this.path = path;
   }
-
-  private String directory;
-  private String filename;
-  private int lineno = -1;
-  private String line;
-  private String path;
 
   public String getDirectory() {
     return directory;
