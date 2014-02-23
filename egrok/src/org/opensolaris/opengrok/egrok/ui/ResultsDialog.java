@@ -24,6 +24,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
@@ -52,10 +55,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.opensolaris.opengrok.egrok.Activator;
 import org.opensolaris.opengrok.egrok.model.Hit;
 import org.opensolaris.opengrok.egrok.model.HitContainer;
@@ -344,47 +349,10 @@ public class ResultsDialog extends PopupDialog {
         Object selected = selection.getFirstElement();
 
         if (selected instanceof Hit) {
-          Hit hit = (Hit) selected;
-
-          try {
-            String baseurl = Activator.getDefault().getPreferenceStore()
-                .getString(EGrokPreferencePage.BASE_URL);
-            baseurl += "/xref" + hit.getDirectory() + "/" + hit.getFilename()
-                + "#" + hit.getLineno();
-            Desktop.getDesktop().browse(new URI(baseurl));
-          } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-          }
+          ResultsDialog.this.open((Hit) selected);
         } else if (selected instanceof HitContainer) {
-          HitContainer container = (HitContainer) selected;
-
-          IFile file = container.getCorrespondingFile();
-
-          if (file != null) {
-            IWorkbenchPage page = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
-
-            try {
-              page.openEditor(new FileEditorInput(file), findEditor(container)
-                  .getId());
-            } catch (PartInitException e) {
-              e.printStackTrace();
-            }
-
-          } else {
-
-            try {
-              String baseurl = Activator.getDefault().getPreferenceStore()
-                  .getString(EGrokPreferencePage.BASE_URL);
-              baseurl += "/xref" + container.getName();
-              Desktop.getDesktop().browse(new URI(baseurl));
-            } catch (IOException | URISyntaxException e) {
-              e.printStackTrace();
-            }
-          }
-
+          ResultsDialog.this.open((HitContainer) selected);
         }
-
       }
     });
 
@@ -548,15 +516,94 @@ public class ResultsDialog extends PopupDialog {
     }
   }
 
+  private IEditorPart open(Hit hit) {
+    HitContainer container = hit.getContainer();
+    IFile correspondingFile = container.getCorrespondingFile();
+
+    if (correspondingFile != null) {
+      IEditorPart editor = openInEditor(correspondingFile,
+          findEditor(hit.getContainer()));
+
+      if (editor instanceof ITextEditor) {
+        ITextEditor textEditor = (ITextEditor) editor;
+
+        IDocument document = textEditor.getDocumentProvider().getDocument(
+            editor.getEditorInput());
+        if (document != null) {
+          IRegion lineInfo = null;
+          try {
+            lineInfo = document.getLineInformation(hit.getLineno() - 1);
+          } catch (BadLocationException e) {
+            e.printStackTrace();
+          }
+          if (lineInfo != null) {
+            textEditor.selectAndReveal(lineInfo.getOffset(),
+                lineInfo.getLength());
+          }
+        }
+      }
+    } else {
+      openInBrowser(hit.getDirectory() + "/" + hit.getFilename(),
+          hit.getLineno());
+    }
+
+    return null;
+  }
+
+  private IEditorPart open(HitContainer container) {
+    IFile file = container.getCorrespondingFile();
+
+    if (file != null) {
+      openInEditor(file, findEditor(container));
+    } else {
+      openInBrowser(container.getName(), -1);
+    }
+
+    return null;
+  }
+
+  private void openInBrowser(String location, int lineNo) {
+    try {
+      String baseUrl = Activator.getDefault().getPreferenceStore()
+          .getString(EGrokPreferencePage.BASE_URL);
+      baseUrl += "/xref" + location;
+      if (lineNo > -1) {
+        baseUrl += "#" + lineNo;
+      }
+      Desktop.getDesktop().browse(new URI(baseUrl));
+    } catch (IOException | URISyntaxException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  private IEditorPart openInEditor(IFile file, IEditorDescriptor desc) {
+    IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+        .getActivePage();
+
+    try {
+      return page.openEditor(new FileEditorInput(file), desc.getId());
+    } catch (PartInitException e) {
+      e.printStackTrace();
+    }
+
+    return null;
+  }
+
   private IEditorDescriptor findEditor(HitContainer container) {
-    String filename = container.getName().substring(
+    String fileName = container.getName().substring(
         container.getName().lastIndexOf('/') + 1);
+    return findEditor(fileName);
+  }
+
+  private IEditorDescriptor findEditor(String fileName) {
     IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry()
-        .getDefaultEditor(filename);
+        .getDefaultEditor(fileName);
     if (desc == null) {
       desc = PlatformUI.getWorkbench().getEditorRegistry()
           .findEditor("org.eclipse.ui.DefaultTextEditor");
     }
     return desc;
   }
+
 }

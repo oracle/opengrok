@@ -16,6 +16,7 @@ public class HitContainer {
 
   public void add(Hit hit) {
     hits.add(hit);
+    hit.setContainer(this);
   }
 
   public String getName() {

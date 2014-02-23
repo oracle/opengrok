@@ -16,6 +16,7 @@ public class Hit {
   private int lineno = -1;
   private String line;
   private String path;
+  private HitContainer container;
 
   public Hit(JSONObject jsonobj) {
     String directory = (String) jsonobj.get(ATTRIBUTE_DIRECTORY);
@@ -86,5 +87,13 @@ public class Hit {
 
   public boolean isValid() {
     return lineno > -1;
+  }
+
+  public HitContainer getContainer() {
+    return container;
+  }
+
+  public void setContainer(HitContainer container) {
+    this.container = container;
   }
 }
