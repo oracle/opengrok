@@ -128,7 +128,6 @@ public class ResultsDialog extends PopupDialog {
 
     @Override
     public Object getParent(Object element) {
-      // TODO Auto-generated method stub
       return null;
     }
 
@@ -163,7 +162,7 @@ public class ResultsDialog extends PopupDialog {
                 .getFont().getFontData()[0].getHeight(), SWT.NORMAL);
           }
         };
-        StyledString.Styler courierNewHighlight = new StyledString.Styler() {
+        StyledString.Styler courierNewGrey = new StyledString.Styler() {
           @Override
           public void applyStyles(TextStyle textStyle) {
             textStyle.font = new Font(null, "Courier New", viewer.getControl()
@@ -176,15 +175,16 @@ public class ResultsDialog extends PopupDialog {
         result.append(hit.getLineno() + " ", courierNew);
 
         String line = hit.getLine();
+
         int startidx = line.indexOf("<b>");
         int endidx = line.indexOf("</b>");
         String before = line.substring(0, startidx);
         String term = line.substring(startidx + "<b>".length(), endidx);
         String after = line.substring(endidx + "</b>".length());
 
-        result.append(before, courierNewHighlight);
+        result.append(before, courierNewGrey);
         result.append(term, courierNew);
-        result.append(after, courierNewHighlight);
+        result.append(after, courierNewGrey);
         return result;
       } else if (element instanceof HitContainer) {
         HitContainer container = (HitContainer) element;
@@ -196,6 +196,7 @@ public class ResultsDialog extends PopupDialog {
 
           result.append(project + "/");
           result.append(file.getProjectRelativePath().toString());
+
         } else {
 
           String name = container.getName();
@@ -203,9 +204,9 @@ public class ResultsDialog extends PopupDialog {
           result.append(name.substring(0, name.lastIndexOf('/') + 1),
               StyledString.COUNTER_STYLER);
           result.append(fileName);
-          result.append(" (" + container.getNumberOfHits() + ")",
-              StyledString.COUNTER_STYLER);
         }
+        result.append(" (" + container.getNumberOfHits() + ")",
+            StyledString.DECORATIONS_STYLER);
         return result;
 
       }
