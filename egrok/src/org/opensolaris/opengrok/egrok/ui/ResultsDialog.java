@@ -154,6 +154,13 @@ public class ResultsDialog extends PopupDialog {
         Hit hit = (Hit) element;
         StyledString result = new StyledString();
 
+        StyledString.Styler courierNewSmall = new StyledString.Styler() {
+          @Override
+          public void applyStyles(TextStyle textStyle) {
+            textStyle.font = new Font(null, "Courier New", viewer.getControl()
+                .getFont().getFontData()[0].getHeight() - 1, SWT.NORMAL);
+          }
+        };
         StyledString.Styler courierNew = new StyledString.Styler() {
           @Override
           public void applyStyles(TextStyle textStyle) {
@@ -171,7 +178,7 @@ public class ResultsDialog extends PopupDialog {
           }
         };
 
-        result.append(hit.getLineno() + " ", courierNew);
+        result.append(hit.getLineno() + " ", courierNewSmall);
 
         String line = hit.getLine();
 
