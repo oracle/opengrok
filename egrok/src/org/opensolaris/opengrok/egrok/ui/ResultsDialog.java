@@ -4,6 +4,9 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +76,17 @@ public class ResultsDialog extends PopupDialog {
         return new Object[] {};
       }
 
-      return map.values().toArray(new Object[map.values().size()]);
+      List<HitContainer> rootElements = new ArrayList<HitContainer>(
+          map.values());
+
+      Collections.sort(rootElements, new Comparator<HitContainer>() {
+        @Override
+        public int compare(HitContainer o1, HitContainer o2) {
+          return o2.getNumberOfHits() - o1.getNumberOfHits();
+        }
+      });
+
+      return rootElements.toArray(new Object[rootElements.size()]);
     }
 
     public void setHits(Map<String, HitContainer> map) {
