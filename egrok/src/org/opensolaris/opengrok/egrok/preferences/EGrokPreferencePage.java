@@ -15,6 +15,7 @@ public class EGrokPreferencePage extends FieldEditorPreferencePage implements
   public static final String USERNAME = "userName";
   public static final String PASSWORD = "password";
   public static final String FILTER_REGEX = "filterRegex";
+  public static final String WORKSPACE_MATCHES = "workspaceMatches";
 
   @Override
   protected void createFieldEditors() {
@@ -35,6 +36,10 @@ public class EGrokPreferencePage extends FieldEditorPreferencePage implements
 
     addField(new BooleanFieldEditor(FILTER_REGEX,
         "Filter with Regular Expressions", getFieldEditorParent()));
+
+    addField(new BooleanFieldEditor(WORKSPACE_MATCHES,
+        "Corelate matches with files in workspace (experimental)",
+        getFieldEditorParent()));
   }
 
   @Override

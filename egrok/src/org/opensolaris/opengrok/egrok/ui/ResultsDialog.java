@@ -10,8 +10,17 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.JFaceResources;
@@ -32,6 +41,7 @@ import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
@@ -41,9 +51,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.opensolaris.opengrok.egrok.Activator;
 import org.opensolaris.opengrok.egrok.model.Hit;
 import org.opensolaris.opengrok.egrok.model.HitContainer;
+import org.opensolaris.opengrok.egrok.model.WorkspaceMatches;
 import org.opensolaris.opengrok.egrok.preferences.EGrokPreferencePage;
 
 public class ResultsDialog extends PopupDialog {
@@ -82,6 +98,13 @@ public class ResultsDialog extends PopupDialog {
       Collections.sort(rootElements, new Comparator<HitContainer>() {
         @Override
         public int compare(HitContainer o1, HitContainer o2) {
+          if (o1.getCorrespondingFile() != null
+              && o2.getCorrespondingFile() == null) {
+            return -1;
+          } else if (o1.getCorrespondingFile() == null
+              && o2.getCorrespondingFile() != null) {
+            return 1;
+          }
           return o2.getNumberOfHits() - o1.getNumberOfHits();
         }
       });
@@ -160,23 +183,39 @@ public class ResultsDialog extends PopupDialog {
         return result;
       } else if (element instanceof HitContainer) {
         HitContainer container = (HitContainer) element;
-
         StyledString result = new StyledString();
 
-        String name = container.getName();
-        String fileName = name.substring(name.lastIndexOf('/') + 1);
-        result.append(name.substring(0, name.lastIndexOf('/') + 1),
-            StyledString.COUNTER_STYLER);
-        result.append(fileName);
-        result.append(" (" + container.getNumberOfHits() + ")",
-            StyledString.COUNTER_STYLER);
+        IFile file = container.getCorrespondingFile();
+        if (file != null) {
+          String project = file.getProject().getName();
 
+          result.append(project + "/");
+          result.append(file.getProjectRelativePath().toString());
+        } else {
+
+          String name = container.getName();
+          String fileName = name.substring(name.lastIndexOf('/') + 1);
+          result.append(name.substring(0, name.lastIndexOf('/') + 1),
+              StyledString.COUNTER_STYLER);
+          result.append(fileName);
+          result.append(" (" + container.getNumberOfHits() + ")",
+              StyledString.COUNTER_STYLER);
+        }
         return result;
 
       }
 
       return null;
 
+    }
+
+    @Override
+    public Image getImage(Object element) {
+      if (element instanceof HitContainer) {
+        HitContainer container = (HitContainer) element;
+        return findEditor(container).getImageDescriptor().createImage();
+      }
+      return super.getImage(element);
     }
   }
 
@@ -319,13 +358,29 @@ public class ResultsDialog extends PopupDialog {
         } else if (selected instanceof HitContainer) {
           HitContainer container = (HitContainer) selected;
 
-          try {
-            String baseurl = Activator.getDefault().getPreferenceStore()
-                .getString(EGrokPreferencePage.BASE_URL);
-            baseurl += "/xref" + container.getName();
-            Desktop.getDesktop().browse(new URI(baseurl));
-          } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+          IFile file = container.getCorrespondingFile();
+
+          if (file != null) {
+            IWorkbenchPage page = PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow().getActivePage();
+
+            try {
+              page.openEditor(new FileEditorInput(file), findEditor(container)
+                  .getId());
+            } catch (PartInitException e) {
+              e.printStackTrace();
+            }
+
+          } else {
+
+            try {
+              String baseurl = Activator.getDefault().getPreferenceStore()
+                  .getString(EGrokPreferencePage.BASE_URL);
+              baseurl += "/xref" + container.getName();
+              Desktop.getDesktop().browse(new URI(baseurl));
+            } catch (IOException | URISyntaxException e) {
+              e.printStackTrace();
+            }
           }
 
         }
@@ -352,7 +407,7 @@ public class ResultsDialog extends PopupDialog {
   }
 
   public void setResults(List<Hit> results) {
-    Map<String, HitContainer> roots = new HashMap<String, HitContainer>();
+    final Map<String, HitContainer> roots = new HashMap<String, HitContainer>();
     for (Hit hit : results) {
       String key = hit.getDirectory() + "/" + hit.getFilename();
 
@@ -372,6 +427,136 @@ public class ResultsDialog extends PopupDialog {
         viewer.refresh();
       }
     });
+
+    if (Activator.getDefault().getPreferenceStore()
+        .getBoolean(EGrokPreferencePage.WORKSPACE_MATCHES)) {
+
+      Runnable workspaceLocator = new Runnable() {
+        @Override
+        public void run() {
+          IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace()
+              .getRoot();
+          final Map<HitContainer, WorkspaceMatches> potentialProjects = new HashMap<HitContainer, WorkspaceMatches>();
+
+          final Map<IProject, ArrayList<String>> locationSegments = new HashMap<IProject, ArrayList<String>>();
+
+          try {
+            workspaceRoot.accept(new IResourceVisitor() {
+              @Override
+              public boolean visit(IResource resource) throws CoreException {
+                if (resource instanceof IWorkspaceRoot) {
+                  return true;
+                }
+                if (resource instanceof IProject) {
+                  IProject project = (IProject) resource;
+
+                  IPath location = project.getLocation();
+
+                  for (String segment : location.segments()) {
+                    ArrayList<String> segments = locationSegments.get(project);
+                    if (segments == null) {
+                      segments = new ArrayList<String>();
+                      locationSegments.put(project, segments);
+                    }
+                    segments.add(segment);
+                  }
+                }
+                return false;
+              }
+
+            });
+          } catch (CoreException e) {
+            e.printStackTrace();
+          }
+
+          Map<HitContainer, ArrayList<String>> hitcontainerSegments = new HashMap<HitContainer, ArrayList<String>>();
+
+          for (HitContainer hitcontainer : roots.values()) {
+            ArrayList<String> segments = new ArrayList<String>();
+
+            for (String segment : hitcontainer.getName().split("/")) {
+              segments.add(segment);
+            }
+
+            hitcontainerSegments.put(hitcontainer, segments);
+          }
+
+          for (IProject project : locationSegments.keySet()) {
+            ArrayList<String> segments = locationSegments.get(project);
+            int idx = 0;
+            for (String segment : segments) {
+              for (HitContainer container : hitcontainerSegments.keySet()) {
+
+                for (String containerPathSegment : hitcontainerSegments
+                    .get(container)) {
+                  if (segment.equals(containerPathSegment)) {
+                    WorkspaceMatches matches = potentialProjects.get(container);
+
+                    if (matches == null) {
+                      matches = new WorkspaceMatches();
+                      potentialProjects.put(container, matches);
+                    }
+
+                    matches.add(project, idx);
+                  }
+                }
+              }
+              idx++;
+            }
+          }
+
+          for (HitContainer container : potentialProjects.keySet()) {
+            String fullLocation = container.getName();
+            WorkspaceMatches matches = potentialProjects.get(container);
+
+            System.out.println(container.getName());
+            for (Entry<IProject, Integer> match : matches.get()) {
+              IProject project = match.getKey();
+              Integer matchingLocation = match.getValue();
+              String matchingString = project.getLocation().segment(
+                  matchingLocation);
+              System.out.println("match: " + matchingString);
+
+              String local = fullLocation.substring(fullLocation
+                  .indexOf(matchingString) + matchingString.length());
+
+              System.out.println("local: " + local);
+
+              IResource member = project.findMember(local);
+              System.out.println("member: " + member);
+
+              if (member instanceof IFile) {
+                IFile file = (IFile) member;
+
+                container.setCorrespondingFile(file);
+              }
+            }
+          }
+
+          Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+              viewer.refresh();
+            }
+          });
+
+        }
+      };
+
+      workspaceLocator.run();
+
+    }
   }
 
+  private IEditorDescriptor findEditor(HitContainer container) {
+    String filename = container.getName().substring(
+        container.getName().lastIndexOf('/') + 1);
+    IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry()
+        .getDefaultEditor(filename);
+    if (desc == null) {
+      desc = PlatformUI.getWorkbench().getEditorRegistry()
+          .findEditor("org.eclipse.ui.DefaultTextEditor");
+    }
+    return desc;
+  }
 }
