@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.opensolaris.opengrok.egrok.query.Query;
@@ -56,14 +57,16 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
             history.add(0, text);
             historyIndex = 0;
 
-            Query query = new Query(text);
-
             Rectangle bounds = searchBox.getBounds();
 
             Point topLeft = new Point(bounds.x, bounds.y + bounds.height);
             topLeft = searchBox.getShell().toDisplay(topLeft);
 
-            query.run(topLeft);
+            final ResultsDialog dialog = new ResultsDialog(Display.getCurrent()
+                .getActiveShell(), text, topLeft);
+
+            Query query = new Query(text);
+            query.run(dialog);
           }
         } else if (e.keyCode == SWT.ARROW_UP) {
           historyIndex++;

@@ -16,7 +16,6 @@ import javax.net.ssl.X509TrustManager;
 
 import org.eclipse.equinox.security.storage.EncodingUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -36,7 +35,7 @@ public class Query {
     this.freetext = freetext;
   }
 
-  public void run(Point location) {
+  public void run(final ResultsDialog dialog) {
     try {
       String baseUrl = Activator.getDefault().getPreferenceStore()
           .getString(EGrokPreferencePage.BASE_URL);
@@ -62,9 +61,6 @@ public class Query {
             .getBytes());
         conn.setRequestProperty("Authorization", "Basic " + base64);
       }
-
-      final ResultsDialog dialog = new ResultsDialog(Display.getCurrent()
-          .getActiveShell(), freetext, location);
 
       Runnable runnable = new Runnable() {
 
