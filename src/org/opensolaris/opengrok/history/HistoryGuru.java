@@ -538,6 +538,11 @@ public final class HistoryGuru {
         }
         RuntimeEnvironment.freeHistoryExecutor();
 
+        /* Thread pool for handling renamed files needs to be destroyed too. */
+        executor = RuntimeEnvironment.getHistoryRenamedExecutor();
+        executor.shutdown();
+        RuntimeEnvironment.freeRenamedHistoryExecutor();
+
         // The cache has been populated. Now, optimize how it is stored on
         // disk to enhance performance and save space.
         try {
