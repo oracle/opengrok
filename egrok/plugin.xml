@@ -22,5 +22,15 @@
             name="EGrok">
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            class="org.opensolaris.opengrok.egrok.ui.ResultsView"
+            id="org.opensolaris.opengrok.egrok.resultsView"
+            name="EGrok Results"
+            restorable="true">
+      </view>
+   </extension>
 
 </plugin>
