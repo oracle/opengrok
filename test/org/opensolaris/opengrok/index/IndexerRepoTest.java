@@ -23,7 +23,6 @@
 package org.opensolaris.opengrok.index;
 
 import java.io.IOException;
-import static org.hamcrest.CoreMatchers.not;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -80,7 +79,10 @@ public class IndexerRepoTest {
         Thread[] threads = new Thread[mainGroup.activeCount()];
         mainGroup.enumerate(threads);
         for (int i = 0; i < threads.length; i++) {
-            assertThat(threads[i].getName(), not(containsString("renamed-handling")));
+            if (threads[i].getName() == null) {
+                continue;
+            }
+            assertEquals(false, threads[i].getName().contains("renamed-handling"));
         }
     }
 
