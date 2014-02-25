@@ -54,7 +54,7 @@ public class SearchEngineTest {
         repository.create(HistoryGuru.class.getResourceAsStream("repositories.zip"));
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
+        env.setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 
