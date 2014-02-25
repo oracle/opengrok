@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -78,7 +79,14 @@ public final class RuntimeEnvironment {
                 }
             }
 
-            historyExecutor = Executors.newFixedThreadPool(num);
+            historyExecutor = Executors.newFixedThreadPool(num,
+                new ThreadFactory() {
+                    public Thread newThread(Runnable runnable) {
+                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                        thread.setName("history-handling-" + thread.getId());
+                        return thread;
+                    }
+                });
         }
 
         return historyExecutor;
@@ -98,18 +106,36 @@ public final class RuntimeEnvironment {
                 }
             }
 
-            historyRenamedExecutor = Executors.newFixedThreadPool(num);
+            historyRenamedExecutor = Executors.newFixedThreadPool(num,
+                new ThreadFactory() {
+                    public Thread newThread(Runnable runnable) {
+                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                        thread.setName("renamed-handling-" + thread.getId());
+                        return thread;
+                    }
+                });
         }
  
         return historyRenamedExecutor;
+    }
+
+    public boolean isRenamedExecutorSet() {
+        if (historyRenamedExecutor != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static synchronized void freeHistoryExecutor() {
         historyExecutor = null;
     }
  
-    public static synchronized void freeRenamedHistoryExecutor() {
-        historyRenamedExecutor = null;
+    public static synchronized void destroyRenamedHistoryExecutor() {
+        if (historyRenamedExecutor != null) {
+            historyRenamedExecutor.shutdown();
+            historyRenamedExecutor = null;
+        }
     }
 
     /*
