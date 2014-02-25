@@ -114,7 +114,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         // test runs (like tags enabled) and this makes other tests fail in
         // very nasty fashion (what is caused by fetch of particular thread
         // with cached thread-local value appears like race condition).
-        RuntimeEnvironment.freeRenamedHistoryExecutor();
+        RuntimeEnvironment.destroyRenamedHistoryExecutor();
     }
 
     /**
