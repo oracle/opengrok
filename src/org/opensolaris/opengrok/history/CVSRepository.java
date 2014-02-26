@@ -78,8 +78,8 @@ public class CVSRepository extends RCSRepository {
 
         if (isWorking()) {
             Logger logger = OpenGrokLogger.getLogger();
-            // XXX use proper dir separator
-            File rootFile = new File(getDirectoryName() + "/CVS/Root");
+            File rootFile = new File(getDirectoryName() + File.separatorChar
+                + "CVS" + File.separatorChar + "Root");
             BufferedReader input;
             String root;
             try {
