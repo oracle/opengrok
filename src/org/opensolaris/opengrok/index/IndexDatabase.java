@@ -426,17 +426,16 @@ public class IndexDatabase {
             }            
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             File timestamp = new File(env.getDataRootFile(), "timestamp");
+            String purpose = "used for timestamping the index database.";
             if (timestamp.exists()) {
                 if (!timestamp.setLastModified(System.currentTimeMillis())) {
-                    log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', "
-                        + "used for timestamping the index database.",
-                        timestamp.getAbsolutePath());
+                    log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', {1}",
+                        new Object[]{timestamp.getAbsolutePath(), purpose});
                 }
             } else {
                 if (!timestamp.createNewFile()) {
-                    log.log(Level.WARNING, "Failed to create file ''{0}'', "
-                        + "used for timestamping the index database.",
-                        timestamp.getAbsolutePath());
+                    log.log(Level.WARNING, "Failed to create file ''{0}'', {1}",
+                        new Object[]{timestamp.getAbsolutePath(), purpose});
                 }
             }
         }
