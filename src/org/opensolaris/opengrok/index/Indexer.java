@@ -799,6 +799,10 @@ public final class Indexer {
                 log.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
         }
+        // It can happen that history index is not done in prepareIndexer()
+        // but via db.update() above in which case we must make sure the
+        // thread pool for renamed file handling is destroyed.
+        RuntimeEnvironment.destroyRenamedHistoryExecutor();
         log.info("Done indexing");
     }
 

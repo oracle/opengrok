@@ -55,7 +55,7 @@ public class SearchTest {
         repository.create(IndexerTest.class.getResourceAsStream("source.zip"));
 
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        env.setCtags(System.getProperty("org.opensolaris.opengrok.configuration.ctags", "ctags"));
+        env.setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
         env.setSourceRoot(repository.getSourceRoot());
         env.setDataRoot(repository.getDataRoot());
 
@@ -63,7 +63,8 @@ public class SearchTest {
             env.setSourceRoot(repository.getSourceRoot());
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
-            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null, false, false, false, null, null, new ArrayList<String>(), false);
+            Indexer.getInstance().prepareIndexer(env, true, true, "/c", null,
+                false, false, false, null, null, new ArrayList<String>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");

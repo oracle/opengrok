@@ -105,13 +105,15 @@ Usage()
 #
 # Runtime Configuration
 #
-if [ -f "/bin/uname" ]
-then
-    OS_NAME="`/bin/uname -s`"
-    OS_VERSION="`/bin/uname -r`"
+if [ -x "/bin/uname" ]; then
+	OS_NAME="`/bin/uname -s`"
+	OS_VERSION="`/bin/uname -r`"
+elif [ -x "/usr/bin/uname" ]; then
+	OS_NAME="`/usr/bin/uname -s`"
+	OS_VERSION="`/usr/bin/uname -r`"
 else
-    OS_NAME="`/usr/bin/uname -s`"
-    OS_VERSION="`/usr/bin/uname -r`"
+	echo "Cannot determine operating system version"
+	exit 1
 fi
 
 # TODO: Handle symlinks correctly (especially in ${0})
@@ -459,10 +461,11 @@ FindJavaHome()
 {
     javaHome=""
     case "${OS_NAME}:${OS_VERSION}" in
-        SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
-        SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
-        SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
-        Linux:*)
+	SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
+	SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
+	SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
+	Darwin:*)    javaHome=`/usr/libexec/java_home`     ;;
+	Linux:*)
             if [ -f /etc/alternatives/java ]
             then
                javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
