@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -117,14 +117,6 @@ public final class RuntimeEnvironment {
         }
  
         return historyRenamedExecutor;
-    }
-
-    public boolean isRenamedExecutorSet() {
-        if (historyRenamedExecutor != null) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public static synchronized void freeHistoryExecutor() {
