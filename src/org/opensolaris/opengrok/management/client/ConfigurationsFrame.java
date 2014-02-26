@@ -827,6 +827,8 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             return RemoteSCM.ON;
         } else if (rscm.contentEquals("off")) {
             return RemoteSCM.OFF;
+        } else if (rscm.contentEquals("dirbased")) {
+            return RemoteSCM.DIRBASED;
         } else if (rscm.contentEquals("uionly")) {
             return RemoteSCM.UIONLY;
         } else {

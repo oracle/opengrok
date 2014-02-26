@@ -42,11 +42,13 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_REMOTE_REPOS       Influence History Cache for (remote)
-#                                 Repositories (*). Following values are
-#                                 recognized:
+#   - OPENGROK_REMOTE_REPOS       Influence history cache generation for remote
+#                                 repositories. Following values are recognized:
 #                                   on - enabled (default)
 #                                   off - disabled for indexing and UI
+#                                   dirbased - indexing enabled only for repos
+#                                              which can fetch history for
+#                                              directory
 #                                   uionly - enabled for UI only
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go

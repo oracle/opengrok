@@ -66,6 +66,7 @@ public final class Indexer {
     /* tunables for -r (history for remote repositories) */
     private static final String ON = "on";
     private static final String OFF = "off";
+    private static final String DIRBASED = "dirbased";
     private static final String UIONLY = "uionly";
 
     private static Indexer index = new Indexer();
@@ -232,12 +233,16 @@ public final class Indexer {
                                 cfg.setRemoteScmSupported(Configuration.RemoteSCM.ON);
                             } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
                                 cfg.setRemoteScmSupported(Configuration.RemoteSCM.OFF);
+                            } else if (getopt.getOptarg().equalsIgnoreCase(DIRBASED)) {
+                                cfg.setRemoteScmSupported(Configuration.RemoteSCM.DIRBASED);
                             } else if (getopt.getOptarg().equalsIgnoreCase(UIONLY)) {
                                 cfg.setRemoteScmSupported(Configuration.RemoteSCM.UIONLY);
                             } else {
                                 System.err.println("ERROR: You should pass either \"on\" or \"off\" or \"uionly\" as argument to -r");
-                                System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
+                                System.err.println("       Ex: \"-r on\" will allow retrieval for remote SCM systems");
                                 System.err.println("           \"-r off\" will ignore SCM for remote systems");
+                                System.err.println("           \"-r dirbased\" will allow retrieval during history index "
+                                    + "only for repositories which allow getting history for directories");
                                 System.err.println("           \"-r uionly\" will support remote SCM for UI only");
                             }
                             break;

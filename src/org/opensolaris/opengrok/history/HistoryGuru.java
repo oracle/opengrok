@@ -219,7 +219,9 @@ public final class HistoryGuru {
 
         History history = null;
         RemoteSCM rscm = RuntimeEnvironment.getInstance().getRemoteScmSupported();
-        boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY)) || (rscm == RemoteSCM.ON);
+        boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
+            || (rscm == RemoteSCM.ON)
+            || (repo.hasHistoryForDirectories() && (rscm == RemoteSCM.DIRBASED));
 
         if (repo != null && repo.isWorking() && repo.fileHasHistory(file)
             && (!repo.isRemote() || doRemote)) {
@@ -268,6 +270,7 @@ public final class HistoryGuru {
         return repo.isWorking() && repo.fileHasHistory(file)
                 && ((RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.ON)
                     || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.UIONLY)
+                    || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.DIRBASED)
                     || !repo.isRemote());
     }
 
