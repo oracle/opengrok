@@ -368,7 +368,7 @@ public class IndexDatabase {
                                 startuid);
                         }
                     }
-                    // TODO below should be optional, since it traverses the tree once more to get total count! :(
+                    // The code below traverses the tree to get total count.
                     int file_cnt = 0;
                     if (RuntimeEnvironment.getInstance().isPrintProgress()) {
                         log.log(Level.INFO, "Counting files in {0} ...", dir);
