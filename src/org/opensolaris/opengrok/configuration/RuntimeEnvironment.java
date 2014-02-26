@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
@@ -123,9 +124,12 @@ public final class RuntimeEnvironment {
         historyExecutor = null;
     }
  
-    public static synchronized void destroyRenamedHistoryExecutor() {
+    public static synchronized void destroyRenamedHistoryExecutor() throws InterruptedException {
         if (historyRenamedExecutor != null) {
             historyRenamedExecutor.shutdown();
+            // All the jobs should be completed by now however for testing
+            // we would like to make sure the threads are gone.
+            historyRenamedExecutor.awaitTermination(1, TimeUnit.MINUTES);
             historyRenamedExecutor = null;
         }
     }

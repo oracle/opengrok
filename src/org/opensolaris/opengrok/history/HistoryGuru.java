@@ -561,9 +561,13 @@ public final class HistoryGuru {
             }
         }
         RuntimeEnvironment.freeHistoryExecutor();
-
-        /* Thread pool for handling renamed files needs to be destroyed too. */
-        RuntimeEnvironment.destroyRenamedHistoryExecutor();
+        try {
+            /* Thread pool for handling renamed files needs to be destroyed too. */
+            RuntimeEnvironment.destroyRenamedHistoryExecutor();
+        } catch (InterruptedException ex) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                "destroying of renamed thread pool failed", ex);
+        }
 
         // The cache has been populated. Now, optimize how it is stored on
         // disk to enhance performance and save space.
