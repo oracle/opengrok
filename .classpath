@@ -5,7 +5,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="generatedsrc"/>
 	<classpathentry kind="src" path="build/src/jsp"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/bcel-5.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Jasper GF3"/>
 	<classpathentry kind="lib" path="build/jrcs"/>
@@ -16,7 +15,8 @@
 	<classpathentry kind="lib" path="lib/lucene-queryparser-4.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-suggest-4.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
-	<classpathentry kind="lib" path="D:/eclipse-kepler-cloud-appengine/plugins/org.apache.ant_1.8.4.v201303080030/lib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/ant.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
