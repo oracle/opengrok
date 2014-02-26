@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,13 +34,14 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
- * Access to a local CVS repository.
+ * Access to a CVS repository.
  */
 public class CVSRepository extends RCSRepository {
     private static final long serialVersionUID = 1L;
@@ -59,7 +61,6 @@ public class CVSRepository extends RCSRepository {
     public CVSRepository() {
         setType("CVS");
         setDatePattern("yyyy-MM-dd hh:mm:ss");
-        setRemote(true);
     }
 
     @Override
@@ -69,6 +70,41 @@ public class CVSRepository extends RCSRepository {
             working = checkCmd(cmd , "--version");
         }
         return working.booleanValue();
+    }
+
+    @Override
+    public void setDirectoryName(String directoryName) {
+        super.setDirectoryName(directoryName);
+
+        if (isWorking()) {
+            Logger logger = OpenGrokLogger.getLogger();
+            // XXX use proper dir separator
+            File rootFile = new File(getDirectoryName() + "/CVS/Root");
+            BufferedReader input;
+            String root;
+            try {
+                input = new BufferedReader(new FileReader(rootFile));
+                try {
+                    root = input.readLine();
+                } catch (java.io.IOException e) {
+                    logger.warning("failed to load: " + e);
+                    return;
+                } finally {
+                    try {
+                        input.close();
+                    } catch (java.io.IOException e) {
+                        logger.info("failed to close: " + e);
+                    }
+                }
+            } catch (java.io.FileNotFoundException e) {
+                logger.fine("not loading header include file: " + e);
+                return;
+            }
+
+            if (!root.startsWith("/")) {
+                setRemote(true);
+            }
+        }
     }
 
     @Override
