@@ -29,7 +29,8 @@
             class="org.opensolaris.opengrok.egrok.ui.ResultsView"
             id="org.opensolaris.opengrok.egrok.resultsView"
             name="EGrok Results"
-            restorable="true">
+            restorable="false"
+            icon="icons/resultsview.png">
       </view>
    </extension>
 
