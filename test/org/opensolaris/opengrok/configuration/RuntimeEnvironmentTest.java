@@ -310,9 +310,13 @@ public class RuntimeEnvironmentTest {
     @Test
     public void testRemoteScmSupported() {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
-        assertFalse(instance.isRemoteScmSupported());
-        instance.setRemoteScmSupported(true);
-        assertTrue(instance.isRemoteScmSupported());
+        assertEquals(Configuration.RemoteSCM.OFF, instance.getRemoteScmSupported());
+        instance.setRemoteScmSupported(Configuration.RemoteSCM.ON);
+        assertEquals(Configuration.RemoteSCM.ON, instance.getRemoteScmSupported());
+        instance.setRemoteScmSupported(Configuration.RemoteSCM.DIRBASED);
+        assertEquals(Configuration.RemoteSCM.DIRBASED, instance.getRemoteScmSupported());
+        instance.setRemoteScmSupported(Configuration.RemoteSCM.UIONLY);
+        assertEquals(Configuration.RemoteSCM.UIONLY, instance.getRemoteScmSupported());
     }
 
     @Test

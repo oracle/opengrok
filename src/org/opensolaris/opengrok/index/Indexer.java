@@ -63,8 +63,12 @@ import org.opensolaris.opengrok.util.Getopt;
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 public final class Indexer {
 
+    /* tunables for -r (history for remote repositories) */
     private static final String ON = "on";
     private static final String OFF = "off";
+    private static final String DIRBASED = "dirbased";
+    private static final String UIONLY = "uionly";
+
     private static Indexer index = new Indexer();
     static final Logger log = Logger.getLogger(Indexer.class.getName());
     private static final String DERBY_EMBEDDED_DRIVER =
@@ -224,18 +228,24 @@ public final class Indexer {
                         case 'u':
                             databaseURL = getopt.getOptarg();
                             break;
-                        case 'r': {
+                        case 'r':
                             if (getopt.getOptarg().equalsIgnoreCase(ON)) {
-                                cfg.setRemoteScmSupported(true);
+                                cfg.setRemoteScmSupported(Configuration.RemoteSCM.ON);
                             } else if (getopt.getOptarg().equalsIgnoreCase(OFF)) {
-                                cfg.setRemoteScmSupported(false);
+                                cfg.setRemoteScmSupported(Configuration.RemoteSCM.OFF);
+                            } else if (getopt.getOptarg().equalsIgnoreCase(DIRBASED)) {
+                                cfg.setRemoteScmSupported(Configuration.RemoteSCM.DIRBASED);
+                            } else if (getopt.getOptarg().equalsIgnoreCase(UIONLY)) {
+                                cfg.setRemoteScmSupported(Configuration.RemoteSCM.UIONLY);
                             } else {
-                                System.err.println("ERROR: You should pass either \"on\" or \"off\" as argument to -r");
-                                System.err.println("       Ex: \"-r on\" will allow retrival for remote SCM systems");
+                                System.err.println("ERROR: You should pass either \"on\" or \"off\" or \"uionly\" as argument to -r");
+                                System.err.println("       Ex: \"-r on\" will allow retrieval for remote SCM systems");
                                 System.err.println("           \"-r off\" will ignore SCM for remote systems");
+                                System.err.println("           \"-r dirbased\" will allow retrieval during history index "
+                                    + "only for repositories which allow getting history for directories");
+                                System.err.println("           \"-r uionly\" will support remote SCM for UI only");
                             }
-                        }
-                        break;
+                            break;
                         case 'o':
                             String CTagsExtraOptionsFile = getopt.getOptarg();
                             File CTagsFile = new File(CTagsExtraOptionsFile);
@@ -263,8 +273,8 @@ public final class Indexer {
                             if (oldval != cfg.isOptimizeDatabase()) {
                                 optimizedChanged = true;
                             }
+                            break;
                         }
-                        break;
                         case 'v':
                             cfg.setVerbose(true);
                             OpenGrokLogger.setOGConsoleLogLevel(Level.INFO);

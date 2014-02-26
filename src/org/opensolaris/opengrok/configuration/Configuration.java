@@ -107,7 +107,7 @@ public final class Configuration {
     private String reviewPage;
     private String reviewPattern;
     private String webappLAF;
-    private boolean remoteScmSupported;
+    private RemoteSCM remoteScmSupported;
     private boolean optimizeDatabase;
     private boolean useLuceneLocking;
     private boolean compressXref;
@@ -136,6 +136,18 @@ public final class Configuration {
      */
     public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
     private transient File dtagsEftar = null;
+
+    /*
+     * types of handling history for remote SCM repositories:
+     *  ON - index history and display it in webapp
+     *  OFF - do not index or display history in webapp
+     *  DIRBASED - index history only for repositories capable
+     *             of getting history for directories
+     *  UIONLY - display history only in webapp (do not index it)
+     */
+    public enum RemoteSCM {
+        ON, OFF, DIRBASED, UIONLY
+    }
 
     /**
      * Get the default tab size (number of space characters per tab character)
@@ -212,7 +224,7 @@ public final class Configuration {
         setReviewPage("http://arc.myserver.org/caselog/PSARC/");
         setReviewPattern("\\b(\\d{4}/\\d{3})\\b"); // in form e.g. PSARC 2008/305
         setWebappLAF("default");
-        setRemoteScmSupported(false);
+        setRemoteScmSupported(RemoteSCM.OFF);
         setOptimizeDatabase(true);
         setUsingLuceneLocking(false);
         setCompressXref(true);
@@ -525,11 +537,11 @@ public final class Configuration {
         this.webappLAF = webappLAF;
     }
 
-    public boolean isRemoteScmSupported() {
+    public RemoteSCM getRemoteScmSupported() {
         return remoteScmSupported;
     }
 
-    public void setRemoteScmSupported(boolean remoteScmSupported) {
+    public void setRemoteScmSupported(RemoteSCM remoteScmSupported) {
         this.remoteScmSupported = remoteScmSupported;
     }
 

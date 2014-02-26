@@ -781,11 +781,11 @@ public final class RuntimeEnvironment {
         threadConfig.get().setWebappLAF(laf);
     }
 
-    public boolean isRemoteScmSupported() {
-        return threadConfig.get().isRemoteScmSupported();
+    public Configuration.RemoteSCM getRemoteScmSupported() {
+        return threadConfig.get().getRemoteScmSupported();
     }
 
-    public void setRemoteScmSupported(boolean supported) {
+    public void setRemoteScmSupported(Configuration.RemoteSCM supported) {
         threadConfig.get().setRemoteScmSupported(supported);
     }
 

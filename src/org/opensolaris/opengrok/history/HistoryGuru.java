@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.util.StringUtils;
@@ -182,7 +183,22 @@ public final class HistoryGuru {
      * @throws HistoryException on error when accessing the history
      */
     public History getHistory(File file) throws HistoryException {
-        return getHistory(file, true);
+        return getHistory(file, true, false);
+    }
+
+    public History getHistory(File file, boolean withFiles) throws HistoryException {
+        return getHistory(file, true, false);
+    }
+
+    /**
+     * Get history for the specified file (called from the web app).
+     *
+     * @param file the file to get the history for
+     * @return history for the file
+     * @throws HistoryException on error when accessing the history
+     */
+    public History getHistoryUI(File file) throws HistoryException {
+        return getHistory(file, true, true);
     }
 
     /**
@@ -192,24 +208,28 @@ public final class HistoryGuru {
      * @param withFiles whether or not the returned history should contain
      * a list of files touched by each changeset (the file list may be skipped
      * if false, but it doesn't have to)
+     * @param ui called from the webapp
      * @return history for the file
      * @throws HistoryException on error when accessing the history
      */
-    public History getHistory(File file, boolean withFiles)
+    public History getHistory(File file, boolean withFiles, boolean ui)
             throws HistoryException {
         final File dir = file.isDirectory() ? file : file.getParentFile();
-        final Repository repos = getRepository(dir);
+        final Repository repo = getRepository(dir);
 
         History history = null;
+        RemoteSCM rscm = RuntimeEnvironment.getInstance().getRemoteScmSupported();
+        boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
+            || (rscm == RemoteSCM.ON)
+            || (repo.hasHistoryForDirectories() && (rscm == RemoteSCM.DIRBASED));
 
-        if (repos != null && repos.isWorking() && repos.fileHasHistory(file)
-            && (!repos.isRemote() || RuntimeEnvironment.getInstance()
-                .isRemoteScmSupported()))
-        {
-            if (useCache() && historyCache.supportsRepository(repos)) {
-                history = historyCache.get(file, repos, withFiles);
+        if (repo != null && repo.isWorking() && repo.fileHasHistory(file)
+            && (!repo.isRemote() || doRemote)) {
+
+            if (useCache() && historyCache.supportsRepository(repo)) {
+                history = historyCache.get(file, repo, withFiles);
             } else {
-                history = repos.getHistory(file);
+                history = repo.getHistory(file);
             }
         }
 
@@ -223,8 +243,7 @@ public final class HistoryGuru {
      * @param rev The revision to get
      * @return An InputStream containing the named revision of the file.
      */
-    public InputStream getRevision(String parent, String basename, String rev)
-    {
+    public InputStream getRevision(String parent, String basename, String rev) {
         InputStream ret = null;
 
         Repository rep = getRepository(new File(parent));
@@ -241,13 +260,18 @@ public final class HistoryGuru {
      * history
      */
     public boolean hasHistory(File file) {
-        Repository repos = getRepository(file);
+        Repository repo = getRepository(file);
 
-        return repos == null
-            ? false
-            : repos.isWorking() && repos.fileHasHistory(file)
-                && (RuntimeEnvironment.getInstance().isRemoteScmSupported()
-                    || !repos.isRemote());
+        if (repo == null) {
+            return false;
+        }
+
+        // This should return true for Annotate view.
+        return repo.isWorking() && repo.fileHasHistory(file)
+                && ((RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.ON)
+                    || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.UIONLY)
+                    || (RuntimeEnvironment.getInstance().getRemoteScmSupported() == RemoteSCM.DIRBASED)
+                    || !repo.isRemote());
     }
 
     /**

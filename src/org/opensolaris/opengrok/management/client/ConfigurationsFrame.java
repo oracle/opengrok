@@ -40,6 +40,7 @@ import javax.management.ReflectionException;
 import javax.swing.table.DefaultTableModel;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.Configuration;
+import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -148,7 +149,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
         this.sourceRootField.setText(config.getSourceRoot());
         this.indexVersionedFilesOnlyCB.setSelected(config.isIndexVersionedFilesOnly());
         this.luceneLockingCB.setSelected(config.isUsingLuceneLocking());
-        this.remoteSCMSupportedCB.setSelected(config.isRemoteScmSupported());
+        this.remoteSCMSupportedCB.setText(config.getRemoteScmSupported().toString());
         this.bugPageField.setText(config.getBugPage());
         this.bugPatternField.setText(config.getBugPattern());
         this.reviewPageField.setText(config.getReviewPage());
@@ -821,6 +822,19 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
 // Avoid UnusedFormalParameter until the method has been implemented
 // Avoid UnusedFormalParameter until the method has been implemented
 
+    private RemoteSCM stringToRemoteSCM(String rscm) {
+        if (rscm.contentEquals("on")) {
+            return RemoteSCM.ON;
+        } else if (rscm.contentEquals("off")) {
+            return RemoteSCM.OFF;
+        } else if (rscm.contentEquals("dirbased")) {
+            return RemoteSCM.DIRBASED;
+        } else if (rscm.contentEquals("uionly")) {
+            return RemoteSCM.UIONLY;
+        } else {
+            return RemoteSCM.OFF;
+        }
+    }
 
     /**
      * put the GUI fields and objects into the OpenGrok Configuration object
@@ -831,7 +845,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
        config.setDataRoot(this.dataRootField.getText());
        config.setIndexVersionedFilesOnly(this.indexVersionedFilesOnlyCB.isSelected());
        config.setUsingLuceneLocking(luceneLockingCB.isSelected());
-       config.setRemoteScmSupported(remoteSCMSupportedCB.isSelected());
+       config.setRemoteScmSupported(stringToRemoteSCM(this.remoteSCMSupportedCB.getText()));
        config.setOptimizeDatabase(this.optimizedDatabaseCB.isSelected());
        config.setAllowLeadingWildcard(this.allowLeadingWildCardsCB.isSelected());
        config.setCompressXref(this.compressXRefsCB.isSelected());

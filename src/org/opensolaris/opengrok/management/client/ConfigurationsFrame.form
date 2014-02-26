@@ -392,7 +392,7 @@
                 <Property name="text" type="java.lang.String" value="Optimized Database" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JCheckBox" name="remoteSCMSupportedCB">
+            <Component class="javax.swing.JTextField" name="remoteSCMSupportedCB">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Remote SCM Supported" noResource="true"/>
               </Properties>
