@@ -116,7 +116,7 @@ public class IndexDatabase {
      * Create a new instance of an Index Database for a given project
      *
      * @param project the project to create the database for
-     * @throws java.io.IOException if an errror occurs while creating
+     * @throws java.io.IOException if an error occurs while creating
      * directories
      */
     public IndexDatabase(Project project) throws IOException {
