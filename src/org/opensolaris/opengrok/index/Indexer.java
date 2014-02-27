@@ -55,6 +55,7 @@ import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Getopt;
+import org.opensolaris.opengrok.util.Statistics;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
@@ -69,7 +70,7 @@ public final class Indexer {
     private static final String DIRBASED = "dirbased";
     private static final String UIONLY = "uionly";
 
-    private static Indexer index = new Indexer();
+    private static final Indexer index = new Indexer();
     static final Logger log = Logger.getLogger(Indexer.class.getName());
     private static final String DERBY_EMBEDDED_DRIVER =
             "org.apache.derby.jdbc.EmbeddedDriver";
@@ -98,12 +99,12 @@ public final class Indexer {
      */
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public static void main(String argv[]) {
+        Statistics stats=new Statistics();//this won't count JVM creation though
         boolean runIndex = true;
         boolean update = true;
         boolean optimizedChanged = false;
-        ArrayList<String> zapCache = new ArrayList<String>();
-        CommandLineOptions cmdOptions = new CommandLineOptions();
-
+        ArrayList<String> zapCache = new ArrayList<>();
+        CommandLineOptions cmdOptions = new CommandLineOptions();        
 
         if (argv.length == 0) {
             System.err.println(cmdOptions.getUsage());
@@ -111,9 +112,9 @@ public final class Indexer {
         } else {
             Executor.registerErrorHandler();
             boolean searchRepositories = false;
-            ArrayList<String> subFiles = new ArrayList<String>();
-            ArrayList<String> repositories = new ArrayList<String>();
-            HashSet<String> allowedSymlinks = new HashSet<String>();
+            ArrayList<String> subFiles = new ArrayList<>();
+            ArrayList<String> repositories = new ArrayList<>();
+            HashSet<String> allowedSymlinks = new HashSet<>();
             String configFilename = null;
             String configHost = null;
             boolean addProjects = false;
@@ -219,10 +220,13 @@ public final class Indexer {
                             // Should be a full class name, but we also accept
                             // the shorthands "client" and "embedded". Expand
                             // the shorthands here.
-                            if ("client".equals(databaseDriver)) {
-                                databaseDriver = DERBY_CLIENT_DRIVER;
-                            } else if ("embedded".equals(databaseDriver)) {
-                                databaseDriver = DERBY_EMBEDDED_DRIVER;
+                            switch (databaseDriver) {
+                                case "client":
+                                    databaseDriver = DERBY_CLIENT_DRIVER;
+                                    break;
+                                case "embedded":
+                                    databaseDriver = DERBY_EMBEDDED_DRIVER;
+                                    break;
                             }
                             break;
                         case 'u':
@@ -559,6 +563,9 @@ public final class Indexer {
                 System.err.println("Exception: " + e.getLocalizedMessage());
                 log.log(Level.SEVERE, "Unexpected Exception", e);
                 System.exit(1);
+            } 
+            finally {
+                stats.report(log);
             }
         }
 
@@ -616,7 +623,7 @@ public final class Indexer {
                     }
                 }
                 if (!zapCache.isEmpty()) {
-                    HashSet<String> toZap = new HashSet<String>(zapCache.size() << 1);
+                    HashSet<String> toZap = new HashSet<>(zapCache.size() << 1);
                     boolean all = false;
                     for (String repo : zapCache) {
                         if ("*".equals(repo)) {
@@ -651,7 +658,7 @@ public final class Indexer {
 
             // Keep a copy of the old project list so that we can preserve
             // the customization of existing projects.
-            Map<String, Project> oldProjects = new HashMap<String, Project>();
+            Map<String, Project> oldProjects = new HashMap<>();
             for (Project p : projects) {
                 oldProjects.put(p.getPath(), p);
             }
@@ -745,7 +752,7 @@ public final class Indexer {
                 IndexDatabase.optimizeAll(executor);
             }
         } else {
-            List<IndexDatabase> dbs = new ArrayList<IndexDatabase>();
+            List<IndexDatabase> dbs = new ArrayList<>();
 
             for (String path : subFiles) {
                 Project project = Project.getProject(path);
