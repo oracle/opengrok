@@ -57,9 +57,7 @@ import org.opensolaris.opengrok.search.context.HistoryContext;
  * database.
  *
  * @author Trond Norbye 2005
- * @author Lubos Kosco 2010 - upgrade to lucene 3.0.0
- * @author Lubos Kosco 2011 - upgrade to lucene 3.5.0
- * @author Lubos Kosco 2012 - upgrade to lucene 3.6.0
+ * @author Lubos Kosco 2010 - upgrade to lucene 3.0.0 
  * @author Lubos Kosco 2012 - upgrade to lucene 4.0
  */
 public class SearchEngine {
@@ -74,7 +72,7 @@ public class SearchEngine {
     /**
      * version of lucene index common for whole app
      */
-    public static final Version LUCENE_VERSION = Version.LUCENE_46;
+    public static final Version LUCENE_VERSION = Version.LUCENE_47;
     /**
      * Holds value of property definition.
      */
