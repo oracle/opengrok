@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -152,7 +152,7 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Get an input stream that I may use to read a speciffic version of a
+     * Get an input stream that I may use to read a specific version of a
      * named file.
      * @param parent the name of the directory containing the file
      * @param basename the name of the file to get
@@ -338,7 +338,7 @@ public abstract class Repository extends RepositoryInfo {
     abstract boolean isRepositoryFor(File file);
 
     /**
-     * Returns true if this repository supports sub reporitories (a.k.a. forests).
+     * Returns true if this repository supports sub repositories (a.k.a. forests).
      *
      * @return true if this repository supports sub repositories
      */

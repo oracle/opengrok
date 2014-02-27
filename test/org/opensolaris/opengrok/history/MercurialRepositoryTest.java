@@ -223,5 +223,4 @@ public class MercurialRepositoryTest {
             }
         }
     }
-
 }

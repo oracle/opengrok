@@ -19,12 +19,17 @@
 
 /*
  * Copyright (c) 2011 Trond Norbye
- * Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,5 +55,40 @@ public final class IOUtils {
                 log.log(Level.WARNING, "Failed to close resource: ", e);
             }
         }
+    }
+
+    /**
+     * Delete directory recursively. This method does not follow symlinks.
+     * @param path directory to delete
+     * @throws IOException
+     */
+    public static void removeRecursive(Path path) throws IOException
+    {
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                // Try to delete the file anyway.
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                if (exc == null) {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    // Directory traversal failed.
+                    throw exc;
+                }
+            }
+        });
     }
 }

@@ -96,7 +96,7 @@ public class CVSRepository extends RCSRepository {
                     }
                 }
             } catch (java.io.FileNotFoundException e) {
-                logger.fine("not loading header include file: " + e);
+                logger.fine("not loading CVS Root file: " + e);
                 return;
             }
 

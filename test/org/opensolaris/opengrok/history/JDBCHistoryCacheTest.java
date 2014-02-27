@@ -250,16 +250,23 @@ public class JDBCHistoryCacheTest extends TestCase {
 
         History updatedHistory = cache.get(reposRoot, repos, true);
 
-        HistoryEntry newEntry = new HistoryEntry(
+        HistoryEntry newEntry1 = new HistoryEntry(
                 "10:1e392ef0b0ed",
                 new Date(1245446973L / 60 * 60 * 1000), // whole minutes only
                 "xyz", null, "Return failure when executed with no arguments",
                 true);
-        newEntry.addFile("/mercurial/main.c");
+        newEntry1.addFile("/mercurial/main.c");
+        HistoryEntry newEntry2 = new HistoryEntry(
+                "11:bbb3ce75e1b8",
+                new Date(1245447973L / 60 * 60 * 1000), // whole minutes only
+                "xyz", null, "Do something else",
+                true);
+        newEntry2.addFile("/mercurial/main.c");
 
         LinkedList<HistoryEntry> updatedEntries = new LinkedList<HistoryEntry>(
                 updatedHistory.getHistoryEntries());
-        assertSameEntry(newEntry, updatedEntries.removeFirst());
+        assertSameEntry(newEntry2, updatedEntries.removeFirst());
+        assertSameEntry(newEntry1, updatedEntries.removeFirst());
         assertSameEntries(historyToStore.getHistoryEntries(), updatedEntries);
 
         // test clearing of cache
@@ -301,7 +308,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         importHgChangeset(
                 reposRoot, getClass().getResource("hg-export.txt").getPath());
         repos.createCache(cache, latestRevision);
-        assertEquals("10:1e392ef0b0ed", cache.getLatestCachedRevision(repos));
+        assertEquals("11:bbb3ce75e1b8", cache.getLatestCachedRevision(repos));
     }
 
     /**
