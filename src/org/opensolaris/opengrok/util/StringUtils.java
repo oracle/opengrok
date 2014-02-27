@@ -36,7 +36,7 @@ public final class StringUtils {
      * Returns true if the string is empty or only includes whitespace characters.
      *
      * @param str the string to be checked
-     * @return true if string is empty or only contains whitespace charadcters
+     * @return true if string is empty or only contains whitespace characters
      */
     public static boolean isOnlyWhitespace(String str) {
         for (int i = 0; i < str.length(); i++) {
@@ -66,8 +66,8 @@ public final class StringUtils {
 
   /**
    * Convert value in milliseconds to readable time.
-   * @param time delta in milliseconds
-   * @returns human readable string
+   * @param time_ms delta in milliseconds
+   * @return human readable string   
    */
   public static String getReadableTime(long time_ms) {
       String output = "";
