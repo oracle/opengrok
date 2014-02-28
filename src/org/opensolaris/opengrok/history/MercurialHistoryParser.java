@@ -112,23 +112,23 @@ class MercurialHistoryParser implements Executor.StreamHandler {
         String s;
         HistoryEntry entry = null;
         while ((s = in.readLine()) != null) {
-            if (s.startsWith("changeset:")) {
+            if (s.startsWith(MercurialRepository.CHANGESET)) {
                 entry = new HistoryEntry();
                 entries.add(entry);
                 entry.setActive(true);
-                entry.setRevision(s.substring("changeset:".length()).trim());
-            } else if (s.startsWith("user:") && entry != null) {
-                entry.setAuthor(s.substring("user:".length()).trim());
-            } else if (s.startsWith("date:") && entry != null) {
+                entry.setRevision(s.substring(MercurialRepository.CHANGESET.length()).trim());
+            } else if (s.startsWith(MercurialRepository.USER) && entry != null) {
+                entry.setAuthor(s.substring(MercurialRepository.USER.length()).trim());
+            } else if (s.startsWith(MercurialRepository.DATE) && entry != null) {
                 Date date = new Date();
                 try {
-                    date = df.parse(s.substring("date:".length()).trim());
+                    date = df.parse(s.substring(MercurialRepository.DATE.length()).trim());
                 } catch (ParseException pe) {
                     OpenGrokLogger.getLogger().log(Level.WARNING,
                         "Could not parse date: " + s, pe);
                 }
                 entry.setDate(date);
-            } else if (s.startsWith("files:") && entry != null) {
+            } else if (s.startsWith(MercurialRepository.FILES) && entry != null) {
                 String[] strings = s.split(" ");
                 for (int ii = 1; ii < strings.length; ++ii) {
                     if (strings[ii].length() > 0) {
@@ -141,13 +141,13 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                         }
                     }
                 }
-            } else if (s.startsWith(MercurialRepository.FILE_COPIES_) &&
+            } else if (s.startsWith(MercurialRepository.FILE_COPIES) &&
                 entry != null && isDir) {
                 /* 
                  * 'file_copies:' should be present only for directories but
                  * we use isDir to be on the safe side.
                  */
-                s = s.replaceFirst(MercurialRepository.FILE_COPIES_, "");
+                s = s.replaceFirst(MercurialRepository.FILE_COPIES, "");
                 String[] splitArray = s.split("\\)");
                 for (String part: splitArray) {
                      /*

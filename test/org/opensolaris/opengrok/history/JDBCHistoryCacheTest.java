@@ -85,6 +85,9 @@ public class JDBCHistoryCacheTest extends TestCase {
         cache = new JDBCHistoryCache(
                 DERBY_EMBEDDED_DRIVER, getURL() + ";create=true");
         cache.initialize();
+
+        // Mercurial parser needs to know if the history is stored in DB.
+        RuntimeEnvironment.getInstance().setStoreHistoryCacheInDB(true);
     }
 
     /**
