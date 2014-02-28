@@ -16,15 +16,35 @@ diff -r 6a8c423f5624 -r 78649c3ec6cb main.c
 +   return argc > 1 ? EXIT_SUCCESS : EXIT_FAILURE;
  }
 # HG changeset patch
-# User xyz
-# Date 1245447973 -7200
+# User Vladimir Kotal <Vladimir.Kotal@oracle.com>
+# Date 1393515291 -3600
 # Node ID 7c92b0cf284d923dcff65bf59f096444e36be1c3
 # Parent  78649c3ec6cb1a8c8aec9530db47df59dfd63b92
+rename1
+
+diff --git a/main.c b/main1.c
+rename from main.c
+rename to main1.c
+# HG changeset patch
+# User Vladimir Kotal <Vladimir.Kotal@oracle.com>
+# Date 1393515253 -3600
+# Node ID af216915331fc93020d9743faec97b308284ad1c
+# Parent  7c92b0cf284d923dcff65bf59f096444e36be1c3
+rename2
+
+diff --git a/main1.c b/main2.c
+rename from main1.c
+rename to main2.c
+# HG changeset patch
+# User xyz
+# Date 1245447973 -7200
+# Node ID ffacde4c3962640400e1aa79053c70b5364162bf
+# Parent  af216915331fc93020d9743faec97b308284ad1c
 Do something else
 
-diff -r 6a8c423f5624 -r 78649c3ec6cb main.c
---- a/main.c	Tue Aug 12 22:13:09 2008 +0200
-+++ b/main.c	Fri Jun 19 23:29:33 2009 +0200
+diff -r 6a8c423f5624 -r 78649c3ec6cb main2.c
+--- a/main2.c	Tue Aug 12 22:13:09 2008 +0200
++++ b/main2.c	Fri Jun 19 23:29:33 2009 +0200
 @@ -8,5 +8,5 @@
     }
     (void)printf("\n");
