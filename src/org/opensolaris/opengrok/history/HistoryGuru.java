@@ -513,27 +513,47 @@ public final class HistoryGuru {
     }
 
     private void createCacheReal(Collection<Repository> repositories) {
+        long start = System.currentTimeMillis();
         ExecutorService executor = RuntimeEnvironment.getHistoryExecutor();
+        // Since we know each repository object from the repositories
+        // collection is unique, we can abuse HashMap to create a list of
+        // repository,revision tuples with repository as key (as the revision
+        // string does not have to be unique - surely it is not unique
+        // for the initial index case).
+        HashMap<Repository,String> repos2process = new HashMap<>();
 
-        final CountDownLatch latch = new CountDownLatch(repositories.size());
+        // Collect the list of <latestRev,repo> pairs first so that we
+        // do not have to deal with latch decrementing in the cycle below.
         for (final Repository repo : repositories) {
             final String latestRev;
 
             try {
                 latestRev = historyCache.getLatestCachedRevision(repo);
+                repos2process.put(repo, latestRev);
             } catch (HistoryException he) {
                 log.log(Level.WARNING,
                         String.format(
                         "Failed to retrieve latest cached revision for %s",
                         repo.getDirectoryName()), he);
-                latch.countDown();
-                continue;
             }
+        }
+
+        log.log(Level.INFO, "Creating historycache for {0} repositories",
+            repos2process.size());
+        final CountDownLatch latch = new CountDownLatch(repos2process.size());
+        for (final Map.Entry<Repository,String> entry : repos2process.entrySet()) {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    createCache(repo, latestRev);
-                    latch.countDown();
+                    try {
+                        createCache(entry.getKey(), entry.getValue());
+                    } catch (Exception ex) {
+                        // We want to catch any exception since we are in thread.
+                        log.log(Level.WARNING,
+                            "createCacheReal() got exception" + ex);
+                    } finally {
+                        latch.countDown();
+                    }
                 }
             });
         }
@@ -577,6 +597,10 @@ public final class HistoryGuru {
             OpenGrokLogger.getLogger().log(Level.WARNING,
                     "Failed optimizing the history cache database", he);
         }
+        long stop = System.currentTimeMillis();
+        String time_str = StringUtils.getReadableTime(stop - start);
+        log.log(Level.INFO, "Done historycache for all repositories (took {0})",
+            time_str);
     }
 
     public void createCache(Collection<String> repositories) {
