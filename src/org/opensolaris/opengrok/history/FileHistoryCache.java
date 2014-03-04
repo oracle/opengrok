@@ -360,7 +360,7 @@ class FileHistoryCache implements HistoryCache {
                 }
             } catch (IOException ex) {
                OpenGrokLogger.getLogger().log(Level.WARNING,
-                   "isRenamedFile() got exception" + ex);
+                   "isRenamedFile() got exception: " + ex);
             }
             
             doFileHistory(map_entry, env, repository, null, root, false);
@@ -382,7 +382,20 @@ class FileHistoryCache implements HistoryCache {
                 }
             } catch (IOException ex) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "isRenamedFile() got exception" + ex);
+                    "isRenamedFile() got exception: " + ex);
+            }
+        }
+        // The directories for the renamed files have to be created before
+        // the actual files otherwise storeFile() might be racing for
+        // mkdirs() if there are multiple renamed files from single directory
+        // handled in parallel.
+        for (final String file : renamed_map.keySet()) {
+            File cache = getCachedFile(new File(env.getSourceRootPath() + file));
+            File dir = cache.getParentFile();
+
+            if (!dir.isDirectory() && !dir.mkdirs()) {
+                OpenGrokLogger.getLogger().log(Level.WARNING,
+                   "Unable to create cache directory '" + dir + "'.");
             }
         }
         final Repository repositoryF = repository;
@@ -398,7 +411,7 @@ class FileHistoryCache implements HistoryCache {
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
                         OpenGrokLogger.getLogger().log(Level.WARNING,
-                            "doFileHistory() got exception" + ex);
+                            "doFileHistory() got exception: " + ex);
                     } finally {
                         latch.countDown();
                     }
