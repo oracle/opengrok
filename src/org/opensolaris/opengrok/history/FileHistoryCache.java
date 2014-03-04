@@ -385,6 +385,19 @@ class FileHistoryCache implements HistoryCache {
                     "isRenamedFile() got exception" + ex);
             }
         }
+        // The directories for the renamed files have to be created before
+        // the actual files otherwise storeFile() might be racing for
+        // mkdirs() if there are multiple renamed files from single directory
+        // handled in parallel.
+        for (final String file : renamed_map.keySet()) {
+            File cache = getCachedFile(new File(env.getSourceRootPath() + file));
+            File dir = cache.getParentFile();
+
+            if (!dir.isDirectory() && !dir.mkdirs()) {
+                OpenGrokLogger.getLogger().log(Level.WARNING,
+                   "Unable to create cache directory '" + dir + "'.");
+            }
+        }
         final Repository repositoryF = repository;
         final CountDownLatch latch = new CountDownLatch(renamed_map.size());
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : renamed_map.entrySet()) {
