@@ -1,6 +1,6 @@
 = How to build {OpenGrok =
 
-The easiest way to build (or modify) {OpenGrok is by using [http://www.netbeans.org NetBeans] (v7.2.1 and up preferred), but you can also build {OpenGrok from the command line.
+The easiest way to build (or modify) {OpenGrok is by using [http://www.netbeans.org NetBeans] (v7.4 and up preferred), but you can also build {OpenGrok from the command line.
 
 == Requirements ==
 
@@ -45,4 +45,8 @@ Note that there is an experimental maven build system being implemented. If you 
 
 = Useful Tools =
 
-Inspecting indexes: [http://code.google.com/p/luke/ Luke]
+Travis CI: <a href="https://travis-ci.org/OpenGrok/OpenGrok">OpenGrok on Travis <img src="https://travis-ci.org/OpenGrok/OpenGrok.png?branch=master"/></a>
+
+Inspecting indexes: [http://code.google.com/p/luke/ Luke] 
+
+(get the latest luke jar from our downloads: [https://java.net/projects/opengrok/downloads java.net Downloads])
