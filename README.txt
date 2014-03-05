@@ -807,6 +807,27 @@ Output is stored in the jdepend directory:
   $ ls jdepend/
   report.txt  report.xml
 
+8.7 Using SonarQube
+-------------------
+
+Use a sonar runner with included sonar-project.properties properties, 
+e.g. using bash:
+
+  $ cd <checkout_dir> # it has to contain sonar-project.properties!
+  $ export SONAR_RUNNER_OPTS="-Xmx768m -XX:MaxPermSize=256m"
+  $ export SERVERIP=10.163.26.78
+  $ ~//Projects/sonar-runner-2.3/bin/sonar-runner \
+    -Dsonar.host.url=http://${SERVERIP}:9000 
+    -Dsonar.jdbc.url=jdbc:h2:tcp://${SERVERIP}:9092/sonar
+
+8.8 Using Travis CI
+-------------------
+
+Please see .travis.yml, if your branch has this file,
+you should be able to connect your Github to Travis CI.
+OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok
+
+
 9. Tuning OpenGrok for large code bases
 ---------------------------------------
 
