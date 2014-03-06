@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -102,6 +102,9 @@ class JDBCHistoryCache implements HistoryCache {
 
     private static final PreparedQuery GET_LAST_MODIFIED_TIMES =
             new PreparedQuery(getQuery("getLastModifiedTimes"));
+
+    private static final PreparedQuery GET_FILEMOVES_COUNT =
+            new PreparedQuery(getQuery("getFilemovesCount"));
 
     /**
      * The number of times to retry an operation that failed in a way that
@@ -516,6 +519,8 @@ class JDBCHistoryCache implements HistoryCache {
      */
     private static final PreparedQuery GET_FILE_HISTORY =
             new PreparedQuery(getQuery("getFileHistory"));
+    private static final PreparedQuery GET_FILE_HISTORY_FOLDED =
+            new PreparedQuery(getQuery("getFileHistoryFolded"));
 
     /**
      * Statement that gets the history for all files matching a pattern in the
@@ -551,6 +556,31 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
+     * Get the number of rows in the FILEMOVES table. This is used as a
+     * workaround/optimization since JavaDB cannot currently handle the
+     * GET_FILE_HISTORY very well.
+     * @return number of rows in the FILEMOVES table
+     * @throws SQLException
+     */
+    private int getFilemovesCount() throws SQLException {
+        final ConnectionResource conn;
+        conn = connectionManager.getConnectionResource();
+
+        try {
+            final PreparedStatement cntPS = conn.getStatement(GET_FILEMOVES_COUNT);
+            try (ResultSet rs = cntPS.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } finally {
+            connectionManager.releaseConnection(conn);
+        }
+
+        return -1;
+    }
+
+    /**
      * Helper for {@link #get(File, Repository)}.
      */
     private History getHistory(
@@ -561,6 +591,8 @@ class JDBCHistoryCache implements HistoryCache {
         final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         final ConnectionResource conn =
                 connectionManager.getConnectionResource();
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
         try {
             final PreparedStatement ps;
             if (file.isDirectory()) {
@@ -569,7 +601,8 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(2, filePath);
             } else {
                 // Fetch history for a single file only.
-                ps = conn.getStatement(GET_FILE_HISTORY);
+                ps = conn.getStatement(env.RenamedFilesEnabled() && (getFilemovesCount() > 0) ?
+                    GET_FILE_HISTORY : GET_FILE_HISTORY_FOLDED);
                 ps.setString(2, getParentPath(filePath));
                 ps.setString(3, getBaseName(filePath));
             }
@@ -609,7 +642,6 @@ class JDBCHistoryCache implements HistoryCache {
         History history = new History();
         history.setHistoryEntries(entries);
 
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.isTagsEnabled() && repository.hasFileBasedTags()) {
             repository.assignTagsInHistory(history);
         }
