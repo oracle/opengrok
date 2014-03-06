@@ -488,9 +488,9 @@ public final class PageConfig {
     }
 
     /**
-     * Get the eftar reader for the opengrok data directory. If it has been
+     * Get the eftar reader for the data directory. If it has been
      * already opened and not closed, this instance gets returned. One should
-     * not close it once used: {@link #cleanup()} takes care to close it.
+     * not close it once used: {@link #cleanup(ServletRequest)} takes care to close it.
      *
      * @return {@code null} if a reader can't be established, the reader
      * otherwise.
@@ -1216,7 +1216,6 @@ public final class PageConfig {
      * the given request.
      * @param sr request to check, cleanup. Ignored if {@code null}.
      * @see PageConfig#get(HttpServletRequest)
-     * 
      */
     public static void cleanup(ServletRequest sr) {
         if (sr == null) {
