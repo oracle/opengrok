@@ -30,10 +30,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-
-import junit.framework.Assert;
-
 import org.apache.lucene.document.Document;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class TextAnalyzerTest {
@@ -56,9 +54,9 @@ public class TextAnalyzerTest {
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource("hello".getBytes()), null);
 
-        Assert.assertEquals(defaultEncoding, encoding);
+        assertEquals(defaultEncoding, encoding);
 
-        Assert.assertEquals("hello", contents);
+        assertEquals("hello", contents);
     }
 
     @Test
@@ -66,9 +64,9 @@ public class TextAnalyzerTest {
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource("hi".getBytes()), null);
 
-        Assert.assertEquals(defaultEncoding, encoding);
+        assertEquals(defaultEncoding, encoding);
 
-        Assert.assertEquals("hi", contents);
+        assertEquals("hi", contents);
     }
 
     @Test
@@ -77,8 +75,8 @@ public class TextAnalyzerTest {
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource(buffer), null);
 
-        Assert.assertEquals("hello", contents);
-        Assert.assertEquals("UTF8", encoding);
+        assertEquals("hello", contents);
+        assertEquals("UTF8", encoding);
     }
 
     @Test
@@ -90,9 +88,9 @@ public class TextAnalyzerTest {
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource(bytes), null);
 
-        Assert.assertEquals("UTF-16", encoding);
+        assertEquals("UTF-16", encoding);
 
-        Assert.assertEquals("hello", contents);
+        assertEquals("hello", contents);
     }
 
     @Test
@@ -110,9 +108,9 @@ public class TextAnalyzerTest {
         new TestableTextAnalyzer().analyze(new Document(),
                 getStreamSource(bytes), null);
 
-        Assert.assertEquals("UTF-16", encoding);
+        assertEquals("UTF-16", encoding);
 
-        Assert.assertEquals("hello", contents);
+        assertEquals("hello", contents);
     }
 
     public class TestableTextAnalyzer extends TextAnalyzer {
