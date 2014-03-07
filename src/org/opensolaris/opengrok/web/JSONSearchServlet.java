@@ -31,6 +31,8 @@ public class JSONSearchServlet extends HttpServlet {
 	private static final String ATTRIBUTE_LINE = "line";
 	private static final String ATTRIBUTE_PATH = "path";
 	private static final String ATTRIBUTE_RESULTS = "results";
+	private static final String ATTRIBUTE_DURATION = "duration";
+	private static final String ATTRIBUTE_RESULT_COUNT = "resultcount";
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -78,12 +80,15 @@ public class JSONSearchServlet extends HttpServlet {
 		}
 
 		if (valid) {
+			long start = System.currentTimeMillis();
+			
 			int numResults = engine.search();
 			int maxResults = MAX_RESULTS;
 			String maxResultsParam = req.getParameter(PARAM_MAXRESULTS);
 			if (maxResultsParam != null) {
 				try {
 					maxResults = Integer.parseInt(maxResultsParam);
+					result.put(PARAM_MAXRESULTS, maxResults);
 				} catch (NumberFormatException ex) {
 				}
 			}
@@ -102,6 +107,12 @@ public class JSONSearchServlet extends HttpServlet {
 				hitJson.put(ATTRIBUTE_PATH, hit.getPath());
 				resultsArray.add(hitJson);
 			}
+			
+			long duration = System.currentTimeMillis() - start;
+			
+			result.put(ATTRIBUTE_DURATION, duration);
+			result.put(ATTRIBUTE_RESULT_COUNT, results.size());
+			
 			result.put(ATTRIBUTE_RESULTS, resultsArray);
 		}
 		resp.getWriter().write(result.toString());
