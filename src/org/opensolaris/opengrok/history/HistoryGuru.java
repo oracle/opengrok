@@ -221,7 +221,7 @@ public final class HistoryGuru {
         RemoteSCM rscm = RuntimeEnvironment.getInstance().getRemoteScmSupported();
         boolean doRemote = (ui && (rscm == RemoteSCM.UIONLY))
             || (rscm == RemoteSCM.ON)
-            || ((rscm == RemoteSCM.DIRBASED) && (repo != null) && repo.hasHistoryForDirectories());
+            || (ui || ((rscm == RemoteSCM.DIRBASED) && (repo != null) && repo.hasHistoryForDirectories()));
 
         if (repo != null && repo.isWorking() && repo.fileHasHistory(file)
             && (!repo.isRemote() || doRemote)) {
