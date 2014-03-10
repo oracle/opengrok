@@ -109,7 +109,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                     path = stringInterner.intern(path);
                     entry.addFile(path);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.INFO, "Skipping file outside repository: " + s);
+                    OpenGrokLogger.getLogger().log(Level.FINER, "Skipping file outside repository: " + s);
                 }
             } else if ("msg".equals(qname)) {
                 entry.setMessage(s);
