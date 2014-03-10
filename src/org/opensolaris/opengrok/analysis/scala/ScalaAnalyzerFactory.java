@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.scala;
@@ -43,12 +43,9 @@ public class ScalaAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "SCALA"
     };
-    private static final String[] MAGICS = {
-        "/"
-    };
 
     public ScalaAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
