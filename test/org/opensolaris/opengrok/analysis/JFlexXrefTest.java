@@ -65,6 +65,7 @@ public class JFlexXrefTest {
      * returned by an xref.
      */
     private static final String FIRST_LINE_PREAMBLE =
+                "<div id=\"l1\" class=\"line-bg\"></div>" +
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a>";
 
     @BeforeClass
@@ -343,9 +344,11 @@ public class JFlexXrefTest {
         // The next call used to loop forever.
         xref.write(out);
 
-        assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+        assertEquals("<div id=\"l1\" class=\"line-bg\"></div>"
+            + "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
             + "<a href=\"/source/s?defs=cat\">cat</a> &lt;&lt; EOF"
             + "<span class=\"s\">\n"
+            + "<div id=\"l2\" class=\"line-bg\"></div>"
             + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>"
             + "unterminated heredoc</span>",
             out.toString());
@@ -364,10 +367,12 @@ public class JFlexXrefTest {
         StringWriter out = new StringWriter();
         xref.write(out);
 
-        assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+        assertEquals("<div id=\"l1\" class=\"line-bg\"></div>"
+                + "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
                 + "<strong>begin</strong> <i>644</i> "
                 + "<a href=\"/source/s?q=test.txt\">test.txt</a>"
                 + "<span class='c'>\n"
+                + "<div id=\"l2\" class=\"line-bg\"></div>"
                 + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>",
                 out.toString());
     }

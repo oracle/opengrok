@@ -490,6 +490,7 @@ public final class Util {
         if (num > 1) {
             out.write("\n");
         }
+        out.write("<div id=\"l" + num + "\" class=\"line-bg\"></div>");
         out.write(anchorClassStart);
         out.write( (num % 10 == 0 ? "hl" : "l"));
         out.write("\" name=\"");
@@ -509,7 +510,7 @@ public final class Util {
                 out.write(URIEncode(annotation.getFilename()));
                 out.write("?a=true&amp;r=");
                 out.write(URIEncode(r));
-		String msg = annotation.getDesc(r);
+                String msg = annotation.getDesc(r);
                 if (msg != null) {
                     out.write("\" title=\"");
                     out.write(msg);
