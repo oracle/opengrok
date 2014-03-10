@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -89,9 +89,12 @@ public class MercurialRepository extends Repository {
         + FILE_LIST + END_OF_ENTRY + "\\n";
 
     /** Template for formatting hg log output for directories. */
-    private static final String DIR_TEMPLATE =
+    private static final String DIR_TEMPLATE_RENAMED =
         TEMPLATE_STUB + FILE_LIST
         + FILE_COPIES + "{file_copies}\\n" + END_OF_ENTRY + "\\n";
+    private static final String DIR_TEMPLATE =
+        TEMPLATE_STUB + FILE_LIST
+        + END_OF_ENTRY + "\\n";
 
     /** Pattern used to extract author/revision from hg annotate. */
     private static final Pattern ANNOTATION_PATTERN =
@@ -145,9 +148,9 @@ public class MercurialRepository extends Repository {
 
         cmd.add("--template");
         if (file.isDirectory()) {
-            cmd.add(DIR_TEMPLATE);
+            cmd.add(RuntimeEnvironment.isRenamedFilesEnabled() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
         } else {
-            /* JDBC requires to have complete list of files. */
+            /* JDBC requires complete list of files. */
             cmd.add(env.storeHistoryCacheInDB() ? FILE_TEMPLATE_LIST : FILE_TEMPLATE);
         }
         if (!filename.isEmpty()) {
