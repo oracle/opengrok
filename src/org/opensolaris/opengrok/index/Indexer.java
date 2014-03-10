@@ -542,7 +542,9 @@ public final class Indexer {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 env.setConfiguration(cfg);
 
-                if (RuntimeEnvironment.isRenamedFilesEnabled()) {
+                // Issue a warning when JDBC is used with renamed file handling.
+                // This causes heavy slowdown when used with JavaDB (issue #774).
+                if (RuntimeEnvironment.isRenamedFilesEnabled() && cfg.isHistoryCacheInDB()) {
                     System.out.println("History stored in DB and renamed file handling is on - possible performance degradation");
                 }
 
