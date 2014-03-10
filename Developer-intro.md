@@ -74,3 +74,5 @@ To run tests in single file, open the file from the left column which contains t
 ### Publish changes
 
 Once done with your changes, save them in Netbeans, `git commit` and `push` them to your repository (or you can do the Git dance directly from Netbeans using the Team -> Git menu). From there it is possible to create new pull request to the origin master branch using the standard Github process (https://help.github.com/articles/creating-a-pull-request - again Github help describes this in detail).
+
+Make sure to sign the Oracle Contributor Agreement (http://www.oracle.com/technetwork/goto/oca) and ideally post the contributor number to the pull request.
