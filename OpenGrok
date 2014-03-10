@@ -91,7 +91,7 @@ Usage()
 
     exec >&2
     echo ""
-    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help>"
+    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help|histzap>"
     echo "       ${progname} index [<directory>]"
     echo ""
     echo "  Optional environment variables:"
@@ -883,6 +883,15 @@ DerbyServer()
 }
 
 #
+# Clear history index for given project.
+#
+ZapHistory()
+{
+	Progress "Removing history index data for repository ${1}"
+	StdInvocation -k "${1}"
+}
+
+#
 # Main Program
 #
 
@@ -932,6 +941,13 @@ case "${1}" in
         UpdateGeneratedData
         UpdateDescriptionCache
         ;;
+
+    zaphist)
+	if [ -z "${2}" ]; then
+		Usage
+	fi
+	ZapHistory "${2}"
+	;;
 
     usage|help)
         OpenGrokUsage
