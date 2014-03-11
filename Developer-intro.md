@@ -65,7 +65,7 @@ Now select the opengrok project in the left column and go to Run -> Run Project 
 
 ### Debugging
 
-Simply insert a breakpoint either in the Indexer code or the webapp and Run it or do something with the browser, respectively. Then it is possible to single step, observe the variables etc.
+Simply insert a breakpoint either in the Indexer code or the webapp and Debug it (Ctrl+F5) it or do something with the browser, respectively. Then it is possible to single step, observe the variables etc.
 
 ### Test
 
