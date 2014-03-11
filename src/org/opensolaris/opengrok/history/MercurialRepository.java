@@ -129,7 +129,13 @@ public class MercurialRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("log");
-        if (!file.isDirectory()) { cmd.add("-f"); }
+
+        // For plain files we would like to follow the complete history
+        // (this is necessary for getting the original name in given revision
+        // when handling renamed files)
+        if (!file.isDirectory()) {
+            cmd.add("-f");
+        }
 
         if (changeset != null) {
             cmd.add("-r");
