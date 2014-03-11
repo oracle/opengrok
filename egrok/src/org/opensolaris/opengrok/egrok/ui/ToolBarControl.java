@@ -18,6 +18,7 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.opensolaris.opengrok.egrok.query.Query;
 
 public class ToolBarControl extends WorkbenchWindowControlContribution {
+
   public static final String JSON_SUFFIX = "/json";
 
   private List<String> history = new ArrayList<String>();
@@ -36,6 +37,7 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 
     TextUtils.setToDefault(searchBox, "{OpenGrok");
     searchBox.addFocusListener(new FocusListener() {
+
       @Override
       public void focusLost(FocusEvent e) {
         TextUtils.setToDefault(searchBox, "{OpenGrok");
@@ -48,27 +50,13 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
     });
 
     searchBox.addKeyListener(new KeyAdapter() {
+
       @Override
       public void keyReleased(KeyEvent e) {
         if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
-          String text = searchBox.getText();
-
-          if (text != null && !"".equals(text)) {
-            history.add(0, text);
-            historyIndex = 0;
-
-            Rectangle bounds = searchBox.getBounds();
-
-            Point topLeft = new Point(bounds.x, bounds.y + bounds.height);
-            topLeft = searchBox.getShell().toDisplay(topLeft);
-
-            final ResultsDialog dialog = new ResultsDialog(Display.getCurrent()
-                .getActiveShell(), text, topLeft);
-
-            Query query = new Query(text);
-            query.run(dialog);
-          }
-        } else if (e.keyCode == SWT.ARROW_UP) {
+          doSearch();
+        }
+        else if (e.keyCode == SWT.ARROW_UP) {
           historyIndex++;
           if (historyIndex > history.size()) {
             historyIndex = history.size();
@@ -76,14 +64,50 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
           if (historyIndex >= 0 && history.size() >= historyIndex) {
             searchBox.setText(history.get(historyIndex - 1));
           }
-        } else if (e.keyCode == SWT.ARROW_DOWN) {
+        }
+        else if (e.keyCode == SWT.ARROW_DOWN) {
           historyIndex--;
 
           if (historyIndex < 0) {
             historyIndex = 0;
-          } else if (history.size() > historyIndex) {
+          }
+          else if (history.size() > historyIndex) {
             searchBox.setText(history.get(historyIndex));
           }
+        }
+        else if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'v') {
+          searchBox.setText("");
+          
+          searchBox.paste();
+
+          if ((e.stateMask & SWT.SHIFT) == SWT.SHIFT) {
+            doSearch();
+          }
+
+        }
+        else if (e.stateMask == SWT.CTRL && e.keyCode == 'c') {
+          searchBox.copy();
+        }else{
+          System.out.println((e.stateMask & SWT.SHIFT) == SWT.SHIFT);
+        }
+      }
+
+      private void doSearch() {
+        String text = searchBox.getText();
+
+        if (text != null && !"".equals(text)) {
+          history.add(0, text);
+          historyIndex = 0;
+
+          Rectangle bounds = searchBox.getBounds();
+
+          Point topLeft = new Point(bounds.x, bounds.y + bounds.height);
+          topLeft = searchBox.getShell().toDisplay(topLeft);
+
+          final ResultsDialog dialog = new ResultsDialog(Display.getCurrent().getActiveShell(), text, topLeft);
+
+          Query query = new Query(text);
+          query.run(dialog);
         }
       }
     });
