@@ -91,8 +91,9 @@ Usage()
 
     exec >&2
     echo ""
-    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help|histzap>"
+    echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help>"
     echo "       ${progname} index [<directory>]"
+    echo "       ${progname} clearHistory [<repository_name>]"
     echo ""
     echo "  Optional environment variables:"
     echo "    OPENGROK_CONFIGURATION - location of your configuration"
@@ -885,7 +886,7 @@ DerbyServer()
 #
 # Clear history index for given project.
 #
-ZapHistory()
+ClearHistory()
 {
 	Progress "Removing history index data for repository ${1}"
 	StdInvocation -k "${1}"
@@ -942,11 +943,11 @@ case "${1}" in
         UpdateDescriptionCache
         ;;
 
-    zaphist)
+    clearHistory)
 	if [ -z "${2}" ]; then
 		Usage
 	fi
-	ZapHistory "${2}"
+	ClearHistory "${2}"
 	;;
 
     usage|help)
