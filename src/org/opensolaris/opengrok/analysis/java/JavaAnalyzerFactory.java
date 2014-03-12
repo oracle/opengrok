@@ -38,12 +38,8 @@ public class JavaAnalyzerFactory extends FileAnalyzerFactory {
         "JAVA"
     };
 
-    private static final String[] MAGICS = {
-        "/*"
-    };
-
     public JavaAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
     }
 
     @Override
