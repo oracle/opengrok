@@ -887,6 +887,16 @@ public final class RuntimeEnvironment {
         threadConfig.get().setChattyStatusPage(chatty);
     }
 
+    public boolean noFetchHistoryWhenNotInCache() {
+        String enabled =
+            System.getProperty("org.opensolaris.opengrok.history.noFetchWhenNotInCache");
+        if (enabled != null) {
+            return true;
+        }
+
+        return (false);
+    }
+    
     /**
      * Read an configuration file and set it as the current configuration.
      *
