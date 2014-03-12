@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -99,7 +99,7 @@ public final class Indexer {
      */
     @SuppressWarnings("PMD.UseStringBufferForStringAppends")
     public static void main(String argv[]) {
-        Statistics stats=new Statistics();//this won't count JVM creation though
+        Statistics stats = new Statistics(); //this won't count JVM creation though
         boolean runIndex = true;
         boolean update = true;
         boolean optimizedChanged = false;
@@ -538,9 +538,15 @@ public final class Indexer {
                 allowedSymlinks.addAll(cfg.getAllowedSymlinks());
                 cfg.setAllowedSymlinks(allowedSymlinks);
 
-                //Set updated configuration in RuntimeEnvironment
+                // Set updated configuration in RuntimeEnvironment.
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 env.setConfiguration(cfg);
+
+                // Issue a warning when JDBC is used with renamed file handling.
+                // This causes heavy slowdown when used with JavaDB (issue #774).
+                if (RuntimeEnvironment.isRenamedFilesEnabled() && cfg.isHistoryCacheInDB()) {
+                    System.out.println("History stored in DB and renamed file handling is on - possible performance degradation");
+                }
 
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,

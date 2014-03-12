@@ -50,6 +50,9 @@ public class FileHistoryCacheTest extends TestCase {
 
         cache = new FileHistoryCache();
         cache.initialize();
+
+        // The tests expect support for renamed files.
+        System.setProperty("org.opensolaris.opengrok.history.RenamedHandlingEnabled", "1");
     }
 
     /**

@@ -601,7 +601,7 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(2, filePath);
             } else {
                 // Fetch history for a single file only.
-                ps = conn.getStatement(env.RenamedFilesEnabled() && (getFilemovesCount() > 0) ?
+                ps = conn.getStatement(RuntimeEnvironment.isRenamedFilesEnabled() && (getFilemovesCount() > 0) ?
                     GET_FILE_HISTORY : GET_FILE_HISTORY_FOLDED);
                 ps.setString(2, getParentPath(filePath));
                 ps.setString(3, getBaseName(filePath));
@@ -828,7 +828,7 @@ class JDBCHistoryCache implements HistoryCache {
                         String fullPath = toUnixPath(file);
                         if (!history.isRenamed(
                             file.substring(repodir.length() + 1)) ||
-                            !RuntimeEnvironment.RenamedFilesEnabled()) {
+                            !RuntimeEnvironment.isRenamedFilesEnabled()) {
                                 int fileId = files.get(fullPath);
                                 addFilechange.setInt(2, fileId);
                                 addFilechange.executeUpdate();
@@ -858,7 +858,7 @@ class JDBCHistoryCache implements HistoryCache {
             }
         }
 
-        if (!RuntimeEnvironment.RenamedFilesEnabled()) {
+        if (!RuntimeEnvironment.isRenamedFilesEnabled()) {
             return;
         }
 
