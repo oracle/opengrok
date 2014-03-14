@@ -6,7 +6,7 @@ Firstly, create Github account (of course !).
 
 OpenGrok can be built and tested on Linux, OS X, BSD, Windows etc. too.
 
-E.g. for Solaris do this:
+E.g. for Solaris install:
 
 1. Solaris 11+
 2. JDK7 (`pkg install developer/java/jdk`)
