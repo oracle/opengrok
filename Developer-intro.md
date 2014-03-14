@@ -10,9 +10,9 @@ E.g. for Solaris install:
 
 1. Solaris 11+
 2. JDK7 (`pkg install developer/java/jdk`)
-3. Exuberant ctags (from source, no IPS package yet)
+3. [Exuberant ctags](http://ctags.sourceforge.net/) (from source, no IPS package yet)
 4. Git (`pkg install git`)
-5. Netbeans (with bundled Tomcat)
+5. [Netbeans](https://netbeans.org/) (with bundled Tomcat)
 6. other SCMs (e.g. `pkg install mercurial subversion`, will be handy for testing)
 
 Also, it would not hurt if you created an issue (https://github.com/OpenGrok/OpenGrok/issues) and mentioned that you will be working on it.
