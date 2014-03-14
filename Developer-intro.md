@@ -4,7 +4,9 @@ If you wanted to make a change to OpenGrok code base (small fix, new feature, an
 
 Firstly, create Github account (of course !).
 
-Then install:
+OpenGrok can be built and tested on Linux, OS X, BSD, Windows etc. too.
+
+E.g. for Solaris do this:
 
 1. Solaris 11+
 2. JDK7 (`pkg install developer/java/jdk`)
