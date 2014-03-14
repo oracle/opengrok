@@ -57,6 +57,8 @@ import org.opensolaris.opengrok.jdbc.PreparedQuery;
 
 class JDBCHistoryCache implements HistoryCache {
 
+    private boolean historyIndexDone = false;
+
     /** The schema in which the tables live. */
     private static final String SCHEMA = "OPENGROK";
 
@@ -1383,5 +1385,15 @@ class JDBCHistoryCache implements HistoryCache {
                 }
             }
         }
+    }
+
+    @Override
+    public void setHistoryIndexDone() {
+        historyIndexDone = true;
+    }
+
+    @Override
+    public boolean isHistoryIndexDone() {
+        return historyIndexDone;
     }
 }

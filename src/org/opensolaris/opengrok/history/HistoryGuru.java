@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -162,8 +162,7 @@ public final class HistoryGuru {
     }
 
     /**
-     * Get the appropriate history reader for the file specified by parent and
-     * basename.
+     * Get the appropriate history reader for given file.
      *
      * @param file The file to get the history reader for
      * @throws HistoryException If an error occurs while getting the history
@@ -601,6 +600,7 @@ public final class HistoryGuru {
         String time_str = StringUtils.getReadableTime(stop - start);
         log.log(Level.INFO, "Done historycache for all repositories (took {0})",
             time_str);
+        historyCache.setHistoryIndexDone();
     }
 
     public void createCache(Collection<String> repositories) {

@@ -63,6 +63,17 @@ class FileHistoryCache implements HistoryCache {
     private final Object lock = new Object();
     private String historyCacheDirName = "historycache";
     private String latestRevFileName = "OpenGroklatestRev";
+    private boolean historyIndexDone = false;
+    
+    @Override
+    public void setHistoryIndexDone() {
+        historyIndexDone = true;
+    }
+
+    @Override
+    public boolean isHistoryIndexDone() {
+        return historyIndexDone;
+    }
 
     /**
      * Generate history for single file.
@@ -445,6 +456,13 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
+        // Some repository checkouts may contain lots of files untracked by
+        // given SCM. For these it would be waste of time to get their history.
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (isHistoryIndexDone() && env.noFetchHistoryWhenNotInCache()) {
+            return null;
+        }
+
         final History history;
         long time;
         try {
@@ -464,7 +482,6 @@ class FileHistoryCache implements HistoryCache {
             // a sub-directory change. This will cause us to present a stale
             // history log until a the current directory is updated and
             // invalidates the cache entry.
-            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
             if ((cache != null) &&
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {

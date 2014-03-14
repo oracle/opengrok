@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.Map;
 
 interface HistoryCache {
-
     /**
      * Create and initialize an empty history cache if one doesn't exist
      * already.
@@ -133,4 +132,8 @@ interface HistoryCache {
      * @throws HistoryException if an error occurred while getting the info
      */
     String getInfo() throws HistoryException;
+
+    // Set and query if history index phase is done.
+    void setHistoryIndexDone();
+    boolean isHistoryIndexDone();
 }
