@@ -440,20 +440,32 @@ LocateBinary() {
 
 FindExuberantCTags()
 {
-    binary=`LocateBinary ctags-exuberant exctags ctags`
-    if test $? -eq 1
-    then
+    #
+    # Search for Exuberant ctags intelligently, skipping
+    # over other ctags implementations.
+    #
+    binary=""
+    found=0
+    for program in ctags-exuberant exctags ctags; do
+	for path in `echo $PATH | tr ':' '\n'`; do
+		if [ -x "$path/$program" ]; then
+			binary="$path/$program"
+
+			# Verify that this really is Exuberant Ctags.
+			$binary --version 2>&1 | grep "Exuberant Ctags" > /dev/null
+			if [ $? -eq 0 ]; then
+				found=1
+				break
+			fi
+		fi
+	done
+	if [ $found -eq 1 ]; then
+		break;
+	fi
+    done
+    if [ $found -ne 1 ]; then
         Error "Unable to determine Exuberant CTags command name" \
             "for ${OS_NAME} ${OS_VERSION}"
-        return
-    fi
-
-    # Verify that this really is Exuberant Ctags
-    $binary --version 2>&1 | grep "Exuberant Ctags" > /dev/null
-    if test $? -ne 0
-    then
-        Error "Unable to determine Exuberant CTags command name" \
-            "for ${OS_NAME} ${OS_VERSION}\n(${binary} is not Exuberant CTags)"
         return
     fi
 
