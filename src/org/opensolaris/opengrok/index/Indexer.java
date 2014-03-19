@@ -56,7 +56,6 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Getopt;
 import org.opensolaris.opengrok.util.Statistics;
-import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
