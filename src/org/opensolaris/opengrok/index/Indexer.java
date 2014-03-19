@@ -564,7 +564,7 @@ public final class Indexer {
                 }
                 long stop = System.currentTimeMillis();
                 String time_str = StringUtils.getReadableTime(stop - start);
-                log.log(Level.INFO, "Total indexing time: {0})", time_str);
+                log.log(Level.INFO, "Total indexing time: {0}", time_str);
                 getInstance().sendToConfigHost(env, configHost);
             } catch (IndexerException ex) {
                 log.log(Level.SEVERE, "Exception running indexer", ex);
