@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class Query {
             "Invalid base url, check your configuration!");
       }
 
-      URL url = new URL(baseUrl + JSON_SUFFIX + "?freetext=" + freetext);
+      URL url = new URL(baseUrl + JSON_SUFFIX + "?freetext=" + URLEncoder.encode(freetext, "UTF-8"));
 
       final HttpURLConnection conn = (HttpURLConnection) (baseUrl
           .startsWith("https") ? createHttpsUrlConnection(url) : url

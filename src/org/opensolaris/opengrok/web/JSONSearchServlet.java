@@ -1,6 +1,7 @@
 package org.opensolaris.opengrok.web;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class JSONSearchServlet extends HttpServlet {
 	private static final String ATTRIBUTE_DURATION = "duration";
 	private static final String ATTRIBUTE_RESULT_COUNT = "resultcount";
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -42,7 +43,7 @@ public class JSONSearchServlet extends HttpServlet {
 		SearchEngine engine = new SearchEngine();
 
 		boolean valid = false;
-
+		
 		String freetext = req.getParameter(PARAM_FREETEXT);
 		String def = req.getParameter(PARAM_DEF);
 		String symbol = req.getParameter(PARAM_SYMBOL);
@@ -50,30 +51,35 @@ public class JSONSearchServlet extends HttpServlet {
 		String hist = req.getParameter(PARAM_HIST);
 
 		if (freetext != null) {
+			freetext = URLDecoder.decode(freetext);
 			engine.setFreetext(freetext);
 			valid = true;
 			result.put(PARAM_FREETEXT, freetext);
 		}
 
 		if (def != null) {
+			def = URLDecoder.decode(def);
 			engine.setDefinition(def);
 			valid = true;
 			result.put(PARAM_DEF, def);
 		}
 
 		if (symbol != null) {
+			symbol = URLDecoder.decode(symbol);
 			engine.setSymbol(symbol);
 			valid = true;
 			result.put(PARAM_SYMBOL, symbol);
 		}
 
 		if (path != null) {
+			path = URLDecoder.decode(path);
 			engine.setFile(path);
 			valid = true;
 			result.put(PARAM_PATH, path);
 		}
 
 		if (hist != null) {
+			hist = URLDecoder.decode(hist);
 			engine.setHistory(hist);
 			valid = true;
 			result.put(PARAM_HIST, hist);
