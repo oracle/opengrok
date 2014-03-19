@@ -24,6 +24,8 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
   private List<String> history = new ArrayList<String>();
   private int historyIndex = 0;
 
+  private boolean disableFocusLostEvent = false;
+
   public ToolBarControl() {
   }
 
@@ -40,7 +42,9 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
 
       @Override
       public void focusLost(FocusEvent e) {
-        TextUtils.setToDefault(searchBox, "{OpenGrok");
+        if (!disableFocusLostEvent) {
+          TextUtils.setToDefault(searchBox, "{OpenGrok");
+        }
       }
 
       @Override
@@ -77,7 +81,7 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
         }
         else if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'v') {
           searchBox.setText("");
-          
+
           searchBox.paste();
 
           if ((e.stateMask & SWT.SHIFT) == SWT.SHIFT) {
@@ -87,8 +91,6 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
         }
         else if (e.stateMask == SWT.CTRL && e.keyCode == 'c') {
           searchBox.copy();
-        }else{
-          System.out.println((e.stateMask & SWT.SHIFT) == SWT.SHIFT);
         }
       }
 
@@ -107,7 +109,9 @@ public class ToolBarControl extends WorkbenchWindowControlContribution {
           final ResultsDialog dialog = new ResultsDialog(Display.getCurrent().getActiveShell(), text, topLeft);
 
           Query query = new Query(text);
+          disableFocusLostEvent = true;
           query.run(dialog);
+          disableFocusLostEvent = false;
         }
       }
     });
