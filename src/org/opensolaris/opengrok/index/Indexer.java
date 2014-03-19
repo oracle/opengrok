@@ -56,6 +56,7 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Getopt;
 import org.opensolaris.opengrok.util.Statistics;
+import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * Creates and updates an inverted source index as well as generates Xref, file
@@ -548,6 +549,7 @@ public final class Indexer {
                     System.out.println("History stored in DB and renamed file handling is on - possible performance degradation");
                 }
 
+                long start = System.currentTimeMillis();
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,
                         listFiles, createDict, subFiles, repositories,
@@ -560,6 +562,9 @@ public final class Indexer {
                     getInstance().doIndexerExecution(update, noThreads, subFiles,
                             progress);
                 }
+                long stop = System.currentTimeMillis();
+                String time_str = StringUtils.getReadableTime(stop - start);
+                log.log(Level.INFO, "Total indexing time: {0})", time_str);
                 getInstance().sendToConfigHost(env, configHost);
             } catch (IndexerException ex) {
                 log.log(Level.SEVERE, "Exception running indexer", ex);
@@ -577,8 +582,14 @@ public final class Indexer {
 
     }
 
-    // PMD wants us to use length() > 0 && charAt(0) instead of startsWith()
-    // for performance. We prefer clarity over performance here, so silence it.
+    /*
+     * This is the first phase of the indexing where history cache is being
+     * generated for repositories (at least for those which support getting
+     * history per directory).
+     *
+     * PMD wants us to use length() > 0 && charAt(0) instead of startsWith()
+     * for performance. We prefer clarity over performance here, so silence it.
+     */
     @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
             boolean searchRepositories,
@@ -743,9 +754,16 @@ public final class Indexer {
         }
     }
 
+    /*
+     * This is the second phase of the indexer which generates Lucene index
+     * by passing source code files through Exuberant ctags, generating xrefs
+     * and storing data from the source files in the index (along with history,
+     * if any).
+     */
     public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
             IndexChangedListener progress)
             throws IOException {
+        long start = System.currentTimeMillis();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
         log.info("Starting indexing");
 
@@ -826,7 +844,10 @@ public final class Indexer {
             log.log(Level.SEVERE,
                 "destroying of renamed thread pool failed", ex);
         }
-        log.info("Done indexing");
+        long stop = System.currentTimeMillis();
+        String time_str = StringUtils.getReadableTime(stop - start);
+        log.log(Level.INFO, "Done indexing data of all repositories (took {0})",
+            time_str);
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
