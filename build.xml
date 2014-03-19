@@ -394,6 +394,9 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <exec os="SunOS" executable="/usr/bin/pkgtrans" failonerror="true">
             <arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
         </exec>
+	<exec os="SunOS" executable="platform/solaris/ips/create.sh" failonerror="true">
+	    <arg line="-v ${version}"/>
+	</exec>
     </target>
 
     <target name="dist" depends="jar">
