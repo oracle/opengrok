@@ -42,6 +42,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.util.Statistics;
 import org.opensolaris.opengrok.util.StringUtils;
 
 /**
@@ -484,7 +485,7 @@ public final class HistoryGuru {
 
         if (repository.isWorking()) {
             boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
-            long start = System.currentTimeMillis();
+            Statistics elapsed = new Statistics();
 
             if (verbose) {
                 log.log(Level.INFO, "Creating historycache for {0} ({1})",
@@ -500,10 +501,7 @@ public final class HistoryGuru {
             }
 
             if (verbose) {
-                long stop = System.currentTimeMillis();
-                String time_str = StringUtils.getReadableTime(stop - start);
-                log.log(Level.INFO, "Done historycache for {0} (took {1})",
-                    new Object[]{path, time_str});
+                elapsed.report(log, "Done historycache for " + path);
             }
         } else {
             log.log(Level.WARNING, "Skipping creation of historycache of "
@@ -512,7 +510,7 @@ public final class HistoryGuru {
     }
 
     private void createCacheReal(Collection<Repository> repositories) {
-        long start = System.currentTimeMillis();
+        Statistics elapsed = new Statistics();
         ExecutorService executor = RuntimeEnvironment.getHistoryExecutor();
         // Since we know each repository object from the repositories
         // collection is unique, we can abuse HashMap to create a list of
@@ -596,10 +594,7 @@ public final class HistoryGuru {
             OpenGrokLogger.getLogger().log(Level.WARNING,
                     "Failed optimizing the history cache database", he);
         }
-        long stop = System.currentTimeMillis();
-        String time_str = StringUtils.getReadableTime(stop - start);
-        log.log(Level.INFO, "Done historycache for all repositories (took {0})",
-            time_str);
+        elapsed.report(log, "Done historycache for all repositories");
         historyCache.setHistoryIndexDone();
     }
 

@@ -549,7 +549,6 @@ public final class Indexer {
                     System.out.println("History stored in DB and renamed file handling is on - possible performance degradation");
                 }
 
-                long start = System.currentTimeMillis();
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,
                         listFiles, createDict, subFiles, repositories,
@@ -562,9 +561,6 @@ public final class Indexer {
                     getInstance().doIndexerExecution(update, noThreads, subFiles,
                             progress);
                 }
-                long stop = System.currentTimeMillis();
-                String time_str = StringUtils.getReadableTime(stop - start);
-                log.log(Level.INFO, "Total indexing time: {0}", time_str);
                 getInstance().sendToConfigHost(env, configHost);
             } catch (IndexerException ex) {
                 log.log(Level.SEVERE, "Exception running indexer", ex);
@@ -763,7 +759,7 @@ public final class Indexer {
     public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
             IndexChangedListener progress)
             throws IOException {
-        long start = System.currentTimeMillis();
+        Statistics elapsed = new Statistics();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
         log.info("Starting indexing");
 
@@ -844,10 +840,7 @@ public final class Indexer {
             log.log(Level.SEVERE,
                 "destroying of renamed thread pool failed", ex);
         }
-        long stop = System.currentTimeMillis();
-        String time_str = StringUtils.getReadableTime(stop - start);
-        log.log(Level.INFO, "Done indexing data of all repositories (took {0})",
-            time_str);
+        elapsed.report(log, "Done indexing data of all repositories");
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
@@ -859,7 +852,8 @@ public final class Indexer {
                     InetAddress host = InetAddress.getByName(cfg[0]);
                     env.writeConfiguration(host, Integer.parseInt(cfg[1]));
                 } catch (Exception ex) {
-                    log.log(Level.SEVERE, "Failed to send configuration to " + configHost + " (is web application server running with opengrok deployed?)", ex);
+                    log.log(Level.SEVERE, "Failed to send configuration to "
+                        + configHost + " (is web application server running with opengrok deployed?)", ex);
                 }
             } else {
                 log.severe("Syntax error: ");
