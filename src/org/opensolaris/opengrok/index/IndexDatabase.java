@@ -322,7 +322,7 @@ public class IndexDatabase {
             }
         }
 
-        try {            
+        try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
             IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);

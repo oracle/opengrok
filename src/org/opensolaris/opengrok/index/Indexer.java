@@ -577,8 +577,14 @@ public final class Indexer {
 
     }
 
-    // PMD wants us to use length() > 0 && charAt(0) instead of startsWith()
-    // for performance. We prefer clarity over performance here, so silence it.
+    /*
+     * This is the first phase of the indexing where history cache is being
+     * generated for repositories (at least for those which support getting
+     * history per directory).
+     *
+     * PMD wants us to use length() > 0 && charAt(0) instead of startsWith()
+     * for performance. We prefer clarity over performance here, so silence it.
+     */
     @SuppressWarnings("PMD.SimplifyStartsWith")
     public void prepareIndexer(RuntimeEnvironment env,
             boolean searchRepositories,
@@ -743,9 +749,16 @@ public final class Indexer {
         }
     }
 
+    /*
+     * This is the second phase of the indexer which generates Lucene index
+     * by passing source code files through Exuberant ctags, generating xrefs
+     * and storing data from the source files in the index (along with history,
+     * if any).
+     */
     public void doIndexerExecution(final boolean update, int noThreads, List<String> subFiles,
             IndexChangedListener progress)
             throws IOException {
+        Statistics elapsed = new Statistics();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
         log.info("Starting indexing");
 
@@ -826,7 +839,7 @@ public final class Indexer {
             log.log(Level.SEVERE,
                 "destroying of renamed thread pool failed", ex);
         }
-        log.info("Done indexing");
+        elapsed.report(log, "Done indexing data of all repositories");
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
@@ -838,7 +851,8 @@ public final class Indexer {
                     InetAddress host = InetAddress.getByName(cfg[0]);
                     env.writeConfiguration(host, Integer.parseInt(cfg[1]));
                 } catch (Exception ex) {
-                    log.log(Level.SEVERE, "Failed to send configuration to " + configHost + " (is web application server running with opengrok deployed?)", ex);
+                    log.log(Level.SEVERE, "Failed to send configuration to "
+                        + configHost + " (is web application server running with opengrok deployed?)", ex);
                 }
             } else {
                 log.severe("Syntax error: ");
