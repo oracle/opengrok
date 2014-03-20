@@ -603,6 +603,9 @@ public final class Util {
 
         out.write("<td class=\"q\"><a href=\"");
         out.write(histPrefixE);
+        if (!entry.startsWith("/")) {
+            entry = "/" + entry;
+        }
         out.write(entry);
         out.write("\" title=\"History\">H</a>");
 
