@@ -48,6 +48,28 @@ public class XMLAnalyzerTest {
         // Ordinary file names should not have .'s replaced
         assertTrue(xref[3].contains("path=README.txt"));
     }
+    
+    @Test
+    public void bug806() throws IOException {
+        String xmlText
+                = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<server>\n"
+                + "  <mbean code=\"QuartzBean\" \n"
+                + "      name=\"user:service=QuartzService,name=QuartzService\">\n"
+                + "    <depends>jboss.jca:service=DataSourceBinding,name=ServerDS</depends>\n"
+                + "    <attribute name=\"JndiName\">Quartz</attribute>\n"
+                + "    <attribute name=\"Properties\">\n"
+                + "      org.quartz.plugin.jobInitializer.fileNames = ../server/default/conf/scheduler/quartz_jobs.xml\n"
+                + "    </attribute>\n"
+                + "  </mbean>\n"
+                + "</server>";
+        StringReader sr = new StringReader(xmlText);
+        StringWriter sw = new StringWriter();
+        XMLAnalyzer.writeXref(sr, sw, null, null, null);
+        String[] xref = sw.toString().split("\n");
+        // don't remove ../
+        assertTrue(xref[7].contains("org.quartz.plugin.jobInitializer.fileNames</a> = <a href=\"/source/s?path=../\">..</a>/"));
+    }
 
     /**
      * XML special chars inside a string were not escaped if single quotes
