@@ -103,10 +103,11 @@ NameChar = {FileChar}|"."
 {File}|{Path}
   {
     final String path = yytext();
-    final char separator = StringUtils.isPossiblyJavaClass(path) ? '.' : '/';
+    final boolean isJavaClass=StringUtils.isPossiblyJavaClass(path);
+    final char separator = isJavaClass ? '.' : '/';
     final String hyperlink =
             Util.breadcrumbPath(urlPrefix + "path=", path, separator,
-                                getProjectPostfix(), true);
+                                getProjectPostfix(), isJavaClass);
     out.append(hyperlink);
   }
 
