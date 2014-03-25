@@ -35,6 +35,7 @@
     </modules>
 
     <properties>
+        <lucene.version>4.7.0</lucene.version>
         <compileSource>1.7</compileSource>
         <compileTarget>1.7</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,22 +56,22 @@
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
-                <version>4.7.0</version>
+                <version>${lucene.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-analyzers-common</artifactId>
-                <version>4.7.0</version>
+                <version>${lucene.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-queryparser</artifactId>
-                <version>4.7.0</version>
+                <version>${lucene.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-suggest</artifactId>
-                <version>4.7.0</version>
+                <version>${lucene.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
