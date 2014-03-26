@@ -1,4 +1,4 @@
-January 2014 release 0.12
+March 2014 release 0.12
 -------------------------------------------------
 
 This is a major release and uses lucene 4.7.0.
@@ -16,13 +16,105 @@ Features:
  php analyzers improved
  monotone, mercurial SCM support improved
  AccuRev SCM added to supported SCMs
+ Surround SCM added to supported SCMs
  new config options in OpenGrok script
  new search by analyzer/language
  full history tracking for files renamed in Mercurial repository
  small UI enhancements
+ a lot of history cache fixes and tunables
+ zaphist history cleanup command
+ better developer support, added automated travis builds for pull request + sonar
 
-Bug fixes:
-
+Bug fixes(newest first):
+ 
+ take (jdbc) queries from the bug, fixes  #774
+ simplify lucene version in mvn build file
+ Missing ../ in path when displaying xml xref fixes #806
+ prefix entry with backslash if it does not start with it fixes #800
+ add elapsed time reporting for 2nd phase of indexing and report total time as well
+ more intelligent way of finding Exuberant ctags fixes #772
+ implement tunable for suppressing history fetch other than from the cache fixes #446
+ add zaphist sub-command to clear history cache for given repository fixes #758
+ remove too generic MAGICS from Java and Scala analyzers fixes #782
+ change the renamed file handling tunable to be false by default
+ fix -r dirbased for remote repositories which cannot get have per-directory history
+ do not run expensive JDBC query if FILEMOVES table is empty or tracking of renamed files is off this works around #774
+ sonar support
+ trigger travis build
+ create history data directories for renamed files before spawning the threads fixes #775
+ rework handling of latest revisions for list of repositories fixes #771
+ do not list files for changesets when getting history for a file fixes #768
+ implement incremental history index for file based repository fixes #729
+ simple stats fixes #764
+ need to wait for the renamed thread pool threads to be really gone
+ do not check repository unless it is non-null in getHistory()
+ introduce dirbased state for remote SCMs
+ use correct path separator
+ need to be more intelligent in determining if repo is remote
+ fix jenkins build due to missing org.hamcrest
+ destroy renamed files thread pool also for the case when the indexer is run without -H
+ fix ctags system configuration tunable to match the opengrok sources
+ destroy pool for renamed files handling properly
+ tunable of remote repositories to allow generating history only from UI fixes #748
+ make the OpenGrok script work on OS X fixes #687
+ Countdownlatch (for renamed history)
+ replace condvar with CountDownLatch fixes #754
+ Seach the vb directory for a list of visual basic reserved words. Without this, the VB analyser will fail at runtime because the file is missing
+ use separate pool for history generation of renamed files fixes #751
+ better logging for indexing fixes #749
+ human readable time format for duration of history index fixes #745
+ remove old cruft and make Mercurial history parsing more strict so that it can detect format changes fixes #743
+ make file based history cache creation synchronous
+ add private tunable to disable handling of renamed files
+ QUERIES has to be fully initialized before getQuery() is called
+ Stop matching empty strings in heredocs
+ Fixes infinite loop that was exposed after upgrading to JFlex 1.5.0
+ give the chance to tune RAM buffer size + some tuning docs fixes #718
+ jflex 1.5.0
+ when no branch is specified, only fetch revisions on the default branch fixes #516
+ parallelize history indexing of renamed files fixes #728
+ partial fix for #7178 GC overhead limit hit when reindexing large code base with 0.12-rc5
+ add title explaining the link
+ report timeout value when terminating process
+ move the revision tag to comments and make it visible as link fixes #587
+ use webapp prefix from runtime environment
+ introduce method for getting revision ID out of revision ID from HistoryEntry suitable for annotate fixes #722
+ first version of changeset search link in Annotate view fixes #721
+ perform HTML escaping in diffline() fixes #719
+ use correct variable name for hash retrieval fixes #715
+ add missing changes for non-default CSS for issue #573
+ use wildcard CSS prefix matching for div id src fixes #716
+ let the comments wrap, left-align comments even for history view of directories fixes #570
+ do not assume that the build happens in git repo or archived git repo fixes #712
+ add H A D links to directory listing fixes #573
+ fix dtags.eftar file descriptor leak fixes #535
+ do not unnecessarily create 2 File objects when returning eftar reader fixes #539
+ differentiate between raw and download fixes #578
+ anchor highlighting for all styles
+ highlight line number with anchor fixes #702
+ fix junit after #681 + some special case logic fix
+ show time to get the results even when no match was found
+ Fix for issue 294 (definitions search displays comment lines)
+ timeout for command execution fixes #429 fixes #487
+ show time to get the results even when no match was found fixes #698
+ Small tweak to only use new defs search rules if ONLY the defs field is populated, as per tarzanek's concerns
+ dist-src is not needed as Github creates the tarball/zip itself automatically
+ fixes #10 False matches in Java class files
+ lucene 4.6.0 + fix summarizer to follow proper tokenstream API
+ add testcase for issue #694
+ ignore path actions which match top-level directory of the repository in Subversion history parser fixes #694
+ let sendToConfigHost body use the parameter "env" to keep align with its signature and other methods
+ need more careful checking of repositories.zip in order to avoid generating it every time single test is run
+ make -post-compile-test pre-requisite for running single test file fixes #686
+ duplicate key value JDBC exception when indexing large Mercurial repo fixes #683
+ bug #672 need double-quotes to specify path
+ improve comment why we can change \ to /
+ bug #625 xref links containing \u don't seem to be working
+ follow-up fixes for Mercurial renamed files handling fixes #666
+ Modified 'Definitions' search to only return where actual definitions of functions/variables/macros/etc are found 
+ Support for Surround SCM history
+ store changesets which changed file when it was named differently in extra table
+ generate history of files renamed in Mercurial repo separately fixes #22
  introduce OPENGROK_WEBAPP_CONTEXT for setting the webapp context
  #637 cleanup spellchecker code, use Direct spellchecker to avoid another index creation
  #641 , #604 introduce prefix matching
