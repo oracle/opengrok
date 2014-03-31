@@ -117,7 +117,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
     </target>
     
-    <property name="jflex-version" value="1.5.0"/>
+    <property name="jflex-version" value="1.5.1"/>
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
         <pathelement path="${java.class.path}"/>
@@ -643,7 +643,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <delete dir="${test.svn}"/>
         <delete dir="${build.test.reposroots}/svn"/>
         <mkdir dir="${build.test.reposroots}"/>
-        <exec executable="svnadmin" failifexecutionfails="true">
+        <exec executable="svnadmin" failifexecutionfails="false">
             <arg value="create"/>
             <arg value="${build.test.reposroots}/svn"/>
         </exec>
