@@ -28,6 +28,8 @@ usually it's overall coverage above 80%)
 
 (jenkins can help here, see README.txt on setup)
 
+The release is OK, once above is fullfilled to our satisfaction.
+
 3) tag the build used for release so we can get back to it:
 
    git tag 0.XYZ
@@ -67,4 +69,11 @@ Note that for the IPS package *.p5p the version names are translated this way:
 
 5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
 
-The release is OK, once above is fullfilled to our satisfaction.
+6) Modify the download links on http://opengrok.github.io/OpenGrok/
+
+   git fetch --all
+   git checkout gh-pages
+   < now edit index.html >
+   git commit index.html
+   git push
+
