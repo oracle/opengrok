@@ -1,7 +1,7 @@
-March 2014 release 0.12
+April 2014 release 0.12
 -------------------------------------------------
 
-This is a major release and uses lucene 4.7.0.
+This is a major release and uses lucene 4.7.1.
 {OpenGrok was moved to github and java.net, since opensolaris.org is no more.
 
 http://opengrok.github.com/OpenGrok
@@ -11,7 +11,7 @@ http://java.net/projects/opengrok
 Features:
 
  JDK7 + tomcat7 tested, JDK6 unsupported!
- lucene 4.7.0 -> A LOT faster engine, no spellindex needed, regexp search supported (see help)
+ lucene 4.7.1 -> A LOT faster engine, no spellindex needed, regexp search supported (see help)
  pl/sql, scala, uuencode languages/analyzers support
  php analyzers improved
  monotone, mercurial SCM support improved
