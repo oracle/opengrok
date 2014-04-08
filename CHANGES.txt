@@ -22,7 +22,7 @@ Features:
  full history tracking for files renamed in Mercurial repository (disabled by default)
  small UI enhancements
  a lot of history cache fixes and tunables
- zaphist history cleanup command
+ clearHistory history cleanup command
  better developer support, added automated travis builds for pull request + sonar
 
 Bug fixes(newest first):
