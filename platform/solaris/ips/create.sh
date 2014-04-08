@@ -1,4 +1,4 @@
-#! /bin/ksh -p
+#!/usr/bin/ksh -p
 #
 # CDDL HEADER START
 #
@@ -24,7 +24,7 @@
 
 
 PKG_REPO_NAME=myrepo
-PKG_PUBLISHER=opengrokpublisher
+PKG_PUBLISHER=opengrok
 PKG_NAME=opengrok
 
 case "$1" in
@@ -230,7 +230,7 @@ PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat type=require
 # This has to stay commented until the next release of Solaris will contain the exhuberant ctags package
 #PKG pkgsend add depend fmri=pkg:/developer/tool/exuberant-ctags type=require
 
-PKG pkgsend add file dist/source.war mode=0444 owner=webservd group=webservd path=/var/tomcat6/webapps/source.war
+PKG pkgsend add file dist/source.war mode=0444 owner=webservd group=webservd path=/usr/opengrok/lib/source.war
 
 PKG pkgsend add set name=description value="OpenGrok - wicked fast source browser"
 PKG pkgsend add set name=pkg.human-version value="${human_readable_version}"
@@ -243,7 +243,9 @@ then
    rm -f ${PKG_NAME}-${human_readable_version}.p5p
 fi
 
-PKG pkgrecv -s "$PKG_REPO_NAME" -a -d ./dist/${PKG_NAME}-${human_readable_version}.p5p ${PKG_NAME}
+outfile="$PWD/dist/${PKG_NAME}-${human_readable_version}.p5p"
+rm -f "${outfile}"
+PKG pkgrecv -s "$PKG_REPO_NAME" -a -d "${outfile}" ${PKG_NAME}
 
 # cleanup
 if [ -d "$PKG_REPO_NAME" ]
@@ -254,6 +256,5 @@ fi
 unset PKG_REPO
 
 echo "SUCCESSFULLY COMPLETED"
-echo "OpenGrok has been packaged into $(pwd)/dist/opengrok-${human_readable_version}.p5p"
+echo "OpenGrok has been packaged into $outfile"
 echo "For more information about installing OpenGrok visit pkg man page."
-
