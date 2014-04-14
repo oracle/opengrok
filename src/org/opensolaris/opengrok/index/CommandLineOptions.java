@@ -91,7 +91,7 @@ public class CommandLineOptions {
         options.add(new Option('L', "path", "Path to the subdirectory in the web-application containing the requested stylesheet. The following factory-defaults exist: \"default\", \"offwhite\" and \"polished\""));
         options.add(new Option('l', ON_OFF, "Turn on/off locking of the Lucene database during index generation"));
         options.add(new Option('m', NUMBER, "Amount of memory that may be used for buffering added documents and deletions before they are flushed to the Directory(default "+Configuration.defaultRamBufferSize+"MB). Please increase JVM heap accordingly, too."));
-        options.add(new Option('N', "/path/to/symlink", "Allow this symlink to be followed. Option may be repeated."));
+        options.add(new Option('N', "/path/to/symlink", "Allow this symlink to be followed. Option may be repeated. By default only symlinks directly under source root directory are allowed."));
         options.add(new Option('n', null, "Do not generate indexes, but process all other command line options"));
         options.add(new Option('O', ON_OFF, "Turn on/off the optimization of the index database as part of the indexing step"));
         options.add(new Option('o', "path", "File with extra command line options for ctags"));
