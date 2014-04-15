@@ -186,7 +186,7 @@ do
 done
 
 for dir in /var/opengrok /var/opengrok/data /var/opengrok/etc \
-           /var/opengrok/log /var/opengrok/source
+           /var/opengrok/log /var/opengrok/src
 do
    PKG pkgsend add dir mode=0755 owner=webservd group=webservd path=${dir}
 done
