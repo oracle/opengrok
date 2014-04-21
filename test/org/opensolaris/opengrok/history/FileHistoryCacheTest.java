@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import junit.framework.TestCase;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -86,6 +87,7 @@ public class FileHistoryCacheTest extends TestCase {
      * Assert that two HistoryEntry objects are equal.
      * @param expected the expected entry
      * @param actual the actual entry
+     * @param isdir was the history generated for a directory
      * @throws AssertFailure if the two entries don't match
      */
     private void assertSameEntries(
@@ -102,6 +104,7 @@ public class FileHistoryCacheTest extends TestCase {
      * Assert that two lists of HistoryEntry objects are equal.
      * @param expected the expected list of entries
      * @param actual the actual list of entries
+     * @param isdir was the history generated for directory
      * @throws AssertFailure if the two lists don't match
      */
     private void assertSameEntry(HistoryEntry expected, HistoryEntry actual, boolean isdir) {
@@ -114,8 +117,9 @@ public class FileHistoryCacheTest extends TestCase {
         } else {
             assertEquals(0, actual.getFiles().size());
         }
+        assertEquals(expected.getTags(), actual.getTags());
     }
-    
+
     /**
      * Basic tests for the {@code store()} method on cache with disabled
      * handling of renamed files.
@@ -136,6 +140,83 @@ public class FileHistoryCacheTest extends TestCase {
         cache.store(historyNull, repo);
 
         assertEquals("9:8b340409b3a8", cache.getLatestCachedRevision(repo));
+    }
+
+    /**
+     * Test tagging by creating history cache for repository with one tag
+     * and then importing couple of changesets which add both file changes
+     * and tags. The last history entry before the import is important
+     * as it needs to be retagged when old history is merged with the new one.
+     */
+    public void testStoreAndGetIncrementalTags() throws Exception {
+        // Enable tagging of history entries.
+        RuntimeEnvironment.getInstance().setTagsEnabled(true);
+        
+        File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+        History historyToStore = repo.getHistory(reposRoot);
+
+        // Store the history.
+        cache.store(historyToStore, repo);
+
+        // Add bunch of changesets with file based changes and tags.
+        importHgChangeset(
+            reposRoot, getClass().getResource("hg-export-tag.txt").getPath());
+
+        // Perform incremental reindex.
+        repo.createCache(cache, cache.getLatestCachedRevision(repo));
+
+        // Check that the changesets were indeed applied and indexed.
+        History updatedHistory = cache.get(reposRoot, repo, true);
+        assertEquals("Unexpected number of history entries",
+            15, updatedHistory.getHistoryEntries().size());
+
+        // Verify tags in fileHistory for main.c which is the most interesting
+        // file from the repository from the perspective of tags.
+        File main = new File(reposRoot, "main.c");
+        assertTrue(main.exists());
+        History retrievedHistoryMainC = cache.get(main, repo, true);
+        List<HistoryEntry> entries = retrievedHistoryMainC.getHistoryEntries();
+        assertEquals("Unexpected number of entries for main.c",
+            3, entries.size());
+        HistoryEntry e0 = entries.get(0);
+        assertEquals("Unexpected revision for entry 0", "13:3d386f6bd848",
+            e0.getRevision());
+        assertEquals("Invalid tag list for revision 13", "tag3", e0.getTags());
+        HistoryEntry e1 = entries.get(1);
+        assertEquals("Unexpected revision for entry 1", "2:585a1b3f2efb",
+            e1.getRevision());
+        assertEquals("Invalid tag list for revision 2",
+            "tag2, tag1, start_of_novel", e1.getTags());
+        HistoryEntry e2 = entries.get(2);
+        assertEquals("Unexpected revision for entry 2", "1:f24a5fd7a85d",
+            e2.getRevision());
+        assertEquals("Invalid tag list for revision 1", null, e2.getTags());
+        
+        // Reindex from scratch.
+        File dir = new File(cache.getRepositoryHistDataDirname(repo));
+        assertTrue(dir.isDirectory());
+        cache.clear(repo);
+        // We cannot call cache.get() here since it would read the history anew.
+        // Instead check that the data directory does not exist anymore.
+        assertFalse(dir.exists());
+        History freshHistory = repo.getHistory(reposRoot);
+        cache.store(freshHistory, repo);
+        History updatedHistoryFromScratch = cache.get(reposRoot, repo, true);
+        assertEquals("Unexpected number of history entries",
+            freshHistory.getHistoryEntries().size(),
+            updatedHistoryFromScratch.getHistoryEntries().size());
+        
+        // Verify that the result for the directory is the same as incremental
+        // reindex.
+        assertSameEntries(updatedHistory.getHistoryEntries(),
+            updatedHistoryFromScratch.getHistoryEntries(), true);
+        // Do the same for main.c.
+        History retrievedUpdatedHistoryMainC = cache.get(main, repo, true);
+        assertSameEntries(retrievedHistoryMainC.getHistoryEntries(),
+            retrievedUpdatedHistoryMainC.getHistoryEntries(), false);
+
+        RuntimeEnvironment.getInstance().setTagsEnabled(false);
     }
 
     /**

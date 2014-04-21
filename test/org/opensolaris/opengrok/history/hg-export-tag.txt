@@ -1,0 +1,77 @@
+# HG changeset patch
+# User Vladimir Kotal <vlada@devnull.cz>
+# Date 1398454830 -7200
+#      Fri Apr 25 21:40:30 2014 +0200
+# Node ID 9203f5519aca0213ab1fb1700082eeabeda82e60
+# Parent  8b340409b3a81618750aa660cb113c65440688be
+Added tag tag1 for changeset 8b340409b3a8
+
+diff -r 8b340409b3a8 -r 9203f5519aca .hgtags
+--- a/.hgtags	Sat Jul 13 18:27:46 2013 +0200
++++ b/.hgtags	Fri Apr 25 21:40:30 2014 +0200
+@@ -1,1 +1,2 @@
+ db1394c05268686f89fbe4ca5524ac4ed61ec71c start_of_novel
++8b340409b3a81618750aa660cb113c65440688be tag1
+# HG changeset patch
+# User Vladimir Kotal <vlada@devnull.cz>
+# Date 1398454848 -7200
+#      Fri Apr 25 21:40:48 2014 +0200
+# Node ID c102ebbaff2bf9320277a374c287987ec7f99ab9
+# Parent  9203f5519aca0213ab1fb1700082eeabeda82e60
+more
+
+diff -r 9203f5519aca -r c102ebbaff2b bar.txt
+--- a/bar.txt	Fri Apr 25 21:40:30 2014 +0200
++++ b/bar.txt	Fri Apr 25 21:40:48 2014 +0200
+@@ -1,1 +1,1 @@
+-stuff
++stuff more
+# HG changeset patch
+# User Vladimir Kotal <vlada@devnull.cz>
+# Date 1398454861 -7200
+#      Fri Apr 25 21:41:01 2014 +0200
+# Node ID de12e7efa8d8771de0614fe151cf6e8a16530da6
+# Parent  c102ebbaff2bf9320277a374c287987ec7f99ab9
+Added tag tag2 for changeset c102ebbaff2b
+
+diff -r c102ebbaff2b -r de12e7efa8d8 .hgtags
+--- a/.hgtags	Fri Apr 25 21:40:48 2014 +0200
++++ b/.hgtags	Fri Apr 25 21:41:01 2014 +0200
+@@ -1,2 +1,3 @@
+ db1394c05268686f89fbe4ca5524ac4ed61ec71c start_of_novel
+ 8b340409b3a81618750aa660cb113c65440688be tag1
++c102ebbaff2bf9320277a374c287987ec7f99ab9 tag2
+# HG changeset patch
+# User Vladimir Kotal <vlada@devnull.cz>
+# Date 1398454896 -7200
+#      Fri Apr 25 21:41:36 2014 +0200
+# Node ID 3d386f6bd84815069dbd6e4e1bc14bd1b958bdc7
+# Parent  de12e7efa8d8771de0614fe151cf6e8a16530da6
+brackets
+
+diff -r de12e7efa8d8 -r 3d386f6bd848 main.c
+--- a/main.c	Fri Apr 25 21:41:01 2014 +0200
++++ b/main.c	Fri Apr 25 21:41:36 2014 +0200
+@@ -8,5 +8,5 @@
+    }
+    (void)printf("\n");
+ 
+-   return EXIT_SUCCESS;
++   return (EXIT_SUCCESS);
+ }
+# HG changeset patch
+# User Vladimir Kotal <vlada@devnull.cz>
+# Date 1398454900 -7200
+#      Fri Apr 25 21:41:40 2014 +0200
+# Node ID 5c85cd3019d8c8cbe54bca382c8329622be42c7c
+# Parent  3d386f6bd84815069dbd6e4e1bc14bd1b958bdc7
+Added tag tag3 for changeset 3d386f6bd848
+
+diff -r 3d386f6bd848 -r 5c85cd3019d8 .hgtags
+--- a/.hgtags	Fri Apr 25 21:41:36 2014 +0200
++++ b/.hgtags	Fri Apr 25 21:41:40 2014 +0200
+@@ -1,3 +1,4 @@
+ db1394c05268686f89fbe4ca5524ac4ed61ec71c start_of_novel
+ 8b340409b3a81618750aa660cb113c65440688be tag1
+ c102ebbaff2bf9320277a374c287987ec7f99ab9 tag2
++3d386f6bd84815069dbd6e4e1bc14bd1b958bdc7 tag3

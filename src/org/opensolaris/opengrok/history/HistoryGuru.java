@@ -43,7 +43,6 @@ import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.util.Statistics;
-import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * The HistoryGuru is used to implement an transparent layer to the various

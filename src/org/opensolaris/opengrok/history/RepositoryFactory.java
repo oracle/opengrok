@@ -88,7 +88,8 @@ public final class RepositoryFactory {
                 try {
                     res.setDirectoryName(file.getCanonicalPath());
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get canonical path name for " + file.getAbsolutePath(), e);
+                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        "Failed to get canonical path name for " + file.getAbsolutePath(), e);
                 }
 
                 if (!res.isWorking()) {
