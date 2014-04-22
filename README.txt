@@ -428,7 +428,9 @@ History view will show a list of files modified with given change.
 On the other hand it consumes more system memory because the database has to
 run in background.
 
-You need Java DB 10.5.3 or later. To install it peform the following steps:
+Versions of Java DB from 10.5.3 to 10.8.3.0 are known to work.
+Java DB 10.10.x.y versions are known to NOT work.
+To install it perform the following steps:
 
 Solaris 11:
 
@@ -438,6 +440,9 @@ Debian/Ubuntu:
 
   # apt-get install sun-java6-javadb
 
+Other:
+
+  Fetch the db-derby bundle from db.apache.org, and unpack to your preferred path.
 
 1) Start the server:
 
