@@ -1,8 +1,8 @@
 {OpenGrok can be installed and used under different use cases, we will just show how to use the wrapper script. Advanced usage depends on your knowledge of running java applications and command line options of {OpenGrok.
 Note, that you '''need''' the '''index setup''' no matter what use case you plan to use. Without indexes {Opengrok will be simply useless.
-This document is a live document, we are updating it as the new versions/changes come out (note the date at the right bottom of the page).
+This document is a live document, we are updating it as the new versions/changes come out (note the date at the right bottom of the page)
 
-== Requirements ==
+=== Requirements ===
 
 You need the following:
 
