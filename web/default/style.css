@@ -462,7 +462,12 @@ div[id^='src'] {
 }
 
 div[id^='src'] pre {
+	display: table-cell;
 	margin: 0;
+	position: relative;
+	/* Hack to make the pre as wide as the screen. Width 100% or auto do not
+	 * work because of table-cell. */
+	width: 10000px;
 }
 
 div[id^='src'] .l-hide, #src .hl-hide, .blame-hidden { /* hidden line number/annotation block */
@@ -490,12 +495,6 @@ div[id^='src'] .l, div[id^='src'] .hl, .blame .r, .blame .a,
 
 div[id^='src'] .hl { /* highlighted line number */
 	color: #000;
-}
-
-/* highlight line number with anchor */
-div[id^='src'] a.l:target, div[id^='src'] a.hl:target {
-	background: orange;
-	color:yellow;
 }
 
 .blame .r { /* revision number "column" (annotation) */
@@ -675,3 +674,19 @@ a.xsr	{ /* subroutine */		color: #00f; font-weight: bold; }
 }
 /* ############### end of footer ############## */
 
+/* Line highlighting */
+.line-bg {
+	height: 15px;
+	left: 0;
+	position: absolute;
+	width: 100%;
+	z-index: -10;
+}
+
+.selected-line {
+	background-color: #ffeebe;
+}
+
+.l:focus, .hl:focus {
+	outline: none;
+}

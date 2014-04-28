@@ -15,8 +15,8 @@ public class PhpXrefTest {
         String s = "<?php foo bar";
         Writer w = new StringWriter();
         PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
-        assertEquals(
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
+        assertEquals("<div id=\"l1\" class=\"line-bg\"></div>"
+                +"<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
                 + "source/s?defs=foo\">foo</a> <a href=\"/source/s?defs=bar\">bar</a>",
                 w.toString());
     }

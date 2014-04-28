@@ -439,3 +439,24 @@ function checkEnter(event) {
         $("#sbox").submit();
     }
 }
+
+function getHash(url) {
+    return url.split('#')[1];
+}
+
+function hashChange(event) {
+    var new_line = getHash(event.newURL);
+    var old_line = getHash(event.oldURL);
+    $('#l' + old_line).removeClass('selected-line');
+    $('#l' + new_line).addClass('selected-line');
+}
+
+function highlight() {
+    var line = getHash(window.location.hash);
+    $('#l' + line).addClass('selected-line');
+}
+
+$(document).ready(function() {
+    highlight();
+});
+window.onhashchange = hashChange;
