@@ -287,6 +287,13 @@ class FileHistoryCache implements HistoryCache {
         }
     }
 
+    private void finishStore(Repository repository, String latestRev) {
+        storeLatestCachedRevision(repository, latestRev);
+        OpenGrokLogger.getLogger().log(Level.FINE,
+            "Done storing history for repo {0}",
+            new Object[] {repository.getDirectoryName()});
+    }
+
     /**
      * Store history for the whole repository in directory hierarchy resembling
      * the original repository structure. History of individual files will be
@@ -378,6 +385,7 @@ class FileHistoryCache implements HistoryCache {
         }
 
         if (!RuntimeEnvironment.isRenamedFilesEnabled()) {
+            finishStore(repository, latestRev);
             return;
         }
 
@@ -437,10 +445,7 @@ class FileHistoryCache implements HistoryCache {
         } catch (InterruptedException ex) {
             OpenGrokLogger.getLogger().log(Level.SEVERE, "latch exception" + ex);
         }
-        storeLatestCachedRevision(repository, latestRev);
-        OpenGrokLogger.getLogger().log(Level.FINE,
-            "Done storing history for repo {0}",
-            new Object[] {repository.getDirectoryName()});
+        finishStore(repository, latestRev);
     }
 
     @Override
