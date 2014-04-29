@@ -65,7 +65,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * implementation files), Razor supports the use of either SCCS or RCS
  * for non-binary files and numbered compressed instances of binary files.
  * Each file is given a unique (per universe) numerical identifier in the
- * file .../razor_db/<universe>/RAZOR_UNIVERSE/Mapping, this is used by Razor
+ * file .../razor_db/&lt;universe&gt;/RAZOR_UNIVERSE/Mapping, this is used by Razor
  * to track files over time, as they renamed or deleted.
  *
  * Unfortunately, the Razor command line interface does not support features
@@ -114,12 +114,12 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * and Implementation. Then in SRC_ROOT (or a sub-directory of it), check-out
  * read-only say the Implementation into $SRC_ROOT, and create a symlink called
  * $SRC_ROOT/Implementation/.razor which points to a directory of the form
- * <prefix>/razor_db/<Universe>/RAZOR_UNIVERSE/DOMAIN_01/<GroupName>, so that
+ * &lt;prefix&gt;/razor_db/&lt;Universe&gt;/RAZOR_UNIVERSE/DOMAIN_01/&lt;GroupName&gt;, so that
  * might be /repository/razor/razor_db/MyUniverse/RAZOR_UNIVERSE/DOMAIN_01/MyGroup
  *
  * Because of the distributed nature of information storage in Razor (by this
  * I mean, that each file in the repository is represented by files of the
- * same name (and path) under multiple directories (Archive, History & Info)),
+ * same name (and path) under multiple directories (Archive, History &amp; Info)),
  * I'm continuously mapping SRC_ROOT based names into the appropriate
  * subdirectory of the actual repository.
  *
@@ -128,7 +128,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * not worked Java for almost 8 years now, so please forgive any oversights
  * in this regard.
  *
- * @author Peter Bray <Peter.Darren.Bray@gmail.com>
+ * @author Peter Bray &lt;Peter.Darren.Bray@gmail.com&gt;
  */
 public class RazorRepository extends Repository {
     private static final long serialVersionUID = 1L;

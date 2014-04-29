@@ -154,6 +154,7 @@ public class FileAnalyzer extends Analyzer {
      * @param doc the Lucene document
      * @param src the input data source
      * @param xrefOut where to write the xref (may be {@code null})
+     * @throws IOException if any I/O error
      */
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         // not used

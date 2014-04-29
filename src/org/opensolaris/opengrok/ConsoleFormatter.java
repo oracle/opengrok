@@ -31,7 +31,7 @@ import java.util.logging.LogRecord;
 /**
  * Opengrok console formatter
  * Creates a logentry on the console using the following format
- * [#|HH:MM:ss.SSS | <logmessage> |#]
+ * [#|HH:MM:ss.SSS | &lt;logmessage&gt; |#]
  * @author Jan S Berg
  */
 final public class ConsoleFormatter extends Formatter {

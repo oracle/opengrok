@@ -42,8 +42,8 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * Created on October 12, 2005
  *
  * A Eftar File has the following format
- * FILE --> Record  ( Record | tagString ) *
- * Record --> 64bit:Hash 16bit:childrenOffset  16bit:(numberChildren|lenthOfTag) 16bit:tagOffset
+ * FILE --&gt; Record  ( Record | tagString ) *
+ * Record --&gt; 64bit:Hash 16bit:childrenOffset  16bit:(numberChildren|lenthOfTag) 16bit:tagOffset
  *
  * It is a tree of tagged names,
  * doing binary search in sorted list of children

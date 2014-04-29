@@ -35,7 +35,7 @@ Offical page of the project is on:
 2. Requirements
 ---------------
 
-    * Latest Java (At least 1.7)
+    * Latest Java (At least 1.7, 1.8 is supported)
       http://www.oracle.com/technetwork/java/
     * A servlet container like Tomcat (7.x or later)
       supporting Servlet 2.4 and JSP 2.0
@@ -45,11 +45,11 @@ Offical page of the project is on:
     * Source Code Management installation
       depending on type of repositories indexed
     * If you want to build OpenGrok:
-      - Ant (1.8 and later)
+      - Ant (1.9.3 and later)
         http://ant.apache.org/
       - JFlex
         http://www.jflex.de/
-      - Netbeans (optional, at least 7.4, will need Ant 1.8.1)
+      - Netbeans (optional, at least 8.0, will need Ant 1.9.3)
         http://netbeans.org/
 
 3. Usage

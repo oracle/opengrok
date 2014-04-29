@@ -431,7 +431,7 @@ public final class Util {
      *
      * @param s
      *            input text
-     * @return encoded text for use in <a title=""> tag
+     * @return encoded text for use in &lt;a title=""&gt; tag 
      */
     public static String encode(String s) {
         StringBuilder sb = new StringBuilder();

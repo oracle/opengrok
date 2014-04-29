@@ -179,7 +179,7 @@ public class IndexDatabase {
      *
      * @param executor An executor to run the job
      * @param listener where to signal the changes to the database
-     * @param paths
+     * @param paths list of paths to be indexed
      * @throws IOException if an error occurs
      */
     public static void update(ExecutorService executor, IndexChangedListener listener, List<String> paths) throws IOException {

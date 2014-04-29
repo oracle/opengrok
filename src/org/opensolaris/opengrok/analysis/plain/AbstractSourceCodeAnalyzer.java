@@ -81,10 +81,13 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
     /**
      * Write a cross referenced HTML file reads the source from in
      *
+     * @param lxref xrefer to be used
      * @param in Input source
      * @param out Output xref writer
      * @param defs definitions for the file (could be null)
      * @param annotation annotation for the file (could be null)
+     * @param project project where this xref belongs to
+     * @throws IOException when any I/O error occurs
      */
     static protected void writeXref(JFlexXref lxref, Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
         if (lxref != null) {

@@ -31,8 +31,8 @@ import java.util.logging.LogRecord;
 /**
  * Opengrok logfile formatter
  * Creates a logentry in the logfile on the following format
- * [#|YYYY-MM-DD HH:MM:ss.SSSZ |<loglevel>|<version>|OG|T=<threadnumber>|
- * <Class.method>: <logmessage> |#]
+ * [#|YYYY-MM-DD HH:MM:ss.SSSZ |&lt;loglevel&gt;|&lt;version&gt;|OG|T=&lt;threadnumber&gt;|
+ * &lt;Class.method&gt;: &lt;logmessage&gt; |#]
  * @author Jan S Berg
  */
 final public class FileLogFormatter extends Formatter {

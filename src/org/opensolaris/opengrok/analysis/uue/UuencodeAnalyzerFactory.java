@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
+ * Copyright (c) 2012, 2013 Constantine A. Murenin &lt;C++@Cns.SU&gt;
  */
 
 package org.opensolaris.opengrok.analysis.uue;
@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 /**
- * @author Constantine A. Murenin <http://cnst.su/>
+ * @author Constantine A. Murenin &lt;http://cnst.su/&gt;
  */
 
 public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {

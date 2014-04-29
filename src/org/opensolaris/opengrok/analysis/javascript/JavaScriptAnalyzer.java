@@ -42,6 +42,7 @@ public class JavaScriptAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of JavaAnalyzer
+     * @param factory factory for this analyzer
      */
     protected JavaScriptAnalyzer(FileAnalyzerFactory factory) {
         super(factory);

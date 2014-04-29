@@ -40,7 +40,7 @@ import org.opensolaris.opengrok.util.Executor;
  *
  * AccuRev requires that a user logs into their system before it can be used. So
  * on the machine acting as the OpenGrok server, some valid user has to be
- * permanently logged in. (accurev login -n <user>)
+ * permanently logged in. (accurev login -n &lt;user&gt;)
  *
  * It appears that the file path that is given to all these methods is the
  * complete path to the file which includes the path to the root of the source

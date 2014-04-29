@@ -6,18 +6,18 @@ package org.opensolaris.opengrok.history;
 import java.util.Date;
 
 /**
- * Class representing tag as Pair<revision, tag string>. Has overloaded equals()
+ * Class representing tag as Pair&lt;revision, tag string&gt;. Has overloaded equals()
  * using only revision string.
  *
  * @author Stanislav Kozina
  */
 public abstract class TagEntry implements Comparable {
 
-    protected int revision; /**< If repo uses linear revision numbering */
-    protected Date date; /**< If repo does not use linear numbering */
-    protected String tags; /**< Tag of the revision */
+    protected int revision; /** If repo uses linear revision numbering */
+    protected Date date; /** If repo does not use linear numbering */
+    protected String tags; /** Tag of the revision */
     
-    protected static final int NOREV = -1; /**< Revision number not present */
+    protected static final int NOREV = -1; /** Revision number not present */
     public TagEntry(int revision, String tags) {
         this.revision = revision;
         this.date = null;

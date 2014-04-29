@@ -32,7 +32,7 @@ import java.util.logging.LogRecord;
 /**
  * Opengrok console formatter
  * Creates a logentry on the console using the following format
- * HH:MM:ss <loglevel>: <logmessage>
+ * HH:MM:ss &lt;loglevel&gt;: &lt;logmessage&gt;
  * @author Lubos Kosco
  */
 final public class SimpleConsoleFormatter extends Formatter {

@@ -32,7 +32,7 @@ import org.opensolaris.opengrok.util.Executor;
 /**
  * Access to a Git repository.
  *
- * @author Trond Norbye <trond.norbye@gmail.com>
+ * @author Trond Norbye &lt;trond.norbye@gmail.com&gt;
  */
 public class RepoRepository extends Repository {
     // TODO: cache all of the GitRepositories within the class

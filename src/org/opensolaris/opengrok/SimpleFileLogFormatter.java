@@ -32,7 +32,7 @@ import java.util.logging.LogRecord;
 /**
  * Opengrok logfile formatter
  * Creates a logentry in the logfile on the following format
- * YYYY-MM-DD HH:MM:ss.SSSZ <loglevel> t<threadnumber> <Class.method>: <logmessage>
+ * YYYY-MM-DD HH:MM:ss.SSSZ &lt;loglevel&gt; t&lt;threadnumber&gt; &lt;Class.method&gt;: &lt;logmessage&gt;
  * @author Lubos Kosco
  */
 final public class SimpleFileLogFormatter extends Formatter {

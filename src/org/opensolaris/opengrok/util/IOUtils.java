@@ -37,7 +37,7 @@ import java.util.logging.Logger;
  * A small utility class to provide common functionality related to
  * IO so that we don't need to duplicate the logic all over the place.
  * 
- * @author Trond Norbye <trond.norbye@gmail.com>
+ * @author Trond Norbye &lt;trond.norbye@gmail.com&gt;
  */
 public final class IOUtils {
 

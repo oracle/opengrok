@@ -49,7 +49,7 @@ public abstract class Repository extends RepositoryInfo {
     protected String cmd;
     
     /**
-     * List of <revision, tags> pairs for repositories which display tags
+     * List of &lt;revision, tags&gt; pairs for repositories which display tags
      * only for files changed by the tagged commit.
      */
     protected TreeSet<TagEntry> tagList = null;
@@ -331,7 +331,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Update the content in this repository by pulling the changes from the
      * upstream repository..
-     * @throws Exception if an error occurs.
+     * @throws IOException if an error occurs.
      */
     abstract void update() throws IOException;
 
