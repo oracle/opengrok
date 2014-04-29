@@ -1,3 +1,14 @@
+May 2014 update 0.12.1
+-------------------------------------------------
+
+This is a stability improvement release and we suggest to use it instead of 0.12
+
+Bug fixes:
+  reassign tags to changesets when performing merging of old and new history during incremental reindex fixes #819
+  create file which stores the latest cached revision also when renamed file handling is disabled fixes #818
+  Made the limitations on JavaDB versions explicit
+
+
 April 2014 release 0.12
 -------------------------------------------------
 
