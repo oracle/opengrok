@@ -124,7 +124,7 @@ class FileHistoryCache implements HistoryCache {
 
         File file = new File(root, map_entry.getKey());
         if (!file.isDirectory()) {
-            storeFile(hist, file);
+            storeFile(hist, file, repository);
         }
     }
 
@@ -213,9 +213,10 @@ class FileHistoryCache implements HistoryCache {
      *
      * @param history history object to store
      * @param file file to store the history object into
+     * @param repo repository for the file
      * @throws HistoryException
      */
-    private void storeFile(History histNew, File file) throws HistoryException {
+    private void storeFile(History histNew, File file, Repository repo) throws HistoryException {
 
         File cache = getCachedFile(file);
         History history = histNew;
@@ -233,12 +234,26 @@ class FileHistoryCache implements HistoryCache {
             // Merge old history with the new history.
             List<HistoryEntry> listOld = histOld.getHistoryEntries();
             if (!listOld.isEmpty()) {
+                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 List<HistoryEntry> listNew = histNew.getHistoryEntries();
                 ListIterator li = listNew.listIterator(listNew.size());
                 while (li.hasPrevious()) {
                     listOld.add(0, (HistoryEntry) li.previous());
                 }
                 history = new History(listOld);
+
+                // Retag the last changesets in case there have been some new
+                // tags added to the repository. Technically we should just
+                // retag the last revision from the listOld however this
+                // does not solve the problem when listNew contains new tags
+                // retroactively tagging changesets from listOld so we resort
+                // to this somewhat crude solution.
+                if (env.isTagsEnabled() && repo.hasFileBasedTags()) {
+                    for (HistoryEntry ent : history.getHistoryEntries()) {
+                        ent.setTags(null);
+                    }
+                    repo.assignTagsInHistory(history);
+                }
             }
         } catch (IOException ex) {
             // Ideally we would want to catch the case when incremental update
@@ -491,7 +506,7 @@ class FileHistoryCache implements HistoryCache {
                         (cache.exists() ||
                              (time > env.getHistoryReaderTimeLimit()))) {
                 // retrieving the history takes too long, cache it!
-                storeFile(history, file);
+                storeFile(history, file, repository);
             }
         }
         return history;
@@ -573,13 +588,13 @@ class FileHistoryCache implements HistoryCache {
                   new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
-            logger.log(Level.WARNING, "cannot write latest cached revision to file: {0}",
+            logger.log(Level.WARNING, "cannot write latest cached revision to file: " +
                 ex.getCause());
         } finally {
            try {
                writer.close();
            } catch (IOException ex) {
-               logger.log(Level.INFO, "cannot close file: {0}", ex);
+               logger.log(Level.INFO, "cannot close file: " + ex);
            }
         }
     }

@@ -589,6 +589,10 @@ public class MercurialRepository extends Repository {
                         tag.concat(" ");
                         tag.concat(parts[i]);
                     }
+                    // The implicit 'tip' tag only causes confusion so ignore it. 
+                    if (tag.contentEquals("tip")) {
+                        continue;
+                    }
                     String revParts[] = parts[parts.length - 1].split(":");
                     if (revParts.length != 2) {
                         OpenGrokLogger.getLogger().log(Level.WARNING,

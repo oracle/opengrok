@@ -260,7 +260,7 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Create a history log cache for all of the files in this repository.
+     * Create a history log cache for all files in this repository.
      * {@code getHistory()} is used to fetch the history for the entire
      * repository. If {@code hasHistoryForDirectories()} returns {@code false},
      * this method is a no-op.
@@ -315,6 +315,12 @@ public abstract class Repository extends RepositoryInfo {
             // Got full history successfully. Clear the history cache so that
             // we can recreate it from scratch.
             cache.clear(this);
+        }
+
+        // We need to refresh list of tags for incremental reindex.
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.isTagsEnabled() && this.hasFileBasedTags()) {
+            this.buildTagList(new File(this.directoryName));
         }
 
         if (history != null) {
