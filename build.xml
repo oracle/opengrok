@@ -110,6 +110,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
 
+    <property name="mvn.repository" value="http://repo1.maven.org/maven2/"/>
+    
     <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
 
     <target name="-exclude-client" unless="compileSystrayClient">	    
@@ -155,7 +157,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
  
     <target name="download-jflex" depends="-check-jflex" if="jflex_not_downloaded">
-        <get src="http://repo1.maven.org/maven2/de/jflex/jflex/${jflex-version}/jflex-${jflex-version}.jar"
+        <get src="${mv.repository}/de/jflex/jflex/${jflex-version}/jflex-${jflex-version}.jar"
         dest="lib/jflex-${jflex-version}.jar" verbose="true" usetimestamp="true"/>
     </target>
 
@@ -361,13 +363,13 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
     
     <target name="download-lucene" depends="-check-lucene" if="lucene_not_downloaded">
-        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
+        <get src="${mvn.repository}/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
         dest="lib/${lucene-core.jar}" verbose="true" usetimestamp="true"/>
-        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-analyzers-common/${lucene.version}/${lucene-analyzers-common.jar}"
+        <get src="${mvn.repository}/org/apache/lucene/lucene-analyzers-common/${lucene.version}/${lucene-analyzers-common.jar}"
         dest="lib/${lucene-analyzers-common.jar}" verbose="true" usetimestamp="true"/>
-        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-queryparser/${lucene.version}/${lucene-queryparser.jar}"
+        <get src="${mvn.repository}/org/apache/lucene/lucene-queryparser/${lucene.version}/${lucene-queryparser.jar}"
         dest="lib/${lucene-queryparser.jar}" verbose="true" usetimestamp="true"/>
-        <get src="http://repo1.maven.org/maven2/org/apache/lucene/lucene-suggest/${lucene.version}/${lucene-suggest.jar}"
+        <get src="${mvn.repository}/org/apache/lucene/lucene-suggest/${lucene.version}/${lucene-suggest.jar}"
         dest="lib/${lucene-suggest.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
@@ -525,7 +527,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
         <mkdir dir="pmd"/>
         <pmd failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
-	    <sourcelanguage name="java" version="1.7" />
+	    <sourcelanguage name="java" version="${javac.source}" />
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
@@ -787,7 +789,9 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     <target name="jrcs" depends="-pre-pre-compile">
         <mkdir dir="${build.dir}/jrcs"/>
         <javac srcdir="jrcs/src/main/java" destdir="${build.dir}/jrcs"
-             nowarn="on" source="1.4"/>
+               nowarn="on" source="${javac.source}">
+        <compilerarg value="-Xlint:deprecation"/> <!-- ,unchecked -->
+        </javac>
         <jar destfile="${file.reference.jrcs.jar}">
             <fileset dir="${build.dir}/jrcs" includes="**/*.class"/>
         </jar>
@@ -873,8 +877,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 			javaencoding="UTF-8"
 			uriroot="${build.dir}/src/web"
 			package="${codebase.dot}.jsp"
-			compilersourcevm="1.7"
-			compilertargetvm="1.7"
+			compilersourcevm="${javac.source}"
+			compilertargetvm="${javac.target}"
 			smapsuppressed="false"
 			webxmlfragment="${build.dir}/src/servlets_web.xml"
 			/>
@@ -897,7 +901,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 			deprecation="${deprecation}" classpathref="classpath.jsp"
 			encoding="UTF-8" listfiles="${listfiles}"
 			includeantruntime="false">
-            <compilerarg value="-Xlint:unchecked" compiler="javac1.7"/>
+            <compilerarg value="-Xlint:deprecation,unchecked" compiler="javac${javac.source}"/>
         </javac>
     </target>
 
