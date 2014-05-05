@@ -57,6 +57,7 @@
 #                                 (use "none" to avoid sending it to web app)
 #   - OPENGROK_WEBAPP_CONTEXT     Context URL of the OpenGrok webapp
 #                                 (by default /source)
+#                                 - FULL reindex is needed one this is used
 #   - OPENGROK_WPREFIX            Disable wildcard prefix search query
 #                                 support (*)
 #   - OPENGROK_DERBY              if set, then indexer tries to use derby as

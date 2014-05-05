@@ -379,7 +379,8 @@ file named source.war, you can change it as follows:
      Copy source.war to TOMCAT/webapps
 
      When invoking OpenGrok to build the index, use -w <webapp> to set the 
-     context.
+     context. If you change this(or set using OPENGROK_WEBAPP_CONTEXT) later, 
+     FULL clean reindex is needed.
 
      After the index is built, there's a couple different ways to set the
      Context for the servlet container:
@@ -553,7 +554,8 @@ more options, refer to manual or read param comments).
 
 If you need to change name of the web application from source to something
 else you need to use special option -w <new_name> for indexer to create
-proper xrefs, besides changing the .war file name. Examples below show just
+proper xrefs, besides changing the .war file name. Be sure that when this
+changed you reindex cleanly from scratch. Examples below show just
 deploying source.war, but you can use it to deploy your new_name.war too.
 
 Deploy the modified .war file in glassfish/Sun Java App Server:
