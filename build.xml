@@ -157,7 +157,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
  
     <target name="download-jflex" depends="-check-jflex" if="jflex_not_downloaded">
-        <get src="${mv.repository}/de/jflex/jflex/${jflex-version}/jflex-${jflex-version}.jar"
+        <get src="${mvn.repository}/de/jflex/jflex/${jflex-version}/jflex-${jflex-version}.jar"
         dest="lib/jflex-${jflex-version}.jar" verbose="true" usetimestamp="true"/>
     </target>
 
