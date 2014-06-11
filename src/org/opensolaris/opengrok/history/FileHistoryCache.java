@@ -592,7 +592,9 @@ class FileHistoryCache implements HistoryCache {
                 ex.getCause());
         } finally {
            try {
-               writer.close();
+               if (writer != null) {
+                   writer.close();
+               }
            } catch (IOException ex) {
                logger.log(Level.INFO, "cannot close file: " + ex);
            }
