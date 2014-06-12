@@ -186,8 +186,9 @@ public abstract class JFlexXref {
         }
     }
 
-    protected String getProjectPostfix() {
-        return project == null ? "" : ("&amp;project=" + project.getDescription());
+    protected String getProjectPostfix(boolean encoded) {
+        String amp = encoded ? "&amp;" : "&";
+        return project == null ? "" : (amp + "project=" + project.getDescription());
     }
 
     /**
@@ -334,7 +335,8 @@ public abstract class JFlexXref {
     protected void startNewLine() throws IOException {
         int line = getLineNumber() + 1;
         setLineNumber(line);
-        Util.readableLine(line, out, annotation, userPageLink, userPageSuffix);
+        Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
+            getProjectPostfix(false));
     }
 
     /**

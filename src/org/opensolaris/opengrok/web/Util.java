@@ -482,7 +482,7 @@ public final class Util {
      * @throws IOException depends on the destination (<var>out</var>).
      */
     public static void readableLine(int num, Writer out, Annotation annotation,
-        String userPageLink, String userPageSuffix)
+        String userPageLink, String userPageSuffix, String project)
     throws IOException
     {
         // this method should go to JFlexXref
@@ -525,11 +525,12 @@ public final class Util {
 
                 out.write(anchorEnd);
 
-                // Write link to search the revision.
+                // Write link to search the revision in current project.
                 out.write(anchorClassStart);
-                out.write("search\" href=\"" + env.getUrlPrefix() +
-                    "defs=&refs=&path=&hist=");
-                out.write(URIEncode(r));
+                out.write("search\" href=\"" + env.getUrlPrefix());
+                out.write("defs=&refs=&path=");
+                out.write(project);
+                out.write("&hist=" + URIEncode(r));
                 out.write("&type=\" title=\"Search history for this changeset");
                 out.write(closeQuotedTag);
                 out.write("S");
