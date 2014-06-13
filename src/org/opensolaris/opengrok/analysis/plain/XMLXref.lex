@@ -107,7 +107,7 @@ NameChar = {FileChar}|"."
     final char separator = isJavaClass ? '.' : '/';
     final String hyperlink =
             Util.breadcrumbPath(urlPrefix + "path=", path, separator,
-                                getProjectPostfix(), isJavaClass);
+                                getProjectPostfix(true), isJavaClass);
     out.append(hyperlink);
   }
 
