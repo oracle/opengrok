@@ -788,7 +788,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="emma-report" description="Analyze" depends="-check_emma">
-        <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+	    <taskdef resource="emma_ant.properties"/>
         <emma enabled="true" >
             <report sourcepath="${src.dir},${src.generatedsrc.dir}">
                 <!-- collect all EMMA data dumps (metadata and runtime): -->
