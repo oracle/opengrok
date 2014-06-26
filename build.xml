@@ -21,7 +21,7 @@ CDDL HEADER END
 Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
 
 -->
-<project name="OpenGrok" default="jar" basedir=".">
+<project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
     <description>Builds, tests, and runs the project opengrok.</description>
     <property name="build.sysclasspath" value="ignore"/>
     <property file="${user.home}/config/ant/${ant.project.name}.properties" />
@@ -119,13 +119,20 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
     </target>
     
-    <property name="jflex-version" value="1.5.1"/>
+    <property name="jflex-version" value="1.6.0"/>
+             
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
         <pathelement path="${java.class.path}"/>
         <pathelement path="lib"/>
-        <pathelement path="../lib"/>
+        <pathelement path="../lib"/>        
         <pathelement location="lib/jflex-${jflex-version}.jar"/>
+    </path>
+
+    <path id="jacoco.lib.search.path">
+        <pathelement path="${jacoco.home}/lib/"/>
+        <pathelement path="${java.class.path}"/>
+        <pathelement path="lib/jacoco/lib/"/>        
     </path>
 
     <path id="findbugs.lib.search.path">
@@ -153,7 +160,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <not>
                 <isset property="JFlex.present"/>
             </not>
-        </condition>         
+        </condition>
     </target>
  
     <target name="download-jflex" depends="-check-jflex" if="jflex_not_downloaded">
@@ -290,7 +297,8 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <manifest file="manifest.mf" mode="replace"/>
     </target>
 
-    <target name="-pre-init" depends="-touch-manifest, -exclude-client"/>
+    <!-- injecting jacoco, too -->
+    <target name="-pre-init" depends="-touch-manifest, -exclude-client, -set-jacocoagent"/>                    
 
     <!--
         Initialize a property holding a list of jar files on which
@@ -570,6 +578,56 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         </cpd>
     </target>
 
+    <target name="-check_jacoco" description="Check that jacoco jar files are present">
+        <available file="jacocoagent.jar" type="file" property="jacocoagent.jar.present">
+            <filepath refid="jacoco.lib.search.path"/>
+        </available>
+        <fail unless="jacocoagent.jar.present" message="Please install jacoco/lib/jacocoagent.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>
+
+        <available file="jacocoant.jar" type="file" property="jacocoant.jar.present">
+            <filepath refid="jacoco.lib.search.path"/>
+        </available>
+        <fail unless="jacocoant.jar.present" message="Please install jacoco/lib/jacocoant.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>                
+        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+            <classpath refid="jacoco.lib.search.path"/>
+            <classpath path="lib/jacoco/lib/jacocoant.jar"/>
+        </taskdef>
+    </target>
+        
+    <target name="-set-jacocoagent" if="jacoco" depends="-check_jacoco">
+        <!--<antcall target=""/>-->
+        
+        <jacoco:agent property="jacocoagent"/>
+        <!-- Ugly hack to leverage IDE variable to inject jacoco 
+        this will most probably break once Netbeans folks will drop this variable!
+        -->
+        <property name="run.jvmargs.ide" value="${jacocoagent}" />
+        <echo level="warn" message="Jacoco agent was enabled and injected to run.jvmargs.ide"/>
+    </target>
+
+    <target name="jacocoreport" depends="-check_jacoco,-jacocoreport-without-test" />    
+
+    <target name="jacoco-code-coverage" depends="clean, test, jacocoreport" description="Make jacoco test code coverage reports based on the OpenGrok unit tests" if="jacoco"/>        
+
+    <target name="-jacocoreport-without-test"> <!--depends="-set-jacocoagent">        -->
+        <jacoco:report>
+            <executiondata>
+                <file file="jacoco.exec"/>
+            </executiondata>
+            <structure name="Opengrok">
+                <classfiles>
+                    <fileset dir="build"/>
+                </classfiles>
+                <sourcefiles encoding="UTF-8">
+                    <fileset dir="src"/>                    
+                </sourcefiles>
+            </structure>            
+            <html destdir="jacoco"/>
+            <csv destfile="jacoco/report.csv"/>
+            <xml destfile="jacoco/report.xml"/>
+        </jacoco:report>
+    </target>    
+
     <target name="-check_emma" description="Check that emma jar files are present">
         <available file="emma.jar" type="file" property="emma.jar.present">
             <filepath refid="lib.search.path"/>
@@ -581,7 +639,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         </available>
         <fail unless="emma_ant.jar.present" message="Please install emma_ant.jar in lib-directory  (or in ant classpath) to run Emma, see README."/>
     </target>
-    
+
     <target name="emma-instrument" depends="compile, -check_emma" description="Instruments the source code for Emma code coverage analysis">
         <path id="emma.lib" >
             <pathelement location="lib/emma.jar"/>
@@ -597,10 +655,12 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         </emma>
     </target>
     
-    <target name="-pre-compile-test">
+    <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->
         <property name="test-sys-prop.emma.coverage.out.file" value="${coverage.dir}/coverage.ec"/>
         <property name="test-sys-prop.emma.coverage.out.merge" value="true"/>
     </target>
+    
+    <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
 
     <target name="check_repositories_zip" description="check if repositores.zip was generated">
         <available
@@ -751,7 +811,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         </emma>
     </target>
     
-    <target name="code-coverage" depends="clean, emma-instrument, test, emma-report" description="Make test code coverage reports based on the OpenGrok unit tests"/>
+    <target name="emma-code-coverage" depends="clean, emma-instrument, test, emma-report" description="Make test code coverage reports based on the OpenGrok unit tests"/>
 
     <target name="jdepend" depends="compile" description="Run JDepend dependency checking">
         <mkdir dir="jdepend"/>

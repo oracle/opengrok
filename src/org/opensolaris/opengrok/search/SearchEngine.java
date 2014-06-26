@@ -35,6 +35,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -73,7 +74,7 @@ public class SearchEngine {
     /**
      * version of lucene index common for whole application
      */
-    public static final Version LUCENE_VERSION = Version.LUCENE_48;
+    public static final Version LUCENE_VERSION = Version.LUCENE_4_9;
     /**
      * Holds value of property definition.
      */
@@ -124,7 +125,7 @@ public class SearchEngine {
      * Creates a new instance of SearchEngine
      */
     public SearchEngine() {
-        docs = new ArrayList<org.apache.lucene.document.Document>();
+        docs = new ArrayList<>();
     }
 
     /**
@@ -148,7 +149,7 @@ public class SearchEngine {
         try {
             query = createQueryBuilder().build();
             ret = (query != null);
-        } catch (Exception e) {
+        } catch (ParseException e) {
             ret = false;
         }
 
@@ -173,8 +174,8 @@ public class SearchEngine {
             searcher.search(query, collector);
         }
         hits = collector.topDocs().scoreDocs;
-        for (int i = 0; i < hits.length; i++) {
-            int docId = hits[i].doc;
+        for (ScoreDoc hit : hits) {
+            int docId = hit.doc;
             Document d = searcher.doc(docId);
             docs.add(d);
         }
@@ -211,8 +212,8 @@ public class SearchEngine {
             searcher.search(query, collector);
         }
         hits = collector.topDocs().scoreDocs;
-        for (int i = 0; i < hits.length; i++) {
-            int docId = hits[i].doc;
+        for (ScoreDoc hit : hits) {
+            int docId = hit.doc;
             Document d = searcher.doc(docId);
             docs.add(d);
         }
@@ -224,7 +225,7 @@ public class SearchEngine {
 
     /**
      * Execute a search. Before calling this function, you must set the
-     * appropriate seach critera with the set-functions. Note that this search
+     * appropriate search criteria with the set-functions. Note that this search
      * will return the first cachePages of hitsPerPage, for more you need to
      * call more
      *
@@ -389,13 +390,7 @@ public class SearchEngine {
                 if (!hasContext) {
                     ret.add(new Hit(filename, "...", "", false, alt));
                 }
-            } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(
-                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
-            } catch (ClassNotFoundException e) {
-                OpenGrokLogger.getLogger().log(
-                        Level.WARNING, SEARCH_EXCEPTION_MSG, e);
-            } catch (HistoryException e) {
+            } catch (IOException | ClassNotFoundException | HistoryException e) {
                 OpenGrokLogger.getLogger().log(
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }

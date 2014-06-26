@@ -15,6 +15,7 @@
  */
 
 // modified by Lubos Kosco 2010 to upgrade lucene to 3.0.0
+// modified by Lubos Kosco 2014 to upgrade lucene to 4.9.0
 
 // TODO : rewrite this to use Highlighter from lucene contrib ...
 
@@ -29,10 +30,10 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.PackedTokenAttributeImpl;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -41,7 +42,6 @@ import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
-
 
 /** Implements hit summarization. */
 public class Summarizer {
@@ -55,7 +55,7 @@ public class Summarizer {
     /** Converts text to tokens. */
     private final Analyzer analyzer;
 
-    private final Set<String> highlight = new HashSet<String>();            // put query terms in table
+    private final Set<String> highlight = new HashSet<>();            // put query terms in table
 
     public Summarizer(Query query, Analyzer a) {
         analyzer = a;
@@ -64,11 +64,11 @@ public class Summarizer {
 
     /**
      * Class Excerpt represents a single passage found in the
-     * document, with some appropriate regions highlit.
+     * document, with some appropriate regions highlight.
      */
     static class Excerpt {
-        List<Summary.Fragment> passages = new ArrayList<Summary.Fragment>();
-        Set<String> tokenSet = new TreeSet<String>();
+        List<Summary.Fragment> passages = new ArrayList<>();
+        Set<String> tokenSet = new TreeSet<>();
         int numTerms = 0;
 
         /**
@@ -114,7 +114,10 @@ public class Summarizer {
         }
     }
 
-    /** Returns a summary for the given pre-tokenized text. */
+    /** Returns a summary for the given pre-tokenized text.
+     * @param text input text
+     * @return summary of hits
+     * @throws java.io.IOException */
     public Summary getSummary(String text) throws IOException {
         if (text == null) {
             return null;
@@ -124,7 +127,7 @@ public class Summarizer {
         //
         // @TODO: check that phrases in the query are matched in the fragment
 
-        Token[] tokens = getTokens(text);             // parse text to token array
+        SToken[] tokens = getTokens(text);             // parse text to token array
 
         if (tokens.length == 0) {
             return new Summary();
@@ -136,7 +139,7 @@ public class Summarizer {
         // how many query terms are present.  An excerpt is
         // a List full of Fragments and Highlights
         //
-        SortedSet<Excerpt> excerptSet = new TreeSet<Excerpt>(new Comparator<Excerpt>() {
+        SortedSet<Excerpt> excerptSet = new TreeSet<>(new Comparator<Excerpt>() {
             @Override
             public int compare(Excerpt excerpt1, Excerpt excerpt2) {
                 if (excerpt1 == null) {
@@ -195,7 +198,7 @@ public class Summarizer {
                     //
                     // Now grab the hit-element, if present
                     //
-                    Token t = tokens[j];
+                    SToken t = tokens[j];
                     if (highlight.contains(t.toString())) {
                         excerpt.addToken(t.toString());
                         excerpt.add(new Summary.Fragment(text.substring(offset, t.startOffset())));
@@ -280,21 +283,28 @@ public class Summarizer {
         return s;
     }
 
-    private Token[] getTokens(String text) throws IOException {
+    private class SToken extends PackedTokenAttributeImpl {
+        public SToken(char[] startTermBuffer, int termBufferOffset, int termBufferLength, int start, int end) {
+                 copyBuffer(startTermBuffer, termBufferOffset, termBufferLength);
+                 setOffset(start, end);
+        }        
+    }
+    
+    private SToken[] getTokens(String text) throws IOException {
         //FIXME somehow integrate below cycle to getSummary to save the cloning and memory,
-        //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter
-        ArrayList<Token> result = new ArrayList<Token>();
-        TokenStream ts = analyzer.tokenStream("full", text);        
-        CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
-        OffsetAttribute offset = ts.addAttribute(OffsetAttribute.class);        
-        ts.reset();
-        while(ts.incrementToken()) {
-            Token t=new Token(term.buffer(),0,term.length(),offset.startOffset(),offset.endOffset());
-            result.add(t);
+        //also creating Tokens is suboptimal with 3.0.0 , this whole class could be replaced by highlighter        
+        ArrayList<SToken> result = new ArrayList<>();
+        try (TokenStream ts = analyzer.tokenStream("full", text)) {
+            CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
+            OffsetAttribute offset = ts.addAttribute(OffsetAttribute.class);
+            ts.reset();
+            while(ts.incrementToken()) {
+                SToken t=new SToken(term.buffer(),0,term.length(),offset.startOffset(),offset.endOffset());
+                result.add(t);
+            }
+            ts.end();
         }
-        ts.end();
-        ts.close();        
-        return result.toArray(new Token[result.size()]);
+        return result.toArray(new SToken[result.size()]);
     }
 
 
@@ -321,17 +331,17 @@ public class Summarizer {
 
     private void getBooleans(BooleanQuery query) {
         BooleanClause[] queryClauses = query.getClauses();
-        for (int i = 0; i < queryClauses.length; i++) {
-            if (!queryClauses[i].isProhibited()) {
-                getTerms(queryClauses[i].getQuery());
+        for (BooleanClause queryClause : queryClauses) {
+            if (!queryClause.isProhibited()) {
+                getTerms(queryClause.getQuery());
             }
         }
     }
 
     private void getPhrases(PhraseQuery query) {
         Term[] queryTerms = query.getTerms();
-        for (int i = 0; i < queryTerms.length; i++) {
-            highlight.add(queryTerms[i].text());
+        for (Term queryTerm : queryTerms) {
+            highlight.add(queryTerm.text());
         }
     }
 
