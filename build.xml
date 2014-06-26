@@ -129,10 +129,10 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <pathelement location="lib/jflex-${jflex-version}.jar"/>
     </path>
 
-    <path id="jacoco.lib.search.path">
-        <pathelement path="${jacoco.home}/lib/"/>
-        <pathelement path="${java.class.path}"/>
-        <pathelement path="lib/jacoco/lib/"/>        
+    <path id="jacoco.lib.search.path">	
+	<pathelement path="${java.class.path}"/>
+	<pathelement path="lib/jacoco/lib/"/>        
+	<pathelement path="lib/jacoco/lib/jacocoant.jar"/>
     </path>
 
     <path id="findbugs.lib.search.path">
@@ -582,21 +582,19 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <available file="jacocoagent.jar" type="file" property="jacocoagent.jar.present">
             <filepath refid="jacoco.lib.search.path"/>
         </available>
-        <fail unless="jacocoagent.jar.present" message="Please install jacoco/lib/jacocoagent.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>
+        <fail unless="jacocoagent.jar.present" message="Please install jacocoagent.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>
 
         <available file="jacocoant.jar" type="file" property="jacocoant.jar.present">
             <filepath refid="jacoco.lib.search.path"/>
         </available>
-        <fail unless="jacocoant.jar.present" message="Please install jacoco/lib/jacocoant.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>                
-        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
-            <classpath refid="jacoco.lib.search.path"/>
-            <classpath path="lib/jacoco/lib/jacocoant.jar"/>
+        <fail unless="jacocoant.jar.present" message="Please install jacocoant.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>                        
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" >
+		<classpath refid="jacoco.lib.search.path"/>		
         </taskdef>
     </target>
         
-    <target name="-set-jacocoagent" if="jacoco" depends="-check_jacoco">
-        <!--<antcall target=""/>-->
-        
+    <target name="-set-jacocoagent" if="jacoco">
+        <antcall target="-check_jacoco"/>        
         <jacoco:agent property="jacocoagent"/>
         <!-- Ugly hack to leverage IDE variable to inject jacoco 
         this will most probably break once Netbeans folks will drop this variable!
