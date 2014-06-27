@@ -583,7 +583,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             <filepath refid="jacoco.lib.search.path"/>
         </available>
         <fail unless="jacocoant.jar.present" message="Please install jacocoant.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>                
-	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml"/>
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="jacoco.lib.search.path"/>
     </target>
         
     <property name="jacoco_out" value="jacoco.exec"/>
@@ -609,7 +609,9 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
             </executiondata>
             <structure name="Opengrok">
                 <classfiles>
-                    <fileset dir="build"/>
+                    <fileset dir="build/classes">
+                        <exclude name="**/org/opensolaris/opengrok/management/client/*.class" />
+                    </fileset>
                 </classfiles>
                 <sourcefiles encoding="UTF-8">
                     <fileset dir="src"/>                    
