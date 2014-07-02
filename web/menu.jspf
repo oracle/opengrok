@@ -159,6 +159,7 @@ org.opensolaris.opengrok.web.Util"
     if (projects.size() != 0) {
 %>
 <div id="ptbl">
+     <input type="hidden" id="allProjects" name="allProjects" value="true">
     <p><label for="project">In Project(s)</label> <button tabindex="6" type="button"
         onclick="javascript: selectAllProjects(); return false;"
         >select all</button>&nbsp;<button tabindex="7" type="button"
@@ -174,11 +175,9 @@ org.opensolaris.opengrok.web.Util"
             // with F5 also below ondblclick doesn't work in IE ...
             // ondblclick="javascript:goFirstProject();"
         %>
-        <option value="<%= e.getValue() %>"<%
-            if (pRequested.contains(e.getKey())) {
-            %> selected="selected"<%
-            }
-            %>><%= e.getValue() %></option><%
+        <option value="<%= e.getValue() %>" 
+                selected="selected">
+            <%= e.getValue() %></option><%
         }
         %>
     </select>
@@ -186,7 +185,7 @@ org.opensolaris.opengrok.web.Util"
     }
     %>
 
-    <p><input tabindex="9" class="submit" type="submit" value="Search"/> 
+    <p><input tabindex="9" class="submit" onclick="javascript: checkBeforeSubmit();" type="submit" value="Search"/> 
     <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();" 
 	   type="button" value=" Clear "/> 
     <button class="help" tabindex="11" onclick="window.open('help.jsp');">Help

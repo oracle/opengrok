@@ -100,6 +100,7 @@ public final class PageConfig {
             EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
+    private Boolean allProjects;
     private List<String> dirFileList;
     private QueryBuilder queryBuilder;
     private File dataRoot;
@@ -405,7 +406,20 @@ public final class PageConfig {
         }
         return ret;
     }
-
+    public boolean getBooleanParam(String paramName, Boolean defaultValue) {
+        Boolean ret = defaultValue;
+        System.out.println("###paramName: "+paramName);
+        String s = req.getParameter(paramName);
+        if (s != null && s.length() != 0) {
+            try {
+               ret= Boolean.valueOf(s);
+            } catch (Exception e) {
+                log.log(Level.INFO, "Failed to parse Boolean " + s, e);
+            }
+        }
+         System.out.println("###result: "+ret);
+        return ret;
+    }
     /**
      * Get the <b>start</b> index for a search result to return by looking up
      * the {@code start} request parameter.
@@ -703,12 +717,34 @@ public final class PageConfig {
      * Otherwise:</li> <li>an empty set</li> </ol>
      */
     public SortedSet<String> getRequestedProjects() {
+        getIfAllProjectsRequested();
+        if (allProjects) {
+            TreeSet<String> set = new TreeSet<String>();
+            List<Project> projects = getEnv().getProjects();
+            for (Project project : projects) {
+                set.add(project.getDescription());
+            }
+            requestedProjects = set;
+        }
+        
         if (requestedProjects == null) {
             requestedProjects =
                     getRequestedProjects("project", "OpenGrokProject");
         }
+        
         return requestedProjects;
     }
+    
+    
+    /**
+    * If request for all projects then 
+    */
+    public boolean isRequestForAllProjects() {
+        //TODO: take this from requst 
+        //return (requestedProjects == null || allProjects)? true :false;  
+        return true;
+    }
+    
     private static Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
@@ -1230,5 +1266,9 @@ public final class PageConfig {
         if (cfg.eftarReader != null) {
             cfg.eftarReader.close();
         }
+    }
+
+    private void getIfAllProjectsRequested() {
+       allProjects = getBooleanParam("allProjects", Boolean.TRUE);
     }
 }

@@ -395,6 +395,7 @@ function togglediffs() {
 
 function selectAllProjects() {
     $("#project *").attr("selected", "selected");
+    $("#allProjects").val("true");
 }
 
 function invertAllProjects() {
@@ -407,9 +408,10 @@ function invertAllProjects() {
             }
         }
     );
+    $("#allProjects").val("false");
 }
 
-function goFirstProject() {
+function goFirstProject() {    
     var selected=$.map($('#project :selected'), function(e) {
             return $(e).text();
         });
@@ -424,6 +426,17 @@ function clearSearchFrom() {
     );    
     $("#type :selected").removeAttr("selected");
 }
+function checkBeforeSubmit() {
+   var notSelected = $("#project option:not(:selected)").length;
+   if (notSelected == 0) {
+    $("select").val([]);
+    $("#allProjects").val("true");
+    } else {
+        //activ choise to select projects
+        $("#allProjects").val("false");
+    }
+   $("#sbox").submit();
+}
 
 function checkEnter(event) {
     concat='';
@@ -436,6 +449,15 @@ function checkEnter(event) {
     {
         goFirstProject();
     } else if (event.keyCode == '13') {
+        var notSelected = $("#project option:not(:selected)").length;
+        
+        if (notSelected == 0) {
+            $("#allProjects").val("true");
+        } else {
+            //activ choise to select projects
+            $("#allProjects").val("false");
+        }
+
         $("#sbox").submit();
     }
 }
