@@ -5,6 +5,7 @@
 * http://www.midnightbsd.org/opengrok/ &mdash; MidnightBSD, MirBSD and other BSDs
 * http://opengrok.quantumachine.net/ &mdash; DragonFly, FreeBSD, OpenBSD and Linux
 * http://sauce.bbqdroid.org/ &mdash; CyanogenMod Android-related projects
+* http://lxr.devzen.net/source &mdash; Linux branches and some other projects
 
 ## Programming languages:
 * http://lxr.php.net/ &mdash; PHP
