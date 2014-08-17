@@ -335,8 +335,26 @@ public class IndexDatabase {
                     directories.add("");
                 } else {
                     directories.add(project.getPath());
-                }
-            }
+					                    /*
+                     * Check if there are any directories in the PATH
+                     * Also test for symbolic link directories.
+                     * Add them to the directories list.
+                     */
+                     String prPath = project.getPath();
+                     File prPathF = new File(RuntimeEnvironment.getInstance().getSourceRootFile(), prPath);
+
+                     for (File file : prPathF.listFiles()) {
+                        //First test is for directories
+                        if (file.isDirectory()) {
+                           String abPath = file.getAbsolutePath();
+                           //Here the absolute path is not required. Only the relative path.
+                           String newPath = abPath.substring(abPath.indexOf(prPath,0),abPath.length());
+                           directories.add(newPath);
+                           log.info(newPath);
+                        }
+                     } //End For Loop
+                } //End else
+            } //End Outer If
             
             for (String dir : directories) {
                 File sourceRoot;
