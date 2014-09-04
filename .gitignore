@@ -42,3 +42,5 @@ opengrok-web-nbproject/nbproject/build-impl.xml~
 build.bat
 jacoco
 jacoco.exec
+cov-int.zip
+cov-int/*

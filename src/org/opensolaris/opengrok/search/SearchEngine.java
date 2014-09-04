@@ -18,11 +18,19 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
-import java.io.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -49,18 +57,18 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.web.Prefix;
 
 /**
  * This is an encapsulation of the details on how to search in the index
  * database.
  *
- * @author Trond Norbye 2005
- * @author Lubos Kosco 2010 - upgrade to lucene 3.0.0 
- * @author Lubos Kosco 2012 - upgrade to lucene 4.0
- * @author Lubos Kosco 2014 - upgrade to lucene 4.8
+ * @author Trond Norbye 2005 
+ * @author Lubos Kosco - upgrade to lucene 3.x, 4.x
  */
 public class SearchEngine {
 
@@ -74,7 +82,7 @@ public class SearchEngine {
     /**
      * version of lucene index common for whole application
      */
-    public static final Version LUCENE_VERSION = Version.LUCENE_4_9;
+    public static final Version LUCENE_VERSION = Version.LATEST;
     /**
      * Holds value of property definition.
      */
@@ -190,7 +198,7 @@ public class SearchEngine {
      */
     private void searchMultiDatabase(List<Project> root, boolean paging) throws IOException {
         IndexReader[] subreaders = new IndexReader[root.size()];
-        File droot = new File(RuntimeEnvironment.getInstance().getDataRootFile(), "index");
+        File droot = new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR);
         int ii = 0;
         for (Project project : root) {
             IndexReader ireader = (DirectoryReader.open(FSDirectory.open(new File(droot, project.getPath()))));
@@ -242,7 +250,7 @@ public class SearchEngine {
             query = queryBuilder.build();
             if (query != null) {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-                File root = new File(env.getDataRootFile(), "index");
+                File root = new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR);
 
                 if (env.hasProjects()) {
                     // search all projects
@@ -339,11 +347,11 @@ public class SearchEngine {
             boolean hasContext = false;
             try {
                 Document doc = docs.get(ii);
-                String filename = doc.get("path");
+                String filename = doc.get(QueryBuilder.PATH);
 
-                Genre genre = Genre.get(doc.get("t"));
+                Genre genre = Genre.get(doc.get(QueryBuilder.T));
                 Definitions tags = null;
-                IndexableField tagsField = doc.getField("tags");
+                IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
                 if (tagsField != null) {
                     tags = Definitions.deserialize(tagsField.binaryValue().bytes);
                 }
@@ -356,10 +364,10 @@ public class SearchEngine {
                                     + filename)), null, null, null, filename,
                                     tags, nhits > 100, false, ret);
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
-                            int l = 0;
+                            int l;
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref() ?
-                                     new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + "/xref" + filename + ".gz"))))) :
-                                     new HTMLStripCharFilter(new BufferedReader(new FileReader(data + "/xref" + filename)))) {
+                                     new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + Prefix.XREF_P + filename + ".gz"))))) :
+                                     new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
                                 l = r.read(content);
                             }
                             //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )

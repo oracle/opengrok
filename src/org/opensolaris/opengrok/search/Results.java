@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -74,7 +74,7 @@ public final class Results {
     private static Map<String, ArrayList<Document>> createMap(IndexSearcher searcher, ScoreDoc[] hits, int startIdx, int stopIdx)
             throws CorruptIndexException, IOException {
         LinkedHashMap<String, ArrayList<Document>> dirHash =
-                new LinkedHashMap<String, ArrayList<Document>>();
+                new LinkedHashMap<>();
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
             Document doc = searcher.doc(docId);
@@ -82,7 +82,7 @@ public final class Results {
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
             ArrayList<Document> dirDocs = dirHash.get(parent);
             if (dirDocs == null) {
-                dirDocs = new ArrayList<Document>();
+                dirDocs = new ArrayList<>();
                 dirHash.put(parent, dirDocs);
             }
             dirDocs.add(doc);

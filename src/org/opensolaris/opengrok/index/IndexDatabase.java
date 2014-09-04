@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -45,8 +45,17 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -75,7 +84,7 @@ import org.opensolaris.opengrok.web.Util;
  * one index database per project.
  *
  * @author Trond Norbye
- * @author Lubos Kosco , update for lucene 4.2.0
+ * @author Lubos Kosco , update for lucene 4.x
  */
 public class IndexDatabase {
 
@@ -100,7 +109,7 @@ public class IndexDatabase {
     private final BytesRef emptyBR = new BytesRef("");
     
     //Directory where we store indexes
-    private static final String INDEX_DIR="index";
+    public static final String INDEX_DIR="index";
 
     /**
      * Create a new instance of the Index Database. Use this constructor if you
@@ -490,7 +499,7 @@ public class IndexDatabase {
         IndexWriter wrt = null;
         try {
             log.info("Optimizing the index ... ");
-            Analyzer analyzer = new StandardAnalyzer(SearchEngine.LUCENE_VERSION);
+            Analyzer analyzer = new StandardAnalyzer();
             IndexWriterConfig conf = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 

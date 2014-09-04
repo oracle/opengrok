@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.util;
@@ -51,7 +50,7 @@ import java.util.Map;
 public class Interner<T> {
 
     /** Map of interned objects. Key and value contain the same object. */
-    private final Map<T, T> map = new HashMap<T, T>();
+    private final Map<T, T> map = new HashMap<>();
 
     /**
      * <p>

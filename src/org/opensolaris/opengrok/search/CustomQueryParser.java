@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -40,7 +39,7 @@ class CustomQueryParser extends QueryParser {
      * @param field default field for unqualified query terms
      */
     CustomQueryParser(String field) {
-        super(SearchEngine.LUCENE_VERSION, field, new CompatibleAnalyser());
+        super(field, new CompatibleAnalyser());
         setDefaultOperator(AND_OPERATOR);
         setAllowLeadingWildcard(
                 RuntimeEnvironment.getInstance().isAllowLeadingWildcard());

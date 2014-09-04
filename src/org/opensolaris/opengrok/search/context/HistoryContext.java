@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -39,7 +39,8 @@ import org.opensolaris.opengrok.history.HistoryEntry;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.Hit;
-import org.opensolaris.opengrok.web.Constants;
+import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.web.Prefix;
 
 /**
  * it is supposed to get the matching lines from history log files.
@@ -55,7 +56,7 @@ public class HistoryContext {
      * insensitivity, false for sensitivity).
      */
     private static final Map<String, Boolean> tokenFields =
-            Collections.singletonMap("hist", Boolean.TRUE);
+            Collections.singletonMap(QueryBuilder.HIST, Boolean.TRUE);
 
     public HistoryContext(Query query) {
         QueryMatchers qm = new QueryMatchers();
@@ -134,9 +135,9 @@ public class HistoryContext {
         int matchedLines = 0;
         Iterator<HistoryEntry> it = in.getHistoryEntries().iterator();
         try {
-            HistoryEntry he=null;
+            HistoryEntry he;
             HistoryEntry nhe=null;
-            String nrev=null;
+            String nrev;
             while(( it.hasNext()||(nhe!=null) ) && matchedLines < 10) {
                 if (nhe==null) { he=it.next(); }
                 else { he=nhe; } //nhe is the lookahead revision
@@ -207,7 +208,7 @@ public class HistoryContext {
 
         if (wcontext!=null && nrev!=null && !wcontext.isEmpty() ) {
             //does below need to be encoded? see bug 16985
-            out.append("<a href="+wcontext+Constants.diffP+path+"?r2="+path+"@"+rev+"&r1="+path+"@"+nrev+" title=\"diff to previous version\">diff</a> ");
+            out.append("<a href="+wcontext+Prefix.DIFF_P+path+"?r2="+path+"@"+rev+"&r1="+path+"@"+nrev+" title=\"diff to previous version\">diff</a> ");
         }
 
         printHTML(out, prefix, flatten);

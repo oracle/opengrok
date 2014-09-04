@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.web;
@@ -67,7 +67,7 @@ public class EftarFile {
         public Node(long hash, String tag) {
             this.hash = hash;
             this.tag = tag;
-            children = new TreeMap<Long, Node>();
+            children = new TreeMap<>();
         }
 
         public Node put(long hash, String desc) {
@@ -259,7 +259,7 @@ public class EftarFile {
         try {
             EftarFile ef = new EftarFile();
             ef.create(args);
-        } catch (Exception e) {
+        } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING, "EftarFile error", e);
         }
     }

@@ -19,6 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
+ * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -36,8 +37,8 @@ public enum SortOrder {
     RELEVANCY("relevancy", "relevance"),
     /** sort by path */
     BY_PATH("fullpath", "path");
-    private String name;
-    private String desc;
+    private final String name;
+    private final String desc;
 
     private SortOrder(String name, String desc) {
         this.name = name;
@@ -65,6 +66,7 @@ public enum SortOrder {
 
     /**
      * The query parameter name.
+     * @return just return the name
      */
     @Override
     public String toString() {

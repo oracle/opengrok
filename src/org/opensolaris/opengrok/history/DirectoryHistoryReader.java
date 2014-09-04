@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -48,7 +48,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexDatabase;
-import org.opensolaris.opengrok.search.SearchEngine;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Generate SCM history for directory by using the Index database. (Please note
@@ -56,12 +56,12 @@ import org.opensolaris.opengrok.search.SearchEngine;
  * implement their own HistoryReader!)
  *
  * @author Chandan
- * @author Lubos Kosco update for lucene 4.0.0
+ * @author Lubos Kosco update for lucene 4.x
  */
 public class DirectoryHistoryReader {
 
     private final Map<Date, Map<String, Map<String, SortedSet<String>>>> hash =
-            new LinkedHashMap<Date, Map<String, Map<String, SortedSet<String>>>>();
+            new LinkedHashMap<>();
     Iterator<Date> diter;
     Date idate;
     Iterator<String> aiter;
@@ -84,9 +84,9 @@ public class DirectoryHistoryReader {
                 throw new IOException("Could not locate index database");
             }
             searcher = new IndexSearcher(ireader);
-            SortField sfield = new SortField("date", SortField.Type.STRING, true);
+            SortField sfield = new SortField(QueryBuilder.DATE, SortField.Type.STRING, true);
             Sort sort = new Sort(sfield);
-            QueryParser qparser = new QueryParser(SearchEngine.LUCENE_VERSION, "path", new CompatibleAnalyser());
+            QueryParser qparser = new QueryParser(QueryBuilder.PATH, new CompatibleAnalyser());
             Query query;
             ScoreDoc[] hits = null;
             try {
@@ -101,13 +101,13 @@ public class DirectoryHistoryReader {
                 for (int i = 0; i < 40 && i < hits.length; i++) {
                     int docId = hits[i].doc;
                     Document doc = searcher.doc(docId);
-                    String rpath = doc.get("path");
+                    String rpath = doc.get(QueryBuilder.PATH);
                     if (!rpath.startsWith(path)) {
                         continue;
                     }
                     Date cdate;
                     try {
-                        cdate = DateTools.stringToDate(doc.get("date"));
+                        cdate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
                     } catch (java.text.ParseException ex) {
                         OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get date for " + path, ex);
                         cdate = new Date();
@@ -132,7 +132,7 @@ public class DirectoryHistoryReader {
                 }
             }
 
-            ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
+            ArrayList<HistoryEntry> entries = new ArrayList<>();
             while (next()) {
                 entries.add(currentEntry);
             }
@@ -159,19 +159,19 @@ public class DirectoryHistoryReader {
 
         Map<String, Map<String, SortedSet<String>>> ac = hash.get(date);
         if (ac == null) {
-            ac = new HashMap<String, Map<String, SortedSet<String>>>();
+            ac = new HashMap<>();
             hash.put(date, ac);
         }
 
         Map<String, SortedSet<String>> cf = ac.get(author);
         if (cf == null) {
-            cf = new HashMap<String, SortedSet<String>>();
+            cf = new HashMap<>();
             ac.put(author, cf);
         }
 
         SortedSet<String> fls = cf.get(comment);
         if (fls == null) {
-            fls = new TreeSet<String>();
+            fls = new TreeSet<>();
             cf.put(comment, fls);
         }
 

@@ -17,6 +17,10 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.opensolaris.opengrok.util;
 
 import java.util.regex.Pattern;

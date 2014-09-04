@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
@@ -51,7 +51,7 @@ public class Getopt {
      * @param opts the list of allowed options
      */
     public Getopt(String[] argv, String opts) {
-        options = new ArrayList<Option>();
+        options = new ArrayList<>();
         current = -1;
         optind = -1;
         this.argv = argv.clone();

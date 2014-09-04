@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -45,7 +45,7 @@ public class EftarFileReader {
     private boolean isOpen;
     private static final Logger log = Logger.getLogger(EftarFileReader.class.getName());
 
-    class FNode {
+    protected class FNode {
 
         public long offset;
         public long hash;
@@ -158,8 +158,8 @@ public class EftarFileReader {
         }
         return null;
     }
-
-    public String getChildTag(FNode fn, String name) throws IOException {
+    
+    protected String getChildTag(FNode fn, String name) throws IOException {
         if (fn != null && fn.childOffset != 0 && fn.numChildren != 0) {
             FNode ch = fn.binarySearch(fn.offset + fn.childOffset, fn.numChildren, EftarFile.myHash(name));
             if (ch != null) {

@@ -18,7 +18,8 @@
  */
 
 /*
- * Copyright 2005 Trond Norbye.  All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * portions copyright 2005 Trond Norbye.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.search;
@@ -47,7 +48,7 @@ public class Hit implements Comparable<Hit> {
     private String line;
 
     /**
-     * Holds value of property lineno.
+     * Holds value of property line no.
      */
     private String lineno;
 
@@ -57,7 +58,7 @@ public class Hit implements Comparable<Hit> {
     private boolean binary;
 
     /**
-     * Holds value of property alt used to hightlight alternating files.
+     * Holds value of property alt used to highlight alternating files.
      */
     private boolean alt;
 
@@ -153,18 +154,18 @@ public class Hit implements Comparable<Hit> {
     }
 
     /**
-     * Getter for property lineno.
+     * Getter for property line no.
      *
-     * @return Value of property lineno.
+     * @return Value of property line no.
      */
     public String getLineno() {
         return this.lineno;
     }
 
     /**
-     * Setter for property lineno.
+     * Setter for property line no.
      *
-     * @param lineno New value of property lineno.
+     * @param lineno New value of property line no.
      */
     public void setLineno(String lineno) {
         this.lineno = lineno;

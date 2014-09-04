@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -43,7 +43,14 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
@@ -51,6 +58,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.search.Summarizer;
 import org.opensolaris.opengrok.search.context.Context;
@@ -246,7 +254,7 @@ public class SearchHelper {
         }
         // the Query created by the QueryBuilder
         try {
-            indexDir=new File(dataRoot, "index");
+            indexDir=new File(dataRoot, IndexDatabase.INDEX_DIR);
             query = builder.build();
             if (projects == null) {
                 errorMsg = "No project selected!";
@@ -287,10 +295,10 @@ public class SearchHelper {
             // then wait ;)
             switch (order) {
                 case LASTMODIFIED:
-                    sort = new Sort(new SortField("date", SortField.Type.STRING, true));
+                    sort = new Sort(new SortField(QueryBuilder.DATE, SortField.Type.STRING, true));
                     break;
                 case BY_PATH:
-                    sort = new Sort(new SortField("fullpath", SortField.Type.STRING));
+                    sort = new Sort(new SortField(QueryBuilder.FULLPATH, SortField.Type.STRING));
                     break;
                 default:
                     sort = Sort.RELEVANCE;
@@ -344,8 +352,8 @@ public class SearchHelper {
             boolean uniqueDefinition = false;
             if (isSingleDefinitionSearch && hits != null && hits.length == 1) {
                 Document doc = searcher.doc(hits[0].doc);
-                if (doc.getField("tags") != null) {
-                    byte[] rawTags = doc.getField("tags").binaryValue().bytes;
+                if (doc.getField(QueryBuilder.TAGS) != null) {
+                    byte[] rawTags = doc.getField(QueryBuilder.TAGS).binaryValue().bytes;
                     Definitions tags = Definitions.deserialize(rawTags);
                     String symbol = ((TermQuery) query).getTerm().text();
                     if (tags.occurrences(symbol) == 1) {
@@ -357,7 +365,7 @@ public class SearchHelper {
             // instead of returning a page with just _one_ entry in....
             if (uniqueDefinition && hits != null && hits.length > 0 && isCrossRefSearch) {
                 redirect = contextPath + Prefix.XREF_P
-                        + Util.URIEncodePath(searcher.doc(hits[0].doc).get("path"))
+                        + Util.URIEncodePath(searcher.doc(hits[0].doc).get(QueryBuilder.PATH))
                         + '#' + Util.URIEncode(((TermQuery) query).getTerm().text());
             }
         } catch (BooleanQuery.TooManyClauses e) {

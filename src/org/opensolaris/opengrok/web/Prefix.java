@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -75,7 +75,7 @@ public enum Prefix {
     /** misc error occurred */
     ERROR("/error")
     ;
-    private String prefix;
+    private final String prefix;
     private Prefix(String prefix) {
         this.prefix = prefix;
     }
@@ -90,9 +90,9 @@ public enum Prefix {
     }
 
     // should be sufficient for now
-    private static Map<String, Prefix> lookupTable;
+    private static final Map<String, Prefix> lookupTable;
     static {
-        lookupTable = new TreeMap<String, Prefix>();
+        lookupTable = new TreeMap<>();
         for (Prefix p : Prefix.values()) {
             lookupTable.put(p.toString(), p);
         }

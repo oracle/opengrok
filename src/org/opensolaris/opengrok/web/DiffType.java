@@ -19,6 +19,7 @@
 
 /*
  * Copyright 2009 - 2011 Jens Elkner.
+ * Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -40,8 +41,8 @@ public enum DiffType {
     OLD('o', "old"),
     /** the new version of the file (after changes applied) */
     NEW('n', "new");
-    private char abbrev;
-    private String name;
+    private final char abbrev;
+    private final String name;
 
     private DiffType(char abbrev, String name) {
         this.abbrev = abbrev;

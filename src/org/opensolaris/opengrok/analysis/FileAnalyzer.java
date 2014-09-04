@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -70,7 +70,7 @@ public class FileAnalyzer extends Analyzer {
         /** not xrefed - summarizer context from original file */
         HTML("h")
         ;
-        private String typeName;
+        private final String typeName;
         private Genre(String typename) {
             this.typeName = typename;
         }
@@ -123,7 +123,9 @@ public class FileAnalyzer extends Analyzer {
         return factory.getGenre();
     }    
 
-    /** Creates a new instance of FileAnalyzer */
+    /** Creates a new instance of FileAnalyzer
+     * @param factory name of factory to be used 
+     */
     public FileAnalyzer(FileAnalyzerFactory factory) {
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         this.factory = factory;        

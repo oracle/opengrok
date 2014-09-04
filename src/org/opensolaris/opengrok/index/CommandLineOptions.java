@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -70,7 +70,7 @@ public class CommandLineOptions {
     }
 
     public CommandLineOptions() {
-        options = new ArrayList<Option>();
+        options = new ArrayList<>();
         options.add(new Option('?', null, "Help"));
         options.add(new Option('A', ".ext|prefix.:analyzer", "Files with the named prefix/extension should be analyzed with the specified class"));
         options.add(new Option('a', ON_OFF, "Allow or disallow leading wildcards in a search"));

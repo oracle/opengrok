@@ -19,6 +19,7 @@
 
 /*
  * Copyright 2009 - 2011 Jens Elkner.
+ * Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -41,7 +42,7 @@ public class DiffData {
     public String filename;
     /** the genre of the requested diff */
     public Genre genre;
-    /** the orignal and new revision container */
+    /** the original and new revision container */
     public Revision revision;
     /** the URI encoded parameter values of the request. {@code param[0]}
      * belongs to {@code r1}, {@code param[1]} to {@code r2}. */

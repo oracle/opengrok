@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.index;
@@ -48,9 +48,9 @@ public class Filter implements Serializable {
     private final List<String> items;
 
     public Filter() {
-        filename = new HashSet<String>();
-        patterns = new ArrayList<Pattern>();
-        path = new ArrayList<String>();
+        filename = new HashSet<>();
+        patterns = new ArrayList<>();
+        path = new ArrayList<>();
         items = new PatternList(this);
     }
 

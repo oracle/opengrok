@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -99,15 +99,18 @@ public class DirectoryListing {
      *  Gets filtered by {@link IgnoredNames}.
      * @return a possible empty list of README files included in the written
      *  listing.
+     * @throws org.opensolaris.opengrok.history.HistoryException when we cannot 
+     * get result from scm
      *
-     * @throws java.io.IOException
+     * @throws java.io.IOException when any I/O problem
      * @throws NullPointerException if a parameter except <var>files</var>
      *  is {@code null}
      */
-    public List<String> listTo(String contextPath, File dir, Writer out, String path, List<String> files)
+    public List<String> listTo(String contextPath, File dir, Writer out, 
+            String path, List<String> files)
             throws HistoryException, IOException {
         // TODO this belongs to a jsp, not here
-        ArrayList<String> readMes = new ArrayList<String>();
+        ArrayList<String> readMes = new ArrayList<>();
         int offset = -1;
         EftarFileReader.FNode parentFNode = null;
         if (desc != null) {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -59,8 +59,7 @@ public final class Util {
 
     private static final String SPAN_D = "<span class=\"d\">";
     private static final String SPAN_A = "<span class=\"a\">";
-    private static final String SPAN_E = "</span>";
-    private static final int SPAN_LEN = SPAN_D.length() + SPAN_E.length();
+    private static final String SPAN_E = "</span>";    
 
     private Util() {
         // singleton
@@ -149,12 +148,12 @@ public final class Util {
         }
     }
 
-    private static String versionP = htmlize(Info.getRevision());
+    private static final String versionP = htmlize(Info.getRevision());
 
     /**
      * used by BUI - CSS needs this parameter for proper cache refresh (per
-     * changeset) in client browser jel: but useless, since the page cached
-     * anyway.
+     * changeset) in client browser 
+     * TODO jel: but useless, since the page cached anyway.
      *
      * @return html escaped version (hg changeset)
      */
@@ -361,26 +360,25 @@ public final class Util {
      * @return a possible empty array of names all with a length &gt; 0.
      */
     private static String[] normalize(String[] names, boolean canonical) {
-        LinkedList<String> res = new LinkedList<String>();
+        LinkedList<String> res = new LinkedList<>();
         if (names == null || names.length == 0) {
             return new String[0];
         }
-        for (int i = 0; i < names.length; i++ ) {
-            if (names[i] == null || names[i].length() == 0) {
+        for (String name : names) {
+            if (name == null || name.length() == 0) {
                 continue;
             }
             if (canonical) {
-                if (names[i].equals("..")) {
+                if (name.equals("..")) {
                     if (!res.isEmpty()) {
                         res.removeLast();
                     }
-                } else if (names[i].equals(".")) {
-                    continue;
+                } else if (name.equals(".")) {                    
                 } else {
-                    res.add(names[i]);
+                    res.add(name);
                 }
             } else {
-                res.add(names[i]);
+                res.add(name);
             }
         }
         return res.size() == names.length ? names : res.toArray(new String[res
@@ -479,6 +477,7 @@ public final class Util {
      *  linenumber gets printed.
      * @param userPageLink see {@link RuntimeEnvironment#getUserPage()}
      * @param userPageSuffix see {@link RuntimeEnvironment#getUserPageSuffix()}
+     * @param project project that is used
      * @throws IOException depends on the destination (<var>out</var>).
      */
     public static void readableLine(int num, Writer out, Annotation annotation,

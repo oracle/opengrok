@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -46,6 +46,7 @@ public class XMLAnalyzer extends TextAnalyzer {
 
     /**
      * Creates a new instance of XMLAnalyzer
+     * @param factory factory to be used
      */
     protected XMLAnalyzer(FileAnalyzerFactory factory) {
         super(factory);

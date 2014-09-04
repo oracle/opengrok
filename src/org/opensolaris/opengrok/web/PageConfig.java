@@ -19,12 +19,13 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -77,8 +78,7 @@ import org.opensolaris.opengrok.util.IOUtils;
  */
 public final class PageConfig {
     // TODO if still used, get it from the app context
-
-    boolean check4on = true;
+    
     private RuntimeEnvironment env;
     private IgnoredNames ignoredNames;
     private String path;
@@ -213,7 +213,7 @@ public final class PageConfig {
                     return data;
                 }
 
-                ArrayList<String> lines = new ArrayList<String>();
+                ArrayList<String> lines = new ArrayList<>();
                 Project p = getProject();
                 for (int i = 0; i < 2; i++) {
                     try (BufferedReader br = new BufferedReader(
@@ -296,13 +296,12 @@ public final class PageConfig {
      * not available, an empty String if further processing is ok and a
      * non-empty string which contains the URI encoded redirect path if the
      * request should be redirected.
-     * @see #resourceNotAvailable()
-     * @see #getOnRedirect()
+     * @see #resourceNotAvailable()     
      * @see #getDirectoryRedirect()
      */
     public String canProcess() {
         if (resourceNotAvailable()) {
-            return getOnRedirect();
+            return null;
         }
         String redir = getDirectoryRedirect();
         if (redir == null && getPrefix() == Prefix.HIST_L && !hasHistory()) {
@@ -375,8 +374,8 @@ public final class PageConfig {
             return path;
         }
         StringBuilder paths = new StringBuilder(path);
-        for (int i = 0; i < val.length; i++) {
-            paths.append(' ').append(val[i]);
+        for (String val1 : val) {
+            paths.append(' ').append(val1);
         }
         return paths.toString();
     }
@@ -399,7 +398,7 @@ public final class PageConfig {
                 if (x >= 0) {
                     ret = x;
                 }
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 log.log(Level.INFO, "Failed to parse integer " + s, e);
             }
         }
@@ -436,7 +435,7 @@ public final class PageConfig {
      * same order supplied by the request parameter or cookie(s).
      */
     public List<SortOrder> getSortOrder() {
-        List<SortOrder> sort = new ArrayList<SortOrder>();
+        List<SortOrder> sort = new ArrayList<>();
         List<String> vals = getParamVals("sort");
         for (String s : vals) {
             SortOrder so = SortOrder.get(s);
@@ -467,11 +466,11 @@ public final class PageConfig {
     public QueryBuilder getQueryBuilder() {
         if (queryBuilder == null) {
             queryBuilder = new QueryBuilder().setFreetext(req.getParameter("q"))
-                    .setDefs(req.getParameter("defs"))
-                    .setRefs(req.getParameter("refs"))
-                    .setPath(req.getParameter("path"))
-                    .setHist(req.getParameter("hist"))
-                    .setType(req.getParameter("type"));
+                    .setDefs(req.getParameter(QueryBuilder.DEFS))
+                    .setRefs(req.getParameter(QueryBuilder.REFS))
+                    .setPath(req.getParameter(QueryBuilder.PATH))
+                    .setHist(req.getParameter(QueryBuilder.HIST))
+                    .setType(req.getParameter(QueryBuilder.TYPE));
 
             // This is for backward compatibility with links created by OpenGrok
             // 0.8.x and earlier. We used to concatenate the entire query into a
@@ -503,7 +502,7 @@ public final class PageConfig {
             } else {
                 try {
                     eftarReader = new EftarFileReader(f);
-                } catch (Exception e) {
+                } catch (FileNotFoundException e) {
                     log.log(Level.FINE, "Failed to create EftarFileReader: ", e);
                 }
             }
@@ -556,9 +555,9 @@ public final class PageConfig {
      */
     public boolean hasHistory() {
         if (hasHistory == null) {
-            hasHistory = Boolean.valueOf(HistoryGuru.getInstance().hasHistory(getResourceFile()));
+            hasHistory = HistoryGuru.getInstance().hasHistory(getResourceFile());
         }
-        return hasHistory.booleanValue();
+        return hasHistory;
     }
 
     /**
@@ -568,10 +567,10 @@ public final class PageConfig {
      */
     public boolean hasAnnotations() {
         if (hasAnnotation == null) {
-            hasAnnotation = Boolean.valueOf(!isDir()
-                    && HistoryGuru.getInstance().hasHistory(getResourceFile()));
+            hasAnnotation = !isDir()
+                    && HistoryGuru.getInstance().hasHistory(getResourceFile());
         }
-        return hasAnnotation.booleanValue();
+        return hasAnnotation;
     }
 
     /**
@@ -581,10 +580,10 @@ public final class PageConfig {
      */
     public boolean annotate() {
         if (annotate == null) {
-            annotate = Boolean.valueOf(hasAnnotations()
-                    && Boolean.parseBoolean(req.getParameter("a")));
+            annotate = hasAnnotations()
+                    && Boolean.parseBoolean(req.getParameter("a"));
         }
-        return annotate.booleanValue();
+        return annotate;
     }
 
     /**
@@ -709,16 +708,16 @@ public final class PageConfig {
         }
         return requestedProjects;
     }
-    private static Pattern COMMA_PATTERN = Pattern.compile(",");
+    private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
         if (value == null || value.length() == 0) {
             return;
         }
         String p[] = COMMA_PATTERN.split(value);
-        for (int k = 0; k < p.length; k++) {
-            if (p[k].length() != 0) {
-                result.add(p[k]);
+        for (String p1 : p) {
+            if (p1.length() != 0) {
+                result.add(p1);
             }
         }
     }
@@ -732,7 +731,7 @@ public final class PageConfig {
      */
     public List<String> getCookieVals(String cookieName) {
         Cookie[] cookies = req.getCookies();
-        ArrayList<String> res = new ArrayList<String>();
+        ArrayList<String> res = new ArrayList<>();
         if (cookies != null) {
             for (int i = cookies.length - 1; i >= 0; i--) {
                 if (cookies[i].getName().equals(cookieName)) {
@@ -752,7 +751,7 @@ public final class PageConfig {
      */
     private List<String> getParamVals(String paramName) {
         String vals[] = req.getParameterValues(paramName);
-        List<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<>();
         if (vals != null) {
             for (int i = vals.length - 1; i >= 0; i--) {
                 splitByComma(vals[i], res);
@@ -774,7 +773,7 @@ public final class PageConfig {
      */
     protected SortedSet<String> getRequestedProjects(String paramName,
             String cookieName) {
-        TreeSet<String> set = new TreeSet<String>();
+        TreeSet<String> set = new TreeSet<>();
         List<Project> projects = getEnv().getProjects();
         if (projects == null) {
             return set;
@@ -912,26 +911,7 @@ public final class PageConfig {
         }
         return path;
     }
-
-    /**
-     * If a requested resource is not available, append "/on/" to the source
-     * root directory and try again to resolve it.
-     *
-     * @return on success a none-{@code null} gets returned, which should be
-     * used to redirect the client to the propper path.
-     */
-    public String getOnRedirect() {
-        if (check4on) {
-            File newFile = new File(getSourceRootPath() + "/on/" + getPath());
-            if (newFile.canRead()) {
-                return req.getContextPath() + req.getServletPath() + "/on"
-                        + getUriEncodedPath()
-                        + (newFile.isDirectory() ? trailingSlash(path) : "");
-            }
-        }
-        return null;
-    }
-
+   
     /**
      * Get the on disk file to the request related file or directory.
      *
@@ -971,7 +951,7 @@ public final class PageConfig {
 
     /**
      * Check, whether the related request resource matches a valid file or
-     * directory below the source root directory and wether it matches an
+     * directory below the source root directory and whether it matches an
      * ignored pattern.
      *
      * @return {@code true} if the related resource does not exists or should be
@@ -993,9 +973,9 @@ public final class PageConfig {
      */
     public boolean isDir() {
         if (isDir == null) {
-            isDir = Boolean.valueOf(getResourceFile().isDirectory());
+            isDir = getResourceFile().isDirectory();
         }
-        return isDir.booleanValue();
+        return isDir;
     }
 
     private static String trailingSlash(String path) {

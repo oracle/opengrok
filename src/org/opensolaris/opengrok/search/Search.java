@@ -18,13 +18,15 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -46,7 +48,7 @@ final class Search {
             "\t -t Type";
 
     private SearchEngine engine;
-    final List<Hit> results = new ArrayList<Hit>();
+    final List<Hit> results = new ArrayList<>();
     int totalResults =0;
     int nhits=0;
 
@@ -56,7 +58,7 @@ final class Search {
         Getopt getopt = new Getopt(argv, "R:d:r:p:h:f:t:");
         try {
             getopt.parse();
-        } catch (Exception e) {
+        } catch (ParseException e) {
             System.err.println(e.getMessage());
             System.err.println(usage);
             return false;
@@ -68,7 +70,7 @@ final class Search {
                 case 'R':
                     try {
                         RuntimeEnvironment.getInstance().readConfiguration(new File(getopt.getOptarg()));
-                    } catch (Exception e) {
+                    } catch (IOException e) {
                         System.err.println("Failed to read config file: ");
                         System.err.println(e.getMessage());
                         return false;
@@ -135,14 +137,14 @@ final class Search {
             if (nhits<totalResults) {
                 System.out.println("Printed results 1 - " + nhits +" of " + totalResults + " total matching documents collected.");
                 System.out.println("Collect the rest (y/n) ?");
-                BufferedReader in=null;
+                BufferedReader in;
                 try {
                     in = new BufferedReader(new InputStreamReader(System.in, "UTF-8"));
                     String line = in.readLine();
                     if (null == line || line.length() == 0 || line.charAt(0) == 'n') {
                        return;
                     }
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                     System.err.println(ex.getMessage());
                 }
               engine.results(nhits, totalResults, results);
@@ -155,7 +157,7 @@ final class Search {
     }
 
     /**
-     * usage Search index "query" prunepath
+     * usage Search index "query" prune path
      * @param argv command line arguments
      */
     public static void main(String[] argv) {

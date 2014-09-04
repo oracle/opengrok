@@ -18,10 +18,8 @@
  */
 
 /*
- * Copyright 2010 Sun Micosystems.  All rights reserved.
- * Use is subject to license terms.
- *
  * Portions Copyright 2011 Jens Elkner.
+ * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -208,11 +206,10 @@ public class QueryBuilder {
     public boolean isDefSearch() {
 
         return ((getQueryText(FULL) == null) &&
-            (getQueryText(REFS) == null) &&
-            (getQueryText(PATH) == null) &&
-            (getQueryText(HIST) == null) &&
-            (getQueryText(DEFS) != null))
-            ? true : false;
+                (getQueryText(REFS) == null) &&
+                (getQueryText(PATH) == null) &&
+                (getQueryText(HIST) == null) &&
+                (getQueryText(DEFS) != null));
     }    
 
     /**
@@ -228,7 +225,7 @@ public class QueryBuilder {
             return null;
         }
         // Parse each of the query texts separately
-        ArrayList<Query> queryList = new ArrayList<Query>(queries.size());
+        ArrayList<Query> queryList = new ArrayList<>(queries.size());
         for (Map.Entry<String, String> entry : queries.entrySet()) {
             String field = entry.getKey();
             String queryText = entry.getValue();
