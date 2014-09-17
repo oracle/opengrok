@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="EGrok" default="build">
+	<loadproperties srcfile="build.properties" />
+	<loadproperties srcfile="userbuild.properties">
+		
+	</loadproperties>
+
+	<target name="clean">
+		<delete dir="./build" />
+	</target>
+
+	<target name="build" depends="clean">
+		<mkdir dir="./build" />
+
+		<javac srcdir="src" destdir="./build">
+			<classpath>
+				<fileset dir="${eclipse.home}/plugins">
+					<include name="*.jar" />
+				</fileset>
+				<fileset dir="./lib">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+
+		<copy file="plugin.xml" tofile="./build/plugin.xml" />
+		<copy todir="./build/META-INF">
+			<fileset dir="./META-INF">
+				<include name="*" />
+			</fileset>
+		</copy>
+    <copy todir="./build/lib">
+      <fileset dir="./lib">
+        <include name="*" />
+      </fileset>
+    </copy>
+		
+		<tstamp>
+			<format property="timestamp" pattern="yyyyMMddkkmm" />
+	  </tstamp>
+		
+		<zip basedir="./build" file="./build/org.opensolaris.opengrok.egrok_${build.version}.v${timestamp}.jar" />
+	</target>
+</project>

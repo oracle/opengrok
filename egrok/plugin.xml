@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="org.opensolaris.opengrok.egrok.toolbar">
+            <control
+                  class="org.opensolaris.opengrok.egrok.ui.ToolBarControl">
+            </control>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.opensolaris.opengrok.egrok.preferences.EGrokPreferencePage"
+            id="org.opensolaris.opengrok.egrok.preferences"
+            name="EGrok">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="true"
+            class="org.opensolaris.opengrok.egrok.ui.ResultsView"
+            id="org.opensolaris.opengrok.egrok.resultsView"
+            name="EGrok Results"
+            restorable="false"
+            icon="icons/resultsview.png">
+      </view>
+   </extension>
+
+</plugin>
