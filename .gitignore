@@ -44,3 +44,4 @@ jacoco
 jacoco.exec
 cov-int.zip
 cov-int/*
+egrok/bin
