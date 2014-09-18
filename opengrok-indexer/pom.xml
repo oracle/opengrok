@@ -207,8 +207,8 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
-            <artifactIdjson-simple</artifactId>
-        </dependency>    
+            <artifactId>json-simple</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.opensolaris.opengrok</groupId>
             <artifactId>jrcs</artifactId>
