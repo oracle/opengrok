@@ -335,7 +335,7 @@ public class IndexDatabase {
                     directories.add("");
                 } else {
                     directories.add(project.getPath());
-					                    /*
+		    /*
                      * Check if there are any directories in the PATH
                      * Also test for symbolic link directories.
                      * Add them to the directories list.
