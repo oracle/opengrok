@@ -113,7 +113,7 @@ Failure to do so will result in 400 errors after first query - with the error "E
 
 == Optional info ==
 
-Additional information can be found in the [https://github.com/OpenGrok/OpenGrok/blob/master/README.txt README.txt] in the doc folder
+Additional information can be found in the [https://github.com/OpenGrok/OpenGrok/blob/master/doc/EXAMPLE.txt EXAMPLE.txt] in the doc folder
 
 === Windows installation ===
 http://algopadawan.blogspot.co.uk/2012/07/installing-opengrok-on-windows.html
