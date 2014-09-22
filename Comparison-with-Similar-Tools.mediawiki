@@ -249,6 +249,14 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |
 |-
+|Integration with Eclipse
+| 
+| 
+| 
+| 
+| 
+|Y
+|-
 |Integration with less
 | 
 |Y
