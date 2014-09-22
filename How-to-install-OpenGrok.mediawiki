@@ -89,7 +89,7 @@ of the PATH environment variable (e.g. 'git' command for Git repositories).
 Likewise, this should be maintained in the environment of the user which runs
 the web server instance.
 
-Congratulations, you should now be able to point your browser to http://<YOUR_WEBAPP_SERVER>:<WEBAPPSRV_PORT>/source to work with your fresh opengrok installation! :-)
+Congratulations, you should now be able to point your browser to http://YOUR_WEBAPP_SERVER:WEBAPPSRV_PORT/source to work with your fresh opengrok installation! :-)
 
 At this time we'd like to point out some customization to OpenGrok script for advanced users.
 A common case would be, that you want the data in some other directory than /var/opengrok.
@@ -106,13 +106,14 @@ Since above will also change default location of config file, beforehands(or res
 A lot more customizations can be found inside the script, you just need to have a look [https://github.com/OpenGrok/OpenGrok/blob/master/OpenGrok at it], eventually create a configuration out of it and use <code>OPENGROK_CONFIGURATION</code> environment variable to point to it. Obviously such setups can be used for nightly cron job updates of index or other automated purposes.
 
 ===== Large number of projects on Tomcat =====
+
 If you have a large number of projects the http headers start to get big and you need to increase this in the settings.xml file in the http connector add:
  maxHttpHeaderSize="65536"
 Failure to do so will result in 400 errors after first query - with the error "Error parsing HTTP request header"
 
 == Optional info ==
 
-Additional information can be found in the readme.txt in the doc folder
+Additional information can be found in the [https://github.com/OpenGrok/OpenGrok/blob/master/README.txt README.txt] in the doc folder
 
 === Windows installation ===
 http://algopadawan.blogspot.co.uk/2012/07/installing-opengrok-on-windows.html
