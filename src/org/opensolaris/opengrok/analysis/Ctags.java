@@ -105,6 +105,21 @@ public class Ctags {
             command.add("--regex-scala=/^[ \t]*((abstract|final|sealed|implicit|lazy)[ \t]*)*val[ \t]+([a-zA-Z0-9_]+)/\3/l,constants/");
             command.add("--regex-scala=/^[ \t]*((abstract|final|sealed|implicit|lazy)[ \t]*)*var[ \t]+([a-zA-Z0-9_]+)/\3/l,variables/");
             command.add("--regex-scala=/^[ \t]*package[ \t]+([a-zA-Z0-9_.]+)/\1/p,packages/");
+            command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/xzj/1518834)
+            command.add("--langmap=clojure:.clj");
+            command.add("--langmap=clojure:+.cljs");
+            command.add("--regex-clojure=/\\([ \t]*create-ns[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/n,namespace/");
+            command.add("--regex-clojure=/\\([ \t]*def[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/d,definition/");
+            command.add("--regex-clojure=/\\([ \t]*defn[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/f,function/");
+            command.add("--regex-clojure=/\\([ \t]*defn-[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/p,private function/");
+            command.add("--regex-clojure=/\\([ \t]*defmacro[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/m,macro/");
+            command.add("--regex-clojure=/\\([ \t]*definline[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/i,inline/");
+            command.add("--regex-clojure=/\\([ \t]*defmulti[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/a,multimethod definition/");
+            command.add("--regex-clojure=/\\([ \t]*defmethod[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/b,multimethod instance/");
+            command.add("--regex-clojure=/\\([ \t]*defonce[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/c,definition (once)/");
+            command.add("--regex-clojure=/\\([ \t]*defstruct[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/s,struct/");
+            command.add("--regex-clojure=/\\([ \t]*intern[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/v,intern/");
+            command.add("--regex-clojure=/\\([ \t]*ns[ \t]+([-[:alnum:]*+!_:\\/.?]+)/\1/n,namespace/");
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {

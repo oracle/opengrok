@@ -205,6 +205,7 @@ public class SearchHelper {
         fileTypeDescription.put("image", "Image file");
         fileTypeDescription.put("c", "C");
         fileTypeDescription.put("csharp", "C#");
+        fileTypeDescription.put("clojure", "Clojure");
         fileTypeDescription.put("vb", "Visual Basic");
         fileTypeDescription.put("cxx", "C++");
         fileTypeDescription.put("sh", "Shell script");
