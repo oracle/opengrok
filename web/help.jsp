@@ -189,7 +189,7 @@ the term (phrases) can be boosted (making it more relevant) using a caret
 </p>
 
 <p>Opengrok search is powered by <a href="http://lucene.apache.org/"
->lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_7_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
+>lucene</a>, for more detail on query syntax refer to <a href="http://lucene.apache.org/core/4_10_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">lucene docs</a>.<br>
 </p>
         </div>
 <%

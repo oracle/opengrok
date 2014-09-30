@@ -35,7 +35,7 @@
     </modules>
 
     <properties>
-        <lucene.version>4.10.0</lucene.version>
+        <lucene.version>4.10.1</lucene.version>
         <compileSource>1.7</compileSource>
         <compileTarget>1.7</compileTarget>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
