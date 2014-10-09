@@ -15,8 +15,8 @@ OpenGrok - a wicked fast source browser
 7.  Change web application properties or name
 8.  OpenGrok systray
 9.  Information for developers
-10.  Tuning OpenGrok for large code bases
-11.  Authors
+10. Tuning OpenGrok for large code bases
+11. Authors
 12. Contact us
 
 
@@ -514,6 +514,16 @@ the JavaDB data directory and add this line to it:
 
     # echo "derby.storage.pageCacheSize=25000" >> \
           /var/lib/javadb/data/derby.properties
+
+5.6 Introduce own mapping for an extension to analyzer
+------------------------------------------------------
+
+OpenGrok script doesn't support this out of box, so you'd need to add it there.
+Usually to StdInvocation() function after line -jar ${OPENGROK_JAR} .
+It would look like this:
+-A cs:org.opensolaris.opengrok.analysis.PlainAnalayzer 
+(this will map extension .cs to PlainAnalyzer) 
+You should even be able to override OpenGroks analyzers using this option.
 
 
 6. Optional Command Line Interface Usage
