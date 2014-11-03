@@ -930,6 +930,7 @@ Refer to docs of other containers for more info on how to achieve the same.
 The same tuning to Apache can be done with the LimitRequestLine directive:
 
   LimitRequestLine 65536
+  LimitRequestFieldSize 65536
 
 
 11. Authors
