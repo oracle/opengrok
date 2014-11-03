@@ -799,7 +799,7 @@ You also have to make links to the jar files:
   $ ln -s pmd-core-5.2.0.jar pmd-core.jar
   $ ln -s pmd-java-5.2.0.jar pmd-java.jar
   $ ln -s jaxen-1.1.1.jar jaxen.jar
-  $ ln -s asm-5.0.2.jar asm.jar
+  $ ln -s asm-5.2.0.jar asm.jar
 
 To run PMD on the rource code, just run ant pmd:
 

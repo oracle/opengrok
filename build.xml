@@ -280,14 +280,7 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <delete dir="${coverage.dir}"/>
         <antcall target="-delete-generated-repository-files"/>
     </target>
-    
-    <target name="clean-lib" depends="init">
-        <delete file="${file.reference.lucene-core.jar}"/>
-        <delete file="${file.reference.lucene-analyzers-common.jar}"/>
-        <delete file="${file.reference.lucene-queryparser.jar}"/>
-        <delete file="${file.reference.lucene-suggest.jar}"/>
-    </target>
-
+        
     <!--
         Create an empty manifest file so that nbproject/build-impl.xml
         notices that a manifest should be added to the jar file
@@ -371,6 +364,11 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
     </target>
     
     <target name="download-lucene" depends="-check-lucene" if="lucene_not_downloaded">
+        <delete>
+         <fileset dir="lib">
+          <include name="lucene-*.jar"/>          
+         </fileset>
+        </delete>
         <get src="${mvn.repository}/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
         dest="lib/${lucene-core.jar}" verbose="true" usetimestamp="true"/>
         <get src="${mvn.repository}/org/apache/lucene/lucene-analyzers-common/${lucene.version}/${lucene-analyzers-common.jar}"
