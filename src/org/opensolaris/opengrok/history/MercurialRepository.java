@@ -58,6 +58,8 @@ public class MercurialRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "hg";
 
+    private String branch = null;
+
     /**
      * The boolean property and environment variable name to indicate
      * whether forest-extension in Mercurial adds repositories inside the
@@ -108,6 +110,24 @@ public class MercurialRepository extends Repository {
         datePattern = "yyyy-MM-dd hh:mm ZZZZ";
     }
 
+    /** Return name of the branch or "default" */
+    private String getBranch() {
+        if (branch == null) {
+            List<String> cmd = new ArrayList<String>();
+            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+            cmd.add(this.cmd);
+            cmd.add("branch");
+
+            Executor e = new Executor(cmd, new File(directoryName));
+            e.exec();
+
+            String output = e.getOutputString();
+            branch = output.trim();
+        }
+
+        return branch;
+    }
+
     /**
      * Get an executor to be used for retrieving the history log for the
      * named file or directory.
@@ -140,16 +160,21 @@ public class MercurialRepository extends Repository {
             cmd.add("-f");
         }
 
+        // If this is non-default branch we would like to get the changesets
+        // on that branch and also any changesets from the parent branch(es).
         if (changeset != null) {
             cmd.add("-r");
             String[] parts = changeset.split(":");
             if (parts.length == 2) {
-                cmd.add("tip:" + parts[0]);
+                cmd.add("reverse(" + parts[0] + "::'" + getBranch() + "')");
             } else {
                 throw new HistoryException(
                         "Don't know how to parse changeset identifier: " +
                         changeset);
             }
+        } else {
+            cmd.add("-r");
+            cmd.add("reverse(0::'" + getBranch() + "')");
         }
 
         cmd.add("--template");

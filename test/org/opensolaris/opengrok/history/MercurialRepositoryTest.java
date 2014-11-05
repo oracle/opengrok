@@ -26,11 +26,16 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import static junit.framework.Assert.fail;
 import org.junit.After;
 import org.junit.Test;
 import org.opensolaris.opengrok.util.TestRepository;
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Tests for MercurialRepository.
@@ -48,6 +53,12 @@ public class MercurialRepositoryTest {
         "5:8706402863c6", "4:e494d67af12f", "3:2058725c1470",
         "2:585a1b3f2efb", "1:f24a5fd7a85d", "0:816b6279ae9c"
     };
+
+    // extra revisions for branch test
+    private static final String[] REVISIONS_extra_branch = {
+        "10:c4518ca0c841"
+    };
+
     // novel.txt (or its ancestors) existed only since revision 3
     private static final String[] REVISIONS_novel = {
         "9:8b340409b3a8",
@@ -118,7 +129,73 @@ public class MercurialRepositoryTest {
             assertNotNull(e.getMessage());
         }
     }
-    
+
+    /**
+     * Run Mercurial command.
+     * @param command hg command to run
+     * @param reposRoot directory of the repository root
+     * @param arg argument to use for the command
+     */
+    static void runHgCommand(String command, File reposRoot, String arg) {
+        String[] cmdargs = {
+            MercurialRepository.CMD_FALLBACK, command, arg
+        };
+        Executor exec = new Executor(Arrays.asList(cmdargs), reposRoot);
+        int exitCode = exec.exec();
+        if (exitCode != 0) {
+            fail("hg " + command + " failed." +
+                    "\nexit code: " + exitCode +
+                    "\nstdout:\n" + exec.getOutputString() +
+                    "\nstderr:\n" + exec.getErrorString());
+        }
+    }
+
+    /**
+     * Test that history of branched repository contains changesets of the
+     * default branch as well.
+     * @throws Exception
+     */
+    @Test
+    public void testGetHistoryBranch() throws Exception {
+        setUpTestRepository();
+        File root = new File(repository.getSourceRoot(), "mercurial");
+        MercurialRepository mr =
+                (MercurialRepository) RepositoryFactory.getRepository(root);
+
+        // Branch the repo and add one changeset.
+        runHgCommand("unbundle",
+            root, getClass().getResource("hg-branch.bundle").getPath());
+        // Switch to the branch.
+        runHgCommand("update", root, "mybranch");
+
+        // Get all revisions.
+        History hist = mr.getHistory(root);
+        List<HistoryEntry> entries = hist.getHistoryEntries();
+        List<String> both = new ArrayList<String>(REVISIONS.length +
+            REVISIONS_extra_branch.length);
+        Collections.addAll(both, REVISIONS_extra_branch);
+        Collections.addAll(both, REVISIONS);
+        String revs[] = both.toArray(new String[both.size()]);
+        assertEquals(revs.length, entries.size());
+        // Ideally we should check that the last revision is branched but
+        // there is currently no provision for that in HistoryEntry object.
+        for (int i = 0; i < entries.size(); i++) {
+            HistoryEntry e = entries.get(i);
+            assertEquals(revs[i], e.getRevision());
+            assertNotNull(e.getAuthor());
+            assertNotNull(e.getDate());
+            assertNotNull(e.getFiles());
+            assertNotNull(e.getMessage());
+        }
+
+        // Get revisions starting with given changeset before the repo was branched.
+        hist = mr.getHistory(root, "8:6a8c423f5624");
+        entries = hist.getHistoryEntries();
+        assertEquals(2, entries.size());
+        assertEquals(REVISIONS_extra_branch[0], entries.get(0).getRevision());
+        assertEquals(REVISIONS[0], entries.get(1).getRevision());
+    }
+
     /**
      * Test that it is possible to get contents of last revision of a text
      * file.

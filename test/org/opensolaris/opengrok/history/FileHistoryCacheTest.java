@@ -62,26 +62,6 @@ public class FileHistoryCacheTest extends TestCase {
 
         cache = null;
     }
-    
-    /**
-     * Import a new changeset into a Mercurial repository.
-     *
-     * @param reposRoot the root of the repository
-     * @param changesetFile file that contains the changesets to import
-     */
-    private void importHgChangeset(File reposRoot, String changesetFile) {
-        String[] cmdargs = {
-            MercurialRepository.CMD_FALLBACK, "import", changesetFile
-        };
-        Executor exec = new Executor(Arrays.asList(cmdargs), reposRoot);
-        int exitCode = exec.exec();
-        if (exitCode != 0) {
-            fail("hg import failed." +
-                    "\nexit code: " + exitCode +
-                    "\nstdout:\n" + exec.getOutputString() +
-                    "\nstderr:\n" + exec.getErrorString());
-        }
-    }
 
     /**
      * Assert that two HistoryEntry objects are equal.
@@ -160,7 +140,7 @@ public class FileHistoryCacheTest extends TestCase {
         cache.store(historyToStore, repo);
 
         // Add bunch of changesets with file based changes and tags.
-        importHgChangeset(
+        MercurialRepositoryTest.runHgCommand("import",
             reposRoot, getClass().getResource("hg-export-tag.txt").getPath());
 
         // Perform incremental reindex.
@@ -286,8 +266,7 @@ public class FileHistoryCacheTest extends TestCase {
                 dirHistory.getHistoryEntries(), true);
 
         // test incremental update
-
-        importHgChangeset(
+        MercurialRepositoryTest.runHgCommand("import",
                 reposRoot, getClass().getResource("hg-export.txt").getPath());
 
         repo.createCache(cache, cache.getLatestCachedRevision(repo));
@@ -347,7 +326,7 @@ public class FileHistoryCacheTest extends TestCase {
         cache.store(historyToStore, repo);
 
         // import changesets which rename one of the files
-        importHgChangeset(
+        MercurialRepositoryTest.runHgCommand("import",
             reposRoot, getClass().getResource("hg-export-renamed.txt").getPath());
 
         // reindex

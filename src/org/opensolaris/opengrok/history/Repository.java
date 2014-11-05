@@ -147,7 +147,8 @@ public abstract class Repository extends RepositoryInfo {
         // and compare more fields, like author and date.
         if (entry == null || !revision.equals(entry.getRevision())) {
             throw new HistoryException("Cached revision '" + revision +
-                                       "' not found in the repository");
+                                       "' not found in the repository " +
+                                       getDirectoryName());
         }
     }
 
