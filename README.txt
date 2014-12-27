@@ -790,16 +790,16 @@ from http://pmd.sourceforge.net/.
 How to install:
 
   $ cd ~/.ant/lib
-  $ unzip ~/Desktop/pmd-bin-5.2.0.zip
-  $ ln -s pmd-5.2.0/ pmd
+  $ unzip ~/Desktop/pmd-bin-5.2.3.zip
+  $ ln -s pmd-5.2.3/ pmd
 
 You also have to make links to the jar files:
 
   $ cd ~/.ant/lib/pmd/lib
-  $ ln -s pmd-core-5.2.0.jar pmd-core.jar
-  $ ln -s pmd-java-5.2.0.jar pmd-java.jar
+  $ ln -s pmd-core-5.2.3.jar pmd-core.jar
+  $ ln -s pmd-java-5.2.3.jar pmd-java.jar
   $ ln -s jaxen-1.1.1.jar jaxen.jar
-  $ ln -s asm-5.2.0.jar asm.jar
+  $ ln -s asm-5.2.3.jar asm.jar
 
 To run PMD on the rource code, just run ant pmd:
 
