@@ -793,19 +793,11 @@ How to install:
   $ unzip ~/Desktop/pmd-bin-5.2.3.zip
   $ ln -s pmd-5.2.3/ pmd
 
-You also have to make links to the jar files:
+To run PMD on the source code, just run ant pmd:
 
-  $ cd ~/.ant/lib/pmd/lib
-  $ ln -s pmd-core-5.2.3.jar pmd-core.jar
-  $ ln -s pmd-java-5.2.3.jar pmd-java.jar
-  $ ln -s jaxen-1.1.1.jar jaxen.jar
-  $ ln -s asm-5.2.3.jar asm.jar
+  $ ant -Dpmd.home=~/.ant/lib/pmd pmd
 
-To run PMD on the rource code, just run ant pmd:
-
-  $ ant pmd
-
-Outout from the command will be stored in the pmd subdirectory:
+Output from the command will be stored in the pmd subdirectory:
 
   $ ls pmd
   pmd_report.html  pmd_report.xml
@@ -813,13 +805,13 @@ Outout from the command will be stored in the pmd subdirectory:
 If you want to install PMD some other place than ~/.ant/lib, you can
 unzip the .zip file to a directory, and use the pmd.home property
 to tell ant where to find PMD, like this (if you have installed 
-PMD under the lib directory):
+PMD under the ./ext_lib directory):
 
-  $ ant pmd -Dpmd.home=lib/pmd-5.2.0
+  $ ant pmd -Dpmd.home=ext_lib/pmd
 
 To run CPD, just use the same as above, but use targets:
 
-  $ ant cpd cpd-xml
+  $ ant -Dpmd.home=ext_lib/pmd cpd cpd-xml
 
 Which will result in:
 

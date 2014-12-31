@@ -516,21 +516,17 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         </checkstyle>
     </target>
 
-    <target name="-check_pmd" description="Check that pmd jar files are present">
-        <available file="pmd-core.jar" type="file" property="pmd-core.jar.present">
-            <filepath refid="pmd.lib.search.path"/>
-        </available>        
-        <fail unless="pmd-core.jar.present" message="Please install pmd-core.jar in lib-directory  (or in ant classpath) to run PMD, see README."/>
-        <available file="pmd-java.jar" type="file" property="pmd-java.jar.present">
+    <target name="-check_pmd" description="Check that pmd jar files are present">        
+        <available file="${pmd.home}/lib" type="dir" property="pmd-lib.present">
             <filepath refid="pmd.lib.search.path"/>
         </available>
-        <fail unless="pmd-java.jar.present" message="Please install pmd-java.jar in lib-directory  (or in ant classpath) to run PMD, see README."/>
+        <fail unless="pmd-lib.present" message="Please point pmd.home to proper directory to run PMD, see README."/>        
     </target>
 
     <path id="pmd.lib" >
-	<fileset dir="${pmd.home}/lib">
+	<fileset followsymlinks="false" dir="${pmd.home}/lib">
 		<include name="*.jar"/>
-	</fileset>
+	</fileset>        
     </path>
 
     <target name="pmd" depends="compile, -check_pmd" description="Run PMD on OpenGrok source code">
