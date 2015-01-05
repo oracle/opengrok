@@ -33,7 +33,9 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
+import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -47,7 +49,7 @@ import org.opensolaris.opengrok.history.Annotation;
 public class PlainAnalyzer extends TextAnalyzer {
 
     private JFlexXref xref;
-    private Definitions defs;
+    protected Definitions defs;
 
     /**
      * Creates a new instance of PlainAnalyzer
@@ -81,7 +83,7 @@ public class PlainAnalyzer extends TextAnalyzer {
                 doc.add(new TextField("refs", getReader(src.getStream())));
                 byte[] tags = defs.serialize();
                 doc.add(new StoredField("tags", tags));
-            }
+            }            
         }
 
         if (xrefOut != null) {

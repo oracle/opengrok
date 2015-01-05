@@ -46,7 +46,10 @@ import org.apache.lucene.search.ScoreDoc;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.Scopes;
+import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.search.context.LineMatcher;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
@@ -178,6 +181,11 @@ public final class Results {
                     if (tagsField != null) {
                         tags = Definitions.deserialize(tagsField.binaryValue().bytes);
                     }
+                    Scopes scopes = null;
+                    IndexableField scopesField = doc.getField("scopes");
+                    if (scopesField != null) {
+                        scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
+                    }
                     if (Genre.XREFABLE == genre && sh.summerizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
                         // FIXME use Highlighter from lucene contrib here,
@@ -192,9 +200,10 @@ public final class Results {
                                 ? new FileReader(new File(sh.sourceRoot, rpath))
                                 : null;
                         sh.sourceContext.getContext(r, out, xrefPrefix, morePrefix, 
-                                rpath, tags, true, sh.builder.isDefSearch(), null);
+                                rpath, tags, true, sh.builder.isDefSearch(), null, scopes);
                     }
                 }
+
                 if (sh.historyContext != null) {
                     sh.historyContext.getContext(new File(sh.sourceRoot, rpath),
                             rpath, out, sh.contextPath);

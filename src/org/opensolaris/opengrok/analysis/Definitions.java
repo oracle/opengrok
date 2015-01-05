@@ -150,17 +150,20 @@ public class Definitions implements Serializable {
         public final String type;
         /** The full line on which the definition occurs. */
         public final String text;
+        
+        public final String inher;
 
-        protected Tag(int line, String symbol, String type, String text) {
+        protected Tag(int line, String symbol, String type, String text, String inher) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
             this.text = text;
+            this.inher = inher;
         }
     }
 
-    public void addTag(int line, String symbol, String type, String text) {
-        Tag new_tag = new Tag(line, symbol, type, text);
+    public void addTag(int line, String symbol, String type, String text, String inher) {
+        Tag new_tag = new Tag(line, symbol, type, text, inher);
         tags.add(new_tag);
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {

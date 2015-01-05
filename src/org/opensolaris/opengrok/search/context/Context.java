@@ -40,6 +40,8 @@ import java.util.logging.Level;
 import org.apache.lucene.search.Query;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.Scopes;
+import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.util.IOUtils;
@@ -112,7 +114,7 @@ public class Context {
     }
 
     private boolean alt = true;
-
+   
     /**
      * ???.
      * Closes the given <var>in</var> reader on return.
@@ -127,7 +129,7 @@ public class Context {
      */
     public boolean getContext(Reader in, Writer out, String urlPrefix,
             String morePrefix, String path, Definitions tags,
-            boolean limit, boolean isDefSearch, List<Hit> hits) {
+            boolean limit, boolean isDefSearch, List<Hit> hits, Scopes scopes) {
         alt = !alt;
         if (m == null) {
             IOUtils.close(in);
@@ -144,16 +146,24 @@ public class Context {
                 for (Definitions.Tag tag : tags.getTags()) {
                     for (int i = 0; i < m.length; i++) {
                         if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
+                            String scope = "";
+                            if (scopes != null) {
+                                scope = scopes.getScope(tag.line).getName();
+                            }
+
                             /* desc[0] is matched symbol
                              * desc[1] is line number
                              * desc[2] is type
                              * desc[3] is matching line;
+                             * desc[4] is scope
                              */
                             String[] desc = {
                                 tag.symbol,
                                 Integer.toString(tag.line),
                                 tag.type,
-                                tag.text,};
+                                tag.text,
+                                scope,
+                                };
                             if (in == null) {
                                 if (out == null) {
                                     Hit hit = new Hit(path,
@@ -170,7 +180,9 @@ public class Context {
                                     out.write(desc[1]);
                                     out.write("\"><span class=\"l\">");
                                     out.write(desc[1]);
-                                    out.write("</span> ");
+                                    out.write("</span> <i>");
+                                    out.write(desc[4]);
+                                    out.write("</i> ");
                                     out.write(Util.htmlize(desc[3]).replace(
                                             desc[0], "<b>" + desc[0] + "</b>"));
                                     out.write("</a> <i>");
@@ -231,9 +243,9 @@ public class Context {
                 return anything;
             }
 
-            tokens.reInit(buffer, charsRead, out, urlPrefixE + pathE + "#", matchingTags);
+            tokens.reInit(buffer, charsRead, out, urlPrefixE + pathE + "#", matchingTags, scopes);
         } else {
-            tokens.reInit(in, out, urlPrefixE + pathE + "#", matchingTags);
+            tokens.reInit(in, out, urlPrefixE + pathE + "#", matchingTags, scopes);
         }
 
         if (hits != null) {

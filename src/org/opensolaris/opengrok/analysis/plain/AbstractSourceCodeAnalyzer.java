@@ -25,13 +25,17 @@ package org.opensolaris.opengrok.analysis.plain;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
@@ -47,6 +51,10 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
      */
     protected AbstractSourceCodeAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+    }
+    
+    protected JFlexScopeParser newScopeParser(Reader reader) {
+        return null;
     }
 
     /**
@@ -68,6 +76,21 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         super.analyze(doc, src, xrefOut);
         doc.add(new TextField("refs", getReader(src.getStream())));
+        
+        /*
+         * Parsing of scopes of every document
+         */
+        JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
+        if (scopeParser != null) {
+            for (Definitions.Tag tag : defs.getTags()) {
+                if (tag.type.startsWith("function")) {
+                    scopeParser.parse(tag, getReader(src.getStream()));
+                }
+            }        
+            Scopes scopes = scopeParser.getScopes();
+            byte[] scopesSerialized = scopes.serialize();
+            doc.add(new StoredField("scopes", scopesSerialized));
+        }
     }
 
     @Override
