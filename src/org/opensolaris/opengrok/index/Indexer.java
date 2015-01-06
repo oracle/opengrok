@@ -47,6 +47,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
+import static org.opensolaris.opengrok.configuration.Project.getProject;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -479,13 +480,6 @@ public final class Indexer {
                         // don't care
                     }
                 }
-                int optind = getopt.getOptind();
-                if (optind != -1) {
-                    while (optind < argv.length) {
-                        subFiles.add(argv[optind]);
-                        ++optind;
-                    }
-                }
 
                 //logging starts here
                 if (cfg.isVerbose()) {
@@ -540,12 +534,45 @@ public final class Indexer {
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
                 env.setConfiguration(cfg);
 
+                /*
+                 * Add paths to directories under source root. If projects 
+                 * are enabled the path should correspond to a project because
+                 * project path is necessary to correctly set index directory
+                 * (otherwise the index files will end up in index data root
+                 * directory and not per project data root directory).
+                 * For the check we need to have 'env' already set.
+                 */
+                int optind = getopt.getOptind();
+                int orig_optind = optind;
+                if (optind != -1) {
+                    while (optind < argv.length) {
+                        if (env.hasProjects()) {
+                            // The paths need to correspond to a project.
+                            if (Project.getProject(argv[optind]) != null) {
+                                subFiles.add(argv[optind]);
+                            } else {
+                                System.err.println("The path " + argv[optind] +
+                                    " does not correspond to a project");
+                            }
+                        } else {
+                            subFiles.add(argv[optind]);
+                        }
+                        ++optind;
+                    }
+
+                    if ((orig_optind < argv.length) && subFiles.isEmpty()) {
+                        System.err.println("None of the paths were added, exiting");
+                        System.exit(1);
+                    }
+                }
+
                 // Issue a warning when JDBC is used with renamed file handling.
                 // This causes heavy slowdown when used with JavaDB (issue #774).
                 if (RuntimeEnvironment.isRenamedFilesEnabled() && cfg.isHistoryCacheInDB()) {
                     System.out.println("History stored in DB and renamed file handling is on - possible performance degradation");
                 }
 
+                // Get history first.
                 getInstance().prepareIndexer(env, searchRepositories, addProjects,
                         defaultProject, configFilename, refreshHistory,
                         listFiles, createDict, subFiles, repositories,
@@ -553,11 +580,15 @@ public final class Indexer {
                 if (listRepos || !zapCache.isEmpty()) {
                     return;
                 }
+
+                // And now index it all.
                 if (runIndex || (optimizedChanged && env.isOptimizeDatabase())) {
                     IndexChangedListener progress = new DefaultIndexChangedListener();
                     getInstance().doIndexerExecution(update, noThreads, subFiles,
                             progress);
                 }
+
+                // Finally send new configuration to the web application.
                 getInstance().sendToConfigHost(env, configHost);
             } catch (IndexerException ex) {
                 log.log(Level.SEVERE, "Exception running indexer", ex);
@@ -572,7 +603,6 @@ public final class Indexer {
                 stats.report(log);
             }
         }
-
     }
 
     /*

@@ -149,7 +149,7 @@ public class CommandLineOptions {
     public String getUsage() {
         StringWriter wrt = new StringWriter();
         try (PrintWriter out = new PrintWriter(wrt)) {
-            out.println("Usage: opengrok.jar [options]");
+            out.println("Usage: opengrok.jar [options] [subDir1 ..]");
             for (Option o : options) {
                 out.println(o.getUsage());
             }
