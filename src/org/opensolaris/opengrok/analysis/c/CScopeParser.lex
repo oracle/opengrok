@@ -18,11 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
- * Gets C symbols - ignores comments, strings, keywords
+ * Parses C/C++ scopes - ignores comments, strings, keywords
  */
 
 package org.opensolaris.opengrok.analysis.c;

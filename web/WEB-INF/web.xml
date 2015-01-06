@@ -11,7 +11,7 @@
   
   <context-param>
     <param-name>ConfigAddress</param-name>
-    <param-value>localhost:8080</param-value>
+    <param-value>localhost:2424</param-value>
     <description>An address where OpenGrok can receive new configuration</description>
   </context-param>
 

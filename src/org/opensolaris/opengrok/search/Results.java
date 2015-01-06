@@ -81,7 +81,7 @@ public final class Results {
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
             Document doc = searcher.doc(docId);
-            String rpath = doc.get("path");
+            String rpath = doc.get(QueryBuilder.PATH);
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
             ArrayList<Document> dirDocs = dirHash.get(parent);
             if (dirDocs == null) {
@@ -164,7 +164,7 @@ public final class Results {
             }
             out.write("</td></tr>");
             for (Document doc : entry.getValue()) {
-                String rpath = doc.get("path");
+                String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.URIEncodePath(rpath);
                 out.write("<tr>");
                 Util.writeHAD(out, sh.contextPath, rpathE, false);
@@ -177,12 +177,12 @@ public final class Results {
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
                     Definitions tags = null;
-                    IndexableField tagsField = doc.getField("tags");
+                    IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
                     if (tagsField != null) {
                         tags = Definitions.deserialize(tagsField.binaryValue().bytes);
                     }
                     Scopes scopes = null;
-                    IndexableField scopesField = doc.getField("scopes");
+                    IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
                     if (scopesField != null) {
                         scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
                     }

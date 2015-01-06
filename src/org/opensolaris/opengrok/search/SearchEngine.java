@@ -357,7 +357,7 @@ public class SearchEngine {
                     tags = Definitions.deserialize(tagsField.binaryValue().bytes);
                 }
                 Scopes scopes = null;
-                IndexableField scopesField = doc.getField("scopes");
+                IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
                 if (scopesField != null) {
                     scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
                 }

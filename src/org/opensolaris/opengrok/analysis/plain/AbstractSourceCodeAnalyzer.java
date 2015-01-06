@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2015 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -39,6 +39,7 @@ import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  *
@@ -53,10 +54,6 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
         super(factory);
     }
     
-    protected JFlexScopeParser newScopeParser(Reader reader) {
-        return null;
-    }
-
     /**
      * Create a symbol tokenizer for the language supported by this analyzer.
      * @param reader the data to tokenize
@@ -75,22 +72,7 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         super.analyze(doc, src, xrefOut);
-        doc.add(new TextField("refs", getReader(src.getStream())));
-        
-        /*
-         * Parsing of scopes of every document
-         */
-        JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
-        if (scopeParser != null) {
-            for (Definitions.Tag tag : defs.getTags()) {
-                if (tag.type.startsWith("function")) {
-                    scopeParser.parse(tag, getReader(src.getStream()));
-                }
-            }        
-            Scopes scopes = scopeParser.getScopes();
-            byte[] scopesSerialized = scopes.serialize();
-            doc.add(new StoredField("scopes", scopesSerialized));
-        }
+        doc.add(new TextField(QueryBuilder.REFS, getReader(src.getStream())));
     }
 
     @Override
