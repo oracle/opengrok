@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 /**
@@ -272,12 +272,12 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
 
                 if (out != null) {
                     if (scope != null) {
-                        out.write(" <i><a class=\"s\" href=\"");
+                        out.write(" <a class=\"s\" href=\"");
                         out.write(url);
                         out.write(String.valueOf(scope.lineFrom));
                         out.write("\">");
                         out.write(scope.getName());
-                        out.write("</a></i> ");
+                        out.write("</a> ");
                     }
                     out.write("<a class=\"s\" href=\"");
                     out.write(url);

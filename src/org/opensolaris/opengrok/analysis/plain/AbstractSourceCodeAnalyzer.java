@@ -72,7 +72,6 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         super.analyze(doc, src, xrefOut);
-        doc.add(new TextField(QueryBuilder.REFS, getReader(src.getStream())));
     }
 
     @Override

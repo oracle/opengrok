@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -283,13 +283,13 @@ public class Ctags {
      * Add a tag to a {@code Definitions} instance.
      */
     private void addTag(Definitions defs, Interner<String> seenSymbols,
-            String lnum, String symbol, String type, String text, String inher) {
+            String lnum, String symbol, String type, String text, String scope) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
         defs.addTag(Integer.parseInt(lnum), seenSymbols.intern(symbol.trim()),
             seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
-            inher == null ? null : seenSymbols.intern(inher.trim()));
+            scope == null ? null : seenSymbols.intern(scope.trim()));
     }
 }

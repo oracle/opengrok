@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Comparator;
+import java.util.TreeSet;
 
 /**
  *
@@ -53,17 +53,29 @@ public class Scopes implements Serializable {
             this.scope = scope;
         }
         
+        public Scope(int lineFrom) {
+            this.lineFrom = lineFrom;
+        }
+        
         public String getName() {
             return name; //(scope == null ? name : scope + "::" + name) + "()";
         }
     }
     
+    public static class ScopeComparator implements Comparator<Scope> {
+        @Override
+        public int compare(Scope o1, Scope o2) {
+            return o1.lineFrom < o2.lineFrom ? -1 : o1.lineFrom > o2.lineFrom ? 1 : 0;
+        }
+    }
+    
+    // default global scope
     private static Scope globalScope = new Scope(0, 0, "global", "");
     
-    private List<Scope> scopes = new ArrayList<>();  
+    // tree of scopes sorted by starting line
+    private TreeSet<Scope> scopes = new TreeSet<>(new ScopeComparator());
     
-    public Scopes() {
-        
+    public Scopes() {        
     }
     
     public void addScope(Scope scope) {
@@ -71,13 +83,9 @@ public class Scopes implements Serializable {
     }
     
     public Scope getScope(int line) {
-        for (Scope s : scopes) {
-            if (s.lineFrom <= line && s.lineTo >= line) {
-                return s;
-            }
-        }
-        
-        return globalScope;
+        // find closest scope that starts before or on given line
+        Scope s = scopes.lower(new Scope(line+1));
+        return s != null ? s : globalScope;
     }
     
     /**
