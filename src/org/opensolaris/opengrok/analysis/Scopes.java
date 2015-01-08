@@ -84,8 +84,8 @@ public class Scopes implements Serializable {
     
     public Scope getScope(int line) {
         // find closest scope that starts before or on given line
-        Scope s = scopes.lower(new Scope(line+1));
-        return s != null ? s : globalScope;
+        Scope s = scopes.lower(new Scope(line+1));        
+        return (s != null && s.lineTo >= line) ? s : globalScope;
     }
     
     /**
