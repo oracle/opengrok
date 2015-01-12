@@ -162,6 +162,10 @@ public class Definitions implements Serializable {
         }
     }
 
+    public void addTag(int line, String symbol, String type, String text) {
+        addTag(line, symbol, type, text, null);
+    }
+
     public void addTag(int line, String symbol, String type, String text, String scope) {
         Tag new_tag = new Tag(line, symbol, type, text, scope);
         tags.add(new_tag);

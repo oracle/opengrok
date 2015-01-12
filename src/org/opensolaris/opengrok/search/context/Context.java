@@ -114,7 +114,12 @@ public class Context {
     }
 
     private boolean alt = true;
-   
+
+    public boolean getContext(Reader in, Writer out, String urlPrefix,
+        String morePrefix, String path, Definitions tags,
+        boolean limit, boolean isDefSearch, List<Hit> hits) {
+        return getContext(in, out, urlPrefix, morePrefix, path, tags, limit, isDefSearch, hits, null);
+    }
     /**
      * ???.
      * Closes the given <var>in</var> reader on return.
