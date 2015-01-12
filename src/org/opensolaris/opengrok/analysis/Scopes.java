@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.TreeSet;
 
 /**
@@ -38,7 +37,7 @@ import java.util.TreeSet;
 public class Scopes implements Serializable {
     private static final long serialVersionUID = 1191703801007779489L;
     
-    public static class Scope implements Serializable {
+    public static class Scope implements Serializable, Comparable<Scope> {
         private static final long serialVersionUID = 1191703801007779489L;
 
         public int lineFrom;
@@ -60,12 +59,10 @@ public class Scopes implements Serializable {
         public String getName() {
             return name; //(scope == null ? name : scope + "::" + name) + "()";
         }
-    }
-    
-    public static class ScopeComparator implements Comparator<Scope> {
+
         @Override
-        public int compare(Scope o1, Scope o2) {
-            return o1.lineFrom < o2.lineFrom ? -1 : o1.lineFrom > o2.lineFrom ? 1 : 0;
+        public int compareTo(Scope o) {
+            return lineFrom < o.lineFrom ? -1 : lineFrom > o.lineFrom ? 1 : 0;
         }
     }
     
@@ -73,9 +70,13 @@ public class Scopes implements Serializable {
     private static Scope globalScope = new Scope(0, 0, "global", "");
     
     // tree of scopes sorted by starting line
-    private TreeSet<Scope> scopes = new TreeSet<>(new ScopeComparator());
+    private TreeSet<Scope> scopes = new TreeSet<>();
     
     public Scopes() {        
+    }
+    
+    public int size() {
+        return scopes.size();
     }
     
     public void addScope(Scope scope) {

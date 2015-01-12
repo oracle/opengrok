@@ -47,9 +47,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.Scopes;
-import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.history.HistoryException;
-import org.opensolaris.opengrok.search.context.LineMatcher;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
@@ -181,10 +179,12 @@ public final class Results {
                     if (tagsField != null) {
                         tags = Definitions.deserialize(tagsField.binaryValue().bytes);
                     }
-                    Scopes scopes = null;
+                    Scopes scopes;
                     IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
                     if (scopesField != null) {
                         scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
+                    } else {
+                        scopes = new Scopes();
                     }
                     if (Genre.XREFABLE == genre && sh.summerizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);

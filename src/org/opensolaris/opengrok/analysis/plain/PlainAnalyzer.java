@@ -50,7 +50,7 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 public class PlainAnalyzer extends TextAnalyzer {
 
     private JFlexXref xref;
-    protected Definitions defs;
+    private Definitions defs;
 
     /**
      * Creates a new instance of PlainAnalyzer
@@ -106,8 +106,10 @@ public class PlainAnalyzer extends TextAnalyzer {
                     }
                     
                     Scopes scopes = scopeParser.getScopes();
-                    byte[] scopesSerialized = scopes.serialize();
-                    doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
+                    if (scopes.size() > 0) {
+                        byte[] scopesSerialized = scopes.serialize();
+                        doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
+                    }
                 }
             }
         }
