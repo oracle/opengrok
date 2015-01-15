@@ -1,3 +1,10 @@
+June 2015 update 0.12.1.2 (0.12-stable)
+-------------------------------------------------
+
+This is bug fix release based on 0.12.1.
+
+Functional changes:
+   add support for parallel indexing #876
 
 November 2014 update 0.12.1.1 (0.12-stable)
 -------------------------------------------------
