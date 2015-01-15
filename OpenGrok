@@ -76,6 +76,7 @@
 #                                 increase it to 256MB, but do increase JVM to 
 #                                 4/8/16GB ! Lucene defaults to 8 threads.
 #                                 Increase JVM memory as noted using JAVA_OPTS
+#   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
 #
 # Notes:
 #   (*) Any Non-Empty String will enable these options
@@ -95,6 +96,7 @@ Usage()
     echo ""
     echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help>"
     echo "       ${progname} index [<directory>]"
+    echo "       ${progname} indexpart [<directory1> ..]"
     echo "       ${progname} clearHistory [<repository_name>]"
     echo ""
     echo "  Optional environment variables:"
@@ -195,7 +197,15 @@ DefaultInstanceConfiguration()
     fi
 
     # REQUIRED: Logger Configuration
-    LOGGER_CONFIG_PATH="${OPENGROK_INSTANCE_BASE}/${LOGGER_CONFIG_FILE}"
+    if [ -n "${OPENGROK_LOGGER_CONFIG_PATH}" ]; then
+        if [ ! -f "${OPENGROK_LOGGER_CONFIG_PATH}" ]; then
+	    echo "File ${OPENGROK_LOGGER_CONFIG_PATH} does not exist"
+	    exit 1
+	fi
+        LOGGER_CONFIG_PATH=${OPENGROK_LOGGER_CONFIG_PATH}
+    else
+        LOGGER_CONFIG_PATH="${OPENGROK_INSTANCE_BASE}/${LOGGER_CONFIG_FILE}"
+    fi
     LOGGER_PROPERTIES="-Djava.util.logging.config.file=${LOGGER_CONFIG_PATH}"
 
     # REQUIRED: Java Archive of OpenGrok (Installation Location)
@@ -780,33 +790,54 @@ CreateRuntimeRequirements()
     fi
 }
 
+CommonInvocation()
+{
+    ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    	\
+        ${LOGGER_PROPERTIES}                                    	\
+        ${JAVA_DEBUG}                                           	\
+        -jar ${OPENGROK_JAR}                                    	\
+        ${IGNORE_PATTERNS}                    				\
+        ${DERBY_OPTIONS}						\
+        ${HISTORY_TAGS}							\
+        ${REMOTE_REPOSITORIES}           				\
+        ${SCAN_DEPTH}                                           	\
+        ${VERBOSE} ${QUIET}                                     	\
+        ${PROGRESS}                                             	\
+        ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
+        ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
+        ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}	\
+        ${READ_XML_CONF}                                        	\
+        "${@}"
+}
+
 StdInvocation()
 {
-    ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    \
-        ${LOGGER_PROPERTIES}                                    \
-        ${JAVA_DEBUG}                                           \
-        -jar ${OPENGROK_JAR}                                    \
-        ${IGNORE_PATTERNS} ${ENABLE_PROJECTS}                   \
-        ${DERBY_OPTIONS}					\
-        ${HISTORY_TAGS}						\
-        ${SCAN_FOR_REPOSITORY} ${REMOTE_REPOSITORIES}           \
-        ${SCAN_DEPTH}                                           \
-        ${VERBOSE} ${QUIET}                                     \
-        ${PROGRESS}                                             \
-        ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               \
-        ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         \
-        ${OPENGROK_FLUSH_RAM_BUFFER_SIZE} ${SKIN} ${LEADING_WILDCARD}        \
-        ${READ_XML_CONF}                                        \
-        -W ${XML_CONFIGURATION}                                 \
-        ${WEBAPP_CONFIG}                                        \
-        ${WEBAPP_CONTEXT}                                       \
-        -s ${SRC_ROOT} -d ${DATA_ROOT}                          \
-        "${@}"
+    CommonInvocation		\
+        -W ${XML_CONFIGURATION}	\
+	${SCAN_FOR_REPOSITORY}	\
+	${ENABLE_PROJECTS}	\
+        ${WEBAPP_CONFIG}	\
+        ${WEBAPP_CONTEXT}	\
+        -s ${SRC_ROOT}		\
+	-d ${DATA_ROOT}
 }
 
 UpdateGeneratedData()
 {
     StdInvocation -H
+}
+
+UpdateDataPartial()
+{
+    extra_args=""
+    for arg in "$@"; do
+        if [ -n "$extra_args" ]; then
+            extra_args="$extra_args -h $arg"
+	else
+	    extra_args="-h $arg"
+	fi
+    done
+    CommonInvocation $extra_args "$@"
 }
 
 UpdateDescriptionCache()
@@ -910,7 +941,7 @@ ClearHistory()
 # Main Program
 #
 
-if [ $# -eq 0 -o $# -gt 2 ]
+if [ $# -eq 0 ]
 then
     Usage
 fi
@@ -947,6 +978,10 @@ case "${1}" in
         ;;
 
     index)
+	if [ $# -gt 2 ]
+	then
+	    Usage
+	fi
         if [ -n "${2}" ]
         then
             SRC_ROOT="${2}"
@@ -955,6 +990,17 @@ case "${1}" in
         CreateRuntimeRequirements
         UpdateGeneratedData
         UpdateDescriptionCache
+        ;;
+
+    indexpart)
+        if [ -z "${2}" ]
+        then
+            Usage
+        fi
+	shift
+        ValidateConfiguration
+        CreateRuntimeRequirements
+        UpdateDataPartial $@
         ;;
 
     clearHistory)
