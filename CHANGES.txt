@@ -1,3 +1,11 @@
+June 2015 update 0.12.1.3 (0.12-stable)
+-------------------------------------------------
+
+This is bug fix release based on 0.12.1.
+
+Bug fixes:
+  change indexpart command in the OpenGrok shell script to require SRC_ROOT
+
 June 2015 update 0.12.1.2 (0.12-stable)
 -------------------------------------------------
 
