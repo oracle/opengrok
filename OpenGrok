@@ -96,7 +96,7 @@ Usage()
     echo ""
     echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help>"
     echo "       ${progname} index [<directory>]"
-    echo "       ${progname} indexpart [<directory1> ..]"
+    echo "       ${progname} indexpart <src_root> <directory1> [..]"
     echo "       ${progname} clearHistory [<repository_name>]"
     echo ""
     echo "  Optional environment variables:"
@@ -993,11 +993,12 @@ case "${1}" in
         ;;
 
     indexpart)
-        if [ -z "${2}" ]
+        if [ $# -ne 3 ]
         then
             Usage
         fi
-	shift
+        SRC_ROOT="${2}"
+        shift 2
         ValidateConfiguration
         CreateRuntimeRequirements
         UpdateDataPartial $@
