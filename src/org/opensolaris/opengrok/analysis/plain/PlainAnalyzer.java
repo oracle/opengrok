@@ -92,24 +92,13 @@ public class PlainAnalyzer extends TextAnalyzer {
                 doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
                 doc.add(new TextField(QueryBuilder.REFS, getReader(src.getStream())));
                 byte[] tags = defs.serialize();
-                doc.add(new StoredField(QueryBuilder.TAGS, tags));                              
-                        
+                doc.add(new StoredField(QueryBuilder.TAGS, tags));
+                
                 /*
                  * Parse all scopes for file if we know how
                  */
-                JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
-                if (scopeParser != null) {
-                    for (Definitions.Tag tag : defs.getTags()) {
-                        if (tag.type.startsWith("function")) {
-                            scopeParser.parse(tag, getReader(src.getStream()));
-                        }
-                    }
-                    
-                    Scopes scopes = scopeParser.getScopes();
-                    if (scopes.size() > 0) {
-                        byte[] scopesSerialized = scopes.serialize();
-                        doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
-                    }
+                if (scopesEnabled) {
+                    addScopes(doc, src);
                 }
             }
         }
@@ -117,6 +106,23 @@ public class PlainAnalyzer extends TextAnalyzer {
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 writeXref(in, xrefOut);
+            }
+        }
+    }
+    
+    private void addScopes(Document doc, StreamSource src) throws IOException {
+        JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
+        if (scopeParser != null) {
+            for (Definitions.Tag tag : defs.getTags()) {
+                if (tag.type.startsWith("function")) {
+                    scopeParser.parse(tag, getReader(src.getStream()));
+                }
+            }
+
+            Scopes scopes = scopeParser.getScopes();
+            if (scopes.size() > 0) {
+                byte[] scopesSerialized = scopes.serialize();
+                doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
             }
         }
     }

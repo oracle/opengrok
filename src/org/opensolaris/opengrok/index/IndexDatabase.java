@@ -609,6 +609,7 @@ public class IndexDatabase {
         }
         fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
+        fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
 
         Document doc = new Document();
         try (Writer xrefOut = getXrefWriter(fa, path)) {
