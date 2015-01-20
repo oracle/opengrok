@@ -938,7 +938,15 @@ public final class RuntimeEnvironment {
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
         register();
-        HistoryGuru.getInstance().invalidateRepositories(configuration.getRepositories());
+        HistoryGuru.getInstance().invalidateRepositories(
+            configuration.getRepositories());
+    }
+
+    public void setConfiguration(Configuration configuration, List<String> subFileList) {
+        this.configuration = configuration;
+        register();
+        HistoryGuru.getInstance().invalidateRepositories(
+            configuration.getRepositories(), subFileList);
     }
 
     public Configuration getConfiguration() {
