@@ -25,6 +25,7 @@ package org.opensolaris.opengrok.history;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -714,7 +715,32 @@ public final class HistoryGuru {
     }
 
     /**
-     * Invalidate the current list of known repositories!
+     * Invalidate list of known repositories which match the list of directories.
+     *
+     * @param repos the new repositories
+     * @param dirs only process repositories which match the directories
+     */
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs)
+    {
+        if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
+            List<RepositoryInfo> newrepos = new ArrayList<> ();
+            for (RepositoryInfo i : repos) {
+                for (String dir : dirs) {
+                    Path dirPath = new File(dir).toPath();
+                    Path iPath = new File(i.getDirectoryName()).toPath();
+                    if (iPath.startsWith(dirPath)) {
+                        newrepos.add(i);
+                    }
+                }
+            }
+            repos = newrepos;
+        }
+
+        invalidateRepositories(repos);
+    }
+
+    /**
+     * Invalidate list of known repositories.
      *
      * @param repos The new repositories
      */
@@ -723,8 +749,13 @@ public final class HistoryGuru {
         if (repos == null || repos.isEmpty()) {
             repositories.clear();
         } else {
-            Map<String, Repository> nrep =
+            Map<String, Repository> newrepos =
                 new HashMap<String, Repository>(repos.size());
+            Statistics elapsed = new Statistics();
+            boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
+            if (verbose) {
+                log.log(Level.FINE, "invalidating repositories");
+            }
             for (RepositoryInfo i : repos) {
                 try {
                     Repository r = RepositoryFactory.getRepository(i);
@@ -733,7 +764,7 @@ public final class HistoryGuru {
                             "Failed to instanciate internal repository data for "
                             + i.getType() + " in " + i.getDirectoryName());
                     } else {
-                        nrep.put(r.getDirectoryName(), r);
+                        newrepos.put(r.getDirectoryName(), r);
                     }
                 } catch (InstantiationException ex) {
                     log.log(Level.WARNING, "Could not create " + i.getType()
@@ -745,7 +776,10 @@ public final class HistoryGuru {
                         + "', missing access rights.", iae);
                 }
             }
-            repositories = nrep;
+            repositories = newrepos;
+            if (verbose) {
+                elapsed.report(log, "done invalidating repositories");
+            }
         }
     }
 }
