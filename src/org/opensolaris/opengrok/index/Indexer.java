@@ -114,6 +114,7 @@ public final class Indexer {
             Executor.registerErrorHandler();
             boolean searchRepositories = false;
             ArrayList<String> subFiles = new ArrayList<>();
+            ArrayList<String> subFilesList = new ArrayList<>();
             ArrayList<String> repositories = new ArrayList<>();
             HashSet<String> allowedSymlinks = new HashSet<>();
             String configFilename = null;
@@ -530,9 +531,20 @@ public final class Indexer {
                 allowedSymlinks.addAll(cfg.getAllowedSymlinks());
                 cfg.setAllowedSymlinks(allowedSymlinks);
 
+                // Assemble the unprocessed command line arguments (possibly
+                // a list of paths). This will be used to perform more fine
+                // grained checking in invalidateRepositories().
+                int optind = getopt.getOptind();
+                int orig_optind = optind;
+                if (optind != -1) {
+                    while (optind < argv.length) {
+                        subFilesList.add(cfg.getSourceRoot() + argv[optind++]);
+                    }
+                }
+
                 // Set updated configuration in RuntimeEnvironment.
                 RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-                env.setConfiguration(cfg);
+                env.setConfiguration(cfg, subFilesList);
 
                 /*
                  * Add paths to directories under source root. If projects 
@@ -542,28 +554,24 @@ public final class Indexer {
                  * directory and not per project data root directory).
                  * For the check we need to have 'env' already set.
                  */
-                int optind = getopt.getOptind();
-                int orig_optind = optind;
-                if (optind != -1) {
-                    while (optind < argv.length) {
-                        if (env.hasProjects()) {
-                            // The paths need to correspond to a project.
-                            if (Project.getProject(argv[optind]) != null) {
-                                subFiles.add(argv[optind]);
-                            } else {
-                                System.err.println("The path " + argv[optind] +
-                                    " does not correspond to a project");
-                            }
+                for (String path : subFilesList) {
+                    path = path.substring(env.getSourceRootPath().length());
+                    if (env.hasProjects()) {
+                        // The paths need to correspond to a project.
+                        if (Project.getProject(path) != null) {
+                            subFiles.add(path);
                         } else {
-                            subFiles.add(argv[optind]);
+                            System.err.println("The path " + path +
+                                " does not correspond to a project");
                         }
-                        ++optind;
+                    } else {
+                        subFiles.add(path);
                     }
+                }
 
-                    if ((orig_optind < argv.length) && subFiles.isEmpty()) {
-                        System.err.println("None of the paths were added, exiting");
-                        System.exit(1);
-                    }
+                if (!subFilesList.isEmpty() && subFiles.isEmpty()) {
+                    System.err.println("None of the paths were added, exiting");
+                    System.exit(1);
                 }
 
                 // Issue a warning when JDBC is used with renamed file handling.
