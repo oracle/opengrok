@@ -114,7 +114,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
         if (scopeParser != null) {
             for (Definitions.Tag tag : defs.getTags()) {
-                if (tag.type.startsWith("function")) {
+                if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
                     scopeParser.parse(tag, getReader(src.getStream()));
                 }
             }

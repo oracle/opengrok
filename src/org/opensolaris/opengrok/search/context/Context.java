@@ -151,7 +151,7 @@ public class Context {
                 for (Definitions.Tag tag : tags.getTags()) {
                     for (int i = 0; i < m.length; i++) {
                         if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
-                            String scope = "";
+                            String scope = null;
                             if (scopes != null) {
                                 scope = scopes.getScope(tag.line).getName();
                             }
@@ -185,9 +185,12 @@ public class Context {
                                     out.write(desc[1]);
                                     out.write("\"><span class=\"l\">");
                                     out.write(desc[1]);
-                                    out.write("</span> <i>");
-                                    out.write(desc[4]);
-                                    out.write("</i> ");
+                                    out.write("</span> ");
+                                    if (desc[4] != null) {
+                                        out.write("<i> ");
+                                        out.write(desc[4]);
+                                        out.write("</i> ");
+                                    }
                                     out.write(Util.htmlize(desc[3]).replace(
                                             desc[0], "<b>" + desc[0] + "</b>"));
                                     out.write("</a> <i>");

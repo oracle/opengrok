@@ -285,7 +285,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                     out.write(num);
                     out.write("\"><span class=\"l\">");
                     out.write(num);
-                    out.write("</span>");
+                    out.write("</span> ");
                 }
         }
 

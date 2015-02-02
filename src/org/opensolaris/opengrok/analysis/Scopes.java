@@ -67,7 +67,7 @@ public class Scopes implements Serializable {
     }
     
     // default global scope
-    private static Scope globalScope = new Scope(0, 0, "global", "");
+    private static Scope globalScope = new Scope(0, 0, "global", null);
     
     // tree of scopes sorted by starting line
     private TreeSet<Scope> scopes = new TreeSet<>();
