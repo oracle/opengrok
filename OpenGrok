@@ -286,7 +286,7 @@ DefaultInstanceConfiguration()
     WEBAPP_CONFIG=""
     if [ -n "${OPENGROK_WEBAPP_CFGADDR}" ]; then
         WEBAPP_CONFIG_ADDRESS=${OPENGROK_WEBAPP_CFGADDR}
-	if [ "${OPENGROK_WEBAPP_CFGADDR}" == "none" ]; then
+	if [ "${OPENGROK_WEBAPP_CFGADDR}" = "none" ]; then
 	    WEBAPP_CONFIG_ADDRESS=""
 	fi
     else
