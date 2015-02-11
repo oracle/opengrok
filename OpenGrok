@@ -817,7 +817,8 @@ StdInvocation()
         ${WEBAPP_CONFIG}	\
         ${WEBAPP_CONTEXT}	\
         -s ${SRC_ROOT}		\
-	-d ${DATA_ROOT}
+	-d ${DATA_ROOT}		\
+	"${@}"
 }
 
 UpdateGeneratedData()
