@@ -97,7 +97,7 @@ Usage()
     echo "Usage: ${progname} <deploy|derby|update|updateQuietly|usage|help>"
     echo "       ${progname} index [<directory>]"
     echo "       ${progname} indexpart <src_root> <directory1> [..]"
-    echo "       ${progname} clearHistory [<repository_name>]"
+    echo "       ${progname} clearHistory <src_root> <repository_name>"
     echo ""
     echo "  Optional environment variables:"
     echo "    OPENGROK_CONFIGURATION - location of your configuration"
@@ -793,8 +793,8 @@ CreateRuntimeRequirements()
 MinimalInvocation()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    	\
-        ${LOGGER_PROPERTIES}                                    	\
         ${JAVA_DEBUG}                                           	\
+        ${LOGGER_PROPERTIES}                                    	\
         -jar ${OPENGROK_JAR}                                    	\
         ${VERBOSE} ${QUIET}                                     	\
         "${@}"
@@ -941,7 +941,7 @@ DerbyServer()
 ClearHistory()
 {
 	Progress "Removing history index data for repository ${1}"
-	MinimalInvocation -d ${DATA_ROOT} -k "${1}"
+	MinimalInvocation -s ${SRC_ROOT} -d ${DATA_ROOT} -k "${1}"
 }
 
 #
@@ -1012,10 +1012,16 @@ case "${1}" in
         ;;
 
     clearHistory)
-	if [ -z "${2}" ]; then
+        if [ $# -ne 3 ]
+        then
+            Usage
+        fi
+        SRC_ROOT="${2}"
+        shift 2
+	if [ -z "${1}" ]; then
 		Usage
 	fi
-	ClearHistory "${2}"
+	ClearHistory "${1}"
 	;;
 
     usage|help)
