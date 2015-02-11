@@ -790,18 +790,24 @@ CreateRuntimeRequirements()
     fi
 }
 
-CommonInvocation()
+MinimalInvocation()
 {
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    	\
         ${LOGGER_PROPERTIES}                                    	\
         ${JAVA_DEBUG}                                           	\
         -jar ${OPENGROK_JAR}                                    	\
+        ${VERBOSE} ${QUIET}                                     	\
+        "${@}"
+}
+
+CommonInvocation()
+{
+    MinimalInvocation							\
         ${IGNORE_PATTERNS}                    				\
         ${DERBY_OPTIONS}						\
         ${HISTORY_TAGS}							\
         ${REMOTE_REPOSITORIES}           				\
         ${SCAN_DEPTH}                                           	\
-        ${VERBOSE} ${QUIET}                                     	\
         ${PROGRESS}                                             	\
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
         ${CTAGS_OPTIONS_FILE:+-o} ${CTAGS_OPTIONS_FILE}         	\
@@ -935,7 +941,7 @@ DerbyServer()
 ClearHistory()
 {
 	Progress "Removing history index data for repository ${1}"
-	StdInvocation -k "${1}"
+	MinimalInvocation -d ${DATA_ROOT} -k "${1}"
 }
 
 #
