@@ -394,7 +394,8 @@ public final class Indexer {
                         case 's': {
                             File sourceRoot = new File(getopt.getOptarg());
                             if (!sourceRoot.isDirectory()) {
-                                System.err.println("ERROR: Source root must be a directory");
+                                System.err.println("ERROR: Source root " +
+                                    getopt.getOptarg() + " must be a directory");
                                 System.exit(1);
                             }
                             cfg.setSourceRoot(sourceRoot.getCanonicalPath());
@@ -404,7 +405,8 @@ public final class Indexer {
                             try {
                                 noThreads = Integer.parseInt(getopt.getOptarg());
                             } catch (NumberFormatException exp) {
-                                System.err.println("ERROR: Failed to parse argument to \"-T\": " + exp.getMessage());
+                                System.err.println("ERROR: Failed to parse argument to \"-T\": " +
+                                    exp.getMessage());
                                 System.exit(1);
                             }
                             break;
@@ -413,7 +415,8 @@ public final class Indexer {
                                 int tmp = Integer.parseInt(getopt.getOptarg());
                                 cfg.setTabSize(tmp);
                             } catch (NumberFormatException exp) {
-                                System.err.println("ERROR: Failed to parse argument to \"-t\": " + exp.getMessage());
+                                System.err.println("ERROR: Failed to parse argument to \"-t\": " +
+                                    exp.getMessage());
                                 System.exit(1);
                             }
                             break;
@@ -453,7 +456,8 @@ public final class Indexer {
                             try {
                                 cfg.setScanningDepth(Integer.parseInt(getopt.getOptarg()));
                             } catch (NumberFormatException exp) {
-                                System.err.println("ERROR: Failed to parse argument to \"-z\": " + exp.getMessage());
+                                System.err.println("ERROR: Failed to parse argument to \"-z\": " +
+                                    exp.getMessage());
                                 System.exit(1);
                             }
                             break;
