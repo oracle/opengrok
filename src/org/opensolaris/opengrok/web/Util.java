@@ -189,8 +189,7 @@ public final class Util {
      * @return HTML markup fro the breadcrumb or the path itself.
      * @see #breadcrumbPath(String, String, char, String, boolean, boolean)
      */
-    public static String breadcrumbPath(String urlPrefix, String path, char sep)
-    {
+    public static String breadcrumbPath(String urlPrefix, String path, char sep) {
         return breadcrumbPath(urlPrefix, path, sep, "", false);
     }
 
@@ -339,10 +338,10 @@ public final class Util {
      *      address.
      */
     public static String getEmail(String author) {
-        Matcher email_matcher = EMAIL_PATTERN.matcher(author);
+        Matcher emailMatcher = EMAIL_PATTERN.matcher(author);
         String email = author;
-        if (email_matcher.find()) {
-            email = email_matcher.group(1).trim();
+        if (emailMatcher.find()) {
+            email = emailMatcher.group(1).trim();
         }
 
         return email;
@@ -482,15 +481,14 @@ public final class Util {
      */
     public static void readableLine(int num, Writer out, Annotation annotation,
         String userPageLink, String userPageSuffix, String project)
-    throws IOException
-    {
+    throws IOException {
         // this method should go to JFlexXref
         String snum = String.valueOf(num);
         if (num > 1) {
             out.write("\n");
         }
         out.write(anchorClassStart);
-        out.write( (num % 10 == 0 ? "hl" : "l"));
+        out.write(num % 10 == 0 ? "hl" : "l");
         out.write("\" name=\"");
         out.write(snum);
         out.write("\" href=\"#");
@@ -654,8 +652,8 @@ public final class Util {
      * @see #URIEncode(String)
      */
     public static void appendQuery(StringBuilder buf, String key,
-        String value)
-    {
+        String value) {
+
         if (value != null) {
             buf.append("&amp;").append(key).append('=').append(URIEncode(value));
         }

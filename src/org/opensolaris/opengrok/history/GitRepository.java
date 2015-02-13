@@ -122,8 +122,8 @@ public class GitRepository extends Repository {
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision)
-        throws IOException
-    {
+        throws IOException {
+
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -166,8 +166,7 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
-    {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -308,8 +307,8 @@ public class GitRepository extends Repository {
     }
 
     protected Annotation parseAnnotation(Reader input, String fileName)
-        throws IOException
-    {
+        throws IOException {
+
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
         String line = "";
