@@ -17,7 +17,7 @@ public class PhpXrefTest {
         PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
         assertEquals(
                 "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
-                + "source/s?defs=foo\">foo</a> <a href=\"/source/s?defs=bar\">bar</a>",
+                + "source/s?defs=foo\" onmouseover=\"onMouseOverSymbol('foo', 'undefined-in-file')\">foo</a> <a href=\"/source/s?defs=bar\" onmouseover=\"onMouseOverSymbol('bar', 'undefined-in-file')\">bar</a>",
                 w.toString());
     }
 
