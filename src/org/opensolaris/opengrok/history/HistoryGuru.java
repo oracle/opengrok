@@ -720,8 +720,7 @@ public final class HistoryGuru {
      * @param repos the new repositories
      * @param dirs only process repositories which match the directories
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs)
-    {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos, List<String> dirs) {
         if (repos != null && !repos.isEmpty() && dirs != null && !dirs.isEmpty()) {
             List<RepositoryInfo> newrepos = new ArrayList<> ();
             for (RepositoryInfo i : repos) {
@@ -744,8 +743,7 @@ public final class HistoryGuru {
      *
      * @param repos The new repositories
      */
-    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos)
-    {
+    public void invalidateRepositories(Collection<? extends RepositoryInfo> repos) {
         if (repos == null || repos.isEmpty()) {
             repositories.clear();
         } else {

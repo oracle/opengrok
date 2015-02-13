@@ -539,7 +539,6 @@ public final class Indexer {
                 // a list of paths). This will be used to perform more fine
                 // grained checking in invalidateRepositories().
                 int optind = getopt.getOptind();
-                int orig_optind = optind;
                 if (optind != -1) {
                     while (optind < argv.length) {
                         subFilesList.add(cfg.getSourceRoot() + argv[optind++]);
