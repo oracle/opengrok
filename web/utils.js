@@ -447,14 +447,19 @@ document.onmousemove = function(event) {
 };
 
 $(document).keypress(function(e) {
-    if (e.which === 49 && document.intelliWindow) { // '1' pressed
+    if (document.activeElement.id === 'search' ||
+        typeof document.intelliWindow === 'undefined') {
+        return true;
+    }
+
+    if (e.which === 49) { // '1' pressed
         if (document.intelliWindow.className === "intelli_window_style") {
             hideIntelliWindow();
         } else if (document.intelliWindow.className === "intelli_window_style_hide") {
             showIntelliWindow();
         }
     }
-    if (e.which === 50 && document.intelliWindow) { // '2' pressed
+    if (e.which === 50) { // '2' pressed
         var symbol = document.intelliWindow.symbol;
         var highlighted_symbols_with_same_name = $("a").filter(function(index) {
             return $(this).text() === symbol &&
