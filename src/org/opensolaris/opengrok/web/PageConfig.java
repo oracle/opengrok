@@ -108,6 +108,8 @@ public final class PageConfig {
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private HttpServletRequest req;
+    
+    private static String ALL_PROJECTS_WILDCARD = "*";
 
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
@@ -793,6 +795,12 @@ public final class PageConfig {
             for (String s : cookies) {
                 if (Project.getByDescription(s) != null) {
                     set.add(s);
+                }
+                if (s.equals(ALL_PROJECTS_WILDCARD)) {
+                    //use all existing projects 
+                    for (Project p : projects) {
+                        set.add(p.getDescription());
+                    }
                 }
             }
         }
