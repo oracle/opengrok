@@ -33,7 +33,8 @@ to set the title of the document before the include directive for this fragment:
     cfg.setTitle("your title");
 
 </pre>
---%><%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="
+--%><%@page import="org.opensolaris.opengrok.web.Prefix"%>
+<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="
 org.opensolaris.opengrok.Info,
 org.opensolaris.opengrok.web.PageConfig"
 %><%@
@@ -68,6 +69,14 @@ include file="pageconfig.jspf"
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.autocomplete.css" />
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.combo.css%>" />
 --%>
+<%
+/* RSS feed generation works for files only. */
+if (cfg.getPrefix().equals(Prefix.HIST_L) && !cfg.getPath().endsWith("/")) {
+    out.write("<link rel=\"alternate\" type=\"application/rss+xml\" " +
+        "title=\"RSS feed for " + cfg.getPath() + "\" " +
+        "href=\"" + ctxPath + Prefix.RSS_P + cfg.getPath() + "\" />");
+}
+%>
 <link rel="search" href="<%=ctxPath%>/opensearch"
     type="application/opensearchdescription+xml"
     title="OpenGrok Search for current project(s)" />
