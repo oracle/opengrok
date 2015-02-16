@@ -259,11 +259,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
         }
 
         if (curLinePos == markedPos) {
-                Scope scope = null;
                 Integer ln = Integer.valueOf(markedLine);
-                if (scopes != null) {
-                    scope = scopes.getScope(ln);
-                }
                 prevHi = tags.containsKey(ln);
                 prevLn = ln;
                 if (prevHi) {
@@ -271,14 +267,6 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                 }
 
                 if (out != null) {
-                    if (scope != null) {
-                        out.write(" <a class=\"s\" href=\"");
-                        out.write(url);
-                        out.write(String.valueOf(scope.lineFrom));
-                        out.write("\">");
-                        out.write(scope.getName());
-                        out.write("</a> ");
-                    }
                     out.write("<a class=\"s\" href=\"");
                     out.write(url);
                     String num = String.valueOf(markedLine);
@@ -337,6 +325,20 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                 }
 
                                 out.write("</a>");
+                                
+                                Scope scope = null;
+                                if (scopes != null) {
+                                    scope = scopes.getScope(markedLine);
+                                }
+                                if (scope != null && scope != scopes.getScope(-1)) {
+                                    out.write(" <a class=\"scope\" href=\"");
+                                    out.write(url);
+                                    out.write(String.valueOf(scope.lineFrom));
+                                    out.write("\">");
+                                    out.write(scope.getName());
+                                    out.write("()</a> ");
+                                }
+
                                 if (prevHi) {
                                         out.write(" <i> ");
                                         String[] desc = tags.remove(prevLn);
@@ -366,11 +368,15 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                 out.write(desc[1]);
                 out.write("\"><span class=\"l\">");
                 out.write(desc[1]);
-                out.write("</span> <i>");
-                out.write(desc[4]);
-                out.write("</i> ");
+                out.write("</span> ");
                 out.write(Util.htmlize(desc[3]).replace(desc[0], "<b>" + desc[0] + "</b>"));
-                out.write("</a> <i> ");
+                out.write("</a> ");
+                if (desc[4] != null) {
+                    out.write("<i>");
+                    out.write(desc[4]);
+                    out.write("</i> ");
+                }
+                out.write("<i> ");
                 out.write(desc[2]);
                 out.write(" </i><br/>");
            }
@@ -414,6 +420,20 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                         if (out != null) {
                            printWithNum(rest, endPos, markedLine, false);
                            out.write("</a>");
+
+                           Scope scope = null;
+                           if (scopes != null) {
+                               scope = scopes.getScope(markedLine);
+                           }
+                           if (scope != null && scope != scopes.getScope(-1)) {
+                               out.write(" <a class=\"scope\" href=\"");
+                               out.write(url);
+                               out.write(String.valueOf(scope.lineFrom));
+                               out.write("\">");
+                               out.write(scope.getName());
+                               out.write("()</a> ");
+                           }
+
                            if(prevHi){
                                 out.write(" <i> ");
                                 String[] desc = tags.remove(prevLn);

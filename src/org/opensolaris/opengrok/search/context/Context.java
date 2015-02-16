@@ -152,8 +152,11 @@ public class Context {
                     for (int i = 0; i < m.length; i++) {
                         if (m[i].match(tag.symbol) == LineMatcher.MATCHED) {
                             String scope = null;
+                            String scopeUrl = null;
                             if (scopes != null) {
-                                scope = scopes.getScope(tag.line).getName();
+                                Scope scp = scopes.getScope(tag.line);
+                                scope = scp.getName() + "()";
+                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" + Integer.toString(scp.lineFrom) + "\">" + scope + "</a>";
                             }
 
                             /* desc[0] is matched symbol
@@ -186,14 +189,18 @@ public class Context {
                                     out.write("\"><span class=\"l\">");
                                     out.write(desc[1]);
                                     out.write("</span> ");
-                                    if (desc[4] != null) {
-                                        out.write("<i> ");
-                                        out.write(desc[4]);
-                                        out.write("</i> ");
-                                    }
                                     out.write(Util.htmlize(desc[3]).replace(
                                             desc[0], "<b>" + desc[0] + "</b>"));
-                                    out.write("</a> <i>");
+                                    out.write("</a> ");
+
+                                    if (desc[4] != null) {
+                                        out.write("<span class=\"scope\"><a href\"");
+                                        out.write(scopeUrl);
+                                        out.write("\">");
+                                        out.write(desc[4]);
+                                        out.write("</a></span> ");
+                                    }
+                                    out.write("<i>");
                                     out.write(desc[2]);
                                     out.write("</i><br/>");
                                     anything = true;
