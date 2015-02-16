@@ -70,6 +70,7 @@ include file="pageconfig.jspf"
     <copyright>Copyright 2005</copyright>
     <generator>Java</generator><%
     History hist = null;
+    String newline = System.getProperty("line.separator");
     if(cfg.isDir()) {
         hist = new DirectoryHistoryReader(cfg.getHistoryDirs()).getHistory();
     } else {
@@ -84,7 +85,13 @@ include file="pageconfig.jspf"
             if (entry.isActive()) {
     %>
     <item>
-        <title><%= Util.htmlize(entry.getMessage()) %></title>
+        <title><%
+                /*
+                 * Newlines would result in HTML tags inside the 'title' which
+                 * causes the title to be displayed as 'null'.
+                 */
+                String replaced = entry.getMessage().replaceAll(newline, "|");
+        %><%= Util.htmlize(replaced) %></title>
         <description><%
                 if (cfg.isDir()) {
                     Set<String> files = entry.getFiles();
