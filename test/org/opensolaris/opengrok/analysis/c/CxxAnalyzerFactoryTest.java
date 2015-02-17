@@ -23,6 +23,7 @@
 package org.opensolaris.opengrok.analysis.c;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
@@ -41,6 +42,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  *
@@ -51,8 +53,7 @@ public class CxxAnalyzerFactoryTest {
     FileAnalyzer analyzer;
     private String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
-    
-    private static String PATH = "org/opensolaris/opengrok/analysis/c/sample.cxx";
+    private static TestRepository repository;
     
     public CxxAnalyzerFactoryTest() {
         CxxAnalyzerFactory analFact = new CxxAnalyzerFactory();
@@ -68,7 +69,7 @@ public class CxxAnalyzerFactoryTest {
         return new StreamSource() {
             @Override
             public InputStream getStream() throws IOException {
-                return getClass().getClassLoader().getResourceAsStream(fname);
+                return new FileInputStream(fname);
             }
         };
     }
@@ -77,6 +78,10 @@ public class CxxAnalyzerFactoryTest {
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
+
+        repository = new TestRepository();
+        repository.create(CxxAnalyzerFactoryTest.class.getResourceAsStream(
+                "/org/opensolaris/opengrok/index/source.zip"));
     }
 
     @AfterClass
@@ -89,14 +94,22 @@ public class CxxAnalyzerFactoryTest {
      * Test of writeXref method, of class CAnalyzerFactory.
      */
     @Test
-    public void testScopeAnalyzer() throws Exception {        
+    public void testScopeAnalyzer() throws Exception {
+        String path = repository.getSourceRoot() + "/c/sample.cxx";
+        File f = new File(path);
+        if (!(f.canRead() && f.isFile())) {
+            fail("cxx testfile " + f + " not found");
+        }
+
         Document doc = new Document();
-        doc.add(new Field(QueryBuilder.FULLPATH, new File("test/" + PATH).getAbsolutePath(),
+        doc.add(new Field(QueryBuilder.FULLPATH, path,
             string_ft_nstored_nanalyzed_norms));
         StringWriter xrefOut = new StringWriter();
         analyzer.setCtags(ctags);
         analyzer.setScopesEnabled(true);
-        analyzer.analyze(doc, getStreamSource(PATH), xrefOut);
+        System.out.println(path);
+        
+        analyzer.analyze(doc, getStreamSource(path), xrefOut);
         
         IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
         assertNotNull(scopesField);

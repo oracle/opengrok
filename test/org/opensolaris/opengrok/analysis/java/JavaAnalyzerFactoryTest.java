@@ -23,6 +23,7 @@
 package org.opensolaris.opengrok.analysis.java;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
@@ -39,8 +40,10 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactoryTest;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  *
@@ -51,9 +54,8 @@ public class JavaAnalyzerFactoryTest {
     FileAnalyzer analyzer;
     private String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
+    private static TestRepository repository;
 
-    private static String PATH = "org/opensolaris/opengrok/analysis/java/Sample.java";
-    
     public JavaAnalyzerFactoryTest() {
         JavaAnalyzerFactory analFact = new JavaAnalyzerFactory();
         this.analyzer = analFact.getAnalyzer();
@@ -68,7 +70,7 @@ public class JavaAnalyzerFactoryTest {
         return new StreamSource() {
             @Override
             public InputStream getStream() throws IOException {
-                return getClass().getClassLoader().getResourceAsStream(fname);
+                return new FileInputStream(fname);
             }
         };
     }
@@ -77,6 +79,10 @@ public class JavaAnalyzerFactoryTest {
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
+
+        repository = new TestRepository();
+        repository.create(CxxAnalyzerFactoryTest.class.getResourceAsStream(
+                "/org/opensolaris/opengrok/index/source.zip"));
     }
 
     @AfterClass
@@ -90,13 +96,19 @@ public class JavaAnalyzerFactoryTest {
      */
     @Test
     public void testScopeAnalyzer() throws Exception {        
+        String path = repository.getSourceRoot() + "/java/Sample.java";
+        File f = new File(path);
+        if (!(f.canRead() && f.isFile())) {
+            fail("java testfile " + f + " not found");
+        }
+
         Document doc = new Document();
-        doc.add(new Field(QueryBuilder.FULLPATH, new File("test/" + PATH).getAbsolutePath(),
+        doc.add(new Field(QueryBuilder.FULLPATH, path,
             string_ft_nstored_nanalyzed_norms));
         StringWriter xrefOut = new StringWriter();
         analyzer.setCtags(ctags);
         analyzer.setScopesEnabled(true);
-        analyzer.analyze(doc, getStreamSource(PATH), xrefOut);
+        analyzer.analyze(doc, getStreamSource(path), xrefOut);
         
         IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
         assertNotNull(scopesField);

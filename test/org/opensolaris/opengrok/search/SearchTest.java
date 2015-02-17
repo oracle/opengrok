@@ -167,11 +167,11 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "opengrok && something || else"}));
         assertTrue(instance.search());
-        assertEquals(6, instance.results.size());
+        assertEquals(7, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "op*ng?ok"}));
         assertTrue(instance.search());
-        assertEquals(5, instance.results.size());
+        assertEquals(6, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "\"op*n g?ok\""}));
         assertTrue(instance.search());
