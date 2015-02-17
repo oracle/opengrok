@@ -77,6 +77,10 @@
 #                                 4/8/16GB ! Lucene defaults to 8 threads.
 #                                 Increase JVM memory as noted using JAVA_OPTS
 #   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
+#   - OPENGROK_SUBVERSION_USERNAME name of the user that should be used for
+#                                 fetching the history from subversion
+#   - OPENGROK_SUBVERSION_PASSWORD password of the user that should be used for
+#                                 fetching the history from subversion
 #
 # Notes:
 #   (*) Any Non-Empty String will enable these options

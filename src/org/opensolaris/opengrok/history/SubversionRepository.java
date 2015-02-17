@@ -36,6 +36,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.util.Executor;
 import org.w3c.dom.Document;
@@ -54,6 +55,10 @@ import org.xml.sax.ext.DefaultHandler2;
  */
 public class SubversionRepository extends Repository {
     private static final long serialVersionUID = 1L;
+    
+    private static final String ENV_SVN_USERNAME = "OPENGROK_SUBVERSION_USERNAME";
+    private static final String ENV_SVN_PASSWORD = "OPENGROK_SUBVERSION_PASSWORD";
+    
     /** The property name used to obtain the client command for this repository. */
     public static final String CMD_PROPERTY_KEY =
         "org.opensolaris.opengrok.history.Subversion";
@@ -170,8 +175,8 @@ public class SubversionRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("log");
-        cmd.add("--trust-server-cert");
         cmd.add("--non-interactive");
+        cmd.addAll(getAuthCommandLineParams());
         cmd.add("--xml");
         cmd.add("-v");
         if (sinceRevision != null) {
@@ -300,7 +305,7 @@ public class SubversionRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         argv.add(cmd);
         argv.add("annotate");
-        argv.add("--trust-server-cert");
+        argv.addAll(getAuthCommandLineParams());
         argv.add("--non-interactive");
         argv.add("--xml");
         if (revision != null) {
@@ -357,7 +362,7 @@ public class SubversionRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("update");
-        cmd.add("--trust-server-cert");
+        cmd.addAll(getAuthCommandLineParams());
         cmd.add("--non-interactive");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -381,5 +386,20 @@ public class SubversionRepository extends Repository {
             working = checkCmd(cmd, "--help");
         }
         return working.booleanValue();
+    }
+
+    private List<String> getAuthCommandLineParams() {
+        List<String> result = new ArrayList<>();
+        String userName = System.getenv(ENV_SVN_USERNAME);
+        String password = System.getenv(ENV_SVN_PASSWORD);
+        if (userName != null && !userName.isEmpty() && password != null
+                && !password.isEmpty()) {
+            result.add("--username");
+            result.add(userName);
+            result.add("--password");
+            result.add(password);
+        }
+        result.add("--trust-server-cert");
+        return result;
     }
 }
