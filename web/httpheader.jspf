@@ -70,8 +70,7 @@ include file="pageconfig.jspf"
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.combo.css%>" />
 --%>
 <%
-/* RSS feed generation works for files only. */
-if (cfg.getPrefix().equals(Prefix.HIST_L) && !cfg.getPath().endsWith("/")) {
+if (cfg.getPrefix().equals(Prefix.HIST_L)) {
     out.write("<link rel=\"alternate\" type=\"application/rss+xml\" " +
         "title=\"RSS feed for " + cfg.getPath() + "\" " +
         "href=\"" + ctxPath + Prefix.RSS_P + cfg.getPath() + "\" />");
