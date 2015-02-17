@@ -118,10 +118,9 @@ include file="pageconfig.jspf"
                 }
         %></description>
         <pubDate><%
-                SimpleDateFormat df =
-                    new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-                Util.htmlize(df.format(entry.getDate()));
-        %></pubDate>
+            SimpleDateFormat df =
+                new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+        %><%= Util.htmlize(df.format(entry.getDate())) %></pubDate>
         <dc:creator><%= Util.htmlize(entry.getAuthor()) %></dc:creator>
     </item>
 <%
