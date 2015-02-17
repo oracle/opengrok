@@ -34,6 +34,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 
@@ -89,9 +90,19 @@ public final class QueryMatchers {
             getTerm((TermQuery) query);
         } else if (query instanceof PrefixQuery) {
             getPrefix((PrefixQuery) query);
+        } else if (query instanceof RegexpQuery) {
+            getRegexp((RegexpQuery) query);
         }
     }
-
+    
+    private void getRegexp(RegexpQuery query) {
+        if (useTerm(query.getField())) {
+            String term = query.toString(query.getField());
+            term = term.substring(1, term.length()-1); //trim / from /regexp/
+            matchers.add( new RegexpMatcher(term, true) );
+        }
+    }
+    
     private void getBooleans(BooleanQuery query) {
         BooleanClause[] queryClauses = query.getClauses();
         for (int i = 0; i < queryClauses.length; i++) {
@@ -145,7 +156,14 @@ public final class QueryMatchers {
      * Check whether a matcher should be created for a term.
      */
     private boolean useTerm(Term term) {
-        return fields.keySet().contains(term.field());
+        return useTerm(term.field());
+    }
+    
+    /**
+     * Check whether a matcher should be created for a term.
+     */
+    private boolean useTerm(String termField) {
+        return fields.keySet().contains(termField);
     }
 
     /**
