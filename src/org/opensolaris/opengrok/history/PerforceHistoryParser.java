@@ -30,6 +30,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,14 +88,14 @@ public class PerforceHistoryParser {
         cmd.add("p4");
         cmd.add("filelog");
         cmd.add("-lt");
-        cmd.add(file.getName() + ((rev == null) ? "" : "#"+rev));
+        cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
 
         return parseFileLog(executor.getOutputReader());
     }
 
-    private static final Pattern REVISION_PATTERN = Pattern.compile("#(\\d+) change \\d+ \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
+    private static final Pattern REVISION_PATTERN = Pattern.compile("#\\d+ change (\\d+) \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
     private static final Pattern CHANGE_PATTERN = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
 
     /**
@@ -118,7 +119,7 @@ public class PerforceHistoryParser {
                 matcher.reset(line);
                 if (matcher.find()) {
                     HistoryEntry entry = new HistoryEntry();
-                    entry.setRevision(matcher.group(1));
+                    entry.setRevision(matcher.group(1)); 
                     int year = Integer.parseInt(matcher.group(2));
                     int month = Integer.parseInt(matcher.group(3));
                     int day = Integer.parseInt(matcher.group(4));
@@ -169,6 +170,7 @@ public class PerforceHistoryParser {
                     entry.setDate(newDate(year, month, day, hour, minute, second));
                     entry.setAuthor(matcher.group(8));
                     entry.setActive(true);
+                    entry.appendMessage("CL" + matcher.group(1) + " ");
                 } else {
                     if (entry != null) {
                         /* ... an entry can also finish when some branch/edit entry is encountered */
