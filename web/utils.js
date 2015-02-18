@@ -442,8 +442,10 @@ function checkEnter(event) {
 
 // Intelligence Window code starts from here
 document.onmousemove = function(event) {
-    document.intelliWindowMouseX = event.clientX;
-    document.intelliWindowMouseY = event.clientY;
+    if (typeof event !== 'undefined') {
+        document.intelliWindowMouseX = event.clientX;
+        document.intelliWindowMouseY = event.clientY;
+    }
 };
 
 $(document).keypress(function(e) {
@@ -463,7 +465,7 @@ $(document).keypress(function(e) {
         var symbol = document.intelliWindow.symbol;
         var highlighted_symbols_with_same_name = $("a").filter(function(index) {
             return $(this).text() === symbol &&
-                $(this).css("background-color") === "rgb(255, 215, 0)"; // gold
+                $(this).css("background-color") === "gold";
         })
         if (highlighted_symbols_with_same_name.length === 0) {
             highlightSymbol(symbol);
@@ -589,7 +591,7 @@ function unhighlightSymbol(symbol) {
 
 function unhighlightAll() {
     $("a").filter(function(index) {
-        return $(this).css("background-color") === "rgb(255, 215, 0)"; // gold
+        return $(this).css("background-color") === "gold";
     }).css("background-color", "white");
     return false;
 }
