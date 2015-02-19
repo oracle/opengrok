@@ -56,17 +56,6 @@ include file="pageconfig.jspf"
     String path = cfg.getPath();
     String dtag = cfg.getDefineTagsIndex();
     String ForwardedHost = request.getHeader("X-Forwarded-Host");
-    String requestURL = request.getRequestURL().toString();
-    // Play nice in proxy environment by using hostname from the original
-    // request to construct the URLs.
-    // Will not work well if the scheme or port is different for proxied server
-    // and original server. Unfortunately the X-Forwarded-Host does not seem to
-    // contain the port number so there is no way around it.
-    if (ForwardedHost != null) {
-        String scheme = request.getScheme();
-        requestURL = scheme + "://" + ForwardedHost + request.getContextPath() +
-            Prefix.RSS_P + cfg.getPath();
-    }
     response.setContentType("text/xml");
 %><?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="<%= request.getContextPath()
@@ -76,7 +65,6 @@ include file="pageconfig.jspf"
     <title>Changes in <%= path.length() == 0
         ? "Cross Reference"
         : Util.htmlize(cfg.getResourceFile().getName()) %></title>
-    <link><%= Util.htmlize(requestURL) %></link>
     <description><%= Util.htmlize(dtag) %></description>
     <language>en</language>
     <copyright>Copyright 2015</copyright>
@@ -98,25 +86,54 @@ include file="pageconfig.jspf"
     %>
     <item>
         <title><%
-                /*
-                 * Newlines would result in HTML tags inside the 'title' which
-                 * causes the title to be displayed as 'null'.
-                 */
-                String replaced = entry.getMessage().replaceAll(newline, "|");
-        %><%= Util.htmlize(replaced) %></title>
-        <description><%
-                if (cfg.isDir()) {
-                    Set<String> files = entry.getFiles();
-                    if (files != null) {
-                        for (String ifile : files) {
-            %><%= Util.htmlize(ifile) %><%
-                        }
-                    }
-                } else {
-            %><%= Util.htmlize(path) %> - <%=
-                Util.htmlize(entry.getRevision()) %><%
+            /*
+             * Newlines would result in HTML tags inside the 'title' which
+             * causes the title to be displayed as 'null'. Print first line
+             * of the message. The whole message will be printed in description.
+             */
+            String replaced = entry.getMessage().split("\n")[0];
+        %><%= Util.htmlize(entry.getRevision()) %> - <%= Util.htmlize(replaced) %></title>
+        <link><%
+            // Play nice in proxy environment by using hostname from the original
+            // request to construct the URLs.
+            // Will not work well if the scheme or port is different for proxied server
+            // and original server. Unfortunately the X-Forwarded-Host does not seem to
+            // contain the port number so there is no way around it.
+            String requestURL = request.getScheme() + "://";
+            if (ForwardedHost != null) {
+                requestURL += ForwardedHost;
+            } else {
+                requestURL += request.getServerName();
+                String port = Integer.toString(request.getLocalPort());
+                if (!port.isEmpty()) {
+                    requestURL += ":" + port;
                 }
-        %></description>
+            }
+            requestURL += request.getContextPath();
+            requestURL += Prefix.HIST_L + cfg.getPath() + "#" + entry.getRevision();
+        %><%= Util.htmlize(requestURL) %></link>
+        <description><%
+            for (String e : entry.getMessage().split("\n")) {
+            %>
+            <%= Util.htmlize(e) %><%
+            }
+            %>
+
+            List of files:
+            <%
+            if (cfg.isDir()) {
+                Set<String> files = entry.getFiles();
+                if (files != null) {
+                    for (String ifile : files) {
+            %>
+            <%= Util.htmlize(ifile) %><%
+                    }
+                }
+            } else {
+            %><%= Util.htmlize(path) %><%
+            }
+        %>
+        </description>
         <pubDate><%
             SimpleDateFormat df =
                 new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
