@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -55,22 +56,37 @@ import org.opensolaris.opengrok.search.QueryBuilder;
  * that SCM systems that supports changesets consisting of multiple files should
  * implement their own HistoryReader!)
  *
+ * The sole purpose of this class is to produce history for generating RSS feed
+ * for directory changes.
+ *
  * @author Chandan
  * @author Lubos Kosco update for lucene 4.x
  */
 public class DirectoryHistoryReader {
 
-    private final Map<Date, Map<String, Map<String, SortedSet<String>>>> hash =
-            new LinkedHashMap<>();
+    // This is a giant hash constructed in this class.
+    // It maps date -> author -> (comment, revision) -> [ list of files ]
+    private final Map<Date, Map<String, Map<List<String>, SortedSet<String>>>> hash =
+            new LinkedHashMap<>(); // set in put()
     Iterator<Date> diter;
     Date idate;
     Iterator<String> aiter;
     String iauthor;
-    Iterator<String> citer;
-    String icomment;
-    HistoryEntry currentEntry;
-    History history;
+    Iterator<List<String>> citer;
+    List<String> icomment;
+    HistoryEntry currentEntry; // set in next()
+    History history; // set in the constructor
 
+    /**
+     * The main task of this method is to produce list of history entries
+     * for the specified directory and store them in @code history.
+     * This is done by searching the index to get recently changed files under
+     * in the directory tree under @code path and storing their histories
+     * in giant @code hash.
+     *
+     * @param path directory to generate history for
+     * @throws IOException when index cannot be accessed
+     */
     public DirectoryHistoryReader(String path) throws IOException {
         //TODO can we introduce paging here ???  this class is used just for rss.jsp !
         int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
@@ -78,11 +94,13 @@ public class DirectoryHistoryReader {
         IndexReader ireader = null;
         IndexSearcher searcher;
         try {
+            // Prepare for index search.
             String src_root = RuntimeEnvironment.getInstance().getSourceRootPath();
             ireader = IndexDatabase.getIndexReader(path);
             if (ireader == null) {
                 throw new IOException("Could not locate index database");
             }
+            // The search results will be sorted by date.
             searcher = new IndexSearcher(ireader);
             SortField sfield = new SortField(QueryBuilder.DATE, SortField.Type.STRING, true);
             Sort sort = new Sort(sfield);
@@ -90,14 +108,17 @@ public class DirectoryHistoryReader {
             Query query;
             ScoreDoc[] hits = null;
             try {
+                // Get files under given directory by searching the index.
                 query = qparser.parse(path);
                 TopFieldDocs fdocs = searcher.search(query, null, hitsPerPage * cachePages, sort);
                 fdocs = searcher.search(query, null, fdocs.totalHits, sort);
                 hits = fdocs.scoreDocs;
             } catch (ParseException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while parsing search query", e);
+                OpenGrokLogger.getLogger().log(Level.WARNING,
+                    "An error occured while parsing search query", e);
             }
             if (hits != null) {
+                // Get maximum 40 (why ? XXX) files which were changed recently.
                 for (int i = 0; i < 40 && i < hits.length; i++) {
                     int docId = hits[i].doc;
                     Document doc = searcher.doc(docId);
@@ -109,7 +130,8 @@ public class DirectoryHistoryReader {
                     try {
                         cdate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
                     } catch (java.text.ParseException ex) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get date for " + path, ex);
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "Could not get date for " + path, ex);
                         cdate = new Date();
                     }
                     int ls = rpath.lastIndexOf('/');
@@ -121,29 +143,35 @@ public class DirectoryHistoryReader {
                             File f = new File(src_root + rparent, rbase);
                             hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while getting history reader", e);
+                            OpenGrokLogger.getLogger().log(Level.WARNING,
+                                "An error occured while getting history reader", e);
                         }
                         if (hist == null) {
-                            put(cdate, "-", "", rpath);
+                            put(cdate, "", "-", "", rpath);
                         } else {
+                            // Put all history entries for this file into the giant hash.
                             readFromHistory(hist, rpath);
                         }
                     }
                 }
             }
 
+            // Now go through the giant hash and produce history entries from it.
             ArrayList<HistoryEntry> entries = new ArrayList<>();
             while (next()) {
                 entries.add(currentEntry);
             }
 
+            // This is why we are here. Store all the constructed history entries
+            // into history object.
             history = new History(entries);
         } finally {
             if (ireader != null) {
                 try {
                     ireader.close();
                 } catch (Exception ex) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while closing reader", ex);
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                        "An error occured while closing reader", ex);
                 }
             }
         }
@@ -153,31 +181,43 @@ public class DirectoryHistoryReader {
         return history;
     }
 
-    private void put(Date date, String author, String comment, String path) {
+    // Fill the giant hash with some data from one history entry.
+    private void put(Date date, String revision, String author, String comment, String path) {
         long time = date.getTime();
         date.setTime(time - (time % 3600000l));
 
-        Map<String, Map<String, SortedSet<String>>> ac = hash.get(date);
+        Map<String, Map<List<String>, SortedSet<String>>> ac = hash.get(date);
         if (ac == null) {
             ac = new HashMap<>();
             hash.put(date, ac);
         }
 
-        Map<String, SortedSet<String>> cf = ac.get(author);
+        Map<List<String>, SortedSet<String>> cf = ac.get(author);
         if (cf == null) {
             cf = new HashMap<>();
             ac.put(author, cf);
         }
 
-        SortedSet<String> fls = cf.get(comment);
+        // We are not going to modify the list so this is safe to do.
+        List<String> cr = new ArrayList<> ();
+        cr.add(comment);
+        cr.add(revision);
+        SortedSet<String> fls = cf.get(cr);
         if (fls == null) {
             fls = new TreeSet<>();
-            cf.put(comment, fls);
+            cf.put(cr, fls);
         }
 
         fls.add(path);
     }
 
+    /**
+     * Do one traversal step of the giant hash and produce history entry object
+     * and store it into @code currentEntry.
+     *
+     * @return true if history entry was successfully generated otherwise false
+     * @throws IOException
+     */
     private boolean next() throws IOException {
         if (diter == null) {
             diter = hash.keySet().iterator();
@@ -197,18 +237,27 @@ public class DirectoryHistoryReader {
 
         icomment = citer.next();
 
-        currentEntry = new HistoryEntry(null, idate, iauthor, null, icomment, true);
+        currentEntry = new HistoryEntry(icomment.get(1), idate, iauthor, null, icomment.get(0), true);
+        currentEntry.setFiles(hash.get(idate).get(iauthor).get(icomment));
 
         return true;
     }
 
+    /**
+     * Go through all history entries in @code hist for file @code path and
+     * store them in the giant hash.
+     *
+     * @param hist history to store
+     * @param rpath path of the file corresponding to the history
+     */
     private void readFromHistory(History hist, String rpath) {
         for (HistoryEntry entry : hist.getHistoryEntries()) {
             if (entry.isActive()) {
                 String comment = entry.getMessage();
                 String cauthor = entry.getAuthor();
                 Date cdate = entry.getDate();
-                put(cdate, cauthor, comment, rpath);
+                String revision = entry.getRevision();
+                put(cdate, revision, cauthor, comment, rpath);
                 break;
             }
         }
