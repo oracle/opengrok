@@ -80,7 +80,7 @@ public class CAnalyzerFactoryTest {
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
-        repository.create(CxxAnalyzerFactoryTest.class.getResourceAsStream(
+        repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
     }
 

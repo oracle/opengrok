@@ -40,7 +40,6 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.analysis.StreamSource;
-import org.opensolaris.opengrok.analysis.c.CxxAnalyzerFactoryTest;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.TestRepository;
@@ -81,7 +80,7 @@ public class JavaAnalyzerFactoryTest {
         ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
 
         repository = new TestRepository();
-        repository.create(CxxAnalyzerFactoryTest.class.getResourceAsStream(
+        repository.create(JavaAnalyzerFactoryTest.class.getResourceAsStream(
                 "/org/opensolaris/opengrok/index/source.zip"));
     }
 
