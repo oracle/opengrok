@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -54,13 +53,12 @@ public final class HistoryAnalyzer extends Analyzer {
    
     /**
      * Filters LowerCaseTokenizer with StopFilter.
-     * @param fieldName name of field for which to create components
-     * @param reader from which to read data
+     * @param fieldName name of field for which to create components     
      * @return components for this analyzer
      */
     @Override
-    protected TokenStreamComponents createComponents(String fieldName, Reader reader) {        
-        final PlainFullTokenizer plainfull = new PlainFullTokenizer(reader);
+    protected TokenStreamComponents createComponents(String fieldName) {        
+        final PlainFullTokenizer plainfull = new PlainFullTokenizer();
         //we are counting position increments, this might affect the queries later and need to be in sync, especially for highlighting of results
         return new TokenStreamComponents(plainfull, new StopFilter(plainfull, stopWords));
     }

@@ -50,8 +50,6 @@ import org.opensolaris.opengrok.analysis.JFlexScopeParser;
   private void decScope() { if (level > 0) { level--; if (level == 0) { scope.lineTo = yyline; } } }
 %}
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
-
 %state STRING COMMENT SCOMMENT QSTRING
 
 %%

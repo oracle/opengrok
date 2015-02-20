@@ -42,7 +42,8 @@ public class PathTokenizerTest {
     public void testIncrementToken() throws Exception {        
         String inputText = "alpha/beta/gamma/delta.ext";
         String[] expectedTokens = inputText.split("[/.]");
-        PathTokenizer tokenizer = new PathTokenizer(new StringReader(inputText));        
+        PathTokenizer tokenizer = new PathTokenizer();        
+        tokenizer.setReader(new StringReader(inputText));
         CharTermAttribute term = tokenizer.addAttribute(CharTermAttribute.class);
         OffsetAttribute offset = tokenizer.addAttribute(OffsetAttribute.class);
 

@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
@@ -34,7 +36,13 @@ public class PhpSymbolTokenizerTest {
 
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<String>();
-        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs", r).getTokenStream();
+        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs").getTokenStream();
+        try {
+            ts.setReader(r);
+        } catch (IOException ex) {
+            Logger.getLogger(PhpSymbolTokenizerTest.class.getName()).log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);            
+        }
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {

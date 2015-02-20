@@ -49,6 +49,7 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
 
     /**
      * Creates a new instance of abstract analyzer
+     * @param factory for which analyzer to create this
      */
     protected AbstractSourceCodeAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
@@ -74,12 +75,13 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
         super.analyze(doc, src, xrefOut);
     }
 
+    Reader dummy=null;
     @Override
-    public Analyzer.TokenStreamComponents createComponents(String fieldName, Reader reader) {
+    public Analyzer.TokenStreamComponents createComponents(String fieldName) {        
         if ("refs".equals(fieldName)) {
-            return new TokenStreamComponents(newSymbolTokenizer(reader));
+            return new TokenStreamComponents(newSymbolTokenizer(dummy));
         }
-        return super.createComponents(fieldName, reader);
+        return super.createComponents(fieldName);
     }
 
     /**

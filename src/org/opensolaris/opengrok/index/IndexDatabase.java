@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -75,7 +75,6 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.search.SearchEngine;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
@@ -84,7 +83,7 @@ import org.opensolaris.opengrok.web.Util;
  * one index database per project.
  *
  * @author Trond Norbye
- * @author Lubos Kosco , update for lucene 4.x
+ * @author Lubos Kosco , update for lucene 4.x , 5.x
  */
 public class IndexDatabase {
 
@@ -130,7 +129,7 @@ public class IndexDatabase {
      */
     public IndexDatabase(Project project) throws IOException {
         this.project = project;
-        lockfact = new SimpleFSLockFactory();
+        lockfact = SimpleFSLockFactory.INSTANCE;
         initialize();
     }
 
@@ -260,9 +259,9 @@ public class IndexDatabase {
             }            
 
             if (!env.isUsingLuceneLocking()) {
-                lockfact = NoLockFactory.getNoLockFactory();
+                lockfact = NoLockFactory.INSTANCE;
             }
-            indexDirectory = FSDirectory.open(indexDir, lockfact);            
+            indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);            
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
@@ -333,7 +332,7 @@ public class IndexDatabase {
 
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
+            IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(RuntimeEnvironment.getInstance().getRamBufferSize());
             writer = new IndexWriter(indexDirectory, iwc);
@@ -500,7 +499,7 @@ public class IndexDatabase {
         try {
             log.info("Optimizing the index ... ");
             Analyzer analyzer = new StandardAnalyzer();
-            IndexWriterConfig conf = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
+            IndexWriterConfig conf = new IndexWriterConfig(analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             wrt = new IndexWriter(indexDirectory, conf);
@@ -626,7 +625,7 @@ public class IndexDatabase {
         }
 
         try {
-            writer.addDocument(doc, fa);
+            writer.addDocument(doc);
         } catch (Throwable t) {
             cleanupResources(doc);
             throw t;
@@ -1090,7 +1089,7 @@ public class IndexDatabase {
             indexDir = new File(indexDir, p.getPath());
         }
         try {
-            FSDirectory fdir = FSDirectory.open(indexDir, NoLockFactory.getNoLockFactory());
+            FSDirectory fdir = FSDirectory.open(indexDir.toPath(), NoLockFactory.INSTANCE);
             if (indexDir.exists() && DirectoryReader.indexExists(fdir)) {
                 ret = DirectoryReader.open(fdir);
             }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.document;
 
@@ -63,11 +63,11 @@ public class TroffAnalyzer extends TextAnalyzer {
     }
 
     @Override
-    public TokenStreamComponents createComponents(String fieldName, Reader reader) {
+    public TokenStreamComponents createComponents(String fieldName) {        
         if ("full".equals(fieldName)) {
-            return new TokenStreamComponents(new TroffFullTokenizer(reader));
+            return new TokenStreamComponents(new TroffFullTokenizer());
         }
-        return super.createComponents(fieldName, reader);
+        return super.createComponents(fieldName);
     }
 
     /**
