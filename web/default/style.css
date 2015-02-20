@@ -55,7 +55,7 @@ input, button {
 for search and clear buttons will make it part of submit class ONLY */
 input.submit:hover, input.submit:active,
 button:hover, button:active {
-	color: #ffffff;        
+	color: #ffffff;
 }
 
 label {
@@ -122,7 +122,7 @@ label {
 #qtbl, #ptbl {
 	display: inline-block;
 	vertical-align: top;
-} 
+}
 
 #qtbl tr {
 	background: none; /* remove alternating colors */
@@ -153,7 +153,7 @@ label {
 
 #ptbl button {
 	font-size: small;
-}	
+}
 
 #ptbl button:first-of-type {
 	margin-left: 1em;
@@ -271,7 +271,7 @@ input.submit { /* start search button , clear button */
 	line-height: 1.25em;
 }
 
-#more b { /* highlight matches */ 
+#more b { /* highlight matches */
 	background-color: #ffff99;
 }
 
@@ -576,6 +576,24 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	display: none;
 }
 
+.intelli_window_style {
+       position: absolute;
+       width: 504px;
+       height: 300px;
+       overflow: auto;
+       z-index: 10;
+       border: solid 1px #c0c0c0;
+       background-color: rgba(233,255,219,0.75);
+       color: #000;
+       font-size: 12px;
+       font-family: monospace;
+       padding: 5px;
+}
+
+.intelli_window_style_hide {
+       display: none;
+}
+
 /* search result page */
 #results {
 }
@@ -587,7 +605,7 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 #results table {
 	border-collapse: collapse;
 	width: 100%;
-} 
+}
 
 #results .dir { /* directory row above matched files */
 	background-color: #c5d5a9;
@@ -624,7 +642,7 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	color: #000;
 }
 
-#results i { /* match type description (method, interface etc.) */ 
+#results i { /* match type description (method, interface etc.) */
 	color: green;
 	font-weight: bold;
 	padding-left: 1ex;

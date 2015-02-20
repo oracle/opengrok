@@ -344,7 +344,7 @@ public class JFlexXrefTest {
         xref.write(out);
 
         assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
-            + "<a href=\"/source/s?defs=cat\">cat</a> &lt;&lt; EOF"
+            + "<a href=\"/source/s?defs=cat\" onmouseover=\"onMouseOverSymbol('cat', 'undefined-in-file')\">cat</a> &lt;&lt; EOF"
             + "<span class=\"s\">\n"
             + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>"
             + "unterminated heredoc</span>",
