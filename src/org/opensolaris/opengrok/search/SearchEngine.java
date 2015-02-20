@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -54,6 +54,7 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
@@ -355,6 +356,11 @@ public class SearchEngine {
                 if (tagsField != null) {
                     tags = Definitions.deserialize(tagsField.binaryValue().bytes);
                 }
+                Scopes scopes = null;
+                IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
+                if (scopesField != null) {
+                    scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
+                }
                 int nhits = docs.size();
 
                 if (sourceContext != null) {
@@ -362,7 +368,7 @@ public class SearchEngine {
                         if (Genre.PLAIN == genre && (source != null)) {
                             hasContext = sourceContext.getContext(new InputStreamReader(new FileInputStream(source
                                     + filename)), null, null, null, filename,
-                                    tags, nhits > 100, false, ret);
+                                    tags, nhits > 100, false, ret, scopes);
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
                             try (Reader r = RuntimeEnvironment.getInstance().isCompressXref() ?
@@ -385,11 +391,11 @@ public class SearchEngine {
                             }
                         } else {
                             OpenGrokLogger.getLogger().log(Level.WARNING, "Unknown genre: {0} for {1}", new Object[]{genre, filename});
-                            hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret);
+                            hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret, scopes);
                         }
                     } catch (FileNotFoundException exp) {
                         OpenGrokLogger.getLogger().log(Level.WARNING, "Couldn''t read summary from {0} ({1})", new Object[]{filename, exp.getMessage()});
-                        hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret);
+                        hasContext |= sourceContext.getContext(null, null, null, null, filename, tags, false, false, ret, scopes);
                     }
                 }
                 if (historyContext != null) {

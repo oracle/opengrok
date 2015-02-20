@@ -175,9 +175,11 @@ Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CScopeParser.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
+        <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaScopeParser.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>
         <jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptXref.lex" destdir="${src.generatedsrc.dir}" inputstreamctor="false"/>

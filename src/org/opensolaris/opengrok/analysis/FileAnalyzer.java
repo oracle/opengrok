@@ -53,6 +53,7 @@ import org.opensolaris.opengrok.configuration.Project;
 public class FileAnalyzer extends Analyzer {
 
     protected Project project;
+    protected boolean scopesEnabled;
     private final FileAnalyzerFactory factory;
 
     /**
@@ -109,6 +110,10 @@ public class FileAnalyzer extends Analyzer {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+    
+    public void setScopesEnabled(boolean scopesEnabled) {
+        this.scopesEnabled = scopesEnabled;
     }
 
     /**

@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2010 Sun Microsystems, Inc.  All rights reserved.
+Copyright 2010, 2015 Sun Microsystems, Inc.  All rights reserved.
 Use is subject to license terms.
 
 Portions Copyright 2011 Jens Elkner.
@@ -50,7 +50,7 @@ file="mast.jsp"
     <pre><%
             sourceContext.getContext(new FileReader(cfg.getResourceFile()), out,
                 request.getContextPath() + Prefix.XREF_P, null, cfg.getPath(),
-                null, false, false, null);
+                null, false, false, null, null);
     %></pre>
 </div><%
         }

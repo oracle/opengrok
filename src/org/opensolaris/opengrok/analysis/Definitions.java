@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -150,17 +150,24 @@ public class Definitions implements Serializable {
         public final String type;
         /** The full line on which the definition occurs. */
         public final String text;
+        /** Scope of tag definition */
+        public final String scope;
 
-        protected Tag(int line, String symbol, String type, String text) {
+        protected Tag(int line, String symbol, String type, String text, String scope) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
             this.text = text;
+            this.scope = scope;
         }
     }
 
     public void addTag(int line, String symbol, String type, String text) {
-        Tag new_tag = new Tag(line, symbol, type, text);
+        addTag(line, symbol, type, text, null);
+    }
+
+    public void addTag(int line, String symbol, String type, String text, String scope) {
+        Tag new_tag = new Tag(line, symbol, type, text, scope);
         tags.add(new_tag);
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {

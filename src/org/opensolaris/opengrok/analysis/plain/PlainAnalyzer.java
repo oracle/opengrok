@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.plain;
 
@@ -33,11 +33,14 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
+import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 import org.opensolaris.opengrok.analysis.JFlexXref;
+import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Analyzer for plain text files Created on September 21, 2005
@@ -69,24 +72,57 @@ public class PlainAnalyzer extends TextAnalyzer {
     protected Reader getReader(InputStream stream) throws IOException {
         return ExpandTabsReader.wrap(super.getReader(stream), project);
     }
+    
+    /**
+     * Create new scope parser for given file type. Default implementation is none.
+     * @param reader
+     * @return new instance of scope parser
+     */
+    protected JFlexScopeParser newScopeParser(Reader reader) {
+        return null;
+    }
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        doc.add(new TextField("full", getReader(src.getStream())));
-        String fullpath = doc.get("fullpath");
+        doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
+        String fullpath = doc.get(QueryBuilder.FULLPATH);
         if (fullpath != null && ctags != null) {
             defs = ctags.doCtags(fullpath + "\n");
             if (defs != null && defs.numberOfSymbols() > 0) {
-                doc.add(new TextField("defs", new IteratorReader(defs.getSymbols())));
-                doc.add(new TextField("refs", getReader(src.getStream())));
+                doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
+                doc.add(new TextField(QueryBuilder.REFS, getReader(src.getStream())));
                 byte[] tags = defs.serialize();
-                doc.add(new StoredField("tags", tags));
+                doc.add(new StoredField(QueryBuilder.TAGS, tags));
+                
+                /*
+                 * Parse all scopes for file if we know how
+                 */
+                if (scopesEnabled) {
+                    addScopes(doc, src);
+                }
             }
         }
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 writeXref(in, xrefOut);
+            }
+        }
+    }
+    
+    private void addScopes(Document doc, StreamSource src) throws IOException {
+        JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
+        if (scopeParser != null) {
+            for (Definitions.Tag tag : defs.getTags()) {
+                if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
+                    scopeParser.parse(tag, getReader(src.getStream()));
+                }
+            }
+
+            Scopes scopes = scopeParser.getScopes();
+            if (scopes.size() > 0) {
+                byte[] scopesSerialized = scopes.serialize();
+                doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
             }
         }
     }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -46,6 +46,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
@@ -78,7 +79,7 @@ public final class Results {
         for (int i = startIdx; i < stopIdx; i++) {
             int docId = hits[i].doc;
             Document doc = searcher.doc(docId);
-            String rpath = doc.get("path");
+            String rpath = doc.get(QueryBuilder.PATH);
             String parent = rpath.substring(0, rpath.lastIndexOf('/'));
             ArrayList<Document> dirDocs = dirHash.get(parent);
             if (dirDocs == null) {
@@ -161,7 +162,7 @@ public final class Results {
             }
             out.write("</td></tr>");
             for (Document doc : entry.getValue()) {
-                String rpath = doc.get("path");
+                String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.URIEncodePath(rpath);
                 out.write("<tr>");
                 Util.writeHAD(out, sh.contextPath, rpathE, false);
@@ -174,9 +175,16 @@ public final class Results {
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
                     Definitions tags = null;
-                    IndexableField tagsField = doc.getField("tags");
+                    IndexableField tagsField = doc.getField(QueryBuilder.TAGS);
                     if (tagsField != null) {
                         tags = Definitions.deserialize(tagsField.binaryValue().bytes);
+                    }
+                    Scopes scopes;
+                    IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
+                    if (scopesField != null) {
+                        scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
+                    } else {
+                        scopes = new Scopes();
                     }
                     if (Genre.XREFABLE == genre && sh.summerizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
@@ -192,9 +200,10 @@ public final class Results {
                                 ? new FileReader(new File(sh.sourceRoot, rpath))
                                 : null;
                         sh.sourceContext.getContext(r, out, xrefPrefix, morePrefix, 
-                                rpath, tags, true, sh.builder.isDefSearch(), null);
+                                rpath, tags, true, sh.builder.isDefSearch(), null, scopes);
                     }
                 }
+
                 if (sh.historyContext != null) {
                     sh.historyContext.getContext(new File(sh.sourceRoot, rpath),
                             rpath, out, sh.contextPath);

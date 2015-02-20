@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 /**
@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.TreeMap;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.web.Util;
+import org.opensolaris.opengrok.analysis.Scopes;
+import org.opensolaris.opengrok.analysis.Scopes.Scope;
+
 %%
 
 %public
@@ -67,6 +70,7 @@ import org.opensolaris.opengrok.web.Util;
   Hit hit;
   StringBuilder sb;
   boolean alt;
+  Scopes scopes = null;
 
   /**
    * Set the writer that should receive all output
@@ -100,11 +104,11 @@ import org.opensolaris.opengrok.web.Util;
     }
 
 
-  public void reInit(char[] buf, int len, Writer out, String url, TreeMap<Integer, String[]> tags) {
-        reInit(new CharArrayReader(buf, 0, len), out, url, tags);
+  public void reInit(char[] buf, int len, Writer out, String url, TreeMap<Integer, String[]> tags, Scopes scopes) {
+        reInit(new CharArrayReader(buf, 0, len), out, url, tags, scopes);
   }
 
-  public void reInit(Reader in, Writer out, String url, TreeMap<Integer, String[]> tags) {
+  public void reInit(Reader in, Writer out, String url, TreeMap<Integer, String[]> tags, Scopes scopes) {
         yyreset(in);
 
         markedContents.setLength(0);
@@ -122,6 +126,7 @@ import org.opensolaris.opengrok.web.Util;
         if(this.tags == null) {
                 this.tags = new TreeMap<Integer, String[]>();
         }
+        this.scopes = scopes;
         prevHi = false;
   }
 
@@ -254,22 +259,22 @@ import org.opensolaris.opengrok.web.Util;
         }
 
         if (curLinePos == markedPos) {
-                        Integer ln = Integer.valueOf(markedLine);
-                        prevHi = tags.containsKey(ln);
+                Integer ln = Integer.valueOf(markedLine);
+                prevHi = tags.containsKey(ln);
+                prevLn = ln;
+                if (prevHi) {
                         prevLn = ln;
-                        if (prevHi) {
-                                prevLn = ln;
-                        }
+                }
 
-                        if (out != null) {
-                           out.write("<a class=\"s\" href=\"");
-                           out.write(url);
-                           String num = String.valueOf(markedLine);
-                           out.write(num);
-                           out.write("\"><span class=\"l\">");
-                           out.write(num);
-                           out.write("</span> ");
-                        }
+                if (out != null) {
+                    out.write("<a class=\"s\" href=\"");
+                    out.write(url);
+                    String num = String.valueOf(markedLine);
+                    out.write(num);
+                    out.write("\"><span class=\"l\">");
+                    out.write(num);
+                    out.write("</span> ");
+                }
         }
 
         if (out != null) {
@@ -320,6 +325,20 @@ import org.opensolaris.opengrok.web.Util;
                 }
 
                                 out.write("</a>");
+                                
+                                Scope scope = null;
+                                if (scopes != null) {
+                                    scope = scopes.getScope(markedLine);
+                                }
+                                if (scope != null && scope != scopes.getScope(-1)) {
+                                    out.write(" <a class=\"scope\" href=\"");
+                                    out.write(url);
+                                    out.write(String.valueOf(scope.lineFrom));
+                                    out.write("\">");
+                                    out.write(scope.getName());
+                                    out.write("()</a> ");
+                                }
+
                                 if (prevHi) {
                                         out.write(" <i> ");
                                         String[] desc = tags.remove(prevLn);
@@ -351,7 +370,13 @@ import org.opensolaris.opengrok.web.Util;
                 out.write(desc[1]);
                 out.write("</span> ");
                 out.write(Util.htmlize(desc[3]).replace(desc[0], "<b>" + desc[0] + "</b>"));
-                out.write("</a> <i> ");
+                out.write("</a> ");
+                if (desc[4] != null) {
+                    out.write("<i>");
+                    out.write(desc[4]);
+                    out.write("</i> ");
+                }
+                out.write("<i> ");
                 out.write(desc[2]);
                 out.write(" </i><br/>");
            }
@@ -395,6 +420,20 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                         if (out != null) {
                            printWithNum(rest, endPos, markedLine, false);
                            out.write("</a>");
+
+                           Scope scope = null;
+                           if (scopes != null) {
+                               scope = scopes.getScope(markedLine);
+                           }
+                           if (scope != null && scope != scopes.getScope(-1)) {
+                               out.write(" <a class=\"scope\" href=\"");
+                               out.write(url);
+                               out.write(String.valueOf(scope.lineFrom));
+                               out.write("\">");
+                               out.write(scope.getName());
+                               out.write("()</a> ");
+                           }
+
                            if(prevHi){
                                 out.write(" <i> ");
                                 String[] desc = tags.remove(prevLn);

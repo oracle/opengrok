@@ -125,6 +125,7 @@ public final class Configuration {
     private final Map<String, String> cmds;
     private int tabSize;
     private int command_timeout;
+    private boolean scopesEnabled;
     private static final Logger logger = Logger.getLogger(Configuration.class.getName());
     
     public static final double defaultRamBufferSize=16;
@@ -239,6 +240,7 @@ public final class Configuration {
         setSourceRoot(null);
         setDataRoot(null);
         setCommandTimeout(600); // 10 minutes
+        setScopesEnabled(true);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -748,6 +750,14 @@ public final class Configuration {
         this.chattyStatusPage = chattyStatusPage;
     }
 
+    public boolean isScopesEnabled() {
+        return scopesEnabled;
+    }
+    
+    public void setScopesEnabled(boolean scopesEnabled) {
+        this.scopesEnabled = scopesEnabled;
+    }
+    
     /**
      * Write the current configuration to a file
      *

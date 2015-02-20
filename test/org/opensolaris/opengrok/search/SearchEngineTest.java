@@ -244,6 +244,6 @@ public class SearchEngineTest {
         // file name search is case insensitive
         instance = new SearchEngine();
         instance.setFile("JaVa"); // should match java
-        assertEquals(6, instance.search());
+        assertEquals(7, instance.search());
     }
 }

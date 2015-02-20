@@ -816,6 +816,14 @@ public final class RuntimeEnvironment {
     public void setTagsEnabled(boolean tagsEnabled) {
         threadConfig.get().setTagsEnabled(tagsEnabled);
     }
+    
+    public boolean isScopesEnabled() {
+        return threadConfig.get().isScopesEnabled();
+    }
+    
+    public void setScopesEnabled(boolean scopesEnabled) {
+        threadConfig.get().setScopesEnabled(scopesEnabled);
+    }
 
     public Date getDateForLastIndexRun() {
         return threadConfig.get().getDateForLastIndexRun();
