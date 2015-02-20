@@ -69,7 +69,7 @@ public class DirectoryListing {
      *
      * @throws NullPointerException if a parameter is {@code null}
      */
-    private void PrintDateSize(Writer out, File child, Date modTime,
+    private void printDateSize(Writer out, File child, Date modTime,
                                Format dateFormatter)
             throws IOException {
         long lastm = modTime == null ? child.lastModified() : modTime.getTime();
@@ -134,7 +134,7 @@ public class DirectoryListing {
         if (path.length() != 0) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
             out.write("<b><a href=\"..\">..</a></b></td><td></td>");
-            PrintDateSize(out, dir.getParentFile(), null, dateFormatter);
+            printDateSize(out, dir.getParentFile(), null, dateFormatter);
             out.write("</tr>\n");
         }
 
@@ -173,7 +173,7 @@ public class DirectoryListing {
                 }
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + file, isDir);
-                PrintDateSize(out, child, modTimes.get(file), dateFormatter);
+                printDateSize(out, child, modTimes.get(file), dateFormatter);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, file);
                     if (briefDesc == null) {

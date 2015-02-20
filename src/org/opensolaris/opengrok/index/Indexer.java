@@ -47,7 +47,6 @@ import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
-import static org.opensolaris.opengrok.configuration.Project.getProject;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -105,7 +104,7 @@ public final class Indexer {
         boolean update = true;
         boolean optimizedChanged = false;
         ArrayList<String> zapCache = new ArrayList<>();
-        CommandLineOptions cmdOptions = new CommandLineOptions();        
+        CommandLineOptions cmdOptions = new CommandLineOptions();
 
         if (argv.length == 0) {
             System.err.println(cmdOptions.getUsage());
@@ -550,7 +549,7 @@ public final class Indexer {
                 env.setConfiguration(cfg, subFilesList);
 
                 /*
-                 * Add paths to directories under source root. If projects 
+                 * Add paths to directories under source root. If projects
                  * are enabled the path should correspond to a project because
                  * project path is necessary to correctly set index directory
                  * (otherwise the index files will end up in index data root
@@ -609,7 +608,7 @@ public final class Indexer {
                 System.err.println("Exception: " + e.getLocalizedMessage());
                 log.log(Level.SEVERE, "Unexpected Exception", e);
                 System.exit(1);
-            } 
+            }
             finally {
                 stats.report(log);
             }
@@ -636,7 +635,7 @@ public final class Indexer {
             List<String> subFiles,
             List<String> repositories,
             List<String> zapCache,
-            boolean listRepoPathes) throws IndexerException, IOException {
+            boolean listRepoPaths) throws IndexerException, IOException {
 
         if (env.getDataRootPath() == null) {
             throw new IndexerException("ERROR: Please specify a DATA ROOT path");
@@ -653,16 +652,16 @@ public final class Indexer {
             throw new IndexerException("Internal error, zapCache shouldn't be null");
         }
 
-        if (searchRepositories || listRepoPathes || !zapCache.isEmpty()) {
+        if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             log.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
             long time = (System.currentTimeMillis() - start) / 1000;
             log.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
-            if (listRepoPathes || !zapCache.isEmpty()) {
+            if (listRepoPaths || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
                 String prefix = env.getSourceRootPath();
-                if (listRepoPathes) {
+                if (listRepoPaths) {
                     if (repos.isEmpty()) {
                         System.out.println("No repositories found.");
                         return;
