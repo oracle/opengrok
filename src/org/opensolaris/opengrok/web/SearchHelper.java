@@ -142,7 +142,7 @@ public class SearchHelper {
      * the searcher used to open/search the index. Automatically set via
      * {@link #prepareExec(SortedSet)}.
      */
-    public IndexSearcher searcher;    
+    public IndexSearcher searcher;
     /**
      * list of docs which result from the executing the query
      */
@@ -164,7 +164,7 @@ public class SearchHelper {
     /**
      * the spellchecker object
      */
-    protected DirectSpellChecker checker;    
+    protected DirectSpellChecker checker;
     /**
      * projects to use to setup indexer searchers. Usually setup via
      * {@link #prepareExec(SortedSet)}.
@@ -197,7 +197,7 @@ public class SearchHelper {
 
     static {
         fileTypeDescription = new TreeMap<>();
-        
+
         fileTypeDescription.put("xml", "XML");
         fileTypeDescription.put("troff", "Troff");
         fileTypeDescription.put("elf", "ELF");
@@ -219,17 +219,18 @@ public class SearchHelper {
         fileTypeDescription.put("sql", "SQL");
         fileTypeDescription.put("plsql", "PL/SQL");
         fileTypeDescription.put("fortran", "Fortran");
+        fileTypeDescription.put("haskell", "Haskell");
     }
-    
+
     /**
      * Returns a set of file type descriptions to be used for a
      * search form.
      * @return Set of tuples with file type and description.
      */
-    public static Set<Map.Entry<String, String>> getFileTypeDescirptions() {
+    public static Set<Map.Entry<String, String>> getFileTypeDescriptions() {
         return fileTypeDescription.entrySet();
     }
-        
+
     File indexDir;
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
@@ -260,7 +261,7 @@ public class SearchHelper {
                 errorMsg = "No project selected!";
                 return this;
             }
-            this.projects = projects;            
+            this.projects = projects;
             if (projects.isEmpty()) {
                 //no project setup
                 FSDirectory dir = FSDirectory.open(indexDir.toPath());
@@ -271,7 +272,7 @@ public class SearchHelper {
                         FSDirectory.open(new File(indexDir, projects.first()).toPath());
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
             } else {
-                //more projects                                
+                //more projects
                 IndexReader[] subreaders = new IndexReader[projects.size()];
                 int ii = 0;
                 //TODO might need to rewrite to Project instead of
@@ -413,7 +414,7 @@ public class SearchHelper {
 		name=new String[]{projects.first()};
         } else {
             name = new String[projects.size()];
-            int ii = 0;            
+            int ii = 0;
             for (String proj : projects) {
                 name[ii++] = proj;
             }
@@ -424,7 +425,7 @@ public class SearchHelper {
 	IndexReader ir=null;
 	Term t;
         for (String proj : name) {
-            Suggestion s = new Suggestion(proj);	    
+            Suggestion s = new Suggestion(proj);
             try {
                 dir = FSDirectory.open(new File(indexDir, proj).toPath());
                 ir = DirectoryReader.open(dir);
@@ -466,7 +467,7 @@ public class SearchHelper {
 			}
                }
             }
-        }    
+        }
         return res;
     }
 

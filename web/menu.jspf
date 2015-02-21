@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -105,10 +105,10 @@ org.opensolaris.opengrok.web.Util"
     <tr>
         <td><label for="s5">Type</label></td>
         <td><select class="q" tabindex="6" name="type" id="type"><%
-                String selection = queryParams.getType();  
+                String selection = queryParams.getType();
                 %>
                 <option value="">Any</option><%
-                for (Map.Entry<String, String> d : SearchHelper.getFileTypeDescirptions()) {
+                for (Map.Entry<String, String> d : SearchHelper.getFileTypeDescriptions()) {
                     %>
                 <option value="<%= Util.formQuoteEscape(d.getKey()) %>"<%
                     if (d.getKey().equals(selection)) {
@@ -186,9 +186,9 @@ org.opensolaris.opengrok.web.Util"
     }
     %>
 
-    <p><input tabindex="9" class="submit" type="submit" value="Search"/> 
-    <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();" 
-	   type="button" value=" Clear "/> 
+    <p><input tabindex="9" class="submit" type="submit" value="Search"/>
+    <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();"
+	   type="button" value=" Clear "/>
     <button class="help" tabindex="11" onclick="window.open('help.jsp');">Help
     </button>
     </p>

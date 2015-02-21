@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
 
 CDDL HEADER START
 
 The contents of this file are subject to the terms of the
-Common Development and Distribution License (the "License").  
+Common Development and Distribution License (the "License").
 You may not use this file except in compliance with the License.
 
 See LICENSE.txt included in this distribution for the specific
@@ -25,15 +25,15 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <description>Builds, tests, and runs the project opengrok.</description>
     <property name="build.sysclasspath" value="ignore"/>
     <property file="${user.home}/config/ant/${ant.project.name}.properties" />
-    <property file="${user.home}/config/ant/global.properties" />    
+    <property file="${user.home}/config/ant/global.properties" />
 
     <import file="nbproject/build-impl.xml"/>
 
     <import file="nbproject/profiler-build-impl.xml"/>    <!--
 
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
+    There exist several targets which are by default empty and which can be
+    used for execution of your tasks. These targets are usually executed
+    before and after some main targets. They are:
 
       -pre-init:                 called before initialization of project properties
       -post-init:                called after initialization of project properties
@@ -59,12 +59,12 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             </obfuscate>
         </target>
 
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
+    For list of available properties check the imported
+    nbproject/build-impl.xml file.
 
 
     Another way to customize the build is by overriding existing main targets.
-    The targets of interest are: 
+    The targets of interest are:
 
       -init-macrodef-javac:     defines macro for javac compilation
       -init-macrodef-junit:     defines macro for junit execution
@@ -72,7 +72,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
       -init-macrodef-java:      defines macro for class execution
       -do-jar-with-manifest:    JAR building (if you are using a manifest)
       -do-jar-without-manifest: JAR building (if you are not using a manifest)
-      run:                      execution of project 
+      run:                      execution of project
       -javadoc-build:           Javadoc generation
       test-report:              JUnit report generation
 
@@ -84,10 +84,10 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             </exec>
         </target>
 
-    Notice that the overridden target depends on the jar target and not only on 
-    the compile target as the regular run target does. Again, for a list of available 
+    Notice that the overridden target depends on the jar target and not only on
+    the compile target as the regular run target does. Again, for a list of available
     properties which you can use, check the target you are overriding in the
-    nbproject/build-impl.xml file. 
+    nbproject/build-impl.xml file.
 
     -->
 
@@ -95,7 +95,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <property name="distname" value="opengrok"/>
     <property name="src.dir" location="src"/>
     <property name="src.generatedsrc.dir" location="generatedsrc"/>
-    
+
     <property name="findbugs.home" value="${user.home}/.ant/lib/findbugs"/>
     <property name="checkstyle.home" value="${user.home}/.ant/lib/checkstyle"/>
     <property name="pmd.home" value="${user.home}/.ant/lib/pmd"/>
@@ -111,27 +111,27 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <property name="test.razor" value="${test.repositories}/razor"/>
 
     <property name="mvn.repository" value="http://repo1.maven.org/maven2/"/>
-    
+
     <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
 
-    <target name="-exclude-client" unless="compileSystrayClient">	    
+    <target name="-exclude-client" unless="compileSystrayClient">
         <echo>JDK doesn't have java.awt.TrayIcon, excluding building of systray client ... </echo>
-        <property name="excludes" value="org/opensolaris/opengrok/management/client/**"/> 
+        <property name="excludes" value="org/opensolaris/opengrok/management/client/**"/>
     </target>
-    
+
     <property name="jflex-version" value="1.6.0"/>
-             
+
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
         <pathelement path="${java.class.path}"/>
         <pathelement path="lib"/>
-        <pathelement path="../lib"/>        
+        <pathelement path="../lib"/>
         <pathelement location="lib/jflex-${jflex-version}.jar"/>
     </path>
 
-    <path id="jacoco.lib.search.path">			         
+    <path id="jacoco.lib.search.path">
         <pathelement path="${jacoco.home}/lib"/>
-        <pathelement path="${java.class.path}"/>        
+        <pathelement path="${java.class.path}"/>
         <pathelement path="lib/jacoco/lib"/>
     </path>
 
@@ -161,7 +161,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             </not>
         </condition>
     </target>
- 
+
     <target name="download-jflex" depends="-check-jflex" if="jflex_not_downloaded">
         <get src="${mvn.repository}/de/jflex/jflex/${jflex-version}/jflex-${jflex-version}.jar"
         dest="lib/jflex-${jflex-version}.jar" verbose="true" usetimestamp="true"/>
@@ -170,7 +170,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <target name="jflex" depends="download-jflex">
         <taskdef classname="jflex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path" />
         <mkdir dir="${src.generatedsrc.dir}"/>
-        <macrodef name="run-jflex">            
+        <macrodef name="run-jflex">
             <attribute name="file"/>
             <sequential>
                 <jflex file="@{file}" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
@@ -180,14 +180,16 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex"/>
-	<run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CScopeParser.lex"/>
-	<run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangSymbolTokenizer.lex"/>
-	<run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangXref.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangSymbolTokenizer.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/haskell/HaskellSymbolTokenizer.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/haskell/HaskellXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex"/>
-	<run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaScopeParser.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptXref.lex"/>
@@ -206,7 +208,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/XMLXref.lex"/>        
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/XMLXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/SQLXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/PLSQLXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffXref.lex"/>
@@ -222,7 +224,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex"/>
     </target>
-    
+
     <property name="git" value="git"/>
 
     <!-- Get the id of the changeset we're building from using a
@@ -246,8 +248,8 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     </target>
     <target name="-check-is-archived-git-repo">
         <available property="build.from.archived.repo"
-	    file=".git_archival.txt"
-	     type="file"/>
+            file=".git_archival.txt"
+            type="file"/>
     </target>
 
     <!-- Get the id of the changeset we're building from by reading
@@ -276,20 +278,20 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             file="${build.classes.dir}/org/opensolaris/opengrok/info.properties">
             <entry  key="version" value="${version}"/>
             <entry  key="changeset" value="${changeset}"/>
-        </propertyfile>        
+        </propertyfile>
     </target>
 
     <property name="coverage.dir" value="${basedir}/coverage"/>
     <target name="-pre-compile" depends="jrcs,jflex,download-lucene"/>
-	<target name="eclipse" depends="-pre-compile" 
-		description="satisfy eclipse dependencies"/>
+    <target name="eclipse" depends="-pre-compile"
+        description="satisfy eclipse dependencies"/>
     <target name="-post-clean">
         <delete dir="${src.generatedsrc.dir}"/>
         <delete file="${manifest.file}"/>
         <delete dir="${coverage.dir}"/>
         <antcall target="-delete-generated-repository-files"/>
     </target>
-        
+
     <!--
         Create an empty manifest file so that nbproject/build-impl.xml
         notices that a manifest should be added to the jar file
@@ -300,7 +302,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <!-- injecting jacoco, too -->
-    <target name="-pre-init" depends="-touch-manifest, -exclude-client, -set-jacocoagent"/>                    
+    <target name="-pre-init" depends="-touch-manifest, -exclude-client, -set-jacocoagent"/>
 
     <!--
         Initialize a property holding a list of jar files on which
@@ -314,8 +316,8 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <flattenmapper/>
             <map from="" to="lib/"/>
         </pathconvert>
-    	<mkdir dir="${build.test.classes.dir}"/>
-    	<mkdir dir="${build.dir}/src/jsp"/>
+        <mkdir dir="${build.test.classes.dir}"/>
+        <mkdir dir="${build.dir}/src/jsp"/>
     </target>
 
     <!-- Update the manifest file with a classpath attribute -->
@@ -341,25 +343,25 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="." includes="${opengrok.lib.files}"/>
         </copy>
     </target>
-    
-    <path id="plainlib.search.path">        
+
+    <path id="plainlib.search.path">
         <pathelement path="lib"/>
         <pathelement path="../lib"/>
     </path>
-    
+
     <target name="-check-lucene" description="Check that lucene jar files are present">
         <available file="${lucene-core.jar}" type="file" property="lucene-core.jar.present">
             <filepath refid="plainlib.search.path"/>
-        </available> 
+        </available>
         <available file="${lucene-analyzers-common.jar}" type="file" property="lucene-analyzers-common.jar.present">
             <filepath refid="plainlib.search.path"/>
-        </available> 
+        </available>
         <available file="${lucene-queryparser.jar}" type="file" property="lucene-queryparser.jar.present">
             <filepath refid="plainlib.search.path"/>
-        </available> 
+        </available>
         <available file="${lucene-suggest.jar}" type="file" property="lucene-suggest.jar.present">
             <filepath refid="plainlib.search.path"/>
-        </available>         
+        </available>
         <condition property="lucene_not_downloaded">
             <not>
             <and>
@@ -369,13 +371,13 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
                 <isset property="lucene-suggest.jar.present"/>
              </and>
              </not>
-        </condition>         
+        </condition>
     </target>
-    
+
     <target name="download-lucene" depends="-check-lucene" if="lucene_not_downloaded">
         <delete>
          <fileset dir="lib">
-          <include name="lucene-*.jar"/>          
+          <include name="lucene-*.jar"/>
          </fileset>
         </delete>
         <get src="${mvn.repository}/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
@@ -395,7 +397,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
         </war>
         <echo message="Generating man page.."/>
-        <java classname="org.opensolaris.opengrok.index.CommandLineOptions" 
+        <java classname="org.opensolaris.opengrok.index.CommandLineOptions"
               output="${dist.dir}/opengrok.1" failonerror="true" fork="true">
             <classpath>
                 <pathelement location="dist/opengrok.jar"/>
@@ -411,9 +413,9 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <exec os="SunOS" executable="/usr/bin/pkgtrans" failonerror="true">
             <arg line="-s build ../dist/OSOLopengrok-${version}.pkg OSOLopengrok"/>
         </exec>
-	<exec os="SunOS" executable="platform/solaris/ips/create.sh" failonerror="true">
-	    <arg line="-v ${version}"/>
-	</exec>
+        <exec os="SunOS" executable="platform/solaris/ips/create.sh" failonerror="true">
+            <arg line="-v ${version}"/>
+        </exec>
     </target>
 
     <target name="dist" depends="jar">
@@ -446,18 +448,18 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="dist-src" depends="init">
-	<mkdir dir="${dist.dir}"/>
-	<echo message="Creating archive for tag ${version}"/>
-	<exec executable="${git}">
+        <mkdir dir="${dist.dir}"/>
+        <echo message="Creating archive for tag ${version}"/>
+        <exec executable="${git}">
             <arg value="archive"/>
-	    <!--<arg value="-v"/>-->
-	    <arg value="--prefix=${distname}-${version}-src/"/>
-	    <arg value="-o${dist.dir}/${distname}-${version}-src.zip"/>
-	    <arg value="${version}"/>
+        <!--<arg value="-v"/>-->
+            <arg value="--prefix=${distname}-${version}-src/"/>
+            <arg value="-o${dist.dir}/${distname}-${version}-src.zip"/>
+            <arg value="${version}"/>
         </exec>
-	<echo message="If above suceeds, output is in ${dist.dir}/${distname}-${version}-src.zip"/>
+        <echo message="If above suceeds, output is in ${dist.dir}/${distname}-${version}-src.zip"/>
     </target>
-    
+
     <target name="-check_findbugs" description="Check that findbugs jar files are present">
         <available file="findbugs.jar" type="file" property="findbugs.jar.present">
             <filepath refid="findbugs.lib.search.path"/>
@@ -469,7 +471,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         </available>
         <fail unless="findbugs-ant.jar.present" message="Please install Findbugs findbugs-ant.jar in ~/.ant/lib-directory (or in ant classpath) to run Findbugs, see README"/>
     </target>
-    
+
     <target name="findbugs" depends="jar, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate HTML output">
         <path id="findbugs.lib" >
             <pathelement location="${findbugs.home}/lib/findbugs.jar"/>
@@ -488,7 +490,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <class location="${dist.dir}/opengrok.jar" />
         </findbugs>
     </target>
-    
+
     <target name="findbugs-xml" depends="jar, -check_findbugs" description="Runs Findbugs on the OpenGrok source code and generate XML output">
         <path id="findbugs.lib" >
             <pathelement location="${findbugs.home}/lib/findbugs.jar"/>
@@ -507,14 +509,14 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <class location="${dist.dir}/opengrok.jar" />
         </findbugs>
     </target>
-    
+
     <target name="-check_checkstyle" description="Check that checkstyle jar files are present">
         <available file="checkstyle-all.jar" type="file" property="checkstyle.jar.present">
             <filepath refid="checkstyle.lib.search.path"/>
         </available>
         <fail unless="checkstyle.jar.present" message="Please install checkstyle-all.jar in lib-directory  (or in ant classpath) to run Checkstyle, see README."/>
     </target>
-    
+
     <target name="checkstyle" depends="compile, -check_checkstyle" description="Run checkstyle on OpenGrok source code">
         <taskdef resource="checkstyletask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
         <checkstyle config="checkstyle/style.xml" failOnViolation="false">
@@ -526,24 +528,24 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         </checkstyle>
     </target>
 
-    <target name="-check_pmd" description="Check that pmd jar files are present">        
+    <target name="-check_pmd" description="Check that pmd jar files are present">
         <available file="${pmd.home}/lib" type="dir" property="pmd-lib.present">
             <filepath refid="pmd.lib.search.path"/>
         </available>
-        <fail unless="pmd-lib.present" message="Please point pmd.home to proper directory to run PMD, see README."/>        
+        <fail unless="pmd-lib.present" message="Please point pmd.home to proper directory to run PMD, see README."/>
     </target>
 
     <path id="pmd.lib" >
-	<fileset followsymlinks="false" dir="${pmd.home}/lib">
-		<include name="*.jar"/>
-	</fileset>        
+        <fileset followsymlinks="false" dir="${pmd.home}/lib">
+            <include name="*.jar"/>
+        </fileset>
     </path>
 
     <target name="pmd" depends="compile, -check_pmd" description="Run PMD on OpenGrok source code">
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
         <mkdir dir="pmd"/>
         <pmd failuresPropertyName="pmd.num.warnings" rulesetfiles="tools/pmd_ruleset.xml">
-	    <sourcelanguage name="java" version="${javac.source}" />
+            <sourcelanguage name="java" version="${javac.source}" />
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
@@ -582,25 +584,25 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <available file="jacocoant.jar" type="file" property="jacocoant.jar.present">
             <filepath refid="jacoco.lib.search.path"/>
         </available>
-        <fail unless="jacocoant.jar.present" message="Please install jacocoant.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>                
-	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="jacoco.lib.search.path"/>
+        <fail unless="jacocoant.jar.present" message="Please install jacocoant.jar in lib-directory  (or in ant classpath) to run Jacoco, see README."/>
+        <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml" classpathref="jacoco.lib.search.path"/>
     </target>
-        
+
     <property name="jacoco_out" value="jacoco.exec"/>
-        
+
     <target name="-set-jacocoagent" if="jacoco">
-        <antcall target="-check_jacoco"/>        
+        <antcall target="-check_jacoco"/>
         <jacoco:agent property="jacocoagent" includes="org.opensolaris.*" excludes="org.opensolaris.opengrok.management.client.*:org.apache.*" destfile="${jacoco_out}"/>
-        <!-- Ugly hack to leverage IDE variable to inject jacoco 
+        <!-- Ugly hack to leverage IDE variable to inject jacoco
         this will most probably break once Netbeans folks will drop this variable!
         -->
         <property name="run.jvmargs.ide" value="${jacocoagent}" />
         <echo level="warn" message="Jacoco agent was enabled and injected to run.jvmargs.ide"/>
     </target>
 
-    <target name="jacocoreport" depends="-check_jacoco,-jacocoreport-without-test" />    
+    <target name="jacocoreport" depends="-check_jacoco,-jacocoreport-without-test" />
 
-    <target name="jacoco-code-coverage" depends="clean, test, jacocoreport" description="Make jacoco test code coverage reports based on the OpenGrok unit tests" if="jacoco"/>        
+    <target name="jacoco-code-coverage" depends="clean, test, jacocoreport" description="Make jacoco test code coverage reports based on the OpenGrok unit tests" if="jacoco"/>
 
     <target name="-jacocoreport-without-test"> <!--depends="-set-jacocoagent">        -->
         <jacoco:report>
@@ -614,14 +616,14 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
                     </fileset>
                 </classfiles>
                 <sourcefiles encoding="UTF-8">
-                    <fileset dir="src"/>                    
+                    <fileset dir="src"/>
                 </sourcefiles>
-            </structure>            
+            </structure>
             <html destdir="jacoco"/>
             <csv destfile="jacoco/report.csv"/>
             <xml destfile="jacoco/report.xml"/>
         </jacoco:report>
-    </target>    
+    </target>
 
     <target name="-check_emma" description="Check that emma jar files are present">
         <available file="emma.jar" type="file" property="emma.jar.present">
@@ -636,7 +638,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="emma-instrument" depends="compile, -check_emma" description="Instruments the source code for Emma code coverage analysis">
-	    <taskdef resource="emma_ant.properties"/>
+        <taskdef resource="emma_ant.properties"/>
         <mkdir dir="${coverage.dir}" />
         <emma enabled="true">
             <instr instrpath="build/classes"
@@ -645,18 +647,18 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
                        filter="+org.opensolaris.*,-org.opensolaris.opengrok.management.client.*"/>
         </emma>
     </target>
-    
+
     <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->
         <property name="test-sys-prop.emma.coverage.out.file" value="${coverage.dir}/coverage.ec"/>
         <property name="test-sys-prop.emma.coverage.out.merge" value="true"/>
     </target>
-    
+
     <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
 
     <target name="check_repositories_zip" description="check if repositores.zip was generated">
         <available
-	    file="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
-	    type="file" property="repos_exists">
+            file="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
+            type="file" property="repos_exists">
         </available>
         <condition property="repos_missing">
             <not>
@@ -672,23 +674,23 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <!-- Strange indentation in line two levels below to get newline correctly -->
         <concat destfile="${test.cvs.repo}/CVS/Root" append="no" force="yes" eol="unix">${basedir}/${test.cvs.root}/
         </concat>
-	<!-- Generate ZIP files used for unit testing git/.git are renamed -->
-	<copy todir="${test.git}/.git">
-		<fileset dir="${test.git}/git"/>
-	</copy>	
+        <!-- Generate ZIP files used for unit testing git/.git are renamed -->
+        <copy todir="${test.git}/.git">
+            <fileset dir="${test.git}/git"/>
+        </copy>
         <!-- Generate ZIP files used for unit testing mercurial/.hg and mercurial/.hgignore are renamed -->
         <copy todir="${test.hg}/.hg">
             <fileset dir="${test.hg}/hg"/>
         </copy>
         <copy file="${test.hg}/hgignore" tofile="${test.hg}/.hgignore"/>
-        
+
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
               basedir="${test.sources}"
               update="false"
               defaultexcludes="no"/>
-        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
+        <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
                 basedir="${test.repositories}"
-		excludes="mercurial/hg/**, mercurial/hgignore, git/git/**"
+                excludes="mercurial/hg/**, mercurial/hgignore, git/git/**"
                 update="false"
                 defaultexcludes="no"/>
 
@@ -703,7 +705,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <arg value="create"/>
             <arg value="${build.test.reposroots}/svn"/>
         </exec>
-      
+
         <!-- need absolute path for svn url -->
         <pathconvert property="test.svn.url">
             <map from="" to="file://"/>
@@ -724,33 +726,33 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <arg value="${test.svn.url}"/>
             <arg value="${build.test.reposroots}/svn-working"/>
         </exec>
-	<mkdir dir="${build.test.reposroots}/svn-working/parent"/>
-	<mkdir dir="${build.test.reposroots}/svn-working/parent/module1"/>
-	<mkdir dir="${build.test.reposroots}/svn-working/parent/module2"/>
-	<touch file="${build.test.reposroots}/svn-working/parent/module1/file1.txt"/>
-	<touch file="${build.test.reposroots}/svn-working/parent/module1/file2.txt"/>
-	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+        <mkdir dir="${build.test.reposroots}/svn-working/parent"/>
+        <mkdir dir="${build.test.reposroots}/svn-working/parent/module1"/>
+        <mkdir dir="${build.test.reposroots}/svn-working/parent/module2"/>
+        <touch file="${build.test.reposroots}/svn-working/parent/module1/file1.txt"/>
+        <touch file="${build.test.reposroots}/svn-working/parent/module1/file2.txt"/>
+        <exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
             <arg value="add"/>
             <arg value="parent"/>
         </exec>
-	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+        <exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
             <arg value="commit"/>
             <arg value="-m"/>
             <arg value="files in 2 modules"/>
         </exec>
-	<!-- move the file1 from module1 to module2, and commit to finish our test case -->
-	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+        <!-- move the file1 from module1 to module2, and commit to finish our test case -->
+        <exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
             <arg value="move"/>
             <arg value="parent/module1/file1.txt"/>
             <arg value="parent/module2"/>
         </exec>
-	<exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
+        <exec executable="svn" failifexecutionfails="false" dir="${build.test.reposroots}/svn-working">
             <arg value="commit"/>
             <arg value="-m"/>
             <arg value="move file1.txt from module1 to module2"/>
         </exec>
-	<delete dir="${build.test.reposroots}/svn-working"/>
-	<!-- end of unit test for issue #694 -->
+        <delete dir="${build.test.reposroots}/svn-working"/>
+        <!-- end of unit test for issue #694 -->
 
         <exec executable="svn" failifexecutionfails="false">
             <arg value="checkout"/>
@@ -758,7 +760,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <arg value="${test.svn}"/>
         </exec>
     </target>
-    
+
     <target name="-create-razor-repository">
         <delete dir="${test.razor}"/>
         <copy todir="${test.razor}/Razor-Simple">
@@ -782,15 +784,15 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <!-- clean up generated test repositories -->
     <target name="-delete-generated-repository-files">
         <delete dir="${test.hg}/.hg"/>
-	<delete file="${test.hg}/.hgignore"/>
-	<delete dir="${test.git}/.git"/>
+        <delete file="${test.hg}/.hgignore"/>
+        <delete dir="${test.git}/.git"/>
         <delete dir="${test.svn}"/>
         <delete dir="${test.razor}"/>
         <delete file="${test.cvs.repo}/CVS/Root"/>
     </target>
 
     <target name="emma-report" description="Analyze" depends="-check_emma">
-	    <taskdef resource="emma_ant.properties"/>
+        <taskdef resource="emma_ant.properties"/>
         <emma enabled="true" >
             <report sourcepath="${src.dir},${src.generatedsrc.dir}">
                 <!-- collect all EMMA data dumps (metadata and runtime): -->
@@ -801,7 +803,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             </report>
         </emma>
     </target>
-    
+
     <target name="emma-code-coverage" depends="clean, emma-instrument, test, emma-report" description="Make test code coverage reports based on the OpenGrok unit tests"/>
 
     <target name="jdepend" depends="compile" description="Run JDepend dependency checking">
@@ -813,7 +815,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <classpath>
                 <pathelement location="${user.home}/.ant/lib/jdepend/lib/jdepend.jar"/>
                 <pathelement path="${java.class.path}"/>
-            </classpath>            
+            </classpath>
         </java>
         <java classname="jdepend.textui.JDepend" failonerror="true" fork="true">
             <arg value="-file"/>
@@ -822,7 +824,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             <classpath>
                 <pathelement location="${user.home}/.ant/lib/jdepend/lib/jdepend.jar"/>
                 <pathelement path="${java.class.path}"/>
-            </classpath>            
+            </classpath>
         </java>
     </target>
 
@@ -849,7 +851,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     </target>
 
 
-	<!-- compile jsp - just to test -->
+    <!-- compile jsp - just to test -->
     <property name="debug" value="on" />
     <property name="jsdebug" value="off" />
     <property name="compress" value=".gz" />
@@ -858,10 +860,10 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <property name="deprecation" value="on" />
     <property name="listfiles" value="true" />
 
-    <property name="codebase"   	value="org/opensolaris/opengrok"/>
+    <property name="codebase"       value="org/opensolaris/opengrok"/>
     <property name="codebase.dot"   value="org.opensolaris.opengrok"/>
     <property name="web.src.dir" location="web" />
-	
+
     <patternset id="libs">
         <include name="*.jar" />
     </patternset>
@@ -874,7 +876,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <path id="classpath.j2ee">
         <fileset dir="${AS_HOME}/modules">
             <include name="javaee.jar" />
-			<!-- for the **/auth/* stuff, only -->
+            <!-- for the **/auth/* stuff, only -->
             <include name="appserv-rt.jar" />
             <include name="appserv-deployment-client.jar" />
         </fileset>
@@ -907,51 +909,51 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <mkdir dir="${build.dir}/src/jsp/${codebase}/jsp" />
         <uptodate property="jsp.not.changed">
             <srcfiles dir="${web.src.dir}" includes="**/*.jsp,**/*.jspf"/>
-            <mapper type="glob" from="*.jsp" 
-				to="${build.dir}/src/jsp/${codebase}/jsp/*_jsp.java"/>
+            <mapper type="glob" from="*.jsp"
+                to="${build.dir}/src/jsp/${codebase}/jsp/*_jsp.java"/>
         </uptodate>
     </target>
-	
+
     <target name="-jsp.generate" depends="-jsp.check" unless="jsp.not.changed">
         <taskdef name="jasper" classname="org.apache.jasper.JspC"
-			classpathref="classpath.jsp" />
+            classpathref="classpath.jsp" />
         <mkdir dir="${build.dir}/src/web"/>
-        <copy todir="${build.dir}/src/web">			
+        <copy todir="${build.dir}/src/web">
             <fileset dir="${web.src.dir}">
                 <include name="**/*.jsp"/>
                 <include name="**/*.jspf"/>
                 <include name="**/index_body.html"/>
             </fileset>
         </copy>
-        <jasper validateXml="false" 
-			outputdir="${build.dir}/src/jsp" 
-			javaencoding="UTF-8"
-			uriroot="${build.dir}/src/web"
-			package="${codebase.dot}.jsp"
-			compilersourcevm="${javac.source}"
-			compilertargetvm="${javac.target}"
-			smapsuppressed="false"
-			webxmlfragment="${build.dir}/src/servlets_web.xml"
-			/>
+        <jasper validateXml="false"
+            outputdir="${build.dir}/src/jsp"
+            javaencoding="UTF-8"
+            uriroot="${build.dir}/src/web"
+            package="${codebase.dot}.jsp"
+            compilersourcevm="${javac.source}"
+            compilertargetvm="${javac.target}"
+            smapsuppressed="false"
+            webxmlfragment="${build.dir}/src/servlets_web.xml"
+        />
         <loadfile property="wdd" srcfile="${build.dir}/src/servlets_web.xml"/>
         <copy file="${web.src.dir}/WEB-INF/web.xml" todir="${build.dir}"
-			overwrite="true">
+            overwrite="true">
             <filterset>
-                <filter token="generated servlet mappings" 
-					value=" generated start -->${wdd}&lt;!-- generated end " />
+                <filter token="generated servlet mappings"
+                    value=" generated start -->${wdd}&lt;!-- generated end " />
             </filterset>
         </copy>
     </target>
 
     <target name="compile.jsp" depends="compile,-jsp.generate"
-		description="--> compile java source code and jsp pages"
-	>
+        description="--> compile java source code and jsp pages"
+    >
         <javac srcdir="${build.dir}/src/jsp" destdir="${build.dir}/classes"
-			includes="**/*.java"
-			optimize="${optimize}" debug="${debug}" debuglevel="${debuglevel}"
-			deprecation="${deprecation}" classpathref="classpath.jsp"
-			encoding="UTF-8" listfiles="${listfiles}"
-			includeantruntime="false">
+            includes="**/*.java"
+            optimize="${optimize}" debug="${debug}" debuglevel="${debuglevel}"
+            deprecation="${deprecation}" classpathref="classpath.jsp"
+            encoding="UTF-8" listfiles="${listfiles}"
+            includeantruntime="false">
             <compilerarg value="-Xlint:deprecation,unchecked" compiler="javac${javac.source}"/>
         </javac>
     </target>

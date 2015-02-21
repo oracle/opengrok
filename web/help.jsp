@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
+Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
 Use is subject to license terms.
 
 Portions Copyright 2011 Jens Elkner.
@@ -57,7 +57,7 @@ include file="menu.jspf"
 <dfn><b>Examples:</b></dfn>
 <pre class="example">
 
-To find where setResourceMonitors is defined: 
+To find where setResourceMonitors is defined:
 <a href="search?q=&amp;defs=setResourceMonitors">defs:setResourceMonitors</a>
 
 To find files that use sprintf in usr/src/cmd/cmd-inet/usr.sbin/:
@@ -117,7 +117,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
 <ul>
     <li>to perform a regular expression search use the "<b>/</b>" enclosure,
         e.g.  /[mb]an/ - will search for man or for ban;<br>
-        NOTE: path field search escapes "/" by default, so it only supports 
+        NOTE: path field search escapes "/" by default, so it only supports
         regexps when the search string <u>starts and ends</u> with "/".<br>
         More info can be found on <a href="http://lucene.apache.org/core/4_5_1/core/org/apache/lucene/util/automaton/RegExp.html?is-external=true">lucene regexp page</a>.
     </li>
@@ -179,7 +179,7 @@ So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</
 <dd>History log comments.</dd>
 
 <dt>type</dt>
-<dd>Type of analyzer used to scope down to certain file types (e.g. just C sources).<br/>Current mappings: <%=SearchHelper.getFileTypeDescirptions().toString()%></dd>
+<dd>Type of analyzer used to scope down to certain file types (e.g. just C sources).<br/>Current mappings: <%=SearchHelper.getFileTypeDescriptions().toString()%></dd>
 
     </dl>
 
