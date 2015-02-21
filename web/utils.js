@@ -442,10 +442,9 @@ function checkEnter(event) {
 
 // Intelligence Window code starts from here
 document.onmousemove = function(event) {
-    if (typeof event !== 'undefined') {
-        document.intelliWindowMouseX = event.clientX;
-        document.intelliWindowMouseY = event.clientY;
-    }
+    event = event || window.event; // cover IE
+    document.intelliWindowMouseX = event.clientX;
+    document.intelliWindowMouseY = event.clientY;
 };
 
 $(document).keypress(function(e) {
@@ -464,8 +463,9 @@ $(document).keypress(function(e) {
     if (e.which === 50) { // '2' pressed
         var symbol = document.intelliWindow.symbol;
         var highlighted_symbols_with_same_name = $("a").filter(function(index) {
+            var bgcolor = $(this).css("background-color");
             return $(this).text() === symbol &&
-                $(this).css("background-color") === "gold";
+                (bgcolor === "rgb(255, 215, 0)" || bgcolor === "rgb(255,215,0)" || bgcolor === "#ffd700"); // gold.  the last two cover IE
         })
         if (highlighted_symbols_with_same_name.length === 0) {
             highlightSymbol(symbol);
@@ -577,7 +577,7 @@ function highlightSymbol(symbol) {
     var symbols_with_same_name = $("a").filter(function(index) {
         return $(this).text() === symbol;
     })
-    symbols_with_same_name.css("background-color", "gold");
+    symbols_with_same_name.css("background-color",  "rgb(255, 215, 0)"); // gold
     return false;
 }
 
@@ -585,14 +585,15 @@ function unhighlightSymbol(symbol) {
     var symbols_with_same_name = $("a").filter(function(index) {
         return $(this).text() === symbol;
     })
-    symbols_with_same_name.css("background-color", "white");
+    symbols_with_same_name.css("background-color", "rgb(255, 255, 255)"); // white
     return false;
 }
 
 function unhighlightAll() {
     $("a").filter(function(index) {
-        return $(this).css("background-color") === "gold";
-    }).css("background-color", "white");
+        var bgcolor = $(this).css("background-color");
+        return bgcolor === "rgb(255, 215, 0)" || bgcolor === "rgb(255,215,0)" || bgcolor === "#ffd700";  // gold.  the last two cover IE
+    }).css("background-color", "rgb(255, 255, 255)"); // white
     return false;
 }
 
