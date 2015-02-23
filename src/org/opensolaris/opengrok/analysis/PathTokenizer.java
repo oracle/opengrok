@@ -18,12 +18,11 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Arrays;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -59,8 +58,7 @@ public class PathTokenizer extends Tokenizer {
     private boolean dot = false;
     private static final char cdot = '.';
 
-    public PathTokenizer(Reader input) {
-        super(input);
+    public PathTokenizer() {        
         this.delimiter = DEFAULT_DELIMITER;        
     }
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -30,9 +30,11 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class PlainFullTokenizer
 %extends JFlexTokenizer
 %unicode
-%init{
-super(in);
-%init}
+%{
+public PlainFullTokenizer() {
+super();
+}
+%}
 %type boolean
 %eofval{
 this.finalOffset=zzEndRead;

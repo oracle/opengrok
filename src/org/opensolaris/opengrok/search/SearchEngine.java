@@ -120,8 +120,7 @@ public class SearchEngine {
     private final List<org.apache.lucene.document.Document> docs;
     private final char[] content = new char[1024 * 8];
     private String source;
-    private String data;
-    private static final boolean docsScoredInOrder = false;
+    private String data;    
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages = RuntimeEnvironment.getInstance().getCachePages();
     int totalHits = 0;
@@ -173,13 +172,13 @@ public class SearchEngine {
      * @throws IOException
      */
     private void searchSingleDatabase(File root, boolean paging) throws IOException {
-        IndexReader ireader = DirectoryReader.open(FSDirectory.open(root));
+        IndexReader ireader = DirectoryReader.open(FSDirectory.open(root.toPath()));
         searcher = new IndexSearcher(ireader);
-        collector = TopScoreDocCollector.create(hitsPerPage * cachePages, docsScoredInOrder);
+        collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
         if (!paging && totalHits > 0) {
-            collector = TopScoreDocCollector.create(totalHits, docsScoredInOrder);
+            collector = TopScoreDocCollector.create(totalHits);
             searcher.search(query, collector);
         }
         hits = collector.topDocs().scoreDocs;
@@ -202,7 +201,7 @@ public class SearchEngine {
         File droot = new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR);
         int ii = 0;
         for (Project project : root) {
-            IndexReader ireader = (DirectoryReader.open(FSDirectory.open(new File(droot, project.getPath()))));
+            IndexReader ireader = (DirectoryReader.open(FSDirectory.open(new File(droot, project.getPath()).toPath())));
             subreaders[ii++] = ireader;
         }
         MultiReader searchables = new MultiReader(subreaders, true);
@@ -213,11 +212,11 @@ public class SearchEngine {
         } else {
             searcher = new IndexSearcher(searchables);
         }
-        collector = TopScoreDocCollector.create(hitsPerPage * cachePages, docsScoredInOrder);
+        collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
         if (!paging && totalHits > 0) {
-            collector = TopScoreDocCollector.create(totalHits, docsScoredInOrder);
+            collector = TopScoreDocCollector.create(totalHits);
             searcher.search(query, collector);
         }
         hits = collector.topDocs().scoreDocs;
@@ -319,7 +318,7 @@ public class SearchEngine {
         //TODO check if below fits for if end=old hits.length, or it should include it
         if (end > hits.length & !allCollected) {
             //do the requery, we want more than 5 pages
-            collector = TopScoreDocCollector.create(totalHits, docsScoredInOrder);
+            collector = TopScoreDocCollector.create(totalHits);
             try {
                 searcher.search(query, collector);
             } catch (Exception e) { // this exception should never be hit, since search() will hit this before

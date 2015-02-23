@@ -19,7 +19,7 @@
 
 /*
  * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -263,12 +263,12 @@ public class SearchHelper {
             this.projects = projects;            
             if (projects.isEmpty()) {
                 //no project setup
-                FSDirectory dir = FSDirectory.open(indexDir);
+                FSDirectory dir = FSDirectory.open(indexDir.toPath());
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
             } else if (projects.size() == 1) {
                 // just 1 project selected
                 FSDirectory dir =
-                        FSDirectory.open(new File(indexDir, projects.first()));
+                        FSDirectory.open(new File(indexDir, projects.first()).toPath());
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
             } else {
                 //more projects                                
@@ -277,7 +277,7 @@ public class SearchHelper {
                 //TODO might need to rewrite to Project instead of
                 // String , need changes in projects.jspf too
                 for (String proj : projects) {
-                    FSDirectory dir = FSDirectory.open(new File(indexDir, proj));
+                    FSDirectory dir = FSDirectory.open(new File(indexDir, proj).toPath());
                     subreaders[ii++] = DirectoryReader.open(dir);
                 }
                 MultiReader searchables = new MultiReader(subreaders, true);
@@ -310,7 +310,7 @@ public class SearchHelper {
         } catch (FileNotFoundException e) {
 //          errorMsg = "Index database(s) not found: " + e.getMessage();
             errorMsg = "Index database(s) not found.";
-        } catch (Exception e) {
+        } catch (IOException e) {
             errorMsg = e.getMessage();
         }
         return this;
@@ -370,7 +370,7 @@ public class SearchHelper {
             }
         } catch (BooleanQuery.TooManyClauses e) {
             errorMsg = "Too many results for wildcard!";
-        } catch (Exception e) {
+        } catch (IOException | ClassNotFoundException e) {
             errorMsg = e.getMessage();
         }
         return this;
@@ -383,14 +383,12 @@ public class SearchHelper {
             return;
         }
         String[] toks = TABSPACE.split(term.text(), 0);
-        for (int j = 0; j < toks.length; j++) {
-         //TODO below seems to be case insensitive ... for refs/defs this is bad
-	    SuggestWord[] words=checker.suggestSimilar(
-		    new Term(term.field(),toks[j]), SPELLCHECK_SUGGEST_WORD_COUNT, ir, 
-		    SuggestMode.SUGGEST_ALWAYS);	    
-	    for (SuggestWord w: words) {
-              result.add(w.string);
-	    }
+        for (String tok : toks) {
+            //TODO below seems to be case insensitive ... for refs/defs this is bad
+            SuggestWord[] words = checker.suggestSimilar(new Term(term.field(), tok), SPELLCHECK_SUGGEST_WORD_COUNT, ir, SuggestMode.SUGGEST_ALWAYS);
+            for (SuggestWord w: words) {
+                result.add(w.string);
+            }
         }
     }
 
@@ -425,39 +423,39 @@ public class SearchHelper {
 	FSDirectory dir;
 	IndexReader ir=null;
 	Term t;
-	for (int idx = 0; idx < name.length; idx++) {
-            Suggestion s = new Suggestion(name[idx]);	    
+        for (String proj : name) {
+            Suggestion s = new Suggestion(proj);	    
             try {
-	        dir = FSDirectory.open(new File(indexDir, name[idx]));	    
-		ir = DirectoryReader.open(dir);
-		if (builder.getFreetext()!=null && 
-			!builder.getFreetext().isEmpty()) {
-		t=new Term(QueryBuilder.FULL,builder.getFreetext());
-                getSuggestion(t, ir, dummy);
-                s.freetext = dummy.toArray(new String[dummy.size()]);
-                dummy.clear();
-		}
-		if (builder.getRefs()!=null && !builder.getRefs().isEmpty()) {
-		t=new Term(QueryBuilder.REFS,builder.getRefs());
-                getSuggestion(t, ir, dummy);
-                s.refs = dummy.toArray(new String[dummy.size()]);
-                dummy.clear();
-		}
+                dir = FSDirectory.open(new File(indexDir, proj).toPath());
+                ir = DirectoryReader.open(dir);
+                if (builder.getFreetext()!=null &&
+                        !builder.getFreetext().isEmpty()) {
+                    t=new Term(QueryBuilder.FULL,builder.getFreetext());
+                    getSuggestion(t, ir, dummy);
+                    s.freetext = dummy.toArray(new String[dummy.size()]);
+                    dummy.clear();
+                }
+                if (builder.getRefs()!=null && !builder.getRefs().isEmpty()) {
+                    t=new Term(QueryBuilder.REFS,builder.getRefs());
+                    getSuggestion(t, ir, dummy);
+                    s.refs = dummy.toArray(new String[dummy.size()]);
+                    dummy.clear();
+                }
                 if (builder.getDefs()!=null && !builder.getDefs().isEmpty()) {
-		t=new Term(QueryBuilder.DEFS,builder.getDefs());
-                getSuggestion(t, ir, dummy);
-                s.defs = dummy.toArray(new String[dummy.size()]);
-                dummy.clear();
-		}
-		//TODO suggest also for path and history?
-                if ((s.freetext!=null && s.freetext.length > 0) || 
-			(s.defs!=null && s.defs.length > 0) || 
-			(s.refs!=null && s.refs.length > 0) ) {
+                    t=new Term(QueryBuilder.DEFS,builder.getDefs());
+                    getSuggestion(t, ir, dummy);
+                    s.defs = dummy.toArray(new String[dummy.size()]);
+                    dummy.clear();
+                }
+                //TODO suggest also for path and history?
+                if ((s.freetext!=null && s.freetext.length > 0) ||
+                        (s.defs!=null && s.defs.length > 0) ||
+                        (s.refs!=null && s.refs.length > 0) ) {
                     res.add(s);
                 }
-            } catch (IOException e) {
+            }catch (IOException e) {
                 log.log(Level.WARNING, "Got exception while getting "
-			+ "spelling suggestions: ", e);
+                        + "spelling suggestions: ", e);
             } finally {
                 if (ir != null) {
 			try {
@@ -467,8 +465,8 @@ public class SearchHelper {
 					+ "getting spelling suggestions: ", ex);
 			}
                }
-	    }	
-	}    
+            }
+        }    
         return res;
     }
 
