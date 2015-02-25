@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -224,7 +224,7 @@ done
 PKG pkgsend add file dist/opengrok.1 mode=0444 owner=root group=bin path=/usr/opengrok/man/man1/opengrok.1
 
 # install default configuration
-PKG pkgsend add depend fmri=pkg:/runtime/java type=require
+PKG pkgsend add depend fmri=pkg:/runtime/java/jre-7 type=require
 PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat type=require
 
 # Following line gets commented by that the developer/tool/exuberant-ctags has been removed from IPS
