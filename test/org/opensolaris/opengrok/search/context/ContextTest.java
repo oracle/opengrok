@@ -452,4 +452,45 @@ public class ContextTest {
             assertEquals(tags[i], hits.get(i).getTag());
         }
     }
+    
+    /**
+     * Test that regexp search has matched words in context.
+     * @throws ParseException 
+     */
+    @Test
+    public void regexpSearchContextTest() throws ParseException {
+        //regex match is returned in context
+        searchContextTestHelper("one two three", "/t.o|three/", "two");
+        //regex match is returned in context
+        searchContextTestHelper("one two three", "/t.o|three/", "three");
+        //not matching regexp will not return anything
+        searchContextTestHelper("one two three", "/z..z/", null);
+    }
+
+    /**
+     * Helper method for testing presence of expected words in search context
+     * 
+     * @param searchInText Context of document we are searching in.
+     * @param queryString Definition of search query.
+     * @param expectWordInContext Word expected to be found by 'queryString' in 'searchInText' and to be included in context. Set null if context is expected to be empty.
+     * @throws ParseException 
+     */
+    private void searchContextTestHelper(String searchInText, String queryString, String expectWordInContext) throws ParseException {
+        Reader in = new StringReader(searchInText);
+        StringWriter out = new StringWriter();
+
+        QueryBuilder qb = new QueryBuilder().setFreetext(queryString);
+        Context c = new Context(qb.build(), qb.getQueries());
+
+        boolean match =
+                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
+     
+        if( expectWordInContext == null ) {
+            assertFalse("Match found", match);
+        } else {            
+            assertTrue("No match found", match);
+            String s = out.toString();
+            assertTrue("Searched word '"+expectWordInContext+"' not in context", s.contains("<b>"+expectWordInContext+"</b>"));
+        }
+    } 
 }
