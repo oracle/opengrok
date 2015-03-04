@@ -169,7 +169,6 @@ public class PerforceHistoryParser {
                     entry.setDate(newDate(year, month, day, hour, minute, second));
                     entry.setAuthor(matcher.group(8));
                     entry.setActive(true);
-                    entry.appendMessage("CL" + matcher.group(1) + " ");
                 } else {
                     if (entry != null) {
                         /* ... an entry can also finish when some branch/edit entry is encountered */
