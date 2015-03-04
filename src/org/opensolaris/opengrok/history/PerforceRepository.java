@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -74,7 +74,7 @@ public class PerforceRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(this.cmd);
         cmd.add("annotate");
-        cmd.add("-qc");
+        cmd.add("-qci");
         cmd.add(file.getPath() + getRevisionCmd(rev));
 
         Executor executor = new Executor(cmd, file.getParentFile());
@@ -216,10 +216,9 @@ public class PerforceRepository extends Repository {
      * @return rev number formatted for P4 command-line.
      */
     public static String getRevisionCmd(String rev) {
-        if(rev == null) {
+        if(rev == null || "".equals(rev)) {
             return "";
         }
-        //TODO "#", split cl-#rev
-        return "@" + rev; //identify with changelist id
+        return "@" + rev;
     }
 }
