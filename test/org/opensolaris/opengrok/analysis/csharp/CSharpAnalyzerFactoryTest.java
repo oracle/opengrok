@@ -96,7 +96,7 @@ public class CSharpAnalyzerFactoryTest {
      */
     @Test
     public void testScopeAnalyzer() throws Exception {
-        String path = "D:/projects/GitHub/OpenGrok/testdata/sources/csharp/Sample.cs"; //repository.getSourceRoot() + "/csharp/Sample.cs";
+        String path = repository.getSourceRoot() + "/csharp/Sample.cs";
         File f = new File(path);
         if (!(f.canRead() && f.isFile())) {
             fail("csharp testfile " + f + " not found");
