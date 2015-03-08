@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -35,8 +35,10 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.util.BytesRef;
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
@@ -279,7 +281,8 @@ public class AnalyzerGuru {
             string_ft_stored_nanalyzed_norms));
         doc.add(new Field(QueryBuilder.FULLPATH, file.getAbsolutePath(),
             string_ft_nstored_nanalyzed_norms));
-
+        doc.add(new SortedDocValuesField(QueryBuilder.FULLPATH, new BytesRef(file.getAbsolutePath())) );
+        
         try {
             HistoryReader hr = HistoryGuru.getInstance().getHistoryReader(file);
             if (hr != null) {
@@ -290,6 +293,7 @@ public class AnalyzerGuru {
             OpenGrokLogger.getLogger().log(Level.WARNING, "An error occurred while reading history: ", e);
         }    
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
+        doc.add(new SortedDocValuesField(QueryBuilder.DATE, new BytesRef(date) ));
         if (path != null) {
             doc.add(new TextField(QueryBuilder.PATH, path, Store.YES));
             Project project = Project.getProject(path);
