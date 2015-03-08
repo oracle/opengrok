@@ -148,6 +148,7 @@ public final class HistoryGuru {
             }
             if (hist != null && ret != null) {
                 Set<String> revs = ret.getRevisions();
+                int revsMatched = 0;
              // !!! cannot do this because of not matching rev ids (keys)
                 // first is the most recent one, so we need the position of "rev"
                 // until the end of the list
@@ -161,6 +162,8 @@ public final class HistoryGuru {
                         ret.addDesc(short_rev, "changeset: " + he.getRevision()
                                 + "\nsummary: " + he.getMessage() + "\nuser: "
                                 + he.getAuthor() + "\ndate: " + he.getDate());
+                        ret.addFileVersion(short_rev, revs.size() - revsMatched); //history entries are coming from recent to older, file version should be from oldest to newer
+                        revsMatched++;
                     }
                 }
             }
