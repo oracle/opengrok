@@ -249,7 +249,7 @@ public class Ctags {
 
                 final String type =
                         inher == null ? kind : kind + " in " + inher;
-                addTag(defs, seenSymbols, lnum, def, type, match, inher);
+                addTag(defs, seenSymbols, lnum, def, type, match, inher, signature);
                 if (signature != null) {
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
                     String[] args = signature.split(",");
@@ -264,7 +264,7 @@ public class Ctags {
                              if (name.length()>0) {
                               //log.fine("Param Def = "+ string);
                               addTag(defs, seenSymbols, lnum, name, "argument",
-                                     def.trim() + signature.trim(), null);
+                                     def.trim() + signature.trim(), null, signature);
                               break;
                              }
                             }
@@ -283,13 +283,13 @@ public class Ctags {
      * Add a tag to a {@code Definitions} instance.
      */
     private void addTag(Definitions defs, Interner<String> seenSymbols,
-            String lnum, String symbol, String type, String text, String scope) {
+            String lnum, String symbol, String type, String text, String scope, String signature) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
         defs.addTag(Integer.parseInt(lnum), seenSymbols.intern(symbol.trim()),
             seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
-            scope == null ? null : seenSymbols.intern(scope.trim()));
+            scope == null ? null : seenSymbols.intern(scope.trim()), signature);
     }
 }

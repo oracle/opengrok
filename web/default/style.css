@@ -694,3 +694,20 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 }
 /* ############### end of footer ############## */
 
+div.scope-head {
+    display: block;
+}
+
+div.scope-body {
+    display: block;
+}
+
+span.fold-icon {
+    border: 1px solid black;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+span.scope-signature {
+    display: none;
+}

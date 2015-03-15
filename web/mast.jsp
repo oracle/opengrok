@@ -81,6 +81,46 @@ include file="httpheader.jspf"
     %>';document.annotate = <%= cfg.annotate() %>;
     document.domReady.push(function() {domReadyMast();});
     document.pageReady.push(function() { pageReadyMast();});
+
+    function fold(id) {
+        var e = document.getElementById(id + "_fold");
+        var i = document.getElementById(id + "_fold_icon");
+        
+        if (e.style.display === "") {
+            e.style.display = "none";
+            i.innerHTML = "+";
+        } else {
+            e.style.display = "";
+            i.innerHTML = "-";
+        }
+    }
+
+    function on_scroll() {
+        var cnt = document.getElementById("content");
+        var scope = document.getElementById("scope");
+        var y = cnt.getBoundingClientRect().top + 2;
+
+        scope.innerHTML = "";
+        //for (i=0; i<20; i++) {
+            //var c = document.elementFromPoint(15, y+i);
+            var c = document.elementFromPoint(15, y+1);
+            if (c.className === "l" || c.className === "hl") {
+                prev = c;
+                var par = c.parentNode;
+                while( par.className !== 'scope-body') {
+                    par = par.parentNode;
+                    if (par === null) {
+                        return ;
+                    }
+                }
+                var head = par.previousSibling;
+                var sig = head.children[0];
+                scope.innerHTML = "<a href='#" + head.id + "'>" + head.id + sig.innerHTML + "</a>";
+                return ;
+            }
+        //}
+    }
+
 /* ]]> */</script>
 <div id="page">
     <div id="whole_header">
@@ -162,7 +202,8 @@ include file="pageheader.jspf"
 </div>
         </form>
     </div>
-<div id="content">
+<div style="width: 100%; text-align: center;" id="scope">SCOPE</div>
+<div id="content" onscroll="on_scroll()" >
 <%
 }
 /* ---------------------- mast.jsp end --------------------- */

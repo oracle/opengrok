@@ -36,6 +36,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 import org.opensolaris.opengrok.analysis.Definitions.Tag;
+import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -53,6 +54,8 @@ public abstract class JFlexXref {
     public Annotation annotation;
     public Project project;
     protected Definitions defs;
+    protected Scopes scopes;
+    private boolean scopeOpen = false;
     /**
      * EOF value returned by yylex().
      */
@@ -178,6 +181,10 @@ public abstract class JFlexXref {
     public void setDefs(Definitions defs) {
         this.defs = defs;
     }
+    
+    public void setScopes(Scopes scopes) {
+        this.scopes = scopes;
+    }
 
     protected void appendProject() throws IOException {
         if (project != null) {
@@ -228,6 +235,12 @@ public abstract class JFlexXref {
         startNewLine();
         while (yylex() != yyeof) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
+        }
+
+        // terminate scopes
+        if (scopeOpen) {
+            out.write("</div>");
+            scopeOpen = false;
         }
     }
 
@@ -333,10 +346,52 @@ public abstract class JFlexXref {
      * @throws IOException on error when writing the xref
      */
     protected void startNewLine() throws IOException {
+        String iconId = null;
         int line = getLineNumber() + 1;
+        boolean skipNl = false;
         setLineNumber(line);
+        
+        if (scopes != null) {
+            Scope prevScope = scopes.getScope(line-1);
+            Scope newScope = scopes.getScope(line);            
+
+            if (prevScope != newScope) {
+                if (scopeOpen) {
+                    scopeOpen = false;
+                    out.write("</div>");
+                    skipNl = true;
+                }
+
+                if (newScope != scopes.GLOBAL_SCOPE) {
+                    out.write("<div id='");
+                    out.write(newScope.getName());
+                    out.write("' class='scope-head'><span class='scope-signature'>");
+                    out.write(newScope.signature);
+                    out.write("</span>");
+                    scopeOpen = true;
+                    iconId = newScope.getName() + "_fold_icon";
+                    skipNl = true;
+                }      
+            } else if (newScope != scopes.GLOBAL_SCOPE && line == newScope.lineFrom+1) {
+                if (scopeOpen) {
+                    out.write("</div>");
+                }
+                
+                scopeOpen = true;
+                out.write("<div id='");
+                out.write(newScope.getName());
+                out.write("_fold' class='scope-body'>");
+                skipNl = true;
+            }
+        }
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-            getProjectPostfix(false));
+            getProjectPostfix(false), skipNl);
+        
+        if (iconId != null) {
+            out.write("<span class='fold-icon' onclick='fold(this.parentNode.id)' id='");
+            out.write(iconId);
+            out.write("'>-</span>");
+        }
     }
 
     /**
