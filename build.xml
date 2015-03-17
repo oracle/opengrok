@@ -181,7 +181,9 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex"/>
 	<run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CScopeParser.lex"/>	
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CScopeParser.lex"/>
+	<run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangSymbolTokenizer.lex"/>
+	<run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex"/>
