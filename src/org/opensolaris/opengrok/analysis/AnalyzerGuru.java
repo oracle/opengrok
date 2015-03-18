@@ -51,6 +51,7 @@ import org.opensolaris.opengrok.analysis.csharp.CSharpAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.data.IgnorantAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.data.ImageAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.document.TroffAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.erlang.ErlangAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.ELFAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
@@ -145,6 +146,7 @@ public class AnalyzerGuru {
             new CSharpAnalyzerFactory(),
             new VBAnalyzerFactory(),
             new CxxAnalyzerFactory(),
+            new ErlangAnalyzerFactory(),
             new ShAnalyzerFactory(),
             PlainAnalyzerFactory.DEFAULT_INSTANCE,
             new UuencodeAnalyzerFactory(),
