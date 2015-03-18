@@ -27,6 +27,10 @@ The following table lists all currently (as of OpenGrok pre-0.12) supported form
 |0.XXX
 |
 |-
+|Erlang
+|0.13
+|
+|-
 |Fortran
 |0.XXX
 |"F","F90","INC"
