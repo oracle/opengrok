@@ -29,7 +29,7 @@ The following table lists all currently (as of OpenGrok pre-0.12) supported form
 |-
 |Erlang
 |0.13
-|
+|"ERL", "HRL", "ESCRIPT"
 |-
 |Fortran
 |0.XXX
