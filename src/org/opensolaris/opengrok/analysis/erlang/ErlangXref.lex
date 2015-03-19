@@ -18,7 +18,11 @@
  */
 
 /*
- * Cross reference a Erlang file
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ */
+
+/*
+ * Cross reference an Erlang file
  */
 
 package org.opensolaris.opengrok.analysis.erlang;

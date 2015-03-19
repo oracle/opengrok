@@ -18,6 +18,10 @@
  */
 
 /*
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ */
+
+/*
  * Gets Erlang symbols - ignores comments, strings, keywords
  */
 

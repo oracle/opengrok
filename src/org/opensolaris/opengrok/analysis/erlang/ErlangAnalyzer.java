@@ -16,6 +16,11 @@
  *
  * CDDL HEADER END
  */
+
+/*
+ * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.opensolaris.opengrok.analysis.erlang;
 
 import java.io.IOException;
