@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -331,7 +331,7 @@ public final class HistoryGuru {
             if (file.getName().equals(".opengrok_skip_history")) {
                 log.log(Level.INFO, "Skipping history cache creation for "
                         + file.getParentFile().getAbsolutePath()
-                        + " and it's subdirectories");
+                        + " and its subdirectories");
                 return;
             }
         }
@@ -347,7 +347,7 @@ public final class HistoryGuru {
                     + file + "', missing access rights.", iae);
             }
             if (repository == null) {
-                // Not a repository, search it's sub-dirs
+                // Not a repository, search its sub-dirs
                 if (file.isDirectory() && !ignoredNames.ignore(file)) {
                     File subFiles[] = file.listFiles();
                     if (subFiles == null) {

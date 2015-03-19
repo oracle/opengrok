@@ -93,6 +93,7 @@ public class Ctags {
             command.add("--langmap=sql:+.pls"); // RFE #19208
             command.add("--langmap=sql:+.pld"); // RFE #19208
             command.add("--langmap=sql:+.pks"); // RFE #19208 ?
+
             command.add("--langdef=scala"); // below is bug 61 to get full scala support
             command.add("--langmap=scala:.scala");
             command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*(private|protected)?\\s*class\\s+([a-zA-Z0-9_]+)/\\4/c,classes/");
@@ -106,15 +107,28 @@ public class Ctags {
             command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*var\\s+([a-zA-Z0-9_]+)/\\3/l,variables/");
             command.add("--regex-scala=/^\\s*package\\s+([a-zA-Z0-9_.]+)/\\1/p,packages/");
 
+            command.add("--langdef=haskell");
+            command.add("--langmap=haskell:.hs.hsc");
+            command.add("--regex-haskell=/^\\s*class\\s+([a-zA-Z0-9_]+)/\\1/c,classes/");
+            command.add("--regex-haskell=/^\\s*data\\s+([a-zA-Z0-9_]+)/\\1/t,types/");
+            command.add("--regex-haskell=/^\\s*newtype\\s+([a-zA-Z0-9_]+)/\\1/t,types/");
+            command.add("--regex-haskell=/^\\s*type\\s+([a-zA-Z0-9_]+)/\\1/t,types/");
+            command.add("--regex-haskell=/^([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\1/f,functions/");
+            command.add("--regex-haskell=/\\s+([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\1/f,functions/");
+            command.add("--regex-haskell=/^(let|where)\\s+([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\2/f,functions/");
+            command.add("--regex-haskell=/\\s+(let|where)\\s+([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\2/f,functions/");
+
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
                 log.log(Level.INFO, "Adding extra options to ctags");
                 command.add("--options=" + CTagsExtraOptionsFile);
             }
 
+            StringBuilder sb = new StringBuilder();
             for (String s : command) {
-                commandStr += s + " ";
+                sb.append(s).append(" ");
             }
+            commandStr = sb.toString();
             log.log(Level.FINE, "Executing ctags command [" + commandStr + "]");
 
             processBuilder = new ProcessBuilder(command);

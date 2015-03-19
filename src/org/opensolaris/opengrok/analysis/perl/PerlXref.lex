@@ -2,7 +2,7 @@
  * CDDL HEADER START
  *
  * The contents of this file are subject to the terms of the
- * Common Development and Distribution License (the "License").  
+ * Common Development and Distribution License (the "License").
  * You may not use this file except in compliance with the License.
  *
  * See LICENSE.txt included in this distribution for the specific
@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -72,7 +72,7 @@ PodEND = "=cut"
 }
 
 ("$"|"@"|"%"|"&") {Identifier} {
-  //we ignore keywords if the identifier starts with one of variable chars ...
+  //we ignore keywords if the identifier starts with a sigil ...
     String id = yytext().substring(1);
     out.write(yytext().substring(0,1));
     writeSymbol(id, null, yyline);
@@ -146,7 +146,7 @@ PodEND = "=cut"
  [^\n]      { writeUnicodeChar(yycharat(0)); }
 }
 
-<STRING, SCOMMENT, STRING, QSTRING, POD> {
+<STRING, SCOMMENT, QSTRING, POD> {
 {Path}
         { out.write(Util.breadcrumbPath(urlPrefix+"path=",yytext(),'/'));}
 

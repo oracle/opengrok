@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -69,7 +69,7 @@ public class DirectoryListing {
      *
      * @throws NullPointerException if a parameter is {@code null}
      */
-    private void PrintDateSize(Writer out, File child, Date modTime,
+    private void printDateSize(Writer out, File child, Date modTime,
                                Format dateFormatter)
             throws IOException {
         long lastm = modTime == null ? child.lastModified() : modTime.getTime();
@@ -99,14 +99,14 @@ public class DirectoryListing {
      *  Gets filtered by {@link IgnoredNames}.
      * @return a possible empty list of README files included in the written
      *  listing.
-     * @throws org.opensolaris.opengrok.history.HistoryException when we cannot 
+     * @throws org.opensolaris.opengrok.history.HistoryException when we cannot
      * get result from scm
      *
      * @throws java.io.IOException when any I/O problem
      * @throws NullPointerException if a parameter except <var>files</var>
      *  is {@code null}
      */
-    public List<String> listTo(String contextPath, File dir, Writer out, 
+    public List<String> listTo(String contextPath, File dir, Writer out,
             String path, List<String> files)
             throws HistoryException, IOException {
         // TODO this belongs to a jsp, not here
@@ -134,7 +134,7 @@ public class DirectoryListing {
         if (path.length() != 0) {
             out.write("<tr><td><p class=\"'r'\"/></td><td>");
             out.write("<b><a href=\"..\">..</a></b></td><td></td>");
-            PrintDateSize(out, dir.getParentFile(), null, dateFormatter);
+            printDateSize(out, dir.getParentFile(), null, dateFormatter);
             out.write("</tr>\n");
         }
 
@@ -173,7 +173,7 @@ public class DirectoryListing {
                 }
                 out.write("</td>");
                 Util.writeHAD(out, contextPath, path + file, isDir);
-                PrintDateSize(out, child, modTimes.get(file), dateFormatter);
+                printDateSize(out, child, modTimes.get(file), dateFormatter);
                 if (offset > 0) {
                     String briefDesc = desc.getChildTag(parentFNode, file);
                     if (briefDesc == null) {

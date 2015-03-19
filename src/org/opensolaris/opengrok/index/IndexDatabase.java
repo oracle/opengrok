@@ -367,7 +367,7 @@ public class IndexDatabase {
                 
                 try {
                     if (numDocs > 0) {
-                        uidIter = terms.iterator(uidIter);                        
+                        uidIter = terms.iterator(uidIter);
                         TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
                         if (stat==TermsEnum.SeekStatus.END) {
                             uidIter=null;
