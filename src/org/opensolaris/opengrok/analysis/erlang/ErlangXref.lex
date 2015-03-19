@@ -52,8 +52,8 @@ EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_@]+
 
 IncludeDirective = (include|include_lib)
-PPDirective = (define|undef|ifdef|else|endif)
-Directive = (module|author|compile|export|import)
+//PPDirective = (define|undef|ifdef|else|endif)
+//Directive = (module|author|compile|export|import)
 
 // ErlChar = \$ASCII
 ErlInt = ([12][0-9]|3[0-6]|[1-9])#[0-9]+
