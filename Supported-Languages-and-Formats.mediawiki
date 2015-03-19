@@ -43,6 +43,11 @@ The following table lists all currently (as of OpenGrok pre-0.12) supported form
 |0.3.1
 |"GZ"
 |-
+|-
+|Haskell
+|0.13
+|"HS", "HSC"
+|-
 |Java
 |0.XXX
 |"JAVA"
