@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -60,12 +60,14 @@ public class FileAnalyzerFactory {
     private final String contentType;
     /** The genre for files recognized by this kind of analyzer. */
     private final Genre genre;
+    /** The user friendly name of this analyzer. */
+    private final String name;
 
     /**
      * Create an instance of {@code FileAnalyzerFactory}.
      */
     FileAnalyzerFactory() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null,null);
     }
 
     /**
@@ -80,12 +82,13 @@ public class FileAnalyzerFactory {
      * @param contentType content type for this analyzer (possibly {@code null})
      * @param genre the genre for this analyzer (if {@code null}, {@code
      * Genre.DATA} is used)
+     * @param name user friendly name of this analyzer (or null if it shouldn't be listed)
      */
     protected FileAnalyzerFactory(
             String[] names, String[] prefixes, String[] suffixes,
             String[] magics, Matcher matcher, String contentType,
-            Genre genre) {
-        cachedAnalyzer = new ThreadLocal<FileAnalyzer>();
+            Genre genre, String name) {
+        cachedAnalyzer = new ThreadLocal<>();
         this.names = asList(names);
         this.prefixes = asList(prefixes);
         this.suffixes = asList(suffixes);
@@ -97,6 +100,7 @@ public class FileAnalyzerFactory {
         }
         this.contentType = contentType;
         this.genre = (genre == null) ? Genre.DATA : genre;
+        this.name = name;
     }
 
     /**
@@ -179,6 +183,14 @@ public class FileAnalyzerFactory {
     }
 
     /**
+     * The user friendly name of this analyzer
+     * @return a genre
+     */
+    public final String getName() {
+        return name;
+    }
+    
+    /**
      * Get an analyzer. If the same thread calls this method multiple times on
      * the same factory object, the exact same analyzer object will be returned
      * each time. Subclasses should not override this method, but instead
@@ -218,6 +230,7 @@ public class FileAnalyzerFactory {
          * @param in the input stream from which the full file can be read
          * @return an analyzer factory if the contents match, or {@code null}
          * if they don't match any factory known by this matcher
+         * @throws java.io.IOException
          */
         FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException;

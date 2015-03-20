@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.sh;
 
@@ -33,6 +33,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class ShAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Shell script";
+    
     private static final String[] NAMES = {
         "GNUMAKEFILE", "MAKEFILE"
     };
@@ -64,7 +67,7 @@ public class ShAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ShAnalyzerFactory() {
-        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(NAMES, PREFIXES, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

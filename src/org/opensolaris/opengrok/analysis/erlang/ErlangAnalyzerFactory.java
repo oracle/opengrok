@@ -35,6 +35,8 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class ErlangAnalyzerFactory extends FileAnalyzerFactory {
 
+    private static final String name = "Erlang";
+    
     private static final String[] SUFFIXES = {
         "ERL", "HRL", "ESCRIPT"
     };
@@ -43,7 +45,7 @@ public class ErlangAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public ErlangAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

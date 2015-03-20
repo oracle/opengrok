@@ -20,6 +20,7 @@
 /*
  * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
+
 package org.opensolaris.opengrok.analysis;
 
 import java.io.File;
@@ -126,7 +127,9 @@ public class AnalyzerGuru {
     public static final String dummyS = "";
     public static final FieldType string_ft_stored_nanalyzed_norms = new FieldType(StringField.TYPE_STORED);
     public static final FieldType string_ft_nstored_nanalyzed_norms = new FieldType(StringField.TYPE_NOT_STORED);
-
+   
+    private static final Map<String, String> fileTypeDescriptions = new TreeMap<>();
+    
     /*
      * If you write your own analyzer please register it here
      */
@@ -169,10 +172,20 @@ public class AnalyzerGuru {
         for (FileAnalyzerFactory analyzer : analyzers) {
             registerAnalyzer(analyzer);
         }
+        
+        for (FileAnalyzerFactory analyzer : analyzers) {
+            if (analyzer.getName()!=null && !analyzer.getName().isEmpty()) {
+            fileTypeDescriptions.put(analyzer.getAnalyzer().getFileTypeName(), analyzer.getName());
+            }
+        }                
 
         string_ft_stored_nanalyzed_norms.setOmitNorms(false);
         string_ft_nstored_nanalyzed_norms.setOmitNorms(false);
 
+    }
+    
+    public static Map<String, String> getfileTypeDescriptions() {        
+        return fileTypeDescriptions;
     }
 
     public List<FileAnalyzerFactory> getAnalyzerFactories() {
@@ -244,6 +257,7 @@ public class AnalyzerGuru {
 
     /**
      * Get the default Analyzer.
+     * @return default FileAnalyzer
      */
     public static FileAnalyzer getAnalyzer() {
         return DEFAULT_ANALYZER_FACTORY.getAnalyzer();
@@ -606,6 +620,7 @@ public class AnalyzerGuru {
      * @param sig a sequence of bytes from which to remove the BOM
      * @return a string without the byte-order marker, or <code>null</code> if
      * the string doesn't start with a BOM
+     * @throws java.io.IOException
      */
     public static String stripBOM(byte[] sig) throws IOException {
         for (Map.Entry<String, byte[]> entry : BOMS.entrySet()) {

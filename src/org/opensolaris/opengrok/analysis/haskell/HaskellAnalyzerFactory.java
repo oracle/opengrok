@@ -39,15 +39,17 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class HaskellAnalyzerFactory extends FileAnalyzerFactory {
 
+    private static final String name = "Haskell";
+    
     private static final String[] SUFFIXES = {
         "HS",
         "HSC"
     };
     private static final String[] MAGICS = {
     };
-
+    
     public HaskellAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

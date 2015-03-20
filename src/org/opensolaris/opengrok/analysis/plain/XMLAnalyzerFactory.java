@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -34,6 +34,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class XMLAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "XML";
+    
     private static final String[] SUFFIXES = {
         "HTML", "HTM", "XML", "ASPX", "ASCX", "ASAX", "MASTER", "XAML"
     };
@@ -45,7 +48,7 @@ public class XMLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public XMLAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/html", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/html", Genre.PLAIN, name);
     }
 
     @Override

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.archive;
@@ -29,12 +28,15 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 public class TarAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Tar";
+    
     private static final String[] SUFFIXES = {
         "TAR"
     };
 
     public TarAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, null, Genre.XREFABLE);
+        super(null, null, SUFFIXES, null, null, null, Genre.XREFABLE, name);
     }
 
     @Override

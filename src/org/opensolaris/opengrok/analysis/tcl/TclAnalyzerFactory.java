@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.tcl;
@@ -34,6 +34,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class TclAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Tcl";
+    
     private static final String[] SUFFIXES = {
         "TCL",
         "TM",
@@ -46,7 +49,7 @@ public class TclAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public TclAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

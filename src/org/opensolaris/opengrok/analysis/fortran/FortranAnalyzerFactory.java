@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.fortran;
 
@@ -34,13 +34,15 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class FortranAnalyzerFactory extends FileAnalyzerFactory {
 
+    private static final String name = "Fortran";
+    
     private static final String[] SUFFIXES = {
         "F",
         "F90",
         "INC",};
-
+     
     public FortranAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.lisp;
@@ -34,6 +34,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class LispAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Lisp";
+    
     private static final String[] SUFFIXES = {
         "LISP",
         "LSP",
@@ -42,7 +45,7 @@ public class LispAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public LispAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override
