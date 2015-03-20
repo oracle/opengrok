@@ -52,6 +52,7 @@ Coverity scan: <a href="https://scan.coverity.com/projects/2627">
        src="https://scan.coverity.com/projects/2627/badge.svg"/>
 </a>
 
-Inspecting indexes: [http://code.google.com/p/luke/ Luke] 
+Inspecting indexes: [http://code.google.com/p/luke/ Luke] - this site is old, we maintain a fork
+ [ https://github.com/tarzanek/luke tarzanek/Luke ] and downloads can be found on [ https://java.net/projects/opengrok/downloads java.net/opengrok/downloads]
 
 (get the latest luke jar from our downloads: [https://java.net/projects/opengrok/downloads java.net Downloads])
