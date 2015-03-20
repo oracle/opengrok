@@ -52,7 +52,6 @@ Coverity scan: <a href="https://scan.coverity.com/projects/2627">
        src="https://scan.coverity.com/projects/2627/badge.svg"/>
 </a>
 
-Inspecting indexes: [http://code.google.com/p/luke/ Luke] - this site is abandoned, we maintain a fork on
- [http://github.com/tarzanek/luke tarzanek Luke] 
+Inspecting indexes: [http://code.google.com/p/luke/ Luke] - this site is abandoned, we maintain a fork on [http://github.com/tarzanek/luke tarzanek/Luke] 
 
 (get the latest luke jar from our downloads: [https://java.net/projects/opengrok/downloads java.net Downloads])
