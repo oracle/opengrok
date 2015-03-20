@@ -47,6 +47,11 @@ Note that there is an experimental maven build system being implemented. If you 
 
 Travis CI: <a href="https://travis-ci.org/OpenGrok/OpenGrok">OpenGrok on Travis <img src="https://travis-ci.org/OpenGrok/OpenGrok.png?branch=master"/></a>
 
+Coverity scan: <a href="https://scan.coverity.com/projects/2627">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/2627/badge.svg"/>
+</a>
+
 Inspecting indexes: [http://code.google.com/p/luke/ Luke] 
 
 (get the latest luke jar from our downloads: [https://java.net/projects/opengrok/downloads java.net Downloads])
