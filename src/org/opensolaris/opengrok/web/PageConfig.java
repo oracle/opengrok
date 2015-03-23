@@ -189,6 +189,7 @@ public final class PageConfig {
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
             try {
+                // Get input stream for both older and newer file.
                 for (int i = 0; i < 2; i++) {
                     File f = new File(srcRoot + filepath[i]);
                     in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
@@ -200,12 +201,17 @@ public final class PageConfig {
                     }
                 }
 
-                if (data.genre == null) {
+                /*
+                 * If the genre of the older revision cannot be determined,
+                 * (this can happen if the file was empty), try with newer
+                 * version.
+                 */
+                for (int i = 0; i < 2 && data.genre == null; i++) {
                     try {
-                        data.genre = AnalyzerGuru.getGenre(in[0]);
+                        data.genre = AnalyzerGuru.getGenre(in[i]);
                     } catch (IOException e) {
                         data.errorMsg = "Unable to determine the file type: "
-                                + Util.htmlize(e.getMessage());
+                            + Util.htmlize(e.getMessage());
                     }
                 }
 
