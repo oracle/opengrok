@@ -61,16 +61,8 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9][0-9_]*)([eE][+-]?[0-9]+)?
 %%
 <YYINITIAL> {
     {Identifier} {
-        // this won't work well for identifiers like a'b' but very few people would do that anyway
         String id = yytext();
-        String prime = "";
-        int i = id.indexOf("'");
-        if (i != -1) {
-            id = id.substring(0, i);
-            prime = id.substring(i);
-        }
         writeSymbol(id, Consts.kwd, yyline);
-        out.write(prime);
     }
     {Number}     { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
     \"           { yybegin(STRING); out.write("<span class=\"s\">\"");                         }

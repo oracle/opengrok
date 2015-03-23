@@ -46,7 +46,7 @@ return false;
 %eofval}
 %char
 
-Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
+Identifier = [a-zA-Z_] [a-zA-Z0-9_']*
 
 %state STRING CHAR COMMENT BCOMMENT
 
@@ -68,12 +68,12 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 
 <STRING> {
     \"   { yybegin(YYINITIAL); }
-    \\\" {}
+    \\\" {}     // escaped double quote - don't do anything
 }
 
-<CHAR> {
+<CHAR> {    // we don't need to consider the case where prime is part of an identifier since it is handled above
     \'   { yybegin(YYINITIAL); }
-    \\\' {}
+    \\\' {}     // escaped single quote - don't do anything
 }
 
 <COMMENT> {

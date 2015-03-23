@@ -30,10 +30,6 @@ public class PhpSymbolTokenizerTest {
         this.analyzer = analFact.getAnalyzer();
     }
 
-    private String[] getTermsFor(String s) {
-        return getTermsFor(new StringReader(s));
-    }
-
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<String>();
         JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs").getTokenStream();
@@ -59,7 +55,7 @@ public class PhpSymbolTokenizerTest {
     @Test
     public void basicTest() {
         String s = "<?php foobar eval $eval 0sdf _ds˙d";
-        String[] termsFor = getTermsFor(s);
+        String[] termsFor = getTermsFor(new StringReader(s));
         assertArrayEquals(
                 new String[]{"foobar", "eval", "sdf", "_ds˙d"},
                 termsFor);

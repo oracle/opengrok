@@ -526,7 +526,7 @@ function hideIntelliWindow() {
 }
 
 function createCapitionHTML() {
-    return "<a onclick='hideIntelliWindow()'>[Close]</a><br/><b>Intelligence Window</b><br/>";
+    return '<a onclick="hideIntelliWindow()">[Close]</a><br/><b>Intelligence Window</b><br/>';
 }
 
 function createSymbolHTML(symbol) {
@@ -548,28 +548,29 @@ function createDescriptionHTML(symbolType) {
 }
 
 function createActionHTML(symbol, symbolType) {
+    var escapedSymbol = escapeSingleQuote(symbol);
     var project = $("input[name='project']").val();
     return [
         "In current file:<br/><ul>",
-        "<li><a onclick='highlightSymbol(\"", symbol, "\")'>Highlight <b><i>", symbol,
+        "<li><a onclick=\"highlightSymbol('", escapedSymbol, "')\">Highlight <b><i>", symbol,
             "</i></b></a>.</li>",
-        "<li><a onclick='unhighlightSymbol(\"", symbol, "\")'>Unhighlight <b><i>", symbol,
+        "<li><a onclick=\"unhighlightSymbol('", escapedSymbol, "')\">Unhighlight <b><i>", symbol,
             "</i></b></a>.</li>",
-        "<li><a onclick='unhighlightAll()'>Unhighlight all.</li></ul>",
+        "<li><a onclick=\"unhighlightAll()\">Unhighlight all.</li></ul>",
         "In project ", project, ":<br/><ul>",
-        "<li><a onclick='intelliWindowSearch(\"defs=\", \"", symbol, "\", \"", symbolType,
-            "\")'>Search for definitions of <i><b>", symbol,
+        "<li><a onclick=\"intelliWindowSearch('defs=', '", escapedSymbol, "', '", symbolType,
+            "')\">Search for definitions of <i><b>", symbol,
             "</b></i>.</a></li>",
-        "<li><a onclick='intelliWindowSearch(\"refs=\", \"", symbol, "\", \"", symbolType,
-            "\")'>Search for references of <i><b>", symbol,
+        "<li><a onclick=\"intelliWindowSearch('refs=', '", escapedSymbol, "', '", symbolType,
+            "')\">Search for references of <i><b>", symbol,
             "</b></i>.</a></li>",
-        "<li><a onclick='intelliWindowSearch(\"q=\", \"", symbol, "\", \"", symbolType,
-            "\")'>Do a full search with <i><b>", symbol,
+        "<li><a onclick=\"intelliWindowSearch('q=', '", escapedSymbol, "', '", symbolType,
+            "')\">Do a full search with <i><b>", symbol,
             "</b></i>.</a></li>",
-        "<li><a onclick='intelliWindowSearch(\"path=\", \"", symbol, "\", \"", symbolType,
-            "\")'>Search for file names that contain <i><b>", symbol,
+        "<li><a onclick=\"intelliWindowSearch('path=', '", escapedSymbol, "', '", symbolType,
+            "')\">Search for file names that contain <i><b>", symbol,
             "</b></i>.</a></li></ul>",
-        "<a onclick='googleSymbol(\"", symbol, "\")'>Google <b><i>", symbol, "</i></b>.</a>"
+        "<a onclick=\"googleSymbol('", escapedSymbol, "')\">Google <b><i>", symbol, "</i></b>.</a>"
     ].join("");
 }
 
@@ -609,4 +610,8 @@ function googleSymbol(symbol) {
     var url = "https://www.google.com/search?q=" + symbol;
     window.open(url, '_blank');
     return false;
+}
+
+function escapeSingleQuote(string) {
+    return string.replace("'", "\\'");
 }
