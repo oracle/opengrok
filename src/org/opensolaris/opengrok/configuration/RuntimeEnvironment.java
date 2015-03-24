@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -895,16 +895,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setChattyStatusPage(chatty);
     }
 
-    public boolean noFetchHistoryWhenNotInCache() {
-        String enabled =
-            System.getProperty("org.opensolaris.opengrok.history.noFetchWhenNotInCache");
-        if (enabled != null) {
-            return true;
-        }
-
-        return (false);
+    public void setFetchHistoryWhenNotInCache(boolean nofetch) {
+        threadConfig.get().setFetchHistoryWhenNotInCache(nofetch);
     }
-    
+
+    public boolean isFetchHistoryWhenNotInCache() {
+        return threadConfig.get().isFetchHistoryWhenNotInCache();
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
