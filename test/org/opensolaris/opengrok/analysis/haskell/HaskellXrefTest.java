@@ -26,6 +26,7 @@ package org.opensolaris.opengrok.analysis.haskell;
 import java.io.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.opensolaris.opengrok.analysis.Definitions;
 
 /**
  * Tests the {@link HaskellXref} class.
@@ -45,13 +46,13 @@ public class HaskellXrefTest {
             w.toString());
     }
 
-    private static void writeHaskellXref(InputStream is, PrintStream os) throws IOException {
+    private static void writeHaskellXref(InputStream is, PrintStream os, Definitions defs) throws IOException {
         os.println(
             "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
             + "href=\"http://localhost:8080/source/default/style.css\" /><title>Haskell Xref Test</title></head>");
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
-        HaskellAnalyzer.writeXref(new InputStreamReader(is, "UTF-8"), w, null, null, null);
+        HaskellAnalyzer.writeXref(new InputStreamReader(is, "UTF-8"), w, defs, null, null);
         os.print(w.toString());
         os.println("</pre></div></body></html>");
     }
@@ -63,8 +64,10 @@ public class HaskellXrefTest {
             "org/opensolaris/opengrok/analysis/haskell/sample.hs");
         ByteArrayOutputStream sampleOutputStream = new ByteArrayOutputStream();
 
+        Definitions defs = new Definitions();
+        defs.addTag(6, "x'y'", "functions", "x'y' = let f' = 1; g'h = 2 in f' + g'h");
         try {
-            writeHaskellXref(sampleInputStream, new PrintStream(sampleOutputStream));
+            writeHaskellXref(sampleInputStream, new PrintStream(sampleOutputStream), defs);
         } finally {
             sampleInputStream.close();
             sampleOutputStream.close();
