@@ -42,14 +42,15 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_REMOTE_REPOS       Influence history cache generation for remote
-#                                 repositories. Following values are recognized:
-#                                   on - enabled (default)
-#                                   off - disabled for indexing and UI
-#                                   dirbased - indexing enabled only for repos
-#                                              which can fetch history for
-#                                              directory
-#                                   uionly - enabled for UI only
+#   - OPENGROK_GENERATE_HISTORY   Influence history cache generation 
+#                                 Following values are recognized:
+#                                   on		- enabled (default)
+#                                   off		- disabled for indexing and UI
+#                                   dirbased	- indexing enabled only for repos
+#                                              	  which can fetch history for
+#                                                 directory
+#                                   local	- for local repos only
+#                                   uionly	- enabled for UI only
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
 #                                 (by default 3 directories from SRC_ROOT)
@@ -260,10 +261,10 @@ DefaultInstanceConfiguration()
     fi
 
     # OPTIONAL: Disable remote repository support (CVS or SVN) [on by default]
-    REMOTE_REPOSITORIES="-r on"
-    if [ -n "${OPENGROK_REMOTE_REPOS}" ]
+    GENERATE_HISTORY="-r on"
+    if [ -n "${OPENGROK_GENERATE_HISTORY}" ]
     then
-        REMOTE_REPOSITORIES="-r ${OPENGROK_REMOTE_REPOS}"
+        GENERATE_HISTORY="-r ${OPENGROK_GENERATE_HISTORY}"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
@@ -810,7 +811,7 @@ CommonInvocation()
         ${IGNORE_PATTERNS}                    				\
         ${DERBY_OPTIONS}						\
         ${HISTORY_TAGS}							\
-        ${REMOTE_REPOSITORIES}           				\
+        ${GENERATE_HISTORY}           				\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
