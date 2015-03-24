@@ -383,4 +383,50 @@ public class FileHistoryCacheTest extends TestCase {
         updatedHistory = cache.get(reposRoot, repo, true);
         assertEquals(14, updatedHistory.getHistoryEntries().size());
     }
+
+    private void checkNoHistoryFetchRepo(String reponame, String filename,
+        boolean hasHistory, boolean historyFileExists) throws Exception {
+
+        File reposRoot = new File(repositories.getSourceRoot(), reponame);
+        Repository repo = RepositoryFactory.getRepository(reposRoot);
+
+        // Make sure the file exists in the repository.
+        File repoFile = new File(reposRoot, filename);
+        assertTrue(repoFile.exists());
+
+        // Try to fetch the history for given file. With default setting of
+        // FetchHistoryWhenNotInCache this should create corresponding file
+        // in history cache.
+        History retrievedHistory = cache.get(repoFile, repo, true);
+        assertEquals(hasHistory, retrievedHistory == null ? false : true);
+
+        // The file in history cache should not exist since
+        // FetchHistoryWhenNotInCache is set to false.
+        File dataRoot = new File(repositories.getDataRoot(),
+            "historycache" + File.separatorChar + reponame);
+        File fileHistory = new File(dataRoot, filename + ".gz");
+        assertEquals(historyFileExists, fileHistory.exists());
+    }
+
+    /*
+     * Functional test for the FetchHistoryWhenNotInCache configuration option.
+     */
+    public void testNoHistoryFetch() throws Exception {
+        // Do not create history cache for files which do not have it cached.
+        RuntimeEnvironment.getInstance().setFetchHistoryWhenNotInCache(false);
+
+        // Make cache.get() predictable. Normally when the retrieval of
+        // history of given file is faster than the limit, the history of this
+        // file is not stored. For the sake of this test we want the history
+        // to be always stored.
+        RuntimeEnvironment.getInstance().setHistoryReaderTimeLimit(0);
+
+        // Pretend we are done with first phase of indexing.
+        cache.setHistoryIndexDone();
+
+        // First try repo with ability to fetch history for directories.
+        checkNoHistoryFetchRepo("mercurial", "main.c", false, false);
+        // Second try repo which can fetch history of individual files only.
+        checkNoHistoryFetchRepo("teamware", "header.h", true, true);
+    }
 }

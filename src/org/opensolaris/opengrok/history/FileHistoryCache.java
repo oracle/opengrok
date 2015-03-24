@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -476,11 +476,17 @@ class FileHistoryCache implements HistoryCache {
             }
         }
 
-        // Some repository checkouts may contain lots of files untracked by
-        // given SCM. For these it would be waste of time to get their history.
+        /*
+         * Some mirrors of repositories which are capable of fetching history
+         * for directories may contain lots of files untracked by given SCM.
+         * For these it would be waste of time to get their history
+         * since the history of all files in this repository should have been
+         * fetched in the first phase of indexing.
+         */
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        if (isHistoryIndexDone() && env.noFetchHistoryWhenNotInCache()) {
-            return null;
+        if (isHistoryIndexDone() && repository.hasHistoryForDirectories() &&
+            !env.isFetchHistoryWhenNotInCache()) {
+                return null;
         }
 
         final History history;
