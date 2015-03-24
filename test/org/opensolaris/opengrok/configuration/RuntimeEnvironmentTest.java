@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -169,6 +169,14 @@ public class RuntimeEnvironmentTest {
         assertEquals(30, instance.getHistoryReaderTimeLimit());
         instance.setHistoryReaderTimeLimit(50);
         assertEquals(50, instance.getHistoryReaderTimeLimit());
+    }
+
+    @Test
+    public void testFetchHistoryWhenNotInCache() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        assertEquals(true, instance.isFetchHistoryWhenNotInCache());
+        instance.setFetchHistoryWhenNotInCache(false);
+        assertEquals(false, instance.isFetchHistoryWhenNotInCache());
     }
 
     @Test
