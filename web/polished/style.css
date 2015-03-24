@@ -779,3 +779,35 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	background-position: -425px 0;
 }
 /* ############### end of footer ############## */
+
+/* *** scopes *** */
+
+div.scope-head {
+    display: block;
+}
+
+div.scope-body {
+    display: block;
+}
+
+img.unfold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    content: url('./img/unfolding.png');
+}
+
+img.fold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    content: url('./img/folding.png');
+}
+
+span.scope-signature {
+    display: none;
+}
+
+div#scope {
+    width: 100%;
+    min-height: 1em;
+    text-align: center;
+}

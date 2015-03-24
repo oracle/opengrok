@@ -388,9 +388,9 @@ public abstract class JFlexXref {
             getProjectPostfix(false), skipNl);
         
         if (iconId != null) {
-            out.write("<span class='fold-icon' onclick='fold(this.parentNode.id)' id='");
+            out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
             out.write(iconId);
-            out.write("'>-</span>");
+            out.write("'><img class='fold-icon' /></a>");
         }
     }
 

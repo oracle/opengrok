@@ -46,6 +46,10 @@ public class Scopes implements Serializable {
         public String scope;
         public String signature;
 
+        public Scope(int lineFrom, int lineTo, String name, String scope) {
+            this(lineFrom, lineTo, name, scope, "");
+        }
+        
         public Scope(int lineFrom, int lineTo, String name, String scope, String signature) {
             this.lineFrom = lineFrom;
             this.lineTo = lineTo;
