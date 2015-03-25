@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -179,7 +179,7 @@ public class MercurialRepository extends Repository {
 
         cmd.add("--template");
         if (file.isDirectory()) {
-            cmd.add(RuntimeEnvironment.isRenamedFilesEnabled() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
+            cmd.add(env.isHandleHistoryOfRenamedFiles() ? DIR_TEMPLATE_RENAMED : DIR_TEMPLATE);
         } else {
             /* JDBC requires complete list of files. */
             cmd.add(env.storeHistoryCacheInDB() ? FILE_TEMPLATE_LIST : FILE_TEMPLATE);

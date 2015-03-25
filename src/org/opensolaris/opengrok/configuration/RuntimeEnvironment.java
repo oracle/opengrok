@@ -64,7 +64,6 @@ public final class RuntimeEnvironment {
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
-    private static boolean RenamedEnabled = false;
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -132,19 +131,6 @@ public final class RuntimeEnvironment {
             historyRenamedExecutor.awaitTermination(1, TimeUnit.MINUTES);
             historyRenamedExecutor = null;
         }
-    }
-
-    /*
-     * Is handling of renamed files turned on ?
-     */
-    public static boolean isRenamedFilesEnabled() {
-        String enabled =
-            System.getProperty("org.opensolaris.opengrok.history.RenamedHandlingEnabled");
-        if (enabled != null) {
-            RenamedEnabled = true;
-        }
-
-        return (RenamedEnabled);
     }
 
     /**
@@ -901,6 +887,14 @@ public final class RuntimeEnvironment {
 
     public boolean isFetchHistoryWhenNotInCache() {
         return threadConfig.get().isFetchHistoryWhenNotInCache();
+    }
+
+    public void setHandleHistoryOfRenamedFiles(boolean enable) {
+        threadConfig.get().setHandleHistoryOfRenamedFiles(enable);
+    }
+
+    public boolean isHandleHistoryOfRenamedFiles() {
+        return threadConfig.get().isHandleHistoryOfRenamedFiles();
     }
 
     /**

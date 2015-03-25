@@ -387,7 +387,7 @@ class FileHistoryCache implements HistoryCache {
         final File root = RuntimeEnvironment.getInstance().getSourceRootFile();
         for (Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
-                if (RuntimeEnvironment.isRenamedFilesEnabled() &&
+                if (env.isHandleHistoryOfRenamedFiles() &&
                     isRenamedFile(map_entry, env, repository, history)) {
                         continue;
                 }
@@ -395,11 +395,11 @@ class FileHistoryCache implements HistoryCache {
                OpenGrokLogger.getLogger().log(Level.WARNING,
                    "isRenamedFile() got exception: " + ex);
             }
-            
+
             doFileHistory(map_entry, env, repository, null, root, false);
         }
 
-        if (!RuntimeEnvironment.isRenamedFilesEnabled()) {
+        if (!env.isHandleHistoryOfRenamedFiles()) {
             finishStore(repository, latestRev);
             return;
         }
