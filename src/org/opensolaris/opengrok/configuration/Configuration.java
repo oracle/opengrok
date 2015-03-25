@@ -134,7 +134,13 @@ public final class Configuration {
      * directories. This option affects file based history cache only.
      */
     private boolean fetchHistoryWhenNotInCache;
- 
+    /*
+     * Set to false to disable extended handling of history of files across
+     * renames, i.e. support getting diffs of revisions across renames
+     * for capable repositories.
+     */
+    private boolean handleHistoryOfRenamedFiles;
+
     public static final double defaultRamBufferSize=16;
     public static final int defaultScanningDepth=3;
 
@@ -160,10 +166,6 @@ public final class Configuration {
     /**
      * Get the default tab size (number of space characters per tab character)
      * to use for each project. If {@code <= 0} tabs are read/write as is.
-     *
-     *
-     *
-
      *
      * @return current tab size set.
      * @see Project#getTabSize()
@@ -245,6 +247,7 @@ public final class Configuration {
         setCommandTimeout(600); // 10 minutes
         setScopesEnabled(true);
         setFetchHistoryWhenNotInCache(true);
+        setHandleHistoryOfRenamedFiles(true);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -342,6 +345,14 @@ public final class Configuration {
 
     public void setFetchHistoryWhenNotInCache(boolean nofetch) {
         this.fetchHistoryWhenNotInCache = nofetch;
+    }
+
+    public boolean isHandleHistoryOfRenamedFiles() {
+        return handleHistoryOfRenamedFiles;
+    }
+
+    public void setHandleHistoryOfRenamedFiles(boolean enable) {
+        this.handleHistoryOfRenamedFiles = enable;
     }
 
     /**
