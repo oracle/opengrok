@@ -128,13 +128,13 @@ public final class Configuration {
     private boolean scopesEnabled;
     private static final Logger logger = Logger.getLogger(Configuration.class.getName());
     /*
-     * Set if we want to disable fetching history of individual files
+     * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
      * in history cache for repositories capable of fetching history for
      * directories. This option affects file based history cache only.
      */
-    private boolean noFetchHistoryWhenNoCache;
-    
+    private boolean fetchHistoryWhenNotInCache;
+ 
     public static final double defaultRamBufferSize=16;
     public static final int defaultScanningDepth=3;
 
@@ -337,11 +337,11 @@ public final class Configuration {
     }
 
     public boolean isFetchHistoryWhenNotInCache() {
-        return noFetchHistoryWhenNoCache;
+        return fetchHistoryWhenNotInCache;
     }
 
     public void setFetchHistoryWhenNotInCache(boolean nofetch) {
-        this.noFetchHistoryWhenNoCache = nofetch;
+        this.fetchHistoryWhenNotInCache = nofetch;
     }
 
     /**
