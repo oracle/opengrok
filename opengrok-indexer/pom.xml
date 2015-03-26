@@ -89,6 +89,11 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                 <directory>../test/org/opensolaris/opengrok/analysis/php/</directory>
                 <excludes><exclude>*.java</exclude></excludes>
             </testResource>
+            <testResource>
+                <targetPath>org/opensolaris/opengrok/analysis/haskell/</targetPath>
+                <directory>../test/org/opensolaris/opengrok/analysis/haskell/</directory>
+                <excludes><exclude>*.java</exclude></excludes>
+            </testResource>
         </testResources>
 
         <plugins>

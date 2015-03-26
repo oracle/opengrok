@@ -42,6 +42,7 @@ public class HaskellAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of HaskellAnalyzer
+     * @param factory
      */
     protected HaskellAnalyzer(FileAnalyzerFactory factory) {
         super(factory);

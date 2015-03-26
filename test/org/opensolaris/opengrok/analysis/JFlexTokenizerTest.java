@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -33,6 +33,7 @@ import org.opensolaris.opengrok.analysis.c.CSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.c.CxxSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.document.TroffFullTokenizer;
 import org.opensolaris.opengrok.analysis.fortran.FortranSymbolTokenizer;
+import org.opensolaris.opengrok.analysis.haskell.HaskellSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.java.JavaSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.lisp.LispSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.perl.PerlSymbolTokenizer;
@@ -56,17 +57,18 @@ public class JFlexTokenizerTest {
      */
     @Test
     public void testOffsetAttribute() throws Exception {
-        testOffsetAttribute(ShSymbolTokenizer.class);
-        testOffsetAttribute(TroffFullTokenizer.class);
-        testOffsetAttribute(PerlSymbolTokenizer.class);
-        testOffsetAttribute(PlainSymbolTokenizer.class);
-        testOffsetAttribute(PlainFullTokenizer.class);
         testOffsetAttribute(CSymbolTokenizer.class);
         testOffsetAttribute(CxxSymbolTokenizer.class);
+        testOffsetAttribute(HaskellSymbolTokenizer.class);
         testOffsetAttribute(JavaSymbolTokenizer.class);
-        testOffsetAttribute(ScalaSymbolTokenizer.class);
         testOffsetAttribute(LispSymbolTokenizer.class);
+        testOffsetAttribute(PerlSymbolTokenizer.class);
+        testOffsetAttribute(PlainFullTokenizer.class);
+        testOffsetAttribute(PlainSymbolTokenizer.class);
+        testOffsetAttribute(ScalaSymbolTokenizer.class);
+        testOffsetAttribute(ShSymbolTokenizer.class);
         testOffsetAttribute(TclSymbolTokenizer.class);
+        testOffsetAttribute(TroffFullTokenizer.class);
 
         // The Fortran tokenizer doesn't accept the default input text, so
         // create a text fragment that it understands
