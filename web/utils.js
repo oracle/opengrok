@@ -980,7 +980,7 @@ function get_sym_list_contents() {
         for (var j = 0; j < symbols.length; j++) {
             var symbol = symbols[j][0];
             var line = symbols[j][1];
-            contents += "<a href=\"#" + line + "\" class=\"" + class_name + "\">"
+            contents += "<a href=\"#" + line + "\" class=\"" + class_name + "\" onclick=\"lnshow(); return true;\">"
                 + escape_html(symbol) + "</a><br/>";
         }
     }
@@ -1064,6 +1064,16 @@ function lntoggle() {
                 this.innerHTML = this.getAttribute("tmp");
                 this.className = this.className.substr(0, this.className
                         .indexOf('-'));
+            }
+        });
+}
+
+function lnshow() {
+    $("a").each(
+        function() {
+            if (this.className == 'l-hide' || this.className == 'hl-hide') {
+                this.innerHTML = this.getAttribute("tmp");
+                this.className = this.className.substr(0, this.className.indexOf('-'));
             }
         });
 }
