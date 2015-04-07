@@ -35,9 +35,9 @@ Offical page of the project is on:
 2. Requirements
 ---------------
 
-    * Latest Java (At least 1.7, 1.8 is supported)
+    * Latest Java (At least 1.8)
       http://www.oracle.com/technetwork/java/
-    * A servlet container like Tomcat (7.x or later)
+    * A servlet container like Tomcat (8.x or later)
       supporting Servlet 2.4 and JSP 2.0
       http://tomcat.apache.org/
     * Exuberant Ctags
@@ -439,7 +439,7 @@ Solaris 11:
 
 Debian/Ubuntu:
 
-  # apt-get install sun-java6-javadb
+  # apt-get install sun-java8-javadb
 
 Other:
 
@@ -638,13 +638,8 @@ being executed on) under the dist/ directory.
 Note: For full coverage report your system has to provide proper junit test 
 environment, that would mean:
 
-  - you have to use Ant 1.7 and above
-  - at least junit-4.10.jar has to be in ant's classpath (e.g. in ./lib)
-    - Example install in the top of the opengrok repository:
-
-      $ cd lib
-      $ wget http://.../junit-4.10.jar
-      $ jar -xf junit-4.10.jar
+  - you have to use Ant 1.9 and above
+  - at least junit-4.12.jar has to be in ant's classpath (e.g. in ./lib)    
 
   - install derby.jar to ant's classpath so that Java DB tests can be run
   - your PATH must contain directory with exuberant ctags binary
@@ -696,53 +691,18 @@ under the lib directory):
 There is also a findbugs-xml ant target that can be used to generate XML files
 that can later be parsed, e.g. by Jenkins.
 
-9.3 Using Emma
+9.3 Using Jacoco
 --------------
 
-If you want to check test coverage on OpenGrok, download Emma from
-http://emma.sourceforge.net/. Place emma.jar and emma-ant.jar in the
-opengrok/trunk/lib directory, or ~/.ant/lib.
+If you want to check test coverage on OpenGrok, download jacoco from
+http://www.eclemma.org/jacoco/. Place jacocoagent.jar and jacocoant.jar in the
+opengrok/lib ~/.ant/lib or into classpath (-lib option of ant).
 
-Now you can instrument your classes, and create a jar file:
+Now you can instrument your classes and test them run:
 
-  $ ant emma-instrument
+  $ ant -Djacoco=true -Djacoco.home=/<path_to>/jacoco jacoco-code-coverage
 
-If you are using NetBeans, select File - "opengrok" Properties 
-- libraries - Compile tab. Press the "Add JAR/Folder" and select
-lib/emma.jar and lib/emma_ant.jar
-
-If you are not using netbeans, you have to edit the file 
-nbproject/project.properties, and add "lib/emma.jar" and 
-"lib/emma_ant.jar" to the javac.classpath inside it.
-
-Now you can put the classes into jars and generate distributable:
-
-  $ ant dist
-
-The classes inside opengrok.jar should now be instrumented.
-If you use opengrok.jar for your own set of tests, you need 
-emma.jar in the classpath.If you want to specify where to store 
-the run time analysis, use these properties:
-
-   emma.coverage.out.file=path/coverage.ec
-   emma.coverage.out.merge=true
-
-The coverage.ec file should be placed in the opengrok/trunk/coverage
-directory for easy analyze.
-
-If you want to test the coverage of the unit tests, you can
-run the tests:
-
-   $ ant test   
-   
-Alternatively press Alt+F6 in NetBeans to achieve the same.
-
-Now you should get some output saying that Emma is placing runtime 
-coverage data into coverage.ec.
-
-To generate reports, run ant again:
-
-  $ ant emma-report
+Now you should get output data in .
 
 Look at coverage/coverage.txt, coverage/coverage.xml and 
 coverage/coverage.html to see how complete your tests are.
@@ -857,6 +817,7 @@ e.g. using bash:
 9.8 Using Travis CI
 -------------------
 
+Travis depends on updated and working maven build.
 Please see .travis.yml, if your branch has this file,
 you should be able to connect your Github to Travis CI.
 OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok

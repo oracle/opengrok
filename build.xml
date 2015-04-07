@@ -625,32 +625,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         </jacoco:report>
     </target>
 
-    <target name="-check_emma" description="Check that emma jar files are present">
-        <available file="emma.jar" type="file" property="emma.jar.present">
-            <filepath refid="lib.search.path"/>
-        </available>
-        <fail unless="emma.jar.present" message="Please install emma.jar in lib-directory  (or in ant classpath) to run Emma, see README."/>
-
-        <available file="emma_ant.jar" type="file" property="emma_ant.jar.present">
-            <filepath refid="lib.search.path"/>
-        </available>
-        <fail unless="emma_ant.jar.present" message="Please install emma_ant.jar in lib-directory  (or in ant classpath) to run Emma, see README."/>
-    </target>
-
-    <target name="emma-instrument" depends="compile, -check_emma" description="Instruments the source code for Emma code coverage analysis">
-        <taskdef resource="emma_ant.properties"/>
-        <mkdir dir="${coverage.dir}" />
-        <emma enabled="true">
-            <instr instrpath="build/classes"
-                       metadatafile="${coverage.dir}/coverage.em"
-                       mode="overwrite"
-                       filter="+org.opensolaris.*,-org.opensolaris.opengrok.management.client.*"/>
-        </emma>
-    </target>
-
-    <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->
-        <property name="test-sys-prop.emma.coverage.out.file" value="${coverage.dir}/coverage.ec"/>
-        <property name="test-sys-prop.emma.coverage.out.merge" value="true"/>
+    <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->        
     </target>
 
     <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
@@ -790,21 +765,6 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <delete dir="${test.razor}"/>
         <delete file="${test.cvs.repo}/CVS/Root"/>
     </target>
-
-    <target name="emma-report" description="Analyze" depends="-check_emma">
-        <taskdef resource="emma_ant.properties"/>
-        <emma enabled="true" >
-            <report sourcepath="${src.dir},${src.generatedsrc.dir}">
-                <!-- collect all EMMA data dumps (metadata and runtime): -->
-                <infileset dir="${coverage.dir}" includes="*.em, *.ec"/>
-                <txt outfile="${coverage.dir}/coverage.txt"/>
-                <xml outfile="${coverage.dir}/coverage.xml"/>
-                <html  outfile="${coverage.dir}/index.html"/>
-            </report>
-        </emma>
-    </target>
-
-    <target name="emma-code-coverage" depends="clean, emma-instrument, test, emma-report" description="Make test code coverage reports based on the OpenGrok unit tests"/>
 
     <target name="jdepend" depends="compile" description="Run JDepend dependency checking">
         <mkdir dir="jdepend"/>

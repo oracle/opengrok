@@ -94,29 +94,31 @@ public class Ctags {
             command.add("--langmap=sql:+.pld"); // RFE #19208
             command.add("--langmap=sql:+.pks"); // RFE #19208 ?
 
+            //Ideally all below should be in ctags, or in outside config file, 
+            //we might run out of command line SOON
             command.add("--langdef=scala"); // below is bug 61 to get full scala support
             command.add("--langmap=scala:.scala");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*(private|protected)?\\s*class\\s+([a-zA-Z0-9_]+)/\\4/c,classes/");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*(private|protected)?\\s*object\\s+([a-zA-Z0-9_]+)/\\4/c,objects/");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*(private|protected)?\\s*case class\\s+([a-zA-Z0-9_]+)/\\4/c,case classes/");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*(private|protected)?\\s*case object\\s+([a-zA-Z0-9_]+)/\\4/c,case objects/");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*(private|protected)?\\s*trait\\s+([a-zA-Z0-9_]+)/\\4/t,traits/");
-            command.add("--regex-scala=/^\\s*type\\s+([a-zA-Z0-9_]+)/\\1/T,types/");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*def\\s+([a-zA-Z0-9_]+)/\\3/m,methods/");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*val\\s+([a-zA-Z0-9_]+)/\\3/l,constants/");
-            command.add("--regex-scala=/^\\s*((abstract|final|sealed|implicit|lazy)\\s*)*var\\s+([a-zA-Z0-9_]+)/\\3/l,variables/");
-            command.add("--regex-scala=/^\\s*package\\s+([a-zA-Z0-9_.]+)/\\1/p,packages/");
-
-            command.add("--langdef=haskell");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*object[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,objects/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,case classes/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*case object[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,case objects/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*trait[[:space:]]+([a-zA-Z0-9_]+)/\\4/t,traits/");
+            command.add("--regex-scala=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/T,types/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*def[[:space:]]+([a-zA-Z0-9_]+)/\\3/m,methods/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,constants/");
+            command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*var[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,variables/");
+            command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
+            
+            command.add("--langdef=haskell"); // below was added with #912
             command.add("--langmap=haskell:.hs.hsc");
-            command.add("--regex-haskell=/^\\s*class\\s+([a-zA-Z0-9_]+)/\\1/c,classes/");
-            command.add("--regex-haskell=/^\\s*data\\s+([a-zA-Z0-9_]+)/\\1/t,types/");
-            command.add("--regex-haskell=/^\\s*newtype\\s+([a-zA-Z0-9_]+)/\\1/t,types/");
-            command.add("--regex-haskell=/^\\s*type\\s+([a-zA-Z0-9_]+)/\\1/t,types/");
-            command.add("--regex-haskell=/^([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\1/f,functions/");
-            command.add("--regex-haskell=/\\s+([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\1/f,functions/");
-            command.add("--regex-haskell=/^(let|where)\\s+([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\2/f,functions/");
-            command.add("--regex-haskell=/\\s+(let|where)\\s+([a-zA-Z0-9_]+).*\\s+={1}\\s+/\\2/f,functions/");
+            command.add("--regex-haskell=/^[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\1/c,classes/");
+            command.add("--regex-haskell=/^[[:space:]]*data[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
+            command.add("--regex-haskell=/^[[:space:]]*newtype[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
+            command.add("--regex-haskell=/^[[:space:]]*type[[:space:]]+([a-zA-Z0-9_]+)/\\1/t,types/");
+            command.add("--regex-haskell=/^([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\1/f,functions/");
+            command.add("--regex-haskell=/[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\1/f,functions/");
+            command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
+            command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
