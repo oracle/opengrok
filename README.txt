@@ -702,10 +702,9 @@ Now you can instrument your classes and test them run:
 
   $ ant -Djacoco=true -Djacoco.home=/<path_to>/jacoco jacoco-code-coverage
 
-Now you should get output data in .
+Now you should get output data in jacoco.exec
 
-Look at coverage/coverage.txt, coverage/coverage.xml and 
-coverage/coverage.html to see how complete your tests are.
+Look at jacoco/index.html to see how complete your tests are.
 
 9.4 Using Checkstyle
 --------------------

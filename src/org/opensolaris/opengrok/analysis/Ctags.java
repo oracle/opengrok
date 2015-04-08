@@ -96,6 +96,12 @@ public class Ctags {
 
             //Ideally all below should be in ctags, or in outside config file, 
             //we might run out of command line SOON
+            
+            //Also note, that below ctags definitions HAVE to be in POSIX
+            //otherwise the regexp will not work on some platforms
+            //on Solaris regexp.h used is different than on linux (gnu regexp)            
+            //http://en.wikipedia.org/wiki/Regular_expression#POSIX_basic_and_extended
+            
             command.add("--langdef=scala"); // below is bug 61 to get full scala support
             command.add("--langmap=scala:.scala");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
