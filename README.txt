@@ -439,7 +439,7 @@ Solaris 11:
 
 Debian/Ubuntu:
 
-  # apt-get install sun-java8-javadb
+  # apt-get install libderby-java
 
 Other:
 
