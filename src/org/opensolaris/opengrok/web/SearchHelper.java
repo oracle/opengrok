@@ -310,7 +310,7 @@ public class SearchHelper {
             return this;
         }
         try {
-            TopFieldDocs fdocs = searcher.search(query, null, start + maxItems, sort);
+            TopFieldDocs fdocs = searcher.search(query, start + maxItems, sort);
             totalHits = fdocs.totalHits;
             hits = fdocs.scoreDocs;
             // Bug #3900: Check if this is a search for a single term, and that

@@ -110,8 +110,8 @@ public class DirectoryHistoryReader {
             try {
                 // Get files under given directory by searching the index.
                 query = qparser.parse(path);
-                TopFieldDocs fdocs = searcher.search(query, null, hitsPerPage * cachePages, sort);
-                fdocs = searcher.search(query, null, fdocs.totalHits, sort);
+                TopFieldDocs fdocs = searcher.search(query, hitsPerPage * cachePages, sort);
+                fdocs = searcher.search(query, fdocs.totalHits, sort);
                 hits = fdocs.scoreDocs;
             } catch (ParseException e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
