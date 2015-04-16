@@ -80,6 +80,8 @@ otherwise (if SRC_ROOT is in different directory) run:
 
  $ ./OpenGrok index <absolute_path_to_your_SRC_ROOT>
 
+NOTE: Please DON'T use symlinks to /var/opengrok/src - rather use above command with parameter.
+
 Above command should try to upload latest index status reflected into configuration.xml to a running source web application.
 Once above command finishes without errors(e.g. SEVERE: Failed to send configuration to localhost:2424
 ), you should be able to enjoy your opengrok and search your sources using latest indexes and setup.
