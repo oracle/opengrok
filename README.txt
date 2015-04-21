@@ -38,18 +38,18 @@ Offical page of the project is on:
     * Latest Java (At least 1.8)
       http://www.oracle.com/technetwork/java/
     * A servlet container like Tomcat (8.x or later)
-      supporting Servlet 2.4 and JSP 2.0
+      supporting Servlet 2.5 and JSP 2.1
       http://tomcat.apache.org/
     * Exuberant Ctags
       http://ctags.sourceforge.net/
     * Source Code Management installation
       depending on type of repositories indexed
     * If you want to build OpenGrok:
-      - Ant (1.9.3 and later)
+      - Ant (1.9.4 and later)
         http://ant.apache.org/
       - JFlex
         http://www.jflex.de/
-      - Netbeans (optional, at least 8.0, will need Ant 1.9.3)
+      - Netbeans (optional, at least 8.0, will need Ant 1.9.4)
         http://netbeans.org/
 
 3. Usage

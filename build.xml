@@ -282,7 +282,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <property name="coverage.dir" value="${basedir}/coverage"/>
-    <target name="-pre-compile" depends="jrcs,jflex,download-lucene"/>
+    <target name="-pre-compile" depends="jrcs,jflex,download-lucene,download-servlet-api"/>
     <target name="eclipse" depends="-pre-compile"
         description="satisfy eclipse dependencies"/>
     <target name="-post-clean">
@@ -390,11 +390,32 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         dest="lib/${lucene-suggest.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
+    <target name="-check-servlet-api" description="Check that servlet-api jar file is present">
+        <available file="${servlet-api.jar}" type="file" property="servlet-api.jar.present">
+            <filepath refid="plainlib.search.path"/>
+        </available>        
+        <condition property="servlet-api_not_downloaded">
+            <not>            
+                <isset property="servlet-api.jar.present"/>
+             </not>
+        </condition>
+    </target>
+
+    <target name="download-servlet-api" depends="-check-servlet-api" if="servlet-api_not_downloaded">
+        <delete>
+         <fileset dir="lib">
+          <include name="servlet-api-*.jar"/>
+         </fileset>
+        </delete>
+        <get src="${mvn.repository}/javax/servlet/servlet-api/${servlet-api.version}/${servlet-api.jar}"
+        dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>        
+    </target>
+
     <target name="-post-jar" depends="-copy-lib-without-netbeans">
         <war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" excludes="META-INF/context.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
-            <lib dir="${dist.dir}/lib" includes="*.jar" excludes="servlet-api.jar"/>
+            <lib dir="${dist.dir}/lib" includes="*.jar" excludes="${servlet-api.jar}"/>
         </war>
         <echo message="Generating man page.."/>
         <java classname="org.opensolaris.opengrok.index.CommandLineOptions"
@@ -439,7 +460,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
                 <include name="opengrok.jar"/>
                 <include name="source.war"/>
                 <include name="lib/*"/>
-                <exclude name="lib/servlet-api.jar"/>
+                <exclude name="lib/${servlet-api.jar}"/>
             </tarfileset>
             <tarfileset dir="${dist.dir}" prefix="${distname}-${version}/man/man1">
                 <include name="opengrok.1"/>
