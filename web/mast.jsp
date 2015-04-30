@@ -101,7 +101,7 @@ include file="httpheader.jspf"
         var y = cnt.getBoundingClientRect().top + 2;
 
         var c = document.elementFromPoint(15, y+1);
-        scope.innerHTML = "";
+        scope.innerHTML = "&nbsp;";
         if (c.className === "l" || c.className === "hl") {
             prev = c;
             var par = c.parentNode;
@@ -196,9 +196,9 @@ include file="pageheader.jspf"
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
 </div>
+<div id="scope">&nbsp;</div>
         </form>
     </div>
-<div id="scope">&nbsp;</div>
 <div id="content" onscroll="on_scroll()" >
 <%
 }

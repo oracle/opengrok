@@ -704,16 +704,22 @@ div.scope-body {
     display: block;
 }
 
-img.unfold-icon {
+span.unfold-icon {
     margin-left: 0.2em;
     margin-right: 0.2em;
-    content: url('./img/unfolding.png');
+    background-image: url('./img/unfolding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
 }
 
-img.fold-icon {
+span.fold-icon {
     margin-left: 0.2em;
     margin-right: 0.2em;
-    content: url('./img/folding.png');
+    background-image: url('./img/folding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
 }
 
 span.scope-signature {
@@ -723,5 +729,8 @@ span.scope-signature {
 div#scope {
     width: 100%;
     min-height: 1em;
-    text-align: center;
+    text-align: left;
+    background-color: #dddddd;
+    font-size: 0.9em;
+    padding: 0.5em 0.5em 0.5em 6.5ex;
 }
