@@ -390,7 +390,8 @@ public abstract class JFlexXref {
         if (iconId != null) {
             out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
             out.write(iconId);
-            out.write("'><span class='fold-icon' /></a>");
+            /* space inside span for IE support */
+            out.write("'><span class='fold-icon'>&nbsp;</span></a>");
         }
     }
 
