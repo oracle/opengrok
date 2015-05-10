@@ -316,7 +316,7 @@ public final class HistoryGuru {
     }
 
     /**
-     * recursivelly search for repositories with a depth limit
+     * recursively search for repositories with a depth limit
      * @param files list of files to check if they contain a repo
      * @param repos list of found repos
      * @param ignoredNames what files to ignore
