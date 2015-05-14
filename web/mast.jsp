@@ -113,7 +113,7 @@ include file="httpheader.jspf"
             }
             var head = par.previousSibling;
             var sig = head.children[0];
-            scope.innerHTML = "<a href='#" + head.id + "'>" + head.id + sig.innerHTML + "</a>";
+            scope.innerHTML = "<a href='#" + head.id + "'>" + sig.innerHTML + "</a>";
         }
     }
 
@@ -199,7 +199,7 @@ include file="pageheader.jspf"
 <div id="scope">&nbsp;</div>
         </form>
     </div>
-<div id="content" onscroll="on_scroll()" >
+<div id="content" onscroll="on_scroll()">
 <%
 }
 /* ---------------------- mast.jsp end --------------------- */

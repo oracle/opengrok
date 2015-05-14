@@ -824,6 +824,14 @@ public final class RuntimeEnvironment {
     public void setScopesEnabled(boolean scopesEnabled) {
         threadConfig.get().setScopesEnabled(scopesEnabled);
     }
+    
+    public boolean isFoldingEnabled() {
+        return threadConfig.get().isFoldingEnabled();
+    }
+    
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        threadConfig.get().setFoldingEnabled(foldingEnabled);
+    }
 
     public Date getDateForLastIndexRun() {
         return threadConfig.get().getDateForLastIndexRun();

@@ -696,11 +696,11 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 
 /* *** scopes *** */
 
-div.scope-head {
+span.scope-head {
     display: block;
 }
 
-div.scope-body {
+span.scope-body {
     display: block;
 }
 
@@ -720,6 +720,14 @@ span.fold-icon {
     width: 11px;
     height: 11px;
     display: inline-block;
+}
+
+span.fold-space {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    width: 11px;
+    height: 11px;
+    display: inline-block;    
 }
 
 span.scope-signature {

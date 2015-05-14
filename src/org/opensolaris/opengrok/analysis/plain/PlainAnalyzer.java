@@ -144,6 +144,7 @@ public class PlainAnalyzer extends TextAnalyzer {
         }
         xref.setDefs(defs);
         xref.setScopes(scopes);
+        xref.setFoldingEnabled(foldingEnabled);
         xref.project = project;
         xref.write(out);
     }

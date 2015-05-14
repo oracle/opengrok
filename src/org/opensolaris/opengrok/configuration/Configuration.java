@@ -126,6 +126,7 @@ public final class Configuration {
     private int tabSize;
     private int command_timeout;
     private boolean scopesEnabled;
+    private boolean foldingEnabled;
     private static final Logger logger = Logger.getLogger(Configuration.class.getName());
     
     public static final double defaultRamBufferSize=16;
@@ -241,6 +242,7 @@ public final class Configuration {
         setDataRoot(null);
         setCommandTimeout(600); // 10 minutes
         setScopesEnabled(true);
+        setFoldingEnabled(true);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -756,6 +758,14 @@ public final class Configuration {
     
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
+    }
+    
+    public boolean isFoldingEnabled() {
+        return foldingEnabled;
+    }
+    
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        this.foldingEnabled = foldingEnabled;
     }
     
     /**
