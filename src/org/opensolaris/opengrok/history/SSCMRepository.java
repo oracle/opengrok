@@ -380,5 +380,9 @@ public class SSCMRepository extends Repository {
         }
         return false;
     }
-    
+
+    @Override
+    String determineParent() throws IOException {
+        return null;
+    }
 }

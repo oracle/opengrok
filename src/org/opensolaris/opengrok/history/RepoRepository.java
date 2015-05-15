@@ -113,4 +113,8 @@ public class RepoRepository extends Repository {
         throw new UnsupportedOperationException("Should never be called!");
     }
 
+    @Override
+    String determineParent() throws IOException {
+        return null;
+    }
 }

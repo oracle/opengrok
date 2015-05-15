@@ -649,4 +649,21 @@ public class MercurialRepository extends Repository {
             }
         }
     }
+
+    @Override
+    String determineParent() throws IOException {
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("paths");
+        cmd.add("default");
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
+
+        return executor.getOutputString().trim();
+    }
 }

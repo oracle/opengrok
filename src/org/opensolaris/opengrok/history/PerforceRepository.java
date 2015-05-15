@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -208,5 +208,10 @@ public class PerforceRepository extends Repository {
     @Override
     History getHistory(File file) throws HistoryException {
         return new PerforceHistoryParser().parse(file, this);
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        return null;
     }
 }

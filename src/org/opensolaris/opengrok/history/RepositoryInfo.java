@@ -32,13 +32,14 @@ import java.io.Serializable;
  * @author Trond Norbye
  */
 public class RepositoryInfo implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     protected String directoryName; // absolute path
     protected Boolean working;
     protected String type;
     protected boolean remote;
     protected String datePattern;
+    protected String parent;
 
     /**
      * Empty constructor to support serialization.
@@ -53,6 +54,7 @@ public class RepositoryInfo implements Serializable {
         this.working = Boolean.valueOf(orig.isWorking());
         this.remote = orig.isRemote();
         this.datePattern = orig.datePattern;
+        this.parent = orig.parent;
     }
 
     /**
@@ -122,6 +124,22 @@ public class RepositoryInfo implements Serializable {
      */
     public void setType(String type) {
         this.type = type;
+    }
+
+    /**
+     * get property type
+     * @return parent
+     */
+    public String getParent() {
+        return parent;
+    }
+
+    /**
+     * Set property parent
+     * @param parent
+     */
+    public void setParent(String parent) {
+        this.parent = parent;
     }
 
     public void setDatePattern(String datePattern) {

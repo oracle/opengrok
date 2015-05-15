@@ -345,6 +345,11 @@ public abstract class Repository extends RepositoryInfo {
     abstract boolean isRepositoryFor(File file);
 
     /**
+     * Determine parent of this repository.
+     */
+    abstract String determineParent() throws IOException;
+
+    /**
      * Returns true if this repository supports sub repositories (a.k.a. forests).
      *
      * @return true if this repository supports sub repositories
