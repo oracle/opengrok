@@ -294,4 +294,9 @@ public class MonotoneRepository extends Repository {
 
         return parent;
     }
+
+    @Override
+    String determineBranch() {
+        return null;
+    }
 }

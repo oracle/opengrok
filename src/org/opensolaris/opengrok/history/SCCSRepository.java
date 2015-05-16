@@ -274,5 +274,10 @@ public class SCCSRepository extends Repository {
 
         return parent;
     }
+
+    @Override
+    String determineBranch() {
+        return null;
+    }
 }
 

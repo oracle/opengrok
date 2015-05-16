@@ -562,5 +562,33 @@ public class GitRepository extends Repository {
 
         return parent;
     }
+
+    @Override
+    String determineBranch() throws IOException {
+        String branch = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("branch");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process = null;
+
+        process = pb.start();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("*")) {
+                    branch = line.substring(2).trim();
+                    break;
+                }
+            }
+        }
+
+        return branch;
+    }
 }
 

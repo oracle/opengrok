@@ -437,4 +437,9 @@ public class SubversionRepository extends Repository {
 
         return parent;
     }
+
+    @Override
+    String determineBranch() {
+        return null;
+    }
 }

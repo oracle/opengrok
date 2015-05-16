@@ -58,8 +58,6 @@ public class MercurialRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "hg";
 
-    private String branch = null;
-
     /**
      * The boolean property and environment variable name to indicate
      * whether forest-extension in Mercurial adds repositories inside the
@@ -111,21 +109,17 @@ public class MercurialRepository extends Repository {
     }
 
     /** Return name of the branch or "default" */
-    private String getBranch() {
-        if (branch == null) {
-            List<String> cmd = new ArrayList<String>();
-            ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            cmd.add(this.cmd);
-            cmd.add("branch");
+    @Override
+    String determineBranch() {
+        List<String> cmd = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("branch");
 
-            Executor e = new Executor(cmd, new File(directoryName));
-            e.exec();
+        Executor e = new Executor(cmd, new File(directoryName));
+        e.exec();
 
-            String output = e.getOutputString();
-            branch = output.trim();
-        }
-
-        return branch;
+        return e.getOutputString().trim();
     }
 
     /**

@@ -154,4 +154,9 @@ public class RCSRepository extends Repository {
     String determineParent() throws IOException {
         return null;
     }
+
+    @Override
+    String determineBranch() {
+        return null;
+    }
 }

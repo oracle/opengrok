@@ -122,7 +122,7 @@ public final class RepositoryFactory {
                         res.setBranch(res.determineBranch());
                     } catch (IOException ex) {
                         OpenGrokLogger.getLogger().log(Level.WARNING,
-                            "Failed to get branch for " + file.getAbsolutePath(), ex);
+                            "Failed to get branch for " + file.getAbsolutePath());
                     }
                 }
 

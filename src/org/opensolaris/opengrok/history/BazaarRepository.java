@@ -348,4 +348,9 @@ public class BazaarRepository extends Repository {
 
         return executor.getOutputString().trim();
     }
+
+    @Override
+    String determineBranch() {
+        return null;
+    }
 }

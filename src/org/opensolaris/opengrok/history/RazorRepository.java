@@ -341,4 +341,9 @@ public class RazorRepository extends Repository {
     String determineParent() throws IOException {
         return "N/A";
     }
+
+    @Override
+    String determineBranch() {
+        return null;
+    }
 }

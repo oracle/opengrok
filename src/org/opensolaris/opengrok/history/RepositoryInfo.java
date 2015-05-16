@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -40,6 +40,7 @@ public class RepositoryInfo implements Serializable {
     protected boolean remote;
     protected String datePattern;
     protected String parent;
+    protected String branch;
 
     /**
      * Empty constructor to support serialization.
@@ -55,6 +56,7 @@ public class RepositoryInfo implements Serializable {
         this.remote = orig.isRemote();
         this.datePattern = orig.datePattern;
         this.parent = orig.parent;
+        this.branch = orig.branch;
     }
 
     /**
@@ -148,6 +150,14 @@ public class RepositoryInfo implements Serializable {
 
     public String getDatePattern() {
         return datePattern;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 }
 
