@@ -663,7 +663,13 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         </condition>
     </target>
 
-    <target depends="check_repositories_zip" name="-post-compile-test" if="repos_missing">
+    <target depends="create_repos" name="-post-compile-test">
+    </target>
+
+    <target depends="create_repos" name="-post-compile-test-single">
+    </target>
+
+    <target depends="check_repositories_zip" name="create_repos" if="repos_missing">
         <antcall target="-create-svn-repository"/>
         <antcall target="-create-razor-repository"/>
         <!-- Change root in CVS test repository -->
