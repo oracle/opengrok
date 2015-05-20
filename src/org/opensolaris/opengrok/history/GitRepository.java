@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -527,6 +527,68 @@ public class GitRepository extends Repository {
 	        "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        String parent = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("remote");
+        cmd.add("-v");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process = null;
+
+        process = pb.start();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("origin") && line.contains("(fetch)")) {
+                    String parts[] = line.split("\\s+");
+                    if (parts.length != 3) {
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "Failed to get parent for {0}", directoryName);
+                    }
+                    parent = parts[1];
+                    break;
+                }
+            }
+        }
+
+        return parent;
+    }
+
+    @Override
+    String determineBranch() throws IOException {
+        String branch = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("branch");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process = null;
+
+        process = pb.start();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("*")) {
+                    branch = line.substring(2).trim();
+                    break;
+                }
+            }
+        }
+
+        return branch;
     }
 }
 

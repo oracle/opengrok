@@ -18,15 +18,17 @@
  */
 
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -401,5 +403,43 @@ public class SubversionRepository extends Repository {
         }
         result.add("--trust-server-cert");
         return result;
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        String parent = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("info");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process = null;
+
+        process = pb.start();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("URL:")) {
+                    String parts[] = line.split("\\s+");
+                    if (parts.length != 2) {
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "Failed to get parent for {0}", directoryName);
+                    }
+                    parent = parts[1];
+                    break;
+                }
+            }
+        }
+
+        return parent;
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
     }
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -32,13 +32,15 @@ import java.io.Serializable;
  * @author Trond Norbye
  */
 public class RepositoryInfo implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     protected String directoryName; // absolute path
     protected Boolean working;
     protected String type;
     protected boolean remote;
     protected String datePattern;
+    protected String parent;
+    protected String branch;
 
     /**
      * Empty constructor to support serialization.
@@ -53,6 +55,8 @@ public class RepositoryInfo implements Serializable {
         this.working = Boolean.valueOf(orig.isWorking());
         this.remote = orig.isRemote();
         this.datePattern = orig.datePattern;
+        this.parent = orig.parent;
+        this.branch = orig.branch;
     }
 
     /**
@@ -124,12 +128,36 @@ public class RepositoryInfo implements Serializable {
         this.type = type;
     }
 
+    /**
+     * get property type
+     * @return parent
+     */
+    public String getParent() {
+        return parent;
+    }
+
+    /**
+     * Set property parent
+     * @param parent
+     */
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+
     public void setDatePattern(String datePattern) {
         this.datePattern = datePattern;
     }
 
     public String getDatePattern() {
         return datePattern;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 }
 

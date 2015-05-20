@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -318,5 +318,24 @@ public class CVSRepository extends RCSRepository {
             }
         }
         return ret;
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        File rootFile = new File(directoryName + File.separator + "CVS" +
+            File.separator + "Root");
+        String parent = null;
+
+        if (rootFile.isFile()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(rootFile))) {
+                parent = br.readLine();
+            } catch (IOException ex) {
+                OpenGrokLogger.getLogger().log(Level.WARNING,
+                    "Failed to read CVS/Root file {0}: {1}",
+                    new Object[]{rootFile, ex.getClass().toString()});
+            }
+        }
+        
+        return parent;
     }
 }

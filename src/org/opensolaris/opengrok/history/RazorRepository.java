@@ -336,4 +336,14 @@ public class RazorRepository extends Repository {
     History getHistory(File file) throws HistoryException {
         return new RazorHistoryParser().parse(file, this);
     }
+
+    @Override
+    String determineParent() throws IOException {
+        return "N/A";
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
+    }
 }

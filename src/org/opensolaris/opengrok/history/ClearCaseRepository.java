@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -196,7 +196,7 @@ public class ClearCaseRepository extends Repository {
      * @return file annotation
      */
     @Override
-public Annotation annotate(File file, String revision) throws IOException {
+    public Annotation annotate(File file, String revision) throws IOException {
         ArrayList<String> argv = new ArrayList<String>();
 
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
@@ -394,5 +394,15 @@ public Annotation annotate(File file, String revision) throws IOException {
     @Override
     History getHistory(File file) throws HistoryException {
         return new ClearCaseHistoryParser().parse(file, this);
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        return null;
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
     }
 }

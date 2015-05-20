@@ -159,14 +159,17 @@ public class MercurialRepositoryTest {
     public void testGetHistoryBranch() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
 
         // Branch the repo and add one changeset.
         runHgCommand("unbundle",
             root, getClass().getResource("hg-branch.bundle").getPath());
         // Switch to the branch.
         runHgCommand("update", root, "mybranch");
+
+        // Since the above hg commands change the active branch the repository
+        // needs to be initialized here so that its branch matches.
+        MercurialRepository mr =
+            (MercurialRepository) RepositoryFactory.getRepository(root);
 
         // Get all revisions.
         History hist = mr.getHistory(root);

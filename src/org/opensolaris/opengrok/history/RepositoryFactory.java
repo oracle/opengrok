@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
@@ -104,6 +105,25 @@ public final class RepositoryFactory {
 
                 if (res.getType() == null || res.getType().length() == 0) {
                     res.setType(res.getClass().getSimpleName());
+                }
+
+                if (res.getParent() == null || res.getParent().length() == 0) {
+                    try {
+                        res.setParent(res.determineParent());
+                    } catch (IOException ex) {
+                        Logger.getLogger(RepositoryFactory.class.getName()).log(Level.SEVERE, null, ex);
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "Failed to get parent for " + file.getAbsolutePath());
+                    }
+                }
+
+                if (res.getBranch() == null || res.getBranch().length() == 0) {
+                    try {
+                        res.setBranch(res.determineBranch());
+                    } catch (IOException ex) {
+                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                            "Failed to get branch for " + file.getAbsolutePath());
+                    }
                 }
 
                 // If this repository displays tags only for files changed by tagged

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -329,5 +329,28 @@ public class BazaarRepository extends Repository {
                 process.destroy();
             }
         }
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        String parent = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<String>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(this.cmd);
+        cmd.add("config");
+        cmd.add("parent_location");
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec() != 0) {
+            throw new IOException(executor.getErrorString());
+        }
+
+        return executor.getOutputString().trim();
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
     }
 }

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -149,5 +148,15 @@ public class RCSRepository extends Repository {
     @Override
     History getHistory(File file) throws HistoryException {
         return new RCSHistoryParser().parse(file, this);
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        return null;
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
     }
 }

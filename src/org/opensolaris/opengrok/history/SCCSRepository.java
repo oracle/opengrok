@@ -18,13 +18,14 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -245,6 +246,38 @@ public class SCCSRepository extends Repository {
     @Override
     History getHistory(File file) throws HistoryException {
         return new SCCSHistoryParser().parse(file, this);
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        File parentFile = new File(directoryName + File.separator +
+            "Codemgr_wsdata" + File.separator + "parent");
+        String parent = null;
+
+        if (parentFile.isFile()) {
+            String line;
+            try (BufferedReader in = new BufferedReader(new FileReader(parentFile))) {
+                if ((line = in.readLine()) == null) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                        "Failed to get parent for {0} (cannot read line)", directoryName);
+                }
+                if (!line.startsWith("VERSION")) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                        "Failed to get parent for {0} (first line does not start with VERSION)", directoryName);
+                }
+                if ((parent = in.readLine()) == null) {
+                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                        "Failed to get parent for {0} (cannot read second line)", directoryName);
+                }
+            }
+        }
+
+        return parent;
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
     }
 }
 
