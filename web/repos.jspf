@@ -1,0 +1,120 @@
+<%--
+$Id$
+
+CDDL HEADER START
+
+The contents of this file are subject to the terms of the
+Common Development and Distribution License (the "License").
+You may not use this file except in compliance with the License.
+
+See LICENSE.txt included in this distribution for the specific
+language governing permissions and limitations under the License.
+
+When distributing Covered Code, include this CDDL HEADER in each
+file and include the License file at LICENSE.txt.
+If applicable, add the following below this CDDL HEADER, with the
+fields enclosed by brackets "[]" replaced with your own identifying
+information: Portions Copyright [yyyy] [name of copyright owner]
+
+CDDL HEADER END
+
+Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+
+--%>
+<%@page import="java.util.Collections"%>
+<%@page import="java.util.TreeMap"%>
+<%@page import="java.util.Comparator"%>
+<%@page import="java.util.Iterator"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.Collection"%>
+<%@page import="java.util.Map"%>
+<%@page import="java.util.HashMap"%>
+<%@page import="java.io.File"%>
+<%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
+<%@page import="org.opensolaris.opengrok.history.RepositoryInfo"%>
+<%@page import="org.opensolaris.opengrok.history.Repository"%>
+<%@page import="org.opensolaris.opengrok.web.Util"%>
+<%@page import="org.opensolaris.opengrok.configuration.Project"%>
+<%@page import="java.util.List"%>
+<%@page import="org.opensolaris.opengrok.web.PageConfig"%>
+<%
+{
+    Comparator<Project> comparatorProj = new Comparator<Project>() {
+        public int compare(Project p1, Project p2) {
+            return p1.getDescription().compareTo(p2.getDescription());
+        }
+    };
+
+    Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
+        public int compare(RepositoryInfo r1, RepositoryInfo r2) {
+            return r1.getDirectoryName().compareTo(r2.getDirectoryName());
+        }
+    };
+
+    List<Project> projects = cfg.getEnv().getProjects();
+    if (projects.size() > 0) {
+        // Create structure for mapping a project to list of related repositories.
+        RuntimeEnvironment env = cfg.getEnv();
+        TreeMap<Project, ArrayList<RepositoryInfo>> map =
+            new TreeMap<Project, ArrayList<RepositoryInfo>>(comparatorProj);
+        for (RepositoryInfo r: env.getRepositories()) {
+            Project proj;
+            String repoPath = env.getPathRelativeToSourceRoot(
+                new File(r.getDirectoryName()), 0);
+            if ((proj = Project.getProject(repoPath)) != null) {
+                ArrayList<RepositoryInfo> values = map.get(proj);
+                if (values == null) {
+                    values = new ArrayList<RepositoryInfo>();
+                    map.put(proj, values);
+                }
+                values.add(r);
+            }
+        }
+
+        // Print table of project-repository mappings.
+        %>
+        <table>
+        <tr>
+        <td><b>Project</b></td>
+        <td><b>SCM type</b></td>
+        <td><b>Parent (branch)</b></td>
+        </tr>
+        <%
+        Iterator<Project> keySetIterator = map.keySet().iterator();
+        while (keySetIterator.hasNext()) {
+            Project proj = keySetIterator.next();
+            ArrayList<RepositoryInfo> repos = map.get(proj);
+            String projDesc = proj.getDescription();
+            Integer cnt = 0;
+            Collections.sort(repos, comparatorRepo);
+            for (RepositoryInfo ri : repos) {
+                if (cnt != 0) {
+                    projDesc = "";
+                }
+                %>
+                <tr><td><%= Util.htmlize(projDesc) %></td><%
+                String parent = ri.getParent();
+                if (parent == null) {
+                    parent = "N/A";
+                }
+                String type = ri.getType();
+                if (type == null) {
+                    type = "N/A";
+                }
+                String branch = ri.getBranch();
+                if (branch == null) {
+                    branch = "N/A";
+                }
+                %><td><%= Util.htmlize(type) %></td><%
+                %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                %></tr><%
+                cnt++;
+            }
+        }
+        %>
+        </table> <%
+    }
+}
+%>
+<br/>
+<br/>

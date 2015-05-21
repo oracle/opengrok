@@ -123,7 +123,7 @@ public class Project {
      */
     public static Project getProject(String path) {
         Project ret = null;
-        String lpath=path;
+        String lpath = path;
         if (File.separatorChar != '/') {
             lpath = path.replace(File.separatorChar, '/');
         }

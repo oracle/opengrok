@@ -52,7 +52,13 @@ include file="menu.jspf"
 
 include file="index_body.html"
 
-        %></div>
+        %>
+        <%@
+
+include file="repos.jspf"
+
+        %>
+        </div>
 <%
 }
 /* ---------------------- index.jsp end --------------------- */
