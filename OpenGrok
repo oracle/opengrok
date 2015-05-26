@@ -129,8 +129,8 @@ else
 fi
 
 # TODO: Handle symlinks correctly (especially in ${0})
-SCRIPT_DIRECTORY="`dirname ${0}`"
-SCRIPT_DIRECTORY="`cd ${SCRIPT_DIRECTORY}; pwd`"
+SCRIPT_DIRECTORY=`dirname "${0}"`
+SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
 
 #
 # Default Instance Configuration
@@ -800,7 +800,7 @@ MinimalInvocation()
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    	\
         ${JAVA_DEBUG}                                           	\
         ${LOGGER_PROPERTIES}                                    	\
-        -jar ${OPENGROK_JAR}                                    	\
+        -jar "${OPENGROK_JAR}"                                    	\
         ${VERBOSE} ${QUIET}                                     	\
         "${@}"
 }
@@ -811,7 +811,7 @@ CommonInvocation()
         ${IGNORE_PATTERNS}                    				\
         ${DERBY_OPTIONS}						\
         ${HISTORY_TAGS}							\
-        ${GENERATE_HISTORY}           				\
+        ${GENERATE_HISTORY}           					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
@@ -829,8 +829,8 @@ StdInvocation()
 	${ENABLE_PROJECTS}	\
         ${WEBAPP_CONFIG}	\
         ${WEBAPP_CONTEXT}	\
-        -s ${SRC_ROOT}		\
-	-d ${DATA_ROOT}		\
+        -s "${SRC_ROOT}"	\
+	-d "${DATA_ROOT}"	\
 	"${@}"
 }
 
@@ -858,15 +858,15 @@ UpdateDescriptionCache()
 
     if [ -n "${PATH_DESC}" -a -s "${PATH_DESC}" ]
     then
-        ${DO} ${JAVA} -classpath ${OPENGROK_JAR}                \
-            ${EFTAR_UPDATE} ${PATH_DESC} ${EFTAR_OUTPUT_FILE}
+        ${DO} ${JAVA} -classpath "${OPENGROK_JAR}"		\
+            ${EFTAR_UPDATE} "${PATH_DESC}" "${EFTAR_OUTPUT_FILE}"
     fi
 }
 
 OpenGrokUsage()
 {
     echo "Options for opengrok.jar:" 1>&2
-    ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} '-?'
+    ${DO} ${JAVA} ${JAVA_OPTS} -jar "${OPENGROK_JAR}" '-?'
 }
 
 DeployWar()
@@ -946,7 +946,7 @@ DerbyServer()
 ClearHistory()
 {
 	Progress "Removing history index data for repository ${1}"
-	MinimalInvocation -s ${SRC_ROOT} -d ${DATA_ROOT} -k "${1}"
+	MinimalInvocation -s "${SRC_ROOT}" -d "${DATA_ROOT}" -k "${1}"
 }
 
 #
