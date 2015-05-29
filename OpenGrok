@@ -714,7 +714,7 @@ ValidateConfiguration()
 
     if [ -n "${OPENGROK_DERBY}" ]
     then
-        if [ `uname -s` == "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
+        if [ "`uname -s`" = "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
 	then
 	    if [ -d "/var/tomcat6" -a \
 	        ! -r "/var/tomcat6/webapps/source/WEB-INF/lib/derbyclient.jar" ];
