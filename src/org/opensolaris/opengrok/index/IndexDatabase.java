@@ -367,7 +367,7 @@ public class IndexDatabase {
                 
                 try {
                     if (numDocs > 0) {
-                        uidIter = terms.iterator(uidIter);
+                        uidIter = terms.iterator();
                         TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
                         if (stat==TermsEnum.SeekStatus.END) {
                             uidIter=null;
@@ -973,7 +973,7 @@ public class IndexDatabase {
      */
     public void listFiles() throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter=null;
+        TermsEnum iter;
         Terms terms = null;
 
         try {
@@ -983,7 +983,7 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.U);
             }
-            iter = terms.iterator(iter); // init uid iterator
+            iter = terms.iterator(); // init uid iterator
             while (iter != null && iter.term() != null) {
                 log.fine(Util.uid2url(iter.term().utf8ToString()));
                 BytesRef next=iter.next();
@@ -1034,7 +1034,7 @@ public class IndexDatabase {
 
     public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter = null;
+        TermsEnum iter;
         Terms terms = null;         
 
         try {
@@ -1044,7 +1044,7 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.DEFS);
             }
-            iter = terms.iterator(iter); // init uid iterator            
+            iter = terms.iterator(); // init uid iterator            
             while (iter != null && iter.term() != null) {
                 //if (iter.term().field().startsWith("f")) {
                 if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
