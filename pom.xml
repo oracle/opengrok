@@ -143,8 +143,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>			
                         <forkCount>1</forkCount>
-                        <reuseForks>false</reuseForks>
-			<argLine>-XX:-UseSplitVerifier</argLine>
+                        <reuseForks>false</reuseForks>			
                 </configuration>
                 <version>2.16</version>
             </plugin>
