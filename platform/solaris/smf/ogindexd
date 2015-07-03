@@ -53,7 +53,7 @@ read_config() {
 	fi
 
 	if [ -r "$READONLY_CFG_FILE" ]; then
-		READ_XML_CONF="-R $a"
+		READ_XML_CONF="-R $READONLY_CFG_FILE"
 	fi
 }
 
