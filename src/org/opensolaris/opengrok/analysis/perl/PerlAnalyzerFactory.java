@@ -45,7 +45,8 @@ public class PerlAnalyzerFactory extends FileAnalyzerFactory {
     private static final String[] SUFFIXES = {
         "PL",
         "PERL",
-        "PM"
+        "PM",
+        "PH"
     };
     private static final String[] MAGICS = {
         "#!/usr/bin/env perl",
