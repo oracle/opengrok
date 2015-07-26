@@ -511,6 +511,11 @@ public final class Util {
                     out.write("\" title=\"");
                     out.write(msg);
                 }
+                int versionVisibility = annotation.getFileVersionsCount() > 1
+                    ? 221 - ((221 * Math.max(0, annotation.getFileVersion(r)-1) ) / (annotation.getFileVersionsCount()-1) ) //keep this in range 0..221, 0 most visible
+                    : 221
+                ;
+                out.write("\" style=\"background-color: rgb(221,221,"+  versionVisibility +");");
                 out.write(closeQuotedTag);
             }
             StringBuilder buf = new StringBuilder();
