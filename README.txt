@@ -716,19 +716,18 @@ To check that your code follows the standard coding conventions,
 you can use checkstyle from http://checkstyle.sourceforge.net/
 
 First you must download checkstyle from http://checkstyle.sourceforge.net/ ,
-You need Version 5.3 (or newer). Extract the package you have
+You need Version 6.8 (or newer). Extract the package you have
 downloaded, and create a symbolic link to it from ~/.ant/lib/checkstyle,
 e.g. like this:
 
    $ cd ~/.ant/lib
-   $ unzip ~/Desktop/checkstyle-5.3.zip
-   $ ln -s checkstyle-5.3 checkstyle
+   $ unzip ~/Desktop/checkstyle-6.8.zip
+   $ ln -s checkstyle-6.8 checkstyle
 
 You also have to create symbolic links to the jar files:
 
-   $ cd checkstyle
-   $ ln -s checkstyle-5.3.jar checkstyle.jar
-   $ ln -s checkstyle-all-5.3.jar checkstyle-all.jar
+   $ cd checkstyle   
+   $ ln -s checkstyle-6.8-all.jar checkstyle-all.jar
 
 To run checkstyle on the source code, just run ant checkstyle:
 

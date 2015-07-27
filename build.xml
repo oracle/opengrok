@@ -539,7 +539,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <target name="checkstyle" depends="compile, -check_checkstyle" description="Run checkstyle on OpenGrok source code">
-        <taskdef resource="checkstyletask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
+        <taskdef resource="checkstyleanttask.properties" classpath="${checkstyle.home}/checkstyle-all.jar"/>
         <checkstyle config="checkstyle/style.xml" failOnViolation="false">
             <fileset dir="src" includes="**/*.java"/>
             <fileset dir="test" includes="**/*.java"/>
