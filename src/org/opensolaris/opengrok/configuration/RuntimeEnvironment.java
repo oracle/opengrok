@@ -382,7 +382,7 @@ public final class RuntimeEnvironment {
 
         executor.exec(false);
         String output = executor.getOutputString();
-        if (output == null || output.indexOf("Exuberant Ctags") == -1) {
+        if (output == null || ( output.indexOf("Exuberant Ctags") == -1 && output.indexOf("Universal Ctags") == -1 ) ) {
             log.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
                     + "(tried running " + "{0}" + ")\n"
                     + "Please use option -c to specify path to a good "
