@@ -32,7 +32,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,10 +47,11 @@ import org.opensolaris.opengrok.history.RepositoryInfo;
 
 /**
  * Test the RuntimeEnvironment class
- * 
+ *
  * @author Trond Norbye
  */
 public class RuntimeEnvironmentTest {
+
     private static File originalConfig;
 
     public RuntimeEnvironmentTest() {
@@ -54,7 +61,7 @@ public class RuntimeEnvironmentTest {
     public static void setUpClass() throws Exception {
         // preserve the original
         originalConfig = File.createTempFile("config", ".xml");
-        RuntimeEnvironment.getInstance().writeConfiguration(originalConfig);       
+        RuntimeEnvironment.getInstance().writeConfiguration(originalConfig);
     }
 
     @AfterClass
@@ -137,7 +144,7 @@ public class RuntimeEnvironmentTest {
             public void run() {
                 Configuration c = new Configuration();
                 RuntimeEnvironment.getInstance().setConfiguration(c);
-                
+
             }
         });
         t.start();
@@ -225,7 +232,7 @@ public class RuntimeEnvironmentTest {
         assertNotNull(instance.getRepositories());
         instance.setRepositories(null);
         assertNull(instance.getRepositories());
-        List<RepositoryInfo> reps = new ArrayList<RepositoryInfo>();
+        List<RepositoryInfo> reps = new ArrayList<>();
         instance.setRepositories(reps);
         assertSame(reps, instance.getRepositories());
     }
@@ -373,8 +380,8 @@ public class RuntimeEnvironmentTest {
         assertNotNull(o);
         m = m.replace('a', 'm');
         try {
-             o = Configuration.makeXMLStringAsConfiguration(m);
-             fail("makeXmlStringsAsConfiguration should throw exception");
+            o = Configuration.makeXMLStringAsConfiguration(m);
+            fail("makeXmlStringsAsConfiguration should throw exception");
         } catch (Throwable t) {
         }
     }
@@ -392,7 +399,7 @@ public class RuntimeEnvironmentTest {
         assertTrue(f.isAbsolute());
         assertTrue(file.delete());
     }
-    
+
     @Test
     public void testBug3154() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
@@ -430,11 +437,11 @@ public class RuntimeEnvironmentTest {
         StringWriter out = new StringWriter();
         xref.write(out);
 
-        String expectedAddress = expected ?
-            address.replace("@", " (at) ") : address;
+        String expectedAddress = expected
+                ? address.replace("@", " (at) ") : address;
 
-        String expectedOutput =
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+        String expectedOutput
+                = "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
                 + expectedAddress;
 
         assertEquals(expectedOutput, out.toString());

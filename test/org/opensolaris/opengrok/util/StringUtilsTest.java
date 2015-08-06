@@ -18,20 +18,20 @@
  */
 
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.util;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for the {@code StringUtils} class.
- * 
+ *
  * @author Vladimir Kotal
  */
 public class StringUtilsTest {
+
     @Test
     public void testValues() {
         int i;
@@ -44,7 +44,7 @@ public class StringUtilsTest {
             "0:02:04", "1:00:51", "1 day", "1 day 34.349 seconds",
             "12 days 10:47:14"
         };
-        
+
         for (i = 0; i < values.length; i++) {
             assertEquals(expected[i], StringUtils.getReadableTime(values[i]));
         }

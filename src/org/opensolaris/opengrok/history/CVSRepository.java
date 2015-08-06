@@ -43,19 +43,26 @@ import org.opensolaris.opengrok.util.Executor;
  * Access to a CVS repository.
  */
 public class CVSRepository extends RCSRepository {
+
     private static final long serialVersionUID = 1L;
-    /** The property name used to obtain the client command for repository. */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.cvs";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * The property name used to obtain the client command for repository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.cvs";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "cvs";
 
     private Boolean isBranch = null;
     private String branch = null;
 
-    /** Pattern used to extract author/revision from cvs annotate. */
-    private static final Pattern ANNOTATE_PATTERN =
-        Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
+    /**
+     * Pattern used to extract author/revision from cvs annotate.
+     */
+    private static final Pattern ANNOTATE_PATTERN
+            = Pattern.compile("([\\.\\d]+)\\W+\\((\\w+)");
 
     public CVSRepository() {
         setType("CVS");
@@ -66,9 +73,9 @@ public class CVSRepository extends RCSRepository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd , "--version");
+            working = checkCmd(RepoCommand, "--version");
         }
-        return working.booleanValue();
+        return working;
     }
 
     @Override
@@ -78,7 +85,7 @@ public class CVSRepository extends RCSRepository {
         if (isWorking()) {
             Logger logger = OpenGrokLogger.getLogger();
             File rootFile = new File(getDirectoryName() + File.separatorChar
-                + "CVS" + File.separatorChar + "Root");
+                    + "CVS" + File.separatorChar + "Root");
             BufferedReader input;
             String root;
             try {
@@ -86,17 +93,17 @@ public class CVSRepository extends RCSRepository {
                 try {
                     root = input.readLine();
                 } catch (java.io.IOException e) {
-                    logger.warning("failed to load: " + e);
+                    logger.log(Level.WARNING, "failed to load: {0}", e);
                     return;
                 } finally {
                     try {
                         input.close();
                     } catch (java.io.IOException e) {
-                        logger.info("failed to close: " + e);
+                        logger.log(Level.INFO, "failed to close: {0}", e);
                     }
                 }
             } catch (java.io.FileNotFoundException e) {
-                logger.fine("not loading CVS Root file: " + e);
+                logger.log(Level.FINE, "not loading CVS Root file: {0}", e);
                 return;
             }
 
@@ -108,8 +115,8 @@ public class CVSRepository extends RCSRepository {
 
     @Override
     File getRCSFile(File file) {
-        File cvsFile =
-                RCSHistoryParser.getCVSFile(file.getParent(), file.getName());
+        File cvsFile
+                = RCSHistoryParser.getCVSFile(file.getParent(), file.getName());
         if (cvsFile != null && cvsFile.exists()) {
             return cvsFile;
         }
@@ -118,20 +125,20 @@ public class CVSRepository extends RCSRepository {
 
     @Override
     public boolean isRepositoryFor(File file) {
-       if (file.isDirectory()) {
-        File cvsDir = new File(file, "CVS");
-        return cvsDir.isDirectory();
-       }
-       return false;
+        if (file.isDirectory()) {
+            File cvsDir = new File(file, "CVS");
+            return cvsDir.isDirectory();
+        }
+        return false;
     }
 
     @Override
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("update");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -140,8 +147,8 @@ public class CVSRepository extends RCSRepository {
     }
 
     /**
-     * Get an executor to be used for retrieving the history log for the
-     * named file.
+     * Get an executor to be used for retrieving the history log for the named
+     * file.
      *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
@@ -153,9 +160,9 @@ public class CVSRepository extends RCSRepository {
             filename = abs.substring(directoryName.length() + 1);
         }
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("log");
 
         if (isBranch == null) {
@@ -184,7 +191,7 @@ public class CVSRepository extends RCSRepository {
         if (isBranch.equals(Boolean.TRUE) && branch != null && !branch.isEmpty()) {
             // Just generate THIS branch history, we don't care about the other
             // branches which are not checked out.
-            cmd.add("-r"+branch);
+            cmd.add("-r" + branch);
         } else {
             // Get revisions on this branch only (otherwise the revisions
             // list produced by the cvs log command would be unsorted).
@@ -192,14 +199,13 @@ public class CVSRepository extends RCSRepository {
         }
 
         if (filename.length() > 0) {
-           cmd.add(filename);
+            cmd.add(filename);
         }
         return new Executor(cmd, new File(getDirectoryName()));
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
-    {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
         Process process = null;
@@ -210,7 +216,7 @@ public class CVSRepository extends RCSRepository {
         }
         try {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {cmd, "up", "-p", "-r", revision, basename};
+            String argv[] = {RepoCommand, "up", "-p", "-r", revision, basename};
             process = Runtime.getRuntime().exec(argv, null, new File(parent));
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -228,7 +234,7 @@ public class CVSRepository extends RCSRepository {
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get history: {0}", exp.getClass().toString());
+                    "Failed to get history: {0}", exp.getClass().toString());
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -264,9 +270,9 @@ public class CVSRepository extends RCSRepository {
 
     @Override
     Annotation annotate(File file, String revision) throws IOException {
-        ArrayList<String> cmd = new ArrayList<String>();
+        ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("annotate");
         if (revision != null) {
             cmd.add("-r");
@@ -279,16 +285,15 @@ public class CVSRepository extends RCSRepository {
 
         if (status != 0) {
             OpenGrokLogger.getLogger().log(Level.WARNING,
-                "Failed to get annotations for: \"{0}\" Exit code: {1}",
-                new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
+                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
     }
 
     protected Annotation parseAnnotation(Reader input, String fileName)
-        throws IOException
-    {
+            throws IOException {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
         String line = "";
@@ -298,8 +303,7 @@ public class CVSRepository extends RCSRepository {
         while ((line = in.readLine()) != null) {
             // Skip header
             if (!hasStarted && (line.length() == 0
-                || !Character.isDigit(line.charAt(0))))
-            {
+                    || !Character.isDigit(line.charAt(0)))) {
                 continue;
             }
             hasStarted = true;
@@ -313,8 +317,8 @@ public class CVSRepository extends RCSRepository {
                 ret.addLine(rev, author, true);
             } else {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Error: did not find annotation in line {0}: [{1}]",
-                    new Object[]{String.valueOf(lineno), line});
+                        "Error: did not find annotation in line {0}: [{1}]",
+                        new Object[]{String.valueOf(lineno), line});
             }
         }
         return ret;
@@ -322,8 +326,8 @@ public class CVSRepository extends RCSRepository {
 
     @Override
     String determineParent() throws IOException {
-        File rootFile = new File(directoryName + File.separator + "CVS" +
-            File.separator + "Root");
+        File rootFile = new File(directoryName + File.separator + "CVS"
+                + File.separator + "Root");
         String parent = null;
 
         if (rootFile.isFile()) {
@@ -331,11 +335,11 @@ public class CVSRepository extends RCSRepository {
                 parent = br.readLine();
             } catch (IOException ex) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Failed to read CVS/Root file {0}: {1}",
-                    new Object[]{rootFile, ex.getClass().toString()});
+                        "Failed to read CVS/Root file {0}: {1}",
+                        new Object[]{rootFile, ex.getClass().toString()});
             }
         }
-        
+
         return parent;
     }
 }

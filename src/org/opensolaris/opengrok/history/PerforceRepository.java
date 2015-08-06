@@ -45,14 +45,18 @@ import org.opensolaris.opengrok.util.Executor;
 public class PerforceRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
-    /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.Perforce";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * The property name used to obtain the client command for this repository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.Perforce";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "p4";
 
-    private static final Pattern annotation_pattern =
-        Pattern.compile("^(\\d+): .*");
+    private static final Pattern annotation_pattern
+            = Pattern.compile("^(\\d+): .*");
 
     public PerforceRepository() {
         type = "Perforce";
@@ -62,17 +66,17 @@ public class PerforceRepository extends Repository {
     public Annotation annotate(File file, String rev) throws IOException {
         Annotation a = new Annotation(file.getName());
 
-        List<HistoryEntry> revisions =
-            PerforceHistoryParser.getRevisions(file, rev).getHistoryEntries();
-        HashMap<String, String> revAuthor = new HashMap<String, String>();
+        List<HistoryEntry> revisions
+                = PerforceHistoryParser.getRevisions(file, rev).getHistoryEntries();
+        HashMap<String, String> revAuthor = new HashMap<>();
         for (HistoryEntry entry : revisions) {
             // a.addDesc(entry.getRevision(), entry.getMessage());
             revAuthor.put(entry.getRevision(), entry.getAuthor());
         }
 
-        ArrayList<String> cmd = new ArrayList<String>();
+        ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("annotate");
         cmd.add("-q");
         cmd.add(file.getPath() + ((rev == null) ? "" : "#" + rev));
@@ -92,8 +96,8 @@ public class PerforceRepository extends Repository {
                     a.addLine(revision, author, true);
                 } else {
                     OpenGrokLogger.getLogger().log(Level.SEVERE,
-                        "Error: did not find annotation in line "
-                        + lineno + ": [" + line + "]");
+                            "Error: did not find annotation in line {0}: [{1}]",
+                            new Object[]{lineno, line});
                 }
             }
         } catch (IOException e) {
@@ -105,9 +109,9 @@ public class PerforceRepository extends Repository {
 
     @Override
     InputStream getHistoryGet(String parent, String basename, String rev) {
-        ArrayList<String> cmd = new ArrayList<String>();
+        ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("print");
         cmd.add("-q");
         cmd.add(basename + ((rev == null) ? "" : "#" + rev));
@@ -120,9 +124,9 @@ public class PerforceRepository extends Repository {
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("sync");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
@@ -140,8 +144,8 @@ public class PerforceRepository extends Repository {
         return true;
     }
 
-    private static final PerforceRepository testRepo =
-            new PerforceRepository();
+    private static final PerforceRepository testRepo
+            = new PerforceRepository();
 
     /**
      * Check if a given file is in the depot
@@ -152,35 +156,35 @@ public class PerforceRepository extends Repository {
     public static boolean isInP4Depot(File file) {
         boolean status = false;
         if (testRepo.isWorking()) {
-            ArrayList<String> cmd = new ArrayList<String>();
+            ArrayList<String> cmd = new ArrayList<>();
             String name = file.getName();
-            File   dir  = file.getParentFile();
+            File dir = file.getParentFile();
             if (file.isDirectory()) {
                 dir = file;
                 name = "*";
-                cmd.add(testRepo.cmd);
+                cmd.add(testRepo.RepoCommand);
                 cmd.add("dirs");
                 cmd.add(name);
                 Executor executor = new Executor(cmd, dir);
                 executor.exec();
-            /* OUTPUT:
-            stdout: //depot_path/name
-            stderr: name - no such file(s).
-             */
-                status = (executor.getOutputString().indexOf("//") != -1);
+                /* OUTPUT:
+                 stdout: //depot_path/name
+                 stderr: name - no such file(s).
+                 */
+                status = (executor.getOutputString().contains("//"));
             }
             if (!status) {
                 cmd.clear();
-                cmd.add(testRepo.cmd);
+                cmd.add(testRepo.RepoCommand);
                 cmd.add("files");
                 cmd.add(name);
                 Executor executor = new Executor(cmd, dir);
                 executor.exec();
-            /* OUTPUT:
-            stdout: //depot_path/name
-            stderr: name - no such file(s).
-             */
-                status = (executor.getOutputString().indexOf("//") != -1);
+                /* OUTPUT:
+                 stdout: //depot_path/name
+                 stderr: name - no such file(s).
+                 */
+                status = (executor.getOutputString().contains("//"));
             }
         }
         return status;
@@ -195,9 +199,9 @@ public class PerforceRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd, "help");
+            working = checkCmd(RepoCommand, "help");
         }
-        return working.booleanValue();
+        return working;
     }
 
     @Override

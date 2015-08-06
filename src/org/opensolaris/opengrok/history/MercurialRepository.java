@@ -29,7 +29,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,27 +47,25 @@ import org.opensolaris.opengrok.web.Util;
  *
  */
 public class MercurialRepository extends Repository {
+
     private static final long serialVersionUID = 1L;
 
     /**
-     * the property name used to obtain the client command for
-     * this repository
+     * the property name used to obtain the client command for this repository
      */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.Mercurial";
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.Mercurial";
     /**
-     * the command to use to access the repository if none was given
-     * explicitly
+     * the command to use to access the repository if none was given explicitly
      */
     public static final String CMD_FALLBACK = "hg";
 
     /**
-     * The boolean property and environment variable name to indicate
-     * whether forest-extension in Mercurial adds repositories inside the
-     * repositories.
+     * The boolean property and environment variable name to indicate whether
+     * forest-extension in Mercurial adds repositories inside the repositories.
      */
-    public static final String NOFOREST_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.mercurial.disableForest";
+    public static final String NOFOREST_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.mercurial.disableForest";
 
     static final String CHANGESET = "changeset: ";
     static final String USER = "user: ";
@@ -72,48 +73,56 @@ public class MercurialRepository extends Repository {
     static final String DESCRIPTION = "description: ";
     static final String FILE_COPIES = "file_copies: ";
     static final String FILES = "files: ";
-    static final String END_OF_ENTRY =
-        "mercurial_history_end_of_entry";
+    static final String END_OF_ENTRY
+            = "mercurial_history_end_of_entry";
 
-    private static final String TEMPLATE_STUB =
-        CHANGESET + "{rev}:{node|short}\\n"
-        + USER + "{author}\\n" + DATE + "{date|isodate}\\n"
-        + DESCRIPTION + "{desc|strip|obfuscate}\\n";
+    private static final String TEMPLATE_STUB
+            = CHANGESET + "{rev}:{node|short}\\n"
+            + USER + "{author}\\n" + DATE + "{date|isodate}\\n"
+            + DESCRIPTION + "{desc|strip|obfuscate}\\n";
 
     private static final String FILE_LIST = FILES + "{files}\\n";
 
-    /** Templates for formatting hg log output for files. */
+    /**
+     * Templates for formatting hg log output for files.
+     */
     private static final String FILE_TEMPLATE = TEMPLATE_STUB
-        + END_OF_ENTRY + "\\n";
+            + END_OF_ENTRY + "\\n";
     private static final String FILE_TEMPLATE_LIST = TEMPLATE_STUB
-        + FILE_LIST + END_OF_ENTRY + "\\n";
+            + FILE_LIST + END_OF_ENTRY + "\\n";
 
-    /** Template for formatting hg log output for directories. */
-    private static final String DIR_TEMPLATE_RENAMED =
-        TEMPLATE_STUB + FILE_LIST
-        + FILE_COPIES + "{file_copies}\\n" + END_OF_ENTRY + "\\n";
-    private static final String DIR_TEMPLATE =
-        TEMPLATE_STUB + FILE_LIST
-        + END_OF_ENTRY + "\\n";
+    /**
+     * Template for formatting hg log output for directories.
+     */
+    private static final String DIR_TEMPLATE_RENAMED
+            = TEMPLATE_STUB + FILE_LIST
+            + FILE_COPIES + "{file_copies}\\n" + END_OF_ENTRY + "\\n";
+    private static final String DIR_TEMPLATE
+            = TEMPLATE_STUB + FILE_LIST
+            + END_OF_ENTRY + "\\n";
 
-    /** Pattern used to extract author/revision from hg annotate. */
-    private static final Pattern ANNOTATION_PATTERN =
-        Pattern.compile("^\\s*(\\d+):");
+    /**
+     * Pattern used to extract author/revision from hg annotate.
+     */
+    private static final Pattern ANNOTATION_PATTERN
+            = Pattern.compile("^\\s*(\\d+):");
 
-    private static final Pattern LOG_COPIES_PATTERN =
-        Pattern.compile("^(\\d+):(.*)");
+    private static final Pattern LOG_COPIES_PATTERN
+            = Pattern.compile("^(\\d+):(.*)");
 
     public MercurialRepository() {
         type = "Mercurial";
         datePattern = "yyyy-MM-dd hh:mm ZZZZ";
     }
 
-    /** Return name of the branch or "default" */
+    /**
+     * Return name of the branch or "default"
+     */
     @Override
     String determineBranch() {
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("branch");
 
         Executor e = new Executor(cmd, new File(directoryName));
@@ -123,17 +132,16 @@ public class MercurialRepository extends Repository {
     }
 
     /**
-     * Get an executor to be used for retrieving the history log for the
-     * named file or directory.
+     * Get an executor to be used for retrieving the history log for the named
+     * file or directory.
      *
      * @param file The file or directory to retrieve history for
-     * @param changeset the oldest changeset to return from the executor,
-     * or {@code null} if all changesets should be returned
+     * @param changeset the oldest changeset to return from the executor, or
+     * {@code null} if all changesets should be returned
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(File file, String changeset)
-             throws HistoryException, IOException
-    {
+            throws HistoryException, IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -142,9 +150,9 @@ public class MercurialRepository extends Repository {
             filename = abs.substring(directoryName.length() + 1);
         }
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("log");
 
         // For plain files we would like to follow the complete history
@@ -163,8 +171,8 @@ public class MercurialRepository extends Repository {
                 cmd.add("reverse(" + parts[0] + "::'" + getBranch() + "')");
             } else {
                 throw new HistoryException(
-                        "Don't know how to parse changeset identifier: " +
-                        changeset);
+                        "Don't know how to parse changeset identifier: "
+                        + changeset);
             }
         } else {
             cmd.add("-r");
@@ -187,13 +195,12 @@ public class MercurialRepository extends Repository {
 
     /**
      * Try to get file contents for given revision.
-     * 
+     *
      * @param fullpath full pathname of the file
      * @param rev revision
      * @return contents of the file in revision rev
      */
-    private InputStream getHistoryRev(String fullpath, String rev)
-    {
+    private InputStream getHistoryRev(String fullpath, String rev) {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -205,10 +212,10 @@ public class MercurialRepository extends Repository {
             revision = rev.substring(0, rev.indexOf(':'));
         }
         try {
-            String filename = 
-                fullpath.substring(directoryName.length() + 1);
+            String filename
+                    = fullpath.substring(directoryName.length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {cmd, "cat", "-r", revision, filename};
+            String argv[] = {RepoCommand, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -234,7 +241,7 @@ public class MercurialRepository extends Repository {
             }
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get history: " + exp.getClass().toString());
+                    "Failed to get history: {0}", exp.getClass().toString());
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -252,22 +259,24 @@ public class MercurialRepository extends Repository {
 
     /**
      * Get the name of file in given revision
+     *
      * @param fullpath file path
-     * @param full_rev_to_find revision number (in the form of {rev}:{node|short})
+     * @param full_rev_to_find revision number (in the form of
+     * {rev}:{node|short})
      * @returns original filename
      */
-    private String findOriginalName(String fullpath, String full_rev_to_find) 
+    private String findOriginalName(String fullpath, String full_rev_to_find)
             throws IOException {
         Matcher matcher = LOG_COPIES_PATTERN.matcher("");
         String file = fullpath.substring(directoryName.length() + 1);
-        ArrayList<String> argv = new ArrayList<String>();
+        ArrayList<String> argv = new ArrayList<>();
 
         // Extract {rev} from the full revision specification string.
         String[] rev_array = full_rev_to_find.split(":");
         String rev_to_find = rev_array[0];
         if (rev_to_find.isEmpty()) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Invalid revision string: {0}", full_rev_to_find);
+                    "Invalid revision string: {0}", full_rev_to_find);
             return null;
         }
 
@@ -285,20 +294,20 @@ public class MercurialRepository extends Repository {
         argv.add("--template");
         argv.add("{rev}:{file_copies}\\n");
         argv.add(fullpath);
-        
+
         ProcessBuilder pb = new ProcessBuilder(argv);
         Process process = null;
-        
+
         try {
-           process = pb.start();
-           try (BufferedReader in = new BufferedReader(
-                   new InputStreamReader(process.getInputStream()))) {
-               String line;
-               while ((line = in.readLine()) != null) {
+            process = pb.start();
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = in.readLine()) != null) {
                     matcher.reset(line);
                     if (!matcher.find()) {
                         OpenGrokLogger.getLogger().log(Level.SEVERE,
-                            "Failed to match: {0}", line);
+                                "Failed to match: {0}", line);
                         return (null);
                     }
                     String rev = matcher.group(1);
@@ -314,7 +323,7 @@ public class MercurialRepository extends Repository {
                          * (oldfile2) ...' into pairs of renames.
                          */
                         String[] splitArray = content.split("\\)");
-                        for (String s: splitArray) {
+                        for (String s : splitArray) {
                             /*
                              * This will fail for file names containing ' ('.
                              */
@@ -330,9 +339,9 @@ public class MercurialRepository extends Repository {
                     if (rev.equals(rev_to_find)) {
                         break;
                     }
-               }
-           }
-         } finally {
+                }
+            }
+        } finally {
             if (process != null) {
                 try {
                     process.exitValue();
@@ -342,59 +351,59 @@ public class MercurialRepository extends Repository {
                 }
             }
         }
-        
+
         return (fullpath.substring(0, directoryName.length() + 1) + file);
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
-    {
-       String fullpath;
-       
-       try {
-           fullpath = new File(parent, basename).getCanonicalPath();
-       } catch (IOException exp) {
-           OpenGrokLogger.getLogger().log(Level.SEVERE,
-               "Failed to get canonical path: {0}", exp.getClass().toString());
-           return null;
-       }
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
+        String fullpath;
 
-       InputStream ret = getHistoryRev(fullpath, rev);
-       if (ret == null) {
-           /*
-            * If we failed to get the contents it might be that the file was
-            * renamed so we need to find its original name in that revision
-            * and retry with the original name.
-            */
-           String origpath;
-           try {
-            origpath = findOriginalName(fullpath, rev);
-           } catch (IOException exp) {
-               OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get original revision: {0}",
-                exp.getClass().toString());
-               return null;
-           }
-           if (origpath != null) {
-               ret = getHistoryRev(origpath, rev);
-           }
-       }
-       
-       return ret;
+        try {
+            fullpath = new File(parent, basename).getCanonicalPath();
+        } catch (IOException exp) {
+            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                    "Failed to get canonical path: {0}", exp.getClass().toString());
+            return null;
+        }
+
+        InputStream ret = getHistoryRev(fullpath, rev);
+        if (ret == null) {
+            /*
+             * If we failed to get the contents it might be that the file was
+             * renamed so we need to find its original name in that revision
+             * and retry with the original name.
+             */
+            String origpath;
+            try {
+                origpath = findOriginalName(fullpath, rev);
+            } catch (IOException exp) {
+                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        "Failed to get original revision: {0}",
+                        exp.getClass().toString());
+                return null;
+            }
+            if (origpath != null) {
+                ret = getHistoryRev(origpath, rev);
+            }
+        }
+
+        return ret;
     }
-    
+
     /**
      * Annotate the specified file/revision.
      *
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
+     * @throws java.io.IOException
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        ArrayList<String> argv = new ArrayList<String>();
+        ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(cmd);
+        argv.add(RepoCommand);
         argv.add("annotate");
         argv.add("-n");
         if (revision != null) {
@@ -410,7 +419,7 @@ public class MercurialRepository extends Repository {
         pb.directory(file.getParentFile());
         Process process = null;
         Annotation ret = null;
-        HashMap<String,HistoryEntry> revs = new HashMap<String,HistoryEntry>();
+        HashMap<String, HistoryEntry> revs = new HashMap<>();
 
         // Construct hash map for history entries from history cache. This is
         // needed later to get user string for particular revision.
@@ -425,7 +434,7 @@ public class MercurialRepository extends Repository {
             }
         } catch (HistoryException he) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Error: cannot get history for file " + file);
+                    "Error: cannot get history for file {0}", file);
             return null;
         }
 
@@ -445,13 +454,13 @@ public class MercurialRepository extends Repository {
                         String author = "N/A";
                         // Use the history index hash map to get the author.
                         if (revs.get(rev) != null) {
-                             author = revs.get(rev).getAuthor();
+                            author = revs.get(rev).getAuthor();
                         }
                         ret.addLine(rev, Util.getEmail(author.trim()), true);
                     } else {
                         OpenGrokLogger.getLogger().log(Level.SEVERE,
-                            "Error: did not find annotation in line "
-                            + lineno + ": [" + line + "]");
+                                "Error: did not find annotation in line {0}: [{1}]",
+                                new Object[]{lineno, line});
                     }
                 }
             }
@@ -469,8 +478,7 @@ public class MercurialRepository extends Repository {
     }
 
     @Override
-    protected String getRevisionForAnnotate(String history_revision)
-    {
+    protected String getRevisionForAnnotate(String history_revision) {
         String[] brev = history_revision.split(":");
 
         return brev[0];
@@ -485,18 +493,18 @@ public class MercurialRepository extends Repository {
     public void update() throws IOException {
         File directory = new File(directoryName);
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("showconfig");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
             throw new IOException(executor.getErrorString());
         }
 
-        if (executor.getOutputString().indexOf("paths.default=") != -1) {
+        if (executor.getOutputString().contains("paths.default=")) {
             cmd.clear();
-            cmd.add(this.cmd);
+            cmd.add(RepoCommand);
             cmd.add("pull");
             cmd.add("-u");
             executor = new Executor(cmd, directory);
@@ -528,17 +536,17 @@ public class MercurialRepository extends Repository {
     boolean supportsSubRepositories() {
         String val = System.getenv(NOFOREST_PROPERTY_KEY);
         return !(val == null
-            ? Boolean.getBoolean(NOFOREST_PROPERTY_KEY)
-            : Boolean.parseBoolean(val));
+                ? Boolean.getBoolean(NOFOREST_PROPERTY_KEY)
+                : Boolean.parseBoolean(val));
     }
 
     @Override
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd);
+            working = checkCmd(RepoCommand);
         }
-        return working.booleanValue();
+        return working;
     }
 
     @Override
@@ -556,7 +564,7 @@ public class MercurialRepository extends Repository {
             throws HistoryException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         History result = new MercurialHistoryParser(this).parse(file,
-            sinceRevision);
+                sinceRevision);
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
         // because we know it :-)
@@ -565,23 +573,24 @@ public class MercurialRepository extends Repository {
         }
         return result;
     }
-    
+
     /**
      * We need to create list of all tags prior to creation of HistoryEntries
      * per file.
+     *
      * @return true.
      */
     @Override
     boolean hasFileBasedTags() {
         return true;
     }
-    
+
     @Override
     protected void buildTagList(File directory) {
-        this.tagList = new TreeSet<TagEntry>();
-        ArrayList<String> argv = new ArrayList<String>();
+        this.tagList = new TreeSet<>();
+        ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(cmd);
+        argv.add(RepoCommand);
         argv.add("tags");
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
@@ -596,8 +605,8 @@ public class MercurialRepository extends Repository {
                     String parts[] = line.split("  *");
                     if (parts.length < 2) {
                         OpenGrokLogger.getLogger().log(Level.WARNING,
-                            "Failed to parse tag list: {0}",
-                            "Tag line contains more than 2 columns: " + line);
+                                "Failed to parse tag list: {0}",
+                                "Tag line contains more than 2 columns: " + line);
                         this.tagList = null;
                         break;
                     }
@@ -605,8 +614,8 @@ public class MercurialRepository extends Repository {
                     // This solution will lose multiple spaces ;-/
                     String tag = parts[0];
                     for (int i = 1; i < parts.length - 1; ++i) {
-                        tag.concat(" ");
-                        tag.concat(parts[i]);
+                        tag = tag.concat(" ");
+                        tag = tag.concat(parts[i]);
                     }
                     // The implicit 'tip' tag only causes confusion so ignore it. 
                     if (tag.contentEquals("tip")) {
@@ -615,25 +624,25 @@ public class MercurialRepository extends Repository {
                     String revParts[] = parts[parts.length - 1].split(":");
                     if (revParts.length != 2) {
                         OpenGrokLogger.getLogger().log(Level.WARNING,
-                            "Failed to parse tag list: {0}",
-                            "Mercurial revision parsing error: " +
-                            parts[parts.length - 1]);
+                                "Failed to parse tag list: {0}",
+                                "Mercurial revision parsing error: "
+                                + parts[parts.length - 1]);
                         this.tagList = null;
                         break;
                     }
-                    TagEntry tagEntry =
-                        new MercurialTagEntry(Integer.parseInt(revParts[0]),
-                        tag);
+                    TagEntry tagEntry
+                            = new MercurialTagEntry(Integer.parseInt(revParts[0]),
+                                    tag);
                     // Reverse the order of the list
                     this.tagList.add(tagEntry);
                 }
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING,
-                "Failed to read tag list: {0}", e.getMessage());
+                    "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
-        
+
         if (process != null) {
             try {
                 process.exitValue();
@@ -650,7 +659,7 @@ public class MercurialRepository extends Repository {
 
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("paths");
         cmd.add("default");
         Executor executor = new Executor(cmd, directory);

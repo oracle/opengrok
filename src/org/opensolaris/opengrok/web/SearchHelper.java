@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2011 Jens Elkner.
  * Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions copyright (c) 2011 Jens Elkner. 
  */
 package org.opensolaris.opengrok.web;
 
@@ -77,7 +77,7 @@ public class SearchHelper {
     /**
      * max number of words to suggest for spellcheck
      */
-    public int SPELLCHECK_SUGGEST_WORD_COUNT=5;
+    public int SPELLCHECK_SUGGEST_WORD_COUNT = 5;
     /**
      * opengrok's data root: used to find the search index file
      */
@@ -182,21 +182,20 @@ public class SearchHelper {
      * history context usually created via {@link #prepareSummary()}.
      */
     public HistoryContext historyContext;
-    
+
     /**
      * Default query parse error message prefix
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
     private ExecutorService executor = null;
     private static final Logger log = Logger.getLogger(SearchHelper.class.getName());
-   
-    /**     
-     * User readable description for file types.
-     * Only those listed in fileTypeDescription will be shown
-     * to the user.
-     *     
-     * Returns a set of file type descriptions to be used for a
-     * search form.
+
+    /**
+     * User readable description for file types. Only those listed in
+     * fileTypeDescription will be shown to the user.
+     *
+     * Returns a set of file type descriptions to be used for a search form.
+     *
      * @return Set of tuples with file type and description.
      */
     public static Set<Map.Entry<String, String>> getFileTypeDescriptions() {
@@ -204,12 +203,15 @@ public class SearchHelper {
     }
 
     File indexDir;
+
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
      * projects. Does not produce any {@link #redirect} link. It also does
      * nothing if {@link #redirect} or {@link #errorMsg} have a
-     * none-{@code null} value. <p> Parameters which should be populated/set at
-     * this time: <ul> <li>{@link #builder}</li> <li>{@link #dataRoot}</li>
+     * none-{@code null} value.
+     * <p>
+     * Parameters which should be populated/set at this time: <ul>
+     * <li>{@link #builder}</li> <li>{@link #dataRoot}</li>
      * <li>{@link #order} (falls back to relevance if unset)</li>
      * <li>{@link #parallel} (default: false)</li> </ul> Populates/sets: <ul>
      * <li>{@link #query}</li> <li>{@link #searcher}</li> <li>{@link #sort}</li>
@@ -227,7 +229,7 @@ public class SearchHelper {
         }
         // the Query created by the QueryBuilder
         try {
-            indexDir=new File(dataRoot, IndexDatabase.INDEX_DIR);
+            indexDir = new File(dataRoot, IndexDatabase.INDEX_DIR);
             query = builder.build();
             if (projects == null) {
                 errorMsg = "No project selected!";
@@ -240,8 +242,8 @@ public class SearchHelper {
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
             } else if (projects.size() == 1) {
                 // just 1 project selected
-                FSDirectory dir =
-                        FSDirectory.open(new File(indexDir, projects.first()).toPath());
+                FSDirectory dir
+                        = FSDirectory.open(new File(indexDir, projects.first()).toPath());
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
             } else {
                 //more projects
@@ -277,7 +279,7 @@ public class SearchHelper {
                     sort = Sort.RELEVANCE;
                     break;
             }
-	    checker=new DirectSpellChecker();
+            checker = new DirectSpellChecker();
         } catch (ParseException e) {
             errorMsg = PARSE_ERROR_MSG + e.getMessage();
         } catch (FileNotFoundException e) {
@@ -292,8 +294,10 @@ public class SearchHelper {
     /**
      * Start the search prepared by {@link #prepareExec(SortedSet)}. It does
      * nothing if {@link #redirect} or {@link #errorMsg} have a
-     * none-{@code null} value. <p> Parameters which should be populated/set at
-     * this time: <ul> <li>all fields required for and populated by
+     * none-{@code null} value.
+     * <p>
+     * Parameters which should be populated/set at this time: <ul> <li>all
+     * fields required for and populated by
      * {@link #prepareExec(SortedSet)})</li> <li>{@link #start} (default:
      * 0)</li> <li>{@link #maxItems} (default: 0)</li>
      * <li>{@link #isCrossRefSearch} (default: false)</li> </ul> Populates/sets:
@@ -316,8 +320,8 @@ public class SearchHelper {
             // Bug #3900: Check if this is a search for a single term, and that
             // term is a definition. If that's the case, and we only have one match,
             // we'll generate a direct link instead of a listing.
-            boolean isSingleDefinitionSearch =
-                    (query instanceof TermQuery) && (builder.getDefs() != null);
+            boolean isSingleDefinitionSearch
+                    = (query instanceof TermQuery) && (builder.getDefs() != null);
 
             // Attempt to create a direct link to the definition if we search for
             // one single definition term AND we have exactly one match AND there
@@ -359,7 +363,7 @@ public class SearchHelper {
         for (String tok : toks) {
             //TODO below seems to be case insensitive ... for refs/defs this is bad
             SuggestWord[] words = checker.suggestSimilar(new Term(term.field(), tok), SPELLCHECK_SUGGEST_WORD_COUNT, ir, SuggestMode.SUGGEST_ALWAYS);
-            for (SuggestWord w: words) {
+            for (SuggestWord w : words) {
                 result.add(w.string);
             }
         }
@@ -369,7 +373,8 @@ public class SearchHelper {
      * If a search did not return a hit, one may use this method to obtain
      * suggestions for a new search.
      *
-     * <p> Parameters which should be populated/set at this time: <ul>
+     * <p>
+     * Parameters which should be populated/set at this time: <ul>
      * <li>{@link #projects}</li> <li>{@link #dataRoot}</li>
      * <li>{@link #builder}</li> </ul>
      *
@@ -379,11 +384,11 @@ public class SearchHelper {
         if (projects == null) {
             return new ArrayList<>(0);
         }
-	String name[];
+        String name[];
         if (projects.isEmpty()) {
-            name=new String[]{"/"};
+            name = new String[]{"/"};
         } else if (projects.size() == 1) {
-		name=new String[]{projects.first()};
+            name = new String[]{projects.first()};
         } else {
             name = new String[projects.size()];
             int ii = 0;
@@ -393,51 +398,51 @@ public class SearchHelper {
         }
         List<Suggestion> res = new ArrayList<>();
         List<String> dummy = new ArrayList<>();
-	FSDirectory dir;
-	IndexReader ir=null;
-	Term t;
+        FSDirectory dir;
+        IndexReader ir = null;
+        Term t;
         for (String proj : name) {
             Suggestion s = new Suggestion(proj);
             try {
                 dir = FSDirectory.open(new File(indexDir, proj).toPath());
                 ir = DirectoryReader.open(dir);
-                if (builder.getFreetext()!=null &&
-                        !builder.getFreetext().isEmpty()) {
-                    t=new Term(QueryBuilder.FULL,builder.getFreetext());
+                if (builder.getFreetext() != null
+                        && !builder.getFreetext().isEmpty()) {
+                    t = new Term(QueryBuilder.FULL, builder.getFreetext());
                     getSuggestion(t, ir, dummy);
                     s.freetext = dummy.toArray(new String[dummy.size()]);
                     dummy.clear();
                 }
-                if (builder.getRefs()!=null && !builder.getRefs().isEmpty()) {
-                    t=new Term(QueryBuilder.REFS,builder.getRefs());
+                if (builder.getRefs() != null && !builder.getRefs().isEmpty()) {
+                    t = new Term(QueryBuilder.REFS, builder.getRefs());
                     getSuggestion(t, ir, dummy);
                     s.refs = dummy.toArray(new String[dummy.size()]);
                     dummy.clear();
                 }
-                if (builder.getDefs()!=null && !builder.getDefs().isEmpty()) {
-                    t=new Term(QueryBuilder.DEFS,builder.getDefs());
+                if (builder.getDefs() != null && !builder.getDefs().isEmpty()) {
+                    t = new Term(QueryBuilder.DEFS, builder.getDefs());
                     getSuggestion(t, ir, dummy);
                     s.defs = dummy.toArray(new String[dummy.size()]);
                     dummy.clear();
                 }
                 //TODO suggest also for path and history?
-                if ((s.freetext!=null && s.freetext.length > 0) ||
-                        (s.defs!=null && s.defs.length > 0) ||
-                        (s.refs!=null && s.refs.length > 0) ) {
+                if ((s.freetext != null && s.freetext.length > 0)
+                        || (s.defs != null && s.defs.length > 0)
+                        || (s.refs != null && s.refs.length > 0)) {
                     res.add(s);
                 }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 log.log(Level.WARNING, "Got exception while getting "
                         + "spelling suggestions: ", e);
             } finally {
                 if (ir != null) {
-			try {
-				ir.close();
-			} catch (IOException ex) {
-				log.log(Level.WARNING, "Got exception while "
-					+ "getting spelling suggestions: ", ex);
-			}
-               }
+                    try {
+                        ir.close();
+                    } catch (IOException ex) {
+                        log.log(Level.WARNING, "Got exception while "
+                                + "getting spelling suggestions: ", ex);
+                    }
+                }
             }
         }
         return res;
@@ -447,7 +452,8 @@ public class SearchHelper {
      * Prepare the fields to support printing a full blown summary. Does nothing
      * if {@link #redirect} or {@link #errorMsg} have a none-{@code null} value.
      *
-     * <p> Parameters which should be populated/set at this time: <ul>
+     * <p>
+     * Parameters which should be populated/set at this time: <ul>
      * <li>{@link #query}</li> <li>{@link #builder}</li> </ul> Populates/sets:
      * Otherwise the following fields are set (includes {@code null}): <ul>
      * <li>{@link #sourceContext}</li> <li>{@link #summerizer}</li>

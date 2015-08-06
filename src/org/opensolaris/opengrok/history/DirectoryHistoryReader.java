@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -66,8 +66,8 @@ public class DirectoryHistoryReader {
 
     // This is a giant hash constructed in this class.
     // It maps date -> author -> (comment, revision) -> [ list of files ]
-    private final Map<Date, Map<String, Map<List<String>, SortedSet<String>>>> hash =
-            new LinkedHashMap<>(); // set in put()
+    private final Map<Date, Map<String, Map<List<String>, SortedSet<String>>>> hash
+            = new LinkedHashMap<>(); // set in put()
     Iterator<Date> diter;
     Date idate;
     Iterator<String> aiter;
@@ -78,11 +78,10 @@ public class DirectoryHistoryReader {
     History history; // set in the constructor
 
     /**
-     * The main task of this method is to produce list of history entries
-     * for the specified directory and store them in @code history.
-     * This is done by searching the index to get recently changed files under
-     * in the directory tree under @code path and storing their histories
-     * in giant @code hash.
+     * The main task of this method is to produce list of history entries for
+     * the specified directory and store them in @code history. This is done by
+     * searching the index to get recently changed files under in the directory
+     * tree under @code path and storing their histories in giant @code hash.
      *
      * @param path directory to generate history for
      * @throws IOException when index cannot be accessed
@@ -115,7 +114,7 @@ public class DirectoryHistoryReader {
                 hits = fdocs.scoreDocs;
             } catch (ParseException e) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "An error occured while parsing search query", e);
+                        "An error occured while parsing search query", e);
             }
             if (hits != null) {
                 // Get maximum 40 (why ? XXX) files which were changed recently.
@@ -131,7 +130,7 @@ public class DirectoryHistoryReader {
                         cdate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
                     } catch (java.text.ParseException ex) {
                         OpenGrokLogger.getLogger().log(Level.WARNING,
-                            "Could not get date for " + path, ex);
+                                "Could not get date for " + path, ex);
                         cdate = new Date();
                     }
                     int ls = rpath.lastIndexOf('/');
@@ -144,7 +143,7 @@ public class DirectoryHistoryReader {
                             hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
                             OpenGrokLogger.getLogger().log(Level.WARNING,
-                                "An error occured while getting history reader", e);
+                                    "An error occured while getting history reader", e);
                         }
                         if (hist == null) {
                             put(cdate, "", "-", "", rpath);
@@ -171,7 +170,7 @@ public class DirectoryHistoryReader {
                     ireader.close();
                 } catch (Exception ex) {
                     OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "An error occured while closing reader", ex);
+                            "An error occured while closing reader", ex);
                 }
             }
         }
@@ -199,7 +198,7 @@ public class DirectoryHistoryReader {
         }
 
         // We are not going to modify the list so this is safe to do.
-        List<String> cr = new ArrayList<> ();
+        List<String> cr = new ArrayList<>();
         cr.add(comment);
         cr.add(revision);
         SortedSet<String> fls = cf.get(cr);

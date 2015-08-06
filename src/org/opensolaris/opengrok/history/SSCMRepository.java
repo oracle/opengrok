@@ -17,12 +17,14 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -45,15 +47,19 @@ import org.opensolaris.opengrok.util.Executor;
 public class SSCMRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
-    
-    /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.sscm";
-    /** The command to use to access the repository if none was given explicitly */
+
+    /**
+     * The property name used to obtain the client command for this repository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.sscm";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "sscm";
 
     private static final Pattern ANNOTATE_PATTERN = Pattern.compile("^(\\w+)\\s+(\\d+)\\s+.*$");
-    
+
     private static final String MYSCMSERVERINFO_FILE = ".MySCMServerInfo";
     private static final String BRANCH_PROPERTY = "SCMBranch";
     private static final String REPOSITORY_PROPERTY = "SCMRepository";
@@ -63,7 +69,7 @@ public class SSCMRepository extends Repository {
         setDatePattern("M/d/yyyy h:mm a");
         setRemote(true);
     }
-    
+
     @Override
     boolean fileHasHistory(File file) {
         return true;
@@ -78,9 +84,9 @@ public class SSCMRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd , "version");
+            working = checkCmd(RepoCommand, "version");
         }
-        return working.booleanValue();
+        return working;
     }
 
     private Properties getProperties(File file) {
@@ -97,47 +103,44 @@ public class SSCMRepository extends Repository {
                 props.load(br);
             } catch (IOException ex) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "Failed to work with {0} file of {1}: {2}", new Object[] {
+                        "Failed to work with {0} file of {1}: {2}", new Object[]{
                             MYSCMSERVERINFO_FILE,
-                            getDirectoryName(), ex.getClass().toString() } );
+                            getDirectoryName(), ex.getClass().toString()});
             }
         }
 
         return props;
     }
-    
+
     Executor getHistoryLogExecutor(final File file, String sinceRevision) throws IOException {
 
         List<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(this.cmd);
+        argv.add(RepoCommand);
         argv.add("history");
         if (file.isDirectory()) {
             argv.add("/");
-        }
-        else {
+        } else {
             argv.add(file.getName());
         }
         if (sinceRevision != null && new Scanner(sinceRevision).hasNextInt()) {
-            argv.add("-v"+(Integer.parseInt(sinceRevision) + 1)+":"+Integer.MAX_VALUE);
+            argv.add("-v" + (Integer.parseInt(sinceRevision) + 1) + ":" + Integer.MAX_VALUE);
         }
         argv.add("-w-");
 
         Properties props = getProperties(file);
         String branch = props.getProperty(BRANCH_PROPERTY);
-        if (branch!=null && !branch.isEmpty())
-        {
-            argv.add("-b"+branch);
+        if (branch != null && !branch.isEmpty()) {
+            argv.add("-b" + branch);
         }
         String repo = props.getProperty(REPOSITORY_PROPERTY);
-        if (repo!=null && !repo.isEmpty())
-        {
-            argv.add("-p"+repo);
+        if (repo != null && !repo.isEmpty()) {
+            argv.add("-p" + repo);
         }
 
         return new Executor(argv, new File(getDirectoryName()));
     }
-    
+
     @Override
     History getHistory(File file) throws HistoryException {
         return getHistory(file, null);
@@ -163,33 +166,31 @@ public class SSCMRepository extends Repository {
             // cleartool can't get to a previously existing file
             if (tmp.exists() && !tmp.delete()) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Failed to remove temporary file used by history cache");
+                        "Failed to remove temporary file used by history cache");
             }
 
             if (!tmp.mkdir()) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Failed to create temporary directory used by history cache");
+                        "Failed to create temporary directory used by history cache");
             }
-            
+
             List<String> argv = new ArrayList<>();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            argv.add(this.cmd);
+            argv.add(RepoCommand);
             argv.add("get");
             argv.add(basename);
-            argv.add("-d"+tmpName);
+            argv.add("-d" + tmpName);
             Properties props = getProperties(directory);
             String branch = props.getProperty(BRANCH_PROPERTY);
-            if (branch!=null && !branch.isEmpty())
-            {
-                argv.add("-b"+branch);
+            if (branch != null && !branch.isEmpty()) {
+                argv.add("-b" + branch);
             }
             String repo = props.getProperty(REPOSITORY_PROPERTY);
-            if (repo!=null && !repo.isEmpty())
-            {
-                argv.add("-p"+repo);
+            if (repo != null && !repo.isEmpty()) {
+                argv.add("-p" + repo);
             }
             if (rev != null) {
-                argv.add("-v"+rev);
+                argv.add("-v" + rev);
             }
             argv.add("-q");
             argv.add("-tmodify");
@@ -199,8 +200,8 @@ public class SSCMRepository extends Repository {
 
             if (status != 0) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Failed get revision {2} for: \"{0}\" Exit code: {1}",
-                    new Object[]{new File(parent, basename).getAbsolutePath(), String.valueOf(status), rev});
+                        "Failed get revision {2} for: \"{0}\" Exit code: {1}",
+                        new Object[]{new File(parent, basename).getAbsolutePath(), String.valueOf(status), rev});
                 return null;
             }
 
@@ -226,7 +227,7 @@ public class SSCMRepository extends Repository {
             };
         } catch (IOException exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get file: " + exp.getClass().toString(), exp);
+                    "Failed to get file: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -264,9 +265,9 @@ public class SSCMRepository extends Repository {
                 }
             } catch (IOException ex) {
                 OpenGrokLogger.getLogger().log(Level.WARNING,
-                        "Failed to work with {0} file of {1}: {2}", new Object[] {
+                        "Failed to work with {0} file of {1}: {2}", new Object[]{
                             MYSCMSERVERINFO_FILE,
-                            getDirectoryName(), ex.getClass().toString() } );
+                            getDirectoryName(), ex.getClass().toString()});
             }
         }
         return false;
@@ -284,38 +285,35 @@ public class SSCMRepository extends Repository {
         ArrayList<String> argv = new ArrayList<>();
 
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(this.cmd);
+        argv.add(RepoCommand);
         argv.add("annotate");
         argv.add(file.getName());
         Properties props = getProperties(file);
         String branch = props.getProperty(BRANCH_PROPERTY);
-        if (branch!=null && !branch.isEmpty())
-        {
-            argv.add("-b"+branch);
+        if (branch != null && !branch.isEmpty()) {
+            argv.add("-b" + branch);
         }
         String repo = props.getProperty(REPOSITORY_PROPERTY);
-        if (repo!=null && !repo.isEmpty())
-        {
-            argv.add("-p"+repo);
+        if (repo != null && !repo.isEmpty()) {
+            argv.add("-p" + repo);
         }
         if (revision != null) {
-            argv.add("-aV:"+revision);
+            argv.add("-aV:" + revision);
         }
         Executor exec = new Executor(argv, file.getParentFile());
         int status = exec.exec();
 
         if (status != 0) {
             OpenGrokLogger.getLogger().log(Level.WARNING,
-                "Failed annotate for: {2} \"{0}\" Exit code: {1}",
-                new Object[]{file.getAbsolutePath(), String.valueOf(status), revision});
+                    "Failed annotate for: {2} \"{0}\" Exit code: {1}",
+                    new Object[]{file.getAbsolutePath(), String.valueOf(status), revision});
         }
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
     }
 
     protected Annotation parseAnnotation(Reader input, String fileName)
-        throws IOException
-    {
+            throws IOException {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
         String line = "";
@@ -324,7 +322,9 @@ public class SSCMRepository extends Repository {
         Matcher matcher = ANNOTATE_PATTERN.matcher(line);
         while ((line = in.readLine()) != null) {
             // For some reason there are empty lines.  Line ends may not be applied correctly.
-            if (line.isEmpty()) continue;
+            if (line.isEmpty()) {
+                continue;
+            }
             ++lineno;
             matcher.reset(line);
             if (matcher.find()) {
@@ -334,32 +334,30 @@ public class SSCMRepository extends Repository {
                 ret.addLine(rev, author, true);
             } else if (hasStarted) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Error: did not find annotation in line {0}: [{1}]",
-                    new Object[]{String.valueOf(lineno), line});
+                        "Error: did not find annotation in line {0}: [{1}]",
+                        new Object[]{String.valueOf(lineno), line});
             }
         }
         return ret;
     }
-    
+
     @Override
     void update() throws IOException {
         File directory = new File(getDirectoryName());
         List<String> argv = new ArrayList<>();
-        
+
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(this.cmd);
+        argv.add(RepoCommand);
         argv.add("get");
         argv.add("/");
         Properties props = getProperties(directory);
         String branch = props.getProperty(BRANCH_PROPERTY);
-        if (branch!=null && !branch.isEmpty())
-        {
-            argv.add("-b"+branch);
+        if (branch != null && !branch.isEmpty()) {
+            argv.add("-b" + branch);
         }
         String repo = props.getProperty(REPOSITORY_PROPERTY);
-        if (repo!=null && !repo.isEmpty())
-        {
-            argv.add("-p"+repo);
+        if (repo != null && !repo.isEmpty()) {
+            argv.add("-p" + repo);
         }
         argv.add("-r");
         argv.add("-q");

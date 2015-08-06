@@ -20,11 +20,18 @@
 /*
  * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis.haskell;
 
-import java.io.*;
-import static org.junit.Assert.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
 
@@ -34,22 +41,23 @@ import org.opensolaris.opengrok.analysis.Definitions;
  * @author Harry Pan
  */
 public class HaskellXrefTest {
+
     @Test
     public void basicTest() throws IOException {
         String s = "putStrLn \"Hello, world!\"";
         Writer w = new StringWriter();
         HaskellAnalyzer.writeXref(new StringReader(s), w, null, null, null);
         assertEquals(
-            "<a class=\"l\" name=\"1\" href=\"#1\">1</a>" +
-            "<a href=\"/source/s?defs=putStrLn\" onmouseover=\"onMouseOverSymbol('putStrLn', 'undefined-in-file')\">putStrLn</a>" +
-            " <span class=\"s\">\"&#72;&#101;&#108;&#108;&#111;&#44; &#119;&#111;&#114;&#108;&#100;&#33;\"</span>",
-            w.toString());
+                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+                + "<a href=\"/source/s?defs=putStrLn\" onmouseover=\"onMouseOverSymbol('putStrLn', 'undefined-in-file')\">putStrLn</a>"
+                + " <span class=\"s\">\"&#72;&#101;&#108;&#108;&#111;&#44; &#119;&#111;&#114;&#108;&#100;&#33;\"</span>",
+                w.toString());
     }
 
     private static void writeHaskellXref(InputStream is, PrintStream os, Definitions defs) throws IOException {
         os.println(
-            "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
-            + "href=\"http://localhost:8080/source/default/style.css\" /><title>Haskell Xref Test</title></head>");
+                "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
+                + "href=\"http://localhost:8080/source/default/style.css\" /><title>Haskell Xref Test</title></head>");
         os.println("<body><div id=\"src\"><pre>");
         Writer w = new StringWriter();
         HaskellAnalyzer.writeXref(new InputStreamReader(is, "UTF-8"), w, defs, null, null);
@@ -61,7 +69,7 @@ public class HaskellXrefTest {
     public void sampleTest() throws IOException {
         // load sample source
         InputStream sampleInputStream = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/haskell/sample.hs");
+                "org/opensolaris/opengrok/analysis/haskell/sample.hs");
         ByteArrayOutputStream sampleOutputStream = new ByteArrayOutputStream();
 
         Definitions defs = new Definitions();
@@ -75,7 +83,7 @@ public class HaskellXrefTest {
 
         // load expected xref
         InputStream expectedInputStream = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/haskell/sampleXrefExpected.html");
+                "org/opensolaris/opengrok/analysis/haskell/sampleXrefExpected.html");
         ByteArrayOutputStream expectedOutputSteam = new ByteArrayOutputStream();
         try {
             byte buffer[] = new byte[8192];
@@ -90,7 +98,6 @@ public class HaskellXrefTest {
             expectedInputStream.close();
             expectedOutputSteam.close();
         }
-
 
         String actual[] = new String(sampleOutputStream.toByteArray(), "UTF-8").split("\n");
         String expected[] = new String(expectedOutputSteam.toByteArray(), "UTF-8").split("\n");

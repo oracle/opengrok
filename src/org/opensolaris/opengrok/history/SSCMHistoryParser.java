@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
@@ -41,7 +44,7 @@ import org.opensolaris.opengrok.util.Executor;
 public class SSCMHistoryParser implements Executor.StreamHandler {
 
     private final SSCMRepository repository;
-    
+
     SSCMHistoryParser(SSCMRepository repository) {
         this.repository = repository;
     }
@@ -53,12 +56,12 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
     private static final String COMMENT_START_PATTERN = "Comments - ";
     // ^([a-z][a-z ]+)(?:\[(.*?)\])?\s+(\w+)\s+(\d+)\s+(\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2} [AP]M)$\s*(?:Comments - )?
     private static final Pattern HISTORY_PATTERN = Pattern.compile("^(" + ACTION_PATTERN + ")(?:\\[(.*?)\\])?\\s+(" + USER_PATTERN + ")\\s+(" + VERSION_PATTERN + ")\\s+(" + TIME_PATTERN + ")$\\s*(?:" + COMMENT_START_PATTERN + ")?",
-                                                    Pattern.MULTILINE);
-    
+            Pattern.MULTILINE);
+
     private static final String NEWLINE = System.getProperty("line.separator");
-    
+
     private History history;
-    
+
     /**
      * Process the output from the history command and insert the HistoryEntries
      * into the history field.
@@ -81,7 +84,7 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
         ArrayList<HistoryEntry> entries = new ArrayList<>();
         HistoryEntry entry = null;
         int prevEntryEnd = 0;
-        
+
         long revisionCounter = 0;
         Matcher matcher = HISTORY_PATTERN.matcher(total);
         while (matcher.find()) {
@@ -112,8 +115,9 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
                 entry = new HistoryEntry();
                 // Add context of action to message.  Helps when branch name is used
                 //   as indicator of why promote was made.
-                if (context != null)
+                if (context != null) {
                     entry.appendMessage("[" + context + "] ");
+                }
                 entry.setAuthor(author);
                 entry.setRevision(revision);
                 try {
@@ -143,12 +147,12 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
             int status = executor.exec(true, this);
 
             if (status != 0) {
-                throw new HistoryException("Failed to get history for: \"" +
-                                           file.getAbsolutePath() + "\" Exit code: " + status);
+                throw new HistoryException("Failed to get history for: \""
+                        + file.getAbsolutePath() + "\" Exit code: " + status);
             }
         } catch (IOException e) {
-            throw new HistoryException("Failed to get history for: \"" +
-                                       file.getAbsolutePath() + "\"", e);
+            throw new HistoryException("Failed to get history for: \""
+                    + file.getAbsolutePath() + "\"", e);
         }
 
         return history;

@@ -66,16 +66,16 @@ public class AccuRevRepository extends Repository {
     /**
      * The property name used to obtain the client command for this repository.
      */
-    public static final String CMD_PROPERTY_KEY =
-            "org.opensolaris.opengrok.history.AccuRev";
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.AccuRev";
     /**
      * The command to use to access the repository if none was given explicitly
      */
     public static final String CMD_FALLBACK = "accurev";
-    private static final Pattern annotationPattern =
-            Pattern.compile("^\\s+(\\d+/\\d+)\\s+(\\w+)");   // version, user
-    private static final Pattern depotPattern =
-            Pattern.compile("^Depot:\\s+(\\w+)");
+    private static final Pattern annotationPattern
+            = Pattern.compile("^\\s+(\\d+/\\d+)\\s+(\\w+)");   // version, user
+    private static final Pattern depotPattern
+            = Pattern.compile("^Depot:\\s+(\\w+)");
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
     public AccuRevRepository() {
@@ -89,16 +89,16 @@ public class AccuRevRepository extends Repository {
 
         Annotation a = new Annotation(file.getName());
 
-        ArrayList<String> cmd = new ArrayList<String>();
+        ArrayList<String> cmd = new ArrayList<>();
 
         /*
          * ----------------------------------------------- Strip off source root
          * to get to workspace path.
-        *-----------------------------------------------
+         *-----------------------------------------------
          */
         String path = getDepotRelativePath(file);
 
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("annotate");
         cmd.add("-fvu");      // version & user
 
@@ -111,7 +111,8 @@ public class AccuRevRepository extends Repository {
 
         Executor executor = new Executor(cmd, file.getParentFile());
         executor.exec();
-        try (BufferedReader reader = new BufferedReader(executor.getOutputReader())) {
+        try (BufferedReader reader
+                = new BufferedReader(executor.getOutputReader())) {
             String line;
             int lineno = 0;
             try {
@@ -125,8 +126,8 @@ public class AccuRevRepository extends Repository {
                         a.addLine(version, author, true);
                     } else {
                         OpenGrokLogger.getLogger().log(Level.SEVERE,
-                                "Did not find annotation in line "
-                                + lineno + ": [" + line + "]");
+                                "Did not find annotation in line {0}: [{1}]",
+                                new Object[]{lineno, line});
                     }
                 }
             } catch (IOException e) {
@@ -150,13 +151,13 @@ public class AccuRevRepository extends Repository {
         /*
          * ----------------------------------------------- Strip off source root
          * to get to workspace path.
-        *-----------------------------------------------
+         *-----------------------------------------------
          */
         String path = getDepotRelativePath(file);
 
-        ArrayList<String> cmd = new ArrayList<String>();
+        ArrayList<String> cmd = new ArrayList<>();
 
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("hist");
 
         if (!file.isDirectory()) {
@@ -172,7 +173,7 @@ public class AccuRevRepository extends Repository {
     @Override
     InputStream getHistoryGet(String parent, String basename, String rev) {
 
-        ArrayList<String> cmd = new ArrayList<String>();
+        ArrayList<String> cmd = new ArrayList<>();
         InputStream inputStream = null;
         File directory = new File(parent);
 
@@ -188,9 +189,9 @@ public class AccuRevRepository extends Repository {
          * <filePath> <elementID> <virtualVersion> (<realVersion>) (<status>)
          *
          *  /./myFile e:17715 CP.73_Depot/2 (3220/2) (backed)
-        *-----------------------------------------------------------------
+         *-----------------------------------------------------------------
          */
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("stat");
         cmd.add("-fe");
         cmd.add(basename);
@@ -206,17 +207,17 @@ public class AccuRevRepository extends Repository {
 
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Could not obtain status for " + basename);
+                    "Could not obtain status for {0}", basename);
         }
 
         if (elementID != null) {
             /*
              * ------------------------------------------ This really gets the
              * contents of the file.
-            *------------------------------------------
+             *------------------------------------------
              */
             cmd.clear();
-            cmd.add(this.cmd);
+            cmd.add(RepoCommand);
             cmd.add("cat");
             cmd.add("-v");
             cmd.add(rev.trim());
@@ -226,8 +227,8 @@ public class AccuRevRepository extends Repository {
             executor = new Executor(cmd, directory);
             executor.exec();
 
-            inputStream =
-                    new ByteArrayInputStream(executor.getOutputString().getBytes());
+            inputStream
+                    = new ByteArrayInputStream(executor.getOutputString().getBytes());
         }
 
         return inputStream;
@@ -262,9 +263,9 @@ public class AccuRevRepository extends Repository {
         boolean status = false;
 
         if (isWorking()) {
-            ArrayList<String> cmd = new ArrayList<String>();
+            ArrayList<String> cmd = new ArrayList<>();
 
-            cmd.add(this.cmd);
+            cmd.add(RepoCommand);
             cmd.add("info");
 
             Executor executor = new Executor(cmd, wsPath);
@@ -276,7 +277,7 @@ public class AccuRevRepository extends Repository {
 
                     Matcher depotMatch = depotPattern.matcher(line);
 
-                    if (line.indexOf("not logged in") != -1) {
+                    if (line.contains("not logged in")) {
                         OpenGrokLogger.getLogger().log(
                                 Level.SEVERE, "Not logged into AccuRev server");
                         break;
@@ -289,7 +290,7 @@ public class AccuRevRepository extends Repository {
                 }
             } catch (IOException e) {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
-                        "Could not find AccuRev repository for " + wsPath);
+                        "Could not find AccuRev repository for {0}", wsPath);
             }
         }
 
@@ -310,7 +311,8 @@ public class AccuRevRepository extends Repository {
             }
         } catch (IOException e) {
             OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Unable to determine depot relative path for " + file.getPath());
+                    "Unable to determine depot relative path for {0}",
+                    file.getPath());
         }
 
         return path;
@@ -327,10 +329,10 @@ public class AccuRevRepository extends Repository {
 
         if (working == null) {
 
-            working = checkCmd(cmd, "info");
+            working = checkCmd(RepoCommand, "info");
         }
 
-        return working.booleanValue();
+        return working;
     }
 
     @Override

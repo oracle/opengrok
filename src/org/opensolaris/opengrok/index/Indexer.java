@@ -72,10 +72,10 @@ public final class Indexer {
 
     private static final Indexer index = new Indexer();
     static final Logger log = Logger.getLogger(Indexer.class.getName());
-    private static final String DERBY_EMBEDDED_DRIVER =
-            "org.apache.derby.jdbc.EmbeddedDriver";
-    private static final String DERBY_CLIENT_DRIVER =
-            "org.apache.derby.jdbc.ClientDriver";
+    private static final String DERBY_EMBEDDED_DRIVER
+            = "org.apache.derby.jdbc.EmbeddedDriver";
+    private static final String DERBY_CLIENT_DRIVER
+            = "org.apache.derby.jdbc.ClientDriver";
 
     public static Indexer getInstance() {
         return index;
@@ -207,7 +207,7 @@ public final class Indexer {
                                     log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
                                 }
-			    }
+                            }
                         }
                         break;
                         case 'a':
@@ -383,7 +383,7 @@ public final class Indexer {
                                 System.err.println("       Ex: \"-r on\" will allow retrieval for remote SCM systems");
                                 System.err.println("           \"-r off\" will ignore SCM for remote systems");
                                 System.err.println("           \"-r dirbased\" will allow retrieval during history index "
-                                    + "only for repositories which allow getting history for directories");
+                                        + "only for repositories which allow getting history for directories");
                                 System.err.println("           \"-r uionly\" will support remote SCM for UI only");
                             }
                             break;
@@ -393,8 +393,8 @@ public final class Indexer {
                         case 's': {
                             File sourceRoot = new File(getopt.getOptarg());
                             if (!sourceRoot.isDirectory()) {
-                                System.err.println("ERROR: Source root " +
-                                    getopt.getOptarg() + " must be a directory");
+                                System.err.println("ERROR: Source root "
+                                        + getopt.getOptarg() + " must be a directory");
                                 System.exit(1);
                             }
                             cfg.setSourceRoot(sourceRoot.getCanonicalPath());
@@ -404,8 +404,8 @@ public final class Indexer {
                             try {
                                 noThreads = Integer.parseInt(getopt.getOptarg());
                             } catch (NumberFormatException exp) {
-                                System.err.println("ERROR: Failed to parse argument to \"-T\": " +
-                                    exp.getMessage());
+                                System.err.println("ERROR: Failed to parse argument to \"-T\": "
+                                        + exp.getMessage());
                                 System.exit(1);
                             }
                             break;
@@ -414,8 +414,8 @@ public final class Indexer {
                                 int tmp = Integer.parseInt(getopt.getOptarg());
                                 cfg.setTabSize(tmp);
                             } catch (NumberFormatException exp) {
-                                System.err.println("ERROR: Failed to parse argument to \"-t\": " +
-                                    exp.getMessage());
+                                System.err.println("ERROR: Failed to parse argument to \"-t\": "
+                                        + exp.getMessage());
                                 System.exit(1);
                             }
                             break;
@@ -455,8 +455,8 @@ public final class Indexer {
                             try {
                                 cfg.setScanningDepth(Integer.parseInt(getopt.getOptarg()));
                             } catch (NumberFormatException exp) {
-                                System.err.println("ERROR: Failed to parse argument to \"-z\": " +
-                                    exp.getMessage());
+                                System.err.println("ERROR: Failed to parse argument to \"-z\": "
+                                        + exp.getMessage());
                                 System.exit(1);
                             }
                             break;
@@ -470,8 +470,8 @@ public final class Indexer {
                     }
                 }
 
-                List<Class<? extends Repository>> repositoryClasses =
-                        RepositoryFactory.getRepositoryClasses();
+                List<Class<? extends Repository>> repositoryClasses
+                        = RepositoryFactory.getRepositoryClasses();
                 for (Class<? extends Repository> clazz : repositoryClasses) {
                     try {
                         Field f = clazz.getDeclaredField("CMD_PROPERTY_KEY");
@@ -563,8 +563,8 @@ public final class Indexer {
                         if (Project.getProject(path) != null) {
                             subFiles.add(path);
                         } else {
-                            System.err.println("The path " + path +
-                                " does not correspond to a project");
+                            System.err.println("The path " + path
+                                    + " does not correspond to a project");
                         }
                     } else {
                         subFiles.add(path);
@@ -579,8 +579,8 @@ public final class Indexer {
                 // Issue a warning when JDBC is used with renamed file handling.
                 // This causes heavy slowdown when used with JavaDB (issue #774).
                 if (env.isHandleHistoryOfRenamedFiles() && cfg.isHistoryCacheInDB()) {
-                    System.out.println("History stored in DB and renamed file " +
-                        "handling is on - possible performance degradation");
+                    System.out.println("History stored in DB and renamed file "
+                            + "handling is on - possible performance degradation");
                 }
 
                 // Get history first.
@@ -609,8 +609,7 @@ public final class Indexer {
                 System.err.println("Exception: " + e.getLocalizedMessage());
                 log.log(Level.SEVERE, "Unexpected Exception", e);
                 System.exit(1);
-            }
-            finally {
+            } finally {
                 stats.report(log);
             }
         }
@@ -876,7 +875,7 @@ public final class Indexer {
             RuntimeEnvironment.destroyRenamedHistoryExecutor();
         } catch (InterruptedException ex) {
             log.log(Level.SEVERE,
-                "destroying of renamed thread pool failed", ex);
+                    "destroying of renamed thread pool failed", ex);
         }
         elapsed.report(log, "Done indexing data of all repositories");
     }
@@ -891,7 +890,7 @@ public final class Indexer {
                     env.writeConfiguration(host, Integer.parseInt(cfg[1]));
                 } catch (Exception ex) {
                     log.log(Level.SEVERE, "Failed to send configuration to "
-                        + configHost + " (is web application server running with opengrok deployed?)", ex);
+                            + configHost + " (is web application server running with opengrok deployed?)", ex);
                 }
             } else {
                 log.severe("Syntax error: ");

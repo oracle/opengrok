@@ -18,6 +18,9 @@
  */
 
 /*
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ */
+/*
  * Copyright (c) 2010, Trond Norbye <trond.norbye@gmail.com>. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
@@ -38,10 +41,14 @@ public class RepoRepository extends Repository {
     // TODO: cache all of the GitRepositories within the class
 
     private static final long serialVersionUID = 1L;
-    /** The property name used to obtain the client command for this repository.*/
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.repo";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * The property name used to obtain the client command for this repository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.repo";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "repo";
 
     public RepoRepository() {
@@ -58,9 +65,9 @@ public class RepoRepository extends Repository {
     @Override
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("sync");
 
         Executor executor = new Executor(cmd, directory);

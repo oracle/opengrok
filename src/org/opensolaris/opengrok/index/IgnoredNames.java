@@ -25,18 +25,16 @@ package org.opensolaris.opengrok.index;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensolaris.opengrok.index.IgnoredDirs;
-import org.opensolaris.opengrok.index.IgnoredFiles;
-
 
 /**
  * wrapper class for IgnoredFiles and IgnoredDirs
- * 
+ *
  * @author Vladimir Kotal
  */
 public class IgnoredNames {
-    private IgnoredFiles ignoredFiles;
-    private IgnoredDirs ignoredDirs;
+
+    private final IgnoredFiles ignoredFiles;
+    private final IgnoredDirs ignoredDirs;
 
     public IgnoredNames() {
         ignoredFiles = new IgnoredFiles();
@@ -60,35 +58,38 @@ public class IgnoredNames {
             ignoredFiles.add(pattern);
         }
     }
-    
+
     public void setItems(List<String> item) {
         clear();
         for (String s : item) {
             add(s);
         }
     }
-    
+
     /**
      * Should the file be ignored or not?
+     *
      * @param file the file to check
      * @return true if this file should be ignored, false otherwise
      */
     public boolean ignore(File file) {
-        if (file.isFile())
+        if (file.isFile()) {
             return ignoredFiles.match(file);
-        else
+        } else {
             return ignoredDirs.match(file);
+        }
     }
 
     /**
      * Should the file be ignored or not?
+     *
      * @param name the name of the file to check
      * @return true if this pathname should be ignored, false otherwise
      */
     public boolean ignore(String name) {
         return ignoredFiles.match(name) || ignoredDirs.match(name);
     }
-    
+
     public void clear() {
         ignoredFiles.clear();
         ignoredDirs.clear();

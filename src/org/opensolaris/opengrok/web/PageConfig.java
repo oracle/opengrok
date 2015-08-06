@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions copyright (c) 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
 
@@ -43,9 +43,9 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.ServletRequest;
 import org.apache.commons.jrcs.diff.Diff;
 import org.apache.commons.jrcs.diff.DifferentiationFailedException;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
@@ -60,25 +60,27 @@ import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * A simple container to lazy initialize common vars wrt. a single request.
- * It MUST NOT be shared between several requests and
- * {@link #cleanup(ServletRequest)} should be called before the page context 
- * gets destroyed (e.g.when leaving the {@code service} method). <p> Purpose
- * is to decouple implementation details from web design, so that the JSP
- * developer does not need to know every implementation detail and normally has
- * to deal with this class/wrapper, only (so some people may like to call this
- * class a bean with request scope ;-)). Furthermore it helps to keep the pages
- * (how content gets generated) consistent and to document the request
- * parameters used. <p> General contract for this class (i.e. if not explicitly
- * documented): no method of this class changes neither the request nor the
- * response.
+ * A simple container to lazy initialize common vars wrt. a single request. It
+ * MUST NOT be shared between several requests and
+ * {@link #cleanup(ServletRequest)} should be called before the page context
+ * gets destroyed (e.g.when leaving the {@code service} method).
+ * <p>
+ * Purpose is to decouple implementation details from web design, so that the
+ * JSP developer does not need to know every implementation detail and normally
+ * has to deal with this class/wrapper, only (so some people may like to call
+ * this class a bean with request scope ;-)). Furthermore it helps to keep the
+ * pages (how content gets generated) consistent and to document the request
+ * parameters used.
+ * <p>
+ * General contract for this class (i.e. if not explicitly documented): no
+ * method of this class changes neither the request nor the response.
  *
  * @author Jens Elkner
  * @version $Revision$
  */
 public final class PageConfig {
     // TODO if still used, get it from the app context
-    
+
     private RuntimeEnvironment env;
     private IgnoredNames ignoredNames;
     private String path;
@@ -96,8 +98,8 @@ public final class PageConfig {
     private Boolean annotate;
     private Annotation annotation;
     private Boolean hasHistory;
-    private static final EnumSet<Genre> txtGenres =
-            EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
+    private static final EnumSet<Genre> txtGenres
+            = EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
     private List<String> dirFileList;
@@ -107,7 +109,7 @@ public final class PageConfig {
     private static final Logger log = Logger.getLogger(PageConfig.class.getName());
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
-    private HttpServletRequest req;
+    private final HttpServletRequest req;
 
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
@@ -211,7 +213,7 @@ public final class PageConfig {
                         data.genre = AnalyzerGuru.getGenre(in[i]);
                     } catch (IOException e) {
                         data.errorMsg = "Unable to determine the file type: "
-                            + Util.htmlize(e.getMessage());
+                                + Util.htmlize(e.getMessage());
                     }
                 }
 
@@ -302,7 +304,7 @@ public final class PageConfig {
      * not available, an empty String if further processing is ok and a
      * non-empty string which contains the URI encoded redirect path if the
      * request should be redirected.
-     * @see #resourceNotAvailable()     
+     * @see #resourceNotAvailable()
      * @see #getDirectoryRedirect()
      */
     public String canProcess() {
@@ -320,9 +322,9 @@ public final class PageConfig {
                         && !getRequestedRevision().isEmpty() && !hasHistory()) {
                     return null;
                 }
-            } else if ((getPrefix() == Prefix.RAW_P) ||
-                (getPrefix() == Prefix.DOWNLOAD_P)) {
-                    return null;
+            } else if ((getPrefix() == Prefix.RAW_P)
+                    || (getPrefix() == Prefix.DOWNLOAD_P)) {
+                return null;
             }
         }
         return redir == null ? "" : redir;
@@ -347,8 +349,8 @@ public final class PageConfig {
                 dirFileList = Collections.emptyList();
             } else {
                 Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-                dirFileList =
-                        Collections.unmodifiableList(Arrays.asList(files));
+                dirFileList
+                        = Collections.unmodifiableList(Arrays.asList(files));
             }
         }
         return dirFileList;
@@ -493,9 +495,9 @@ public final class PageConfig {
     }
 
     /**
-     * Get the eftar reader for the data directory. If it has been
-     * already opened and not closed, this instance gets returned. One should
-     * not close it once used: {@link #cleanup(ServletRequest)} takes care to close it.
+     * Get the eftar reader for the data directory. If it has been already
+     * opened and not closed, this instance gets returned. One should not close
+     * it once used: {@link #cleanup(ServletRequest)} takes care to close it.
      *
      * @return {@code null} if a reader can't be established, the reader
      * otherwise.
@@ -690,9 +692,10 @@ public final class PageConfig {
 
     /**
      * Get a reference to a set of requested projects via request parameter
-     * {@code project} or cookies or defaults. <p> NOTE: This method assumes,
-     * that project names do <b>not</b> contain a comma (','), since this
-     * character is used as name separator!
+     * {@code project} or cookies or defaults.
+     * <p>
+     * NOTE: This method assumes, that project names do <b>not</b> contain a
+     * comma (','), since this character is used as name separator!
      *
      * @return a possible empty set of project names aka descriptions but never
      * {@code null}. It is determined as follows: <ol> <li>If there is no
@@ -709,8 +712,8 @@ public final class PageConfig {
      */
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
-            requestedProjects =
-                    getRequestedProjects("project", "OpenGrokProject");
+            requestedProjects
+                    = getRequestedProjects("project", "OpenGrokProject");
         }
         return requestedProjects;
     }
@@ -917,7 +920,7 @@ public final class PageConfig {
         }
         return path;
     }
-   
+
     /**
      * Get the on disk file to the request related file or directory.
      *
@@ -1085,8 +1088,8 @@ public final class PageConfig {
                 return null;
             }
             getPrefix();
-            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L &&
-                prefix != Prefix.RSS_P) {
+            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L
+                    && prefix != Prefix.RSS_P) {
                 // if it is an existing dir perhaps people wanted dir xref
                 return req.getContextPath() + Prefix.XREF_P
                         + getUriEncodedPath() + trailingSlash(path);
@@ -1141,11 +1144,13 @@ public final class PageConfig {
 
     /**
      * Prepare a search helper with all required information, ready to execute
-     * the query implied by the related request parameters and cookies. <p>
+     * the query implied by the related request parameters and cookies.
+     * <p>
      * NOTE: One should check the {@link SearchHelper#errorMsg} as well as
      * {@link SearchHelper#redirect} and take the appropriate action before
-     * executing the prepared query or continue processing. <p> This method
-     * stops populating fields as soon as an error occurs.
+     * executing the prepared query or continue processing.
+     * <p>
+     * This method stops populating fields as soon as an error occurs.
      *
      * @return a search helper.
      */
@@ -1178,7 +1183,8 @@ public final class PageConfig {
 
     /**
      * Get the config wrt. the given request. If there is none yet, a new config
-     * gets created, attached to the request and returned. <p>
+     * gets created, attached to the request and returned.
+     * <p>
      *
      * @param request the request to use to initialize the config parameters.
      * @return always the same none-{@code null} config for a given request.
@@ -1193,14 +1199,15 @@ public final class PageConfig {
         request.setAttribute(ATTR_NAME, pcfg);
         return pcfg;
     }
-    
+
     private PageConfig(HttpServletRequest req) {
         this.req = req;
     }
 
     /**
-     * Cleanup all allocated resources (if any) from the instance attached to 
+     * Cleanup all allocated resources (if any) from the instance attached to
      * the given request.
+     *
      * @param sr request to check, cleanup. Ignored if {@code null}.
      * @see PageConfig#get(HttpServletRequest)
      */
@@ -1211,7 +1218,7 @@ public final class PageConfig {
         PageConfig cfg = (PageConfig) sr.getAttribute(ATTR_NAME);
         if (cfg == null) {
             return;
-        }        
+        }
         sr.removeAttribute(ATTR_NAME);
         cfg.env = null;
         if (cfg.eftarReader != null) {

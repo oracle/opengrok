@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -43,11 +43,11 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * The command with which to access the external repository. Can be
-     * {@code null} if the repository isn't accessed via a CLI, or if it
-     * hasn't been initialized by {@link #ensureCommand} yet.
+     * {@code null} if the repository isn't accessed via a CLI, or if it hasn't
+     * been initialized by {@link #ensureCommand} yet.
      */
-    protected String cmd;
-    
+    protected String RepoCommand;
+
     /**
      * List of &lt;revision, tags&gt; pairs for repositories which display tags
      * only for files changed by the tagged commit.
@@ -57,8 +57,8 @@ public abstract class Repository extends RepositoryInfo {
     abstract boolean fileHasHistory(File file);
 
     /**
-     * Check if the repository supports {@code getHistory()} requests for
-     * whole directories at once.
+     * Check if the repository supports {@code getHistory()} requests for whole
+     * directories at once.
      *
      * @return {@code true} if the repository can get history for directories
      */
@@ -66,6 +66,7 @@ public abstract class Repository extends RepositoryInfo {
 
     /**
      * Get the history log for the specified file or directory.
+     *
      * @param file the file to get the history for
      * @return history log for file
      * @throws HistoryException on error accessing the history
@@ -78,11 +79,11 @@ public abstract class Repository extends RepositoryInfo {
      * </p>
      *
      * <p>
-     * The default implementation first fetches the full history and then
-     * throws away the oldest revisions. This is not efficient, so subclasses
-     * should override it in order to get good performance. Once every subclass
-     * has implemented a more efficient method, the default implementation
-     * should be removed and made abstract.
+     * The default implementation first fetches the full history and then throws
+     * away the oldest revisions. This is not efficient, so subclasses should
+     * override it in order to get good performance. Once every subclass has
+     * implemented a more efficient method, the default implementation should be
+     * removed and made abstract.
      * </p>
      *
      * @param file the file to get the history for
@@ -111,7 +112,7 @@ public abstract class Repository extends RepositoryInfo {
             return history;
         }
 
-        List<HistoryEntry> partial = new ArrayList<HistoryEntry>();
+        List<HistoryEntry> partial = new ArrayList<>();
         for (HistoryEntry entry : history.getHistoryEntries()) {
             partial.add(entry);
             if (sinceRevision.equals(entry.getRevision())) {
@@ -126,19 +127,19 @@ public abstract class Repository extends RepositoryInfo {
     }
 
     /**
-     * Remove the oldest changeset from a list (assuming sorted with most
-     * recent changeset first) and verify that it is the changeset we expected
-     * to find there.
+     * Remove the oldest changeset from a list (assuming sorted with most recent
+     * changeset first) and verify that it is the changeset we expected to find
+     * there.
      *
      * @param entries a list of {@code HistoryEntry} objects
      * @param revision the revision we expect the oldest entry to have
      * @throws HistoryException if the oldest entry was not the one we expected
      */
     void removeAndVerifyOldestChangeset(List<HistoryEntry> entries,
-                                        String revision)
+            String revision)
             throws HistoryException {
-        HistoryEntry entry =
-                entries.isEmpty() ? null : entries.remove(entries.size() - 1);
+        HistoryEntry entry
+                = entries.isEmpty() ? null : entries.remove(entries.size() - 1);
 
         // TODO We should check more thoroughly that the changeset is the one
         // we expected it to be, since some SCMs may change the revision
@@ -146,15 +147,16 @@ public abstract class Repository extends RepositoryInfo {
         // identical changesets. We could for example get the cached changeset
         // and compare more fields, like author and date.
         if (entry == null || !revision.equals(entry.getRevision())) {
-            throw new HistoryException("Cached revision '" + revision +
-                                       "' not found in the repository " +
-                                       getDirectoryName());
+            throw new HistoryException("Cached revision '" + revision
+                    + "' not found in the repository "
+                    + getDirectoryName());
         }
     }
 
     /**
-     * Get an input stream that I may use to read a specific version of a
-     * named file.
+     * Get an input stream that I may use to read a specific version of a named
+     * file.
+     *
      * @param parent the name of the directory containing the file
      * @param basename the name of the file to get
      * @param rev the revision to get
@@ -169,28 +171,29 @@ public abstract class Repository extends RepositoryInfo {
      * @return <code>true</code> if annotation is supported
      */
     abstract boolean fileHasAnnotation(File file);
-    
+
     /**
      * Returns if this repository tags only files changed in last commit, i.e.
      * if we need to prepare list of repository-wide tags prior to creation of
      * file history entries.
-     * @return True if we need tag list creation prior to file parsing,
-     * false by default.
+     *
+     * @return True if we need tag list creation prior to file parsing, false by
+     * default.
      */
     boolean hasFileBasedTags() {
         return false;
     }
-    
+
     TreeSet<TagEntry> getTagList() {
         return this.tagList;
     }
-    
+
     /**
-     * Assign tags to changesets they represent
-     * The complete list of tags must be pre-built using {@code getTagList()}.
-     * Then this function squeeze all tags to changesets which actually exist
-     * in the history of given file.
+     * Assign tags to changesets they represent The complete list of tags must
+     * be pre-built using {@code getTagList()}. Then this function squeeze all
+     * tags to changesets which actually exist in the history of given file.
      * Must be implemented repository-specific.
+     *
      * @see getTagList
      * @param hist History we want to assign tags to.
      */
@@ -228,12 +231,13 @@ public abstract class Repository extends RepositoryInfo {
                     lastTagEntry = null;
                 }
             }
-        }        
+        }
     }
-    
+
     /**
      * Create internal list of all tags in this repository.
-     * @param directory 
+     *
+     * @param directory
      */
     protected void buildTagList(File directory) {
         this.tagList = null;
@@ -244,7 +248,7 @@ public abstract class Repository extends RepositoryInfo {
      *
      * @param file the file to annotate
      * @param revision revision of the file. Either {@code null} or a none-empty
-     *  string.
+     * string.
      * @return an <code>Annotation</code> object
      * @throws java.io.IOException if an error occurs
      */
@@ -267,8 +271,8 @@ public abstract class Repository extends RepositoryInfo {
      * this method is a no-op.
      *
      * @param cache the cache instance in which to store the history log
-     * @param sinceRevision if non-null, incrementally update the cache with
-     * all revisions after the specified revision; otherwise, create the full
+     * @param sinceRevision if non-null, incrementally update the cache with all
+     * revisions after the specified revision; otherwise, create the full
      * history starting with the initial revision
      *
      * @throws HistoryException on error
@@ -283,10 +287,10 @@ public abstract class Repository extends RepositoryInfo {
         // this way. Just give up and return.
         if (!hasHistoryForDirectories()) {
             Logger.getLogger(getClass().getName()).log(
-                Level.INFO,
-                "Skipping creation of history cache for {0}, since retrieval " +
-                "of history for directories is not implemented for this " +
-                "repository type.", getDirectoryName());
+                    Level.INFO,
+                    "Skipping creation of history cache for {0}, since retrieval "
+                    + "of history for directories is not implemented for this "
+                    + "repository type.", getDirectoryName());
             return;
         }
 
@@ -305,8 +309,8 @@ public abstract class Repository extends RepositoryInfo {
             // (bug #14724) so we'll try to regenerate the cache from
             // scratch instead.
             OpenGrokLogger.getLogger().log(Level.INFO,
-                    "Failed to get partial history. Attempting to " +
-                    "recreate the history cache from scratch.", he);
+                    "Failed to get partial history. Attempting to "
+                    + "recreate the history cache from scratch.", he);
             history = null;
         }
 
@@ -332,6 +336,7 @@ public abstract class Repository extends RepositoryInfo {
     /**
      * Update the content in this repository by pulling the changes from the
      * upstream repository..
+     *
      * @throws IOException if an error occurs.
      */
     abstract void update() throws IOException;
@@ -355,7 +360,8 @@ public abstract class Repository extends RepositoryInfo {
     abstract String determineBranch() throws IOException;
 
     /**
-     * Returns true if this repository supports sub repositories (a.k.a. forests).
+     * Returns true if this repository supports sub repositories (a.k.a.
+     * forests).
      *
      * @return true if this repository supports sub repositories
      */
@@ -370,31 +376,32 @@ public abstract class Repository extends RepositoryInfo {
 
     static Boolean checkCmd(String... args) {
         Executor exec = new Executor(args);
-        return Boolean.valueOf(exec.exec(false) == 0);
+        return exec.exec(false) == 0;
     }
 
     /**
-     * Set the name of the external client command that should be used to
-     * access the repository wrt. the given parameters. Does nothing, if this
-     * repository's <var>cmd</var> has already been set (i.e. has a
+     * Set the name of the external client command that should be used to access
+     * the repository wrt. the given parameters. Does nothing, if this
+     * repository's <var>RepoCommand</var> has already been set (i.e. has a
      * non-{@code null} value).
      *
-     * @param propertyKey property key to lookup the corresponding system property.
+     * @param propertyKey property key to lookup the corresponding system
+     * property.
      * @param fallbackCommand the command to use, if lookup fails.
      * @return the command to use.
-     * @see #cmd
+     * @see #RepoCommand
      */
     protected String ensureCommand(String propertyKey, String fallbackCommand) {
-        if (cmd != null) {
-            return cmd;
+        if (RepoCommand != null) {
+            return RepoCommand;
         }
-        cmd = RuntimeEnvironment.getInstance()
-            .getRepoCmd(this.getClass().getCanonicalName());
-        if (cmd == null) {
-            cmd = System.getProperty(propertyKey, fallbackCommand);
+        RepoCommand = RuntimeEnvironment.getInstance()
+                .getRepoCmd(this.getClass().getCanonicalName());
+        if (RepoCommand == null) {
+            RepoCommand = System.getProperty(propertyKey, fallbackCommand);
             RuntimeEnvironment.getInstance()
-                .setRepoCmd(this.getClass().getCanonicalName(), cmd);
+                    .setRepoCmd(this.getClass().getCanonicalName(), RepoCommand);
         }
-        return cmd;
+        return RepoCommand;
     }
 }

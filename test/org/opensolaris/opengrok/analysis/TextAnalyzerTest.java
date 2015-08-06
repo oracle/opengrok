@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -36,7 +36,7 @@ import org.junit.Test;
 
 public class TextAnalyzerTest {
 
-    private String defaultEncoding = new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding();
+    private final String defaultEncoding = new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding();
     private String encoding;
     private String contents;
 

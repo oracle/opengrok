@@ -18,14 +18,17 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
 import java.util.ArrayList;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -77,7 +80,7 @@ public class IndexDatabaseTest {
         assertTrue(defs1.hasSymbol("a"));
         assertFalse(defs1.hasSymbol("b"));
         assertTrue(defs1.hasDefinitionAt("foobar", 1, new String[1]));
-        
+
         //same for windows delimiters
         f1 = new File(repository.getSourceRoot() + "\\c\\foobar.c");
         defs1 = IndexDatabase.getDefinitions(f1);

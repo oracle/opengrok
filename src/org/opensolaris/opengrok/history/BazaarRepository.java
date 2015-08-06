@@ -22,7 +22,14 @@
  */
 package org.opensolaris.opengrok.history;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
@@ -38,11 +45,16 @@ import org.opensolaris.opengrok.util.Executor;
  *
  */
 public class BazaarRepository extends Repository {
+
     private static final long serialVersionUID = 1L;
-    /** The property name used to obtain the client command for thisrepository. */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.Bazaar";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * The property name used to obtain the client command for thisrepository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.Bazaar";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "bzr";
 
     public BazaarRepository() {
@@ -50,16 +62,15 @@ public class BazaarRepository extends Repository {
         datePattern = "EEE yyyy-MM-dd hh:mm:ss ZZZZ";
     }
 
-   /**
-     * Get an executor to be used for retrieving the history log for the
-     * named file.
+    /**
+     * Get an executor to be used for retrieving the history log for the named
+     * file.
      *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, final String sinceRevision)
-        throws IOException
-    {
+            throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
@@ -68,35 +79,34 @@ public class BazaarRepository extends Repository {
 
         List<String> cmd = new ArrayList<String>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("log");
 
         if (file.isDirectory()) {
-           cmd.add("-v");
-       }
-       cmd.add(filename);
+            cmd.add("-v");
+        }
+        cmd.add(filename);
 
-       if (sinceRevision != null) {
-           cmd.add("-r");
-           cmd.add(sinceRevision + "..-1");
-       }
+        if (sinceRevision != null) {
+            cmd.add("-r");
+            cmd.add(sinceRevision + "..-1");
+        }
 
-       return new Executor(cmd, new File(getDirectoryName()));
+        return new Executor(cmd, new File(getDirectoryName()));
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
-    {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
         File directory = new File(directoryName);
 
         Process process = null;
         try {
-            String filename =  (new File(parent, basename)).getCanonicalPath()
-                .substring(directoryName.length() + 1);
+            String filename = (new File(parent, basename)).getCanonicalPath()
+                    .substring(directoryName.length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {cmd, "cat", "-r", rev, filename};
+            String argv[] = {RepoCommand, "cat", "-r", rev, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -113,7 +123,7 @@ public class BazaarRepository extends Repository {
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get history: " + exp.getClass().toString(), exp);
+                    "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -129,9 +139,11 @@ public class BazaarRepository extends Repository {
         return ret;
     }
 
-    /** Pattern used to extract author/revision from bzr blame. */
-    private static final Pattern BLAME_PATTERN =
-        Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
+    /**
+     * Pattern used to extract author/revision from bzr blame.
+     */
+    private static final Pattern BLAME_PATTERN
+            = Pattern.compile("^\\W*(\\S+)\\W+(\\S+).*$");
 
     /**
      * Annotate the specified file/revision.
@@ -139,12 +151,13 @@ public class BazaarRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
+     * @throws java.io.IOException
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("blame");
         cmd.add("--all");
         cmd.add("--long");
@@ -159,16 +172,15 @@ public class BazaarRepository extends Repository {
 
         if (status != 0) {
             OpenGrokLogger.getLogger().log(Level.WARNING,
-                "Failed to get annotations for: \"{0}\" Exit code: {1}",
-                new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
+                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
         return parseAnnotation(exec.getOutputReader(), file.getName());
     }
 
     protected Annotation parseAnnotation(Reader input, String fileName)
-        throws IOException
-    {
+            throws IOException {
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
         String line = "";
@@ -183,8 +195,8 @@ public class BazaarRepository extends Repository {
                 ret.addLine(rev, author, true);
             } else {
                 OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Error: did not find annotation in line {0}: [{1}]",
-                    new Object[]{String.valueOf(lineno), line});
+                        "Error: did not find annotation in line {0}: [{1}]",
+                        new Object[]{String.valueOf(lineno), line});
             }
         }
         return ret;
@@ -199,18 +211,18 @@ public class BazaarRepository extends Repository {
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("info");
         Executor executor = new Executor(cmd, directory);
         if (executor.exec() != 0) {
             throw new IOException(executor.getErrorString());
         }
 
-        if (executor.getOutputString().indexOf("parent branch:") != -1) {
+        if (executor.getOutputString().contains("parent branch:")) {
             cmd.clear();
-            cmd.add(this.cmd);
+            cmd.add(RepoCommand);
             cmd.add("up");
             executor = new Executor(cmd, directory);
             if (executor.exec() != 0) {
@@ -230,20 +242,20 @@ public class BazaarRepository extends Repository {
 
     @Override
     boolean isRepositoryFor(File file) {
-       if (file.isDirectory()) {
-        File f = new File(file, ".bzr");
-        return f.exists() && f.isDirectory();
-       }
-       return false;
+        if (file.isDirectory()) {
+            File f = new File(file, ".bzr");
+            return f.exists() && f.isDirectory();
+        }
+        return false;
     }
 
     @Override
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd, "--help");
+            working = checkCmd(RepoCommand, "--help");
         }
-        return working.booleanValue();
+        return working;
     }
 
     @Override
@@ -278,10 +290,10 @@ public class BazaarRepository extends Repository {
      */
     @Override
     protected void buildTagList(File directory) {
-        this.tagList = new TreeSet<TagEntry>();
-        ArrayList<String> argv = new ArrayList<String>();
+        this.tagList = new TreeSet<>();
+        ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(cmd);
+        argv.add(RepoCommand);
         argv.add("tags");
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
@@ -333,12 +345,11 @@ public class BazaarRepository extends Repository {
 
     @Override
     String determineParent() throws IOException {
-        String parent = null;
         File directory = new File(directoryName);
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("config");
         cmd.add("parent_location");
         Executor executor = new Executor(cmd, directory);

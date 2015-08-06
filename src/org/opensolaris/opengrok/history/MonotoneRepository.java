@@ -46,10 +46,14 @@ import org.opensolaris.opengrok.util.Executor;
 public class MonotoneRepository extends Repository {
 
     private static final long serialVersionUID = 1L;
-    /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.Monotone";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * The property name used to obtain the client command for this repository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.Monotone";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "mnt";
 
     public MonotoneRepository() {
@@ -58,8 +62,7 @@ public class MonotoneRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
-    {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -69,9 +72,9 @@ public class MonotoneRepository extends Repository {
 
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
-                .substring(directoryName.length() + 1);
+                    .substring(directoryName.length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {cmd, "cat", "-r", revision, filename};
+            String argv[] = {RepoCommand, "cat", "-r", revision, filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -89,7 +92,7 @@ public class MonotoneRepository extends Repository {
             ret = new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
         } catch (Exception exp) {
             OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get history: " + exp.getClass().toString());
+                    "Failed to get history: {0}", exp.getClass().toString());
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -106,16 +109,16 @@ public class MonotoneRepository extends Repository {
     }
 
     Executor getHistoryLogExecutor(File file, String changeset)
-        throws IOException {
+            throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("log");
 
         if (changeset != null) {
@@ -130,9 +133,11 @@ public class MonotoneRepository extends Repository {
 
         return new Executor(cmd, new File(directoryName));
     }
-    /** Pattern used to extract author/revision from hg annotate. */
-    private static final Pattern ANNOTATION_PATTERN =
-            Pattern.compile("^(\\w+)\\p{Punct}\\p{Punct} by (\\S+)");
+    /**
+     * Pattern used to extract author/revision from hg annotate.
+     */
+    private static final Pattern ANNOTATION_PATTERN
+            = Pattern.compile("^(\\w+)\\p{Punct}\\p{Punct} by (\\S+)");
 
     /**
      * Annotate the specified file/revision.
@@ -140,12 +145,13 @@ public class MonotoneRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
+     * @throws java.io.IOException
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        ArrayList<String> cmd = new ArrayList<String>();
+        ArrayList<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("annotate");
         cmd.add(getQuietOption());
         if (revision != null) {
@@ -160,7 +166,7 @@ public class MonotoneRepository extends Repository {
             throw new IOException(executor.getErrorString());
         }
 
-        Annotation ret = null;
+        Annotation ret;
         try (BufferedReader in = new BufferedReader(executor.getOutputReader())) {
             ret = new Annotation(file.getName());
             String line;
@@ -190,8 +196,8 @@ public class MonotoneRepository extends Repository {
         File directory = new File(directoryName);
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
 
-        List<String> cmd = new ArrayList<String>();
-        cmd.add(this.cmd);
+        List<String> cmd = new ArrayList<>();
+        cmd.add(RepoCommand);
         cmd.add("pull");
         cmd.add(getQuietOption());
         Executor executor = new Executor(cmd, directory);
@@ -200,7 +206,7 @@ public class MonotoneRepository extends Repository {
         }
 
         cmd.clear();
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("update");
         cmd.add(getQuietOption());
         executor = new Executor(cmd, directory);
@@ -224,9 +230,9 @@ public class MonotoneRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd, "--help");
+            working = checkCmd(RepoCommand, "--help");
         }
-        return working.booleanValue();
+        return working;
     }
 
     @Override
@@ -253,8 +259,8 @@ public class MonotoneRepository extends Repository {
         }
     }
 
-    public static final String DEPRECATED_KEY =
-            "org.opensolaris.opengrok.history.monotone.deprecated";
+    public static final String DEPRECATED_KEY
+            = "org.opensolaris.opengrok.history.monotone.deprecated";
 
     private boolean useDeprecated() {
         return Boolean.parseBoolean(System.getProperty(DEPRECATED_KEY, "false"));
@@ -265,16 +271,15 @@ public class MonotoneRepository extends Repository {
         String parent = null;
         File directory = new File(directoryName);
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("ls");
         cmd.add("vars");
         cmd.add("database");
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.directory(directory);
-        Process process = null;
-
+        Process process;
         process = pb.start();
 
         try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -284,7 +289,7 @@ public class MonotoneRepository extends Repository {
                     String parts[] = line.split("\\s+");
                     if (parts.length != 3) {
                         OpenGrokLogger.getLogger().log(Level.WARNING,
-                            "Failed to get parent for {0}", directoryName);
+                                "Failed to get parent for {0}", directoryName);
                     }
                     parent = parts[2];
                     break;

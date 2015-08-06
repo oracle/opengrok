@@ -20,7 +20,6 @@
 /*
  * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis.haskell;
 
 import java.io.Reader;
@@ -34,9 +33,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import static org.junit.Assert.assertArrayEquals;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import static org.junit.Assert.*;
 
 /**
  * Tests the {@link HaskellSymbolTokenizer} class.
@@ -76,16 +75,16 @@ public class HaskellSymbolTokenizerTest {
     @Test
     public void sampleTest() throws UnsupportedEncodingException {
         InputStream res = getClass().getClassLoader().getResourceAsStream(
-            "org/opensolaris/opengrok/analysis/haskell/sample.hs");
+                "org/opensolaris/opengrok/analysis/haskell/sample.hs");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
         String[] termsFor = getTermsFor(r);
         Logger.getLogger(HaskellSymbolTokenizerTest.class.getName()).log(Level.SEVERE, null, termsFor);
         assertArrayEquals(
-            new String[]{
-                "qsort", // line 2
-                "qsort", "x", "xs", "qsort", "x'", "x'", "xs", "x'", "x", "x", "qsort", "x'", "x'", "xs", "x'", "x", //line 3
-                "x'y'", "f'", "g'h", "f'", "g'h" // line 6
-            },
-            termsFor);
+                new String[]{
+                    "qsort", // line 2
+                    "qsort", "x", "xs", "qsort", "x'", "x'", "xs", "x'", "x", "x", "qsort", "x'", "x'", "xs", "x'", "x", //line 3
+                    "x'y'", "f'", "g'h", "f'", "g'h" // line 6
+                },
+                termsFor);
     }
 }
