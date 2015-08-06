@@ -72,47 +72,48 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
         }
 
         // Print table of project-repository mappings.
-        %>
-        <table>
-        <tr>
-        <td><b>Project</b></td>
-        <td><b>SCM type</b></td>
-        <td><b>Parent (branch)</b></td>
-        </tr>
-        <%
-        Iterator<Project> keySetIterator = map.keySet().iterator();
-        while (keySetIterator.hasNext()) {
-            Project proj = keySetIterator.next();
-            ArrayList<RepositoryInfo> repos = map.get(proj);
-            String projDesc = proj.getDescription();
-            Integer cnt = 0;
-            Collections.sort(repos, comparatorRepo);
-            for (RepositoryInfo ri : repos) {
-                if (cnt != 0) {
-                    projDesc = "";
+        if (map.keySet().size() > 0) { %>
+            <table>
+            <tr>
+            <td><b>Project</b></td>
+            <td><b>SCM type</b></td>
+            <td><b>Parent (branch)</b></td>
+            </tr>
+            <%
+            Iterator<Project> keySetIterator = map.keySet().iterator();
+            while (keySetIterator.hasNext()) {
+                Project proj = keySetIterator.next();
+                ArrayList<RepositoryInfo> repos = map.get(proj);
+                String projDesc = proj.getDescription();
+                Integer cnt = 0;
+                Collections.sort(repos, comparatorRepo);
+                for (RepositoryInfo ri : repos) {
+                    if (cnt != 0) {
+                        projDesc = "";
+                    }
+                    %>
+                    <tr><td><%= Util.htmlize(projDesc) %></td><%
+                    String parent = ri.getParent();
+                    if (parent == null) {
+                        parent = "N/A";
+                    }
+                    String type = ri.getType();
+                    if (type == null) {
+                        type = "N/A";
+                    }
+                    String branch = ri.getBranch();
+                    if (branch == null) {
+                        branch = "N/A";
+                    }
+                    %><td><%= Util.htmlize(type) %></td><%
+                    %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                    %></tr><%
+                    cnt++;
                 }
-                %>
-                <tr><td><%= Util.htmlize(projDesc) %></td><%
-                String parent = ri.getParent();
-                if (parent == null) {
-                    parent = "N/A";
-                }
-                String type = ri.getType();
-                if (type == null) {
-                    type = "N/A";
-                }
-                String branch = ri.getBranch();
-                if (branch == null) {
-                    branch = "N/A";
-                }
-                %><td><%= Util.htmlize(type) %></td><%
-                %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
-                %></tr><%
-                cnt++;
             }
+            %>
+            </table> <%
         }
-        %>
-        </table> <%
     }
 }
 %>
