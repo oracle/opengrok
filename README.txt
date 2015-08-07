@@ -147,8 +147,8 @@ If you want to skip indexing the history of a particular directory
 at the root of that directory.
 
 
-5.2 Using Opengrok wrapper script to create indexes
----------------------------------------------------
+5.2 Using Opengrok shell wrapper script to create indexes
+---------------------------------------------------------
 
 For *nix systems there is a shell script called OpenGrok which simplifies most
 of the tasks. It has been tested on Solaris and Linux distributions.
@@ -244,6 +244,63 @@ have a look at it, eventually create a configuration out of it and use
 OPENGROK_CONFIGURATION environment variable to point to it. Obviously such
 setups can be used for nightly cron job updates of index or other automated
 purposes.
+
+5.2.3 Partial reindex
+---------------------
+
+There is inherent time window between after the source code is updated
+(highlighted in step 5.1 above) and before indexer completes. During this
+time window the index does not match the source code. To alleviate this
+limitation, one can kick off update of all source repositories in
+parallel and once all the mirroring completes perform complete reindex.
+This does not really help in case when some of the source code
+repositories are slow to sync, e.g. because the latency to their origin is
+significant, because the overall mirroring process has to wait for all the
+projects to finish syncing before running the indexer. To overcome this
+limitation, the index of each project can be created just after the
+mirroring of this project finishes.
+
+Thus, the overall approach would be:
+
+  1. create initial index of all the source code
+
+     This will produce configuration.xml, optionally by combining the
+     discovered projects with read-only configuration (as specified
+     with READ_XML_CONFIGURATION). This step has to be performed only once
+     - during the initial OpenGrok setup.
+
+  2. mirror and index all projects in parallel
+
+     This is done by running indexpart command of the OpenGrok script and
+     specifying the configuration.xml written in previous step as
+     READ_XML_CONFIGURATION. The configuration will help the indexer to
+     discover source/data root and project to source path mapping.
+
+  3. perform complete reindex (like in step 1)
+
+     Once all the pre-existing projects are mirrored and indexed, run full
+     indexer to discover projects which have been added or deleted.
+     This will produce new configuration.xml.
+
+When running the indexer the logs are being written to single file. Since
+multiple indexers are being run in parallel in step 2, their logs have to
+be separated. To do this, create logging.properties file for each project
+using the /var/opengrok/logging.properties file as template. The only line
+which can differ would be this:
+
+java.util.logging.FileHandler.pattern = /var/opengrok/log/myproj/opengrok%g.%u.log
+
+Note the path component 'myproj' which separates the logs for given
+project to this directory. The creation of the per-project directory and the
+logging.properties file can be easily done in a script.
+
+The command used in step 2 can look like this:
+
+  OPENGROK_LOGGER_CONFIG_PATH=/var/opengrok/myproj.logging \
+     READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
+     OpenGrok indexpart /myproj
+
+The last argument is path relative to SRC_ROOT.
 
 5.3 Using SMF service (Solaris) to maintain OpenGrok indexes
 ------------------------------------------------------------
