@@ -22,6 +22,8 @@
  */
 package org.opensolaris.opengrok.analysis;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +32,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+
 import org.apache.lucene.document.Document;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class TextAnalyzerTest {

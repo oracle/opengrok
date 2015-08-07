@@ -22,6 +22,9 @@
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +33,7 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
 

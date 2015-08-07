@@ -10,10 +10,10 @@
 	<classpathentry kind="lib" path="build/jrcs"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="build/test/classes"/>
-	<classpathentry kind="lib" path="lib/lucene-analyzers-common-4.10.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-core-4.10.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-queryparser-4.10.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-suggest-4.10.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-analyzers-common-5.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-5.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queryparser-5.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-suggest-5.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>

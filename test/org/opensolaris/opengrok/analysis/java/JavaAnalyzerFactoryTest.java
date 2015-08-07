@@ -22,22 +22,24 @@
  */
 package org.opensolaris.opengrok.analysis.java;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
-import java.io.InputStream;
-import java.io.StringWriter;
-import org.apache.lucene.document.Field;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexableField;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.Scopes;

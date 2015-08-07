@@ -22,6 +22,8 @@
  */
 package org.opensolaris.opengrok.analysis.php;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,7 +34,7 @@ import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 /**

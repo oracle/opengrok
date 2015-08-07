@@ -23,6 +23,9 @@
  */
 package org.opensolaris.opengrok.analysis.document;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.File;
@@ -33,8 +36,6 @@ import java.io.StringWriter;
 import org.apache.lucene.document.Document;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;

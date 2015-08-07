@@ -22,6 +22,11 @@
  */
 package org.opensolaris.opengrok.history;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,11 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.TestRepository;

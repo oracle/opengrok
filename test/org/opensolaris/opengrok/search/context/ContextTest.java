@@ -22,6 +22,11 @@
  */
 package org.opensolaris.opengrok.search.context;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayReader;
 import java.io.Reader;
@@ -30,13 +35,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;

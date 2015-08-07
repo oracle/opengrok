@@ -22,21 +22,23 @@
  */
 package org.opensolaris.opengrok.analysis.php;
 
-import java.io.Reader;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import static org.junit.Assert.assertArrayEquals;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import static org.junit.Assert.assertArrayEquals;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
+import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 
 /**
  * Tests the {@link PhpSymbolTokenizer} class.

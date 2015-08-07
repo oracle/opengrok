@@ -22,15 +22,17 @@
  */
 package org.opensolaris.opengrok.search;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
