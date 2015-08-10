@@ -395,6 +395,9 @@ public final class Util {
 
     /**
      * Convert the given size into a human readable string.
+     * 
+     * NOTE: when changing the output of this function make sure to adapt
+     *       the jQuery tablesorter custom parsers in web/httpheader.jspf
      *
      * @param num size to convert.
      * @return a readable string
@@ -406,8 +409,10 @@ public final class Util {
             return formatter.format(l) + ' '; // for none-dirs append 'B'? ...
         } else if (l < 1048576) {
             return (formatter.format(l / 1024) + " KiB");
-        } else {
+        } else if (l < 1073741824) {
             return ("<b>" + formatter.format(l / 1048576) + " MiB</b>");
+        } else {
+            return ("<b>" + formatter.format(l / 1073741824) + " GiB</b>");
         }
     }
 

@@ -437,6 +437,11 @@ table#dirlist { /* the "Name" column */
 	border-collapse: collapse;
 }
 
+/* The tablersorter jQuery plugin makes the header fields clickable. */
+#dirlist th {
+	cursor: pointer;
+}
+
 #dirlist .r, #dirlist .p {
 	padding: 0;
 	margin: 0 0 0 1em;

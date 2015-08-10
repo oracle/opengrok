@@ -120,8 +120,8 @@ public class DirectoryListing {
             }
         }
 
-        out.write("<table id=\"dirlist\">\n");
-        out.write("<thead>\n<tr><th/><th>Name</th><th></th><th>Date</th><th>Size</th>");
+        out.write("<table id=\"dirlist\" class=\"tablesorter\">\n");
+        out.write("<thead>\n<tr><th></th><th>Name</th><th></th><th>Date</th><th>Size</th>");
         if (offset > 0) {
             out.write("<th><tt>Description</tt></th>");
         }
