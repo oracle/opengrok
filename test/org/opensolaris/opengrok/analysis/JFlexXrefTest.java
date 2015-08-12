@@ -285,6 +285,20 @@ public class JFlexXrefTest {
     }
 
     /**
+     * Verify that template parameters are treated as class names rather than
+     * filenames.
+     */
+    @Test
+    public void testCxxXrefTemplateParameters() throws Exception {
+        StringReader in = new StringReader("#include <vector>\nclass MyClass;\nstd::vector<MyClass> *v;");
+        StringWriter out = new StringWriter();
+        JFlexXref xref = new CxxXref(in);
+        xref.write(out);
+        assertTrue("Link to search for definition of class not found",
+                   out.toString().contains("&lt;<a href=\"/source/s?defs=MyClass\""));
+    }
+
+    /**
      * Verify that ShXref handles here-documents. Bug #18198.
      */
     @Test
