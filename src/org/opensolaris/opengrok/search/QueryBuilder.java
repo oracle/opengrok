@@ -17,9 +17,9 @@
  * CDDL HEADER END
  */
 
-/*
- * Portions Copyright 2011 Jens Elkner.
+/* 
  * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.search;
 
@@ -64,7 +64,7 @@ public class QueryBuilder {
      * had used a hash map, the order of the terms could have varied between
      * platforms and it would be harder to test.)
      */
-    private final Map<String, String> queries = new TreeMap<String, String>();
+    private final Map<String, String> queries = new TreeMap<>();
 
     /**
      * Set search string for the "full" field.
@@ -160,7 +160,7 @@ public class QueryBuilder {
     public String getHist() {
         return getQueryText(HIST);
     }
-    
+
     /**
      * Set search string for the "type" field.
      *
@@ -206,12 +206,12 @@ public class QueryBuilder {
      */
     public boolean isDefSearch() {
 
-        return ((getQueryText(FULL) == null) &&
-                (getQueryText(REFS) == null) &&
-                (getQueryText(PATH) == null) &&
-                (getQueryText(HIST) == null) &&
-                (getQueryText(DEFS) != null));
-    }    
+        return ((getQueryText(FULL) == null)
+                && (getQueryText(REFS) == null)
+                && (getQueryText(PATH) == null)
+                && (getQueryText(HIST) == null)
+                && (getQueryText(DEFS) != null));
+    }
 
     /**
      * Build a new query based on the query text that has been passed in to this
@@ -249,7 +249,7 @@ public class QueryBuilder {
         //
         // All other types of subqueries are added directly to the outer
         // query with Occur.MUST.
-        BooleanQuery combinedQuery = new BooleanQuery();
+        BooleanQuery.Builder combinedQuery = new BooleanQuery.Builder();
         for (Query query : queryList) {
             if (query instanceof BooleanQuery) {
                 BooleanQuery boolQuery = (BooleanQuery) query;
@@ -265,7 +265,7 @@ public class QueryBuilder {
                 combinedQuery.add(query, Occur.MUST);
             }
         }
-        return combinedQuery;
+        return combinedQuery.build();
     }
 
     /**
