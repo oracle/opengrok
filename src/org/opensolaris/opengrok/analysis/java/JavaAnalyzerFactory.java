@@ -38,7 +38,8 @@ public class JavaAnalyzerFactory extends FileAnalyzerFactory {
     private static final String name = "Java";
     
     private static final String[] SUFFIXES = {
-        "JAVA"
+        "JAVA",
+        "AIDL",
     };
 
     public JavaAnalyzerFactory() {
