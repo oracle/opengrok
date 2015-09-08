@@ -626,6 +626,16 @@ public final class Configuration {
     }
 
     /**
+     * Update the lastModified variable, in the case of running a third party indexing job
+     *
+     * @param d
+     */
+
+    public void updateLastModified(Date d){
+        lastModified = d;
+    }
+
+    /**
      * Get the contents of a file or empty string if the file cannot be read.
      */
     private static String getFileContent(File file) {
