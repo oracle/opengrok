@@ -63,6 +63,7 @@ import org.opensolaris.opengrok.analysis.executables.ELFAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.fortran.FortranAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.golang.GolangAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.haskell.HaskellAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.java.JavaAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.javascript.JavaScriptAnalyzerFactory;
@@ -178,7 +179,8 @@ public class AnalyzerGuru {
             new SQLAnalyzerFactory(),
             new PLSQLAnalyzerFactory(),
             new FortranAnalyzerFactory(),
-            new HaskellAnalyzerFactory()
+            new HaskellAnalyzerFactory(),
+            new GolangAnalyzerFactory()
         };
 
         for (FileAnalyzerFactory analyzer : analyzers) {
