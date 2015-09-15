@@ -60,6 +60,11 @@ label {
 	margin: 0;
 }
 
+.edited {
+    font-size: 50%;
+    display: block;
+}
+
 #page { }
 
 .error { /* error messages */

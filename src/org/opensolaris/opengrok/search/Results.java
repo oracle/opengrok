@@ -32,12 +32,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
+import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
@@ -164,6 +167,7 @@ public final class Results {
             for (Document doc : entry.getValue()) {
                 String rpath = doc.get(QueryBuilder.PATH);
                 String rpathE = Util.URIEncodePath(rpath);
+                DateFormat df;
                 out.write("<tr>");
                 Util.writeHAD(out, sh.contextPath, rpathE, false);
                 out.write("<td class=\"f\"><a href=\"");
@@ -171,7 +175,21 @@ public final class Results {
                 out.write(rpathE);
                 out.write("\">");
                 out.write(rpath.substring(rpath.lastIndexOf('/') + 1)); // htmlize ???
-                out.write("</a></td><td><tt class=\"con\">");
+                out.write("</a>");
+                if(sh.lastEditedDisplayMode){
+                    try {
+                        // insert last edited date if possible
+                        df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+                        String dd = df.format(DateTools.stringToDate(doc.get("date")));
+                        out.write("<small class=\"edited\">(last modified ");
+                        out.write(dd);
+                        out.write(")</small>");    
+                    } catch (ParseException ex) {
+                        OpenGrokLogger.getLogger().log(
+                                Level.WARNING, "An error parsing date information", ex);
+                    }                    
+                }
+                out.write("</td><td><tt class=\"con\">");
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));
                     Definitions tags = null;

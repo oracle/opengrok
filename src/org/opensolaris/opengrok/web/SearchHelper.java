@@ -182,7 +182,10 @@ public class SearchHelper {
      * history context usually created via {@link #prepareSummary()}.
      */
     public HistoryContext historyContext;
-
+    /**
+     * display last edited date of a file in search results
+     */
+    public boolean lastEditedDisplayMode = true;
     /**
      * Default query parse error message prefix
      */
@@ -203,6 +206,7 @@ public class SearchHelper {
     }
 
     File indexDir;
+
 
     /**
      * Create the searcher to use wrt. to currently set parameters and the given
