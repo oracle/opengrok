@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.search.context;
@@ -37,7 +37,10 @@ import org.junit.Test;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.util.TestRepository;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for the {@code HistoryContext} class.
@@ -64,11 +67,11 @@ public class HistoryContextTest {
     public void testIsEmpty() {
         TermQuery q1 = new TermQuery(new Term("refs", "isEmpty"));
         TermQuery q2 = new TermQuery(new Term("defs", "isEmpty"));
-        TermQuery q3 = new TermQuery(new Term("hist", "isEmpty"));
-        BooleanQuery q4 = new BooleanQuery();
+        TermQuery q3 = new TermQuery(new Term("hist", "isEmpty"));        
+        BooleanQuery.Builder q4 = new BooleanQuery.Builder();
         q4.add(q1, Occur.MUST);
         q4.add(q2, Occur.MUST);
-        BooleanQuery q5 = new BooleanQuery();
+        BooleanQuery.Builder q5 = new BooleanQuery.Builder();        
         q5.add(q2, Occur.MUST);
         q5.add(q3, Occur.MUST);
 
@@ -76,8 +79,8 @@ public class HistoryContextTest {
         assertTrue(new HistoryContext(q1).isEmpty());
         assertTrue(new HistoryContext(q2).isEmpty());
         assertFalse(new HistoryContext(q3).isEmpty());
-        assertTrue(new HistoryContext(q4).isEmpty());
-        assertFalse(new HistoryContext(q5).isEmpty());
+        assertTrue(new HistoryContext(q4.build()).isEmpty());
+        assertFalse(new HistoryContext(q5.build()).isEmpty());
     }
 
     @Test
@@ -87,18 +90,18 @@ public class HistoryContextTest {
 
         // Construct a query equivalent to hist:dummy
         TermQuery q1 = new TermQuery(new Term("hist", "dummy"));
-        ArrayList<Hit> hits = new ArrayList<Hit>();
+        ArrayList<Hit> hits = new ArrayList<>();
         assertTrue(new HistoryContext(q1).getContext(filename, path, hits));
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy</b> program"));
 
-        // Construct a query equivalent to hist:"dummy program"
-        PhraseQuery q2 = new PhraseQuery();
+        // Construct a query equivalent to hist:"dummy program"        
+        PhraseQuery.Builder q2 = new PhraseQuery.Builder();
         q2.add(new Term("hist", "dummy"));
         q2.add(new Term("hist", "program"));
         hits.clear();
-        assertTrue(new HistoryContext(q2).getContext(filename, path, hits));
+        assertTrue(new HistoryContext(q2.build()).getContext(filename, path, hits));
         assertEquals(1, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Created a small <b>dummy program</b>"));
@@ -110,11 +113,11 @@ public class HistoryContextTest {
         assertEquals(0, hits.size());
 
         // Search for term with multiple hits - hist:small OR hist:target
-        BooleanQuery q4 = new BooleanQuery();
+        BooleanQuery.Builder q4 = new BooleanQuery.Builder();
         q4.add(new TermQuery(new Term("hist", "small")), Occur.SHOULD);
         q4.add(new TermQuery(new Term("hist", "target")), Occur.SHOULD);
         hits.clear();
-        assertTrue(new HistoryContext(q4).getContext(filename, path, hits));
+        assertTrue(new HistoryContext(q4.build()).getContext(filename, path, hits));
         assertEquals(2, hits.size());
         assertTrue(hits.get(0).getLine().contains(
                 "Add lint make <b>target</b> and fix lint warnings"));
@@ -137,11 +140,11 @@ public class HistoryContextTest {
                 "Created a small <b>dummy</b> program"));
 
         // Construct a query equivalent to hist:"dummy program"
-        PhraseQuery q2 = new PhraseQuery();
+        PhraseQuery.Builder q2 = new PhraseQuery.Builder();
         q2.add(new Term("hist", "dummy"));
         q2.add(new Term("hist", "program"));
         sw = new StringWriter();
-        assertTrue(new HistoryContext(q2).getContext(parent, base, path, sw, null));
+        assertTrue(new HistoryContext(q2.build()).getContext(parent, base, path, sw, null));
         assertTrue(sw.toString().contains(
                 "Created a small <b>dummy program</b>"));
 
@@ -152,11 +155,11 @@ public class HistoryContextTest {
         assertEquals("", sw.toString());
 
         // Search for term with multiple hits - hist:small OR hist:target
-        BooleanQuery q4 = new BooleanQuery();
+        BooleanQuery.Builder q4 = new BooleanQuery.Builder();
         q4.add(new TermQuery(new Term("hist", "small")), Occur.SHOULD);
         q4.add(new TermQuery(new Term("hist", "target")), Occur.SHOULD);
         sw = new StringWriter();
-        assertTrue(new HistoryContext(q4).getContext(parent, base, path, sw, null));
+        assertTrue(new HistoryContext(q4.build()).getContext(parent, base, path, sw, null));
         String result = sw.toString();
         assertTrue(result.contains(
                 "Add lint make <b>target</b> and fix lint warnings"));
