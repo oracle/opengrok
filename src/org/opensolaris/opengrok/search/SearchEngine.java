@@ -69,7 +69,7 @@ import org.opensolaris.opengrok.web.Prefix;
  * database.
  *
  * @author Trond Norbye 2005 
- * @author Lubos Kosco - upgrade to lucene 3.x, 4.x
+ * @author Lubos Kosco - upgrade to lucene 3.x, 4.x, 5.x
  */
 public class SearchEngine {
 
@@ -84,6 +84,7 @@ public class SearchEngine {
      * version of lucene index common for whole application
      */
     public static final Version LUCENE_VERSION = Version.LATEST;
+    public static final String LUCENE_VERSION_HELP = LUCENE_VERSION.major+"_"+LUCENE_VERSION.minor+"_"+LUCENE_VERSION.bugfix;
     /**
      * Holds value of property definition.
      */
