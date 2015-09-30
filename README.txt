@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -40,8 +40,9 @@ Offical page of the project is on:
     * A servlet container like Tomcat (8.x or later)
       supporting Servlet 2.5 and JSP 2.1
       http://tomcat.apache.org/
-    * Exuberant Ctags
+    * Exuberant Ctags or Universal Ctags
       http://ctags.sourceforge.net/
+      http://github.io/uctags
     * Source Code Management installation
       depending on type of repositories indexed
     * If you want to build OpenGrok:
