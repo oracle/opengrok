@@ -1,18 +1,9 @@
 /* common stuff */
-html, body {
-	box-sizing:border-box;
-	height: 100%;
-	height: 100vh;
-}
 body {
 	background-color: #ffffff;
 	color: black;
 	font-family: sans-serif;
-	margin: 0;
-	padding: 1ex 1ex 0 1ex;
-	height: -webkit-calc(100vh - 1ex);
-	height: -moz-calc(100vh - 1ex);
-	height: calc(100vh - 1ex);
+	margin: 1ex 1ex 0 1ex;
 }
 
 a {
@@ -93,16 +84,7 @@ label {
 }
 
 /* ############### start of header ############## */
-#whole_header {
-	position: fixed;
-	background: #fff;
-	z-index: 2;
-	height: 11ex;
-	width: 100%;
-	width: -webkit-calc(100vw - 2ex);
-	width: -moz-calc(100vw - 2ex);
-	width: calc(100vw - 2ex);
-}
+#whole_header { }
 
 /* *** banner/deco above navbar *** */
 #header { }
@@ -267,14 +249,11 @@ input.submit { /* start search button , clear button */
 
 /* ############### start of content ############## */
 #content {
-	position: relative;
-	top:11ex;
-}
-
-#src {
-	height: -webkit-calc(100vh - 21ex);
-	height: -moz-calc(100vh - 21ex);
-	height: calc(100vh - 21ex);	
+	position: fixed;
+	left: 0;
+	right: 0;
+	overflow: auto;
+	padding: 1ex; /* should be the same as body's margin */
 }
 
 
@@ -697,13 +676,6 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	color: #777777;
 	font-size: small;
 	margin: 1ex 0;
-	height: 10ex;
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	width: -webkit-calc(100vw - 2ex);
-	width: -moz-calc(100vw - 2ex);
-	width: calc(100vw - 2ex);
 }
 
 #footer p { /* footer text */
