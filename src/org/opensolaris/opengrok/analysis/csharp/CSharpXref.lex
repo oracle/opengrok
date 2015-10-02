@@ -69,7 +69,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 {Identifier} {
     String id = yytext();
-    writeSymbol(id, Consts.kwd, yyline - 1);
+    writeSymbol(id, Consts.kwd, yyline);
 }
 
 "<" ({File}|{Path}) ">" {
