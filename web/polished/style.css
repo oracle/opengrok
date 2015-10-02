@@ -1,9 +1,19 @@
 /* common stuff */
+html, body {
+	box-sizing:border-box;
+	height: 100%;
+	height: 100vh;
+}
 body {
 	background-color: #d8dbd7;
 	color: black;
 	font-family: sans-serif;
-	margin: 1ex 1ex 0 1ex;
+	margin: 0;
+	padding: 1ex 1ex 0 1ex;
+	height:100%;
+	height: -webkit-calc(100vh - 1ex);
+	height: -moz-calc(100vh - 1ex);
+	height: calc(100vh - 1ex);
 }
 
 a {
@@ -84,7 +94,9 @@ label {
 	margin: 0;
 }
 
-#page { }
+#page {
+	height: 100%;
+}
 
 .error { /* error messages */
 	color: #a52a2a;
@@ -98,6 +110,13 @@ label {
 /* ############### start of header ############## */
 #whole_header { 
 	background-color: white;
+	position: fixed;
+	z-index: 2;
+	height: 11ex;
+	width: 100%;
+	width: -webkit-calc(100vw - 2ex);
+	width: -moz-calc(100vw - 2ex);
+	width: calc(100vw - 2ex);
 }
 
 /* *** banner/deco above navbar *** */
@@ -326,13 +345,15 @@ button.help {
 
 /* ############### start of content ############## */
 #content {
-	position: fixed;
-	left: 0;
-	right: 0;
-	overflow: auto;
-	padding: 1ex; /* should be the same as body's margin */
+	position: relative;
+	top: 11ex;
 }
 
+#src {
+	height: -webkit-calc(100vh - 21ex);
+	height: -moz-calc(100vh - 21ex);
+	height: calc(100vh - 21ex);
+}
 
 /* *** help page *** */
 #help dfn { /* definitions */
@@ -757,6 +778,13 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 		#ffffff 70%,
 		#e6e6e6 100%
 	);
+	height: 10ex;
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	width: -webkit-calc(100vw - 2ex);
+	width: -moz-calc(100vw - 2ex);
+	width: calc(100vw - 2ex);
 }
 
 #footer p { /* footer text */
