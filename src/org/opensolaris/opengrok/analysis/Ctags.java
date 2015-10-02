@@ -94,14 +94,14 @@ public class Ctags {
             command.add("--langmap=sql:+.pld"); // RFE #19208
             command.add("--langmap=sql:+.pks"); // RFE #19208 ?
 
-            //Ideally all below should be in ctags, or in outside config file, 
+            //Ideally all below should be in ctags, or in outside config file,
             //we might run out of command line SOON
-            
+
             //Also note, that below ctags definitions HAVE to be in POSIX
             //otherwise the regexp will not work on some platforms
-            //on Solaris regexp.h used is different than on linux (gnu regexp)            
+            //on Solaris regexp.h used is different than on linux (gnu regexp)
             //http://en.wikipedia.org/wiki/Regular_expression#POSIX_basic_and_extended
-            
+
             command.add("--langdef=scala"); // below is bug 61 to get full scala support
             command.add("--langmap=scala:.scala");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
@@ -114,7 +114,7 @@ public class Ctags {
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*val[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,constants/");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*var[[:space:]]+([a-zA-Z0-9_]+)/\\3/l,variables/");
             command.add("--regex-scala=/^[[:space:]]*package[[:space:]]+([a-zA-Z0-9_.]+)/\\1/p,packages/");
-            
+
             command.add("--langdef=haskell"); // below was added with #912
             command.add("--langmap=haskell:.hs.hsc");
             command.add("--regex-haskell=/^[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\1/c,classes/");
@@ -125,6 +125,13 @@ public class Ctags {
             command.add("--regex-haskell=/[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\1/f,functions/");
             command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
             command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
+
+	    command.add("--langdef=golang");
+	    command.add("--langmap=golang:.go");
+	    command.add("--regex-golang=/func([ \t]+([^)]+))?[ \t]+([a-zA-Z0-9_]+)/\2/f,func/");
+	    command.add("--regex-golang=/var[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/v,var/");
+	    command.add("--regex-golang=/type[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/t,type/");
+
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {

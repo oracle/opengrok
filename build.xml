@@ -186,6 +186,8 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/golang/GolangSymbolTokenizer.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/golang/GolangXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/haskell/HaskellSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/haskell/HaskellXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex"/>
@@ -393,9 +395,9 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <target name="-check-servlet-api" description="Check that servlet-api jar file is present">
         <available file="${servlet-api.jar}" type="file" property="servlet-api.jar.present">
             <filepath refid="plainlib.search.path"/>
-        </available>        
+        </available>
         <condition property="servlet-api_not_downloaded">
-            <not>            
+            <not>
                 <isset property="servlet-api.jar.present"/>
              </not>
         </condition>
@@ -408,7 +410,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
          </fileset>
         </delete>
         <get src="${mvn.repository}/javax/servlet/servlet-api/${servlet-api.version}/${servlet-api.jar}"
-        dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>        
+        dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans">
@@ -646,7 +648,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         </jacoco:report>
     </target>
 
-    <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->        
+    <target name="-pre-compile-test"><!-- depends="-set-jacocoagent"> -->
     </target>
 
     <!-- <target name="-pre-compile-test-single" depends="-set-jacocoagent"/> -->
