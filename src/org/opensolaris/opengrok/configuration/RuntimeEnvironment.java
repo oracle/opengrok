@@ -91,7 +91,7 @@ public final class RuntimeEnvironment {
 
         return historyExecutor;
     }
- 
+
     /* Get thread pool used for history generation of renamed files. */
     public static synchronized ExecutorService getHistoryRenamedExecutor() {
         if (historyRenamedExecutor == null) {
@@ -115,14 +115,14 @@ public final class RuntimeEnvironment {
                     }
                 });
         }
- 
+
         return historyRenamedExecutor;
     }
 
     public static synchronized void freeHistoryExecutor() {
         historyExecutor = null;
     }
- 
+
     public static synchronized void destroyRenamedHistoryExecutor() throws InterruptedException {
         if (historyRenamedExecutor != null) {
             historyRenamedExecutor.shutdown();
@@ -396,6 +396,23 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Are we using Universal ctags?
+     *
+     * @return true if we are using Universal ctags
+     */
+    public boolean isUniversalCtags() {
+        boolean ret = false;
+        Executor executor = new Executor(new String[]{getCtags(), "--version"});
+
+        executor.exec(false);
+        String output = executor.getOutputString();
+        if (output.indexOf("Universal Ctags") != -1 ) {
+	  ret = true;
+	}
+	return ret;
+    }
+
+    /**
      * Get the max time a SMC operation may use to avoid beeing cached
      *
      * @return the max time
@@ -530,7 +547,7 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getDefaultProject();
     }
 
-    /**     
+    /**
      *
      * @return at what size (in MB) we should flush the buffer
      */
@@ -794,19 +811,19 @@ public final class RuntimeEnvironment {
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
     }
-    
+
     public boolean isTagsEnabled() {
         return threadConfig.get().isTagsEnabled();
     }
-    
+
     public void setTagsEnabled(boolean tagsEnabled) {
         threadConfig.get().setTagsEnabled(tagsEnabled);
     }
-    
+
     public boolean isScopesEnabled() {
         return threadConfig.get().isScopesEnabled();
     }
-    
+
     public void setScopesEnabled(boolean scopesEnabled) {
         threadConfig.get().setScopesEnabled(scopesEnabled);
     }

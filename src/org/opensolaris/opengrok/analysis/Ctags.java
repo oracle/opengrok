@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.Interner;
 
@@ -67,6 +68,7 @@ public class Ctags {
     }
 
     private void initialize() throws IOException {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (processBuilder == null) {
             List<String> command = new ArrayList<String>();
             String commandStr = "";
@@ -126,12 +128,13 @@ public class Ctags {
             command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
             command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
 
-	    command.add("--langdef=golang");
-	    command.add("--langmap=golang:.go");
-	    command.add("--regex-golang=/func([ \t]+([^)]+))?[ \t]+([a-zA-Z0-9_]+)/\2/f,func/");
-	    command.add("--regex-golang=/var[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/v,var/");
-	    command.add("--regex-golang=/type[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/t,type/");
-
+	    if (!env.isUniversalCtags()) {
+		command.add("--langdef=golang");
+		command.add("--langmap=golang:.go");
+		command.add("--regex-golang=/func([ \t]+([^)]+))?[ \t]+([a-zA-Z0-9_]+)/\2/f,func/");
+		command.add("--regex-golang=/var[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/v,var/");
+		command.add("--regex-golang=/type[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/t,type/");
+	    }
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
