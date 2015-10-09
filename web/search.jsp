@@ -57,6 +57,15 @@ include file="projects.jspf"
 {
     cfg = PageConfig.get(request);
 
+    String lastEditedDisplayMode = config.getInitParameter("lastEditedDisplayMode");
+    if (lastEditedDisplayMode != null) {
+        if(!(lastEditedDisplayMode.compareTo("true") == 0 ||
+             lastEditedDisplayMode.compareTo("1") == 0 ||
+             lastEditedDisplayMode.isEmpty())){
+           cfg.setLastEditedDisplayMode(false);
+       }
+    }
+    
     long starttime = System.currentTimeMillis();
 
     SearchHelper searchHelper = cfg.prepareSearch()
