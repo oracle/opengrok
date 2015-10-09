@@ -60,7 +60,7 @@ function domReadyMast() {
         }
     }
     if (document.annotate) {
-        $('a[class=r]').tooltip({ left: 5, showURL: false });
+        $('a.r').tooltip({ left: 5, showURL: false });
         var toggle_js = document.getElementById('toggle-annotate-by-javascript');
         var toggle_ss = document.getElementById('toggle-annotate');
 
