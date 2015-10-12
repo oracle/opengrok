@@ -495,20 +495,30 @@ public final class Util {
             out.write("<span class=\"blame\">");
             if (enabled) {
                 out.write(anchorClassStart);
-                out.write("r\" href=\"");
+                out.write("r");
+                if( annotation.getFileVersion(r) != 0) {
+                    /*
+                        version number, 1 is the most recent
+                        generates css classes version_color_n
+                    */
+                    int versionNumber = Math.max( 1, 
+                                                  annotation.getFileVersionsCount() - 
+                                                  annotation.getFileVersion(r) + 1 );
+                    out.write(" version_color_" + versionNumber);
+                }
+                out.write("\" href=\"");
                 out.write(URIEncode(annotation.getFilename()));
                 out.write("?a=true&amp;r=");
                 out.write(URIEncode(r));
                 String msg = annotation.getDesc(r);
+                out.write("\" title=\"");
                 if (msg != null) {
-                    out.write("\" title=\"");
                     out.write(msg);
                 }
-                int versionVisibility = annotation.getFileVersionsCount() > 1
-                    ? 221 - ((221 * Math.max(0, annotation.getFileVersion(r)-1) ) / (annotation.getFileVersionsCount()-1) ) //keep this in range 0..221, 0 most visible
-                    : 221
-                ;
-                out.write("\" style=\"background-color: rgb(221,221,"+  versionVisibility +");");
+                if(annotation.getFileVersion(r) != 0) {
+                    out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/" + 
+                              annotation.getFileVersionsCount());
+                }
                 out.write(closeQuotedTag);
             }
             StringBuilder buf = new StringBuilder();
