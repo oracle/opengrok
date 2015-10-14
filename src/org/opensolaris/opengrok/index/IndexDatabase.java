@@ -103,6 +103,12 @@ public class IndexDatabase {
     private boolean running;
     private List<String> directories;
     static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
+    private static final Comparator fileComparator = new Comparator<File>() {
+        @Override
+        public int compare(File p1, File p2) {
+            return p1.getName().compareTo(p2.getName());
+        }
+    };
     private Ctags ctags;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
@@ -829,12 +835,7 @@ public class IndexDatabase {
                 dir.getAbsolutePath());
             return lcur_count;
         }
-        Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File p1, File p2) {
-                return p1.getName().compareTo(p2.getName());
-            }
-        });
+        Arrays.sort(files, fileComparator);
 
         for (File file : files) {
             if (accept(dir, file)) {
