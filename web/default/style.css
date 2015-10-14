@@ -16,6 +16,10 @@ div#src a.l:after, div#src a.hl:after {
 
 div#src a.l.selected:after, div#src a.hl.selected:after {
     content: "";
+/* highlight line number with anchor */
+div[id^='src'] a.l.target, div[id^='src'] a.hl.target {
+	background: orange;
+	color:yellow;
 }
 
 a:link {
@@ -708,6 +712,21 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 #man div.rs { /* a right-shifted block */
 	margin-left: 3em;
 	margin-bottom: 1em;
+}
+
+/* "Navigate Style" */
+.diff_navigation_style {
+    border: solid 1px #c0c0c0;
+    border-radius: 5px;
+    box-shadow: 10px 10px 5px #888888;
+    background-color: rgb(255,255,204);
+    position: absolute;
+    padding: 1em;    
+}
+
+/* "Tooltip Style (minor information)" */
+.tooltip {
+    position: absolute;
 }
 
 /* "Navigate" Popup */
