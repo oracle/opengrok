@@ -35,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CXref;
 import org.opensolaris.opengrok.analysis.c.CxxXref;
+import org.opensolaris.opengrok.analysis.csharp.CSharpXref;
 import org.opensolaris.opengrok.analysis.document.TroffXref;
 import org.opensolaris.opengrok.analysis.fortran.FortranXref;
 import org.opensolaris.opengrok.analysis.haskell.HaskellXref;
@@ -387,5 +388,17 @@ public class JFlexXrefTest {
                 + "<span class='c'>\n"
                 + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>",
                 out.toString());
+    }
+    
+    /**
+     * Test that CSharpXref correctly handles verbatim strings that end with backslash
+     */
+    @Test
+    public void testCsharpXrefVerbatimString() throws IOException {
+        StringReader in = new StringReader("test(@\"\\some_windows_path_in_a_string\\\");");
+        CSharpXref xref = new CSharpXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        assertTrue(out.toString().contains("<span class=\"s\">@\"\\some_windows_path_in_a_string\\\"</span>"));
     }
 }

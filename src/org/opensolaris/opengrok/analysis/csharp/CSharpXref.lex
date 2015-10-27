@@ -94,6 +94,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
  "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
  "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
+ "@\""  { yybegin(VSTRING);out.write("<span class=\"s\">@\"");}  
 }
 
 <STRING> {
