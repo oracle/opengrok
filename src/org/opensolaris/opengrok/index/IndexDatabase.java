@@ -103,7 +103,7 @@ public class IndexDatabase {
     private boolean running;
     private List<String> directories;
     static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
-    private static final Comparator fileComparator = new Comparator<File>() {
+    private static final Comparator<File> fileComparator = new Comparator<File>() {
         @Override
         public int compare(File p1, File p2) {
             return p1.getName().compareTo(p2.getName());
