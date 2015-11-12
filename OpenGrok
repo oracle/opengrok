@@ -8,6 +8,7 @@
 #   - Debian      (Linux)
 #
 # Supported Deployment Engines:
+#   - Tomcat 8
 #   - Tomcat 7
 #   - Tomcat 6
 #   - Glassfish
@@ -550,6 +551,7 @@ FindApplicationServerType()
     if [    -d "/var/tomcat6/webapps"        \
          -o -d "/var/lib/tomcat6/webapps"    \
          -o -d "/var/lib/tomcat7/webapps"    \
+         -o -d "/var/lib/tomcat8/webapps"    \
        ]
     then
         echo "Tomcat"
@@ -582,7 +584,8 @@ DetermineWarDirectoryTomcat()
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
         /var/lib/tomcat6        \
-        /var/lib/tomcat7
+        /var/lib/tomcat7        \
+        /var/lib/tomcat8
     do
         if [ -d "${prefix}/webapps" ]
         then
