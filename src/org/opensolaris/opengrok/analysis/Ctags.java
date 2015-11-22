@@ -70,8 +70,7 @@ public class Ctags {
     private void initialize() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (processBuilder == null) {
-            List<String> command = new ArrayList<String>();
-            String commandStr = "";
+            List<String> command = new ArrayList<>();            
 
             command.add(binary);
             command.add("--c-kinds=+l");
@@ -128,13 +127,30 @@ public class Ctags {
             command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
             command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
 
-	    if (!env.isUniversalCtags()) {
-		command.add("--langdef=golang");
-		command.add("--langmap=golang:.go");
-		command.add("--regex-golang=/func([ \t]+([^)]+))?[ \t]+([a-zA-Z0-9_]+)/\2/f,func/");
-		command.add("--regex-golang=/var[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/v,var/");
-		command.add("--regex-golang=/type[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/t,type/");
-	    }
+            if (!env.isUniversalCtags()) {
+                command.add("--langdef=golang");
+                command.add("--langmap=golang:.go");
+                command.add("--regex-golang=/func([[:space:]]+([^)]+))?[[:space:]]+([a-zA-Z0-9_]+)/\\2/f,func/");
+                command.add("--regex-golang=/var[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/v,var/");
+                command.add("--regex-golang=/type[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/t,type/");
+
+                command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/xzj/1518834)
+                command.add("--langmap=clojure:.clj");
+                command.add("--langmap=clojure:+.cljs");
+                command.add("--langmap=clojure:+.cljx");
+                command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/n,namespace/");
+                command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/d,definition/");
+                command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/f,function/");
+                command.add("--regex-clojure=/\\([[:space:]]*defn-[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/p,private function/");
+                command.add("--regex-clojure=/\\([[:space:]]*defmacro[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/m,macro/");
+                command.add("--regex-clojure=/\\([[:space:]]*definline[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/i,inline/");
+                command.add("--regex-clojure=/\\([[:space:]]*defmulti[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/a,multimethod definition/");
+                command.add("--regex-clojure=/\\([[:space:]]*defmethod[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/b,multimethod instance/");
+                command.add("--regex-clojure=/\\([[:space:]]*defonce[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/c,definition (once)/");
+                command.add("--regex-clojure=/\\([[:space:]]*defstruct[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/s,struct/");
+                command.add("--regex-clojure=/\\([[:space:]]*intern[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/v,intern/");
+                command.add("--regex-clojure=/\\([[:space:]]*ns[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/n,namespace/");
+            }
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
@@ -146,8 +162,8 @@ public class Ctags {
             for (String s : command) {
                 sb.append(s).append(" ");
             }
-            commandStr = sb.toString();
-            log.log(Level.FINE, "Executing ctags command [" + commandStr + "]");
+            String commandStr = sb.toString();
+            log.log(Level.FINE, "Executing ctags command [{0}]", commandStr);
 
             processBuilder = new ProcessBuilder(command);
         }
@@ -158,6 +174,7 @@ public class Ctags {
 
         Thread errThread = new Thread(new Runnable() {
 
+            @Override
             public void run() {
                 StringBuilder sb = new StringBuilder();
                 try (BufferedReader error = new BufferedReader(
@@ -171,7 +188,7 @@ public class Ctags {
                      log.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
                 }
                 if (sb.length() > 0) {
-                     log.warning("Error from ctags: " + sb.toString());
+                     log.log(Level.WARNING, "Error from ctags: {0}", sb.toString());
                 }
             }
         });
@@ -217,7 +234,7 @@ public class Ctags {
                     log.warning("Unexpected end of file!");
                     try {
                         int val = ctags.exitValue();
-                        log.warning("ctags exited with code: " + val);
+                        log.log(Level.WARNING, "ctags exited with code: {0}", val);
                     } catch (Exception e) {
                         log.log(Level.WARNING, "Ctags problem: ", e);
                     }
@@ -277,7 +294,7 @@ public class Ctags {
 
                 // Bug #809: Keep track of which symbols have already been
                 // seen to prevent duplicating them in memory.
-                final Interner<String> seenSymbols = new Interner<String>();
+                final Interner<String> seenSymbols = new Interner<>();
 
                 final String type =
                         inher == null ? kind : kind + " in " + inher;
