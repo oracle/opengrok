@@ -289,8 +289,15 @@ public class MercurialRepository extends Repository {
         argv.add(ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK));
         argv.add("log");
         argv.add("-f");
-        argv.add("-r");
-        argv.add("reverse(" + rev_to_find + ":)");
+        /*
+         * hg log -f -r behavior has changed since Mercurial 3.4 so filtering
+         * the changesets of a file no longer works with -f.
+         * This is tracked by https://bz.mercurial-scm.org/show_bug.cgi?id=4959
+         * Once this is fixed and Mercurial versions with the fix are prevalent,
+         * we can revert to the old behavior.
+         */
+        // argv.add("-r");
+        // argv.add("reverse(" + rev_to_find + ":)");
         argv.add("--template");
         argv.add("{rev}:{file_copies}\\n");
         argv.add(fullpath);
