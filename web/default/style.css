@@ -357,6 +357,19 @@ table#revisions {
         color: #777777;
 }
 
+table#revisions tbody tr td p {
+	-ms-word-break: break-all;
+	-ms-word-wrap: break-all;
+	-webkit-word-break: break-word;
+	-webkit-word-wrap: break-word;
+	word-break: break-word;
+	word-wrap: break-word;
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	-ms-hyphens: auto;
+	hyphens: auto;
+}
+
 .rssbadge { /* RSS/XML Feed on history page */
 	text-align: right;
 	margin: 1ex 0;
