@@ -25,27 +25,14 @@ package org.opensolaris.opengrok.logger;
 import java.util.logging.Logger;
 
 /**
- * Factory for creating {@link Logger} instances.
+ * Bridge for indirect injection of logger factory.
  */
-public class LoggerFactory {
-
-    private static LoggerFactoryBridge loggerFactoryBridge = new PackageBasedLoggerFactoryBridge();
+public interface LoggerFactoryBridge {
 
     /**
      * Returns {@link Logger} for given class.
      * @param clazz class
      * @return logger for given class
      */
-    public static Logger getLogger(Class<?> clazz) {
-        return loggerFactoryBridge.getLogger(clazz);
-    }
-
-    /**
-     * Injecting bridge to use different logger factory (e.g. in tests).
-     * Default access forces to use this method only in the same package.
-     * @param loggerFactoryBridge bridge implementation
-     */
-    static void setLoggerFactoryBridge(LoggerFactoryBridge loggerFactoryBridge) {
-        LoggerFactory.loggerFactoryBridge = loggerFactoryBridge;
-    }
+    Logger getLogger(Class<?> clazz);
 }
