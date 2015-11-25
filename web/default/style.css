@@ -370,6 +370,12 @@ table#revisions tbody tr td p {
 	hyphens: auto;
 }
 
+@-moz-document url-prefix() {
+    table#revisions tbody tr td p {
+        word-break: break-all;
+    }
+}
+
 .rssbadge { /* RSS/XML Feed on history page */
 	text-align: right;
 	margin: 1ex 0;
