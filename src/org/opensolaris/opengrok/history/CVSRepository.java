@@ -36,13 +36,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Access to a CVS repository.
  */
 public class CVSRepository extends RCSRepository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CVSRepository.class);
 
     private static final long serialVersionUID = 1L;
     /**
@@ -83,7 +85,6 @@ public class CVSRepository extends RCSRepository {
         super.setDirectoryName(directoryName);
 
         if (isWorking()) {
-            Logger logger = OpenGrokLogger.getLogger();
             File rootFile = new File(getDirectoryName() + File.separatorChar
                     + "CVS" + File.separatorChar + "Root");
             BufferedReader input;
@@ -93,17 +94,17 @@ public class CVSRepository extends RCSRepository {
                 try {
                     root = input.readLine();
                 } catch (java.io.IOException e) {
-                    logger.log(Level.WARNING, "failed to load: {0}", e);
+                    LOGGER.log(Level.WARNING, "failed to load: {0}", e);
                     return;
                 } finally {
                     try {
                         input.close();
                     } catch (java.io.IOException e) {
-                        logger.log(Level.INFO, "failed to close: {0}", e);
+                        LOGGER.log(Level.INFO, "failed to close: {0}", e);
                     }
                 }
             } catch (java.io.FileNotFoundException e) {
-                logger.log(Level.FINE, "not loading CVS Root file: {0}", e);
+                LOGGER.log(Level.FINE, "not loading CVS Root file: {0}", e);
                 return;
             }
 
@@ -175,11 +176,11 @@ public class CVSRepository extends RCSRepository {
                         branch = line.substring(1);
                     }
                 } catch (IOException ex) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                             "Failed to work with CVS/Tag file of {0}",
                             getDirectoryName() + ": " + ex.getClass().toString());
                 } catch (Exception exp) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                             "Failed to get revision tag of {0}",
                             getDirectoryName() + ": " + exp.getClass().toString());
                 }
@@ -233,7 +234,7 @@ public class CVSRepository extends RCSRepository {
 
             ret = new ByteArrayInputStream(out.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Failed to get history: {0}", exp.getClass().toString());
         } finally {
             // Clean up zombie-processes...
@@ -284,7 +285,7 @@ public class CVSRepository extends RCSRepository {
         int status = exec.exec();
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed to get annotations for: \"{0}\" Exit code: {1}",
                     new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
@@ -316,7 +317,7 @@ public class CVSRepository extends RCSRepository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Error: did not find annotation in line {0}: [{1}]",
                         new Object[]{String.valueOf(lineno), line});
             }
@@ -334,7 +335,7 @@ public class CVSRepository extends RCSRepository {
             try (BufferedReader br = new BufferedReader(new FileReader(rootFile))) {
                 parent = br.readLine();
             } catch (IOException ex) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Failed to read CVS/Root file {0}: {1}",
                         new Object[]{rootFile, ex.getClass().toString()});
             }

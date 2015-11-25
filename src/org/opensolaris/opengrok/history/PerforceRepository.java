@@ -31,10 +31,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -43,6 +44,8 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Emilio Monti - emilmont@gmail.com
  */
 public class PerforceRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PerforceRepository.class);
 
     private static final long serialVersionUID = 1L;
     /**
@@ -95,13 +98,13 @@ public class PerforceRepository extends Repository {
                     String author = revAuthor.get(revision);
                     a.addLine(revision, author, true);
                 } else {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                    LOGGER.log(Level.SEVERE,
                             "Error: did not find annotation in line {0}: [{1}]",
                             new Object[]{lineno, line});
                 }
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Error: Could not read annotations for " + file, e);
         }
         return a;

@@ -29,9 +29,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Adds access to to a Razor Repository
@@ -132,6 +133,8 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * @author Peter Bray &lt;Peter.Darren.Bray@gmail.com&gt;
  */
 public class RazorRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RazorRepository.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -240,7 +243,7 @@ public class RazorRepository extends Repository {
                 return SCCSget.getRevision(RepoCommand, sccsFile, rev);
             }
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "getHistoryGet( "
+            LOGGER.log(Level.SEVERE, "getHistoryGet( "
                     + parent + ", " + basename + ", " + rev + ")", e);
         }
         return null;

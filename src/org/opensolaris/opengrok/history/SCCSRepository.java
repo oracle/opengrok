@@ -33,15 +33,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * This class gives access to repositories built on top of SCCS (including
  * TeamWare).
  */
 public class SCCSRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SCCSRepository.class);
 
     private static final long serialVersionUID = 1L;
     /**
@@ -70,7 +73,7 @@ public class SCCSRepository extends Repository {
         } catch (FileNotFoundException ex) {
             return null;
         } catch (IOException ex) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "An error occured while getting revision", ex);
             return null;
         }
@@ -112,7 +115,7 @@ public class SCCSRepository extends Repository {
                         String auth = matcher.group(2);
                         authors_cache.put(rev, auth);
                     } else {
-                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        LOGGER.log(Level.SEVERE,
                                 "Error: did not find authors in line {0}: [{1}]",
                                 new Object[]{lineno, line});
                     }
@@ -181,7 +184,7 @@ public class SCCSRepository extends Repository {
 
                         a.addLine(rev, author, true);
                     } else {
-                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        LOGGER.log(Level.SEVERE,
                                 "Error: did not find annotations in line {0}: [{1}]",
                                 new Object[]{lineno, line});
                     }
@@ -268,15 +271,15 @@ public class SCCSRepository extends Repository {
             String line;
             try (BufferedReader in = new BufferedReader(new FileReader(parentFile))) {
                 if ((line = in.readLine()) == null) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                             "Failed to get parent for {0} (cannot read line)", directoryName);
                 }
                 if (!line.startsWith("VERSION")) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                             "Failed to get parent for {0} (first line does not start with VERSION)", directoryName);
                 }
                 if ((parent = in.readLine()) == null) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                             "Failed to get parent for {0} (cannot read second line)", directoryName);
                 }
             }

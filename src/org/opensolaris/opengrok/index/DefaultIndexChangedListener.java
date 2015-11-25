@@ -22,6 +22,8 @@
  */
 package org.opensolaris.opengrok.index;
 
+import org.opensolaris.opengrok.logger.LoggerFactory;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,31 +36,31 @@ import java.util.logging.Logger;
 @SuppressWarnings("PMD.SystemPrintln")
 class DefaultIndexChangedListener implements IndexChangedListener {
 
-    private static final Logger log = Logger.getLogger(DefaultIndexChangedListener.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultIndexChangedListener.class);
 
     @Override
     public void fileAdd(String path, String analyzer) {
-        if (log.isLoggable(Level.INFO)) {
-            log.log(Level.INFO, "Add: {0} ({1})", new Object[]{path, analyzer});}
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.log(Level.INFO, "Add: {0} ({1})", new Object[]{path, analyzer});}
     }
 
     @Override
     public void fileRemove(String path) {
-        log.log(Level.INFO, "Remove file:{0}", path);
+        LOGGER.log(Level.INFO, "Remove file:{0}", path);
     }
     @Override
     public void fileUpdate(String path) {
-        log.log(Level.INFO, "Update: {0}", path);
+        LOGGER.log(Level.INFO, "Update: {0}", path);
     }
 
     @Override
     public void fileAdded(String path, String analyzer) {
-        if (log.isLoggable(Level.FINER)) {
-            log.log(Level.FINER, "Added: {0} ({1})", new Object[]{path, analyzer});}
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Added: {0} ({1})", new Object[]{path, analyzer});}
     }
 
     @Override
     public void fileRemoved(String path) {
-        log.log(Level.FINER, "Removed file:{0}", path);
+        LOGGER.log(Level.FINER, "Removed file:{0}", path);
     }
 }

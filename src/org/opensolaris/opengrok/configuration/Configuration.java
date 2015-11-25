@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Placeholder class for all configuration variables. Due to the multithreaded
@@ -57,6 +58,8 @@ import org.opensolaris.opengrok.index.IgnoredNames;
  * package scope, but that didn't work with the XMLDecoder/XMLEncoder.
  */
 public final class Configuration {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
     private String ctags;
     /**
@@ -126,7 +129,6 @@ public final class Configuration {
     private int tabSize;
     private int command_timeout;
     private boolean scopesEnabled;
-    private static final Logger logger = Logger.getLogger(Configuration.class.getName());
     /*
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
@@ -649,7 +651,7 @@ public final class Configuration {
              * should usually not happen
              */
         } catch (java.io.IOException e) {
-            logger.log(Level.WARNING, "failed to read header include file: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "failed to read header include file: {0}", e.getMessage());
         } finally {
             if (input != null) {
                 try {

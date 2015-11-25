@@ -35,7 +35,9 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Level;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import java.util.logging.Logger;
+
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * An Extremely Fast Tagged Attribute Read-only File System
@@ -51,6 +53,8 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * @author Chandan
  */
 public class EftarFile {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EftarFile.class);
 
     public static final int RECORD_LENGTH = 14;
     private long offset;
@@ -260,7 +264,7 @@ public class EftarFile {
             EftarFile ef = new EftarFile();
             ef.create(args);
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "EftarFile error", e);
+            LOGGER.log(Level.WARNING, "EftarFile error", e);
         }
     }
 

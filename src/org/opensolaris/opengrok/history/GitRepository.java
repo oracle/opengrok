@@ -36,11 +36,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -48,6 +49,8 @@ import org.opensolaris.opengrok.util.Executor;
  *
  */
 public class GitRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
 
     private static final long serialVersionUID = 1L;
     /**
@@ -107,7 +110,7 @@ public class GitRepository extends Repository {
 
         int status = exec.exec();
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Failed to get blame list in resolving correct path");
             return path;
         }
@@ -221,7 +224,7 @@ public class GitRepository extends Repository {
 
             ret = new ByteArrayInputStream(output.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
@@ -275,7 +278,7 @@ public class GitRepository extends Repository {
             exec = new Executor(cmd, file.getParentFile());
             status = exec.exec();
             if (status != 0) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Failed to get blame list");
             }
             try (BufferedReader in = new BufferedReader(exec.getOutputReader())) {
@@ -302,7 +305,7 @@ public class GitRepository extends Repository {
                         exec = new Executor(cmd, directory);
                         status = exec.exec();
                         if (status != 0) {
-                            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            LOGGER.log(Level.SEVERE,
                                     "Failed to get blame details for modified file path");
                         }
                         break;
@@ -312,7 +315,7 @@ public class GitRepository extends Repository {
         }
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed to get annotations for: \"{0}\" Exit code: {1}",
                     new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
@@ -337,7 +340,7 @@ public class GitRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Error: did not find annotation in line {0}: [{1}] of {2}",
                         new Object[]{String.valueOf(lineno), line, fileName});
             }
@@ -508,7 +511,7 @@ public class GitRepository extends Repository {
                 }
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
@@ -531,11 +534,11 @@ public class GitRepository extends Repository {
                 this.tagList.add(tagEntry);
             }
         } catch (HistoryException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed to parse tag list: {0}", e.getMessage());
             this.tagList = null;
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
@@ -562,7 +565,7 @@ public class GitRepository extends Repository {
                 if (line.startsWith("origin") && line.contains("(fetch)")) {
                     String parts[] = line.split("\\s+");
                     if (parts.length != 3) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                        LOGGER.log(Level.WARNING,
                                 "Failed to get parent for {0}", directoryName);
                     }
                     parent = parts[1];

@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -45,10 +47,10 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldDocs;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexDatabase;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
@@ -63,6 +65,8 @@ import org.opensolaris.opengrok.search.QueryBuilder;
  * @author Lubos Kosco update for lucene 4.x
  */
 public class DirectoryHistoryReader {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryHistoryReader.class);
 
     // This is a giant hash constructed in this class.
     // It maps date -> author -> (comment, revision) -> [ list of files ]
@@ -113,7 +117,7 @@ public class DirectoryHistoryReader {
                 fdocs = searcher.search(query, fdocs.totalHits, sort);
                 hits = fdocs.scoreDocs;
             } catch (ParseException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "An error occured while parsing search query", e);
             }
             if (hits != null) {
@@ -129,7 +133,7 @@ public class DirectoryHistoryReader {
                     try {
                         cdate = DateTools.stringToDate(doc.get(QueryBuilder.DATE));
                     } catch (java.text.ParseException ex) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                        LOGGER.log(Level.WARNING,
                                 "Could not get date for " + path, ex);
                         cdate = new Date();
                     }
@@ -142,7 +146,7 @@ public class DirectoryHistoryReader {
                             File f = new File(src_root + rparent, rbase);
                             hist = HistoryGuru.getInstance().getHistory(f);
                         } catch (HistoryException e) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING,
+                            LOGGER.log(Level.WARNING,
                                     "An error occured while getting history reader", e);
                         }
                         if (hist == null) {
@@ -169,7 +173,7 @@ public class DirectoryHistoryReader {
                 try {
                     ireader.close();
                 } catch (Exception ex) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                             "An error occured while closing reader", ex);
                 }
             }

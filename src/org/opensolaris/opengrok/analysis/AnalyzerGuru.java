@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -46,7 +48,6 @@ import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.util.BytesRef;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.archive.BZip2AnalyzerFactory;
 import org.opensolaris.opengrok.analysis.archive.GZIPAnalyzerFactory;
@@ -86,6 +87,7 @@ import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.HistoryReader;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Util;
 
@@ -99,6 +101,8 @@ import org.opensolaris.opengrok.web.Util;
  * @author Chandan
  */
 public class AnalyzerGuru {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnalyzerGuru.class);
 
     /**
      * The default {@code FileAnalyzerFactory} instance.
@@ -327,7 +331,7 @@ public class AnalyzerGuru {
                 // date = hr.getLastCommentDate() //RFE
             }
         } catch (HistoryException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "An error occurred while reading history: ", e);
+            LOGGER.log(Level.WARNING, "An error occurred while reading history: ", e);
         }
         doc.add(new Field(QueryBuilder.DATE, date, string_ft_stored_nanalyzed_norms));
         doc.add(new SortedDocValuesField(QueryBuilder.DATE, new BytesRef(date)));

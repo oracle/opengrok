@@ -33,11 +33,13 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 public final class Management implements ManagementMBean, MBeanRegistration {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Management.class);
+
     private static Management managementInstance = null;
-    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
     private final Properties ogaProperties;
     private final long startTime; // Stores the time this bean is created
     private Boolean update = Boolean.FALSE;
@@ -104,7 +106,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      */
     public void setProperty(String key, String value) {
         if (key == null) {
-            log.severe("Trying to set property with key == null");
+            LOGGER.severe("Trying to set property with key == null");
             return;
         }
         ogaProperties.setProperty(key, value);
@@ -135,7 +137,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      * Stops the  agent, so it is not restarted.
      */
     public void stop() {
-        log.warning("STOPPING AGENT!");
+        LOGGER.warning("STOPPING AGENT!");
     //WrapperManager.stop(0);
     }
 
@@ -145,7 +147,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
 
     public void setSystemProperty(String key, String value) {
         if (key == null) {
-            log.severe("Trying to set property with key == null");
+            LOGGER.severe("Trying to set property with key == null");
             return;
         }
         System.setProperty(key, value);

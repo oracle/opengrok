@@ -56,6 +56,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
 
@@ -79,6 +80,9 @@ import org.opensolaris.opengrok.util.IOUtils;
  * @version $Revision$
  */
 public final class PageConfig {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
+
     // TODO if still used, get it from the app context
 
     private RuntimeEnvironment env;
@@ -107,7 +111,6 @@ public final class PageConfig {
     private File dataRoot;
     private StringBuilder headLines;
     private boolean lastEditedDisplayMode = true;
-    private static final Logger log = Logger.getLogger(PageConfig.class.getName());
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private final HttpServletRequest req;
@@ -259,7 +262,7 @@ public final class PageConfig {
                             filepath[i] + "@" + data.rev[i], null);
                     data.param[i] = u.getRawQuery();
                 } catch (URISyntaxException e) {
-                    log.log(Level.WARNING, "Failed to create URI: ", e);
+                    LOGGER.log(Level.WARNING, "Failed to create URI: ", e);
                 }
             }
             data.full = fullDiff();
@@ -408,7 +411,7 @@ public final class PageConfig {
                     ret = x;
                 }
             } catch (NumberFormatException e) {
-                log.log(Level.INFO, "Failed to parse integer " + s, e);
+                LOGGER.log(Level.INFO, "Failed to parse integer " + s, e);
             }
         }
         return ret;
@@ -512,7 +515,7 @@ public final class PageConfig {
                 try {
                     eftarReader = new EftarFileReader(f);
                 } catch (FileNotFoundException e) {
-                    log.log(Level.FINE, "Failed to create EftarFileReader: ", e);
+                    LOGGER.log(Level.FINE, "Failed to create EftarFileReader: ", e);
                 }
             }
         }
@@ -534,7 +537,7 @@ public final class PageConfig {
                 dtag = eftarReader.get(getPath());
                 // cfg.getPrefix() != Prefix.XREF_S) {
             } catch (IOException e) {
-                log.log(Level.INFO, "Failed to get entry from eftar reader: ", e);
+                LOGGER.log(Level.INFO, "Failed to get entry from eftar reader: ", e);
             }
         }
         if (dtag == null) {
@@ -612,7 +615,7 @@ public final class PageConfig {
         try {
             annotation = HistoryGuru.getInstance().annotate(resourceFile, rev.isEmpty() ? null : rev.substring(2));
         } catch (IOException e) {
-            log.log(Level.WARNING, "Failed to get annotations: ", e);
+            LOGGER.log(Level.WARNING, "Failed to get annotations: ", e);
             /* ignore */
         }
         return annotation;

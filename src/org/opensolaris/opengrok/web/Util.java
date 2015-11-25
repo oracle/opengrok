@@ -45,16 +45,18 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Class for useful functions.
  */
 public final class Util {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
 
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
@@ -644,7 +646,7 @@ public final class Util {
             return q == null ? "" : URLEncoder.encode(q, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             // Should not happen. UTF-8 must be supported by JVMs.
-            Logger.getLogger(Util.class.getName()).log(
+            LOGGER.log(
                     Level.WARNING, "Failed to URL-encode UTF-8: ", e);
         }
         return null;
@@ -890,7 +892,7 @@ public final class Util {
                             dump(out, in);
                             return true;
                         } catch (IOException e) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING,
+                            LOGGER.log(Level.WARNING,
                                     "An error occured while piping file " + file + ": ", e);
                         }
                         return false;

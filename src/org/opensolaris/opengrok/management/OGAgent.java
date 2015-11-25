@@ -48,6 +48,7 @@ import javax.management.remote.JMXServiceURL;
 import javax.management.timer.Timer;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 // PMD thinks this import is unused (confused because it's static?)
 import static org.opensolaris.opengrok.management.Constants.*; // NOPMD
@@ -59,9 +60,11 @@ import static org.opensolaris.opengrok.management.Constants.*; // NOPMD
  * @author Jan S Berg
  */
 final public class OGAgent {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OGAgent.class);
+
     Properties props;
 
-    private static final Logger log = Logger.getLogger("org.opensolaris.opengrok");
     private MBeanServer server = null;
 
 
@@ -148,13 +151,13 @@ final public class OGAgent {
             try {
                 oga.runOGA();
             } catch (MalformedURLException e) {
-                log.log(Level.SEVERE, "Could not create connector server: " + e, e);
+                LOGGER.log(Level.SEVERE, "Could not create connector server: " + e, e);
                 System.exit(1);
             } catch (IOException e) {
-                log.log(Level.SEVERE, "Could not start connector server: " + e, e);
+                LOGGER.log(Level.SEVERE, "Could not start connector server: " + e, e);
                 System.exit(2);
             } catch (Exception ex) {
-                Logger.getLogger(OGAgent.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
                 System.exit(1);
             }
         } else {
@@ -179,12 +182,12 @@ final public class OGAgent {
         String javaver = System.getProperty("java.version");
 
 
-        log.info("Starting " + Info.getFullVersion() +
+        LOGGER.info("Starting " + Info.getFullVersion() +
                 " JMX Agent, with java version " + javaver);
         //create mbeanserver
 
         ArrayList<MBeanServer> mbservs = MBeanServerFactory.findMBeanServer(null);
-        log.fine("Finding MBeanservers, size " + mbservs.size());
+        LOGGER.fine("Finding MBeanservers, size " + mbservs.size());
         if (mbservs.isEmpty()) {
             server = MBeanServerFactory.createMBeanServer();
         } else {
@@ -202,7 +205,7 @@ final public class OGAgent {
 
         //instantiate and register Timer service and resource purger
         createIndexTimer(props);
-        log.info("MBeans registered");
+        LOGGER.info("MBeans registered");
 
         // Create and start connector server
         String urlString = props.getProperty(JMX_URL);
@@ -214,17 +217,17 @@ final public class OGAgent {
         if (url.getProtocol().equals(RMI_PROTOCOL) &&
                 Boolean.parseBoolean(props.getProperty(RMI_START))) {
             int rmiport = Integer.parseInt(props.getProperty(RMI_PORT));
-            log.log(Level.FINE, "Starting RMI registry on port {0}", rmiport);
+            LOGGER.log(Level.FINE, "Starting RMI registry on port {0}", rmiport);
             LocateRegistry.createRegistry(rmiport);
         }
 
-        log.log(Level.FINE, "Starting JMX connector on {0}", urlString);
+        LOGGER.log(Level.FINE, "Starting JMX connector on {0}", urlString);
         JMXConnectorServer connectorServer =
                 JMXConnectorServerFactory.newJMXConnectorServer(url, env, server);
 
         connectorServer.start();
 
-        log.info("OGA is ready and running...");
+        LOGGER.info("OGA is ready and running...");
     }
 
     private void createIndexTimer(Properties properties) throws JMException {
@@ -233,12 +236,12 @@ final public class OGAgent {
         ObjectName timer = new ObjectName("service:name=timer");
         server.registerMBean(new Timer(), timer);
         server.invoke(timer, "start", null, null);
-        log.info("Started timer service");
+        LOGGER.info("Started timer service");
 
         boolean enabled = Boolean.parseBoolean(properties.getProperty("org.opensolaris.opengrok.management.indexer.enabled"));
         int period = Integer.parseInt(properties.getProperty("org.opensolaris.opengrok.management.indexer.sleeptime"));
-        log.fine("Indexer enabled: " + enabled);
-        log.fine("Indexer period: " + period + " seconds");
+        LOGGER.fine("Indexer enabled: " + enabled);
+        LOGGER.fine("Indexer period: " + period + " seconds");
         //instantiate and register resource purger
         ObjectName indexRunner = new ObjectName("OGA:name=AgentIndexRunner," + "source=timer");
         server.registerMBean(AgentIndexRunner.getInstance(enabled), indexRunner);

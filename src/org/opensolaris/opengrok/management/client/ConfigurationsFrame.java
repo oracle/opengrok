@@ -38,12 +38,12 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.swing.table.DefaultTableModel;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Configuration.RemoteSCM;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  *
@@ -53,8 +53,9 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 @SuppressWarnings("PMD.SingularField")
 public class ConfigurationsFrame extends javax.swing.JFrame {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigurationsFrame.class);
+
     AgentConnection con;
-    private static final Logger logger = OpenGrokLogger.getLogger();
     private static final Level[] levels = new Level[]{Level.ALL,
     Level.CONFIG, Level.FINE,Level.FINER,Level.FINEST,Level.INFO,Level.OFF,
     Level.SEVERE, Level.WARNING};
@@ -82,7 +83,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             managementObjectName = new ObjectName("OGA:name=Management");
             configObjectName = new ObjectName("OGA:name=JMXConfiguration");
         } catch (MalformedObjectNameException ex) {
-            logger.log(Level.SEVERE, "MalformedObjectName", ex);
+            LOGGER.log(Level.SEVERE, "MalformedObjectName", ex);
             throw new IOException("Malformedname " + ex);
         }
         initComponents();
@@ -131,15 +132,15 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                config = Configuration.makeXMLStringAsConfiguration(xmlconfig);
                this.updateConfigFieldsFromConfig();
             } catch (MBeanException ex) {
-                logger.log(Level.SEVERE, "", ex);
+                LOGGER.log(Level.SEVERE, "", ex);
             } catch (AttributeNotFoundException ex) {
-                Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             } catch (InstanceNotFoundException ex) {
-                Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             } catch (ReflectionException ex) {
-                Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
-                Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -757,7 +758,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
     @SuppressWarnings("unused")
     private void updateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateBtnActionPerformed
         try {
-            logger.info("updating to agent management mbean attributes");
+            LOGGER.log(Level.INFO, "updating to agent management mbean attributes");
             if (!filePath.equals(this.logFilePathField.getText())) {
                 Attribute attribute = new Attribute("FileLogPath", this.logFilePathField.getText());
                 con.getMBeanServerConnection().setAttribute(managementObjectName, attribute);
@@ -784,7 +785,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 configurationFile = this.configFileField.getText();
             }
 
-            logger.info("updating agent configuration mbean attributes");
+            LOGGER.log(Level.INFO, "updating agent configuration mbean attributes");
             //here we just set the configuration object, as we assume the user
             //knows that he have done a change before pressing update.
             updateConfigurationFromGUIObjects();
@@ -793,22 +794,22 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
             con.getMBeanServerConnection().setAttribute(configObjectName, attribute);
 
         } catch (InstanceNotFoundException ex) {
-            Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             this.showError(ex);
         } catch (AttributeNotFoundException ex) {
-            Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             this.showError(ex);
         } catch (InvalidAttributeValueException ex) {
-            Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             this.showError(ex);
         } catch (MBeanException ex) {
-            Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             this.showError(ex);
         } catch (ReflectionException ex) {
-            Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             this.showError(ex);
         } catch (IOException ex) {
-            Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             this.showError(ex);
         }
 
@@ -882,7 +883,7 @@ public class ConfigurationsFrame extends javax.swing.JFrame {
                 try {
                     new ConfigurationsFrame(null).setVisible(true);
                 } catch (IOException ex) {
-                    Logger.getLogger(ConfigurationsFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    LOGGER.log(Level.SEVERE, null, ex);
                 }
             }
         });

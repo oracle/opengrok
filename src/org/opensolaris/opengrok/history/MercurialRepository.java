@@ -34,11 +34,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.web.Util;
 
@@ -47,6 +48,8 @@ import org.opensolaris.opengrok.web.Util;
  *
  */
 public class MercurialRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MercurialRepository.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -240,7 +243,7 @@ public class MercurialRepository extends Repository {
                 ret = null;
             }
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Failed to get history: {0}", exp.getClass().toString());
         } finally {
             // Clean up zombie-processes...
@@ -275,7 +278,7 @@ public class MercurialRepository extends Repository {
         String[] rev_array = full_rev_to_find.split(":");
         String rev_to_find = rev_array[0];
         if (rev_to_find.isEmpty()) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Invalid revision string: {0}", full_rev_to_find);
             return null;
         }
@@ -313,7 +316,7 @@ public class MercurialRepository extends Repository {
                 while ((line = in.readLine()) != null) {
                     matcher.reset(line);
                     if (!matcher.find()) {
-                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        LOGGER.log(Level.SEVERE,
                                 "Failed to match: {0}", line);
                         return (null);
                     }
@@ -369,7 +372,7 @@ public class MercurialRepository extends Repository {
         try {
             fullpath = new File(parent, basename).getCanonicalPath();
         } catch (IOException exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Failed to get canonical path: {0}", exp.getClass().toString());
             return null;
         }
@@ -385,7 +388,7 @@ public class MercurialRepository extends Repository {
             try {
                 origpath = findOriginalName(fullpath, rev);
             } catch (IOException exp) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Failed to get original revision: {0}",
                         exp.getClass().toString());
                 return null;
@@ -440,7 +443,7 @@ public class MercurialRepository extends Repository {
                 revs.put(e.getRevision().replaceFirst(":[a-f0-9]+", ""), e);
             }
         } catch (HistoryException he) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Error: cannot get history for file {0}", file);
             return null;
         }
@@ -465,7 +468,7 @@ public class MercurialRepository extends Repository {
                         }
                         ret.addLine(rev, Util.getEmail(author.trim()), true);
                     } else {
-                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        LOGGER.log(Level.SEVERE,
                                 "Error: did not find annotation in line {0}: [{1}]",
                                 new Object[]{lineno, line});
                     }
@@ -611,7 +614,7 @@ public class MercurialRepository extends Repository {
                 while ((line = in.readLine()) != null) {
                     String parts[] = line.split("  *");
                     if (parts.length < 2) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                        LOGGER.log(Level.WARNING,
                                 "Failed to parse tag list: {0}",
                                 "Tag line contains more than 2 columns: " + line);
                         this.tagList = null;
@@ -630,10 +633,10 @@ public class MercurialRepository extends Repository {
                     }
                     String revParts[] = parts[parts.length - 1].split(":");
                     if (revParts.length != 2) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                        LOGGER.log(Level.WARNING,
                                 "Failed to parse tag list: {0}",
                                 "Mercurial revision parsing error: "
-                                + parts[parts.length - 1]);
+                                        + parts[parts.length - 1]);
                         this.tagList = null;
                         break;
                     }
@@ -645,7 +648,7 @@ public class MercurialRepository extends Repository {
                 }
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }

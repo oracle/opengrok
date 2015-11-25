@@ -32,9 +32,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -42,6 +43,8 @@ import org.opensolaris.opengrok.util.Executor;
  * @author michailf
  */
 public class SSCMHistoryParser implements Executor.StreamHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SSCMHistoryParser.class);
 
     private final SSCMRepository repository;
 
@@ -106,7 +109,7 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
             try {
                 currentRevision = Long.parseLong(revision);
             } catch (NumberFormatException ex) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse revision: '" + revision + "'", ex);
+                LOGGER.log(Level.WARNING, "Failed to parse revision: '" + revision + "'", ex);
             }
             // We're only interested in history entries that change file content
             if (revisionCounter < currentRevision) {
@@ -123,7 +126,7 @@ public class SSCMHistoryParser implements Executor.StreamHandler {
                 try {
                     entry.setDate(df.parse(date));
                 } catch (ParseException ex) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse date: '" + date + "'", ex);
+                    LOGGER.log(Level.WARNING, "Failed to parse date: '" + date + "'", ex);
                 }
                 entry.setActive(true);
             }

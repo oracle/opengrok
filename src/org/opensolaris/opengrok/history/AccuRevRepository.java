@@ -29,10 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -61,6 +62,8 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Steven Haehn
  */
 public class AccuRevRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccuRevRepository.class);
 
     private static final long serialVersionUID = 1L;
     /**
@@ -125,13 +128,13 @@ public class AccuRevRepository extends Repository {
                         String author = matcher.group(2);
                         a.addLine(version, author, true);
                     } else {
-                        OpenGrokLogger.getLogger().log(Level.SEVERE,
+                        LOGGER.log(Level.SEVERE,
                                 "Did not find annotation in line {0}: [{1}]",
                                 new Object[]{lineno, line});
                     }
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Could not read annotations for " + file, e);
             }
         }
@@ -206,7 +209,7 @@ public class AccuRevRepository extends Repository {
             elementID = statInfo[1].substring(2); // skip over 'e:'
 
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Could not obtain status for {0}", basename);
         }
 
@@ -278,7 +281,7 @@ public class AccuRevRepository extends Repository {
                     Matcher depotMatch = depotPattern.matcher(line);
 
                     if (line.contains("not logged in")) {
-                        OpenGrokLogger.getLogger().log(
+                        LOGGER.log(
                                 Level.SEVERE, "Not logged into AccuRev server");
                         break;
                     }
@@ -289,7 +292,7 @@ public class AccuRevRepository extends Repository {
                     }
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Could not find AccuRev repository for {0}", wsPath);
             }
         }
@@ -310,7 +313,7 @@ public class AccuRevRepository extends Repository {
                 path = "/./" + path;
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Unable to determine depot relative path for {0}",
                     file.getPath());
         }

@@ -27,18 +27,23 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.commons.jrcs.diff.PatchFailedException;
 import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.InvalidFileFormatException;
 import org.apache.commons.jrcs.rcs.Node;
 import org.apache.commons.jrcs.rcs.ParseException;
 import org.apache.commons.jrcs.rcs.Version;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Access to an RCS repository.
  */
 public class RCSRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RCSRepository.class);
+
     private static final long serialVersionUID = 1L;
 
     public RCSRepository() {
@@ -58,7 +63,7 @@ public class RCSRepository extends Repository {
             File rcsFile = getRCSFile(file);
             return new RCSget(rcsFile.getPath(), rev);
         } catch (IOException ioe) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Failed to retrieve revision " + rev + " of " + basename, ioe);
             return null;
         }

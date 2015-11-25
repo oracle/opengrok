@@ -34,8 +34,8 @@ import java.util.Locale;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -44,6 +44,8 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Trond Norbye
  */
 public abstract class Repository extends RepositoryInfo {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Repository.class);
 
     /**
      * The command with which to access the external repository. Can be
@@ -102,11 +104,10 @@ public abstract class Repository extends RepositoryInfo {
         // If we want an incremental history update and get here, warn that
         // it may be slow.
         if (sinceRevision != null) {
-            Logger logger = OpenGrokLogger.getLogger();
-            logger.log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Incremental history retrieval is not implemented for {0}.",
                     getClass().getSimpleName());
-            logger.log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Falling back to slower full history retrieval.");
         }
 
@@ -290,11 +291,11 @@ public abstract class Repository extends RepositoryInfo {
         // If we don't have a directory parser, we can't create the cache
         // this way. Just give up and return.
         if (!hasHistoryForDirectories()) {
-            Logger.getLogger(getClass().getName()).log(
+            LOGGER.log(
                     Level.INFO,
                     "Skipping creation of history cache for {0}, since retrieval "
-                    + "of history for directories is not implemented for this "
-                    + "repository type.", getDirectoryName());
+                            + "of history for directories is not implemented for this "
+                            + "repository type.", getDirectoryName());
             return;
         }
 
@@ -312,7 +313,7 @@ public abstract class Repository extends RepositoryInfo {
             // by changes in the revision numbers since the last update
             // (bug #14724) so we'll try to regenerate the cache from
             // scratch instead.
-            OpenGrokLogger.getLogger().log(Level.INFO,
+            LOGGER.log(Level.INFO,
                     "Failed to get partial history. Attempting to "
                     + "recreate the history cache from scratch.", he);
             history = null;

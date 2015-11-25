@@ -31,6 +31,8 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.management.OGAgent;
 
 /**
@@ -39,6 +41,8 @@ import org.opensolaris.opengrok.management.OGAgent;
  */
 @SuppressWarnings("PMD.SingularField")
 public class SettingsFrame extends javax.swing.JFrame {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SettingsFrame.class);
 
     private static final long serialVersionUID = -5229330170574558105L;
     private final SettingsPersistence properties;
@@ -280,7 +284,7 @@ private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             try {
                new SettingsFrame(new SettingsPersistence(null)).setVisible(true);
             } catch (IOException ex) {
-               Logger.getLogger(SettingsFrame.class.getName()).log(Level.SEVERE, null, ex);
+               LOGGER.log(Level.SEVERE, null, ex);
             }
             }
         });

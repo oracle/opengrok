@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  *
@@ -43,10 +44,11 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  */
 public class OpenGrokTrayApp {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenGrokTrayApp.class);
+
     private static TrayIcon trayIcon;
     private static String cfgfile;
     private final SettingsPersistence settings;
-    private static final Logger log = OpenGrokLogger.getLogger();
     public static final String OPENGROKICONURL = "opengrok.gif";
     public static final String INDEXWARNINGICONURL = "opengrok_indexwarning.gif";
     public static final String NOCONNECTIONICONURL = "opengrok_noconnection.gif";
@@ -76,7 +78,7 @@ public class OpenGrokTrayApp {
             OpenGrokTrayApp ogta = new OpenGrokTrayApp(cfgfile);
             ogta.enableSystemTray();
         } catch (IOException ex) {
-            log.log(Level.SEVERE, "Exception starting ", ex);
+            LOGGER.log(Level.SEVERE, "Exception starting ", ex);
         }
     }
 
@@ -99,7 +101,7 @@ public class OpenGrokTrayApp {
         ActionListener actionListener = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                log.info("Got Event " + e.getActionCommand());
+                LOGGER.info("Got Event " + e.getActionCommand());
                 trayIcon.displayMessage("OpenGrok Indexer", "Files have been deleted/added", TrayIcon.MessageType.INFO);
                 trayIcon.setImage(indexWarningImage);
             }
@@ -113,7 +115,7 @@ public class OpenGrokTrayApp {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                log.info("Exiting...");
+                LOGGER.info("Exiting...");
                 if (agent != null && agent.isConnected()) {
                     agent.unregister();
                 }
@@ -128,17 +130,17 @@ public class OpenGrokTrayApp {
         ActionListener configListener = new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                log.finer("Config...");
+                LOGGER.finer("Config...");
                 ConfigurationsFrame sf;
                 try {
                     sf = new ConfigurationsFrame(agent);
                     sf.setVisible(true);
                 } catch (IOException ex) {
-                    Logger.getLogger(OpenGrokTrayApp.class.getName()).log(Level.SEVERE, null, ex);
+                    LOGGER.log(Level.SEVERE, null, ex);
 
                 }
 
-                log.finer("Done config");
+                LOGGER.finer("Done config");
             }
         };
         return configListener;
@@ -149,27 +151,27 @@ public class OpenGrokTrayApp {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                log.finest("Tray Icon - Mouse clicked!");
+                LOGGER.finest("Tray Icon - Mouse clicked!");
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                log.finest("Tray Icon - Mouse entered!");
+                LOGGER.finest("Tray Icon - Mouse entered!");
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                log.finest("Tray Icon - Mouse exited!");
+                LOGGER.finest("Tray Icon - Mouse exited!");
             }
 
             @Override
             public void mousePressed(MouseEvent e) {
-                log.finest("Tray Icon - Mouse pressed!");
+                LOGGER.finest("Tray Icon - Mouse pressed!");
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                log.finest("Tray Icon - Mouse released!");
+                LOGGER.finest("Tray Icon - Mouse released!");
             }
         };
 
@@ -181,15 +183,15 @@ public class OpenGrokTrayApp {
         final WindowListener notificationWindowListener = new WindowListener() {
 
             public void windowOpened(WindowEvent arg0) {
-                log.finest("Received window opened");
+                LOGGER.finest("Received window opened");
             }
 
             public void windowClosing(WindowEvent arg0) {
-                log.finest("Received window closing");
+                LOGGER.finest("Received window closing");
             }
 
             public void windowClosed(WindowEvent arg0) {
-                log.info("Received window closing");
+                LOGGER.info("Received window closing");
                 if (agent != null && agent.isConnected()) {
                     currentIcon = opengrokImage;
                 } else {
@@ -199,19 +201,19 @@ public class OpenGrokTrayApp {
             }
 
             public void windowIconified(WindowEvent arg0) {
-                log.finest("Received window iconified");
+                LOGGER.finest("Received window iconified");
             }
 
             public void windowDeiconified(WindowEvent arg0) {
-                log.finest("Received window deiconified");
+                LOGGER.finest("Received window deiconified");
             }
 
             public void windowActivated(WindowEvent arg0) {
-                log.finest("Received window activated");
+                LOGGER.finest("Received window activated");
             }
 
             public void windowDeactivated(WindowEvent arg0) {
-                log.finest("Received window deactivated");
+                LOGGER.finest("Received window deactivated");
             }
         };
 
@@ -222,11 +224,11 @@ public class OpenGrokTrayApp {
 
         ActionListener settingsListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                log.finer("Settings...");
+                LOGGER.finer("Settings...");
                 SettingsFrame sf = new SettingsFrame(settings);
                 sf.addWindowListener(settingsWindowListener);
                 sf.setVisible(true);
-                log.finer("Done settings");
+                LOGGER.finer("Done settings");
             }
         };
 
@@ -237,17 +239,17 @@ public class OpenGrokTrayApp {
         final WindowListener settingsWindowListener = new WindowListener() {
             @Override
             public void windowOpened(WindowEvent arg0) {
-                log.finest("Received window opened");
+                LOGGER.finest("Received window opened");
             }
 
             @Override
             public void windowClosing(WindowEvent arg0) {
-                log.finest("Received window closing " + arg0);
+                LOGGER.finest("Received window closing " + arg0);
             }
 
             @Override
             public void windowClosed(WindowEvent arg0) {
-                log.info("Received window closing");
+                LOGGER.info("Received window closing");
                 if (!agentConnected) {
                     tryAgentConnect();
                 }
@@ -261,19 +263,19 @@ public class OpenGrokTrayApp {
 
             @Override
             public void windowIconified(WindowEvent arg0) {
-                log.finest("Received window iconified");
+                LOGGER.finest("Received window iconified");
             }
 
             public void windowDeiconified(WindowEvent arg0) {
-                log.finest("Received window deiconified");
+                LOGGER.finest("Received window deiconified");
             }
 
             public void windowActivated(WindowEvent arg0) {
-                log.finest("Received window activated");
+                LOGGER.finest("Received window activated");
             }
 
             public void windowDeactivated(WindowEvent arg0) {
-                log.finest("Received window deactivated");
+                LOGGER.finest("Received window deactivated");
             }
         };
 
@@ -283,7 +285,7 @@ public class OpenGrokTrayApp {
     private ActionListener getShowNotificationListener(final WindowListener notificationWindowListener) {
         ActionListener showNotificationsListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                log.info("Notifications...");
+                LOGGER.info("Notifications...");
                 String notifs = "";
                 long starttime = 0;
                 long endtime = 0;
@@ -296,7 +298,7 @@ public class OpenGrokTrayApp {
                 NotificationsFrame sf = new NotificationsFrame(notifs, starttime, endtime);
                 sf.addWindowListener(notificationWindowListener);
                 sf.setVisible(true);
-                log.finest("Done Notifications");
+                LOGGER.finest("Done Notifications");
             }
         };
 
@@ -326,7 +328,7 @@ public class OpenGrokTrayApp {
             retval = true;
             agentConnected = true;
         } catch (Exception ex) {
-            log.log(Level.WARNING, "Could not connect ", ex);
+            LOGGER.log(Level.WARNING, "Could not connect ", ex);
         }
         return retval;
     }
@@ -338,7 +340,7 @@ public class OpenGrokTrayApp {
             SystemTray tray = SystemTray.getSystemTray();
             MouseListener mouseListener = getMouseListener();
 
-            log.info("Creating listeners");
+            LOGGER.info("Creating listeners");
 
             final ActionListener exitListener = getExitListener();
             final WindowListener settingsWindowListener = getSettingsWindowListener();
@@ -347,7 +349,7 @@ public class OpenGrokTrayApp {
             final ActionListener showNotificationsListener = getShowNotificationListener(notificationWindowListener);
             final ActionListener configListener = this.getConfigurationListener();
 
-            log.info("Creating popup and tray icon ");
+            LOGGER.info("Creating popup and tray icon ");
 
             PopupMenu popup = new PopupMenu();
             MenuItem exitItem = new MenuItem("Exit");
@@ -382,13 +384,13 @@ public class OpenGrokTrayApp {
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
-                log.log(Level.WARNING, "TrayIcon could not be added.", e);
+                LOGGER.log(Level.WARNING, "TrayIcon could not be added.", e);
             }
-            log.info("Created, ready for action");
+            LOGGER.info("Created, ready for action");
 
         } else {
             //  System Tray is not supported
-            log.severe("System Tray is NOT supported");
+            LOGGER.severe("System Tray is NOT supported");
         }
     }
 }
