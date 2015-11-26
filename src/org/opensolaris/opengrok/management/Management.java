@@ -32,8 +32,8 @@ import javax.management.MBeanRegistration;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.logger.LoggerUtil;
 
 public final class Management implements ManagementMBean, MBeanRegistration {
 
@@ -223,23 +223,23 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     }
 
     public void setFileLogLevel(Level level) {
-        OpenGrokLogger.setFileLogLevel(level);
+        LoggerUtil.setBaseFileLogLevel(level);
     }
 
     public void setFileLogPath(String path) throws IOException {
-        OpenGrokLogger.setFileLogPath(path);
+        LoggerUtil.setFileHandlerLogPath(path);
     }
 
     public Level getConsoleLogLevel() {
-        return OpenGrokLogger.getConsoleLogLevel();
+        return LoggerUtil.getBaseConsoleLogLevel();
     }
 
     public Level getFileLogLevel() {
-        return OpenGrokLogger.getFileLogLevel();
+        return LoggerUtil.getBaseFileLogLevel();
     }
 
     public String getFileLogPath() {
-        return OpenGrokLogger.getFileLogPath();
+        return LoggerUtil.getFileHandlerLogPath();
     }
 
     public void setPublishServerURL(String url) {
@@ -247,7 +247,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     }
 
     public void setConsoleLogLevel(Level level) {
-        OpenGrokLogger.setConsoleLogLevel(level);
+        LoggerUtil.setBaseConsoleLogLevel(level);
     }
 
     public void setConfigurationFile(String filename) {

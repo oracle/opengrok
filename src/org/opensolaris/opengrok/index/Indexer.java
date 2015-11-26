@@ -40,10 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
@@ -54,6 +52,7 @@ import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.logger.LoggerUtil;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Getopt;
 import org.opensolaris.opengrok.util.Statistics;
@@ -366,7 +365,7 @@ public final class Indexer {
                             break;
                         case 'q':
                             cfg.setVerbose(false);
-                            OpenGrokLogger.setOGConsoleLogLevel(Level.WARNING);
+                            LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
                             break;
                         case 'R':
                             // already handled
@@ -433,7 +432,7 @@ public final class Indexer {
                             break;
                         case 'v':
                             cfg.setVerbose(true);
-                            OpenGrokLogger.setOGConsoleLogLevel(Level.INFO);
+                            LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
                             break;
                         case 'W':
                             configFilename = getopt.getOptarg();
@@ -489,7 +488,7 @@ public final class Indexer {
 
                 //logging starts here
                 if (cfg.isVerbose()) {
-                    String fn = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
+                    String fn = LoggerUtil.getFileHandlerPattern();
                     if (fn != null) {
                         System.out.println("Logging filehandler pattern: " + fn);
                     }

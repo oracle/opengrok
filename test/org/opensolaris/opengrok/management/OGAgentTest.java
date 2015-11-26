@@ -31,7 +31,7 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerUtil;
 import org.opensolaris.opengrok.util.FileUtilities;
 import static org.junit.Assert.*;
 
@@ -105,8 +105,8 @@ public class OGAgentTest {
         baos.reset();
         String loggedMessage = "Should go to console!";
         String unloggedMessage = "Should not go to console";
-        OpenGrokLogger.getLogger().severe(loggedMessage);
-        OpenGrokLogger.getLogger().fine(unloggedMessage);
+        LoggerUtil.getBaseLogger().severe(loggedMessage);
+        LoggerUtil.getBaseLogger().fine(unloggedMessage);
         assertTrue(baos.toString().contains(loggedMessage));
         assertFalse(baos.toString().contains(unloggedMessage));
     }

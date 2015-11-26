@@ -35,8 +35,8 @@ import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.logger.LoggerUtil;
 
 /**
  *
@@ -85,7 +85,7 @@ public class OpenGrokTrayApp {
     public OpenGrokTrayApp(String cfgfile) throws IOException {
         settings = new SettingsPersistence(cfgfile);
         loadImages();
-        OpenGrokLogger.setupLogger(settings.getProperty(SettingsPersistence.LOGGINGPATHKEY),
+        LoggerUtil.initLogger(settings.getProperty(SettingsPersistence.LOGGINGPATHKEY),
                 settings.getFileLogLevel(),
                 settings.getConsoleLogLevel());
         if (tryAgentConnect()) {

@@ -47,8 +47,8 @@ import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.management.timer.Timer;
 import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.logger.LoggerUtil;
 
 // PMD thinks this import is unused (confused because it's static?)
 import static org.opensolaris.opengrok.management.Constants.*; // NOPMD
@@ -284,7 +284,7 @@ final public class OGAgent {
             consoleloglevel = Level.INFO;
         }
         try {
-            OpenGrokLogger.setupLogger(OGAlogpath, loglevel, consoleloglevel);
+            LoggerUtil.initLogger(OGAlogpath, loglevel, consoleloglevel);
         } catch (IOException ex) {
             System.err.println("OGAgent failed set up logging: " + ex);
             ret = false;
