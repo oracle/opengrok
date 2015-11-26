@@ -80,6 +80,13 @@ include file="mast.jsp"
 %><script type="text/javascript">/* <![CDATA[ */
 document.domReady.push(function() {domReadyHistory();});
 /* ]]> */</script>
+<!--[if IE]>
+<style type="text/css">
+  table#revisions tbody tr td p {
+        word-break: break-all;
+    }
+</style>
+<![endif]-->
 <form action="<%= context + Prefix.DIFF_P + uriEncodedName %>">
 <table class="src" id="revisions">
     <caption>History log of <a href="<%= context + Prefix.XREF_P
