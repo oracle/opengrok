@@ -39,6 +39,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Tests the {@link PhpSymbolTokenizer} class.
@@ -46,6 +47,8 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
  * @author Gustavo Lopes
  */
 public class PhpSymbolTokenizerTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhpSymbolTokenizerTest.class);
 
     private final FileAnalyzer analyzer;
 
@@ -60,7 +63,7 @@ public class PhpSymbolTokenizerTest {
         try {
             ts.setReader(r);
         } catch (IOException ex) {
-            Logger.getLogger(PhpSymbolTokenizerTest.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
         ts.yyreset(r);

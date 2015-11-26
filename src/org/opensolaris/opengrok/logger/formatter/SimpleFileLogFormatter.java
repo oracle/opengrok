@@ -29,7 +29,7 @@ import org.opensolaris.opengrok.Info;
  */
 public class SimpleFileLogFormatter extends LogFormatter {
 
-    private static final String FORMAT = "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS.%1$tL%1$tz %4$s t%10$s %8$s.";
+    private static final String FORMAT = "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS.%1$tL%1$tz %4$s t%10$s %9$s.%8$s: %5$s%6$s%n";
 
     public SimpleFileLogFormatter() {
         super(FORMAT, Info.getVersion());

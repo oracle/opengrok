@@ -38,6 +38,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Tests the {@link HaskellSymbolTokenizer} class.
@@ -45,6 +46,8 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
  * @author Harry Pan
  */
 public class HaskellSymbolTokenizerTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HaskellSymbolTokenizerTest.class);
 
     private final FileAnalyzer analyzer;
 
@@ -58,7 +61,7 @@ public class HaskellSymbolTokenizerTest {
         try {
             ts.setReader(r);
         } catch (IOException ex) {
-            Logger.getLogger(HaskellSymbolTokenizerTest.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
         ts.yyreset(r);
@@ -80,7 +83,7 @@ public class HaskellSymbolTokenizerTest {
                 "org/opensolaris/opengrok/analysis/haskell/sample.hs");
         InputStreamReader r = new InputStreamReader(res, "UTF-8");
         String[] termsFor = getTermsFor(r);
-        Logger.getLogger(HaskellSymbolTokenizerTest.class.getName()).log(Level.SEVERE, null, termsFor);
+        LOGGER.log(Level.SEVERE, null, termsFor);
         assertArrayEquals(
                 new String[]{
                     "qsort", // line 2
