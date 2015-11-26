@@ -28,7 +28,6 @@ java.io.FileReader,
 java.util.logging.Level,
 java.util.logging.Logger,
 
-org.opensolaris.opengrok.OpenGrokLogger,
 org.apache.lucene.search.Query,
 org.opensolaris.opengrok.search.QueryBuilder,
 org.opensolaris.opengrok.search.context.Context,
