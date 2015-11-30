@@ -40,8 +40,7 @@ class DefaultIndexChangedListener implements IndexChangedListener {
 
     @Override
     public void fileAdd(String path, String analyzer) {
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.log(Level.INFO, "Add: {0} ({1})", new Object[]{path, analyzer});}
+        LOGGER.log(Level.INFO, "Add: {0} ({1})", new Object[]{path, analyzer});
     }
 
     @Override
@@ -55,8 +54,7 @@ class DefaultIndexChangedListener implements IndexChangedListener {
 
     @Override
     public void fileAdded(String path, String analyzer) {
-        if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "Added: {0} ({1})", new Object[]{path, analyzer});}
+        LOGGER.log(Level.FINER, "Added: {0} ({1})", new Object[]{path, analyzer});
     }
 
     @Override

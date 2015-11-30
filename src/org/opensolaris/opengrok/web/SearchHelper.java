@@ -498,9 +498,7 @@ public class SearchHelper {
                 executor.shutdown();
             } catch (SecurityException se) {
                 LOGGER.warning(se.getLocalizedMessage());
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "destroy", se);
-                }
+                LOGGER.log(Level.FINE, "destroy", se);
             }
         }
     }

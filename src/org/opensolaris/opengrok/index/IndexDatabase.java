@@ -389,11 +389,9 @@ public class IndexDatabase {
                     if (RuntimeEnvironment.getInstance().isPrintProgress()) {
                         LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
                         file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
-                        if (LOGGER.isLoggable(Level.INFO)) {
-                            LOGGER.log(Level.INFO,
+                        LOGGER.log(Level.INFO,
                                 "Need to process: {0} files for {1}",
                                 new Object[]{file_cnt, dir});
-                        }
                     }
 
                     indexDown(sourceRoot, dir, false, 0, file_cnt);

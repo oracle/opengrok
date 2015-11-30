@@ -47,7 +47,6 @@ import java.util.logging.LogRecord;
 public class LogFormatter extends Formatter {
 
     private static final String DEFAULT_FORMAT = "%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp %2$s%n%4$s: %5$s%6$s%n";
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private String format;
     private String version;
@@ -81,7 +80,6 @@ public class LogFormatter extends Formatter {
             pw.println();
             record.getThrown().printStackTrace(pw);
             pw.close();
-            throwable.append(LINE_SEPARATOR);
             throwable.append(sw.toString());
         }
 
