@@ -30,6 +30,8 @@ import java.io.RandomAccessFile;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 
 
@@ -41,9 +43,10 @@ import org.opensolaris.opengrok.util.IOUtils;
  */
 public class EftarFileReader {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EftarFileReader.class);
+
     private final RandomAccessFile f;
     private boolean isOpen;
-    private static final Logger log = Logger.getLogger(EftarFileReader.class.getName());
 
     protected class FNode {
 
@@ -128,7 +131,7 @@ public class EftarFileReader {
             } catch (EOFException e) { // NOPMD
                 // ignore
             } catch (IOException e) {
-                log.log(Level.WARNING, "Got excption while getting the tag: ", e);
+                LOGGER.log(Level.WARNING, "Got excption while getting the tag: ", e);
             }
             return "H[" + hash + "] num = " + numChildren + " tag = " + tagString;
         }

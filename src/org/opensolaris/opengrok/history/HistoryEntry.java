@@ -32,7 +32,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Collect all information of a given revision
@@ -40,6 +40,9 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * @author Trond Norbye
  */
 public class HistoryEntry {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HistoryEntry.class);
+
     private String revision;
     private Date date;
     private String author;
@@ -88,30 +91,29 @@ public class HistoryEntry {
     }
 
     public void dump() {
-        Logger log = OpenGrokLogger.getLogger();
 
-        log.log(Level.FINE, "HistoryEntry : revision       = {0}", revision);
-        log.log(Level.FINE, "HistoryEntry : tags           = {0}", tags);
-        log.log(Level.FINE, "HistoryEntry : date           = {0}", date);
-        log.log(Level.FINE, "HistoryEntry : author         = {0}", author);
-        log.log(Level.FINE, "HistoryEntry : active         = {0}", (active ?
+        LOGGER.log(Level.FINE, "HistoryEntry : revision       = {0}", revision);
+        LOGGER.log(Level.FINE, "HistoryEntry : tags           = {0}", tags);
+        LOGGER.log(Level.FINE, "HistoryEntry : date           = {0}", date);
+        LOGGER.log(Level.FINE, "HistoryEntry : author         = {0}", author);
+        LOGGER.log(Level.FINE, "HistoryEntry : active         = {0}", (active ?
                 "True" : "False"));
         String[] lines = message.toString().split("\n");
         String separator = "=";
         for (String line : lines) {
-            log.log(Level.FINE, "HistoryEntry : message        {0} {1}",
+            LOGGER.log(Level.FINE, "HistoryEntry : message        {0} {1}",
                     new Object[]{separator, line});
             separator = ">";
         }
         separator = "=";
         for (String cr : changeRequests) {
-            log.log(Level.FINE, "HistoryEntry : changeRequests {0} {1}",
+            LOGGER.log(Level.FINE, "HistoryEntry : changeRequests {0} {1}",
                     new Object[]{separator, cr});
             separator = ">";
         }
         separator = "=";
         for (String file : files) {
-            log.log(Level.FINE, "HistoryEntry : files          {0} {1}",
+            LOGGER.log(Level.FINE, "HistoryEntry : files          {0} {1}",
                     new Object[]{separator, file});
             separator = ">";
         }

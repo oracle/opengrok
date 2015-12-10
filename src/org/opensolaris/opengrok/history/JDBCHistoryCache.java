@@ -46,14 +46,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.jdbc.ConnectionManager;
 import org.opensolaris.opengrok.jdbc.ConnectionResource;
 import org.opensolaris.opengrok.jdbc.InsertQuery;
 import org.opensolaris.opengrok.jdbc.PreparedQuery;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 class JDBCHistoryCache implements HistoryCache {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JDBCHistoryCache.class);
 
     private boolean historyIndexDone = false;
 
@@ -206,9 +208,8 @@ class JDBCHistoryCache implements HistoryCache {
         }
 
         if (isTransient && attemptNo < MAX_RETRIES) {
-            Logger logger = OpenGrokLogger.getLogger();
-            logger.info("Transient database failure detected. Retrying.");
-            logger.log(Level.FINE, "Transient database failure details:", sqle);
+            LOGGER.info("Transient database failure detected. Retrying.");
+            LOGGER.log(Level.FINE, "Transient database failure details:", sqle);
         } else {
             throw sqle;
         }
@@ -730,7 +731,7 @@ class JDBCHistoryCache implements HistoryCache {
             ResultSet rs = ps.executeQuery();
             return rs.next() ? Integer.valueOf(rs.getString(1)) : -1;
         } catch (java.sql.SQLException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "getIdForRevision exception{0}", e);
             return -1;
         } finally {
@@ -757,7 +758,7 @@ class JDBCHistoryCache implements HistoryCache {
             return;
         }
 
-        OpenGrokLogger.getLogger().log(Level.FINE,
+        LOGGER.log(Level.FINE,
                 "Storing history for repo {0}",
                 new Object[]{repository.getDirectoryName()});
 
@@ -847,7 +848,7 @@ class JDBCHistoryCache implements HistoryCache {
                             repodir = env.getPathRelativeToSourceRoot(
                                     new File(repository.getDirectoryName()), 0);
                         } catch (IOException ex) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING,
+                            LOGGER.log(Level.WARNING,
                                     "File exception{0}", ex);
                             continue;
                         }
@@ -908,7 +909,7 @@ class JDBCHistoryCache implements HistoryCache {
                         doRenamedHistory(repository, file, files, repo_path);
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
-                        OpenGrokLogger.getLogger().log(Level.WARNING,
+                        LOGGER.log(Level.WARNING,
                                 "doRenamedHistory exception {0}", ex);
                     } finally {
                         latch.countDown();
@@ -921,10 +922,10 @@ class JDBCHistoryCache implements HistoryCache {
         try {
             latch.await();
         } catch (InterruptedException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "latch exception{0}", ex);
         }
-        OpenGrokLogger.getLogger().log(Level.FINE,
+        LOGGER.log(Level.FINE,
                 "Done storing history for repo {0}",
                 new Object[]{repository.getDirectoryName()});
     }
@@ -1363,7 +1364,7 @@ class JDBCHistoryCache implements HistoryCache {
         try {
             hist = repository.getHistory(file);
         } catch (HistoryException ex) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "cannot get history for {0} because of exception {1}",
                     new Object[]{file, ex});
             return;

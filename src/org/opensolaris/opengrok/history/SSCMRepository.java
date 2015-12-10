@@ -35,9 +35,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -45,6 +46,8 @@ import org.opensolaris.opengrok.util.Executor;
  *
  */
 public class SSCMRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SSCMRepository.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -102,7 +105,7 @@ public class SSCMRepository extends Repository {
             try (BufferedReader br = new BufferedReader(new FileReader(propFile))) {
                 props.load(br);
             } catch (IOException ex) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Failed to work with {0} file of {1}: {2}", new Object[]{
                             MYSCMSERVERINFO_FILE,
                             getDirectoryName(), ex.getClass().toString()});
@@ -165,12 +168,12 @@ public class SSCMRepository extends Repository {
 
             // cleartool can't get to a previously existing file
             if (tmp.exists() && !tmp.delete()) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Failed to remove temporary file used by history cache");
             }
 
             if (!tmp.mkdir()) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Failed to create temporary directory used by history cache");
             }
 
@@ -199,7 +202,7 @@ public class SSCMRepository extends Repository {
             int status = exec.exec();
 
             if (status != 0) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Failed get revision {2} for: \"{0}\" Exit code: {1}",
                         new Object[]{new File(parent, basename).getAbsolutePath(), String.valueOf(status), rev});
                 return null;
@@ -226,7 +229,7 @@ public class SSCMRepository extends Repository {
                 }
             };
         } catch (IOException exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "Failed to get file: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
@@ -264,7 +267,7 @@ public class SSCMRepository extends Repository {
                     }
                 }
             } catch (IOException ex) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Failed to work with {0} file of {1}: {2}", new Object[]{
                             MYSCMSERVERINFO_FILE,
                             getDirectoryName(), ex.getClass().toString()});
@@ -304,7 +307,7 @@ public class SSCMRepository extends Repository {
         int status = exec.exec();
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed annotate for: {2} \"{0}\" Exit code: {1}",
                     new Object[]{file.getAbsolutePath(), String.valueOf(status), revision});
         }
@@ -333,7 +336,7 @@ public class SSCMRepository extends Repository {
                 String author = matcher.group(1);
                 ret.addLine(rev, author, true);
             } else if (hasStarted) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Error: did not find annotation in line {0}: [{1}]",
                         new Object[]{String.valueOf(lineno), line});
             }

@@ -36,7 +36,6 @@ java.util.Set,
 java.util.logging.Level,
 java.util.zip.GZIPInputStream,
 
-org.opensolaris.opengrok.OpenGrokLogger,
 org.opensolaris.opengrok.analysis.AnalyzerGuru,
 org.opensolaris.opengrok.analysis.Definitions,
 org.opensolaris.opengrok.analysis.FileAnalyzer.Genre,

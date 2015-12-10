@@ -32,9 +32,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.StringUtils;
 
 /**
@@ -43,6 +44,8 @@ import org.opensolaris.opengrok.util.StringUtils;
  * @author Peter Bray <Peter.Darren.Bray@gmail.com>
  */
 class RazorHistoryParser {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RazorHistoryParser.class);
 
     private RazorRepository repository=new RazorRepository();
 
@@ -168,7 +171,7 @@ class RazorHistoryParser {
                             try {
                                 date = df.parse(dateTime);
                             } catch (ParseException pe) {
-                                OpenGrokLogger.getLogger().log(Level.WARNING, "Could not parse date: " + dateTime, pe);
+                                LOGGER.log(Level.WARNING, "Could not parse date: " + dateTime, pe);
                             }
                             entry.setDate(date);
                             ignoreEntry = false;
@@ -199,10 +202,10 @@ class RazorHistoryParser {
     }
 
     private void parseDebug(String message) {
-        OpenGrokLogger.getLogger().log(Level.FINE, "RazorHistoryParser: " + message );
+        LOGGER.log(Level.FINE, "RazorHistoryParser: " + message );
     }
 
     private void parseProblem(String message) {
-        OpenGrokLogger.getLogger().log(Level.SEVERE, "PROBLEM: RazorHistoryParser - " + message);
+        LOGGER.log(Level.SEVERE, "PROBLEM: RazorHistoryParser - " + message);
     }
 }

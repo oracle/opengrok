@@ -37,17 +37,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.lucene.search.Query;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
 public class Context {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Context.class);
 
     private final LineMatcher[] m;
     static final int MAXFILEREAD = 1024 * 1024;
@@ -215,7 +219,7 @@ public class Context {
             } catch (Exception e) {
                 if (hits != null) {
                     // @todo verify why we ignore all exceptions?
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
+                    LOGGER.log(Level.WARNING, "Could not get context for " + path, e);
                 }
             }
         }
@@ -251,7 +255,7 @@ public class Context {
                     }
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING, "An error occured while reading data", e);
+                LOGGER.log(Level.WARNING, "An error occured while reading data", e);
                 return anything;
             }
             if (charsRead == 0) {
@@ -298,7 +302,7 @@ public class Context {
                 out.write("<a href=\"" + Util.URIEncodePath(morePrefix) + pathE + "?" + queryAsURI + "\">[all...]</a>");
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get context for " + path, e);
+            LOGGER.log(Level.WARNING, "Could not get context for " + path, e);
         } finally {
             IOUtils.close(in);
             
@@ -306,7 +310,7 @@ public class Context {
                 try {
                     out.flush();
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to flush stream: ", e);
+                    LOGGER.log(Level.WARNING, "Failed to flush stream: ", e);
                 }
             }
         }

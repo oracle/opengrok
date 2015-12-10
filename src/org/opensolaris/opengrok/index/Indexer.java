@@ -40,10 +40,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.Info;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.Project;
@@ -53,6 +51,8 @@ import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.Repository;
 import org.opensolaris.opengrok.history.RepositoryFactory;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.logger.LoggerUtil;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Getopt;
 import org.opensolaris.opengrok.util.Statistics;
@@ -64,6 +64,8 @@ import org.opensolaris.opengrok.util.Statistics;
 @SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.SystemPrintln"})
 public final class Indexer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Indexer.class);
+
     /* tunables for -r (history for remote repositories) */
     private static final String ON = "on";
     private static final String OFF = "off";
@@ -71,7 +73,6 @@ public final class Indexer {
     private static final String UIONLY = "uionly";
 
     private static final Indexer index = new Indexer();
-    static final Logger log = Logger.getLogger(Indexer.class.getName());
     private static final String DERBY_EMBEDDED_DRIVER
             = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String DERBY_CLIENT_DRIVER
@@ -193,8 +194,8 @@ public final class Indexer {
                                             arg[0],
                                             AnalyzerGuru.findFactory(arg[1]));
                                 } catch (Exception e) {
-                                    log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
-                                    log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
+                                    LOGGER.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
+                                    LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
                                 }
                             } else {
@@ -203,8 +204,8 @@ public final class Indexer {
                                             arg[0],
                                             AnalyzerGuru.findFactory(arg[1]));
                                 } catch (Exception e) {
-                                    log.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
-                                    log.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
+                                    LOGGER.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
+                                    LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
                                 }
                             }
@@ -364,7 +365,7 @@ public final class Indexer {
                             break;
                         case 'q':
                             cfg.setVerbose(false);
-                            OpenGrokLogger.setOGConsoleLogLevel(Level.WARNING);
+                            LoggerUtil.setBaseConsoleLogLevel(Level.WARNING);
                             break;
                         case 'R':
                             // already handled
@@ -431,7 +432,7 @@ public final class Indexer {
                             break;
                         case 'v':
                             cfg.setVerbose(true);
-                            OpenGrokLogger.setOGConsoleLogLevel(Level.INFO);
+                            LoggerUtil.setBaseConsoleLogLevel(Level.INFO);
                             break;
                         case 'W':
                             configFilename = getopt.getOptarg();
@@ -487,7 +488,7 @@ public final class Indexer {
 
                 //logging starts here
                 if (cfg.isVerbose()) {
-                    String fn = LogManager.getLogManager().getProperty("java.util.logging.FileHandler.pattern");
+                    String fn = LoggerUtil.getFileHandlerPattern();
                     if (fn != null) {
                         System.out.println("Logging filehandler pattern: " + fn);
                     }
@@ -602,15 +603,15 @@ public final class Indexer {
                 // Finally send new configuration to the web application.
                 getInstance().sendToConfigHost(env, configHost);
             } catch (IndexerException ex) {
-                log.log(Level.SEVERE, "Exception running indexer", ex);
+                LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
                 System.err.println(cmdOptions.getUsage());
                 System.exit(1);
             } catch (Throwable e) {
                 System.err.println("Exception: " + e.getLocalizedMessage());
-                log.log(Level.SEVERE, "Unexpected Exception", e);
+                LOGGER.log(Level.SEVERE, "Unexpected Exception", e);
                 System.exit(1);
             } finally {
-                stats.report(log);
+                stats.report(LOGGER);
             }
         }
     }
@@ -653,11 +654,11 @@ public final class Indexer {
         }
 
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
-            log.log(Level.INFO, "Scanning for repositories...");
+            LOGGER.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
             HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
             long time = (System.currentTimeMillis() - start) / 1000;
-            log.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
+            LOGGER.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
             if (listRepoPaths || !zapCache.isEmpty()) {
                 List<RepositoryInfo> repos = env.getRepositories();
                 String prefix = env.getSourceRootPath();
@@ -695,7 +696,7 @@ public final class Indexer {
                     try {
                         HistoryGuru.getInstance().removeCache(toZap);
                     } catch (HistoryException e) {
-                        log.log(Level.WARNING, "Clearing history cache failed: {0}", e.getLocalizedMessage());
+                        LOGGER.log(Level.WARNING, "Clearing history cache failed: {0}", e.getLocalizedMessage());
                     }
                 }
                 return;
@@ -763,19 +764,19 @@ public final class Indexer {
         }
 
         if (configFilename != null) {
-            log.log(Level.INFO, "Writing configuration to {0}", configFilename);
+            LOGGER.log(Level.INFO, "Writing configuration to {0}", configFilename);
             env.writeConfiguration(new File(configFilename));
-            log.info("Done...");
+            LOGGER.info("Done...");
         }
 
         if (refreshHistory) {
-            log.log(Level.INFO, "Generating history cache for all repositories ...");
+            LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
             HistoryGuru.getInstance().createCache();
-            log.info("Done...");
+            LOGGER.info("Done...");
         } else if (repositories != null && !repositories.isEmpty()) {
-            log.log(Level.INFO, "Generating history cache for specified repositories ...");
+            LOGGER.log(Level.INFO, "Generating history cache for specified repositories ...");
             HistoryGuru.getInstance().createCache(repositories);
-            log.info("Done...");
+            LOGGER.info("Done...");
         }
 
         if (listFiles) {
@@ -798,7 +799,7 @@ public final class Indexer {
             throws IOException {
         Statistics elapsed = new Statistics();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance().register();
-        log.info("Starting indexing");
+        LOGGER.info("Starting indexing");
 
         ExecutorService executor = Executors.newFixedThreadPool(noThreads);
 
@@ -814,7 +815,7 @@ public final class Indexer {
             for (String path : subFiles) {
                 Project project = Project.getProject(path);
                 if (project == null && env.hasProjects()) {
-                    log.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
+                    LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                 } else {
                     IndexDatabase db;
                     if (project == null) {
@@ -832,7 +833,7 @@ public final class Indexer {
                             dbs.add(db);
                         }
                     } else {
-                        log.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
                     }
                 }
             }
@@ -850,7 +851,7 @@ public final class Indexer {
                                 db.optimize();
                             }
                         } catch (Throwable e) {
-                            log.log(Level.SEVERE, "An error occured while "
+                            LOGGER.log(Level.SEVERE, "An error occured while "
                                     + (update ? "updating" : "optimizing")
                                     + " index", e);
                         }
@@ -865,7 +866,7 @@ public final class Indexer {
                 // Wait forever
                 executor.awaitTermination(999, TimeUnit.DAYS);
             } catch (InterruptedException exp) {
-                log.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
+                LOGGER.log(Level.WARNING, "Received interrupt while waiting for executor to finish", exp);
             }
         }
         try {
@@ -874,31 +875,31 @@ public final class Indexer {
             // thread pool for renamed file handling is destroyed.
             RuntimeEnvironment.destroyRenamedHistoryExecutor();
         } catch (InterruptedException ex) {
-            log.log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "destroying of renamed thread pool failed", ex);
         }
-        elapsed.report(log, "Done indexing data of all repositories");
+        elapsed.report(LOGGER, "Done indexing data of all repositories");
     }
 
     public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
         if (configHost != null) {
             String[] cfg = configHost.split(":");
-            log.log(Level.INFO, "Send configuration to: {0}", configHost);
+            LOGGER.log(Level.INFO, "Send configuration to: {0}", configHost);
             if (cfg.length == 2) {
                 try {
                     InetAddress host = InetAddress.getByName(cfg[0]);
                     env.writeConfiguration(host, Integer.parseInt(cfg[1]));
                 } catch (Exception ex) {
-                    log.log(Level.SEVERE, "Failed to send configuration to "
+                    LOGGER.log(Level.SEVERE, "Failed to send configuration to "
                             + configHost + " (is web application server running with opengrok deployed?)", ex);
                 }
             } else {
-                log.severe("Syntax error: ");
+                LOGGER.severe("Syntax error: ");
                 for (String s : cfg) {
-                    log.log(Level.SEVERE, "[{0}]", s);
+                    LOGGER.log(Level.SEVERE, "[{0}]", s);
                 }
             }
-            log.info("Configuration update routine done, check log output for errors.");
+            LOGGER.info("Configuration update routine done, check log output for errors.");
         }
     }
 

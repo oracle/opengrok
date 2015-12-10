@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.DateTools;
@@ -46,11 +47,11 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.history.HistoryException;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.Prefix;
 import org.opensolaris.opengrok.web.SearchHelper;
 import org.opensolaris.opengrok.web.Util;
@@ -59,6 +60,8 @@ import org.opensolaris.opengrok.web.Util;
  * @author Chandan slightly rewritten by Lubos Kosco
  */
 public final class Results {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Results.class);
 
     private Results() {
         // Util class, should not be constructed
@@ -100,7 +103,7 @@ public final class Results {
             int len = r.read(content);
             return new String(content, 0, len);
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(
+            LOGGER.log(
                     Level.WARNING, "An error reading tags from " + basedir + path
                     + (compressed ? ".gz" : ""), e);
         }
@@ -185,7 +188,7 @@ public final class Results {
                         out.write(dd);
                         out.write(")</small>");    
                     } catch (ParseException ex) {
-                        OpenGrokLogger.getLogger().log(
+                        LOGGER.log(
                                 Level.WARNING, "An error parsing date information", ex);
                     }                    
                 }

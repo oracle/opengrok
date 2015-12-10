@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.Interner;
 
@@ -42,10 +43,11 @@ import org.opensolaris.opengrok.util.Interner;
  */
 public class Ctags {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Ctags.class);
+
     private Process ctags;
     private OutputStreamWriter ctagsIn;
     private BufferedReader ctagsOut;
-    private static final Logger log = Logger.getLogger(Ctags.class.getName());
     private static final String CTAGS_FILTER_TERMINATOR = "__ctags_done_with_file__";
     //default: setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
     private String binary;
@@ -154,7 +156,7 @@ public class Ctags {
 
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
-                log.log(Level.INFO, "Adding extra options to ctags");
+                LOGGER.log(Level.INFO, "Adding extra options to ctags");
                 command.add("--options=" + CTagsExtraOptionsFile);
             }
 
@@ -163,7 +165,7 @@ public class Ctags {
                 sb.append(s).append(" ");
             }
             String commandStr = sb.toString();
-            log.log(Level.FINE, "Executing ctags command [{0}]", commandStr);
+            LOGGER.log(Level.FINE, "Executing ctags command [{0}]", commandStr);
 
             processBuilder = new ProcessBuilder(command);
         }
@@ -185,10 +187,10 @@ public class Ctags {
                         sb.append('\n');
                     }
                 } catch (IOException exp) {
-                     log.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
+                     LOGGER.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
                 }
                 if (sb.length() > 0) {
-                     log.log(Level.WARNING, "Error from ctags: {0}", sb.toString());
+                    LOGGER.log(Level.WARNING, "Error from ctags: {0}", sb.toString());
                 }
             }
         });
@@ -231,14 +233,14 @@ public class Ctags {
                 String tagLine = ctagsOut.readLine();
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
-                    log.warning("Unexpected end of file!");
+                    LOGGER.warning("Unexpected end of file!");
                     try {
                         int val = ctags.exitValue();
-                        log.log(Level.WARNING, "ctags exited with code: {0}", val);
+                        LOGGER.log(Level.WARNING, "ctags exited with code: {0}", val);
                     } catch (Exception e) {
-                        log.log(Level.WARNING, "Ctags problem: ", e);
+                        LOGGER.log(Level.WARNING, "Ctags problem: ", e);
                     }
-                    log.fine("Ctag read");
+                    LOGGER.fine("Ctag read");
                     return;
                 }
 
@@ -248,7 +250,7 @@ public class Ctags {
 
                 //fix for bug #16334
                 if (tagLine.endsWith(CTAGS_FILTER_TERMINATOR)) {
-                    log.log(Level.WARNING, "ctags encountered a problem while generating tags for the file. The index will be incomplete.");
+                    LOGGER.log(Level.WARNING, "ctags encountered a problem while generating tags for the file. The index will be incomplete.");
                     return;
                 }
 
@@ -323,9 +325,9 @@ public class Ctags {
             //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
             } while (true);
         } catch (Exception e) {
-            log.log(Level.WARNING, "CTags parsing problem: ", e);
+            LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
         }
-        log.severe("CTag reader cycle was interrupted!");
+        LOGGER.severe("CTag reader cycle was interrupted!");
     }
 
     /**

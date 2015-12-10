@@ -54,11 +54,11 @@ import org.apache.lucene.search.spell.DirectSpellChecker;
 import org.apache.lucene.search.spell.SuggestMode;
 import org.apache.lucene.search.spell.SuggestWord;
 import org.apache.lucene.store.FSDirectory;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.index.IndexDatabase;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.search.Summarizer;
 import org.opensolaris.opengrok.search.context.Context;
@@ -73,6 +73,8 @@ import org.opensolaris.opengrok.util.IOUtils;
  * @version $Revision$
  */
 public class SearchHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchHelper.class);
 
     /**
      * max number of words to suggest for spellcheck
@@ -192,7 +194,6 @@ public class SearchHelper {
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
     private ExecutorService executor = null;
-    private static final Logger log = Logger.getLogger(SearchHelper.class.getName());
 
     /**
      * User readable description for file types. Only those listed in
@@ -436,14 +437,14 @@ public class SearchHelper {
                     res.add(s);
                 }
             } catch (IOException e) {
-                log.log(Level.WARNING, "Got exception while getting "
+                LOGGER.log(Level.WARNING, "Got exception while getting "
                         + "spelling suggestions: ", e);
             } finally {
                 if (ir != null) {
                     try {
                         ir.close();
                     } catch (IOException ex) {
-                        log.log(Level.WARNING, "Got exception while "
+                        LOGGER.log(Level.WARNING, "Got exception while "
                                 + "getting spelling suggestions: ", ex);
                     }
                 }
@@ -473,12 +474,12 @@ public class SearchHelper {
             sourceContext = new Context(query, builder.getQueries());
             summerizer = new Summarizer(query, new CompatibleAnalyser());
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Summerizer: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "Summerizer: {0}", e.getMessage());
         }
         try {
             historyContext = new HistoryContext(query);
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "HistoryContext: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "HistoryContext: {0}", e.getMessage());
         }
         return this;
     }
@@ -496,10 +497,8 @@ public class SearchHelper {
             try {
                 executor.shutdown();
             } catch (SecurityException se) {
-                log.warning(se.getLocalizedMessage());
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "destroy", se);
-                }
+                LOGGER.warning(se.getLocalizedMessage());
+                LOGGER.log(Level.FINE, "destroy", se);
             }
         }
     }

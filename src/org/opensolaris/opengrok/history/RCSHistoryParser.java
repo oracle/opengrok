@@ -31,17 +31,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.commons.jrcs.rcs.Archive;
 import org.apache.commons.jrcs.rcs.Node;
 import org.apache.commons.jrcs.rcs.ParseException;
 import org.apache.commons.jrcs.rcs.Version;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 
 /**
  * Virtualise RCS file as a reader, getting a specified version
  */
 class RCSHistoryParser {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RCSHistoryParser.class);
 
     private static File readCVSRoot(File root, File CVSdir, String name) throws IOException {
         String cvsroot = readFirstLine(root);
@@ -141,7 +145,7 @@ class RCSHistoryParser {
                 }
             }
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
+            LOGGER.log(Level.WARNING,
                     "Failed to retrieve CVS file of parent: " + parent + ", name: " + name, e);
         }
         return null;

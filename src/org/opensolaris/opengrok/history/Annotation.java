@@ -37,6 +37,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import java.util.logging.Logger;
+
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -45,13 +47,14 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class Annotation {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Annotation.class);
+
     private final List<Line> lines = new ArrayList<Line>();
     private final Map<String, String> desc = new HashMap<String, String>();
     private final Map<String, Integer> fileVersions = new HashMap<String, Integer>(); //maps revision to file version
     private int widestRevision;
     private int widestAuthor;
     private final String filename;
-    static final Logger log = Logger.getLogger(Annotation.class.getName());
 
     public Annotation(String filename) {
         this.filename = filename;
@@ -231,7 +234,7 @@ public class Annotation {
         try {
             writeTooltipMap(sw);
         } catch (IOException e) {
-            log.finest(e.getMessage());
+            LOGGER.finest(e.getMessage());
         }
 
         return sw.toString();
