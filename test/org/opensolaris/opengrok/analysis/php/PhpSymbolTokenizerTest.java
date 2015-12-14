@@ -32,8 +32,6 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
@@ -46,9 +44,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
  *
  * @author Gustavo Lopes
  */
-public class PhpSymbolTokenizerTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PhpSymbolTokenizerTest.class);
+public class PhpSymbolTokenizerTest {    
 
     private final FileAnalyzer analyzer;
 
@@ -60,12 +56,7 @@ public class PhpSymbolTokenizerTest {
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<>();
         JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs").getTokenStream();
-        try {
-            ts.setReader(r);
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-            throw new RuntimeException(ex);
-        }
+        ts.setReader(r);        
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {

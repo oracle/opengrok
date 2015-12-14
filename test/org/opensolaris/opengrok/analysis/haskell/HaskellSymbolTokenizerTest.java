@@ -57,13 +57,8 @@ public class HaskellSymbolTokenizerTest {
 
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<>();
-        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs").getTokenStream();
-        try {
-            ts.setReader(r);
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-            throw new RuntimeException(ex);
-        }
+        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs").getTokenStream();        
+        ts.setReader(r);        
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
         try {
