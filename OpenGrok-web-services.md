@@ -1,5 +1,5 @@
 ### requirement
-ensure the commits in this [pull request](https://github.com/OpenGrok/OpenGrok/pull/799) is included in your OpenGrok build
+ensure the commits in this [pull request](https://github.com/OpenGrok/OpenGrok/pull/799) are included in your OpenGrok build
 
 ### syntax
 ```bash
