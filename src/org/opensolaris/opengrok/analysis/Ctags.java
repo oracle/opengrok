@@ -17,10 +17,9 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedReader;
@@ -53,9 +52,9 @@ public class Ctags {
     private String binary;
     private String CTagsExtraOptionsFile = null;
     private ProcessBuilder processBuilder;
-    
-    private final int MIN_METHOD_LINE_LENGTH=6; //this means basically empty method body in tags, so skip it
-    private final int MAX_METHOD_LINE_LENGTH=1030; //96 is used by universal ctags for some lines, but it's too low, OpenGrok can theoretically handle 50000 with 8G heap    
+
+    private final int MIN_METHOD_LINE_LENGTH = 6; //this means basically empty method body in tags, so skip it
+    private final int MAX_METHOD_LINE_LENGTH = 1030; //96 is used by universal ctags for some lines, but it's too low, OpenGrok can theoretically handle 50000 with 8G heap    
     // also this might break scopes functionality, if set too low
 
     public void setBinary(String binary) {
@@ -76,17 +75,19 @@ public class Ctags {
     private void initialize() throws IOException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (processBuilder == null) {
-            List<String> command = new ArrayList<>();            
+            List<String> command = new ArrayList<>();
 
             command.add(binary);
             command.add("--c-kinds=+l");
 
             // Workaround for bug #14924: Don't get local variables in Java
-            // code since that creates many false positives. Uncomment the next
-            // line when the bug has been fixed.
-            //only disable if old ctags, enable for universal ctags
+            // code since that creates many false positives.
+            // only disable if old ctags, enable for universal ctags
             if (env.isUniversalCtags()) {
-             command.add("--java-kinds=+l");
+                command.add("--java-kinds=+l");
+                
+                command.add("--langmap=clojure:+.cljs");
+                command.add("--langmap=clojure:+.cljx");
             }
             command.add("--sql-kinds=+l");
             command.add("--Fortran-kinds=+L");
@@ -105,12 +106,10 @@ public class Ctags {
 
             //Ideally all below should be in ctags, or in outside config file,
             //we might run out of command line SOON
-
             //Also note, that below ctags definitions HAVE to be in POSIX
             //otherwise the regexp will not work on some platforms
             //on Solaris regexp.h used is different than on linux (gnu regexp)
             //http://en.wikipedia.org/wiki/Regular_expression#POSIX_basic_and_extended
-
             command.add("--langdef=scala"); // below is bug 61 to get full scala support
             command.add("--langmap=scala:.scala");
             command.add("--regex-scala=/^[[:space:]]*((abstract|final|sealed|implicit|lazy)[[:space:]]*)*(private|protected)?[[:space:]]*class[[:space:]]+([a-zA-Z0-9_]+)/\\4/c,classes/");
@@ -135,9 +134,6 @@ public class Ctags {
             command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
             command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
 
-            command.add("--langmap=clojure:+.cljs");
-            command.add("--langmap=clojure:+.cljx");
-            
             if (!env.isUniversalCtags()) {
                 command.add("--langdef=golang");
                 command.add("--langmap=golang:.go");
@@ -146,7 +142,7 @@ public class Ctags {
                 command.add("--regex-golang=/type[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/t,type/");
 
                 command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/xzj/1518834)
-                command.add("--langmap=clojure:.clj");                
+                command.add("--langmap=clojure:.clj");
                 command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/n,namespace/");
                 command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/d,definition/");
                 command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/f,function/");
@@ -194,7 +190,7 @@ public class Ctags {
                         sb.append('\n');
                     }
                 } catch (IOException exp) {
-                     LOGGER.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
+                    LOGGER.log(Level.WARNING, "Got an exception reading ctags error stream: ", exp);
                 }
                 if (sb.length() > 0) {
                     LOGGER.log(Level.WARNING, "Error from ctags: {0}", sb.toString());
@@ -297,14 +293,14 @@ public class Ctags {
                 int mlength = p - mstart;
                 if ((p > 0) && (mlength > MIN_METHOD_LINE_LENGTH)) {
                     if (mlength < MAX_METHOD_LINE_LENGTH) {
-                    match = tagLine.substring(mstart + 3, p - 4).
-                            replace("\\/", "/").replaceAll("[ \t]+", " ");
+                        match = tagLine.substring(mstart + 3, p - 4).
+                                replace("\\/", "/").replaceAll("[ \t]+", " ");
                     } else {
                         LOGGER.log(Level.FINEST, "Ctags: stripping method body for def {0} line {1}(scopes might break)", new Object[]{def, lnum});
                         match = tagLine.substring(mstart + 3, mstart + MAX_METHOD_LINE_LENGTH - 1). // +3 - 4 = -1
-                            replace("\\/", "/").replaceAll("[ \t]+", " ");
-                    }                    
-                } else {                    
+                                replace("\\/", "/").replaceAll("[ \t]+", " ");
+                    }
+                } else {
                     continue;
                 }
 
@@ -312,8 +308,8 @@ public class Ctags {
                 // seen to prevent duplicating them in memory.
                 final Interner<String> seenSymbols = new Interner<>();
 
-                final String type =
-                        inher == null ? kind : kind + " in " + inher;
+                final String type
+                        = inher == null ? kind : kind + " in " + inher;
                 addTag(defs, seenSymbols, lnum, def, type, match, inher);
                 if (signature != null) {
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
@@ -322,21 +318,21 @@ public class Ctags {
                         //log.fine("Param = "+ arg);
                         int space = arg.lastIndexOf(' ');//TODO this is not the best way, but works to find the last string(name) in the argument, hence skipping type
                         if (space > 0 && space < arg.length()) {
-                            String afters=arg.substring(space+1);
+                            String afters = arg.substring(space + 1);
                             //FIXME this will not work for typeless languages such as python or assignments inside signature ... but since ctags doesn't provide signatures for python yet and assigning stuff in signature is not the case for c or java, we don't care ...
-                            String[] names=afters.split("[\\W]"); //this should just parse out variables, we assume first non empty text is the argument name
+                            String[] names = afters.split("[\\W]"); //this should just parse out variables, we assume first non empty text is the argument name
                             for (String name : names) {
-                             if (name.length()>0) {
-                              //log.fine("Param Def = "+ string);
-                              addTag(defs, seenSymbols, lnum, name, "argument",
-                                     def.trim() + signature.trim(), null);
-                              break;
-                             }
+                                if (name.length() > 0) {
+                                    //log.fine("Param Def = "+ string);
+                                    addTag(defs, seenSymbols, lnum, name, "argument",
+                                            def.trim() + signature.trim(), null);
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
+                //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
             } while (true);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
@@ -354,7 +350,7 @@ public class Ctags {
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
         defs.addTag(Integer.parseInt(lnum), seenSymbols.intern(symbol.trim()),
-            seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
-            scope == null ? null : seenSymbols.intern(scope.trim()));
+                seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
+                scope == null ? null : seenSymbols.intern(scope.trim()));
     }
 }
