@@ -68,6 +68,17 @@ public class PhpXrefTest {
         os.println("</pre></div></body></html>");
     }
 
+    @Test
+    public void japaneseTest() throws IOException {
+        String s = "<?php foo ああ";
+        Writer w = new StringWriter();
+        PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
+        assertEquals(
+                "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> <a href=\"/"
+                        + "source/s?defs=foo\">foo</a> <a href=\"/source/s?defs=ああ\">ああ</a>",
+                w.toString());
+    }
+
     public static void main(String args[]) throws IOException {
         InputStream is = null;
         if (args.length == 0) {
