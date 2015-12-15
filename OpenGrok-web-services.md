@@ -28,7 +28,45 @@ private static final String ATTRIBUTE_RESULT_COUNT = "resultcount"; // attribute
 
 ### response example
 You can take this response for example:
-![https://cloud.githubusercontent.com/assets/1934627/11387094/61a9758e-9362-11e5-901f-89a9b654ead7.png](https://cloud.githubusercontent.com/assets/1934627/11387094/61a9758e-9362-11e5-901f-89a9b654ead7.png)
+```javascript
+{
+  duration: 14618,
+  path: "",
+  resultcount: 4,
+  hist: "",
+  freetext: "Thread",
+  results: [
+    {
+      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
+      filename: "CommonThreadFactory.java",
+      lineno: "18",
+      line: "ICAgIHB1YmxpYyA8Yj5UaHJlYWQ8L2I+IG5ld1RocmVhZChSdW5uYWJsZSByKSB7",
+      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
+    },
+    {
+      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
+      filename: "CommonThreadFactory.java",
+      lineno: "19",
+      line: "ICAgICAgICA8Yj5UaHJlYWQ8L2I+IDxiPnRocmVhZDwvYj4gPSBuZXcgPGI+VGhyZWFkPC9iPihyLCB0aHJlYWROYW1lUHJlZml4",
+      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
+    },
+    {
+      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
+      filename: "CommonThreadFactory.java",
+      lineno: "21",
+      line: "ICAgICAgICA8Yj50aHJlYWQ8L2I+LnNldFByaW9yaXR5KHRoaXMucHJpb3JpdHkpOw==",
+      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
+    },
+    {
+      path: "/my_project/my_path_section1/commonservice/biz/src/com/alipay/mobile/framework/service/common/threadpool/CommonThreadFactory.java",
+      filename: "CommonThreadFactory.java",
+      lineno: "22",
+      line: "ICAgICAgICByZXR1cm4gPGI+dGhyZWFkPC9iPjs=",
+      directory: "\/my_project\/my_path_section1\/commonservice\/biz\/src\/com\/alipay\/mobile\/framework\/service\/common\/threadpool"
+    }
+  ]
+}
+```
 
 ### additional note
 you need to add Access-Control-Allow-Origin header in the [JSONSearchServlet.java](https://github.com/OpenGrok/OpenGrok/blob/8319a89aaa06ff36af7fb04086caf078421086cf/src/org/opensolaris/opengrok/web/JSONSearchServlet.java) when cross-origin request is required.
