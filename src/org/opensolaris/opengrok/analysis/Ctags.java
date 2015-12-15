@@ -53,6 +53,10 @@ public class Ctags {
     private String binary;
     private String CTagsExtraOptionsFile = null;
     private ProcessBuilder processBuilder;
+    
+    private final int MIN_METHOD_LINE_LENGTH=6; //this means basically empty method body in tags, so skip it
+    private final int MAX_METHOD_LINE_LENGTH=1030; //96 is used by universal ctags for some lines, but it's too low, OpenGrok can theoretically handle 50000 with 8G heap    
+    // also this might break scopes functionality, if set too low
 
     public void setBinary(String binary) {
         this.binary = binary;
@@ -80,8 +84,10 @@ public class Ctags {
             // Workaround for bug #14924: Don't get local variables in Java
             // code since that creates many false positives. Uncomment the next
             // line when the bug has been fixed.
-            // command.add("--java-kinds=+l");
-
+            //only disable if old ctags, enable for universal ctags
+            if (env.isUniversalCtags()) {
+             command.add("--java-kinds=+l");
+            }
             command.add("--sql-kinds=+l");
             command.add("--Fortran-kinds=+L");
             command.add("--C++-kinds=+l");
@@ -129,6 +135,9 @@ public class Ctags {
             command.add("--regex-haskell=/^(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
             command.add("--regex-haskell=/[[:space:]]+(let|where)[[:space:]]+([a-zA-Z0-9_]+).*[[:space:]]+={1}[[:space:]]+/\\2/f,functions/");
 
+            command.add("--langmap=clojure:+.cljs");
+            command.add("--langmap=clojure:+.cljx");
+            
             if (!env.isUniversalCtags()) {
                 command.add("--langdef=golang");
                 command.add("--langmap=golang:.go");
@@ -137,9 +146,7 @@ public class Ctags {
                 command.add("--regex-golang=/type[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]+)/\\1/t,type/");
 
                 command.add("--langdef=clojure"); // clojure support (patterns are from https://gist.github.com/xzj/1518834)
-                command.add("--langmap=clojure:.clj");
-                command.add("--langmap=clojure:+.cljs");
-                command.add("--langmap=clojure:+.cljx");
+                command.add("--langmap=clojure:.clj");                
                 command.add("--regex-clojure=/\\([[:space:]]*create-ns[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/n,namespace/");
                 command.add("--regex-clojure=/\\([[:space:]]*def[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/d,definition/");
                 command.add("--regex-clojure=/\\([[:space:]]*defn[[:space:]]+([-[[:alnum:]]*+!_:\\/.?]+)/\\1/f,function/");
@@ -287,10 +294,17 @@ public class Ctags {
                 }
 
                 final String match;
-                if ((p > 0) && (p - mstart > 6)) {
+                int mlength = p - mstart;
+                if ((p > 0) && (mlength > MIN_METHOD_LINE_LENGTH)) {
+                    if (mlength < MAX_METHOD_LINE_LENGTH) {
                     match = tagLine.substring(mstart + 3, p - 4).
                             replace("\\/", "/").replaceAll("[ \t]+", " ");
-                } else {
+                    } else {
+                        LOGGER.log(Level.FINEST, "Ctags: stripping method body for def {0} line {1}(scopes might break)", new Object[]{def, lnum});
+                        match = tagLine.substring(mstart + 3, mstart + MAX_METHOD_LINE_LENGTH - 1). // +3 - 4 = -1
+                            replace("\\/", "/").replaceAll("[ \t]+", " ");
+                    }                    
+                } else {                    
                     continue;
                 }
 
