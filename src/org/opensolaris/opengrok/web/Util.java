@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -64,6 +64,65 @@ public final class Util {
     private static final String SPAN_A = "<span class=\"a\">";
     private static final String SPAN_E = "</span>";
 
+    private static final char[][] specialCharactersRepresentation = new char[63][];
+
+    static {
+        specialCharactersRepresentation[38] = "&amp;".toCharArray();
+        specialCharactersRepresentation[60] = "&lt;".toCharArray();
+        specialCharactersRepresentation[62] = "&gt;".toCharArray();
+        specialCharactersRepresentation[34] = "&#034;".toCharArray();
+        specialCharactersRepresentation[39] = "&#039;".toCharArray();
+    }
+
+    /**
+     * Please use this function to show any variable from servlet getParameter
+     * in a html/js This is to avoid XSS such as
+     * http://OPENGROK_SERVER/source/xref/?r=%27;alert(1)// 
+     * big thnx to Alex Concha alex.concha at automattic.com
+     * - taken from jstl 1.2
+     *
+     * @param buffer
+     * @return
+     */
+    public static String escapeXml(String buffer) {
+        if (buffer == null) {
+            return "";
+        }
+        int start = 0;
+        int length = buffer.length();
+        char[] arrayBuffer = buffer.toCharArray();
+        StringBuffer escapedBuffer = null;
+
+        for (int i = 0; i < length; ++i) {
+            char c = arrayBuffer[i];
+            if (c <= 62) {
+                char[] escaped = specialCharactersRepresentation[c];
+                if (escaped != null) {
+                    if (start == 0) {
+                        escapedBuffer = new StringBuffer(length + 5);
+                    }
+
+                    if (start < i) {
+                        escapedBuffer.append(arrayBuffer, start, i - start);
+                    }
+
+                    start = i + 1;
+                    escapedBuffer.append(escaped);
+                }
+            }
+        }
+
+        if (start == 0) {
+            return buffer;
+        } else {
+            if (start < length) {
+                escapedBuffer.append(arrayBuffer, start, length - start);
+            }
+
+            return escapedBuffer.toString();
+        }
+    }
+
     private Util() {
         // singleton
     }
@@ -92,7 +151,7 @@ public final class Util {
      * Append a character sequence to the given destination whereby special
      * characters for HTML are escaped accordingly.
      *
-     * @param q a character sequence to esacpe
+     * @param q a character sequence to escape
      * @param dest where to append the character sequence to
      * @throws IOException if an error occurred when writing to {@code dest}
      */
@@ -376,10 +435,10 @@ public final class Util {
     }
 
     /**
-     * Generate a regex that matches the specified character. Escape it in case
-     * it is a character that has a special meaning in a regex.
+     * Generate a regexp that matches the specified character. Escape it in case
+     * it is a character that has a special meaning in a regexp.
      *
-     * @param c the character that the regex should match
+     * @param c the character that the regexp should match
      * @return a six-character string on the form <tt>&#92;u</tt><i>hhhh</i>
      */
     private static String escapeForRegex(char c) {
@@ -397,9 +456,9 @@ public final class Util {
 
     /**
      * Convert the given size into a human readable string.
-     * 
-     * NOTE: when changing the output of this function make sure to adapt
-     *       the jQuery tablesorter custom parsers in web/httpheader.jspf
+     *
+     * NOTE: when changing the output of this function make sure to adapt the
+     * jQuery tablesorter custom parsers in web/httpheader.jspf
      *
      * @param num size to convert.
      * @return a readable string
@@ -498,14 +557,14 @@ public final class Util {
             if (enabled) {
                 out.write(anchorClassStart);
                 out.write("r");
-                if( annotation.getFileVersion(r) != 0) {
+                if (annotation.getFileVersion(r) != 0) {
                     /*
                         version number, 1 is the most recent
                         generates css classes version_color_n
-                    */
-                    int versionNumber = Math.max( 1, 
-                                                  annotation.getFileVersionsCount() - 
-                                                  annotation.getFileVersion(r) + 1 );
+                     */
+                    int versionNumber = Math.max(1,
+                            annotation.getFileVersionsCount()
+                            - annotation.getFileVersion(r) + 1);
                     out.write(" version_color_" + versionNumber);
                 }
                 out.write("\" href=\"");
@@ -517,9 +576,9 @@ public final class Util {
                 if (msg != null) {
                     out.write(msg);
                 }
-                if(annotation.getFileVersion(r) != 0) {
-                    out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/" + 
-                              annotation.getFileVersionsCount());
+                if (annotation.getFileVersion(r) != 0) {
+                    out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
+                            + annotation.getFileVersionsCount());
                 }
                 out.write(closeQuotedTag);
             }
@@ -634,7 +693,7 @@ public final class Util {
     }
 
     /**
-     * wrapper arround UTF-8 URL encoding of a string
+     * wrapper around UTF-8 URL encoding of a string
      *
      * @param q query to be encoded. If {@code null}, an empty string will be
      * used instead.
@@ -733,12 +792,16 @@ public final class Util {
         char c;
         for (int i = 0; i < q.length(); i++) {
             c = q.charAt(i);
-            if (c == '"') {
-                sb.append("&quot;");
-            } else if (c == '&') {
-                sb.append("&amp;");
-            } else {
-                sb.append(c);
+            switch (c) {
+                case '"':
+                    sb.append("&quot;");
+                    break;
+                case '&':
+                    sb.append("&amp;");
+                    break;
+                default:
+                    sb.append(c);
+                    break;
             }
         }
         return sb.toString();
@@ -834,7 +897,7 @@ public final class Util {
     }
 
     /**
-     * Just read the given source and dump as is to the given destionation. Does
+     * Just read the given source and dump as is to the given destination. Does
      * nothing, if one or more of the parameters is {@code null}.
      *
      * @param out write destination
@@ -854,7 +917,7 @@ public final class Util {
     }
 
     /**
-     * Silently dump a file to the given destionation. All {@link IOException}s
+     * Silently dump a file to the given destination. All {@link IOException}s
      * gets caught and logged, but not re-thrown.
      *
      * @param out dump destination
@@ -871,7 +934,7 @@ public final class Util {
     }
 
     /**
-     * Silently dump a file to the given destionation. All {@link IOException}s
+     * Silently dump a file to the given destination. All {@link IOException}s
      * gets caught and logged, but not re-thrown.
      *
      * @param out dump destination
@@ -887,15 +950,15 @@ public final class Util {
         }
         try (Reader in = compressed
                 ? new InputStreamReader(new GZIPInputStream(
-                                new FileInputStream(file)))
+                        new FileInputStream(file)))
                 : new FileReader(file)) {
-                            dump(out, in);
-                            return true;
-                        } catch (IOException e) {
-                            LOGGER.log(Level.WARNING,
-                                    "An error occured while piping file " + file + ": ", e);
-                        }
-                        return false;
+            dump(out, in);
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING,
+                    "An error occured while piping file " + file + ": ", e);
+        }
+        return false;
     }
 
     /**
