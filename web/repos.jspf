@@ -21,98 +21,213 @@ CDDL HEADER END
 Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
 
 --%>
+<%@page import="java.util.Set"%>
+<%@page import="org.opensolaris.opengrok.web.Prefix"%>
+<%@page import="org.opensolaris.opengrok.web.ProjectHelper"%>
+<%@page import="java.util.LinkedList"%>
 <%@page import="java.util.Collections"%>
-<%@page import="java.util.TreeMap"%>
 <%@page import="java.util.Comparator"%>
-<%@page import="java.util.Iterator"%>
-<%@page import="java.util.ArrayList"%>
 <%@page import="java.util.Collection"%>
-<%@page import="java.util.Map"%>
-<%@page import="java.util.HashMap"%>
 <%@page import="java.io.File"%>
 <%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
 <%@page import="org.opensolaris.opengrok.history.RepositoryInfo"%>
 <%@page import="org.opensolaris.opengrok.history.Repository"%>
 <%@page import="org.opensolaris.opengrok.web.Util"%>
 <%@page import="org.opensolaris.opengrok.configuration.Project"%>
+<%@page import="org.opensolaris.opengrok.configuration.Group"%>
 <%@page import="java.util.List"%>
 <%@page import="org.opensolaris.opengrok.web.PageConfig"%>
 <%
 {
-    Comparator<Project> comparatorProj = new Comparator<Project>() {
-        public int compare(Project p1, Project p2) {
-            return p1.getDescription().compareTo(p2.getDescription());
-        }
-    };
-
     Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
         public int compare(RepositoryInfo r1, RepositoryInfo r2) {
             return r1.getDirectoryName().compareTo(r2.getDirectoryName());
         }
     };
-
-    List<Project> projects = cfg.getEnv().getProjects();
-    if (projects.size() > 0) {
-        // Create structure for mapping a project to list of related repositories.
-        RuntimeEnvironment env = cfg.getEnv();
-        TreeMap<Project, ArrayList<RepositoryInfo>> map =
-            new TreeMap<Project, ArrayList<RepositoryInfo>>(comparatorProj);
-        for (RepositoryInfo r: env.getRepositories()) {
-            Project proj;
-            String repoPath = env.getPathRelativeToSourceRoot(
-                new File(r.getDirectoryName()), 0);
-            if ((proj = Project.getProject(repoPath)) != null) {
-                ArrayList<RepositoryInfo> values = map.get(proj);
-                if (values == null) {
-                    values = new ArrayList<RepositoryInfo>();
-                    map.put(proj, values);
-                }
-                values.add(r);
-            }
-        }
-
-        // Print table of project-repository mappings.
-        if (map.keySet().size() > 0) { %>
-            <table>
-            <tr>
-            <td><b>Project</b></td>
-            <td><b>SCM type</b></td>
-            <td><b>Parent (branch)</b></td>
-            </tr>
-            <%
-            Iterator<Project> keySetIterator = map.keySet().iterator();
-            while (keySetIterator.hasNext()) {
-                Project proj = keySetIterator.next();
-                ArrayList<RepositoryInfo> repos = map.get(proj);
-                String projDesc = proj.getDescription();
-                Integer cnt = 0;
-                Collections.sort(repos, comparatorRepo);
-                for (RepositoryInfo ri : repos) {
-                    if (cnt != 0) {
-                        projDesc = "";
-                    }
-                    %>
-                    <tr><td><%= Util.htmlize(projDesc) %></td><%
-                    String parent = ri.getParent();
-                    if (parent == null) {
-                        parent = "N/A";
-                    }
-                    String type = ri.getType();
-                    if (type == null) {
-                        type = "N/A";
-                    }
-                    String branch = ri.getBranch();
-                    if (branch == null) {
-                        branch = "N/A";
-                    }
-                    %><td><%= Util.htmlize(type) %></td><%
-                    %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
-                    %></tr><%
-                    cnt++;
-                }
-            }
+    
+    ProjectHelper pHelper = ProjectHelper.getInstance(cfg);
+    if (pHelper.getAllProjects().size() > 0) {
+        Set<Group> groups = pHelper.getGroups();
+        Set<Project> repositories = pHelper.getUngroupedRepositories();
+        if(groups.size() > 0) {
+            // recursively print all groups
             %>
-            </table> <%
+
+            <div class="panel-group projects">
+                <div class="toggle-buttons">
+                    <a href="#" class="accordion_show_all">
+                        <button>Show all</button>
+                    </a>
+                    <a href="#" class="accordion_hide_all">
+                        <button>Hide all</button>
+                    </a>
+                </div>
+            <%
+            LinkedList<Group> stack = new LinkedList<Group>();
+            for ( Group x : groups ) {
+                if(x.getParent() != null) {
+                    continue;
+                }
+                x.setFlag(0);
+                stack.addLast(x);
+            }
+            
+            while ( ! stack.isEmpty() ) {
+                Group group = stack.element();
+                
+                if(group.getFlag() > 0) {
+                    // already processed
+                    stack.pollFirst();
+                    %></div><!-- body -->
+                    </div><!-- panel --><%
+                    continue;
+                }
+                
+                stack.element().setFlag(1);
+                
+                for ( Group x : group.getSubgroups()) {
+                    x.setFlag(0);
+                    stack.addFirst(x);
+                }
+                
+                %><div class="panel">
+                    <div class="panel-heading-accordion">
+                        
+                        <h2><span class="name"><%= Util.htmlize(group.getName()) %></span> <small>[<a href="#" class="projects_select_all">select all</a>]</small></h2>
+                    </div>
+                    <div class="panel-body-accordion">
+                <%
+                if(group.getRepositories().size() > 0 ) {
+                %>
+                    <table>
+                    <thead>
+                    <tr>
+                    <td><b>Mirror</b></td>
+                    <td><b>SCM type</b></td>
+                    <td><b>Parent (branch)</b></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <%
+                    for ( Project project : group.getRepositories()) {
+                        List<RepositoryInfo> repos = pHelper.getRepositoryInfo(project);
+                        String projDesc = project.getDescription();
+                        Integer cnt = 0;
+                        Collections.sort(repos, comparatorRepo);
+                        %>
+                        <%
+                        for (RepositoryInfo ri : repos) {
+                            if (cnt != 0) {
+                                projDesc = "";
+                            }
+                            %>
+                            <tr>
+                                <td class="name">
+                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
+                       title="Xref for project <%= Util.htmlize(projDesc) %>">
+                        <%= Util.htmlize(projDesc) %>
+                    </a>
+                                </td><%
+                            String parent = ri.getParent();
+                            if (parent == null) {
+                                parent = "N/A";
+                            }
+                            String type = ri.getType();
+                            if (type == null) {
+                                type = "N/A";
+                            }
+                            String branch = ri.getBranch();
+                            if (branch == null) {
+                                branch = "N/A";
+                            }
+                            %><td><%= Util.htmlize(type) %></td><%
+                            %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                            %></tr><%
+                            cnt++;
+                        }
+                    }
+
+                    %></tbody>
+                    </table><%
+                } else if ( group.getRepositories().size() <= 0 && group.getSubgroups().size() <= 0 ) {
+                    %>No projects<%
+                }
+            }
+            %></div><%
+        }    
+    
+        // print the rest of projects which don't have a group
+        if (repositories.size() > 0) { %>
+            <div class="panel-group projects">
+                <% if(groups.size() > 0) { %>
+                    <div class="toggle-buttons">
+                        <a href="#" class="accordion_show_all">
+                            <button>Show all</button>
+                        </a>
+                        <a href="#" class="accordion_hide_all">
+                            <button>Hide all</button>
+                        </a>
+                    </div>
+                <% } %>
+                <div class="panel">
+                    <% if(groups.size() > 0) {%>
+                        <div class="panel-heading-accordion">
+                            <h2><span class="name">Other</span> 
+                                <small>[<a href="#" class="projects_select_all">select all</a>]</small>
+                            </h2>
+                        </div>
+                    <% } %>
+                    <div class="panel-body<% if(groups.size() > 0) {%>-accordion<% } %>">
+                        <table>
+                            <thead>
+                        <tr>
+                        <td><b>Mirror</b></td>
+                        <td><b>SCM type</b></td>
+                        <td><b>Parent (branch)</b></td>
+                        </tr>
+                            </thead>
+                            <tbody>
+                        <%
+                        for ( Project proj : repositories) {
+                            List<RepositoryInfo> repos = pHelper.getRepositoryInfo(proj);
+                            String projDesc = proj.getDescription();
+                            Integer cnt = 0;
+                            Collections.sort(repos, comparatorRepo);
+                            for (RepositoryInfo ri : repos) {
+                                if (cnt != 0) {
+                                    projDesc = "";
+                                }
+                                %>
+                                <tr><td class="name">
+                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
+                       title="Xref for project <%= Util.htmlize(projDesc) %>">
+                        <%= Util.htmlize(projDesc) %>
+                    </a>
+                                    </td><%
+                                String parent = ri.getParent();
+                                if (parent == null) {
+                                    parent = "N/A";
+                                }
+                                String type = ri.getType();
+                                if (type == null) {
+                                    type = "N/A";
+                                }
+                                String branch = ri.getBranch();
+                                if (branch == null) {
+                                    branch = "N/A";
+                                }
+                                %><td><%= Util.htmlize(type) %></td><%
+                                %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                %></tr><%
+                                cnt++;
+                            }
+                        }
+                        %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div><%
         }
     }
 }

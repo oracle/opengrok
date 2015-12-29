@@ -309,6 +309,34 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Do we have groups?
+     *
+     * @return true if we have groups
+     */
+    public boolean hasGroups() {
+        return (getGroups() != null && !getGroups().isEmpty());
+    }
+
+    /**
+     * Get all of the groups
+     *
+     * @return a set containing all of the groups (may be null)
+     */
+    public Set<Group> getGroups() {
+        return threadConfig.get().getGroups();
+    }
+
+    /**
+     * Set the list of the groups
+     *
+     * @param groups the set of groups to use
+     */
+    public void setGroups(Set<Group> groups) {
+        threadConfig.get().setGroups(groups);
+    }
+
+    
+    /**
      * Register this thread in the thread/configuration map (so that all
      * subsequent calls to the RuntimeEnvironment from this thread will use the
      * same configuration

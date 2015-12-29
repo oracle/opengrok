@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
+ /*
+ * Copyright 2006, 2015, Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.configuration;
@@ -26,11 +26,13 @@ package org.opensolaris.opengrok.configuration;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * Placeholder for the information that builds up a project
  */
-public class Project {
+public class Project implements Comparable<Project> {
+
     private String path;
     // this variable is very important, since it's used as the project identifier
     // all over xrefs and webapp
@@ -45,6 +47,7 @@ public class Project {
 
     /**
      * Get a textual description of this project
+     *
      * @return a textual description of the project
      */
     public String getDescription() {
@@ -53,6 +56,7 @@ public class Project {
 
     /**
      * Get the path (relative from source root) where this project is located
+     *
      * @return the relative path
      */
     public String getPath() {
@@ -61,6 +65,7 @@ public class Project {
 
     /**
      * Get the project id
+     *
      * @return the id of the project
      */
     public String getId() {
@@ -78,7 +83,9 @@ public class Project {
     }
 
     /**
-     * Set a textual description of this project, prefferably don't use " , " in the name, since it's used as delimiter for more projects
+     * Set a textual description of this project, prefferably don't use " , " in
+     * the name, since it's used as delimiter for more projects
+     *
      * @param description a textual description of the project
      */
     public void setDescription(String description) {
@@ -86,18 +93,20 @@ public class Project {
     }
 
     /**
-     * Set the path (relative from source root) this project is located
-     * It seems that you should ALWAYS prefix the path with current file.separator , current environment should always have it set up
+     * Set the path (relative from source root) this project is located It seems
+     * that you should ALWAYS prefix the path with current file.separator ,
+     * current environment should always have it set up
+     *
      * @param path the relative path from source sroot where this project is
-     *             located.
+     * located.
      */
     public void setPath(String path) {
         this.path = path;
     }
 
     /**
-     * Set tab size for this project. Used for expanding tabs to spaces
-     * in xrefs.
+     * Set tab size for this project. Used for expanding tabs to spaces in
+     * xrefs.
      *
      * @param tabSize the size of tabs in this project
      */
@@ -117,9 +126,10 @@ public class Project {
 
     /**
      * Get the project for a specific file
+     *
      * @param path the file to lookup (relative from source root)
      * @return the project that this file belongs to (or null if the file
-     *         doesn't belong to a project)
+     * doesn't belong to a project)
      */
     public static Project getProject(String path) {
         Project ret = null;
@@ -140,9 +150,10 @@ public class Project {
 
     /**
      * Get the project for a specific file
+     *
      * @param file the file to lookup
      * @return the project that this file belongs to (or null if the file
-     *         doesn't belong to a project)
+     * doesn't belong to a project)
      */
     public static Project getProject(File file) {
         Project ret = null;
@@ -157,7 +168,9 @@ public class Project {
     }
 
     /**
-     * Returns project object by its description, used in webapp to figure out which project is to be searched
+     * Returns project object by its description, used in webapp to figure out
+     * which project is to be searched
+     *
      * @param desc description of the project
      * @return project that fits the description
      */
@@ -173,4 +186,34 @@ public class Project {
         }
         return ret;
     }
+
+    @Override
+    public int compareTo(Project p2) {
+        return getDescription().toUpperCase(Locale.getDefault()).compareTo(p2.getDescription().toUpperCase(Locale.getDefault()));
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 41 * hash + (this.description == null ? 0 : this.description.toUpperCase(Locale.getDefault()).hashCode());
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Project other = (Project) obj;
+        return !(this.description != other.description
+                && (this.description == null
+                || !this.description.toUpperCase(Locale.getDefault()).equals(other.description.toUpperCase(Locale.getDefault()))));
+    }
+
 }

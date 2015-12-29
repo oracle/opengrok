@@ -71,6 +71,21 @@ label {
 	color: #a52a2a;
 }
 
+/*
+ * Project list on the index page
+ */
+.projects {
+    list-style-type: none; 
+}
+
+.projects .panel-body {
+    display: block;
+}
+
+.projects .toggle-buttons {
+    display: none;
+}
+
 /* ############### start of header ############## */
 #whole_header {
 	display: none;

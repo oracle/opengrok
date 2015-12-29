@@ -22,7 +22,12 @@ Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="org.opensolaris.opengrok.web.SearchHelper"%>
+--%><%@page import="java.util.TreeSet"%>
+<%@page import="java.util.Set"%>
+<%@page import="java.util.LinkedList"%>
+<%@page import="org.opensolaris.opengrok.configuration.Group"%>
+<%@page import="org.opensolaris.opengrok.web.ProjectHelper"%>
+<%@page import="org.opensolaris.opengrok.web.SearchHelper"%>
 <%@page import="java.util.Map"%>
 <%@page import="
 java.util.SortedSet,
@@ -41,12 +46,12 @@ org.opensolaris.opengrok.web.Util"
 /* ---------------------- menu.jspf start --------------------- */
 {
     // PageConfig cfg = PageConfig.get(request);
-
-    List<Project> projects = cfg.getEnv().getProjects();
+    ProjectHelper ph = ProjectHelper.getInstance(cfg);
+    Set<Project> projects = ph.getAllProjects();
     if (projects == null) {
-        projects = new ArrayList<Project>(0);
+        projects = new TreeSet<>();
     }
-    TreeMap<String, String> pMap = new TreeMap<String, String>();
+    TreeMap<String, String> pMap = new TreeMap<>();
     QueryBuilder queryParams = cfg.getQueryBuilder();
     if (projects.size() != 0) {
         for (Project p : projects) {
@@ -164,24 +169,46 @@ org.opensolaris.opengrok.web.Util"
         >select all</button>&nbsp;<button tabindex="7" type="button"
         onclick="javascript: invertAllProjects(); return false;"
         >invert selection</button> </p>
-    <select tabindex="8" ondblclick="javascript: goFirstProject();"
+    <select tabindex="8" ondblclick="javascript: goFirstProject(event);"
         onkeyup="javascript: checkEnter(event);" class="q" id="project"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projects.size()) %>"><%
         SortedSet<String> pRequested = cfg.getRequestedProjects();
-        for (Entry<String,String> e : pMap.entrySet()) {
-            // TODO below "selected" has no effect if one refreshes the page
-            // with F5 also below ondblclick doesn't work in IE ...
-            // ondblclick="javascript:goFirstProject();"
-        %>
-        <option value="<%= e.getValue() %>"<%
-            if (pRequested.contains(e.getKey())) {
-            %> selected="selected"<%
+        for ( Group group : ph.getGroups() ) {
+            Set<Project> groupProjects = ph.getAllGrouped(group);
+            if ( groupProjects.size() > 0) {
+                %><optgroup label="<%= group.getName() %>"><%
+                for (Project p : groupProjects) {
+                // TODO below "selected" has no effect if one refreshes the page
+                // with F5 also below ondblclick doesn't work in IE ...
+                // ondblclick="javascript:goFirstProject();"
+
+                %><option value="<%= p.getDescription() %>"<%
+                    if (pRequested.contains(p.getDescription())) {
+                        %> selected="selected"<%
+                    }
+                    %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
+                }
+                %></optgroup><%
             }
-            %>><%= e.getValue() %></option><%
         }
-        %>
-    </select>
+  
+        if(ph.getGroups().size() > 0) {
+            %><optgroup label="Other"><%
+        }
+        for ( Project p : ph.getAllUngrouped()) {
+        %><option value="<%= p.getDescription() %>"<%
+            if (pRequested.contains(p.getDescription())) {
+                %> selected="selected"<%
+            }
+            %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
+        }
+        if(ph.getGroups().size() > 0) {
+            %></optgroup><%
+        }
+
+
+    %></select>
 </div><%
     }
     %>
