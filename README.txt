@@ -43,7 +43,7 @@ Offical page of the project is on:
       http://tomcat.apache.org/
     * Exuberant Ctags or Universal Ctags
       http://ctags.sourceforge.net/
-      http://github.io/uctags
+      https://ctags.io/
     * Source Code Management installation
       depending on type of repositories indexed
     * If you want to build OpenGrok:
