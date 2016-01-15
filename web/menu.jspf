@@ -167,7 +167,7 @@ org.opensolaris.opengrok.web.Util"
     <select tabindex="8" ondblclick="javascript: goFirstProject();"
         onkeyup="javascript: checkEnter(event);" class="q" id="project"
         name="project" multiple="multiple" size="<%=
-        Math.min(6, projects.size()) %>"><%
+        Math.min(15, projects.size()) %>"><%
         SortedSet<String> pRequested = cfg.getRequestedProjects();
         for (Entry<String,String> e : pMap.entrySet()) {
             // TODO below "selected" has no effect if one refreshes the page
