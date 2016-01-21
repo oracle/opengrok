@@ -55,6 +55,22 @@ public class PhpXrefTest {
                 w.toString());
     }
 
+    @Test
+    public void basicSingleQuotedStringTest() throws IOException {
+        String s = "<?php define(\"FOO\", 'BAR\\'\"'); $foo='bar'; $hola=\"ls\"; $hola=''; $hola=\"\";";
+        Writer w = new StringWriter();
+        PhpAnalyzer.writeXref(new StringReader(s), w, null, null, null);
+        assertEquals(
+                "<a class=\"l\" name=\"1\" href=\"#1\">1</a><strong>&lt;?php</strong> "
+                + "<a href=\"/source/s?defs=define\" onmouseover=\"onMouseOverSymbol('define', 'undefined-in-file')\">define</a>(<span class=\"s\">\"FOO\"</span>, <span class=\"s\">'BAR<strong>\\'</strong>\"'</span>); "
+                + "$<a href=\"/source/s?defs=foo\" onmouseover=\"onMouseOverSymbol('foo', 'undefined-in-file')\">foo</a>=<span class=\"s\">'bar'</span>; "
+                + "$<a href=\"/source/s?defs=hola\" onmouseover=\"onMouseOverSymbol('hola', 'undefined-in-file')\">hola</a>=<span class=\"s\">\"ls\"</span>; "
+                + "$<a href=\"/source/s?defs=hola\" onmouseover=\"onMouseOverSymbol('hola', 'undefined-in-file')\">hola</a>=<span class=\"s\">''</span>; "
+                + "$<a href=\"/source/s?defs=hola\" onmouseover=\"onMouseOverSymbol('hola', 'undefined-in-file')\">hola</a>=<span class=\"s\">\"\"</span>;",
+                w.toString());
+    }
+
+
     public static void writePhpXref(InputStream is, PrintStream os) throws IOException {
         os.println(
                 "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" /><link rel=\"stylesheet\" type=\"text/css\" "
