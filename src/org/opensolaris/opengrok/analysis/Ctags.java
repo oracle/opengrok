@@ -79,15 +79,16 @@ public class Ctags {
 
             command.add(binary);
             command.add("--c-kinds=+l");
-
-            // Workaround for bug #14924: Don't get local variables in Java
-            // code since that creates many false positives.
-            // CtagsTest : bug14924 "too many methods" guards for this
-            // command.add("--java-kinds=+l");
-            
+                        
             if (env.isUniversalCtags()) {                                
                 command.add("--langmap=clojure:+.cljs");
                 command.add("--langmap=clojure:+.cljx");
+                
+            // Workaround for bug #14924: Don't get local variables in Java
+            // code since that creates many false positives.
+            // CtagsTest : bug14924 "too many methods" guards for this
+            // universal ctags are however safe, so enabling for them
+                command.add("--java-kinds=+l");
             }
             command.add("--sql-kinds=+l");
             command.add("--Fortran-kinds=+L");
