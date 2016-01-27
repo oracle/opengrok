@@ -22,6 +22,7 @@
  */
 package org.opensolaris.opengrok.configuration;
 
+import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
@@ -41,9 +42,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.history.RepositoryInfo;
@@ -77,6 +81,7 @@ public final class Configuration {
     private boolean historyCacheInDB;
 
     private List<Project> projects;
+    private Set<Group> groups;
     private String sourceRoot;
     private String dataRoot;
     private List<RepositoryInfo> repositories;
@@ -214,6 +219,7 @@ public final class Configuration {
         setHistoryCacheTime(30);
         setHistoryCacheInDB(false);
         setProjects(new ArrayList<Project>());
+        setGroups(new TreeSet<Group>());
         setRepositories(new ArrayList<RepositoryInfo>());
         setUrlPrefix("/source/s?");
         //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
@@ -388,6 +394,28 @@ public final class Configuration {
         this.projects = projects;
     }
 
+    /**
+     * Adds a group to the set. This is performed upon configuration parsing
+     *
+     * @param group group
+     * @throws IOException when group is not unique across the set
+     */
+    public void addGroup(Group group) throws IOException {
+        if (!groups.add(group)) {
+            throw new IOException(
+                    String.format("Duplicate group name '%s' in configuration.",
+                            group.getName()));
+        }
+    }
+
+    public Set<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
+    }
+    
     public String getSourceRoot() {
         return sourceRoot;
     }
@@ -819,17 +847,65 @@ public final class Configuration {
         ret = decodeObject(in);
         return ret;
     }
-
+    
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
-        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in))) {
+        final LinkedList<Exception> exceptions = new LinkedList<Exception>();
+        ExceptionListener listener = new ExceptionListener() {
+            @Override
+            public void exceptionThrown(Exception e) {
+                exceptions.addLast(e);
+            }
+        };
+
+        try (XMLDecoder d = new XMLDecoder(new BufferedInputStream(in), null, listener)) {
             ret = d.readObject();
         }
 
         if (!(ret instanceof Configuration)) {
             throw new IOException("Not a valid config file");
         }
-        return (Configuration) ret;
+
+        if (!exceptions.isEmpty()) {
+            // There was an exception during parsing.
+            // see {@code addGroup}
+            if (exceptions.getFirst() instanceof IOException) {
+                throw (IOException) exceptions.getFirst();
+            }
+            throw new IOException(exceptions.getFirst());
+        }
+
+        Configuration conf = ((Configuration) ret);        
+        
+        // Removes all non root groups.
+        // This ensures that when the configuration is reloaded then the set 
+        // contains only root groups. Subgroups are discovered again
+        // as follows below
+        conf.groups.removeIf(new Predicate<Group>() {
+            @Override
+            public boolean test(Group g) {
+                return g.getParent() != null;
+            }
+        });
+
+        // Traversing subgroups and checking for duplicates,
+        // effectively transforms the group tree to a structure (Set)
+        // supporting an iterator.
+        TreeSet<Group> copy = new TreeSet<Group>();
+        LinkedList<Group> stack = new LinkedList<Group>(conf.groups);
+        while (!stack.isEmpty()) {
+            Group group = stack.pollFirst();
+            stack.addAll(group.getSubgroups());
+            
+            if (!copy.add(group)) {
+                throw new IOException(
+                        String.format("Duplicate group name '%s' in configuration.",
+                                group.getName()));
+            }
+        }
+        conf.setGroups(copy);
+
+        return conf;
     }
 
 }

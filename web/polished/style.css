@@ -101,6 +101,104 @@ label {
 }
 
 /*
+ * Project list on the index page
+ */
+.projects {
+    list-style-type: none; 
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+.panel {
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-color: #ddd;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 4px;
+}
+
+.projects > .toggle-buttons {
+  margin-left: 1%;
+  margin-right: 1%;
+  border: none; 
+  text-align: right;
+}
+
+.projects > .panel {
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+          box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+  margin-left: 1%;
+  margin-right: 1%;
+}
+
+.projects .panel-body-accordion {
+    display: none;
+}
+
+.panel > .panel-heading, .panel > .panel-heading-accordion {
+  padding: 0 15px;
+  border-bottom: 1px solid transparent;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  color: #333;
+  background-color: #D8DBD7;
+  border-color: #ddd;
+}
+
+.panel > .panel-heading:hover,
+.panel > .panel-heading-accordion:hover {
+    cursor: pointer;
+}
+
+.panel > .panel-heading h1,
+.panel > .panel-heading h2,
+.panel > .panel-heading h3,
+.panel > .panel-heading h4,
+.panel > .panel-heading h5,
+.panel > .panel-heading h6,
+.panel > .panel-heading-accordion h1,
+.panel > .panel-heading-accordion h2,
+.panel > .panel-heading-accordion h3,
+.panel > .panel-heading-accordion h4,
+.panel > .panel-heading-accordion h5,
+.panel > .panel-heading-accordion h6 {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin: 0;
+}
+
+.panel > .panel-body, .panel > .panel-body-accordion {
+  padding: 15px;
+}
+
+.panel-group {
+  margin-bottom: 20px;
+}
+
+.panel-group .panel {
+  margin-bottom: 0;
+  border-radius: 4px;
+}
+
+.panel-group .panel + .panel {
+  margin-top: 0px;
+}
+
+.panel-group .panel-heading, .panel-group .panel-heading-accordion {
+  border-bottom: 0;
+}
+
+.panel-body > table, .panel-body-accordion > table {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.panel-body > table:last-child, .panel-body-accordion > table:last-child {
+  margin-bottom: 0;
+}
+
+/*
  * Changesets colorization
  * 1 is the most recent changeset
  * class is set in web/Util.java

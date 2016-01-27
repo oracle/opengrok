@@ -17,18 +17,10 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +30,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,6 +37,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.history.RepositoryInfo;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test the RuntimeEnvironment class
@@ -133,6 +132,26 @@ public class RuntimeEnvironmentTest {
         assertEquals(p, Project.getProject(file));
         instance.setProjects(null);
         assertNull(instance.getProjects());
+    }
+
+    @Test
+    public void testGroups() throws IOException {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        assertFalse(instance.hasGroups());
+        assertNotNull(instance.getGroups());
+        assertEquals(0, instance.getGroups().size());
+
+        Group g = new Group();
+        g.setName("Random");
+        g.setPattern("xyz.*");
+
+        instance.getGroups().add(g);
+        assertEquals(1, instance.getGroups().size());
+        assertEquals(g, instance.getGroups().iterator().next());
+        assertEquals("Random", instance.getGroups().iterator().next().getName());
+
+        instance.setGroups(null);
+        assertNull(instance.getGroups());
     }
 
     @Test
