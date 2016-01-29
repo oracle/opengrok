@@ -945,6 +945,9 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestLine 65536
   LimitRequestFieldSize 65536
 
+Open File hard and soft limits
+The initial index creation process is resource intensive and often the error "java.io.IOException: error=24, Too many open files" appears in the logs. To avoid this increase the ulimit value to a higher number. 
+It is noted that the hard and soft limit for open files of 10240 works for mid sized repositores and so the recommendation is to start with 10240.
 
 11. Authors
 -----------
