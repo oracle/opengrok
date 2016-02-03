@@ -81,8 +81,8 @@ public class PerforceRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("annotate");
-        cmd.add("-q");
-        cmd.add(file.getPath() + ((rev == null) ? "" : "#" + rev));
+        cmd.add("-qci");
+        cmd.add(file.getPath() + getRevisionCmd(rev));
 
         Executor executor = new Executor(cmd, file.getParentFile());
         executor.exec();
@@ -117,7 +117,7 @@ public class PerforceRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("print");
         cmd.add("-q");
-        cmd.add(basename + ((rev == null) ? "" : "#" + rev));
+        cmd.add(basename + getRevisionCmd(rev));
         Executor executor = new Executor(cmd, new File(parent));
         executor.exec();
         return new ByteArrayInputStream(executor.getOutputString().getBytes());
@@ -225,5 +225,16 @@ public class PerforceRepository extends Repository {
     @Override
     String determineBranch() {
         return null;
+    }
+    /**
+     * Parse internal rev number and returns it in format suitable for P4 command-line.
+     * @param rev Internal rev number.
+     * @return rev number formatted for P4 command-line.
+     */
+    public static String getRevisionCmd(String rev) {
+        if(rev == null || "".equals(rev)) {
+            return "";
+        }
+        return "@" + rev;
     }
 }

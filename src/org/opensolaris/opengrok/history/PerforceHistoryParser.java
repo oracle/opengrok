@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -86,15 +86,15 @@ public class PerforceHistoryParser {
         ArrayList<String> cmd = new ArrayList<String>();
         cmd.add("p4");
         cmd.add("filelog");
-        cmd.add("-lt");
-        cmd.add(file.getName() + ((rev == null) ? "" : "#"+rev));
+        cmd.add("-lti");
+        cmd.add(file.getName() + PerforceRepository.getRevisionCmd(rev));
         Executor executor = new Executor(cmd, file.getCanonicalFile().getParentFile());
         executor.exec();
 
         return parseFileLog(executor.getOutputReader());
     }
 
-    private static final Pattern REVISION_PATTERN = Pattern.compile("#(\\d+) change \\d+ \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
+    private static final Pattern REVISION_PATTERN = Pattern.compile("#\\d+ change (\\d+) \\S+ on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)");
     private static final Pattern CHANGE_PATTERN = Pattern.compile("Change (\\d+) on (\\d{4})/(\\d{2})/(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2}) by ([^@]+)@\\S* '([^']*)'");
 
     /**
@@ -118,7 +118,7 @@ public class PerforceHistoryParser {
                 matcher.reset(line);
                 if (matcher.find()) {
                     HistoryEntry entry = new HistoryEntry();
-                    entry.setRevision(matcher.group(1));
+                    entry.setRevision(matcher.group(1)); 
                     int year = Integer.parseInt(matcher.group(2));
                     int month = Integer.parseInt(matcher.group(3));
                     int day = Integer.parseInt(matcher.group(4));
