@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%--
@@ -40,7 +40,7 @@ org.opensolaris.opengrok.web.Util"%><%
     cfg = PageConfig.get(request);
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
-        if (redir == null) {
+        if (redir == null) {            
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
             response.sendRedirect(redir);
