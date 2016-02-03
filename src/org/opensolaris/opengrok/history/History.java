@@ -72,6 +72,20 @@ public class History {
     }
 
     /**
+     * Get the list of log entries, most recent first.
+     * With parameters
+     * @param limit max number of entries
+     * @param offset starting position
+     *
+     * @return The list of entries in this history
+     */
+    public List<HistoryEntry> getHistoryEntries(int limit, int offset) {
+        offset = offset < 0 ? 0 : offset;
+        limit = offset + limit > entries.size() ? limit = entries.size() - offset : limit;
+        return entries.subList(offset, offset + limit);
+    }    
+    
+    /**
      * Check if at least one history entry has a file list.
      *
      * @return {@code true} if at least one of the entries has a non-empty
