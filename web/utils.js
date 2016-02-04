@@ -21,7 +21,6 @@
  * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
-
 (function(window, $){
     /*
      * DiffJumper module
@@ -598,6 +597,188 @@
     };
 })(jQuery);
 
+(function(window, $) {
+   
+    var hash = function () {
+        var inner = {
+            self: this,
+            initialized: false,
+            highlighted: [],
+            defaults: {
+              highlightedClass: 'target',
+              linkSelectorTemplate: '{parent} a[name={n}]',
+              clickSelector: '{parent} a.l, {parent} a.hl',
+              parent: 'div#src',
+              autoScroll: true,
+              autoScrollDuration: 500,
+              tooltip: true
+            },
+            options: {},
+            $tooltip: null,
+            bindClickHandler: function() {
+                $(inner.format(inner.options.clickSelector, {parent: inner.options.parent})).click (function (e){
+                    if(e.shiftKey) {
+                        // shift pressed
+                        var val = inner.toInt($(this).attr("name"))
+                        if(!val){
+                            return false
+                        }
+
+                        var l = inner.getLinesParts(window.location.hash)
+
+                        if(l.length == 2) {
+                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(val, l[1])
+                        } else if ( l.length == 1){
+                            window.location.hash = "#" + Math.min(l[0], val) + "-" + Math.max(l[0], val) 
+                        }
+                        return false
+                    }
+                    return true
+                })                    
+            },
+            
+            getHashParts: function (hash) {
+                if(!hash || hash == "")
+                    return hash;
+                return (hash = hash.split("#")).length > 1 ? hash[1] : "";
+            },
+
+            getLinesParts: function ( hashPart ) {
+              hashPart = inner.getHashParts(hashPart)
+              if (!hashPart || hashPart == "")
+                  return hashPart;
+              var s = hashPart.split("-")
+              if(s.length > 1 && inner.toInt(s[0]) && inner.toInt(s[1]))
+                  return [ inner.toInt(s[0]), inner.toInt(s[1]) ]
+              if(s.length > 0 && inner.toInt(s[0]))
+                  return [ inner.toInt(s[0]) ]
+              return []
+            },
+
+            lines: function (urlPart) {
+                p = inner.getLinesParts(urlPart)
+                if(p.length == 2) {
+                    var l = [];
+                    for ( var i = Math.min(p[0],p[1]); i <= Math.max(p[0], p[1]); i ++ )
+                        l.push(i);
+                    return l;
+                } else if (p.length == 1){
+                    return [ p[0] ]
+                }
+                return [];
+            },
+        
+
+            reload: function(e){
+                for ( var i = 0; i < inner.highlighted.length; i ++ ) {
+                    // remove color
+                    inner.highlighted[i].removeClass(inner.options.highlightedClass)
+                }
+                inner.highlighted = []
+
+                var lines = inner.lines(window.location.hash);
+
+                if(lines.length < 1) {
+                    // not a case of line highlighting
+                    return
+                }
+
+                for ( var i = 0; i < lines.length; i ++ ) {
+                    // color
+                    var slc = inner.format(inner.options.linkSelectorTemplate, { "parent": inner.options.parent,
+                                                                                  "n": lines[i] } );
+                    var el = $(slc).addClass(inner.options.highlightedClass)
+                    inner.highlighted.push(el)
+                }                   
+            },
+            format: function(format) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                args = args.length > 0 ? typeof args[0] === "object" ? args[0] : args : args;
+                return format.replace(/{([a-zA-Z0-9_-]+)}/g, function(match, number) {
+                  return typeof args[number] != 'undefined'
+                    ? args[number] 
+                    : match
+                  ;
+                });
+            },
+            toInt: function (string) {
+                return parseInt(string)
+            },
+            scroll: function (){
+                if(!inner.options.autoScroll)
+                    return
+   
+                var lines = inner.getLinesParts(window.location.hash);
+                if(lines.length > 0) {
+                   var line = lines[0] // first line
+                   $("*").animate({
+                      scrollTop: $(inner.format(inner.options.linkSelectorTemplate, {
+                          parent: inner.options.parent,
+                          n: line
+                      })).offset().top - $(inner.options.parent).offset().top
+                   }, inner.options.autoScrollDuration);
+                }
+            },
+            tooltip: function() {
+                if(!inner.options.tooltip)
+                    return
+                
+                inner.$tooltip = inner.$tooltip ? 
+                                    inner.$tooltip :
+                                    $("<div>Did you know? You can select a range of lines<br /> by clicking on the other while holding shift key.</div>")
+                                    .appendTo($("body"))
+                                    .hide()
+                                    .addClass("tooltip")
+                                    .addClass("diff_navigation_style")
+                
+                
+                $(inner.format(inner.options.clickSelector, {parent: inner.options.parent}))
+                .click(function(e) {
+                    if(!inner.options.tooltip)
+                        return
+                   // show box
+                   var $el = $(this)
+                   setTimeout(function () {
+                    inner.$tooltip
+                            .show()
+                            .stop()
+                            .fadeIn()
+                            .fadeOut( 5000 )
+                            .offset({ 
+                                top: $el.offset().top + 20, 
+                                left: $el.offset().left + $el.width() + 5 
+                            });
+                   }, 300);
+                   inner.options.tooltip = false;
+                })
+            }
+        } // inner
+        
+        this.init = function (options) {
+            if ( inner.initialized ) {
+                return this;
+            }
+
+            inner.options = $.extend(inner.defaults, options, {})
+            
+            $(window).bind("hashchange", inner.reload )
+            
+            inner.reload()
+            
+            inner.tooltip()
+            
+            inner.bindClickHandler()
+            
+            inner.scroll()
+
+            inner.initialized = true
+            
+            return this;
+        }
+    }
+    $.hash = new ($.extend(hash, $.hash ? $.hash : {}));
+}) (window, window.jQuery);
+
 $(document).ready(function () {
     $(".projects").accordion()
 
@@ -605,6 +786,8 @@ $(document).ready(function () {
 
     // starting spaces plugin
     $.spaces.init()
+    
+    $.hash.init({ parent: "pre"})
     
     $(".projects_select_all").click(function (e) {
         var projects = $(this).closest(".panel").find("table tbody tr, .panel-heading table tbody tr")
@@ -626,7 +809,6 @@ $(document).ready(function () {
         return false;
     });
 });
-
 
 /*
  * Portions Copyright 2011 Jens Elkner.
