@@ -749,6 +749,80 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
        display: none;
 }
 
+/**** DIFF NAVIGATION/JUMPER *****/
+
+.diff_navigation_style {
+    border: solid 1px #c0c0c0;
+    border-radius: 5px;
+    box-shadow: 10px 10px 5px #888888;
+    background-color: rgb(255,255,204);
+    padding: 1em;    
+}
+
+.diff_navigation {
+    position: fixed;
+    top: 250px;
+    right: 25px;
+    width: 30%;
+    max-width: 250px;
+
+    background-color: rgba(255,255,204,0.80);
+    overflow: auto;
+    padding: 0;
+}
+
+.diff_navigation div:nth-child(2) {
+    margin-top: 1.5em;
+    border-top: solid 2px #c0c0c0;
+}
+
+.diff_navigation .header .minimize {
+    float: right;
+    padding: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border: 2px outset black;
+    border-radius: 3px;
+}
+
+.diff_navigation div {
+    clear: both;
+    padding-right: 1em;
+    padding-left: 1em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+}
+
+.diff_navigation div:empty {
+    padding: 0;
+}
+
+.diff_navigation .errors, 
+.diff_navigation .summary,
+.diff_navigation .progress {
+    text-align: center;
+}
+
+.diff_navigation a {
+    /*border: 1px solid #bbbbff;
+    border-radius: 0.75ex;
+    -moz-border-radius: 0.75ex;
+    background-color: #a3b8cb;*/   
+}
+
+.diff_navigation .prev {
+    float: left;
+}
+
+.diff_navigation .next {
+    float: right;
+}
+
+.diff_navigation .error {
+    color: red;
+}
+/**** DIFF NAVIGATION/JUMPER *****/
+
 /* search result page */
 #results {
 }
