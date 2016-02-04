@@ -805,7 +805,7 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	padding: 1ex 0;
 }
 
-#results p { /* pagetitle and slider */
+#results p, #revisions p { /* pagetitle and slider */
 	padding: 0.5em;
 }
 
@@ -851,14 +851,14 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	font-weight: bold;
 }
 
-#results .sel { /* slider item for the shown search result page */
+#results .sel, #revisions .sel { /* slider item for the shown search result page */
 	background-color: #a3b8cb;
 	border: 1px solid #333366;
 	padding: .5em;
 	margin: 1px;
 }
 
-#results .more { /* slider item for the n-th search result page */
+#results .more, #revisions .more { /* slider item for the n-th search result page */
 	border: 1px #ccc solid;
 	padding: .3em;
 	margin: 1px;

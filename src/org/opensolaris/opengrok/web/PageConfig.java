@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -416,7 +416,7 @@ public final class PageConfig {
         }
         return ret;
     }
-
+    
     /**
      * Get the <b>start</b> index for a search result to return by looking up
      * the {@code start} request parameter.
