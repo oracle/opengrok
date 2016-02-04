@@ -21,6 +21,259 @@
  * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
+(function(window, $) {
+   
+    var spaces = function () {
+        var inner = {
+            self: this,
+            initialized: false,
+            /**
+             * Mouse selection event
+             * - upon a user's selection triggers a select event
+             */
+            mouse: {
+                dragging: false,
+                init: function () {
+                    var that = this
+                    $(document).mousedown(function (e) {
+                       that.dragging = false
+                    }).mousemove(function(e){
+                        that.dragging = true
+                    }).mouseup(function(e){
+                        var wasDragging = that.dragging
+                        that.dragging = false
+                        if(wasDragging) {
+                            $(document).trigger("select");
+                        }
+                    }).dblclick(function(e){
+                        //$(document).trigger("select")
+                    });
+                },
+            },           
+            defaults: {
+                "selector": "a.l, a.hl",
+                "parent": "div#src pre",
+                "selectedClass": "selected",
+                "sourceContainer": "pre",
+            },
+            options: {},
+            indent: function($el){
+                return $el.each(function() {
+                    if(! $(this).is("." + inner.options.selectedClass))
+                        $(this).html($(this).html() + "&nbsp");
+                    $(this).addClass(inner.options.selectedClass)
+                });
+            },
+            /**
+             * @returns {Boolean} if client is IE
+             */
+            ie: function() {
+                var ua = window.navigator.userAgent;
+                if (ua.indexOf('MSIE ') > 0 || 
+                    ua.indexOf('Trident/') > 0 ||
+                    ua.indexOf('Edge/') > 0 )
+                    return true;
+                return false;
+            },            
+            getSelection: function () {
+                if (window.getSelection)
+                    return window.getSelection()
+                return null
+            },
+            /**
+
+             * Select closest element giben by options.selector to the actual
+             * element
+             * 
+             * @param {jQuery Object} $el actual element
+             * @param {boolean} next direction
+             * @param {boolean} last if it is the last element in array
+             * @param {int} depth max distance from the path between the actual
+             *                    element and the root element
+             * @returns {Object} of {element found, used given direction}
+             */
+            around: function ($el, next, last, depth) {
+              var slc = inner.options.selector
+              depth = depth || 10
+              next = next || false      
+              last = last || false
+
+                if($el.is(slc)) {
+                  return { "element": $el, "directionUsed": false };
+              }  
+
+              var $tmp = $el;
+              var $result = null
+              var parentDepth = 10
+              // scan every previous parent up to partentDepth
+              // and scan every #depth nodes around a particular parent
+              while ( $tmp.length && 
+                      !$tmp.is (inner.options.sourceContainer) && 
+                      parentDepth >= 0 ) {
+                  if($tmp.is(slc))
+                      return { "element": $tmp, "directionUsed": false }
+                  if(!next) {
+                      // scan #depth previous nodes if they are desired
+                      for ( var i = 0, $tmp2 = $tmp; i < depth && $tmp2.length; i ++ ) {
+                          if ($tmp2.is(slc))
+                              return { "element": $tmp2, "directionUsed": true }
+                          $tmp2 = $tmp2.prev()
+                      }
+                  } else {
+                      // scan #depth next nodes if they are desired
+                      for ( var i = 0, $tmp2 = $tmp; i < depth && $tmp2.length; i ++ ) {
+                          if ($tmp2.is(slc))
+                              return { "element": $tmp2, "directionUsed": true }
+                          $tmp2 = $($tmp2.get(0).nextElementSibling)
+                      }              
+                  }
+                  // going level up
+                  $tmp = $tmp.parent()
+                  parentDepth --;
+              }
+              // no luck in parents -> find links within this node
+              var $down = $el.find(slc)
+              if($down.length){
+                  if(last) {
+                     return { "element": $down.last(), "directionUsed": false }
+                  } else {
+                     return { "element": $down.first (), "directionUsed": false }
+                  }
+              }      
+              return { "element": null, "directionUsed": false }
+            },
+            /**
+             * Handle select event by extracting a range, element lookup,
+             * extending range to approximate bounds and updating range back
+             * to the client
+             * 
+             * @param {Event} e
+             * @returns {undefined} nothing
+             */
+            selectHandler: function(e) {
+                var selection = null
+                if ( ( selection = inner.getSelection() ) == null ) {
+                    console.debug ( "No selection returned. No browser support?")
+                    return
+                }
+                var selector = inner.options.selector
+                var parentSelectorWithLinks = inner.options.selector
+                        .replace( /,/g, ", " + inner.options.parent + " ")
+                        .replace( /^/, inner.options.parent + " ");
+                
+                if(selection.rangeCount <= 0){
+                    //nothing to process
+                    return
+                }
+
+                var range = selection.getRangeAt(0)
+
+                for ( var i = 0; i < selection.rangeCount; i ++ ) {
+                    // if there were more ranges, select the one which is inside 
+                    // the parent element
+                    // default: div#src pre
+                    var r = selection.getRangeAt(i)
+                    if($(r.commonAncestorContainer).has(inner.options.parent).length){
+                        range = r;
+                    }
+                }
+                // clone range (so it works in chrome)
+                range = range.cloneRange()
+
+                // finding closest starting node based on inner.options.selector
+                // by default it's the closest line link
+                $start = $(range.startContainer);
+                $start = inner.around($start, next = false, last = false)
+                $start = $start.element;
+                if($start == null){
+                    // not successful
+                    // - no line link
+                    // - range is larger than the whole source container
+                    // find the first link in the source container
+                    $start = $(parentSelectorWithLinks).filter(":first")
+                }
+
+                if(! $start.length) {
+                    console.debug ( "Cannot determine start link");
+                    return
+                }
+
+                $end = $(range.endContainer);
+                if($end.is(inner.options.sourceContainer) && selection.toString().length <= 5) {
+                    // probably on the same line
+                    $end = $start.next().nextUntil(selector).next()
+                    $end_indir = true
+                } else {
+                    // not on the same line so find closest node according to 
+                    // selector in next nodes
+                    $end = inner.around($end, next = true, last = true)
+                    $end_indir = $end.directionUsed;
+                    $end = $end.element;            
+                }
+                if($end == null){
+                    // not successful
+                    // - no line link
+                    // - range is larger than the whole source container
+                    // find the last link in the source container
+                    $end = $(parentSelectorWithLinks).filter(":last")
+                    $end_dir = false
+                }
+                
+                if (!$end.length) {
+                    console.debug("Cannot determine end link")
+                    return
+                }          
+                
+                range.setStartBefore($start.get(0))
+                
+                if ($end_indir){
+                    range.setEndBefore($end.get(0))
+                } else {
+                    range.setEndAfter($end.get(0))
+                }
+
+                // extract contents (html now has dissapeared)
+                var content = range.extractContents()
+
+                try {
+                    // select all links in the content
+                    // indent link by one space
+                    inner.indent($(content.querySelectorAll(selector)))
+
+                } finally {
+                    // even if there was an error fill the html back to the site
+                    for( var i = 0; i < $(content).length; i ++ )
+                        range.insertNode(content)  
+                }
+
+                // clears the selection
+                selection.removeAllRanges()
+                // inserts the new updated range
+                selection.addRange(range)
+            },
+            init: function() {
+                
+                // IE does not need this feature
+                if( inner.ie () )
+                    return
+                
+                inner.mouse.init()
+                $(document).bind("select", inner.selectHandler );
+            }
+        } // inner
+        
+        this.init = function (options) {
+            if ( inner.initialized )
+                return this;
+            inner.options = $.extend(inner.defaults, options, {})
+            inner.init()
+            inner.initialized = true
+            return this;
+        }
+    }
+    $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}));
+}) (window, window.jQuery);
+
 (function ($) {
     var accordion = function ($parent, options) {
         var inner = {
@@ -84,7 +337,10 @@
 
 $(document).ready(function () {
     $(".projects").accordion()
-
+    
+    // starting spaces plugin
+    $.spaces.init()
+    
     $(".projects_select_all").click(function (e) {
         var projects = $(this).closest(".panel").find("table tbody tr, .panel-heading table tbody tr")
         var multiselect = $("select#project")
