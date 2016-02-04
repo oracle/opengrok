@@ -274,11 +274,6 @@
     $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}));
 }) (window, window.jQuery);
 
-$(document).ready(function(){
-    // starting spaces plugin
-    $.spaces.init()
-});
-
 (function ($) {
     var accordion = function ($parent, options) {
         var inner = {
@@ -342,7 +337,10 @@ $(document).ready(function(){
 
 $(document).ready(function () {
     $(".projects").accordion()
-
+    
+    // starting spaces plugin
+    $.spaces.init()
+    
     $(".projects_select_all").click(function (e) {
         var projects = $(this).closest(".panel").find("table tbody tr, .panel-heading table tbody tr")
         var multiselect = $("select#project")
