@@ -284,12 +284,6 @@
     
 }(window, window.jQuery));
 
-$(document).ready(function(){
-   $("#difftable").diffTable()
-});
-
-
-
 (function(window, $) {
    
     var spaces = function () {
@@ -606,7 +600,9 @@ $(document).ready(function(){
 
 $(document).ready(function () {
     $(".projects").accordion()
-    
+
+    $("#difftable").diffTable()
+
     // starting spaces plugin
     $.spaces.init()
     
