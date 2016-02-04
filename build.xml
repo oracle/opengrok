@@ -110,7 +110,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
 
-    <property name="mvn.repository" value="http://repo1.maven.org/maven2/"/>
+    <property name="mvn.repository" value="http://repo1.maven.org/maven2"/>
 
     <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
 
