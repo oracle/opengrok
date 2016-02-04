@@ -16,6 +16,8 @@ div#src a.l:after, div#src a.hl:after {
 
 div#src a.l.selected:after, div#src a.hl.selected:after {
     content: "";
+}
+
 /* highlight line number with anchor */
 div[id^='src'] a.l.target, div[id^='src'] a.hl.target {
 	background: orange;
