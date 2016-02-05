@@ -13,6 +13,7 @@ You need the following:
 * If history is needed, appropriate binary (in some cases also cvs/svn repository) must be present on the system (e.g. [http://subversion.tigris.org Subversion] or [http://www.selenic.com/mercurial/wiki/index.cgi Mercurial] or [http://dlc.sun.com/osol/devpro/downloads/current/ SCCS] or ... )
 * 2GB of memory for indexing process using OpenGrok script (can use less, this is scaled for bigger deployments)
 * a recent browser for clients - IE, Firefox, recent Chrome or Safari
+* sufficient ULIMIT settings (refer to README)
 
 == Recommended links to read for advanced users ==
 
