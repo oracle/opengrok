@@ -60,11 +60,23 @@ public abstract class JFlexScopeParser {
     
     public void parse(Tag tag, Reader reader) throws IOException {
         try {
-            int lineNo = 0;
+            int lineNo = 0;            
+            int c;
+            int oldc='\n';
             while (lineNo < tag.line) {
-                if (reader.read() == '\n') {
+                c=reader.read();
+                if ( c == '\r') {                    
                     lineNo++;
                 }
+                if ( c == '\n') {
+                    if (oldc!='\r') {                                            
+                        lineNo++;
+                    }
+                }
+                if ( c == -1 ) {
+                  break;                    
+                }
+                oldc=c;
             }
         } catch(IOException e) {
             System.out.print(e.getMessage());
