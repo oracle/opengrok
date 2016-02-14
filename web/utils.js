@@ -1084,16 +1084,6 @@ function lnshow() {
     document.line_numbers_shown = 1;
 }
 
-function lnshow() {
-    $("a").each(
-        function() {
-            if (this.className == 'l-hide' || this.className == 'hl-hide') {
-                this.innerHTML = this.getAttribute("tmp");
-                this.className = this.className.substr(0, this.className.indexOf('-'));
-            }
-        });
-}
-
 /* ------ Highlighting ------ */
 /**
  * An expensive Highlighter:
