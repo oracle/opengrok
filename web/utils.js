@@ -1060,25 +1060,34 @@ function lntoggle() {
 }
 
 function lnhide() {
-    $("a").each(
+    $("a.hl").each(
         function() {
-            if (this.className === 'l' || this.className === 'hl') {
-                this.className = this.className + '-hide';
-                this.setAttribute("tmp", this.innerHTML);
-                this.innerHTML = '';
-            }
+            $(this).removeClass('hl').addClass('hl-hide');
+            this.setAttribute("tmp", this.innerHTML);
+            this.innerHTML = '';
+        }
+    );
+    $("a.l").each(
+        function() {
+            $(this).removeClass('l').addClass('l-hide');
+            this.setAttribute("tmp", this.innerHTML);
+            this.innerHTML = '';
         }
     );
     document.line_numbers_shown = 0;
 }
 
 function lnshow() {
-    $("a").each(
-        function() {
-            if (this.className === 'l-hide' || this.className === 'hl-hide') {
-                this.className = this.className.substr(0, this.className.indexOf('-'));
-                this.innerHTML = this.getAttribute("tmp");
-            }
+    $("a.l-hide").each(
+        function () {
+            $(this).removeClass('l-hide').addClass('l');
+            this.innerHTML = this.getAttribute("tmp");
+        }
+    );
+    $("a.hl-hide").each(
+        function () {
+            $(this).removeClass('hl-hide').addClass('hl');
+            this.innerHTML = this.getAttribute("tmp");
         }
     );
     document.line_numbers_shown = 1;
