@@ -39,6 +39,10 @@ The following table lists all currently (as of OpenGrok pre-0.12) supported form
 |0.XXX
 |"BDF","XPM","PS","AFM","PDF"
 |-
+|Go
+|0.13
+|"GO"
+|-
 |gzip
 |0.3.1
 |"GZ"
