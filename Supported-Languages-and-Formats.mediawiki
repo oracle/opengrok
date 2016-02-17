@@ -1,6 +1,6 @@
 This page lists which file formats are supported by OpenGrok. This largely depends on the support in both Exuberant ctags and OpenGrok analyzers.
 
-The following table lists all currently (as of OpenGrok pre-0.12) supported formats and OpenGrok version in which they have been introduced:
+The following table lists all supported formats and OpenGrok version in which they have been introduced(the version might not be released yet, so you need to build trunk):
 
 {|
 |'''File format'''
