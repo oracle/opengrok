@@ -842,7 +842,7 @@ function resizeContent() {
 function domReadyMast() {
     var h = document.hash;
     if (!window.location.hash) {
-        if (h != null && h != "null")  {
+        if (h != null && h != "null" && h != "")  {
             window.location.hash=h
         } else {
             $('#content').focus();
