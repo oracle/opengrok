@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -74,9 +74,9 @@ public class IgnoredNames {
      */
     public boolean ignore(File file) {
         if (file.isFile()) {
-            return ignoredFiles.match(file);
+            return ignoredFiles.ignore(file);
         } else {
-            return ignoredDirs.match(file);
+            return ignoredDirs.ignore(file);
         }
     }
 
@@ -87,7 +87,7 @@ public class IgnoredNames {
      * @return true if this pathname should be ignored, false otherwise
      */
     public boolean ignore(String name) {
-        return ignoredFiles.match(name) || ignoredDirs.match(name);
+        return ignoredFiles.ignore(name) || ignoredDirs.ignore(name);
     }
 
     public void clear() {
