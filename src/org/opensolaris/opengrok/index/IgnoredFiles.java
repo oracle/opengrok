@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -40,26 +40,24 @@ public final class IgnoredFiles extends Filter {
         "cscope.po.in",
         "cscope.files",
         "cscope.out",
-        // CVS
-        ".cvsignore",
+        ".cvsignore", // CVS
         ".repo",
-        ".hgtags",
-        ".p4config",
+        ".hgtags",  // Mercurial
+        ".p4config", // Perforce
         "*~",
         ".make.*",
         ".del-*",
         "_MTN",
-        // File Extensions for Visual Studio and Mono Projects
-        ".vspscc",
-        ".suo",
-        ".vssscc",
+        ".vspscc", // Visual Studio
+        ".vssscc", // Visual Studio
+        ".suo", // Visual Studio user specific settings
         ".user",
         ".ncb",
-        ".gpState",
+        ".gpState",  // Guidance automation toolkit (MS)
         ".snc",
         ".sln",
-        ".vsmdi",
-        ".dll",
+        ".vsmdi", // Visual Studio tests
+        "*.dll",
         ".opengrok_skip_history",
     };
 
