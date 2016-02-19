@@ -69,11 +69,12 @@ org.opensolaris.opengrok.web.Util"%><%
 
     String uriEncodedPath = cfg.getUriEncodedPath();
     String rev = cfg.getRequestedRevision();
-%><%@
+%>
+<%@
 
 include file="httpheader.jspf"
 
-%><body>
+        %><body>
 <script type="text/javascript">/* <![CDATA[ */
     document.hash = '<%= cfg.getDocumentHash()
     %>';document.rev = '<%= rev
@@ -81,7 +82,7 @@ include file="httpheader.jspf"
     %>';document.annotate = <%= cfg.annotate() %>;
     document.domReady.push(function() {domReadyMast();});
     document.pageReady.push(function() { pageReadyMast();});
-
+    
     function fold(id) {
         var e = document.getElementById(id + "_fold");
         var i = document.getElementById(id + "_fold_icon").children[0];
@@ -115,8 +116,7 @@ include file="httpheader.jspf"
             var sig = head.children[0];
             scope.innerHTML = "<a href='#" + head.id + "'>" + sig.innerHTML + "</a>";
         }
-    }
-
+    }    
 /* ]]> */</script>
 <div id="page">
     <div id="whole_header">
@@ -199,7 +199,7 @@ include file="pageheader.jspf"
 <div id="scope">&nbsp;</div>
         </form>
     </div>
-<div id="content" onscroll="on_scroll()">
+<div id="content">
 <%
 }
 /* ---------------------- mast.jsp end --------------------- */
