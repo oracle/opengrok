@@ -40,6 +40,7 @@ public final class IgnoredDirs extends Filter {
         "Codemgr_wsdata", // Teamware
         "deleted_files",  // Teamware
         ".svn",
+        ".repo",
         ".git",
         ".hg",
         ".razor",

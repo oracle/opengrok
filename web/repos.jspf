@@ -121,12 +121,16 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         %>
                         <%
                         for (RepositoryInfo ri : repos) {
+                            if(cnt > 0 && ri.getParent() == null)
+                                // discard repositories without a parent url
+                                continue;
                             if (cnt != 0) {
-                                projDesc = "";
+                                projDesc = ri.getDirectoryName()
+                                             .replace(cfg.getSourceRootPath() + File.separator, "");
                             }
                             %>
                             <tr>
-                                <td class="name">
+                                <td class="name <%= cnt > 0 ? "subrepository" : "repository" %>">
                     <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
@@ -199,16 +203,20 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             Integer cnt = 0;
                             Collections.sort(repos, comparatorRepo);
                             for (RepositoryInfo ri : repos) {
+                                if(cnt > 0 && ri.getParent() == null)
+                                    // discard repositories without a parent url
+                                    continue;
                                 if (cnt != 0) {
-                                    projDesc = "";
+                                    projDesc = ri.getDirectoryName()
+                                                 .replace(cfg.getSourceRootPath() + File.separator, "");
                                 }
                                 %>
-                                <tr><td class="name">
-                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
+                                <tr><td class="name <%= cnt > 0 ? "subrepository" : "repository" %>">
+                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
                     </a>
-                                    </td><%
+                    </td><%
                                 String parent = ri.getParent();
                                 if (parent == null) {
                                     parent = "N/A";
