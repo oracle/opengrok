@@ -73,6 +73,7 @@ public class IgnoredNamesTest {
 
         /* Test handling of special directories. */
         assertTrue(instance.ignore("usr/src/.git"));
+        assertFalse(instance.ignore("usr/src/.git/foo"));
         assertFalse(instance.ignore("usr/src/foo.git"));
 
         /* cumulative test */
