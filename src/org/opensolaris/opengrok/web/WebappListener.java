@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -39,15 +39,18 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
- * Populate the Mercurial Repositories
+ * Initialize webapp context
  *
  * @author Trond Norbye
  */
 public final class WebappListener
-    implements ServletContextListener, ServletRequestListener {
+        implements ServletContextListener, ServletRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void contextInitialized(final ServletContextEvent servletContextEvent) {
         ServletContext context = servletContextEvent.getServletContext();
@@ -74,9 +77,7 @@ public final class WebappListener
                     if (!RuntimeEnvironment.getInstance().startConfigurationListenerThread(addr)) {
                         LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread");
                     }
-                } catch (NumberFormatException ex) {
-                    LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
-                } catch (UnknownHostException ex) {
+                } catch (NumberFormatException | UnknownHostException ex) {
                     LOGGER.log(Level.SEVERE, "OpenGrok: Failed to start configuration listener thread:", ex);
                 }
             } else {
@@ -88,6 +89,9 @@ public final class WebappListener
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();

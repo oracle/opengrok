@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -94,15 +94,14 @@ public final class Configuration {
      */
     private Project defaultProject;
     /**
-     * Default size of memory to be used for flushing of Lucene docs
-     * per thread.
+     * Default size of memory to be used for flushing of Lucene docs per thread.
      * Lucene 4.x uses 16MB and 8 threads, so below is a nice tunable.
      */
     private double ramBufferSize;
     private boolean verbose;
     /**
-     * If below is set, then we count how many files per project we need
-     * to process and print percentage of completion per project.
+     * If below is set, then we count how many files per project we need to
+     * process and print percentage of completion per project.
      */
     private boolean printProgress;
     private boolean allowLeadingWildcard;
@@ -148,8 +147,8 @@ public final class Configuration {
      */
     private boolean handleHistoryOfRenamedFiles;
 
-    public static final double defaultRamBufferSize=16;
-    public static final int defaultScanningDepth=3;
+    public static final double defaultRamBufferSize = 16;
+    public static final int defaultScanningDepth = 3;
 
     /**
      * The name of the eftar file relative to the <var>DATA_ROOT</var>, which
@@ -209,7 +208,7 @@ public final class Configuration {
     public void setCommandTimeout(int timeout) {
         this.command_timeout = timeout;
     }
-    
+
     /**
      * Creates a new instance of Configuration
      */
@@ -218,9 +217,9 @@ public final class Configuration {
         setHistoryCache(true);
         setHistoryCacheTime(30);
         setHistoryCacheInDB(false);
-        setProjects(new ArrayList<Project>());
-        setGroups(new TreeSet<Group>());
-        setRepositories(new ArrayList<RepositoryInfo>());
+        setProjects(new ArrayList<>());
+        setGroups(new TreeSet<>());
+        setRepositories(new ArrayList<>());
         setUrlPrefix("/source/s?");
         //setUrlPrefix("../s?"); // TODO generate relative search paths, get rid of -w <webapp> option to indexer !
         setCtags(System.getProperty("org.opensolaris.opengrok.analysis.Ctags", "ctags"));
@@ -247,9 +246,9 @@ public final class Configuration {
         setHitsPerPage(25);
         setCachePages(5);
         setScanningDepth(defaultScanningDepth); // default depth of scanning for repositories
-        setAllowedSymlinks(new HashSet<String>());
+        setAllowedSymlinks(new HashSet<>());
         //setTabSize(4);
-        cmds = new HashMap<String, String>();
+        cmds = new HashMap<>();
         setSourceRoot(null);
         setDataRoot(null);
         setCommandTimeout(600); // 10 minutes
@@ -415,7 +414,7 @@ public final class Configuration {
     public void setGroups(Set<Group> groups) {
         this.groups = groups;
     }
-    
+
     public String getSourceRoot() {
         return sourceRoot;
     }
@@ -477,9 +476,10 @@ public final class Configuration {
     }
 
     /**
-     * set size of memory to be used for flushing docs (default 16 MB)
-     * (this can improve index speed a LOT)
-     * note that this is per thread (lucene uses 8 threads by default in 4.x)
+     * set size of memory to be used for flushing docs (default 16 MB) (this can
+     * improve index speed a LOT) note that this is per thread (lucene uses 8
+     * threads by default in 4.x)
+     *
      * @param ramBufferSize new size in MB
      */
     public void setRamBufferSize(double ramBufferSize) {
@@ -631,11 +631,11 @@ public final class Configuration {
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         this.indexVersionedFilesOnly = indexVersionedFilesOnly;
     }
-    
+
     public boolean isTagsEnabled() {
         return this.tagsEnabled;
     }
-    
+
     public void setTagsEnabled(boolean tagsEnabled) {
         this.tagsEnabled = tagsEnabled;
     }
@@ -653,6 +653,10 @@ public final class Configuration {
             lastModified = new Date(timestamp.lastModified());
         }
         return lastModified;
+    }
+
+    public void refreshDateForLastIndexRun() {
+        lastModified = null;
     }
 
     /**
@@ -684,13 +688,15 @@ public final class Configuration {
             if (input != null) {
                 try {
                     input.close();
-                } catch (Exception e) { /*
+                } catch (Exception e) {
+                    /*
                      * nothing we can do about it
                      */ }
             } else if (fin != null) {
                 try {
                     fin.close();
-                } catch (Exception e) { /*
+                } catch (Exception e) {
+                    /*
                      * nothing we can do about it
                      */ }
             }
@@ -806,11 +812,11 @@ public final class Configuration {
     public boolean isScopesEnabled() {
         return scopesEnabled;
     }
-    
+
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
-    
+
     /**
      * Write the current configuration to a file
      *
@@ -847,10 +853,10 @@ public final class Configuration {
         ret = decodeObject(in);
         return ret;
     }
-    
+
     private static Configuration decodeObject(InputStream in) throws IOException {
         final Object ret;
-        final LinkedList<Exception> exceptions = new LinkedList<Exception>();
+        final LinkedList<Exception> exceptions = new LinkedList<>();
         ExceptionListener listener = new ExceptionListener() {
             @Override
             public void exceptionThrown(Exception e) {
@@ -875,8 +881,8 @@ public final class Configuration {
             throw new IOException(exceptions.getFirst());
         }
 
-        Configuration conf = ((Configuration) ret);        
-        
+        Configuration conf = ((Configuration) ret);
+
         // Removes all non root groups.
         // This ensures that when the configuration is reloaded then the set 
         // contains only root groups. Subgroups are discovered again
@@ -891,12 +897,12 @@ public final class Configuration {
         // Traversing subgroups and checking for duplicates,
         // effectively transforms the group tree to a structure (Set)
         // supporting an iterator.
-        TreeSet<Group> copy = new TreeSet<Group>();
-        LinkedList<Group> stack = new LinkedList<Group>(conf.groups);
+        TreeSet<Group> copy = new TreeSet<>();
+        LinkedList<Group> stack = new LinkedList<>(conf.groups);
         while (!stack.isEmpty()) {
             Group group = stack.pollFirst();
             stack.addAll(group.getSubgroups());
-            
+
             if (!copy.add(group)) {
                 throw new IOException(
                         String.format("Duplicate group name '%s' in configuration.",
