@@ -57,7 +57,7 @@ public class Scopes implements Serializable {
         }
         
         public String getName() {
-            return name; //(scope == null ? name : scope + "::" + name) + "()";
+            return name;
         }
 
         public boolean matches(int line) {
@@ -90,7 +90,7 @@ public class Scopes implements Serializable {
     public Scope getScope(int line) {
         // find closest scope that starts before or on given line
         Scope s = scopes.ceiling(new Scope(line));
-        return (s != null && s.matches(line) ) ? s : GLOBAL_SCOPE;
+        return (s != null && s.matches(line)) ? s : globalScope;
     }
     
     /**
