@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -87,7 +87,7 @@ public class JDBCHistoryCacheTest extends TestCase {
         RuntimeEnvironment.getInstance().setStoreHistoryCacheInDB(true);
 
         // The tests expect support for renamed files.
-        System.setProperty("org.opensolaris.opengrok.history.RenamedHandlingEnabled", "1");
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
     }
 
     /**

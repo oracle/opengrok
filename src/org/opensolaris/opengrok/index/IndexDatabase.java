@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -74,8 +74,8 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
-import org.opensolaris.opengrok.search.SearchEngine;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
@@ -84,9 +84,11 @@ import org.opensolaris.opengrok.web.Util;
  * one index database per project.
  *
  * @author Trond Norbye
- * @author Lubos Kosco , update for lucene 4.x
+ * @author Lubos Kosco , update for lucene 4.x , 5.x
  */
 public class IndexDatabase {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndexDatabase.class);
 
     private Project project;
     private FSDirectory indexDirectory;    
@@ -103,7 +105,12 @@ public class IndexDatabase {
     private boolean dirty;
     private boolean running;
     private List<String> directories;
-    static final Logger log = Logger.getLogger(IndexDatabase.class.getName());
+    private static final Comparator<File> fileComparator = new Comparator<File>() {
+        @Override
+        public int compare(File p1, File p2) {
+            return p1.getName().compareTo(p2.getName());
+        }
+    };
     private Ctags ctags;
     private LockFactory lockfact;
     private final BytesRef emptyBR = new BytesRef("");
@@ -130,7 +137,7 @@ public class IndexDatabase {
      */
     public IndexDatabase(Project project) throws IOException {
         this.project = project;
-        lockfact = new SimpleFSLockFactory();
+        lockfact = SimpleFSLockFactory.INSTANCE;
         initialize();
     }
 
@@ -176,7 +183,7 @@ public class IndexDatabase {
                     try {
                         db.update();
                     } catch (Throwable e) {
-                        log.log(Level.SEVERE, "Problem updating lucene index database: ", e);
+                        LOGGER.log(Level.SEVERE, "Problem updating lucene index database: ", e);
                     }
                 }
             });
@@ -198,7 +205,7 @@ public class IndexDatabase {
         for (String path : paths) {
             Project project = Project.getProject(path);
             if (project == null && env.hasProjects()) {
-                log.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
+                LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
             } else {
                 IndexDatabase db;
 
@@ -219,10 +226,10 @@ public class IndexDatabase {
                             dbs.add(db);
                         }
                     } else {
-                        log.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
                     }
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while updating index", e);
+                    LOGGER.log(Level.WARNING, "An error occured while updating index", e);
 
                 }
             }
@@ -235,7 +242,7 @@ public class IndexDatabase {
                         try {
                             db.update();
                         } catch (Throwable e) {
-                            log.log(Level.SEVERE, "An error occured while updating index", e);
+                            LOGGER.log(Level.SEVERE, "An error occured while updating index", e);
                         }
                     }
                 });
@@ -260,9 +267,9 @@ public class IndexDatabase {
             }            
 
             if (!env.isUsingLuceneLocking()) {
-                lockfact = NoLockFactory.getNoLockFactory();
+                lockfact = NoLockFactory.INSTANCE;
             }
-            indexDirectory = FSDirectory.open(indexDir, lockfact);            
+            indexDirectory = FSDirectory.open(indexDir.toPath(), lockfact);            
             ignoredNames = env.getIgnoredNames();
             includedNames = env.getIncludedNames();
             analyzerGuru = new AnalyzerGuru();
@@ -321,7 +328,7 @@ public class IndexDatabase {
             ctags.setBinary(ctgs);
         }
         if (ctags == null) {
-            log.severe("Unable to run ctags! searching definitions will not work!");
+            LOGGER.severe("Unable to run ctags! searching definitions will not work!");
         }
 
         if (ctags != null) {
@@ -333,7 +340,7 @@ public class IndexDatabase {
 
         try {
             Analyzer analyzer = AnalyzerGuru.getAnalyzer();
-            IndexWriterConfig iwc = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
+            IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
             iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
             iwc.setRAMBufferSizeMB(RuntimeEnvironment.getInstance().getRamBufferSize());
             writer = new IndexWriter(indexDirectory, iwc);
@@ -368,11 +375,11 @@ public class IndexDatabase {
                 
                 try {
                     if (numDocs > 0) {
-                        uidIter = terms.iterator(uidIter);                        
+                        uidIter = terms.iterator();
                         TermsEnum.SeekStatus stat = uidIter.seekCeil(new BytesRef(startuid)); //init uid                        
                         if (stat==TermsEnum.SeekStatus.END) {
                             uidIter=null;
-                            log.log(Level.WARNING,
+                            LOGGER.log(Level.WARNING,
                                 "Couldn't find a start term for {0}, empty u field?",
                                 startuid);
                         }
@@ -380,13 +387,11 @@ public class IndexDatabase {
                     // The code below traverses the tree to get total count.
                     int file_cnt = 0;
                     if (RuntimeEnvironment.getInstance().isPrintProgress()) {
-                        log.log(Level.INFO, "Counting files in {0} ...", dir);
+                        LOGGER.log(Level.INFO, "Counting files in {0} ...", dir);
                         file_cnt = indexDown(sourceRoot, dir, true, 0, 0);
-                        if (log.isLoggable(Level.INFO)) {
-                            log.log(Level.INFO,
+                        LOGGER.log(Level.INFO,
                                 "Need to process: {0} files for {1}",
                                 new Object[]{file_cnt, dir});
-                        }
                     }
 
                     indexDown(sourceRoot, dir, false, 0, file_cnt);
@@ -411,7 +416,7 @@ public class IndexDatabase {
                     writer.commit();
                     writer.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing writer", e);
+                    LOGGER.log(Level.WARNING, "An error occured while closing writer", e);
                 }
             }
 
@@ -419,7 +424,7 @@ public class IndexDatabase {
                 try {
                     ctags.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                         "An error occured while closing ctags process", e);
                 }
             }
@@ -438,12 +443,12 @@ public class IndexDatabase {
             String purpose = "used for timestamping the index database.";
             if (timestamp.exists()) {
                 if (!timestamp.setLastModified(System.currentTimeMillis())) {
-                    log.log(Level.WARNING, "Failed to set last modified time on ''{0}'', {1}",
+                    LOGGER.log(Level.WARNING, "Failed to set last modified time on ''{0}'', {1}",
                         new Object[]{timestamp.getAbsolutePath(), purpose});
                 }
             } else {
                 if (!timestamp.createNewFile()) {
-                    log.log(Level.WARNING, "Failed to create file ''{0}'', {1}",
+                    LOGGER.log(Level.WARNING, "Failed to create file ''{0}'', {1}",
                         new Object[]{timestamp.getAbsolutePath(), purpose});
                 }
             }
@@ -476,7 +481,7 @@ public class IndexDatabase {
                         try {
                             db.update();
                         } catch (Throwable e) {
-                            log.log(Level.SEVERE,
+                            LOGGER.log(Level.SEVERE,
                                 "Problem updating lucene index database: ", e);
                         }
                     }
@@ -491,36 +496,36 @@ public class IndexDatabase {
     public void optimize() {
         synchronized (lock) {
             if (running) {
-                log.warning("Optimize terminated... Someone else is updating / optimizing it!");
+                LOGGER.warning("Optimize terminated... Someone else is updating / optimizing it!");
                 return;
             }
             running = true;
         }
         IndexWriter wrt = null;
         try {
-            log.info("Optimizing the index ... ");
+            LOGGER.info("Optimizing the index ... ");
             Analyzer analyzer = new StandardAnalyzer();
-            IndexWriterConfig conf = new IndexWriterConfig(SearchEngine.LUCENE_VERSION, analyzer);
+            IndexWriterConfig conf = new IndexWriterConfig(analyzer);
             conf.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
             wrt = new IndexWriter(indexDirectory, conf);
             wrt.forceMerge(1); // this is deprecated and not needed anymore            
-            log.info("done");
+            LOGGER.info("done");
             synchronized (lock) {
                 if (dirtyFile.exists() && !dirtyFile.delete()) {
-                    log.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
+                    LOGGER.log(Level.FINE, "Failed to remove \"dirty-file\": {0}",
                         dirtyFile.getAbsolutePath());
                 }
                 dirty = false;
             }
         } catch (IOException e) {
-            log.log(Level.SEVERE, "ERROR: optimizing index: {0}", e);
+            LOGGER.log(Level.SEVERE, "ERROR: optimizing index: {0}", e);
         } finally {
             if (wrt != null) {
                 try {
                     wrt.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                         "An error occured while closing writer", e);
                 }
             }
@@ -541,14 +546,14 @@ public class IndexDatabase {
             try {
                 if (!dirty && !dirtyFile.createNewFile()) {
                     if (!dirtyFile.exists()) {
-                        log.log(Level.FINE,
+                        LOGGER.log(Level.FINE,
                                 "Failed to create \"dirty-file\": {0}",
                                 dirtyFile.getAbsolutePath());
                     }
                     dirty = true;
                 }
             } catch (IOException e) {
-                log.log(Level.FINE, "When creating dirty file: ", e);
+                LOGGER.log(Level.FINE, "When creating dirty file: ", e);
             }
         }
     }
@@ -578,12 +583,12 @@ public class IndexDatabase {
         File parent = xrefFile.getParentFile();
 
         if (!xrefFile.delete() && xrefFile.exists()) {
-            log.log(Level.INFO, "Failed to remove obsolete xref-file: {0}", xrefFile.getAbsolutePath());
+            LOGGER.log(Level.INFO, "Failed to remove obsolete xref-file: {0}", xrefFile.getAbsolutePath());
         }
 
         // Remove the parent directory if it's empty
         if (parent.delete()) {
-            log.log(Level.FINE, "Removed empty xref dir:{0}", parent.getAbsolutePath());
+            LOGGER.log(Level.FINE, "Removed empty xref dir:{0}", parent.getAbsolutePath());
         }
         setDirty();
         for (IndexChangedListener listener : listeners) {
@@ -615,18 +620,18 @@ public class IndexDatabase {
         try (Writer xrefOut = getXrefWriter(fa, path)) {
             analyzerGuru.populateDocument(doc, file, path, fa, xrefOut);
         } catch (Exception e) {
-            log.log(Level.INFO,
+            LOGGER.log(Level.INFO,
                     "Skipped file ''{0}'' because the analyzer didn''t "
                     + "understand it.",
                     path);
-            log.log(Level.FINE,
+            LOGGER.log(Level.FINE,
                     "Exception from analyzer " + fa.getClass().getName(), e);
             cleanupResources(doc);
             return;
         }
 
         try {
-            writer.addDocument(doc, fa);
+            writer.addDocument(doc);
         } catch (Throwable t) {
             cleanupResources(doc);
             throw t;
@@ -679,7 +684,7 @@ public class IndexDatabase {
         String absolutePath = file.getAbsolutePath();
 
         if (!file.canRead()) {
-            log.log(Level.WARNING, "Warning: could not read {0}", absolutePath);
+            LOGGER.log(Level.WARNING, "Warning: could not read {0}", absolutePath);
             return false;
         }
 
@@ -688,20 +693,20 @@ public class IndexDatabase {
             if (!absolutePath.equals(canonicalPath)
                 && !acceptSymlink(absolutePath, canonicalPath)) {
 
-                log.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
+                LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
                     new Object[]{absolutePath, canonicalPath});
                 return false;
             }
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
-                log.log(Level.WARNING, "Warning: ignored special file {0}",
+                LOGGER.log(Level.WARNING, "Warning: ignored special file {0}",
                     absolutePath);
                 return false;
             }
         } catch (IOException exp) {
-            log.log(Level.WARNING, "Warning: Failed to resolve name: {0}",
+            LOGGER.log(Level.WARNING, "Warning: Failed to resolve name: {0}",
                 absolutePath);
-            log.log(Level.FINE, "Stack Trace: ", exp);
+            LOGGER.log(Level.FINE, "Stack Trace: ", exp);
         }
 
         if (file.isDirectory()) {
@@ -723,7 +728,7 @@ public class IndexDatabase {
             File f1 = parent.getCanonicalFile();
             File f2 = file.getCanonicalFile();
             if (f1.equals(f2)) {
-                log.log(Level.INFO, "Skipping links to itself...: {0} {1}",
+                LOGGER.log(Level.INFO, "Skipping links to itself...: {0} {1}",
                         new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
                 return false;
             }
@@ -732,7 +737,7 @@ public class IndexDatabase {
             File t1 = f1;
             while ((t1 = t1.getParentFile()) != null) {
                 if (f2.equals(t1)) {
-                    log.log(Level.INFO, "Skipping links to parent...: {0} {1}",
+                    LOGGER.log(Level.INFO, "Skipping links to parent...: {0} {1}",
                             new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
                     return false;
                 }
@@ -740,7 +745,7 @@ public class IndexDatabase {
 
             return accept(file);
         } catch (IOException ex) {
-            log.log(Level.WARNING, "Warning: Failed to resolve name: {0} {1}",
+            LOGGER.log(Level.WARNING, "Warning: Failed to resolve name: {0} {1}",
                     new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
         }
         return false;
@@ -826,16 +831,11 @@ public class IndexDatabase {
 
         File[] files = dir.listFiles();
         if (files == null) {
-            log.log(Level.SEVERE, "Failed to get file listing for: {0}",
+            LOGGER.log(Level.SEVERE, "Failed to get file listing for: {0}",
                 dir.getAbsolutePath());
             return lcur_count;
         }
-        Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File p1, File p2) {
-                return p1.getName().compareTo(p2.getName());
-            }
-        });
+        Arrays.sort(files, fileComparator);
 
         for (File file : files) {
             if (accept(dir, file)) {
@@ -850,8 +850,8 @@ public class IndexDatabase {
                     }
 
                     if (RuntimeEnvironment.getInstance().isPrintProgress()
-                        && est_total > 0 && log.isLoggable(Level.INFO)) {
-                            log.log(Level.INFO, "Progress: {0} ({1}%)",
+                        && est_total > 0 && LOGGER.isLoggable(Level.INFO)) {
+                            LOGGER.log(Level.INFO, "Progress: {0} ({1}%)",
                                 new Object[]{lcur_count,
                                 (lcur_count * 100.0f / est_total)});
                     }
@@ -879,7 +879,7 @@ public class IndexDatabase {
                     try {
                         addFile(file, path);
                     } catch (Exception e) {
-                        log.log(Level.WARNING,
+                        LOGGER.log(Level.WARNING,
                                 "Failed to add file " + file.getAbsolutePath(),
                                 e);
                     }
@@ -954,7 +954,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        log.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listFiles();
@@ -974,7 +974,7 @@ public class IndexDatabase {
      */
     public void listFiles() throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter=null;
+        TermsEnum iter;
         Terms terms = null;
 
         try {
@@ -984,9 +984,9 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.U);
             }
-            iter = terms.iterator(iter); // init uid iterator
+            iter = terms.iterator(); // init uid iterator
             while (iter != null && iter.term() != null) {
-                log.fine(Util.uid2url(iter.term().utf8ToString()));
+                LOGGER.fine(Util.uid2url(iter.term().utf8ToString()));
                 BytesRef next=iter.next();
                 if (next==null) {iter=null;}
             }
@@ -996,7 +996,7 @@ public class IndexDatabase {
                 try {
                     ireader.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing index reader", e);
+                    LOGGER.log(Level.WARNING, "An error occured while closing index reader", e);
                 }
             }
         }
@@ -1020,7 +1020,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        log.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listTokens(4);
@@ -1035,7 +1035,7 @@ public class IndexDatabase {
 
     public void listTokens(int freq) throws IOException {
         IndexReader ireader = null;
-        TermsEnum iter = null;
+        TermsEnum iter;
         Terms terms = null;         
 
         try {
@@ -1045,11 +1045,11 @@ public class IndexDatabase {
                 Fields uFields = MultiFields.getFields(ireader);//reader.getTermVectors(0);
                 terms = uFields.terms(QueryBuilder.DEFS);
             }
-            iter = terms.iterator(iter); // init uid iterator            
+            iter = terms.iterator(); // init uid iterator            
             while (iter != null && iter.term() != null) {
                 //if (iter.term().field().startsWith("f")) {
                 if (iter.docFreq() > 16 && iter.term().utf8ToString().length() > freq) {
-                    log.warning(iter.term().utf8ToString());
+                    LOGGER.warning(iter.term().utf8ToString());
                 }
                 BytesRef next = iter.next();
                 if (next==null) {iter=null;}
@@ -1063,7 +1063,7 @@ public class IndexDatabase {
                 try {
                     ireader.close();
                 } catch (IOException e) {
-                    log.log(Level.WARNING, "An error occured while closing index reader", e);
+                    LOGGER.log(Level.WARNING, "An error occured while closing index reader", e);
                 }
             }
         }
@@ -1090,13 +1090,13 @@ public class IndexDatabase {
             indexDir = new File(indexDir, p.getPath());
         }
         try {
-            FSDirectory fdir = FSDirectory.open(indexDir, NoLockFactory.getNoLockFactory());
+            FSDirectory fdir = FSDirectory.open(indexDir.toPath(), NoLockFactory.INSTANCE);
             if (indexDir.exists() && DirectoryReader.indexExists(fdir)) {
                 ret = DirectoryReader.open(fdir);
             }
         } catch (Exception ex) {
-            log.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());
-            log.log(Level.FINE, "Stack Trace: ", ex);
+            LOGGER.log(Level.SEVERE, "Failed to open index: {0}", indexDir.getAbsolutePath());
+            LOGGER.log(Level.FINE, "Stack Trace: ", ex);
         }
         return ret;
     }

@@ -32,13 +32,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.Util;
 
 /**
@@ -49,6 +51,8 @@ import org.opensolaris.opengrok.web.Util;
  * @author Trond Norbye
  */
 public class ELFAnalyzer extends FileAnalyzer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ELFAnalyzer.class);
 
     private static final List<String> READABLE_SECTIONS;
     static {
@@ -92,7 +96,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         ELFHeader eh = new ELFHeader(fmap);
 
         if (eh.e_shnum <= 0) {
-            OpenGrokLogger.getLogger().log(Level.FINE, "Skipping file, no section headers");
+            LOGGER.log(Level.FINE, "Skipping file, no section headers");
             return null;
         }
 
@@ -100,7 +104,7 @@ public class ELFAnalyzer extends FileAnalyzer {
         ELFSection stringSection = new ELFSection(fmap);
 
         if (stringSection.sh_size == 0) {
-            OpenGrokLogger.getLogger().log(Level.FINE, "Skipping file, no section name string table");
+            LOGGER.log(Level.FINE, "Skipping file, no section name string table");
             return null;
         }
 

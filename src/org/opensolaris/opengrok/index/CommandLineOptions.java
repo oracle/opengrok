@@ -84,7 +84,7 @@ public class CommandLineOptions {
         options.add(new Option('H', null, "Generate history cache for all repositories"));
         options.add(new Option('h', "/path/to/repository", "just generate history cache for the specified repos (absolute path from source root)"));
         options.add(new Option('I', "pattern", "Only files matching this pattern will be examined (supports wildcards, example: -I *.java -I *.c)"));
-        options.add(new Option('i', "pattern", "Ignore the named files or directories (supports wildcards, example: -i *.so -i *.dll)"));
+        options.add(new Option('i', "pattern", "Ignore the named files (prefix with 'f:') or directories (prefix with 'd:') (supports wildcards, example: -i *.so -i *.dll)"));
         options.add(new Option('j', "class", "Name of the JDBC driver class used by the history cache. Can use one of the shorthands \"client\" (org.apache.derby.jdbc.ClientDriver) or \"embedded\" (org.apache.derby.jdbc.EmbeddedDriver). Default: \"client\""));
         options.add(new Option('k', "/path/to/repository", "Kill the history cache for the given repository and exit. Use '*' to delete the cache for all repositories."));
         options.add(new Option('K', null, "List all repository pathes and exit."));
@@ -149,7 +149,7 @@ public class CommandLineOptions {
     public String getUsage() {
         StringWriter wrt = new StringWriter();
         try (PrintWriter out = new PrintWriter(wrt)) {
-            out.println("Usage: opengrok.jar [options]");
+            out.println("Usage: opengrok.jar [options] [subDir1 ..]");
             for (Option o : options) {
                 out.println(o.getUsage());
             }

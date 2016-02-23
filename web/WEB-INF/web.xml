@@ -25,6 +25,7 @@
     <jsp-file>/search.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
+<param-name>lastEditedDisplayMode</param-name><param-value>true</param-value>
 </init-param>  
   </servlet>
   <servlet>

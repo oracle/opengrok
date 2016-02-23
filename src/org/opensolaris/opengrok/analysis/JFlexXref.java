@@ -368,6 +368,7 @@ public abstract class JFlexXref {
             throws IOException {
         String[] strs = new String[1];
         strs[0] = "";
+        String jsEscapedSymbol = symbol.replace("'", "\\'");
 
         if (keywords != null && keywords.contains(
                 caseSensitive ? symbol : symbol.toLowerCase())) {
@@ -402,6 +403,9 @@ public abstract class JFlexXref {
             appendProject();
             out.append("\" class=\"");
             out.append(style_class);
+            out.append("\" onmouseover=\"onMouseOverSymbol('");
+            out.append(jsEscapedSymbol);
+            out.append("', 'def')");
             out.append("\">");
             out.append(symbol);
             out.append("</a>");
@@ -415,6 +419,9 @@ public abstract class JFlexXref {
             out.append(style_class);
             out.append("\" href=\"#");
             out.append(symbol);
+            out.append("\" onmouseover=\"onMouseOverSymbol('");
+            out.append(jsEscapedSymbol);
+            out.append("', 'defined-in-file')");
             out.append("\">");
             out.append(symbol);
             out.append("</a>");
@@ -429,6 +436,9 @@ public abstract class JFlexXref {
             out.append("defs=");
             out.append(symbol);
             appendProject();
+            out.append("\" onmouseover=\"onMouseOverSymbol('");
+            out.append(jsEscapedSymbol);
+            out.append("', 'undefined-in-file')");
             out.append("\">");
             out.append(symbol);
             out.append("</a>");

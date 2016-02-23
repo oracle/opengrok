@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.search.context;
 
 import java.util.ArrayList;
@@ -34,35 +33,38 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 
 /**
- * Utility class used to extract the terms used in a query
- * This class will not find terms for MultiTermQuery, RangeQuery and PrefixQuery classes
- * so the caller must pass a rewritten query (see query.rewrite) to obtain a list of
+ * Utility class used to extract the terms used in a query This class will not
+ * find terms for MultiTermQuery, RangeQuery and PrefixQuery classes so the
+ * caller must pass a rewritten query (see query.rewrite) to obtain a list of
  * expanded terms.
  *
  */
 public final class QueryMatchers {
+
     private Set<String> caseSensitiveTerms;
     private Set<String> caseInsensitiveTerms;
     private List<LineMatcher> matchers;
     private Map<String, Boolean> fields;
+
     /**
-     * Get the terms from a query and returs a list of DFAs which match
-     * a stream of tokens
+     * Get the terms from a query and returns a list of DFAs which match a stream
+     * of tokens
      *
      * @param query the query to generate matchers for
      * @param fields a map whose keys tell which fields to create matchers for,
-     * and whose values tell if the field is case insensitive (true) or
-     * case sensitive (false)
+     * and whose values tell if the field is case insensitive (true) or case
+     * sensitive (false)
      * @return list of LineMatching DFAs
      */
     public LineMatcher[] getMatchers(Query query, Map<String, Boolean> fields) {
-        caseSensitiveTerms = new HashSet<String>();
-        caseInsensitiveTerms = new HashSet<String>();
-        matchers = new ArrayList<LineMatcher>();
+        caseSensitiveTerms = new HashSet<>();
+        caseInsensitiveTerms = new HashSet<>();
+        matchers = new ArrayList<>();
         this.fields = fields;
         getTerms(query);
         if (!caseSensitiveTerms.isEmpty()) {
@@ -89,14 +91,23 @@ public final class QueryMatchers {
             getTerm((TermQuery) query);
         } else if (query instanceof PrefixQuery) {
             getPrefix((PrefixQuery) query);
+        } else if (query instanceof RegexpQuery) {
+            getRegexp((RegexpQuery) query);
+        }
+    }
+
+    private void getRegexp(RegexpQuery query) {
+        if (useTerm(query.getField())) {
+            String term = query.toString(query.getField());
+            term = term.substring(1, term.length() - 1); //trim / from /regexp/
+            matchers.add(new RegexpMatcher(term, true));
         }
     }
 
     private void getBooleans(BooleanQuery query) {
-        BooleanClause[] queryClauses = query.getClauses();
-        for (int i = 0; i < queryClauses.length; i++) {
-            if (!queryClauses[i].isProhibited()) {
-                getTerms(queryClauses[i].getQuery());
+        for (BooleanClause clause : (BooleanQuery) query) {
+            if (!clause.isProhibited()) {
+                getTerms(clause.getQuery());
             }
         }
     }
@@ -145,7 +156,14 @@ public final class QueryMatchers {
      * Check whether a matcher should be created for a term.
      */
     private boolean useTerm(Term term) {
-        return fields.keySet().contains(term.field());
+        return useTerm(term.field());
+    }
+
+    /**
+     * Check whether a matcher should be created for a term.
+     */
+    private boolean useTerm(String termField) {
+        return fields.keySet().contains(termField);
     }
 
     /**

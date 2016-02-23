@@ -18,22 +18,39 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.index;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.opensolaris.opengrok.analysis.c.CAnalyzerFactoryTest;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  *
  * @author Trond Norbye
  */
 public class IgnoredNamesTest {
+
+    private static TestRepository repository;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        repository = new TestRepository();
+        repository.create(CAnalyzerFactoryTest.class.getResourceAsStream(
+                "/org/opensolaris/opengrok/index/source.zip"));
+    }
+
     @Test
     public void testIgnoredPatterns() {
         IgnoredNames instance = new IgnoredNames();
@@ -54,8 +71,13 @@ public class IgnoredNamesTest {
         assertFalse(instance.ignore("usr/src/foo/bar/usr.lib/main.c"));
         assertFalse(instance.ignore("usr/src/foo/bar/usr.lib"));
 
+        /* Test handling of special directories. */
+        assertTrue(instance.ignore("usr/src/.git"));
+        assertFalse(instance.ignore("usr/src/.git/foo"));
+        assertFalse(instance.ignore("usr/src/foo.git"));
+
         /* cumulative test */
-        names = new ArrayList<String>();
+        names = new ArrayList<>();
         names.add("*.o");
 
         instance.setItems(names);
@@ -67,10 +89,12 @@ public class IgnoredNamesTest {
         assertTrue(instance.ignore(".o"));
         assertFalse(instance.ignore("foo.oo"));
 
-        instance.add("Makefile");
+        instance.add("f:Makefile");
         names = instance.getItems();
         assertEquals(2, names.size());
-        assertTrue(instance.ignore(new File("Makefile")));
+        assertTrue(instance.ignore(new File(repository.getSourceRoot()
+                + "/c/Makefile")));
+
         assertFalse(instance.ignore("main.c"));
 
         instance.add("o*o?.a?c*");
@@ -78,6 +102,10 @@ public class IgnoredNamesTest {
         assertTrue(instance.ignore("opengrok.abcd"));
         assertFalse(instance.ignore("opengrok.ac"));
         assertFalse(instance.ignore("grok.abcd"));
+
+        instance.add("d:haskell");
+        assertTrue(instance.ignore(new File(repository.getSourceRoot()
+                + "/haskell")));
 
         instance.clear();
         names = instance.getItems();

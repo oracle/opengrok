@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sql;
@@ -34,6 +34,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "PL/SQL";
+    
     private static final String[] SUFFIXES = {        
         "PLS",
         "PKS", //?
@@ -42,7 +45,7 @@ public class PLSQLAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PLSQLAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

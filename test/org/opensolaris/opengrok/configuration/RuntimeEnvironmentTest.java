@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -32,19 +32,27 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Test the RuntimeEnvironment class
- * 
+ *
  * @author Trond Norbye
  */
 public class RuntimeEnvironmentTest {
+
     private static File originalConfig;
 
     public RuntimeEnvironmentTest() {
@@ -54,7 +62,7 @@ public class RuntimeEnvironmentTest {
     public static void setUpClass() throws Exception {
         // preserve the original
         originalConfig = File.createTempFile("config", ".xml");
-        RuntimeEnvironment.getInstance().writeConfiguration(originalConfig);       
+        RuntimeEnvironment.getInstance().writeConfiguration(originalConfig);
     }
 
     @AfterClass
@@ -127,6 +135,26 @@ public class RuntimeEnvironmentTest {
     }
 
     @Test
+    public void testGroups() throws IOException {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        assertFalse(instance.hasGroups());
+        assertNotNull(instance.getGroups());
+        assertEquals(0, instance.getGroups().size());
+
+        Group g = new Group();
+        g.setName("Random");
+        g.setPattern("xyz.*");
+
+        instance.getGroups().add(g);
+        assertEquals(1, instance.getGroups().size());
+        assertEquals(g, instance.getGroups().iterator().next());
+        assertEquals("Random", instance.getGroups().iterator().next().getName());
+
+        instance.setGroups(null);
+        assertNull(instance.getGroups());
+    }
+
+    @Test
     public void testRegister() throws InterruptedException, IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
         String path = "/tmp/dataroot";
@@ -137,7 +165,7 @@ public class RuntimeEnvironmentTest {
             public void run() {
                 Configuration c = new Configuration();
                 RuntimeEnvironment.getInstance().setConfiguration(c);
-                
+
             }
         });
         t.start();
@@ -169,6 +197,14 @@ public class RuntimeEnvironmentTest {
         assertEquals(30, instance.getHistoryReaderTimeLimit());
         instance.setHistoryReaderTimeLimit(50);
         assertEquals(50, instance.getHistoryReaderTimeLimit());
+    }
+
+    @Test
+    public void testFetchHistoryWhenNotInCache() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        assertEquals(true, instance.isFetchHistoryWhenNotInCache());
+        instance.setFetchHistoryWhenNotInCache(false);
+        assertEquals(false, instance.isFetchHistoryWhenNotInCache());
     }
 
     @Test
@@ -217,7 +253,7 @@ public class RuntimeEnvironmentTest {
         assertNotNull(instance.getRepositories());
         instance.setRepositories(null);
         assertNull(instance.getRepositories());
-        List<RepositoryInfo> reps = new ArrayList<RepositoryInfo>();
+        List<RepositoryInfo> reps = new ArrayList<>();
         instance.setRepositories(reps);
         assertSame(reps, instance.getRepositories());
     }
@@ -365,8 +401,8 @@ public class RuntimeEnvironmentTest {
         assertNotNull(o);
         m = m.replace('a', 'm');
         try {
-             o = Configuration.makeXMLStringAsConfiguration(m);
-             fail("makeXmlStringsAsConfiguration should throw exception");
+            o = Configuration.makeXMLStringAsConfiguration(m);
+            fail("makeXmlStringsAsConfiguration should throw exception");
         } catch (Throwable t) {
         }
     }
@@ -384,7 +420,7 @@ public class RuntimeEnvironmentTest {
         assertTrue(f.isAbsolute());
         assertTrue(file.delete());
     }
-    
+
     @Test
     public void testBug3154() throws IOException {
         RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
@@ -422,11 +458,11 @@ public class RuntimeEnvironmentTest {
         StringWriter out = new StringWriter();
         xref.write(out);
 
-        String expectedAddress = expected ?
-            address.replace("@", " (at) ") : address;
+        String expectedAddress = expected
+                ? address.replace("@", " (at) ") : address;
 
-        String expectedOutput =
-                "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
+        String expectedOutput
+                = "<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
                 + expectedAddress;
 
         assertEquals(expectedOutput, out.toString());

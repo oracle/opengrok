@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -30,13 +30,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -45,24 +50,36 @@ import org.opensolaris.opengrok.util.Executor;
  */
 public class GitRepository extends Repository {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitRepository.class);
+
     private static final long serialVersionUID = 1L;
-    /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.git";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * The property name used to obtain the client command for this repository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.git";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "git";
 
-    /** git blame command */
+    /**
+     * git blame command
+     */
     private static final String BLAME = "blame";
 
-    /** arguments to shorten git IDs */
+    /**
+     * arguments to shorten git IDs
+     */
     private static final int CSET_LEN = 8;
     private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
     private static final String ABBREV_BLAME = "--abbrev=" + (CSET_LEN - 1);
 
-    /** Pattern used to extract author/revision from git blame. */
-    private static final Pattern BLAME_PATTERN =
-            Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
+    /**
+     * Pattern used to extract author/revision from git blame.
+     */
+    private static final Pattern BLAME_PATTERN
+            = Pattern.compile("^\\W*(\\w+).+?\\((\\D+).*$");
 
     public GitRepository() {
         type = "git";
@@ -70,19 +87,19 @@ public class GitRepository extends Repository {
     }
 
     /**
-     * Get path of the requested file given a commit hash.
-     * Useful for tracking the path when file has changed its location.
+     * Get path of the requested file given a commit hash. Useful for tracking
+     * the path when file has changed its location.
      *
      * @param fileName name of the file to retrieve the path
      * @param revision commit hash to track the path of the file
      * @return full path of the file on success; null string on failure
      */
     private String getCorrectPath(String fileName, String revision) throws IOException {
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         String path = "";
 
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add(BLAME);
         cmd.add("-c"); // to get correctly formed changeset IDs
         cmd.add(ABBREV_LOG);
@@ -93,8 +110,8 @@ public class GitRepository extends Repository {
 
         int status = exec.exec();
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
-	        "Failed to get blame list in resolving correct path");
+            LOGGER.log(Level.SEVERE,
+                    "Failed to get blame list in resolving correct path");
             return path;
         }
         try (BufferedReader in = new BufferedReader(exec.getOutputReader())) {
@@ -112,27 +129,27 @@ public class GitRepository extends Repository {
         }
 
         return path;
-    }    
+    }
 
     /**
-     * Get an executor to be used for retrieving the history log for the
-     * named file.
+     * Get an executor to be used for retrieving the history log for the named
+     * file.
      *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision)
-        throws IOException
-    {
+            throws IOException {
+
         String abs = file.getCanonicalPath();
         String filename = "";
         if (abs.length() > directoryName.length()) {
             filename = abs.substring(directoryName.length() + 1);
         }
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("log");
         cmd.add("--abbrev-commit");
         cmd.add(ABBREV_LOG);
@@ -166,8 +183,7 @@ public class GitRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
-    {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -178,9 +194,9 @@ public class GitRepository extends Repository {
         Process process = null;
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
-                .substring(directoryName.length() + 1);
+                    .substring(directoryName.length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {cmd, "show", rev + ":" + filename};
+            String argv[] = {RepoCommand, "show", rev + ":" + filename};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             InputStream in = process.getInputStream();
@@ -208,8 +224,8 @@ public class GitRepository extends Repository {
 
             ret = new ByteArrayInputStream(output.toByteArray());
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get history: " + exp.getClass().toString(), exp);
+            LOGGER.log(Level.SEVERE,
+                    "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -231,12 +247,13 @@ public class GitRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
+     * @throws java.io.IOException
      */
     @Override
     public Annotation annotate(File file, String revision) throws IOException {
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add(BLAME);
         cmd.add("-c"); // to get correctly formed changeset IDs
         cmd.add(ABBREV_BLAME);
@@ -252,7 +269,7 @@ public class GitRepository extends Repository {
         if (status != 0) {
             cmd.clear();
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            cmd.add(this.cmd);
+            cmd.add(RepoCommand);
             cmd.add(BLAME);
             cmd.add("-c"); // to get correctly formed changeset IDs
             cmd.add(ABBREV_BLAME);
@@ -261,8 +278,8 @@ public class GitRepository extends Repository {
             exec = new Executor(cmd, file.getParentFile());
             status = exec.exec();
             if (status != 0) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
-		    "Failed to get blame list");
+                LOGGER.log(Level.SEVERE,
+                        "Failed to get blame list");
             }
             try (BufferedReader in = new BufferedReader(exec.getOutputReader())) {
                 String pattern = "^\\W*" + revision + " (.+?) .*$";
@@ -275,7 +292,7 @@ public class GitRepository extends Repository {
                         String filepath = matcher.group(1);
                         cmd.clear();
                         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-                        cmd.add(this.cmd);
+                        cmd.add(RepoCommand);
                         cmd.add(BLAME);
                         cmd.add("-c"); // to get correctly formed changeset IDs
                         cmd.add(ABBREV_BLAME);
@@ -288,8 +305,8 @@ public class GitRepository extends Repository {
                         exec = new Executor(cmd, directory);
                         status = exec.exec();
                         if (status != 0) {
-                            OpenGrokLogger.getLogger().log(Level.SEVERE,
-			        "Failed to get blame details for modified file path");
+                            LOGGER.log(Level.SEVERE,
+                                    "Failed to get blame details for modified file path");
                         }
                         break;
                     }
@@ -298,9 +315,9 @@ public class GitRepository extends Repository {
         }
 
         if (status != 0) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-                "Failed to get annotations for: \"{0}\" Exit code: {1}",
-                new Object[]{file.getAbsolutePath(), String.valueOf(status)});
+            LOGGER.log(Level.WARNING,
+                    "Failed to get annotations for: \"{0}\" Exit code: {1}",
+                    new Object[]{file.getAbsolutePath(), String.valueOf(status)});
         }
 
         return parseAnnotation(
@@ -308,8 +325,8 @@ public class GitRepository extends Repository {
     }
 
     protected Annotation parseAnnotation(Reader input, String fileName)
-        throws IOException
-    {
+            throws IOException {
+
         BufferedReader in = new BufferedReader(input);
         Annotation ret = new Annotation(fileName);
         String line = "";
@@ -323,9 +340,9 @@ public class GitRepository extends Repository {
                 String author = matcher.group(2).trim();
                 ret.addLine(rev, author, true);
             } else {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
-                    "Error: did not find annotation in line {0}: [{1}] of {2}",
-                    new Object[]{String.valueOf(lineno), line, fileName});
+                LOGGER.log(Level.SEVERE,
+                        "Error: did not find annotation in line {0}: [{1}] of {2}",
+                        new Object[]{String.valueOf(lineno), line, fileName});
             }
         }
         return ret;
@@ -339,9 +356,9 @@ public class GitRepository extends Repository {
     @Override
     public void update() throws IOException {
         File directory = new File(getDirectoryName());
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("config");
         cmd.add("--list");
 
@@ -350,9 +367,9 @@ public class GitRepository extends Repository {
             throw new IOException(executor.getErrorString());
         }
 
-        if (executor.getOutputString().indexOf("remote.origin.url=") != -1) {
+        if (executor.getOutputString().contains("remote.origin.url=")) {
             cmd.clear();
-            cmd.add(this.cmd);
+            cmd.add(RepoCommand);
             cmd.add("pull");
             cmd.add("-n");
             cmd.add("-q");
@@ -384,9 +401,9 @@ public class GitRepository extends Repository {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd, "--help");
+            working = checkCmd(RepoCommand, "--help");
         }
-        return working.booleanValue();
+        return working;
     }
 
     @Override
@@ -406,7 +423,7 @@ public class GitRepository extends Repository {
         History result = new GitHistoryParser().parse(file, this, sinceRevision);
         // Assign tags to changesets they represent
         // We don't need to check if this repository supports tags,
-	// because we know it :-)
+        // because we know it :-)
         if (env.isTagsEnabled()) {
             assignTagsInHistory(result);
         }
@@ -422,9 +439,9 @@ public class GitRepository extends Repository {
         String hash = null;
         Date date = null;
 
-        ArrayList<String> argv = new ArrayList<String>();
+        ArrayList<String> argv = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(cmd);
+        argv.add(RepoCommand);
         argv.add("log");
         argv.add("--format=commit:%H" + System.getProperty("line.separator")
                 + "Date:%at");
@@ -432,8 +449,7 @@ public class GitRepository extends Repository {
         argv.add(tags + "^.." + tags);
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
-        Process process = null;
-
+        Process process;
         process = pb.start();
 
         try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -451,18 +467,16 @@ public class GitRepository extends Repository {
                     if (parts.length < 2) {
                         throw new HistoryException("Tag line contains more than 2 columns: " + line);
                     }
-                    date = new Date((long)(Integer.parseInt(parts[1])) * 1000);
+                    date = new Date((long) (Integer.parseInt(parts[1])) * 1000);
                 }
             }
         }
 
-        if (process != null) {
-            try {
-                process.exitValue();
-            } catch (IllegalThreadStateException e) {
-                // the process is still running??? just kill it..
-                process.destroy();
-            }
+        try {
+            process.exitValue();
+        } catch (IllegalThreadStateException e) {
+            // the process is still running??? just kill it..
+            process.destroy();
         }
 
         // Git can have tags not pointing to any commit, but tree instead
@@ -476,11 +490,11 @@ public class GitRepository extends Repository {
 
     @Override
     protected void buildTagList(File directory) {
-        this.tagList = new TreeSet<TagEntry>();
-        ArrayList<String> argv = new ArrayList<String>();
-        LinkedList<String> tagsList = new LinkedList<String>();
+        this.tagList = new TreeSet<>();
+        ArrayList<String> argv = new ArrayList<>();
+        LinkedList<String> tagsList = new LinkedList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(cmd);
+        argv.add(RepoCommand);
         argv.add("tag");
         ProcessBuilder pb = new ProcessBuilder(argv);
         pb.directory(directory);
@@ -497,8 +511,8 @@ public class GitRepository extends Repository {
                 }
             }
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-	        "Failed to read tag list: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
 
@@ -520,14 +534,73 @@ public class GitRepository extends Repository {
                 this.tagList.add(tagEntry);
             }
         } catch (HistoryException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-	        "Failed to parse tag list: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "Failed to parse tag list: {0}", e.getMessage());
             this.tagList = null;
         } catch (IOException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-	        "Failed to read tag list: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING,
+                    "Failed to read tag list: {0}", e.getMessage());
             this.tagList = null;
         }
     }
-}
 
+    @Override
+    String determineParent() throws IOException {
+        String parent = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(RepoCommand);
+        cmd.add("remote");
+        cmd.add("-v");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process;
+        process = pb.start();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("origin") && line.contains("(fetch)")) {
+                    String parts[] = line.split("\\s+");
+                    if (parts.length != 3) {
+                        LOGGER.log(Level.WARNING,
+                                "Failed to get parent for {0}", directoryName);
+                    }
+                    parent = parts[1];
+                    break;
+                }
+            }
+        }
+
+        return parent;
+    }
+
+    @Override
+    String determineBranch() throws IOException {
+        String branch = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(RepoCommand);
+        cmd.add("branch");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process;
+        process = pb.start();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.startsWith("*")) {
+                    branch = line.substring(2).trim();
+                    break;
+                }
+            }
+        }
+
+        return branch;
+    }
+}

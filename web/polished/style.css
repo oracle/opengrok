@@ -10,6 +10,24 @@ a {
 	text-decoration: none;
 }
 
+div#src a.l, div#src a.hl {
+    padding: 0;
+}
+
+div#src a.l:after, div#src a.hl:after {
+    content: "\0020";
+}
+
+div#src a.l.selected:after, div#src a.hl.selected:after {
+    content: "";
+}
+
+/* highlight line number with anchor */
+div[id^='src'] a.l.target, div[id^='src'] a.hl.target {
+	background: orange;
+	color:yellow;
+}
+
 a:link {
 	color: #2030A2;
 }
@@ -84,6 +102,11 @@ label {
 	margin: 0;
 }
 
+.edited {
+    font-size: 50%;
+    display: block;
+}
+
 #page { }
 
 .error { /* error messages */
@@ -94,6 +117,124 @@ label {
 	font-weight: bold;
 	color: #e08c00;
 }
+
+/*
+ * Project list on the index page
+ */
+.projects {
+    list-style-type: none; 
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+.panel {
+  margin-bottom: 10px;
+  background-color: #fff;
+  border-color: #ddd;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 4px;
+}
+
+.projects > .toggle-buttons {
+  margin-left: 1%;
+  margin-right: 1%;
+  border: none; 
+  text-align: right;
+}
+
+.projects > .panel {
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+          box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+  margin-left: 1%;
+  margin-right: 1%;
+}
+
+.projects .panel-body-accordion {
+    display: none;
+}
+
+.panel > .panel-heading, .panel > .panel-heading-accordion {
+  padding: 0 15px;
+  border-bottom: 1px solid transparent;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  color: #333;
+  background-color: #D8DBD7;
+  border-color: #ddd;
+}
+
+.panel > .panel-heading:hover,
+.panel > .panel-heading-accordion:hover {
+    cursor: pointer;
+}
+
+.panel > .panel-heading h1,
+.panel > .panel-heading h2,
+.panel > .panel-heading h3,
+.panel > .panel-heading h4,
+.panel > .panel-heading h5,
+.panel > .panel-heading h6,
+.panel > .panel-heading-accordion h1,
+.panel > .panel-heading-accordion h2,
+.panel > .panel-heading-accordion h3,
+.panel > .panel-heading-accordion h4,
+.panel > .panel-heading-accordion h5,
+.panel > .panel-heading-accordion h6 {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin: 0;
+}
+
+.panel > .panel-body, .panel > .panel-body-accordion {
+  padding: 15px;
+}
+
+.panel-group {
+  margin-bottom: 20px;
+}
+
+.panel-group .panel {
+  margin-bottom: 0;
+  border-radius: 4px;
+}
+
+.panel-group .panel + .panel {
+  margin-top: 0px;
+}
+
+.panel-group .panel-heading, .panel-group .panel-heading-accordion {
+  border-bottom: 0;
+}
+
+.panel-body > table, .panel-body-accordion > table {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.panel-body > table:last-child, .panel-body-accordion > table:last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * Changesets colorization
+ * 1 is the most recent changeset
+ * class is set in web/Util.java
+ * 
+ * version class is generated for every version number
+ * by setting those classes in style.css (or generating them) you can adjust 
+ * the colorification for more versions than 10 versions
+ */
+.version_color_1 {  background-color: rgb( 0, 256, 0 ) !important;  }
+.version_color_2 {  background-color: rgb( 30, 256, 0 ) !important; }
+.version_color_3 {  background-color: rgb( 60, 256, 0 ) !important; }
+.version_color_4 {  background-color: rgb( 90, 256, 0 ) !important; }
+.version_color_5 {  background-color: rgb( 120, 256, 20 ) !important;}
+.version_color_6 {  background-color: rgb( 150, 256, 40 ) !important;}
+.version_color_7 {  background-color: rgb( 180, 256, 60 ) !important;}
+.version_color_8 {  background-color: rgb( 210, 256, 80 ) !important;}
+.version_color_9 {  background-color: rgb( 240, 256, 100 ) !important;}
+.version_color_10{  background-color: rgb( 256, 256, 120 ) !important;}
 
 /* ############### start of header ############## */
 #whole_header { 
@@ -524,6 +665,11 @@ table#dirlist { /* the "Name" column */
 	border-collapse: collapse;
 }
 
+/* The tablersorter jQuery plugin makes the header fields clickable. */
+#dirlist th {
+	cursor: pointer;
+}
+
 #dirlist .r, #dirlist .p {
 	background-image: url(./img/combined.png);
 	background-repeat: no-repeat;
@@ -650,6 +796,21 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	margin-bottom: 1em;
 }
 
+/* "Navigate Style" */
+.diff_navigation_style {
+    border: solid 1px #c0c0c0;
+    border-radius: 5px;
+    box-shadow: 10px 10px 5px #888888;
+    background-color: rgb(255,255,204);
+    position: absolute;
+    padding: 1em;    
+}
+
+/* "Tooltip Style (minor information)" */
+.tooltip {
+    position: absolute;
+}
+
 /* "Navigate" Popup */
 .sym_list_style {
 	position: absolute;
@@ -671,13 +832,87 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	display: none;
 }
 
+/**** DIFF NAVIGATION/JUMPER *****/
+
+.diff_navigation_style {
+    border: solid 1px #c0c0c0;
+    border-radius: 5px;
+    box-shadow: 10px 10px 5px #888888;
+    background-color: rgb(255,255,204);
+    padding: 1em;    
+}
+
+.diff_navigation {
+    position: fixed;
+    top: 250px;
+    right: 25px;
+    width: 30%;
+    max-width: 250px;
+
+    background-color: rgba(255,255,204,0.80);
+    overflow: auto;
+    padding: 0;
+}
+
+.diff_navigation div:nth-child(2) {
+    margin-top: 1.5em;
+    border-top: solid 2px #c0c0c0;
+}
+
+.diff_navigation .header .minimize {
+    float: right;
+    padding: 1px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border: 2px outset black;
+    border-radius: 3px;
+}
+
+.diff_navigation div {
+    clear: both;
+    padding-right: 1em;
+    padding-left: 1em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+}
+
+.diff_navigation div:empty {
+    padding: 0;
+}
+
+.diff_navigation .errors, 
+.diff_navigation .summary,
+.diff_navigation .progress {
+    text-align: center;
+}
+
+.diff_navigation a {
+    /*border: 1px solid #bbbbff;
+    border-radius: 0.75ex;
+    -moz-border-radius: 0.75ex;
+    background-color: #a3b8cb;*/   
+}
+
+.diff_navigation .prev {
+    float: left;
+}
+
+.diff_navigation .next {
+    float: right;
+}
+
+.diff_navigation .error {
+    color: red;
+}
+/**** DIFF NAVIGATION/JUMPER *****/
+
 /* search result page */
 #results {
 	background: white;
 	padding: 1ex 0;
 }
 
-#results p { /* pagetitle and slider */
+#results p, #revisions p { /* pagetitle and slider */
 	padding: 0.5em;
 }
 
@@ -723,14 +958,14 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	font-weight: bold;
 }
 
-#results .sel { /* slider item for the shown search result page */
+#results .sel, #revisions .sel { /* slider item for the shown search result page */
 	background-color: #a3b8cb;
 	border: 1px solid #333366;
 	padding: .5em;
 	margin: 1px;
 }
 
-#results .more { /* slider item for the n-th search result page */
+#results .more, #revisions .more { /* slider item for the n-th search result page */
 	border: 1px #ccc solid;
 	padding: .3em;
 	margin: 1px;

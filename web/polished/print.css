@@ -8,6 +8,18 @@ a {
 	text-decoration: none;
 }
 
+div#src a.l, div#src a.hl {
+    padding: 0;
+}
+
+div#src a.l:after, div#src a.hl:after {
+    content: "\0020";
+}
+
+div#src a.l.selected:after, div#src a.hl.selected:after {
+    content: "";
+}
+
 a:link {
 	color: #2030A2;
 }
@@ -60,10 +72,30 @@ label {
 	margin: 0;
 }
 
+.edited {
+    font-size: 50%;
+    display: block;
+}
+
 #page { }
 
 .error { /* error messages */
 	color: #a52a2a;
+}
+
+/*
+ * Project list on the index page
+ */
+.projects {
+    list-style-type: none; 
+}
+
+.projects .panel-body {
+    display: block;
+}
+
+.projects .toggle-buttons {
+    display: none;
 }
 
 /* ############### start of header ############## */
@@ -481,6 +513,6 @@ a.xsr	{ /* subroutine */		color: #00f; font-weight: bold; }
 	vertical-align: middle;
 	background-image: url(./img/combined.png);
 	background-repeat: no-repeat;
-	background-position: -432px 0;
+	background-position: -425px 0;
 }
 /* ############### end of footer ############## */

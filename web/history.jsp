@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -80,10 +80,80 @@ include file="mast.jsp"
 %><script type="text/javascript">/* <![CDATA[ */
 document.domReady.push(function() {domReadyHistory();});
 /* ]]> */</script>
+<!--[if IE]>
+<style type="text/css">
+  table#revisions tbody tr td p {
+        word-break: break-all;
+    }
+</style>
+<![endif]-->
+<%
+// We have a lots of results to show: create a slider for
+String slider = "";
+int thispage;  // number of items to display on the current page
+int start = cfg.getSearchStart();
+int max = cfg.getSearchMaxItems();
+int totalHits = hist.getHistoryEntries().size();
+if (max < totalHits) {
+    StringBuilder buf = new StringBuilder(4096);
+    thispage = (start + max) < totalHits ? max : totalHits - start;
+    int labelStart = 1;
+    int sstart = start - max * (start / max % 10 + 1) ;
+    if (sstart < 0) {
+        sstart = 0;
+        labelStart = 1;
+    } else {
+        labelStart = sstart / max + 1;
+    }
+    int label = labelStart;
+    int labelEnd = label + 11;
+    for (int i = sstart; i < totalHits && label <= labelEnd; i+= max) {
+        if (i <= start && start < i + max) {
+            buf.append("<span class=\"sel\">").append(label).append("</span>");
+        } else {
+            buf.append("<a class=\"more\" href=\"?n=").append(max)
+                .append("&amp;start=").append(i);
+            // append revision parameters
+            if (cfg.getIntParam("r1", -1) != -1) {
+                buf.append("&amp;r1=").append(cfg.getIntParam("r1", -1));
+            }
+            if (cfg.getIntParam("r2", -1) != -1) {
+                buf.append("&amp;r2=").append(cfg.getIntParam("r2", -1));
+            }
+            buf.append("\">");
+            if (label == labelStart && label != 1) {
+                buf.append("&lt;&lt");
+            } else if (label == labelEnd && i < totalHits) {
+                buf.append("&gt;&gt;");
+            } else {
+                buf.append(label);
+            }
+            buf.append("</a>");
+        }
+        label++;
+    }
+    slider = buf.toString();
+} else {
+    // set the max index to max or last
+    thispage = totalHits - start;
+}
+
+int revision2 = cfg.getIntParam("r2", -1) < 0 ? 0 : cfg.getIntParam("r2", -1);
+int revision1 = cfg.getIntParam("r1", -1) < revision2 ? revision2 + 1 : cfg.getIntParam("r1", -1);
+revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2; 
+
+
+%>
+
 <form action="<%= context + Prefix.DIFF_P + uriEncodedName %>">
 <table class="src" id="revisions">
     <caption>History log of <a href="<%= context + Prefix.XREF_P
-        + uriEncodedName %>"><%= path %></a></caption>
+        + uriEncodedName %>"><%= path %></a>
+    (Results <b> <%= start + 1 %> - <%= thispage + start
+            %></b> of <b><%= totalHits %></b>)
+    <p class="slider"><%= slider %></p>
+    </caption>
+   
     <thead>
         <tr>
             <th>Revision <%
@@ -97,7 +167,14 @@ document.domReady.push(function() {domReadyHistory();});
             %></th><%
             if (!cfg.isDir()) {
             %>
-            <th><input type="submit" value=" Compare "/></th><%
+            <th><input type="submit" value=" Compare "/>
+            <% if (hist.getHistoryEntries().size() > revision1 && revision1 >= 0) { %>
+                <input type="hidden" name="r1" value="<%= path + '@' + hist.getHistoryEntries().get(revision1).getRevision() %>" />
+            <% } %>
+            <% if (hist.getHistoryEntries().size() > revision2 && revision2 >= 0) { %>
+                <input type="hidden" name="r2" value="<%= path + '@' + hist.getHistoryEntries().get(revision2).getRevision() %>" />
+            <% } %>
+            </th><%
             }
             %>
             <th>Date</th>
@@ -115,9 +192,9 @@ document.domReady.push(function() {domReadyHistory();});
         </tr>
     </thead>
     <tbody>
-    <%
+            <%
             int count=0;
-            for (HistoryEntry entry : hist.getHistoryEntries()) {
+            for (HistoryEntry entry : hist.getHistoryEntries(max, start)) {
                 String rev = entry.getRevision();
                 if (rev == null || rev.length() == 0) {
                     rev = "";
@@ -150,20 +227,32 @@ document.domReady.push(function() {domReadyHistory();});
                 title="link to revision line">#</a>
                 <a href="<%= context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
-            <td>
-                <input type="radio"<%
-                        if (count == 0 ) {
-                    %> disabled="disabled"<%
-                        } else if (count == 1) {
-                    %> checked="checked"<%
-                        }
-                    %> name="r1" value="<%= path %>@<%= rev%>"/>
-                <input type="radio"
-                    name="r2"<%
-                        if (count == 0) {
-                    %> checked="checked"<%
-                        }
-                    %> value="<%= path %>@<%= rev %>"/></td><%
+            <td><%
+                String url;
+                if (count + start > revision1 || (count + start > revision2 && count + start <= revision1 - 1)) {
+                    // revision1 enabled
+                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&start=" + start +"&r1="+(start + count) +"&r2="+revision2;
+                    %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
+                } else if (count + start == revision1 ) {
+                    // revision1 selected
+                    %><input type="radio" checked/><%
+                } else if( count + start <= revision2 ) {
+                    // revision1 disabled
+                    %><input type="radio" disabled/><%
+                }
+
+                if( count + start < revision2 || (count + start > revision2 && count + start <= revision1 - 1) ) {
+                    // revision2 enabled
+                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&start=" + start +"&r1="+revision1 +"&r2="+(start + count);
+                    %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
+                } else if( count + start == revision2 ) {
+                    // revision2 selected
+                    %><input type="radio" checked/><%
+                } else if (count + start >= revision1 ) {
+                    // revision2 disabled
+                    %><input type="radio" disabled/><%
+                }
+                %></td><%
                     } else {
                         striked = true;
                 %>

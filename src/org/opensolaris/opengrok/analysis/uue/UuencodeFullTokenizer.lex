@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin <C++@Cns.SU>
  */
 
@@ -34,9 +34,11 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class UuencodeFullTokenizer
 %extends JFlexTokenizer
 %unicode
-%init{
-super(in);
-%init}
+%{
+public UuencodeFullTokenizer() {
+super();
+}
+%}
 %type boolean
 %eofval{
 return false;

@@ -18,21 +18,21 @@
  */
 
 /*
- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.c.CxxSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.document.TroffFullTokenizer;
 import org.opensolaris.opengrok.analysis.fortran.FortranSymbolTokenizer;
+import org.opensolaris.opengrok.analysis.haskell.HaskellSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.java.JavaSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.lisp.LispSymbolTokenizer;
 import org.opensolaris.opengrok.analysis.perl.PerlSymbolTokenizer;
@@ -51,33 +51,36 @@ public class JFlexTokenizerTest {
 
     /**
      * Test that the various sub-classes of JFlexTokenizerTest return the
-     * correct offsets for the tokens. They used to give wrong values for
-     * the last token. Bug #15858.
+     * correct offsets for the tokens. They used to give wrong values for the
+     * last token. Bug #15858.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testOffsetAttribute() throws Exception {
-        testOffsetAttribute(ShSymbolTokenizer.class);
-        testOffsetAttribute(TroffFullTokenizer.class);
-        testOffsetAttribute(PerlSymbolTokenizer.class);
-        testOffsetAttribute(PlainSymbolTokenizer.class);
-        testOffsetAttribute(PlainFullTokenizer.class);
         testOffsetAttribute(CSymbolTokenizer.class);
         testOffsetAttribute(CxxSymbolTokenizer.class);
+        testOffsetAttribute(HaskellSymbolTokenizer.class);
         testOffsetAttribute(JavaSymbolTokenizer.class);
-        testOffsetAttribute(ScalaSymbolTokenizer.class);
         testOffsetAttribute(LispSymbolTokenizer.class);
+        testOffsetAttribute(PerlSymbolTokenizer.class);
+        testOffsetAttribute(PlainFullTokenizer.class);
+        testOffsetAttribute(PlainSymbolTokenizer.class);
+        testOffsetAttribute(ScalaSymbolTokenizer.class);
+        testOffsetAttribute(ShSymbolTokenizer.class);
         testOffsetAttribute(TclSymbolTokenizer.class);
+        testOffsetAttribute(TroffFullTokenizer.class);
 
         // The Fortran tokenizer doesn't accept the default input text, so
         // create a text fragment that it understands
         testOffsetAttribute(FortranSymbolTokenizer.class,
                 "1 token1 = token2 + token3",
-                new String[] {"token1", "token2", "token3"});
+                new String[]{"token1", "token2", "token3"});
     }
 
     /**
-     * Helper method for {@link #testOffsetAttribute()} that runs the test
-     * on one single implementation class.
+     * Helper method for {@link #testOffsetAttribute()} that runs the test on
+     * one single implementation class.
      */
     private void testOffsetAttribute(Class<? extends JFlexTokenizer> klass)
             throws Exception {
@@ -87,12 +90,12 @@ public class JFlexTokenizerTest {
     }
 
     /**
-     * Helper method for {@link #testOffsetAttribute()} that runs the test
-     * on one single implementation class with the specified input text and
+     * Helper method for {@link #testOffsetAttribute()} that runs the test on
+     * one single implementation class with the specified input text and
      * expected tokens.
      */
     private void testOffsetAttribute(Class<? extends JFlexTokenizer> klass,
-                                     String inputText, String[] expectedTokens)
+            String inputText, String[] expectedTokens)
             throws Exception {
         JFlexTokenizer tokenizer = klass.getConstructor(Reader.class)
                 .newInstance(new StringReader(inputText));
@@ -118,9 +121,11 @@ public class JFlexTokenizerTest {
 
     /**
      * The fix for bug #15858 caused a regression in ShSymbolTokenizer where
-     * variables on the form {@code ${VARIABLE}} were not correctly indexed
-     * if they were inside a quoted string. The closing brace would be part of
-     * the indexed term in that case.
+     * variables on the form {@code ${VARIABLE}} were not correctly indexed if
+     * they were inside a quoted string. The closing brace would be part of the
+     * indexed term in that case.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testShellVariableInBraces() throws Exception {
@@ -134,8 +139,10 @@ public class JFlexTokenizerTest {
     }
 
     /**
-     * Truncated uuencoded files used to cause infinite loops. Verify that
-     * they work now.
+     * Truncated uuencoded files used to cause infinite loops. Verify that they
+     * work now.
+     *
+     * @throws java.io.IOException
      */
     @Test
     public void truncatedUuencodedFile() throws IOException {

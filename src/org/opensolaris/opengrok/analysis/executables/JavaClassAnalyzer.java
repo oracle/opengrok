@@ -59,6 +59,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Analyzes Java Class files Created on September 23, 2005
@@ -67,6 +68,8 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Lubos Kosco , January 2010 , updated bcel, comment on thread safety
  */
 public class JavaClassAnalyzer extends FileAnalyzer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaClassAnalyzer.class);
 
     private final String urlPrefix = RuntimeEnvironment.getInstance().getUrlPrefix();
 
@@ -103,7 +106,7 @@ public class JavaClassAnalyzer extends FileAnalyzer {
             try { 
                 xrefOut.flush();
             } catch (IOException ex) {
-                Logger.getLogger(JavaClassAnalyzer.class.getName()).log(Level.WARNING, "Couldn't flush xref, will retry once added to doc", ex);
+                LOGGER.log(Level.WARNING, "Couldn't flush xref, will retry once added to doc", ex);
             }
         }        
         xref = null; //flush the xref        

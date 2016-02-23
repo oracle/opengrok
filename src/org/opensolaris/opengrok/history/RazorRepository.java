@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ */
 /* Portions Copyright 2008 Peter Bray */
 package org.opensolaris.opengrok.history;
 
@@ -26,9 +29,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Adds access to to a Razor Repository
@@ -38,99 +42,100 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  * A brief and simplistic overview of Razor
  *
  * Razor uses the term 'Group' for what might traditionally be called a
- * repository, that is a collection of files and folders. A collection of
- * Groups is called a 'Universe' in Razor. Razor supports multiple Universes,
- * and these are the units which can be independently started and stopped.
+ * repository, that is a collection of files and folders. A collection of Groups
+ * is called a 'Universe' in Razor. Razor supports multiple Universes, and these
+ * are the units which can be independently started and stopped.
  *
  * A universe usually consists of on issue tracking data set called "Issues",
  * this is managed from a user perspective by a GUI called 'issues' or a web
- * interface called 'issue weaver'. Each group has a file repository, managed
- * by a GUI called 'versions', and an associated GUI called 'threads' is used
- * to collect together related versions of files into a "Thread", which can
- * be thought of as a like a tag against the repository, but is managed outside
- * of the file repository itself.
+ * interface called 'issue weaver'. Each group has a file repository, managed by
+ * a GUI called 'versions', and an associated GUI called 'threads' is used to
+ * collect together related versions of files into a "Thread", which can be
+ * thought of as a like a tag against the repository, but is managed outside of
+ * the file repository itself.
  *
- * From the point of view of the user, they raise an issue to document a unit
- * of work, make changes to a collection of files against that issue, and then
+ * From the point of view of the user, they raise an issue to document a unit of
+ * work, make changes to a collection of files against that issue, and then
  * combine one or more issues into a thread to represent a releasable product.
  * Of course, there is more to the product then this brief outline can do
  * justice to but these general concepts should assist in understanding the
  * concepts presented in the OpenGrok Razor Repository interface.
  *
- * At an implementation level, a Universe consists of it Issues database,
- * and one or more Groups each consisting of file repository and thread
- * repository. Each of these repositories is implemented with a series of
- * directories (Archive, History, Info, Scripts and Tables). When file revision
- * control is needed on a file (both committed files and some internal
- * implementation files), Razor supports the use of either SCCS or RCS
- * for non-binary files and numbered compressed instances of binary files.
- * Each file is given a unique (per universe) numerical identifier in the
- * file .../razor_db/&lt;universe&gt;/RAZOR_UNIVERSE/Mapping, this is used by Razor
+ * At an implementation level, a Universe consists of it Issues database, and
+ * one or more Groups each consisting of file repository and thread repository.
+ * Each of these repositories is implemented with a series of directories
+ * (Archive, History, Info, Scripts and Tables). When file revision control is
+ * needed on a file (both committed files and some internal implementation
+ * files), Razor supports the use of either SCCS or RCS for non-binary files and
+ * numbered compressed instances of binary files. Each file is given a unique
+ * (per universe) numerical identifier in the file
+ * .../razor_db/&lt;universe&gt;/RAZOR_UNIVERSE/Mapping, this is used by Razor
  * to track files over time, as they renamed or deleted.
  *
  * Unfortunately, the Razor command line interface does not support features
  * that other SCMS support like 'log' and 'annotate'. Also, Razor check-outs
- * leave no indication that the files are from a centralised repository, so
- * it will not be possible to implement this module from a copy or check-out
- * of the repository, we will have to access (in a read-only manner) the actual
+ * leave no indication that the files are from a centralised repository, so it
+ * will not be possible to implement this module from a copy or check-out of the
+ * repository, we will have to access (in a read-only manner) the actual
  * repository itself, extracting the information directly or via SCCS/RCS
  * interfaces.
  *
  * IMPLEMENTATION NOTES:
  *
- * The Razor implementation used for development and testing of this code
- * has the following properties which may affect the success of others
- * trying to use this implementation:
- *   - Multiple Universes
- *   - Each Universe had Issues databases
- *   - Each Universe has multiple Groups, with Threads but no Projects
- *   - The file repository format chosen was the non-default implementation,
- *     that is, RCS rather than the default SCCS implementation
- *   - Binary files are compressed with the standard UNIX 'compress' tool
- *   - Not all Groups would be suitable for OpenGrok analysis
- *   - Use of Razor command line interface was deemed impractical
- *   - The use of the Mapping file and the tracking of renamed and deleted
- *     files was deemed too complex for the first implementation attempt
- *   - The Razor implementation was on a single Sun Solaris SPARC Server
- *   - The code development/testing used NetBeans-6.1 and Sun JDK 6 Update 6
+ * The Razor implementation used for development and testing of this code has
+ * the following properties which may affect the success of others trying to use
+ * this implementation: - Multiple Universes - Each Universe had Issues
+ * databases - Each Universe has multiple Groups, with Threads but no Projects -
+ * The file repository format chosen was the non-default implementation, that
+ * is, RCS rather than the default SCCS implementation - Binary files are
+ * compressed with the standard UNIX 'compress' tool - Not all Groups would be
+ * suitable for OpenGrok analysis - Use of Razor command line interface was
+ * deemed impractical - The use of the Mapping file and the tracking of renamed
+ * and deleted files was deemed too complex for the first implementation attempt
+ * - The Razor implementation was on a single Sun Solaris SPARC Server - The
+ * code development/testing used NetBeans-6.1 and Sun JDK 6 Update 6
  *
  * The initial implementation was to create symbolic links in the SRC_ROOT
- * directory to the Razor Group directories you wished OpenGrok to process.
- * The Razor implementation of HistoryParser and DirectoryHistoryParser were
+ * directory to the Razor Group directories you wished OpenGrok to process. The
+ * Razor implementation of HistoryParser and DirectoryHistoryParser were
  * functional, but the file analysis infrastructure could not support the
  * virtual filesystem that I was creating in my implementation of the
- * DirectoryHistoryParser for Razor. Essentially I was trying to make a
- * virtual file system, and remap all file names as required, but the file
- * analysis code assumed it could just read actual directories and process
- * their contents. I would have had to implement a VirtualFile and possibly
- * VirtualFilesystem classes, recode the file analysis framework and develop
- * Standard and Razor implementations. THIS APPROACH HAS BEEN ABORTED!!!
+ * DirectoryHistoryParser for Razor. Essentially I was trying to make a virtual
+ * file system, and remap all file names as required, but the file analysis code
+ * assumed it could just read actual directories and process their contents. I
+ * would have had to implement a VirtualFile and possibly VirtualFilesystem
+ * classes, recode the file analysis framework and develop Standard and Razor
+ * implementations. THIS APPROACH HAS BEEN ABORTED!!!
  *
- * The implementation now requires that you checkout a read-only copy of
- * the directories you wish OpenGrok to process, and place in the top-level
- * directory of each, a symlink called ".razor" to the Razor Group directory
- * for that folder. Example: if you have a universe called MyUniverse,
- * containing a group called MyGroup with top-level folders called Documentation
- * and Implementation. Then in SRC_ROOT (or a sub-directory of it), check-out
+ * The implementation now requires that you checkout a read-only copy of the
+ * directories you wish OpenGrok to process, and place in the top-level
+ * directory of each, a symlink called ".razor" to the Razor Group directory for
+ * that folder. Example: if you have a universe called MyUniverse, containing a
+ * group called MyGroup with top-level folders called Documentation and
+ * Implementation. Then in SRC_ROOT (or a sub-directory of it), check-out
  * read-only say the Implementation into $SRC_ROOT, and create a symlink called
  * $SRC_ROOT/Implementation/.razor which points to a directory of the form
- * &lt;prefix&gt;/razor_db/&lt;Universe&gt;/RAZOR_UNIVERSE/DOMAIN_01/&lt;GroupName&gt;, so that
- * might be /repository/razor/razor_db/MyUniverse/RAZOR_UNIVERSE/DOMAIN_01/MyGroup
+ * &lt;prefix&gt;/razor_db/&lt;Universe&gt;/RAZOR_UNIVERSE/DOMAIN_01/&lt;GroupName&gt;,
+ * so that might be
+ * /repository/razor/razor_db/MyUniverse/RAZOR_UNIVERSE/DOMAIN_01/MyGroup
  *
- * Because of the distributed nature of information storage in Razor (by this
- * I mean, that each file in the repository is represented by files of the
- * same name (and path) under multiple directories (Archive, History &amp; Info)),
+ * Because of the distributed nature of information storage in Razor (by this I
+ * mean, that each file in the repository is represented by files of the same
+ * name (and path) under multiple directories (Archive, History &amp; Info)),
  * I'm continuously mapping SRC_ROOT based names into the appropriate
  * subdirectory of the actual repository.
  *
- * The current implementation assumes the use of a UNIX platform, but I will
- * try not to hard-code too much in relation to these assumptions. Also I have
- * not worked Java for almost 8 years now, so please forgive any oversights
- * in this regard.
+ * The current implementation assumes the use of a UNIX platform, but I will try
+ * not to hard-code too much in relation to these assumptions. Also I have not
+ * worked Java for almost 8 years now, so please forgive any oversights in this
+ * regard.
  *
  * @author Peter Bray &lt;Peter.Darren.Bray@gmail.com&gt;
  */
 public class RazorRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RazorRepository.class);
+
     private static final long serialVersionUID = 1L;
 
     // The path of the repository itself is stored in the super class.
@@ -150,10 +155,10 @@ public class RazorRepository extends Repository {
     public void setDirectoryName(String directoryName) {
         super.setDirectoryName(directoryName);
         File opengrokBaseDirectory = new File(directoryName);
-        opengrokSourceRootDirectoryPath =
-            opengrokBaseDirectory.getParentFile().getAbsolutePath();
-        razorGroupBaseDirectoryPath =
-            new File(directoryName, ".razor").getAbsolutePath();
+        opengrokSourceRootDirectoryPath
+                = opengrokBaseDirectory.getParentFile().getAbsolutePath();
+        razorGroupBaseDirectoryPath
+                = new File(directoryName, ".razor").getAbsolutePath();
     }
 
     public String getOpengrokSourceRootDirectoryPath() {
@@ -174,7 +179,7 @@ public class RazorRepository extends Repository {
 
     String getOpenGrokFileNameFor(File file) {
         return file.getAbsolutePath()
-            .substring(opengrokSourceRootDirectoryPath.length());
+                .substring(opengrokSourceRootDirectoryPath.length());
     }
 
     File getSourceNameForOpenGrokName(String path) {
@@ -198,10 +203,9 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    boolean fileHasHistory( File file) {
+    boolean fileHasHistory(File file) {
 
         // @TODO : Rename & Delete Support
-
         try {
             File mappedFile = getRazorHistoryFileFor(file);
             return mappedFile.exists() && mappedFile.isFile();
@@ -211,11 +215,11 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    InputStream getHistoryGet( String parent, String basename, String rev) {
+    InputStream getHistoryGet(String parent, String basename, String rev) {
         // @TODO : Rename & Delete Support
         try {
-            File binaryFile =
-                getRazorArchiveBinaryFileFor(new File(parent, basename), rev);
+            File binaryFile
+                    = getRazorArchiveBinaryFileFor(new File(parent, basename), rev);
             if (binaryFile != null && binaryFile.exists()) {
                 // @TODO : Implement a UNIX Compress decompression input stream
                 // The standard Razor implementation uses UNIX Compress, so we
@@ -235,18 +239,18 @@ public class RazorRepository extends Repository {
             File sccsFile = getRazorArchiveSCCSFileFor(new File(parent, basename));
             if (sccsFile != null && sccsFile.exists()) {
                 ensureCommand(SCCSRepository.CMD_PROPERTY_KEY,
-                    SCCSRepository.CMD_FALLBACK);
-                return SCCSget.getRevision(cmd, sccsFile, rev);
+                        SCCSRepository.CMD_FALLBACK);
+                return SCCSget.getRevision(RepoCommand, sccsFile, rev);
             }
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "getHistoryGet( "
-                + parent + ", " + basename + ", " + rev + ")", e);
+            LOGGER.log(Level.SEVERE, "getHistoryGet( "
+                    + parent + ", " + basename + ", " + rev + ")", e);
         }
         return null;
     }
 
     @Override
-    Annotation annotate( File file, String revision)
+    Annotation annotate(File file, String revision)
             throws IOException {
         // @TODO : Rename & Delete Support
         File rcsFile = getRazorArchiveRCSFileFor(file);
@@ -264,7 +268,7 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    boolean fileHasAnnotation( File file) {
+    boolean fileHasAnnotation(File file) {
         // @TODO : Rename & Delete Support
         try {
 
@@ -291,27 +295,26 @@ public class RazorRepository extends Repository {
     }
 
     private File pathTranslation(File file, String intermediateElements,
-        String filePrefix, String fileSuffix) throws IOException
-    {
+            String filePrefix, String fileSuffix) throws IOException {
 
         File f = file;
 
         if (!f.getAbsolutePath().startsWith(opengrokSourceRootDirectoryPath)) {
             throw new IOException("Invalid Path for Translation '" + f.getPath()
-                + "', '" + intermediateElements + "', '" + filePrefix + "', '"
-                + fileSuffix + "'");
+                    + "', '" + intermediateElements + "', '" + filePrefix + "', '"
+                    + fileSuffix + "'");
         }
 
         if (filePrefix.length() != 0) {
             f = new File(f.getParent(), filePrefix + f.getName());
         }
 
-        StringBuffer path = new StringBuffer(razorGroupBaseDirectoryPath);
+        StringBuilder path = new StringBuilder(razorGroupBaseDirectoryPath);
         path.append(intermediateElements);
 
         if (f.getAbsolutePath().length() > opengrokSourceRootDirectoryPath.length()) {
             path.append(f.getAbsolutePath()
-                .substring(opengrokSourceRootDirectoryPath.length() + 1));
+                    .substring(opengrokSourceRootDirectoryPath.length() + 1));
         }
 
         if (fileSuffix.length() != 0) {
@@ -322,7 +325,7 @@ public class RazorRepository extends Repository {
     }
 
     @Override
-    boolean isRepositoryFor( File file) {
+    boolean isRepositoryFor(File file) {
         File f = new File(file, ".razor");
         return f.exists() && f.isDirectory();
     }
@@ -335,5 +338,15 @@ public class RazorRepository extends Repository {
     @Override
     History getHistory(File file) throws HistoryException {
         return new RazorHistoryParser().parse(file, this);
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        return "N/A";
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
     }
 }

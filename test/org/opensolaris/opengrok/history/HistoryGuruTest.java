@@ -18,9 +18,12 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,9 +31,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,12 +43,13 @@ import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  * Test the functionality provided by the HistoryGuru (with friends)
+ *
  * @author Trond Norbye
  */
 public class HistoryGuruTest {
 
     private static TestRepository repository = new TestRepository();
-    private static List<File> files = new ArrayList<>();
+    private static final List<File> files = new ArrayList<>();
 
     public HistoryGuruTest() {
     }
@@ -54,17 +58,17 @@ public class HistoryGuruTest {
     public static void setUpClass() throws Exception {
         repository = new TestRepository();
         repository.create(HistoryGuru.class.getResourceAsStream(
-            "repositories.zip"));
+                "repositories.zip"));
         FileUtilities.getAllFiles(new File(repository.getSourceRoot()),
-            files, true);
+                files, true);
         RuntimeEnvironment.getInstance().setVerbose(true);
-        
+
         HistoryGuru instance = HistoryGuru.getInstance();
         instance.addRepositories(repository.getSourceRoot());
-        
+
         // create cache with initial set of repos
         instance.createCache();
-        
+
         // now create cache for more repos
         Collection<String> repos = new ArrayList<>();
         repos.add("git");
@@ -82,11 +86,11 @@ public class HistoryGuruTest {
     }
 
     @Before
-    public void setUp() throws IOException {        
+    public void setUp() throws IOException {
     }
 
     @After
-    public void tearDown() {        
+    public void tearDown() {
     }
 
     @Test
@@ -105,14 +109,14 @@ public class HistoryGuruTest {
         HistoryGuru instance = HistoryGuru.getInstance();
         for (File f : files) {
             if (f.isFile() && instance.hasHistory(f)) {
-                for (HistoryEntry entry :
-                        instance.getHistory(f).getHistoryEntries()) {
+                for (HistoryEntry entry
+                        : instance.getHistory(f).getHistoryEntries()) {
                     String revision = entry.getRevision();
-                    InputStream in = instance.getRevision(
-                            f.getParent(), f.getName(), revision);
-                    assertNotNull("Failed to get revision " + revision +
-                            " of " + f.getAbsolutePath(), in);
-                    in.close();
+                    try (InputStream in = instance.getRevision(
+                            f.getParent(), f.getName(), revision)) {
+                        assertNotNull("Failed to get revision " + revision
+                                + " of " + f.getAbsolutePath(), in);
+                    }
                 }
             }
         }

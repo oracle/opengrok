@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.index;
@@ -36,11 +36,11 @@ public class Filter implements Serializable {
     private static final long serialVersionUID = 3L;
 
     /** The list of exact filenames */
-    private final Set<String> filename;
+    private final Set<String> filenames;
     /** The list of filenames with wildcards */
     private final List<Pattern> patterns;
     /** The list of paths */
-    private final List<String> path;
+    private final List<String> paths;
     /**
      * The full list of all patterns. This list will be saved in the
      * configuration file (if used)
@@ -48,9 +48,9 @@ public class Filter implements Serializable {
     private final List<String> items;
 
     public Filter() {
-        filename = new HashSet<>();
+        filenames = new HashSet<>();
         patterns = new ArrayList<>();
-        path = new ArrayList<>();
+        paths = new ArrayList<>();
         items = new PatternList(this);
     }
 
@@ -94,68 +94,52 @@ public class Filter implements Serializable {
      */
     public void clear() {
         patterns.clear();
-        filename.clear();
-        path.clear();
+        filenames.clear();
+        paths.clear();
         items.clear();
     }
 
     /**
-     * Should the file be ignored or not?
+     * Does the file match any of the filenames, patterns or paths ?
      * @param file the file to check
-     * @return true if this file should be ignored, false otherwise
+     * @return true if this file matches, false otherwise
      */
     public boolean match(File file) {
-        boolean ret = false;
-
-        String fileName = file.getName();
+        String fileName = file.getName(); // basename
         String absolute = file.getAbsolutePath();
 
-        if (filename.contains(fileName)) {
-            ret = true;
-        } else {
-            for (Pattern p : patterns) {
-                Matcher m = p.matcher(fileName);
-                if (m.matches()) {
-                    ret = true;
-                    break;
-                }
-                if (p.pattern().contains("/")) {
-                    m = p.matcher(absolute);
-                    if (m.matches()) {
-                        ret = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (!ret) {
-            for (String s : path) {
-                if (absolute.endsWith(s)) {
-                    ret = true;
-                    break;
-                }
-            }
-        }
-
-        //Check File extension
-        if (!ret) {      
-            int start = fileName.indexOf(".");          
-            if(start != -1){
-                String fileExtension = fileName.substring(start,fileName.length());
-                 if (filename.contains(fileExtension)) {
-                     ret = true;
-                }
-            }
+        if (filenames.contains(fileName)) {
+            return true;
         }
         
-        return ret;
+        for (Pattern p : patterns) {
+            // Try to match the basename first.
+            Matcher m = p.matcher(fileName);
+            if (m.matches()) {
+                return true;
+            }
+            // Try the full path next.
+            if (p.pattern().contains("/")) {
+                m = p.matcher(absolute);
+                if (m.matches()) {
+                    return true;
+                }
+            }
+        }
+
+        for (String s : paths) {
+            if (absolute.endsWith(s)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
-     * Should the file be ignored or not?
+     * Does the file name match any of the filenames, patterns or paths ?
      * @param name the name of the file to check
-     * @return true if this pathname should be ignored, false otherwise
+     * @return true if this pathname matches, false otherwise
      */
     public boolean match(String name) {
         return match(new File(name));
@@ -171,12 +155,12 @@ public class Filter implements Serializable {
             patterns.add(compilePattern(pattern));
         } else if (pattern.contains(File.separator)) {
             if (pattern.charAt(0) == File.separatorChar) {
-                path.add(pattern);
+                paths.add(pattern);
             } else {
-                path.add(File.separator + pattern);
+                paths.add(File.separator + pattern);
             }
         } else {
-            filename.add(pattern);
+            filenames.add(pattern);
         }
     }
 

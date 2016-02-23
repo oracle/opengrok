@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.executables;
@@ -30,6 +29,8 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
 
+    private static final String name = "Java class";
+    
     private static final String[] SUFFIXES = {
         "CLASS"
     };
@@ -39,7 +40,7 @@ public class JavaClassAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public JavaClassAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, Genre.XREFABLE);
+        super(null, null, SUFFIXES, MAGICS, null, null, Genre.XREFABLE, name);
     }
 
     @Override

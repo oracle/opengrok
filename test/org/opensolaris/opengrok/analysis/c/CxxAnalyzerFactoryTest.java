@@ -22,19 +22,24 @@
  */
 package org.opensolaris.opengrok.analysis.c;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import java.io.InputStream;
 import java.io.StringWriter;
+
+import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexableField;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.Scopes;
@@ -51,7 +56,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 public class CxxAnalyzerFactoryTest {
     
     FileAnalyzer analyzer;
-    private String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
     private static TestRepository repository;
     

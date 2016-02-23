@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.vb;
 
@@ -33,6 +33,8 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class VBAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Visual Basic";
 
     private static final String[] SUFFIXES = {
         "VB",
@@ -44,7 +46,7 @@ public class VBAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public VBAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

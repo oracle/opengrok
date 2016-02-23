@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -35,8 +35,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CXref;
 import org.opensolaris.opengrok.analysis.c.CxxXref;
+import org.opensolaris.opengrok.analysis.csharp.CSharpXref;
 import org.opensolaris.opengrok.analysis.document.TroffXref;
 import org.opensolaris.opengrok.analysis.fortran.FortranXref;
+import org.opensolaris.opengrok.analysis.haskell.HaskellXref;
 import org.opensolaris.opengrok.analysis.java.JavaXref;
 import org.opensolaris.opengrok.analysis.lisp.LispXref;
 import org.opensolaris.opengrok.analysis.perl.PerlXref;
@@ -107,6 +109,7 @@ public class JFlexXrefTest {
         bug15890LineCount(new JavaXref(new StringReader(fileContents)));
         bug15890LineCount(new ScalaXref(new StringReader(fileContents)));
         bug15890LineCount(new FortranXref(new StringReader(fileContents)));
+        bug15890LineCount(new HaskellXref(new StringReader(fileContents)));
         bug15890LineCount(new XMLXref(new StringReader(fileContents)));
         bug15890LineCount(new ShXref(new StringReader(fileContents)));
         bug15890LineCount(new TclXref(new StringReader(fileContents)));
@@ -136,6 +139,7 @@ public class JFlexXrefTest {
     public void testBug15890Anchor() throws Exception {
         bug15890Anchor(CXref.class, "c/bug15890.c");
         bug15890Anchor(CxxXref.class, "c/bug15890.c");
+        bug15890Anchor(HaskellXref.class, "haskell/bug15890.hs");
         bug15890Anchor(LispXref.class, "lisp/bug15890.lisp");
         bug15890Anchor(JavaXref.class, "java/bug15890.java");
     }
@@ -282,6 +286,20 @@ public class JFlexXrefTest {
     }
 
     /**
+     * Verify that template parameters are treated as class names rather than
+     * filenames.
+     */
+    @Test
+    public void testCxxXrefTemplateParameters() throws Exception {
+        StringReader in = new StringReader("#include <vector>\nclass MyClass;\nstd::vector<MyClass> *v;");
+        StringWriter out = new StringWriter();
+        JFlexXref xref = new CxxXref(in);
+        xref.write(out);
+        assertTrue("Link to search for definition of class not found",
+                   out.toString().contains("&lt;<a href=\"/source/s?defs=MyClass\""));
+    }
+
+    /**
      * Verify that ShXref handles here-documents. Bug #18198.
      */
     @Test
@@ -344,7 +362,7 @@ public class JFlexXrefTest {
         xref.write(out);
 
         assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
-            + "<a href=\"/source/s?defs=cat\">cat</a> &lt;&lt; EOF"
+            + "<a href=\"/source/s?defs=cat\" onmouseover=\"onMouseOverSymbol('cat', 'undefined-in-file')\">cat</a> &lt;&lt; EOF"
             + "<span class=\"s\">\n"
             + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>"
             + "unterminated heredoc</span>",
@@ -370,5 +388,17 @@ public class JFlexXrefTest {
                 + "<span class='c'>\n"
                 + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>",
                 out.toString());
+    }
+    
+    /**
+     * Test that CSharpXref correctly handles verbatim strings that end with backslash
+     */
+    @Test
+    public void testCsharpXrefVerbatimString() throws IOException {
+        StringReader in = new StringReader("test(@\"\\some_windows_path_in_a_string\\\");");
+        CSharpXref xref = new CSharpXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        assertTrue(out.toString().contains("<span class=\"s\">@\"\\some_windows_path_in_a_string\\\"</span>"));
     }
 }

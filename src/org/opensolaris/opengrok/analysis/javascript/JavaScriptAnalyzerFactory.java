@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.javascript;
@@ -34,6 +34,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "JavaScript";
+    
     private static final String[] SUFFIXES = {
         "JS"
     };
@@ -42,7 +45,7 @@ public class JavaScriptAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public JavaScriptAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

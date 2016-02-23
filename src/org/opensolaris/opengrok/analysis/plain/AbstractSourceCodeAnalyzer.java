@@ -25,21 +25,15 @@ package org.opensolaris.opengrok.analysis.plain;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.logging.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
-import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
-import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  *
@@ -49,6 +43,7 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
 
     /**
      * Creates a new instance of abstract analyzer
+     * @param factory for which analyzer to create this
      */
     protected AbstractSourceCodeAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
@@ -74,12 +69,13 @@ public abstract class AbstractSourceCodeAnalyzer extends PlainAnalyzer {
         super.analyze(doc, src, xrefOut);
     }
 
+    Reader dummy=null;
     @Override
-    public Analyzer.TokenStreamComponents createComponents(String fieldName, Reader reader) {
+    public Analyzer.TokenStreamComponents createComponents(String fieldName) {        
         if ("refs".equals(fieldName)) {
-            return new TokenStreamComponents(newSymbolTokenizer(reader));
+            return new TokenStreamComponents(newSymbolTokenizer(dummy));
         }
-        return super.createComponents(fieldName, reader);
+        return super.createComponents(fieldName);
     }
 
     /**

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.executables;
@@ -29,6 +28,9 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 public final class JarAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Jar";
+    
     private static final String[] SUFFIXES = {
         "JAR", "WAR", "EAR"
     };
@@ -38,7 +40,7 @@ public final class JarAnalyzerFactory extends FileAnalyzerFactory {
 
     private JarAnalyzerFactory() {
         // no magics for jar files, ZipAnalyzerFactory will handle it for us
-        super(null, null, SUFFIXES, null, null, null, Genre.XREFABLE);
+        super(null, null, SUFFIXES, null, null, null, Genre.XREFABLE, name);
     }
 
     @Override

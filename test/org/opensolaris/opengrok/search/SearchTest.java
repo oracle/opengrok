@@ -18,17 +18,21 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,7 +68,7 @@ public class SearchTest {
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(false);
             Indexer.getInstance().prepareIndexer(env, true, true, "/c", null,
-                false, false, false, null, null, new ArrayList<String>(), false);
+                    false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -118,13 +122,13 @@ public class SearchTest {
         assertFalse(instance.parseCmdLine(new String[]{"-R", "nonexisting-config-file"}));
 
         assertTrue(instance.parseCmdLine(new String[]{
-                    "-f", "foo",
-                    "-r", "foo",
-                    "-d", "foo",
-                    "-d", "foo",
-                    "-h", "foo",
-                    "-p", "foo", "-R", configFile.getAbsolutePath()
-                }));
+            "-f", "foo",
+            "-r", "foo",
+            "-d", "foo",
+            "-d", "foo",
+            "-h", "foo",
+            "-p", "foo", "-R", configFile.getAbsolutePath()
+        }));
     }
 
     /**
@@ -194,11 +198,11 @@ public class SearchTest {
         assertTrue(instance.search());
         assertEquals(1, instance.results.size());
 
-	RuntimeEnvironment.getInstance().setAllowLeadingWildcard(true);
+        RuntimeEnvironment.getInstance().setAllowLeadingWildcard(true);
         assertTrue(instance.parseCmdLine(new String[]{"-f", "********in argv path:main.c"}));
         assertTrue(instance.search());
         assertEquals(4, instance.results.size());
-	
+
     }
 
     @Test
@@ -248,7 +252,7 @@ public class SearchTest {
         System.setOut(new PrintStream(array));
         instance.dumpResults();
         System.out.flush();
-        assertTrue(array.toString().indexOf("Makefile: [...]") != -1);
+        assertTrue(array.toString().contains("Makefile: [...]"));
         System.setOut(out);
     }
 
@@ -265,7 +269,7 @@ public class SearchTest {
         System.setOut(new PrintStream(array));
         Search.main(new String[]{"-p", "Makefile"});
         System.out.flush();
-        assertTrue(array.toString().indexOf("Makefile: [...]") != -1);
+        assertTrue(array.toString().contains("Makefile: [...]"));
         System.setOut(out);
     }
 }

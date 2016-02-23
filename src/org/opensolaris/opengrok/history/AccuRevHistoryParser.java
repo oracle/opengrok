@@ -33,7 +33,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import java.util.logging.Logger;
+
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
@@ -42,6 +44,8 @@ import org.opensolaris.opengrok.util.Executor;
  * @author Steven Haehn
  */
 public class AccuRevHistoryParser implements Executor.StreamHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccuRevHistoryParser.class);
 
     private AccuRevRepository repository;
     private History history;
@@ -154,8 +158,7 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                     date = df.parse(data[2]);
                     entry.setDate(date);
                 } catch (ParseException pe) {
-                    OpenGrokLogger.getLogger().log(
-                            Level.WARNING, "Could not parse date: " + line, pe);
+                    LOGGER.log(Level.WARNING, "Could not parse date: " + line, pe);
                 }
 
             } else if (line.startsWith("  #")) {  // found comment

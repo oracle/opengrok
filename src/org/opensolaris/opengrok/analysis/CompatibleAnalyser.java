@@ -18,11 +18,10 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
-import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
@@ -35,21 +34,21 @@ public class CompatibleAnalyser extends Analyzer {
     }
 
     @Override
-    protected TokenStreamComponents createComponents(String fieldName, Reader reader) {
+    protected TokenStreamComponents createComponents(String fieldName) {        
         switch (fieldName) {
             case QueryBuilder.FULL:
-                return new TokenStreamComponents(new PlainFullTokenizer(reader));
+                return new TokenStreamComponents(new PlainFullTokenizer());
             case QueryBuilder.REFS:
-                return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
+                return new TokenStreamComponents(new PlainSymbolTokenizer());
             case QueryBuilder.DEFS:
-                return new TokenStreamComponents(new PlainSymbolTokenizer(reader));
+                return new TokenStreamComponents(new PlainSymbolTokenizer());
             case QueryBuilder.PATH:
             case QueryBuilder.PROJECT:
-                return new TokenStreamComponents(new PathTokenizer(reader));
+                return new TokenStreamComponents(new PathTokenizer());
             case QueryBuilder.HIST:
-                return new HistoryAnalyzer().createComponents(fieldName, reader);
+                return new HistoryAnalyzer().createComponents(fieldName);
             default:
-                return new TokenStreamComponents(new PlainFullTokenizer(reader));
+                return new TokenStreamComponents(new PlainFullTokenizer());
         }
     }
 }

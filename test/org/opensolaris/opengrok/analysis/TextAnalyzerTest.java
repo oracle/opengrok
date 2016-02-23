@@ -18,9 +18,11 @@
  */
 
 /*
- * Copyright (c) 2010, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
+
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -30,13 +32,13 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+
 import org.apache.lucene.document.Document;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class TextAnalyzerTest {
 
-    private String defaultEncoding = new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding();
+    private final String defaultEncoding = new InputStreamReader(new ByteArrayInputStream(new byte[0])).getEncoding();
     private String encoding;
     private String contents;
 

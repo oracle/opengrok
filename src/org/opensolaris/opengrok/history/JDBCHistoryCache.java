@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
@@ -44,69 +43,78 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.jdbc.ConnectionManager;
 import org.opensolaris.opengrok.jdbc.ConnectionResource;
 import org.opensolaris.opengrok.jdbc.InsertQuery;
 import org.opensolaris.opengrok.jdbc.PreparedQuery;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 class JDBCHistoryCache implements HistoryCache {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JDBCHistoryCache.class);
+
     private boolean historyIndexDone = false;
 
-    /** The schema in which the tables live. */
+    /**
+     * The schema in which the tables live.
+     */
     private static final String SCHEMA = "OPENGROK";
 
-    /** The names of all the tables created by this class. */
+    /**
+     * The names of all the tables created by this class.
+     */
     private static final String[] TABLES = {
         "REPOSITORIES", "FILES", "AUTHORS", "CHANGESETS", "FILECHANGES",
         "DIRECTORIES", "DIRCHANGES"
     };
 
     private static final Properties QUERIES = new Properties();
-    /** SQL queries used by this class. */
+
+    /**
+     * SQL queries used by this class.
+     */
     static {
         Class<?> klazz = JDBCHistoryCache.class;
         try (InputStream in = klazz.getResourceAsStream(
                 klazz.getSimpleName() + "_queries.properties")) {
-            if ( in != null ) {
-            QUERIES.load(in); }
+            if (in != null) {
+                QUERIES.load(in);
+            }
         } catch (IOException ioe) {
             throw new ExceptionInInitializerError(ioe);
         }
     }
- 
-    private static final PreparedQuery GET_AUTHORS =
-            new PreparedQuery(getQuery("getAuthors"));
 
-    private static final InsertQuery ADD_AUTHOR =
-            new InsertQuery(getQuery("addAuthor"));
+    private static final PreparedQuery GET_AUTHORS
+            = new PreparedQuery(getQuery("getAuthors"));
 
-    private static final PreparedQuery GET_DIRS =
-            new PreparedQuery(getQuery("getDirectories"));
+    private static final InsertQuery ADD_AUTHOR
+            = new InsertQuery(getQuery("addAuthor"));
 
-    private static final PreparedQuery GET_FILES =
-            new PreparedQuery(getQuery("getFiles"));
+    private static final PreparedQuery GET_DIRS
+            = new PreparedQuery(getQuery("getDirectories"));
 
-    private static final InsertQuery INSERT_DIR =
-            new InsertQuery(getQuery("addDirectory"));
+    private static final PreparedQuery GET_FILES
+            = new PreparedQuery(getQuery("getFiles"));
 
-    private static final InsertQuery INSERT_FILE =
-            new InsertQuery(getQuery("addFile"));
+    private static final InsertQuery INSERT_DIR
+            = new InsertQuery(getQuery("addDirectory"));
 
-    private static final PreparedQuery GET_LATEST_REVISION =
-            new PreparedQuery(getQuery("getLatestCachedRevision"));
+    private static final InsertQuery INSERT_FILE
+            = new InsertQuery(getQuery("addFile"));
 
-    private static final PreparedQuery GET_LAST_MODIFIED_TIMES =
-            new PreparedQuery(getQuery("getLastModifiedTimes"));
+    private static final PreparedQuery GET_LATEST_REVISION
+            = new PreparedQuery(getQuery("getLatestCachedRevision"));
 
-    private static final PreparedQuery GET_FILEMOVES_COUNT =
-            new PreparedQuery(getQuery("getFilemovesCount"));
+    private static final PreparedQuery GET_LAST_MODIFIED_TIMES
+            = new PreparedQuery(getQuery("getLastModifiedTimes"));
+
+    private static final PreparedQuery GET_FILEMOVES_COUNT
+            = new PreparedQuery(getQuery("getFilemovesCount"));
 
     /**
      * The number of times to retry an operation that failed in a way that
@@ -115,8 +123,8 @@ class JDBCHistoryCache implements HistoryCache {
     private static final int MAX_RETRIES = 2;
 
     /**
-     * The maximum number of characters in commit messages. Longer messages
-     * will be truncated.
+     * The maximum number of characters in commit messages. Longer messages will
+     * be truncated.
      */
     private static final int MAX_MESSAGE_LENGTH = 32672;
 
@@ -125,27 +133,37 @@ class JDBCHistoryCache implements HistoryCache {
     private final String jdbcDriverClass;
     private final String jdbcConnectionURL;
 
-    /** The id to be used for the next row inserted into FILES. */
+    /**
+     * The id to be used for the next row inserted into FILES.
+     */
     private final AtomicInteger nextFileId = new AtomicInteger();
 
-    /** The id to be used for the next row inserted into DIRECTORIES. */
+    /**
+     * The id to be used for the next row inserted into DIRECTORIES.
+     */
     private final AtomicInteger nextDirId = new AtomicInteger();
 
-    /** The id to be used for the next row inserted into CHANGESETS. */
+    /**
+     * The id to be used for the next row inserted into CHANGESETS.
+     */
     private final AtomicInteger nextChangesetId = new AtomicInteger();
 
-    /** The id to be used for the next row inserted into AUTHORS. */
+    /**
+     * The id to be used for the next row inserted into AUTHORS.
+     */
     private final AtomicInteger nextAuthorId = new AtomicInteger();
 
-    /** Info string to return from {@link #getInfo()}. */
+    /**
+     * Info string to return from {@link #getInfo()}.
+     */
     private String info;
 
-   /**
+    /**
      * Create a new cache instance with the default JDBC driver and URL.
      */
     JDBCHistoryCache() {
         this(RuntimeEnvironment.getInstance().getDatabaseDriver(),
-             RuntimeEnvironment.getInstance().getDatabaseUrl());
+                RuntimeEnvironment.getInstance().getDatabaseUrl());
     }
 
     /**
@@ -172,8 +190,8 @@ class JDBCHistoryCache implements HistoryCache {
     /**
      * Handle an {@code SQLException}. If the exception indicates that the
      * operation may succeed if it's retried and the number of attempts hasn't
-     * exceeded the limit defined by {@link #MAX_RETRIES}, ignore it and let
-     * the caller retry the operation. Otherwise, re-throw the exception.
+     * exceeded the limit defined by {@link #MAX_RETRIES}, ignore it and let the
+     * caller retry the operation. Otherwise, re-throw the exception.
      *
      * @param sqle the exception to handle
      * @param attemptNo the attempt number, first attempt is 0
@@ -190,9 +208,8 @@ class JDBCHistoryCache implements HistoryCache {
         }
 
         if (isTransient && attemptNo < MAX_RETRIES) {
-            Logger logger = OpenGrokLogger.getLogger();
-            logger.info("Transient database failure detected. Retrying.");
-            logger.log(Level.FINE, "Transient database failure details:", sqle);
+            LOGGER.info("Transient database failure detected. Retrying.");
+            LOGGER.log(Level.FINE, "Transient database failure details:", sqle);
         } else {
             throw sqle;
         }
@@ -200,6 +217,7 @@ class JDBCHistoryCache implements HistoryCache {
 
     /**
      * Get the SQL text for a name query.
+     *
      * @param key name of the query
      * @return SQL text for the query
      */
@@ -259,38 +277,38 @@ class JDBCHistoryCache implements HistoryCache {
         if (!tableExists(dmd, SCHEMA, "FILEMOVES")) {
             s.execute(getQuery("createTableFilemoves"));
         }
-        
+
         // Derby has some performance problems with auto-generated identity
         // columns when multiple threads insert into the same table
         // concurrently. Therefore, we have our own light-weight id generators
         // that we initialize on start-up. Details can be found in Derby's
         // bug tracker: https://issues.apache.org/jira/browse/DERBY-4437
-
         initIdGenerator(s, "getMaxFileId", nextFileId);
         initIdGenerator(s, "getMaxDirId", nextDirId);
         initIdGenerator(s, "getMaxChangesetId", nextChangesetId);
         initIdGenerator(s, "getMaxAuthorId", nextAuthorId);
 
         StringBuilder infoBuilder = new StringBuilder();
-        infoBuilder.append(getClass().getSimpleName() + "\n");
-        infoBuilder.append("Driver class: " + jdbcDriverClass + "\n");
-        infoBuilder.append("URL: " + jdbcConnectionURL + "\n");
-        infoBuilder.append("Database name: " +
-                dmd.getDatabaseProductName() + "\n");
-        infoBuilder.append("Database version: " +
-                dmd.getDatabaseProductVersion() + "\n");
+        infoBuilder.append(getClass().getSimpleName()).append("\n");
+        infoBuilder.append("Driver class: ").append(jdbcDriverClass).
+                append("\n");
+        infoBuilder.append("URL: ").append(jdbcConnectionURL).append("\n");
+        infoBuilder.append("Database name: ").
+                append(dmd.getDatabaseProductName()).append("\n");
+        infoBuilder.append("Database version: ").
+                append(dmd.getDatabaseProductVersion()).append("\n");
         info = infoBuilder.toString();
     }
 
     /**
-     * Fill the PARENT column of the DIRECTORIES table with correct values.
-     * Used when upgrading a database from an old format that doesn't have
-     * the PARENT column.
+     * Fill the PARENT column of the DIRECTORIES table with correct values. Used
+     * when upgrading a database from an old format that doesn't have the PARENT
+     * column.
      */
     private static void fillDirectoriesParentColumn(Statement s)
             throws SQLException {
         try (PreparedStatement update = s.getConnection().prepareStatement(
-                     getQuery("updateDirectoriesParent"));
+                getQuery("updateDirectoriesParent"));
                 ResultSet rs = s.executeQuery(getQuery("getAllDirectories"))) {
             while (rs.next()) {
                 update.setInt(1, rs.getInt("REPOSITORY"));
@@ -305,7 +323,7 @@ class JDBCHistoryCache implements HistoryCache {
             DatabaseMetaData dmd, String schema, String table)
             throws SQLException {
         try (ResultSet rs = dmd.getTables(
-                     null, schema, table, new String[] {"TABLE"})) {
+                null, schema, table, new String[]{"TABLE"})) {
             return rs.next();
         }
     }
@@ -319,11 +337,10 @@ class JDBCHistoryCache implements HistoryCache {
     }
 
     /**
-     * Initialize the {@code AtomicInteger} object that holds the value of
-     * the id to use for the next row in a certain table. If there are rows
-     * in the table, take the maximum value and increment it by one. Otherwise,
-     * the {@code AtomicInteger} will be left at its current value (presumably
-     * 0).
+     * Initialize the {@code AtomicInteger} object that holds the value of the
+     * id to use for the next row in a certain table. If there are rows in the
+     * table, take the maximum value and increment it by one. Otherwise, the
+     * {@code AtomicInteger} will be left at its current value (presumably 0).
      *
      * @param s a statement object on which the max query is executed
      * @param stmtKey name of the query to execute in order to get max id
@@ -345,11 +362,11 @@ class JDBCHistoryCache implements HistoryCache {
     @Override
     public void initialize() throws HistoryException {
         try {
-            connectionManager =
-                    new ConnectionManager(jdbcDriverClass, jdbcConnectionURL);
+            connectionManager
+                    = new ConnectionManager(jdbcDriverClass, jdbcConnectionURL);
             for (int i = 0;; i++) {
-                final ConnectionResource conn =
-                        connectionManager.getConnectionResource();
+                final ConnectionResource conn
+                        = connectionManager.getConnectionResource();
                 try {
                     try (Statement stmt = conn.createStatement()) {
                         initDB(stmt);
@@ -368,8 +385,8 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static final PreparedQuery IS_DIR_IN_CACHE =
-            new PreparedQuery(getQuery("hasCacheForDirectory"));
+    private static final PreparedQuery IS_DIR_IN_CACHE
+            = new PreparedQuery(getQuery("hasCacheForDirectory"));
 
     // We do check the return value from ResultSet.next(), but PMD doesn't
     // understand it, so suppress the warning.
@@ -380,8 +397,8 @@ class JDBCHistoryCache implements HistoryCache {
         assert file.isDirectory();
         try {
             for (int i = 0;; i++) {
-                final ConnectionResource conn =
-                        connectionManager.getConnectionResource();
+                final ConnectionResource conn
+                        = connectionManager.getConnectionResource();
                 try {
                     PreparedStatement ps = conn.getStatement(IS_DIR_IN_CACHE);
                     ps.setString(1, toUnixPath(repository.getDirectoryName()));
@@ -420,6 +437,7 @@ class JDBCHistoryCache implements HistoryCache {
 
     /**
      * Get the path of a file relative to the source root.
+     *
      * @param file the file to get the path for
      * @return relative path for {@code file} with unix file separators
      */
@@ -432,8 +450,9 @@ class JDBCHistoryCache implements HistoryCache {
 
     /**
      * Get the path of a file relative to the specified root directory.
-     * @param filePath the canonical path of the file to get the relative
-     * path for
+     *
+     * @param filePath the canonical path of the file to get the relative path
+     * for
      * @param rootPath the canonical path of the root directory
      * @return relative path with unix file separators
      */
@@ -480,8 +499,8 @@ class JDBCHistoryCache implements HistoryCache {
 
     /**
      * Reconstruct a path previously split by {@link #splitPath(String)}, or
-     * possibly just a part of it (only the {@code num} first elements will
-     * be used).
+     * possibly just a part of it (only the {@code num} first elements will be
+     * used).
      *
      * @param pathElts the elements of the path
      * @param num the number of elements to use when reconstructing the path
@@ -509,9 +528,9 @@ class JDBCHistoryCache implements HistoryCache {
             throw new IllegalArgumentException();
         }
         String suffix = " (...)";
-        return length < suffix.length() ?
-            str.substring(0, length) :
-            (str.substring(0, length - suffix.length()) + suffix);
+        return length < suffix.length()
+                ? str.substring(0, length)
+                : (str.substring(0, length - suffix.length()) + suffix);
     }
 
     /**
@@ -519,28 +538,32 @@ class JDBCHistoryCache implements HistoryCache {
      * The result is ordered in reverse chronological order to match the
      * required ordering for {@link HistoryCache#get(File, Repository)}.
      */
-    private static final PreparedQuery GET_FILE_HISTORY =
-            new PreparedQuery(getQuery("getFileHistory"));
-    private static final PreparedQuery GET_FILE_HISTORY_FOLDED =
-            new PreparedQuery(getQuery("getFileHistoryFolded"));
+    private static final PreparedQuery GET_FILE_HISTORY
+            = new PreparedQuery(getQuery("getFileHistory"));
+    private static final PreparedQuery GET_FILE_HISTORY_FOLDED
+            = new PreparedQuery(getQuery("getFileHistoryFolded"));
 
     /**
      * Statement that gets the history for all files matching a pattern in the
-     * given repository. The result is ordered in reverse chronological order
-     * to match the required ordering for
+     * given repository. The result is ordered in reverse chronological order to
+     * match the required ordering for
      * {@link HistoryCache#get(File, Repository)}.
      */
-    private static final PreparedQuery GET_DIR_HISTORY =
-            new PreparedQuery(getQuery("getDirHistory"));
+    private static final PreparedQuery GET_DIR_HISTORY
+            = new PreparedQuery(getQuery("getDirHistory"));
 
-    /** Statement that retrieves all the files touched by a given changeset. */
-    private static final PreparedQuery GET_CS_FILES =
-            new PreparedQuery(getQuery("getFilesInChangeset"));
+    /**
+     * Statement that retrieves all the files touched by a given changeset.
+     */
+    private static final PreparedQuery GET_CS_FILES
+            = new PreparedQuery(getQuery("getFilesInChangeset"));
 
-    /** Statement for getting ID of given revision */
-    private static final PreparedQuery GET_REV_ID =
-            new PreparedQuery(getQuery("getChangesetIdForRevision"));
-    
+    /**
+     * Statement for getting ID of given revision
+     */
+    private static final PreparedQuery GET_REV_ID
+            = new PreparedQuery(getQuery("getChangesetIdForRevision"));
+
     @Override
     public History get(File file, Repository repository, boolean withFiles)
             throws HistoryException {
@@ -561,6 +584,7 @@ class JDBCHistoryCache implements HistoryCache {
      * Get the number of rows in the FILEMOVES table. This is used as a
      * workaround/optimization since JavaDB cannot currently handle the
      * GET_FILE_HISTORY very well.
+     *
      * @return number of rows in the FILEMOVES table
      * @throws SQLException
      */
@@ -590,9 +614,9 @@ class JDBCHistoryCache implements HistoryCache {
             throws HistoryException, SQLException {
         final String filePath = getSourceRootRelativePath(file);
         final String reposPath = toUnixPath(repository.getDirectoryName());
-        final ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
-        final ConnectionResource conn =
-                connectionManager.getConnectionResource();
+        final ArrayList<HistoryEntry> entries = new ArrayList<>();
+        final ConnectionResource conn
+                = connectionManager.getConnectionResource();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
         try {
@@ -603,15 +627,16 @@ class JDBCHistoryCache implements HistoryCache {
                 ps.setString(2, filePath);
             } else {
                 // Fetch history for a single file only.
-                ps = conn.getStatement(RuntimeEnvironment.isRenamedFilesEnabled() && (getFilemovesCount() > 0) ?
-                    GET_FILE_HISTORY : GET_FILE_HISTORY_FOLDED);
+                ps = conn.getStatement(env.isHandleHistoryOfRenamedFiles()
+                        && (getFilemovesCount() > 0)
+                                ? GET_FILE_HISTORY : GET_FILE_HISTORY_FOLDED);
                 ps.setString(2, getParentPath(filePath));
                 ps.setString(3, getBaseName(filePath));
             }
             ps.setString(1, reposPath);
 
-            final PreparedStatement filePS =
-                    withFiles ? conn.getStatement(GET_CS_FILES) : null;
+            final PreparedStatement filePS
+                    = withFiles ? conn.getStatement(GET_CS_FILES) : null;
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -621,7 +646,7 @@ class JDBCHistoryCache implements HistoryCache {
                     Timestamp time = rs.getTimestamp(3);
                     String message = rs.getString(4);
                     HistoryEntry entry = new HistoryEntry(
-                                revision, time, author, null, message, true);
+                            revision, time, author, null, message, true);
                     entries.add(entry);
 
                     // Fill the list of files touched by the changeset, if
@@ -651,23 +676,23 @@ class JDBCHistoryCache implements HistoryCache {
         return history;
     }
 
-    private static final PreparedQuery GET_REPOSITORY =
-            new PreparedQuery(getQuery("getRepository"));
+    private static final PreparedQuery GET_REPOSITORY
+            = new PreparedQuery(getQuery("getRepository"));
 
-    private static final InsertQuery INSERT_REPOSITORY =
-            new InsertQuery(getQuery("addRepository"));
+    private static final InsertQuery INSERT_REPOSITORY
+            = new InsertQuery(getQuery("addRepository"));
 
     /**
-     * store history for repository. Note that after this method
-     * returns it is not guaranteed that the data will be returned
-     * in full in get() method since some of the threads can be still running.
+     * store history for repository. Note that after this method returns it is
+     * not guaranteed that the data will be returned in full in get() method
+     * since some of the threads can be still running.
      */
     @Override
     public void store(History history, Repository repository)
             throws HistoryException {
         try {
-            final ConnectionResource conn =
-                    connectionManager.getConnectionResource();
+            final ConnectionResource conn
+                    = connectionManager.getConnectionResource();
             try {
                 storeHistory(conn, history, repository);
             } finally {
@@ -678,41 +703,42 @@ class JDBCHistoryCache implements HistoryCache {
         }
     }
 
-    private static final InsertQuery ADD_CHANGESET =
-            new InsertQuery(getQuery("addChangeset"));
+    private static final InsertQuery ADD_CHANGESET
+            = new InsertQuery(getQuery("addChangeset"));
 
-    private static final PreparedQuery ADD_DIRCHANGE =
-            new PreparedQuery(getQuery("addDirchange"));
+    private static final PreparedQuery ADD_DIRCHANGE
+            = new PreparedQuery(getQuery("addDirchange"));
 
-    private static final PreparedQuery ADD_FILECHANGE =
-            new PreparedQuery(getQuery("addFilechange"));
-    
-    private static final PreparedQuery ADD_FILEMOVE =
-            new PreparedQuery(getQuery("addFilemove"));
+    private static final PreparedQuery ADD_FILECHANGE
+            = new PreparedQuery(getQuery("addFilechange"));
+
+    private static final PreparedQuery ADD_FILEMOVE
+            = new PreparedQuery(getQuery("addFilemove"));
 
     /**
      * Get ID value for revision string by querying the DB.
+     *
      * @param revision
      * @return ID
      */
     private int getIdForRevision(String revision, int repoId) throws SQLException {
-        final ConnectionResource conn =
-                connectionManager.getConnectionResource();
+        final ConnectionResource conn
+                = connectionManager.getConnectionResource();
         try {
             PreparedStatement ps = conn.getStatement(GET_REV_ID);
             ps.setString(1, revision);
             ps.setInt(2, repoId);
             ResultSet rs = ps.executeQuery();
-            return rs.next() ? Integer.valueOf(rs.getString(1)).intValue() : -1;
+            return rs.next() ? Integer.valueOf(rs.getString(1)) : -1;
         } catch (java.sql.SQLException e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-                "getIdForRevision exception" + e);
+            LOGGER.log(Level.WARNING,
+                    "getIdForRevision exception{0}", e);
             return -1;
         } finally {
             connectionManager.releaseConnection(conn);
         }
     }
-    
+
     private void storeHistory(final ConnectionResource conn, History history,
             final Repository repository) throws SQLException {
 
@@ -732,9 +758,9 @@ class JDBCHistoryCache implements HistoryCache {
             return;
         }
 
-        OpenGrokLogger.getLogger().log(Level.FINE,
-            "Storing history for repo {0}",
-            new Object[] {repository.getDirectoryName()});
+        LOGGER.log(Level.FINE,
+                "Storing history for repo {0}",
+                new Object[]{repository.getDirectoryName()});
 
         for (int i = 0;; i++) {
             try {
@@ -749,8 +775,8 @@ class JDBCHistoryCache implements HistoryCache {
                 }
 
                 if (directories == null || filesNf == null) {
-                    Map<String, Integer> dirs = new HashMap<String, Integer>();
-                    Map<String, Integer> fls = new HashMap<String, Integer>();
+                    Map<String, Integer> dirs = new HashMap<>();
+                    Map<String, Integer> fls = new HashMap<>();
                     getFilesAndDirectories(conn, history, reposId, dirs, fls);
                     conn.commit();
                     directories = dirs;
@@ -779,7 +805,7 @@ class JDBCHistoryCache implements HistoryCache {
         }
 
         files = filesNf;
-                
+
         addChangeset.setInt(1, reposId);
 
         // getHistoryEntries() returns the entries in reverse chronological
@@ -788,8 +814,8 @@ class JDBCHistoryCache implements HistoryCache {
         // ordering column. Otherwise, incremental updates will make the
         // identity column unusable for chronological ordering. So therefore
         // we walk the list backwards.
-        for (ListIterator<HistoryEntry> it =
-                entries.listIterator(entries.size());
+        for (ListIterator<HistoryEntry> it
+                = entries.listIterator(entries.size());
                 it.hasPrevious();) {
             HistoryEntry entry = it.previous();
             retry:
@@ -820,20 +846,20 @@ class JDBCHistoryCache implements HistoryCache {
                         String repodir = "";
                         try {
                             repodir = env.getPathRelativeToSourceRoot(
-                                new File(repository.getDirectoryName()), 0);
+                                    new File(repository.getDirectoryName()), 0);
                         } catch (IOException ex) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING,
-                                "File exception" + ex);
+                            LOGGER.log(Level.WARNING,
+                                    "File exception{0}", ex);
                             continue;
                         }
 
                         String fullPath = toUnixPath(file);
                         if (!history.isRenamed(
-                            file.substring(repodir.length() + 1)) ||
-                            !RuntimeEnvironment.isRenamedFilesEnabled()) {
-                                int fileId = files.get(fullPath);
-                                addFilechange.setInt(2, fileId);
-                                addFilechange.executeUpdate();
+                                file.substring(repodir.length() + 1))
+                                || !env.isHandleHistoryOfRenamedFiles()) {
+                            int fileId = files.get(fullPath);
+                            addFilechange.setInt(2, fileId);
+                            addFilechange.executeUpdate();
                         }
                         String[] pathElts = splitPath(fullPath);
                         for (int j = 0; j < pathElts.length; j++) {
@@ -860,7 +886,7 @@ class JDBCHistoryCache implements HistoryCache {
             }
         }
 
-        if (!RuntimeEnvironment.isRenamedFilesEnabled()) {
+        if (!env.isHandleHistoryOfRenamedFiles()) {
             return;
         }
 
@@ -870,9 +896,9 @@ class JDBCHistoryCache implements HistoryCache {
          * This ensures that their complete history (follow) will be saved.
          */
         final CountDownLatch latch = new CountDownLatch(history.getRenamedFiles().size());
-        for (String filename: history.getRenamedFiles()) {
-            String file_path = repository.getDirectoryName() +
-                    File.separatorChar + filename;
+        for (String filename : history.getRenamedFiles()) {
+            String file_path = repository.getDirectoryName()
+                    + File.separatorChar + filename;
             final File file = new File(file_path);
             final String repo_path = file_path.substring(env.getSourceRootPath().length());
 
@@ -883,8 +909,8 @@ class JDBCHistoryCache implements HistoryCache {
                         doRenamedHistory(repository, file, files, repo_path);
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
-                        OpenGrokLogger.getLogger().log(Level.WARNING,
-                            "doRenamedHistory exception" + ex);
+                        LOGGER.log(Level.WARNING,
+                                "doRenamedHistory exception {0}", ex);
                     } finally {
                         latch.countDown();
                     }
@@ -896,27 +922,27 @@ class JDBCHistoryCache implements HistoryCache {
         try {
             latch.await();
         } catch (InterruptedException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "latch exception" + ex);
+            LOGGER.log(Level.SEVERE,
+                    "latch exception{0}", ex);
         }
-        OpenGrokLogger.getLogger().log(Level.FINE,
-            "Done storing history for repo {0}",
-            new Object[] {repository.getDirectoryName()});
+        LOGGER.log(Level.FINE,
+                "Done storing history for repo {0}",
+                new Object[]{repository.getDirectoryName()});
     }
 
     /**
-     * Optimize how the cache is stored on disk. In particular, make sure
-     * index cardinality statistics are up to date, and perform a checkpoint
-     * to make sure all changes are forced to the tables on disk and that
-     * the unneeded transaction log is deleted.
+     * Optimize how the cache is stored on disk. In particular, make sure index
+     * cardinality statistics are up to date, and perform a checkpoint to make
+     * sure all changes are forced to the tables on disk and that the unneeded
+     * transaction log is deleted.
      *
      * @throws HistoryException if an error happens when optimizing the cache
      */
     @Override
     public void optimize() throws HistoryException {
         try {
-            final ConnectionResource conn =
-                    connectionManager.getConnectionResource();
+            final ConnectionResource conn
+                    = connectionManager.getConnectionResource();
             try {
                 updateIndexCardinalityStatistics(conn);
                 checkpointDatabase(conn);
@@ -930,15 +956,16 @@ class JDBCHistoryCache implements HistoryCache {
 
     /**
      * <p>
-     * Make sure Derby's index cardinality statistics are up to date.
-     * Otherwise, the optimizer may choose a bad execution strategy for
-     * some queries. This method should be called if the size of the tables
-     * has changed significantly.
+     * Make sure Derby's index cardinality statistics are up to date. Otherwise,
+     * the optimizer may choose a bad execution strategy for some queries. This
+     * method should be called if the size of the tables has changed
+     * significantly.
      * </p>
      *
      * <p>
      * This is a workaround for the problems described in
-     * <a href="https://issues.apache.org/jira/browse/DERBY-269">DERBY-269</a> and
+     * <a href="https://issues.apache.org/jira/browse/DERBY-269">DERBY-269</a>
+     * and
      * <a href="https://issues.apache.org/jira/browse/DERBY-3788">DERBY-3788</a>.
      * When automatic update of index cardinality statistics has been
      * implemented in Derby, the workaround may be removed.
@@ -1006,7 +1033,7 @@ class JDBCHistoryCache implements HistoryCache {
      * @throws SQLException if an error happens when reading the meta-data
      */
     private boolean procedureExists(DatabaseMetaData dmd,
-                                    String schema, String proc)
+            String schema, String proc)
             throws SQLException {
         try (ResultSet rs = dmd.getProcedures(null, schema, proc)) {
             // If there's a row, there is such a procedure.
@@ -1034,8 +1061,8 @@ class JDBCHistoryCache implements HistoryCache {
         }
 
         // Repository is not in the database. Add it.
-        PreparedStatement insert =
-                conn.getStatement(INSERT_REPOSITORY);
+        PreparedStatement insert
+                = conn.getStatement(INSERT_REPOSITORY);
         insert.setString(1, reposPath);
         insert.executeUpdate();
         return getGeneratedIntKey(insert);
@@ -1053,7 +1080,7 @@ class JDBCHistoryCache implements HistoryCache {
     private Map<String, Integer> getAuthors(
             ConnectionResource conn, History history, int reposId)
             throws SQLException {
-        HashMap<String, Integer> map = new HashMap<String, Integer>();
+        HashMap<String, Integer> map = new HashMap<>();
         PreparedStatement ps = conn.getStatement(GET_AUTHORS);
         ps.setInt(1, reposId);
         try (ResultSet rs = ps.executeQuery()) {
@@ -1156,17 +1183,16 @@ class JDBCHistoryCache implements HistoryCache {
 
     /**
      * Add all the parent directories of a specified file to the database, if
-     * they haven't already been added, and also put their paths and ids into
-     * a map.
+     * they haven't already been added, and also put their paths and ids into a
+     * map.
      *
      * @param ps statement that inserts a directory into the DIRECTORY table.
-     * Takes three parameters: (1) the id of the repository, (2) the path of
-     * the directory, and (3) the id to use for the directory.
+     * Takes three parameters: (1) the id of the repository, (2) the path of the
+     * directory, and (3) the id to use for the directory.
      * @param reposId id of the repository to which the file belongs
      * @param fullPath the file whose parents to add
-     * @param map a map from directory path to id for the directories already
-     * in the database. When a new directory is added, it's also added to this
-     * map.
+     * @param map a map from directory path to id for the directories already in
+     * the database. When a new directory is added, it's also added to this map.
      * @return the id of the first parent of {@code fullPath}
      */
     private int addAllDirs(
@@ -1196,11 +1222,12 @@ class JDBCHistoryCache implements HistoryCache {
 
     /**
      * Return the integer key generated by the previous execution of a
-     * statement. The key should be a single INTEGER, and the statement
-     * should insert exactly one row, so there should be only one key.
+     * statement. The key should be a single INTEGER, and the statement should
+     * insert exactly one row, so there should be only one key.
+     *
      * @param stmt a statement that has just inserted a row
-     * @return the integer key for the newly inserted row, or {@code null}
-     * if there is no key
+     * @return the integer key for the newly inserted row, or {@code null} if
+     * there is no key
      */
     private Integer getGeneratedIntKey(Statement stmt) throws SQLException {
         try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -1229,8 +1256,8 @@ class JDBCHistoryCache implements HistoryCache {
      */
     private String getLatestRevisionForRepository(Repository repository)
             throws SQLException {
-        final ConnectionResource conn =
-                connectionManager.getConnectionResource();
+        final ConnectionResource conn
+                = connectionManager.getConnectionResource();
         try {
             PreparedStatement ps = conn.getStatement(GET_LATEST_REVISION);
             ps.setString(1, toUnixPath(repository.getDirectoryName()));
@@ -1245,8 +1272,7 @@ class JDBCHistoryCache implements HistoryCache {
     @Override
     public Map<String, Date> getLastModifiedTimes(
             File directory, Repository repository)
-        throws HistoryException
-    {
+            throws HistoryException {
         try {
             for (int i = 0;; i++) {
                 try {
@@ -1263,12 +1289,11 @@ class JDBCHistoryCache implements HistoryCache {
 
     private Map<String, Date> getLastModifiedTimesForAllFiles(
             File directory, Repository repository)
-        throws HistoryException, SQLException
-    {
+            throws HistoryException, SQLException {
         final Map<String, Date> map = new HashMap<>();
 
-        final ConnectionResource conn =
-                connectionManager.getConnectionResource();
+        final ConnectionResource conn
+                = connectionManager.getConnectionResource();
         try {
             PreparedStatement ps = conn.getStatement(GET_LAST_MODIFIED_TIMES);
             ps.setString(1, toUnixPath(repository.getDirectoryName()));
@@ -1306,11 +1331,11 @@ class JDBCHistoryCache implements HistoryCache {
      */
     private void clearHistoryForRepository(Repository repository)
             throws SQLException {
-        final ConnectionResource conn =
-                connectionManager.getConnectionResource();
+        final ConnectionResource conn
+                = connectionManager.getConnectionResource();
         try {
             try (PreparedStatement ps = conn.prepareStatement(
-                         getQuery("clearRepository"))) {
+                    getQuery("clearRepository"))) {
                 ps.setInt(1, getRepositoryId(conn, repository));
                 ps.execute();
                 conn.commit();
@@ -1330,34 +1355,35 @@ class JDBCHistoryCache implements HistoryCache {
      * This inserts data both into FILECHANGES and FILEMOVES tables.
      */
     private void doRenamedHistory(final Repository repository, File file,
-            Map<String, Integer> files, String repo_path) 
+            Map<String, Integer> files, String repo_path)
             throws SQLException {
         History hist;
-        PreparedStatement addFilemove = null;
-        PreparedStatement addFilechange = null;
-        
+        PreparedStatement addFilemove;
+        PreparedStatement addFilechange;
+
         try {
             hist = repository.getHistory(file);
         } catch (HistoryException ex) {
-            OpenGrokLogger.getLogger().log(Level.WARNING,
-                "cannot get history for " +  file + " because of exception " + ex);
+            LOGGER.log(Level.WARNING,
+                    "cannot get history for {0} because of exception {1}",
+                    new Object[]{file, ex});
             return;
         }
-                        
+
         int fileId = files.get(repo_path);
         for (HistoryEntry entry : hist.getHistoryEntries()) {
             retry:
             for (int i = 0;; i++) {
-                
-                final ConnectionResource conn =
-                        connectionManager.getConnectionResource();
-                
+
+                final ConnectionResource conn
+                        = connectionManager.getConnectionResource();
+
                 addFilemove = conn.getStatement(ADD_FILEMOVE);
                 addFilechange = conn.getStatement(ADD_FILECHANGE);
-                
+
                 try {
                     int changesetId = getIdForRevision(entry.getRevision(),
-                        getRepositoryId(conn, repository));
+                            getRepositoryId(conn, repository));
 
                     /*
                      * If the file exists in the changeset, store it in

@@ -389,7 +389,7 @@ HtmlName      = {HtmlNameStart} ({HtmlNameStart} | [\-.0-9\u00B7])*
         out.write("</strong>");
     }
 
-    \'      { out.write("\"</span>"); yypop(); }
+    \'      { out.write("'</span>"); yypop(); }
 }
 
 <HEREDOC, NOWDOC>^{Identifier} ";"? {EOL}  {

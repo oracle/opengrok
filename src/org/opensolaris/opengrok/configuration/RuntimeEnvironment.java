@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -44,11 +44,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
 
@@ -58,13 +58,13 @@ import org.opensolaris.opengrok.util.IOUtils;
  */
 public final class RuntimeEnvironment {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeEnvironment.class);
+
     private Configuration configuration;
     private final ThreadLocal<Configuration> threadConfig;
-    private static final Logger log = Logger.getLogger(RuntimeEnvironment.class.getName());
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
-    private static boolean RenamedEnabled = false;
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -75,24 +75,24 @@ public final class RuntimeEnvironment {
                 try {
                     num = Integer.valueOf(total);
                 } catch (Throwable t) {
-                    log.log(Level.WARNING, "Failed to parse the number of " +
-                        "cache threads to use for cache creation", t);
+                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
+                            + "cache threads to use for cache creation", t);
                 }
             }
 
             historyExecutor = Executors.newFixedThreadPool(num,
-                new ThreadFactory() {
-                    public Thread newThread(Runnable runnable) {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("history-handling-" + thread.getId());
-                        return thread;
-                    }
-                });
+                    new ThreadFactory() {
+                public Thread newThread(Runnable runnable) {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("history-handling-" + thread.getId());
+                    return thread;
+                }
+            });
         }
 
         return historyExecutor;
     }
- 
+
     /* Get thread pool used for history generation of renamed files. */
     public static synchronized ExecutorService getHistoryRenamedExecutor() {
         if (historyRenamedExecutor == null) {
@@ -102,28 +102,28 @@ public final class RuntimeEnvironment {
                 try {
                     num = Integer.valueOf(total);
                 } catch (Throwable t) {
-                    log.log(Level.WARNING, "Failed to parse the number of " +
-                        "cache threads to use for cache creation of renamed files", t);
+                    LOGGER.log(Level.WARNING, "Failed to parse the number of "
+                            + "cache threads to use for cache creation of renamed files", t);
                 }
             }
 
             historyRenamedExecutor = Executors.newFixedThreadPool(num,
-                new ThreadFactory() {
-                    public Thread newThread(Runnable runnable) {
-                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                        thread.setName("renamed-handling-" + thread.getId());
-                        return thread;
-                    }
-                });
+                    new ThreadFactory() {
+                public Thread newThread(Runnable runnable) {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("renamed-handling-" + thread.getId());
+                    return thread;
+                }
+            });
         }
- 
+
         return historyRenamedExecutor;
     }
 
     public static synchronized void freeHistoryExecutor() {
         historyExecutor = null;
     }
- 
+
     public static synchronized void destroyRenamedHistoryExecutor() throws InterruptedException {
         if (historyRenamedExecutor != null) {
             historyRenamedExecutor.shutdown();
@@ -132,19 +132,6 @@ public final class RuntimeEnvironment {
             historyRenamedExecutor.awaitTermination(1, TimeUnit.MINUTES);
             historyRenamedExecutor = null;
         }
-    }
-
-    /*
-     * Is handling of renamed files turned on ?
-     */
-    public static boolean isRenamedFilesEnabled() {
-        String enabled =
-            System.getProperty("org.opensolaris.opengrok.history.RenamedHandlingEnabled");
-        if (enabled != null) {
-            RenamedEnabled = true;
-        }
-
-        return (RenamedEnabled);
     }
 
     /**
@@ -178,7 +165,7 @@ public final class RuntimeEnvironment {
             }
             return file.getCanonicalPath();
         } catch (IOException ex) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE, "Failed to get canonical path", ex);
+            LOGGER.log(Level.SEVERE, "Failed to get canonical path", ex);
             return s;
         }
     }
@@ -285,12 +272,12 @@ public final class RuntimeEnvironment {
         for (String allowedSymlink : getAllowedSymlinks()) {
             String allowedTarget = new File(allowedSymlink).getCanonicalPath();
             if (canonicalPath.startsWith(allowedTarget)) {
-                return canonicalPath.substring(allowedTarget.length() +
-                        stripCount);
+                return canonicalPath.substring(allowedTarget.length()
+                        + stripCount);
             }
         }
-        throw new FileNotFoundException("Failed to resolve [" + canonicalPath +
-                "] relative to source root [" + sourceRoot + "]");
+        throw new FileNotFoundException("Failed to resolve [" + canonicalPath
+                + "] relative to source root [" + sourceRoot + "]");
     }
 
     /**
@@ -319,6 +306,33 @@ public final class RuntimeEnvironment {
      */
     public void setProjects(List<Project> projects) {
         threadConfig.get().setProjects(projects);
+    }
+
+    /**
+     * Do we have groups?
+     *
+     * @return true if we have groups
+     */
+    public boolean hasGroups() {
+        return (getGroups() != null && !getGroups().isEmpty());
+    }
+
+    /**
+     * Get all of the groups
+     *
+     * @return a set containing all of the groups (may be null)
+     */
+    public Set<Group> getGroups() {
+        return threadConfig.get().getGroups();
+    }
+
+    /**
+     * Set the list of the groups
+     *
+     * @param groups the set of groups to use
+     */
+    public void setGroups(Set<Group> groups) {
+        threadConfig.get().setGroups(groups);
     }
 
     /**
@@ -385,32 +399,60 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHitsPerPage(hitsPerPage);
     }
 
+    // cache these tests instead of reruning them for every call
+    private transient Boolean exCtagsFound;
+    private transient Boolean isUniversalCtagsVal;
+    
     /**
      * Validate that I have a Exuberant ctags program I may use
      *
      * @return true if success, false otherwise
      */
     public boolean validateExuberantCtags() {
-        boolean ret = true;
-        Executor executor = new Executor(new String[]{getCtags(), "--version"});
-
-        executor.exec(false);
-        String output = executor.getOutputString();
-        if (output == null || output.indexOf("Exuberant Ctags") == -1) {
-            log.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
+        if (exCtagsFound==null) {         
+         Executor executor = new Executor(new String[]{getCtags(), "--version"});
+         executor.exec(false);
+         String output = executor.getOutputString();
+         boolean isUnivCtags = output.contains("Universal Ctags");
+         if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
+            LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
                     + "(tried running " + "{0}" + ")\n"
                     + "Please use option -c to specify path to a good "
                     + "Exuberant Ctags program.\n"
                     + "Or set it in java property "
                     + "org.opensolaris.opengrok.analysis.Ctags", getCtags());
-            ret = false;
+            exCtagsFound = false;
+         } else {
+             if (isUnivCtags) {
+                isUniversalCtagsVal = true;
+             }
+             exCtagsFound = true;
+         }
         }
-
-        return ret;
+        return exCtagsFound;
     }
 
     /**
-     * Get the max time a SMC operation may use to avoid beeing cached
+     * Are we using Universal ctags?
+     *
+     * @return true if we are using Universal ctags
+     */
+    public boolean isUniversalCtags() {
+        if (isUniversalCtagsVal==null) {
+         isUniversalCtagsVal = false;
+         Executor executor = new Executor(new String[]{getCtags(), "--version"});
+
+         executor.exec(false);
+         String output = executor.getOutputString();
+         if (output.contains("Universal Ctags")) {
+             isUniversalCtagsVal = true;
+         }
+        }
+        return isUniversalCtagsVal;
+    }
+
+    /**
+     * Get the max time a SMC operation may use to avoid being cached
      *
      * @return the max time
      */
@@ -544,7 +586,7 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getDefaultProject();
     }
 
-    /**     
+    /**
      *
      * @return at what size (in MB) we should flush the buffer
      */
@@ -554,8 +596,8 @@ public final class RuntimeEnvironment {
 
     /**
      * Set the size of buffer which will determine when the docs are flushed to
-     * disk. Specify size in MB please. 16MB is default
-     * note that this is per thread (lucene uses 8 threads by default in 4.x)
+     * disk. Specify size in MB please. 16MB is default note that this is per
+     * thread (lucene uses 8 threads by default in 4.x)
      *
      * @param ramBufferSize the size(in MB) when we should flush the docs
      */
@@ -808,19 +850,19 @@ public final class RuntimeEnvironment {
     public void setIndexVersionedFilesOnly(boolean indexVersionedFilesOnly) {
         threadConfig.get().setIndexVersionedFilesOnly(indexVersionedFilesOnly);
     }
-    
+
     public boolean isTagsEnabled() {
         return threadConfig.get().isTagsEnabled();
     }
-    
+
     public void setTagsEnabled(boolean tagsEnabled) {
         threadConfig.get().setTagsEnabled(tagsEnabled);
     }
-    
+
     public boolean isScopesEnabled() {
         return threadConfig.get().isScopesEnabled();
     }
-    
+
     public void setScopesEnabled(boolean scopesEnabled) {
         threadConfig.get().setScopesEnabled(scopesEnabled);
     }
@@ -895,16 +937,22 @@ public final class RuntimeEnvironment {
         threadConfig.get().setChattyStatusPage(chatty);
     }
 
-    public boolean noFetchHistoryWhenNotInCache() {
-        String enabled =
-            System.getProperty("org.opensolaris.opengrok.history.noFetchWhenNotInCache");
-        if (enabled != null) {
-            return true;
-        }
-
-        return (false);
+    public void setFetchHistoryWhenNotInCache(boolean nofetch) {
+        threadConfig.get().setFetchHistoryWhenNotInCache(nofetch);
     }
-    
+
+    public boolean isFetchHistoryWhenNotInCache() {
+        return threadConfig.get().isFetchHistoryWhenNotInCache();
+    }
+
+    public void setHandleHistoryOfRenamedFiles(boolean enable) {
+        threadConfig.get().setHandleHistoryOfRenamedFiles(enable);
+    }
+
+    public boolean isHandleHistoryOfRenamedFiles() {
+        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *
@@ -946,7 +994,15 @@ public final class RuntimeEnvironment {
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
         register();
-        HistoryGuru.getInstance().invalidateRepositories(configuration.getRepositories());
+        HistoryGuru.getInstance().invalidateRepositories(
+                configuration.getRepositories());
+    }
+
+    public void setConfiguration(Configuration configuration, List<String> subFileList) {
+        this.configuration = configuration;
+        register();
+        HistoryGuru.getInstance().invalidateRepositories(
+                configuration.getRepositories(), subFileList);
     }
 
     public Configuration getConfiguration() {
@@ -984,7 +1040,7 @@ public final class RuntimeEnvironment {
                         try (Socket s = sock.accept();
                                 BufferedInputStream in = new BufferedInputStream(s.getInputStream())) {
                             bos.reset();
-                            log.log(Level.FINE, "OpenGrok: Got request from {0}",
+                            LOGGER.log(Level.FINE, "OpenGrok: Got request from {0}",
                                     s.getInetAddress().getHostAddress());
                             byte[] buf = new byte[1024];
                             int len;
@@ -992,8 +1048,8 @@ public final class RuntimeEnvironment {
                                 bos.write(buf, 0, len);
                             }
                             buf = bos.toByteArray();
-                            if (log.isLoggable(Level.FINE)) {
-                                log.log(Level.FINE, "new config:{0}", new String(buf));
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.log(Level.FINE, "new config:{0}", new String(buf));
                             }
                             Object obj;
                             try (XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf))) {
@@ -1001,23 +1057,25 @@ public final class RuntimeEnvironment {
                             }
 
                             if (obj instanceof Configuration) {
+                                //force timestamp to update itself upon new config arrival
+                                ((Configuration) obj).refreshDateForLastIndexRun();
                                 setConfiguration((Configuration) obj);
-                                log.log(Level.INFO, "Configuration updated: {0}",
-                                    configuration.getSourceRoot());
+                                LOGGER.log(Level.INFO, "Configuration updated: {0}",
+                                        configuration.getSourceRoot());
                             }
                         } catch (IOException e) {
-                            log.log(Level.SEVERE, "Error reading config file: ", e);
+                            LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
                         } catch (RuntimeException e) {
-                            log.log(Level.SEVERE, "Error parsing config file: ", e);
+                            LOGGER.log(Level.SEVERE, "Error parsing config file: ", e);
                         }
                     }
                 }
             });
             t.start();
         } catch (UnknownHostException ex) {
-            log.log(Level.FINE, "Problem resolving sender: ", ex);
+            LOGGER.log(Level.FINE, "Problem resolving sender: ", ex);
         } catch (IOException ex) {
-            log.log(Level.FINE, "I/O error when waiting for config: ", ex);
+            LOGGER.log(Level.FINE, "I/O error when waiting for config: ", ex);
         }
 
         if (!ret && configServerSocket != null) {

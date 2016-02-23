@@ -18,9 +18,14 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileReader;
@@ -28,9 +33,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,7 +58,7 @@ import org.opensolaris.opengrok.util.TestRepository;
 public class IndexerTest {
 
     TestRepository repository;
-    private String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
     public IndexerTest() {
     }
@@ -81,6 +86,7 @@ public class IndexerTest {
 
     /**
      * Test of doIndexerExecution method, of class Indexer.
+     * @throws java.lang.Exception
      */
     @Test
     public void testIndexGeneration() throws Exception {
@@ -92,7 +98,7 @@ public class IndexerTest {
             env.setDataRoot(repository.getDataRoot());
             env.setVerbose(true);
             Indexer.getInstance().prepareIndexer(env, true, true, "/c", null,
-                false, false, false, null, null, new ArrayList<String>(), false);
+                false, false, false, null, null, new ArrayList<>(), false);
             Indexer.getInstance().doIndexerExecution(true, 1, null, null);
         } else {
             System.out.println("Skipping test. Could not find a ctags I could use in path.");
@@ -102,7 +108,7 @@ public class IndexerTest {
     /**
      * Test that rescanning for projects does not erase customization of
      * existing projects. Bug #16006.
-     */
+     * @throws java.lang.Exception*/
     @Test
     public void testRescanProjects() throws Exception {
         // Generate one project that will be found in source.zip, and set
@@ -138,7 +144,7 @@ public class IndexerTest {
                 false, // don't create dictionary
                 null, // subFiles - not needed since we don't list files
                 null, // repositories - not needed when not refreshing history
-                new ArrayList<String>(), // don't zap cache
+                new ArrayList<>(), // don't zap cache
                 false); // don't list repos
 
         List<Project> newProjects = env.getProjects();
@@ -167,6 +173,7 @@ public class IndexerTest {
 
     /**
      * Test of doIndexerExecution method, of class Indexer.
+     * @throws java.io.IOException
      */
     @Test
     public void testMain() throws IOException {
@@ -263,15 +270,15 @@ public class IndexerTest {
             if (factory == null) {
                 continue;
             }
-            FileReader in = new FileReader(f);
-            StringWriter out = new StringWriter();
-            try {
-                AnalyzerGuru.writeXref(factory, in, out, null, null, null);
-            } catch (UnsupportedOperationException exp) {
-                // ignore
-            }
-            in.close();
-            out.close();
+            StringWriter out;
+            try (FileReader in = new FileReader(f)) {
+                out = new StringWriter();
+                try {
+                    AnalyzerGuru.writeXref(factory, in, out, null, null, null);
+                } catch (UnsupportedOperationException exp) {
+                    // ignore
+                }
+            }            out.close();
         }
     }
 

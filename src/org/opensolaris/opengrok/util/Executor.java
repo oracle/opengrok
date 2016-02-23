@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.util;
@@ -39,7 +39,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Wrapper to Java Process API
@@ -48,7 +48,8 @@ import org.opensolaris.opengrok.OpenGrokLogger;
  */
 public class Executor {
 
-    private static final Logger log = Logger.getLogger(Executor.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(Executor.class);
+
     private List<String> cmdList;
     private File workingDirectory;
     private byte[] stdout;
@@ -132,7 +133,7 @@ public class Executor {
             dir_str = cwd.toString();
         }
 
-        OpenGrokLogger.getLogger().log(Level.FINE,
+        LOGGER.log(Level.FINE,
                 "Executing command {0} in directory {1}",
                 new Object[] {cmd_str,dir_str});
 
@@ -151,7 +152,7 @@ public class Executor {
                         err.processStream(errorStream);
                     } catch (IOException ex) {
                         if (reportExceptions) {
-                            OpenGrokLogger.getLogger().log(Level.SEVERE,
+                            LOGGER.log(Level.SEVERE,
                                     "Error during process pipe listening", ex);
                         }
                     }
@@ -166,7 +167,7 @@ public class Executor {
             Timer t = new Timer();
             t.schedule(new TimerTask() {
                 @Override public void run() {
-                    OpenGrokLogger.getLogger().log(Level.INFO,
+                    LOGGER.log(Level.INFO,
                         "Terminating process of command {0} in directory {1} " +
                         "due to timeout {2} seconds",
                         new Object[] {cmd_str, dir_str,
@@ -178,7 +179,7 @@ public class Executor {
             handler.processStream(process.getInputStream());
 
             ret = process.waitFor();
-            OpenGrokLogger.getLogger().log(Level.FINE,
+            LOGGER.log(Level.FINE,
                 "Finished command {0} in directory {1}",
                 new Object[] {cmd_str,dir_str});
             t.cancel();
@@ -187,12 +188,12 @@ public class Executor {
             stderr = err.getBytes();
         } catch (IOException e) {
             if (reportExceptions) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Failed to read from process: " + cmdList.get(0), e);
             }
         } catch (InterruptedException e) {
             if (reportExceptions) {
-                OpenGrokLogger.getLogger().log(Level.SEVERE,
+                LOGGER.log(Level.SEVERE,
                         "Waiting for process interrupted: " + cmdList.get(0), e);
             }
         } finally {
@@ -220,7 +221,7 @@ public class Executor {
                             msg.append(new String(stderr));
                     }
             }
-            OpenGrokLogger.getLogger().log(Level.WARNING, msg.toString());
+            LOGGER.log(Level.WARNING, msg.toString());
         }
 
         return ret;
@@ -332,11 +333,11 @@ public class Executor {
         UncaughtExceptionHandler dueh =
             Thread.currentThread().getDefaultUncaughtExceptionHandler();
         if (dueh == null) {
-            log.fine("Installing default uncaught exception handler");
+            LOGGER.log(Level.FINE, "Installing default uncaught exception handler");
             Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
                 @Override
                 public void uncaughtException(Thread t, Throwable e) {
-                    log.log(Level.SEVERE, "Uncaught exception in thread " 
+                    LOGGER.log(Level.SEVERE, "Uncaught exception in thread "
                         + t.getName() + " with ID " + t.getId() + ": "
                         + e.getMessage(), e);
                 }
