@@ -23,6 +23,8 @@
  */
 package org.opensolaris.opengrok.util;
 
+import org.opensolaris.opengrok.logger.LoggerFactory;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -41,7 +43,7 @@ import java.util.logging.Logger;
  */
 public final class IOUtils {
 
-    private static final Logger log = Logger.getLogger(IOUtils.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(IOUtils.class);
 
     private IOUtils() {
         // singleton
@@ -52,7 +54,7 @@ public final class IOUtils {
             try {
                 c.close();
             } catch (IOException e) {
-                log.log(Level.WARNING, "Failed to close resource: ", e);
+                LOGGER.log(Level.WARNING, "Failed to close resource: ", e);
             }
         }
     }

@@ -18,90 +18,80 @@
  */
 
 /*
- * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * This class maintains a list of file names (like "cscope.out"), SRC_ROOT
- * relative file paths (like "usr/src/uts" or "usr/src/Makefile"), and glob
- * patterns (like .make.*) which opengrok should ignore.
+ * wrapper class for IgnoredFiles and IgnoredDirs
  *
- * @author Chandan
+ * @author Vladimir Kotal
  */
-public final class IgnoredNames extends Filter {
-    private static final String[] defaultPatterns = {
-        "SCCS",
-        "CVS",
-        "RCS",
-        "cscope.in.out",
-        "cscope.out.po",
-        "cscope.out.in",
-        "cscope.po.out",
-        "cscope.po.in",
-        "cscope.files",
-        "cscope.out",
-        "Codemgr_wsdata",
-        ".cvsignore",
-        "CVSROOT",
-        // tags are leftover from the time when ctags did not run daemonized
-        // "TAGS",
-        // "tags",
-        ".svn",
-        ".git",
-        ".repo",
-        ".hg",
-        ".hgtags",
-        ".bzr",
-        ".p4config",
-        ".razor",
-        "*~",
-        "deleted_files",
-        ".make.*",
-        ".del-*",
-        "_MTN",
-        // File Extensions for Visual Studio and Mono Projects
-        ".vspscc",
-        ".suo",
-        ".vssscc",
-        ".user",
-        ".ncb",
-        ".gpState",
-        ".snc",
-        ".sln",
-        ".vsmdi",
-        ".dll",
-        ".opengrok_skip_history",
-    };
+public class IgnoredNames {
+
+    private final IgnoredFiles ignoredFiles;
+    private final IgnoredDirs ignoredDirs;
 
     public IgnoredNames() {
-        super();
-        addDefaultPatterns();
+        ignoredFiles = new IgnoredFiles();
+        ignoredDirs = new IgnoredDirs();
+    }
+
+    public List<String> getItems() {
+        List<String> twoLists = new ArrayList<>();
+        twoLists.addAll(ignoredFiles.getItems());
+        twoLists.addAll(ignoredDirs.getItems());
+        return twoLists;
+    }
+
+    public void add(String pattern) {
+        if (pattern.startsWith("f:")) {
+            ignoredFiles.add(pattern.substring(2));
+        } else if (pattern.startsWith("d:")) {
+            ignoredDirs.add(pattern.substring(2));
+        } else {
+            // backward compatibility
+            ignoredFiles.add(pattern);
+        }
+    }
+
+    public void setItems(List<String> item) {
+        clear();
+        for (String s : item) {
+            add(s);
+        }
     }
 
     /**
      * Should the file be ignored or not?
+     *
      * @param file the file to check
      * @return true if this file should be ignored, false otherwise
      */
     public boolean ignore(File file) {
-        return match(file);
+        if (file.isFile()) {
+            return ignoredFiles.ignore(file);
+        } else {
+            return ignoredDirs.ignore(file);
+        }
     }
 
     /**
      * Should the file be ignored or not?
+     *
      * @param name the name of the file to check
      * @return true if this pathname should be ignored, false otherwise
      */
     public boolean ignore(String name) {
-        return match(name);
+        return ignoredFiles.ignore(name) || ignoredDirs.ignore(name);
     }
 
-    private void addDefaultPatterns() {
-        for (String s : defaultPatterns) {
-            add(s);
-        }
+    public void clear() {
+        ignoredFiles.clear();
+        ignoredDirs.clear();
     }
 }

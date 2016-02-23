@@ -17,6 +17,10 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+ */
+
 package org.opensolaris.opengrok.analysis.php;
 
 import java.io.IOException;
@@ -31,6 +35,8 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class PhpAnalyzerFactory extends FileAnalyzerFactory {
 
+    private static final String name = "PHP";
+    
     private static final String[] SUFFIXES = {
         "PHP",
         "PHP3",
@@ -45,7 +51,7 @@ public class PhpAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PhpAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

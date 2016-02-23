@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%--
@@ -40,7 +40,7 @@ org.opensolaris.opengrok.web.Util"%><%
     cfg = PageConfig.get(request);
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
-        if (redir == null) {
+        if (redir == null) {            
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
             response.sendRedirect(redir);
@@ -76,8 +76,8 @@ include file="httpheader.jspf"
 
         %><body>
 <script type="text/javascript">/* <![CDATA[ */
-    document.hash = '<%= cfg.getDocumentHash()
-    %>';document.rev = '<%= rev
+    document.hash = '<%= Util.escapeXml(cfg.getDocumentHash())
+    %>';document.rev = '<%= Util.escapeXml(rev)
     %>';document.link = '<%= context + Prefix.XREF_P + uriEncodedPath
     %>';document.annotate = <%= cfg.annotate() %>;
     document.domReady.push(function() {domReadyMast();});
@@ -157,7 +157,7 @@ include file="pageheader.jspf"
             ><span class="annotate"></span>Annotate</a></span><span
             id="toggle-annotate"><a href="<%=
                 context + Prefix.XREF_P + uriEncodedPath
-                + (rev.length() == 0 ? "" : "?") + rev
+                + (rev.length() == 0 ? "" : "?") + Util.escapeXml(rev)
             %>"><span class="annotate"></span>Annotate</a></span></li><%
     } else {
         %><li><a href="#" onclick="javascript:get_annotations(); return false;"
@@ -175,10 +175,10 @@ include file="pageheader.jspf"
         }
         %>
 	<li><a href="<%= context + Prefix.RAW_P + uriEncodedPath
-            + (rev.length() == 0 ? "" : "?") + rev
+            + (rev.length() == 0 ? "" : "?") + Util.escapeXml(rev)
             %>"><span id="raw"></span>Raw</a></li>
 	<li><a href="<%= context + Prefix.DOWNLOAD_P + uriEncodedPath
-            + (rev.length() == 0 ? "" : "?") + rev
+            + (rev.length() == 0 ? "" : "?") + Util.escapeXml(rev)
             %>"><span id="download"></span>Download</a></li>
 	<%
     }

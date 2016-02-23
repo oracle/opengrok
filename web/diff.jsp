@@ -157,6 +157,7 @@ include file="mast.jsp"
         <span> <a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2
             %>&amp;format=<%= type.getAbbrev() %>&amp;full=0">compact</a></span><%
         }
+        %><span><a href="#" id="toggle-jumper">jumper</a></span><%
     %></div>
 </div>
 
@@ -243,7 +244,7 @@ include file="mast.jsp"
                     }
                     if (cn1 <= cl1) {
             %>
-            <tr><td><%
+            <tr class="chunk"><td><%
                         for (int j = cn1; j  <= cl1 ; j++) {
                 %><del class="d"><%= ++ln1 %></del><%= file1[j]
                 %><br/><%
@@ -253,7 +254,11 @@ include file="mast.jsp"
                     }
                     if (cn2 <= cl2) {
             %>
-            <tr class="k"><td><%
+            <tr class="k<%
+                    if (cn1 > cl1) {
+                        %> chunk<%
+                    }
+                %>"><td><%
                         for (int j = cn2; j  < cl2; j++) {
                 %><i class="a"><%= ++ln2 %></i><%= file2[j]
                 %><br/><%
@@ -315,7 +320,7 @@ include file="mast.jsp"
             </tr><%
                     }
             %>
-            <tr class="k"><td><%
+            <tr class="k chunk"><td><%
                     for (int j = cn1; j  <= cl1; j++) {
                 %><i><%= ++ln1 %></i><%= file1[j] %><br/><%
                     }

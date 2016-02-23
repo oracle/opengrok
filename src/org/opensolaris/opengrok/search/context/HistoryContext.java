@@ -32,12 +32,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.lucene.search.Query;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.history.History;
 import org.opensolaris.opengrok.history.HistoryEntry;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.Hit;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.web.Prefix;
@@ -47,6 +49,9 @@ import org.opensolaris.opengrok.web.Prefix;
  * since lucene does not easily give the match context.
  */
 public class HistoryContext {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HistoryContext.class);
+
     private final LineMatcher[] m;
     HistoryLineTokenizer tokens;
 
@@ -180,7 +185,7 @@ public class HistoryContext {
                 }
             }
         } catch (Exception e) {
-            OpenGrokLogger.getLogger().log(Level.WARNING, "Could not get history context for " + path, e);
+            LOGGER.log(Level.WARNING, "Could not get history context for " + path, e);
         }
         return matchedLines > 0;
     }

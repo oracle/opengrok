@@ -61,7 +61,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
     
     protected JFlexTokenizer() {
         super();
-    }
+    }        
 
     /**
      * Reinitialize the tokenizer with new reader.

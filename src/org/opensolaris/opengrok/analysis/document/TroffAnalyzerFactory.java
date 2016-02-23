@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.document;
@@ -34,12 +34,15 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class TroffAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Troff";
+    
     private static final String[] MAGICS = {
         "'\\\"", ".so", ".\\\"", ".TH"
     };
 
     public TroffAnalyzerFactory() {
-        super(null, null, null, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, null, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

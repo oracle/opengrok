@@ -8,6 +8,7 @@
 #   - Debian      (Linux)
 #
 # Supported Deployment Engines:
+#   - Tomcat 8
 #   - Tomcat 7
 #   - Tomcat 6
 #   - Glassfish
@@ -42,14 +43,15 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_REMOTE_REPOS       Influence history cache generation for remote
-#                                 repositories. Following values are recognized:
-#                                   on - enabled (default)
-#                                   off - disabled for indexing and UI
-#                                   dirbased - indexing enabled only for repos
-#                                              which can fetch history for
-#                                              directory
-#                                   uionly - enabled for UI only
+#   - OPENGROK_GENERATE_HISTORY   Influence history cache generation 
+#                                 Following values are recognized:
+#                                   on		- enabled (default)
+#                                   off		- disabled for indexing and UI
+#                                   dirbased	- indexing enabled only for repos
+#                                              	  which can fetch history for
+#                                                 directory
+#                                   local	- for local repos only
+#                                   uionly	- enabled for UI only
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
 #                                 (by default 3 directories from SRC_ROOT)
@@ -128,8 +130,8 @@ else
 fi
 
 # TODO: Handle symlinks correctly (especially in ${0})
-SCRIPT_DIRECTORY="`dirname ${0}`"
-SCRIPT_DIRECTORY="`cd ${SCRIPT_DIRECTORY}; pwd`"
+SCRIPT_DIRECTORY=`dirname "${0}"`
+SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
 
 #
 # Default Instance Configuration
@@ -260,10 +262,10 @@ DefaultInstanceConfiguration()
     fi
 
     # OPTIONAL: Disable remote repository support (CVS or SVN) [on by default]
-    REMOTE_REPOSITORIES="-r on"
-    if [ -n "${OPENGROK_REMOTE_REPOS}" ]
+    GENERATE_HISTORY="-r on"
+    if [ -n "${OPENGROK_GENERATE_HISTORY}" ]
     then
-        REMOTE_REPOSITORIES="-r ${OPENGROK_REMOTE_REPOS}"
+        GENERATE_HISTORY="-r ${OPENGROK_GENERATE_HISTORY}"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
@@ -549,6 +551,7 @@ FindApplicationServerType()
     if [    -d "/var/tomcat6/webapps"        \
          -o -d "/var/lib/tomcat6/webapps"    \
          -o -d "/var/lib/tomcat7/webapps"    \
+         -o -d "/var/lib/tomcat8/webapps"    \
        ]
     then
         echo "Tomcat"
@@ -581,7 +584,8 @@ DetermineWarDirectoryTomcat()
         ${OPENGROK_TOMCAT_BASE} \
         /var/tomcat6            \
         /var/lib/tomcat6        \
-        /var/lib/tomcat7
+        /var/lib/tomcat7        \
+        /var/lib/tomcat8
     do
         if [ -d "${prefix}/webapps" ]
         then
@@ -713,7 +717,7 @@ ValidateConfiguration()
 
     if [ -n "${OPENGROK_DERBY}" ]
     then
-        if [ `uname -s` == "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
+        if [ "`uname -s`" = "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
 	then
 	    if [ -d "/var/tomcat6" -a \
 	        ! -r "/var/tomcat6/webapps/source/WEB-INF/lib/derbyclient.jar" ];
@@ -799,7 +803,7 @@ MinimalInvocation()
     ${DO} ${JAVA} ${JAVA_OPTS} ${PROPERTIES}                    	\
         ${JAVA_DEBUG}                                           	\
         ${LOGGER_PROPERTIES}                                    	\
-        -jar ${OPENGROK_JAR}                                    	\
+        -jar "${OPENGROK_JAR}"                                    	\
         ${VERBOSE} ${QUIET}                                     	\
         "${@}"
 }
@@ -810,7 +814,7 @@ CommonInvocation()
         ${IGNORE_PATTERNS}                    				\
         ${DERBY_OPTIONS}						\
         ${HISTORY_TAGS}							\
-        ${REMOTE_REPOSITORIES}           				\
+        ${GENERATE_HISTORY}           					\
         ${SCAN_DEPTH}                                           	\
         ${PROGRESS}                                             	\
         ${EXUBERANT_CTAGS:+-c} ${EXUBERANT_CTAGS}               	\
@@ -828,8 +832,8 @@ StdInvocation()
 	${ENABLE_PROJECTS}	\
         ${WEBAPP_CONFIG}	\
         ${WEBAPP_CONTEXT}	\
-        -s ${SRC_ROOT}		\
-	-d ${DATA_ROOT}		\
+        -s "${SRC_ROOT}"	\
+	-d "${DATA_ROOT}"	\
 	"${@}"
 }
 
@@ -857,15 +861,15 @@ UpdateDescriptionCache()
 
     if [ -n "${PATH_DESC}" -a -s "${PATH_DESC}" ]
     then
-        ${DO} ${JAVA} -classpath ${OPENGROK_JAR}                \
-            ${EFTAR_UPDATE} ${PATH_DESC} ${EFTAR_OUTPUT_FILE}
+        ${DO} ${JAVA} -classpath "${OPENGROK_JAR}"		\
+            ${EFTAR_UPDATE} "${PATH_DESC}" "${EFTAR_OUTPUT_FILE}"
     fi
 }
 
 OpenGrokUsage()
 {
     echo "Options for opengrok.jar:" 1>&2
-    ${DO} ${JAVA} ${JAVA_OPTS} -jar ${OPENGROK_JAR} '-?'
+    ${DO} ${JAVA} ${JAVA_OPTS} -jar "${OPENGROK_JAR}" '-?'
 }
 
 DeployWar()
@@ -902,6 +906,43 @@ DeployWar()
     if [ $? != 0 ]
     then
         FatalError "Web Application Installation FAILED"
+    fi
+
+    # Fix for opengrok issue https://github.com/OpenGrok/OpenGrok/issues/863
+    # If user does not use default OPENGROK_INSTANCE_BASE or default
+    # WEBAPP_CONFIG_ADDRESS, then attempt to extract WEB-INF/web.xml from
+    # source.war using jar or zip utility, update the hardcoded values and
+    # then update source.war with the new WEB-INF/web.xml
+
+    if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ] || [ "${WEBAPP_CONFIG_ADDRESS}" != 'localhost:2424' ]
+    then
+        EXTRACT_COMMAND=""
+        COMPRESS_COMMAND=""
+        if [ -n "`Which jar`" ]
+        then
+            EXTRACT_COMMAND="jar -xf"
+            COMPRESS_COMMAND="jar -uf"
+        elif [ -n "`Which zip`" ] && [ -n "`Which unzip`" ]
+        then
+            EXTRACT_COMMAND="unzip"
+            COMPRESS_COMMAND="zip -rf"
+        fi
+
+        if [ -n "${EXTRACT_COMMAND}" ]
+        then
+            cd "${warTarget}"
+            eval "${EXTRACT_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
+            if [ "${OPENGROK_INSTANCE_BASE}" != '/var/opengrok' ]
+            then
+                sed -i -e 's:/var/opengrok/etc/configuration.xml:'"$XML_CONFIGURATION"':g' "${warTarget}/WEB-INF/web.xml"
+            fi
+            if [ "${WEBAPP_CONFIG_ADDRESS}" != 'localhost:2424' ]
+            then
+                sed -i -e 's/localhost:2424/'"$WEBAPP_CONFIG_ADDRESS"'/g' "${warTarget}/WEB-INF/web.xml"
+            fi
+            eval "${COMPRESS_COMMAND} ${warTarget}/source.war WEB-INF/web.xml"
+            rm -rf "${warTarget}/WEB-INF"
+        fi
     fi
 
     Progress
@@ -945,7 +986,7 @@ DerbyServer()
 ClearHistory()
 {
 	Progress "Removing history index data for repository ${1}"
-	MinimalInvocation -s ${SRC_ROOT} -d ${DATA_ROOT} -k "${1}"
+	MinimalInvocation -s "${SRC_ROOT}" -d "${DATA_ROOT}" -k "${1}"
 }
 
 #

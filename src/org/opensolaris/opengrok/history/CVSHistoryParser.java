@@ -33,13 +33,17 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import java.util.logging.Logger;
+
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 
 /**
  * Parse a stream of CVS log comments.
  */
 class CVSHistoryParser implements Executor.StreamHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CVSHistoryParser.class);
 
     private enum ParseState {
         NAMES, TAG, REVISION, METADATA, COMMENT
@@ -77,7 +81,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                 if (s.startsWith("\t")) {
                     String[] pair = s.trim().split(": ");
                     if (pair.length != 2) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse tag: ''{0}''", s);
+                        LOGGER.log(Level.WARNING, "Failed to parse tag: ''{0}''", s);
                     } else {
                         if (tags.containsKey(pair[1])) {
                             // Join multiple tags for one revision
@@ -118,7 +122,7 @@ class CVSHistoryParser implements Executor.StreamHandler {
                             val = val.replace('/', '-');
                             entry.setDate(df.parse(val));
                         } catch (ParseException pe) {
-                            OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse date: '" + val + "'", pe);
+                            LOGGER.log(Level.WARNING, "Failed to parse date: '" + val + "'", pe);
                         }
                     } else if ("author".equals(key)) {
                         entry.setAuthor(val);

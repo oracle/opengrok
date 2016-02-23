@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.archive;
@@ -32,6 +31,9 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.executables.JarAnalyzerFactory;
 
 public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Zip";
+    
     private static final String[] SUFFIXES = {
         "ZIP"
     };
@@ -61,6 +63,7 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
 
         private static final int XFHSIZ = 4;
 
+        @Override
         public FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException {
             assert in.markSupported();
@@ -99,7 +102,7 @@ public final class ZipAnalyzerFactory extends FileAnalyzerFactory {
             new ZipAnalyzerFactory();
 
     private ZipAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, MATCHER, null, Genre.XREFABLE);
+        super(null, null, SUFFIXES, null, MATCHER, null, Genre.XREFABLE, name);
     }
 
     @Override

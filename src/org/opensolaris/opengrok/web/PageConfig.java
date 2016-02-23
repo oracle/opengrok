@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2011 Jens Elkner.
- * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Portions copyright (c) 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
 
@@ -43,9 +43,9 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.ServletRequest;
 import org.apache.commons.jrcs.diff.Diff;
 import org.apache.commons.jrcs.diff.DifferentiationFailedException;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
@@ -56,29 +56,35 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * A simple container to lazy initialize common vars wrt. a single request.
- * It MUST NOT be shared between several requests and
- * {@link #cleanup(ServletRequest)} should be called before the page context 
- * gets destroyed (e.g.when leaving the {@code service} method). <p> Purpose
- * is to decouple implementation details from web design, so that the JSP
- * developer does not need to know every implementation detail and normally has
- * to deal with this class/wrapper, only (so some people may like to call this
- * class a bean with request scope ;-)). Furthermore it helps to keep the pages
- * (how content gets generated) consistent and to document the request
- * parameters used. <p> General contract for this class (i.e. if not explicitly
- * documented): no method of this class changes neither the request nor the
- * response.
+ * A simple container to lazy initialize common vars wrt. a single request. It
+ * MUST NOT be shared between several requests and
+ * {@link #cleanup(ServletRequest)} should be called before the page context
+ * gets destroyed (e.g.when leaving the {@code service} method).
+ * <p>
+ * Purpose is to decouple implementation details from web design, so that the
+ * JSP developer does not need to know every implementation detail and normally
+ * has to deal with this class/wrapper, only (so some people may like to call
+ * this class a bean with request scope ;-)). Furthermore it helps to keep the
+ * pages (how content gets generated) consistent and to document the request
+ * parameters used.
+ * <p>
+ * General contract for this class (i.e. if not explicitly documented): no
+ * method of this class changes neither the request nor the response.
  *
  * @author Jens Elkner
  * @version $Revision$
  */
 public final class PageConfig {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
+
     // TODO if still used, get it from the app context
-    
+
     private RuntimeEnvironment env;
     private IgnoredNames ignoredNames;
     private String path;
@@ -96,18 +102,18 @@ public final class PageConfig {
     private Boolean annotate;
     private Annotation annotation;
     private Boolean hasHistory;
-    private static final EnumSet<Genre> txtGenres =
-            EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
+    private static final EnumSet<Genre> txtGenres
+            = EnumSet.of(Genre.DATA, Genre.PLAIN, Genre.HTML);
     private SortedSet<String> requestedProjects;
     private String requestedProjectsString;
     private List<String> dirFileList;
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
-    private static final Logger log = Logger.getLogger(PageConfig.class.getName());
+    private boolean lastEditedDisplayMode = true;
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
-    private HttpServletRequest req;
+    private final HttpServletRequest req;
 
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
@@ -189,6 +195,7 @@ public final class PageConfig {
         if (data.genre == null || txtGenres.contains(data.genre)) {
             InputStream[] in = new InputStream[2];
             try {
+                // Get input stream for both older and newer file.
                 for (int i = 0; i < 2; i++) {
                     File f = new File(srcRoot + filepath[i]);
                     in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
@@ -200,9 +207,14 @@ public final class PageConfig {
                     }
                 }
 
-                if (data.genre == null) {
+                /*
+                 * If the genre of the older revision cannot be determined,
+                 * (this can happen if the file was empty), try with newer
+                 * version.
+                 */
+                for (int i = 0; i < 2 && data.genre == null; i++) {
                     try {
-                        data.genre = AnalyzerGuru.getGenre(in[0]);
+                        data.genre = AnalyzerGuru.getGenre(in[i]);
                     } catch (IOException e) {
                         data.errorMsg = "Unable to determine the file type: "
                                 + Util.htmlize(e.getMessage());
@@ -250,7 +262,7 @@ public final class PageConfig {
                             filepath[i] + "@" + data.rev[i], null);
                     data.param[i] = u.getRawQuery();
                 } catch (URISyntaxException e) {
-                    log.log(Level.WARNING, "Failed to create URI: ", e);
+                    LOGGER.log(Level.WARNING, "Failed to create URI: ", e);
                 }
             }
             data.full = fullDiff();
@@ -296,7 +308,7 @@ public final class PageConfig {
      * not available, an empty String if further processing is ok and a
      * non-empty string which contains the URI encoded redirect path if the
      * request should be redirected.
-     * @see #resourceNotAvailable()     
+     * @see #resourceNotAvailable()
      * @see #getDirectoryRedirect()
      */
     public String canProcess() {
@@ -314,9 +326,9 @@ public final class PageConfig {
                         && !getRequestedRevision().isEmpty() && !hasHistory()) {
                     return null;
                 }
-            } else if ((getPrefix() == Prefix.RAW_P) ||
-                (getPrefix() == Prefix.DOWNLOAD_P)) {
-                    return null;
+            } else if ((getPrefix() == Prefix.RAW_P)
+                    || (getPrefix() == Prefix.DOWNLOAD_P)) {
+                return null;
             }
         }
         return redir == null ? "" : redir;
@@ -341,8 +353,8 @@ public final class PageConfig {
                 dirFileList = Collections.emptyList();
             } else {
                 Arrays.sort(files, String.CASE_INSENSITIVE_ORDER);
-                dirFileList =
-                        Collections.unmodifiableList(Arrays.asList(files));
+                dirFileList
+                        = Collections.unmodifiableList(Arrays.asList(files));
             }
         }
         return dirFileList;
@@ -399,12 +411,12 @@ public final class PageConfig {
                     ret = x;
                 }
             } catch (NumberFormatException e) {
-                log.log(Level.INFO, "Failed to parse integer " + s, e);
+                LOGGER.log(Level.INFO, "Failed to parse integer " + s, e);
             }
         }
         return ret;
     }
-
+    
     /**
      * Get the <b>start</b> index for a search result to return by looking up
      * the {@code start} request parameter.
@@ -487,9 +499,9 @@ public final class PageConfig {
     }
 
     /**
-     * Get the eftar reader for the data directory. If it has been
-     * already opened and not closed, this instance gets returned. One should
-     * not close it once used: {@link #cleanup(ServletRequest)} takes care to close it.
+     * Get the eftar reader for the data directory. If it has been already
+     * opened and not closed, this instance gets returned. One should not close
+     * it once used: {@link #cleanup(ServletRequest)} takes care to close it.
      *
      * @return {@code null} if a reader can't be established, the reader
      * otherwise.
@@ -503,7 +515,7 @@ public final class PageConfig {
                 try {
                     eftarReader = new EftarFileReader(f);
                 } catch (FileNotFoundException e) {
-                    log.log(Level.FINE, "Failed to create EftarFileReader: ", e);
+                    LOGGER.log(Level.FINE, "Failed to create EftarFileReader: ", e);
                 }
             }
         }
@@ -525,7 +537,7 @@ public final class PageConfig {
                 dtag = eftarReader.get(getPath());
                 // cfg.getPrefix() != Prefix.XREF_S) {
             } catch (IOException e) {
-                log.log(Level.INFO, "Failed to get entry from eftar reader: ", e);
+                LOGGER.log(Level.INFO, "Failed to get entry from eftar reader: ", e);
             }
         }
         if (dtag == null) {
@@ -603,7 +615,7 @@ public final class PageConfig {
         try {
             annotation = HistoryGuru.getInstance().annotate(resourceFile, rev.isEmpty() ? null : rev.substring(2));
         } catch (IOException e) {
-            log.log(Level.WARNING, "Failed to get annotations: ", e);
+            LOGGER.log(Level.WARNING, "Failed to get annotations: ", e);
             /* ignore */
         }
         return annotation;
@@ -684,9 +696,10 @@ public final class PageConfig {
 
     /**
      * Get a reference to a set of requested projects via request parameter
-     * {@code project} or cookies or defaults. <p> NOTE: This method assumes,
-     * that project names do <b>not</b> contain a comma (','), since this
-     * character is used as name separator!
+     * {@code project} or cookies or defaults.
+     * <p>
+     * NOTE: This method assumes, that project names do <b>not</b> contain a
+     * comma (','), since this character is used as name separator!
      *
      * @return a possible empty set of project names aka descriptions but never
      * {@code null}. It is determined as follows: <ol> <li>If there is no
@@ -703,8 +716,8 @@ public final class PageConfig {
      */
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
-            requestedProjects =
-                    getRequestedProjects("project", "OpenGrokProject");
+            requestedProjects
+                    = getRequestedProjects("project", "OpenGrokProject");
         }
         return requestedProjects;
     }
@@ -911,7 +924,7 @@ public final class PageConfig {
         }
         return path;
     }
-   
+
     /**
      * Get the on disk file to the request related file or directory.
      *
@@ -1079,8 +1092,8 @@ public final class PageConfig {
                 return null;
             }
             getPrefix();
-            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L &&
-                prefix != Prefix.RSS_P) {
+            if (prefix != Prefix.XREF_P && prefix != Prefix.HIST_L
+                    && prefix != Prefix.RSS_P) {
                 // if it is an existing dir perhaps people wanted dir xref
                 return req.getContextPath() + Prefix.XREF_P
                         + getUriEncodedPath() + trailingSlash(path);
@@ -1132,14 +1145,24 @@ public final class PageConfig {
         }
         return dataRoot;
     }
+    
+    public boolean isLastEditedDisplayMode() {
+        return lastEditedDisplayMode;
+    }
+
+    public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
+        this.lastEditedDisplayMode = lastEditedDisplayMode;
+    }
 
     /**
      * Prepare a search helper with all required information, ready to execute
-     * the query implied by the related request parameters and cookies. <p>
+     * the query implied by the related request parameters and cookies.
+     * <p>
      * NOTE: One should check the {@link SearchHelper#errorMsg} as well as
      * {@link SearchHelper#redirect} and take the appropriate action before
-     * executing the prepared query or continue processing. <p> This method
-     * stops populating fields as soon as an error occurs.
+     * executing the prepared query or continue processing.
+     * <p>
+     * This method stops populating fields as soon as an error occurs.
      *
      * @return a search helper.
      */
@@ -1167,12 +1190,14 @@ public final class PageConfig {
         sh.compressed = env.isCompressXref();
         sh.desc = getEftarReader();
         sh.sourceRoot = new File(getSourceRootPath());
+        sh.lastEditedDisplayMode = isLastEditedDisplayMode();
         return sh;
     }
 
     /**
      * Get the config wrt. the given request. If there is none yet, a new config
-     * gets created, attached to the request and returned. <p>
+     * gets created, attached to the request and returned.
+     * <p>
      *
      * @param request the request to use to initialize the config parameters.
      * @return always the same none-{@code null} config for a given request.
@@ -1187,14 +1212,15 @@ public final class PageConfig {
         request.setAttribute(ATTR_NAME, pcfg);
         return pcfg;
     }
-    
+
     private PageConfig(HttpServletRequest req) {
         this.req = req;
     }
 
     /**
-     * Cleanup all allocated resources (if any) from the instance attached to 
+     * Cleanup all allocated resources (if any) from the instance attached to
      * the given request.
+     *
      * @param sr request to check, cleanup. Ignored if {@code null}.
      * @see PageConfig#get(HttpServletRequest)
      */
@@ -1205,7 +1231,7 @@ public final class PageConfig {
         PageConfig cfg = (PageConfig) sr.getAttribute(ATTR_NAME);
         if (cfg == null) {
             return;
-        }        
+        }
         sr.removeAttribute(ATTR_NAME);
         cfg.env = null;
         if (cfg.eftarReader != null) {

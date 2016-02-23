@@ -26,12 +26,14 @@ package org.opensolaris.opengrok.analysis;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Base class for all different File Analyzers
@@ -50,6 +52,8 @@ import org.opensolaris.opengrok.configuration.Project;
  * @author Chandan
  */
 public class FileAnalyzer extends Analyzer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileAnalyzer.class);
 
     protected Project project;
     protected boolean scopesEnabled;
@@ -185,7 +189,7 @@ public class FileAnalyzer extends Analyzer {
             case "defs":
                 return new TokenStreamComponents(new PlainSymbolTokenizer());
             default:
-                OpenGrokLogger.getLogger().log(
+                LOGGER.log(
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);
                 return null;
         }

@@ -32,8 +32,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import java.util.logging.Logger;
+
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.StringUtils;
 
@@ -41,6 +43,8 @@ import org.opensolaris.opengrok.util.StringUtils;
  * Parse a stream of Git log comments.
  */
 class GitHistoryParser implements Executor.StreamHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitHistoryParser.class);
 
     private enum ParseState {
 
@@ -92,7 +96,7 @@ class GitHistoryParser implements Executor.StreamHandler {
                     try {
                         entry.setDate(df.parse(dateString));
                     } catch (ParseException pe) {
-                        OpenGrokLogger.getLogger().log(Level.WARNING, "Failed to parse author date: " + s, pe);
+                        LOGGER.log(Level.WARNING, "Failed to parse author date: " + s, pe);
                     }
                 } else if (StringUtils.isOnlyWhitespace(s)) {
                     // We are done reading the heading, start to read the message

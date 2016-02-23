@@ -27,15 +27,19 @@ package org.opensolaris.opengrok.management;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import java.util.logging.Logger;
+
 import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  *
  * @author Jan Berg
  */
 public class JMXConfiguration implements JMXConfigurationMBean {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JMXConfiguration.class);
 
     public String getConfiguration() {
         return RuntimeEnvironment.getInstance().getConfiguration().getXMLRepresentationAsString();
@@ -58,7 +62,7 @@ public class JMXConfiguration implements JMXConfigurationMBean {
         } catch (IOException orig) {
             IOException ioex = new IOException("Could not create configuration file " + configfile);
             ioex.initCause(orig);
-            OpenGrokLogger.getLogger().log(Level.SEVERE,"Could not create configfile " + configfile, ioex);
+            LOGGER.log(Level.SEVERE,"Could not create configfile " + configfile, ioex);
             throw ioex;
         }
     }

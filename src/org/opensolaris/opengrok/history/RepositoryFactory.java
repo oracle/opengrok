@@ -28,9 +28,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * This is a factory class for the different repositories.
@@ -38,6 +39,8 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author austvik
  */
 public final class RepositoryFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryFactory.class);
 
     private static Repository repositories[] = {
         new MercurialRepository(),
@@ -88,12 +91,12 @@ public final class RepositoryFactory {
                 try {
                     res.setDirectoryName(file.getCanonicalPath());
                 } catch (IOException e) {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
+                    LOGGER.log(Level.SEVERE,
                         "Failed to get canonical path name for " + file.getAbsolutePath(), e);
                 }
 
                 if (!res.isWorking()) {
-                    OpenGrokLogger.getLogger().log(
+                    LOGGER.log(
                             Level.WARNING,
                             "{0} not working (missing binaries?): {1}",
                             new Object[] {
@@ -104,6 +107,25 @@ public final class RepositoryFactory {
 
                 if (res.getType() == null || res.getType().length() == 0) {
                     res.setType(res.getClass().getSimpleName());
+                }
+
+                if (res.getParent() == null || res.getParent().length() == 0) {
+                    try {
+                        res.setParent(res.determineParent());
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.SEVERE, null, ex);
+                        LOGGER.log(Level.WARNING,
+                            "Failed to get parent for " + file.getAbsolutePath());
+                    }
+                }
+
+                if (res.getBranch() == null || res.getBranch().length() == 0) {
+                    try {
+                        res.setBranch(res.determineBranch());
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING,
+                            "Failed to get branch for " + file.getAbsolutePath());
+                    }
                 }
 
                 // If this repository displays tags only for files changed by tagged

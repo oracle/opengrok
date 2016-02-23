@@ -24,15 +24,19 @@
 package org.opensolaris.opengrok.search.context;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.opensolaris.opengrok.OpenGrokLogger;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  *
  * @author dobrou@gmail.com
  */
 class RegexpMatcher extends LineMatcher {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegexpMatcher.class);
+
     private final Pattern termRegexp;
 
     public RegexpMatcher(String term, boolean caseInsensitive) {
@@ -42,7 +46,7 @@ class RegexpMatcher extends LineMatcher {
             regexp = Pattern.compile(term, caseInsensitive ? Pattern.CASE_INSENSITIVE : 0 );
         } catch ( PatternSyntaxException  e) {
             regexp = null;
-            OpenGrokLogger.getLogger().log(Level.WARNING, "RegexpMatcher: {0}", e.getMessage() );
+            LOGGER.log(Level.WARNING, "RegexpMatcher: {0}", e.getMessage() );
         }
         this.termRegexp = regexp;
     }

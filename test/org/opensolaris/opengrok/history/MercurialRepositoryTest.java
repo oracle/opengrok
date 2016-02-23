@@ -18,10 +18,14 @@
  */
 
 /*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.history;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,12 +34,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import static junit.framework.Assert.fail;
+
 import org.junit.After;
 import org.junit.Test;
-import org.opensolaris.opengrok.util.TestRepository;
-import static org.junit.Assert.*;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  * Tests for MercurialRepository.
@@ -43,9 +46,9 @@ import org.opensolaris.opengrok.util.Executor;
 public class MercurialRepositoryTest {
 
     /**
-     * Revision numbers present in the Mercurial test repository, in the
-     * order they are supposed to be returned from getHistory(),
-     * that is latest changeset first.
+     * Revision numbers present in the Mercurial test repository, in the order
+     * they are supposed to be returned from getHistory(), that is latest
+     * changeset first.
      */
     private static final String[] REVISIONS = {
         "9:8b340409b3a8",
@@ -69,9 +72,8 @@ public class MercurialRepositoryTest {
     private TestRepository repository;
 
     /**
-     * Set up a test repository. Should be called by the tests that need it.
-     * The test repository will be destroyed automatically when the test
-     * finishes.
+     * Set up a test repository. Should be called by the tests that need it. The
+     * test repository will be destroyed automatically when the test finishes.
      */
     private void setUpTestRepository() throws IOException {
         repository = new TestRepository();
@@ -90,8 +92,8 @@ public class MercurialRepositoryTest {
     public void testGetHistory() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
         History hist = mr.getHistory(root);
         List<HistoryEntry> entries = hist.getHistoryEntries();
         assertEquals(REVISIONS.length, entries.size());
@@ -108,14 +110,15 @@ public class MercurialRepositoryTest {
     /**
      * Test that subset of changesets can be extracted based on penultimate
      * revision number.
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     @Test
     public void testGetHistoryPartial() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
         // Get all but the oldest revision.
         History hist = mr.getHistory(root, REVISIONS[REVISIONS.length - 1]);
         List<HistoryEntry> entries = hist.getHistoryEntries();
@@ -132,6 +135,7 @@ public class MercurialRepositoryTest {
 
     /**
      * Run Mercurial command.
+     *
      * @param command hg command to run
      * @param reposRoot directory of the repository root
      * @param arg argument to use for the command
@@ -143,36 +147,40 @@ public class MercurialRepositoryTest {
         Executor exec = new Executor(Arrays.asList(cmdargs), reposRoot);
         int exitCode = exec.exec();
         if (exitCode != 0) {
-            fail("hg " + command + " failed." +
-                    "\nexit code: " + exitCode +
-                    "\nstdout:\n" + exec.getOutputString() +
-                    "\nstderr:\n" + exec.getErrorString());
+            fail("hg " + command + " failed."
+                    + "\nexit code: " + exitCode
+                    + "\nstdout:\n" + exec.getOutputString()
+                    + "\nstderr:\n" + exec.getErrorString());
         }
     }
 
     /**
      * Test that history of branched repository contains changesets of the
      * default branch as well.
+     *
      * @throws Exception
      */
     @Test
     public void testGetHistoryBranch() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
 
         // Branch the repo and add one changeset.
         runHgCommand("unbundle",
-            root, getClass().getResource("hg-branch.bundle").getPath());
+                root, getClass().getResource("hg-branch.bundle").getPath());
         // Switch to the branch.
         runHgCommand("update", root, "mybranch");
+
+        // Since the above hg commands change the active branch the repository
+        // needs to be initialized here so that its branch matches.
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
 
         // Get all revisions.
         History hist = mr.getHistory(root);
         List<HistoryEntry> entries = hist.getHistoryEntries();
-        List<String> both = new ArrayList<String>(REVISIONS.length +
-            REVISIONS_extra_branch.length);
+        List<String> both = new ArrayList<>(REVISIONS.length
+                + REVISIONS_extra_branch.length);
         Collections.addAll(both, REVISIONS_extra_branch);
         Collections.addAll(both, REVISIONS);
         String revs[] = both.toArray(new String[both.size()]);
@@ -197,24 +205,25 @@ public class MercurialRepositoryTest {
     }
 
     /**
-     * Test that it is possible to get contents of last revision of a text
-     * file.
+     * Test that it is possible to get contents of last revision of a text file.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryGet() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
-        String exp_str = "This will be a first novel of mine.\n" +
-            "\n" +
-            "Chapter 1.\n" +
-            "\n" +
-            "Let's write some words. It began like this:\n" +
-            "\n" +
-            "...\n";
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
+        String exp_str = "This will be a first novel of mine.\n"
+                + "\n"
+                + "Chapter 1.\n"
+                + "\n"
+                + "Let's write some words. It began like this:\n"
+                + "\n"
+                + "...\n";
         byte[] buffer = new byte[1024];
-        
+
         InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
                 "novel.txt", REVISIONS[0]);
         assertNotNull(input);
@@ -232,52 +241,56 @@ public class MercurialRepositoryTest {
     public void testgetHistoryGetForAll() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
 
         for (String rev : REVISIONS_novel) {
             InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
-                "novel.txt", rev);
+                    "novel.txt", rev);
             assertNotNull(input);
         }
     }
 
     /**
-     * Test that {@code getHistoryGet()} returns historical contents of 
-     * renamed file.
+     * Test that {@code getHistoryGet()} returns historical contents of renamed
+     * file.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryGetRenamed() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
         String exp_str = "This is totally plaintext file.\n";
         byte[] buffer = new byte[1024];
-        
+
         /* 
          * In our test repository the file was renamed twice since 
          * revision 3.
          */
         InputStream input = mr.getHistoryGet(root.getCanonicalPath(),
                 "novel.txt", "3");
-        assert(input != null);
+        assert (input != null);
         int len = input.read(buffer);
-        assert(len != -1);
+        assert (len != -1);
         String str = new String(buffer, 0, len);
-        assert(str.compareTo(exp_str) == 0);
-    }  
+        assert (str.compareTo(exp_str) == 0);
+    }
 
     /**
      * Test that {@code getHistory()} throws an exception if the revision
      * argument doesn't match any of the revisions in the history.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testGetHistoryWithNoSuchRevision() throws Exception {
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "mercurial");
-        MercurialRepository mr =
-                (MercurialRepository) RepositoryFactory.getRepository(root);
+        MercurialRepository mr
+                = (MercurialRepository) RepositoryFactory.getRepository(root);
 
         // Get the sequence number and the hash from one of the revisions.
         String[] revisionParts = REVISIONS[1].split(":");

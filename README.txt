@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -26,7 +26,8 @@ OpenGrok - a wicked fast source browser
 OpenGrok is a fast and usable source code search and cross reference
 engine, written in Java. It helps you search, cross-reference and navigate
 your source tree. It can understand various program file formats and
-version control histories like SCCS, RCS, CVS, Subversion, Mercurial etc.
+version control histories like Mercurial, Git, SCCS, RCS, CVS, Subversion,
+Teamware, ClearCase, Perforce, Monotone and Bazaar.
 
 Offical page of the project is on:
 
@@ -35,21 +36,22 @@ Offical page of the project is on:
 2. Requirements
 ---------------
 
-    * Latest Java (At least 1.7, 1.8 is supported)
+    * Latest Java (At least 1.8)
       http://www.oracle.com/technetwork/java/
-    * A servlet container like Tomcat (7.x or later)
-      supporting Servlet 2.4 and JSP 2.0
+    * A servlet container like Tomcat (8.x or later)
+      supporting Servlet 2.5 and JSP 2.1
       http://tomcat.apache.org/
-    * Exuberant Ctags
+    * Exuberant Ctags or Universal Ctags
       http://ctags.sourceforge.net/
+      https://ctags.io/
     * Source Code Management installation
       depending on type of repositories indexed
     * If you want to build OpenGrok:
-      - Ant (1.9.3 and later)
+      - Ant (1.9.4 and later)
         http://ant.apache.org/
       - JFlex
         http://www.jflex.de/
-      - Netbeans (optional, at least 8.0, will need Ant 1.9.3)
+      - Netbeans (optional, at least 8.0, will need Ant 1.9.4)
         http://netbeans.org/
 
 3. Usage
@@ -147,8 +149,8 @@ If you want to skip indexing the history of a particular directory
 at the root of that directory.
 
 
-5.2 Using Opengrok wrapper script to create indexes
----------------------------------------------------
+5.2 Using Opengrok shell wrapper script to create indexes
+---------------------------------------------------------
 
 For *nix systems there is a shell script called OpenGrok which simplifies most
 of the tasks. It has been tested on Solaris and Linux distributions.
@@ -245,6 +247,63 @@ OPENGROK_CONFIGURATION environment variable to point to it. Obviously such
 setups can be used for nightly cron job updates of index or other automated
 purposes.
 
+5.2.3 Partial reindex
+---------------------
+
+There is inherent time window between after the source code is updated
+(highlighted in step 5.1 above) and before indexer completes. During this
+time window the index does not match the source code. To alleviate this
+limitation, one can kick off update of all source repositories in
+parallel and once all the mirroring completes perform complete reindex.
+This does not really help in case when some of the source code
+repositories are slow to sync, e.g. because the latency to their origin is
+significant, because the overall mirroring process has to wait for all the
+projects to finish syncing before running the indexer. To overcome this
+limitation, the index of each project can be created just after the
+mirroring of this project finishes.
+
+Thus, the overall approach would be:
+
+  1. create initial index of all the source code
+
+     This will produce configuration.xml, optionally by combining the
+     discovered projects with read-only configuration (as specified
+     with READ_XML_CONFIGURATION). This step has to be performed only once
+     - during the initial OpenGrok setup.
+
+  2. mirror and index all projects in parallel
+
+     This is done by running indexpart command of the OpenGrok script and
+     specifying the configuration.xml written in previous step as
+     READ_XML_CONFIGURATION. The configuration will help the indexer to
+     discover source/data root and project to source path mapping.
+
+  3. perform complete reindex (like in step 1)
+
+     Once all the pre-existing projects are mirrored and indexed, run full
+     indexer to discover projects which have been added or deleted.
+     This will produce new configuration.xml.
+
+When running the indexer the logs are being written to single file. Since
+multiple indexers are being run in parallel in step 2, their logs have to
+be separated. To do this, create logging.properties file for each project
+using the /var/opengrok/logging.properties file as template. The only line
+which can differ would be this:
+
+java.util.logging.FileHandler.pattern = /var/opengrok/log/myproj/opengrok%g.%u.log
+
+Note the path component 'myproj' which separates the logs for given
+project to this directory. The creation of the per-project directory and the
+logging.properties file can be easily done in a script.
+
+The command used in step 2 can look like this:
+
+  OPENGROK_LOGGER_CONFIG_PATH=/var/opengrok/myproj.logging \
+     READ_XML_CONFIGURATION=/var/opengrok/etc/configuration.xml \
+     OpenGrok indexpart /myproj
+
+The last argument is path relative to SRC_ROOT.
+
 5.3 Using SMF service (Solaris) to maintain OpenGrok indexes
 ------------------------------------------------------------
 
@@ -316,12 +375,15 @@ web.xml of source.war file and change them (see note1) appropriately.
     * SRC_ROOT: absolute path name of the root directory of your source tree
     * DATA_ROOT: absolute path of the directory where OpenGrok data
                  files are stored
-       - Header file 'header_include' can be created under DATA_ROOT.
-	 The contents of this file file will be appended to the header of each
-	 web page after the OpenGrok logo element.
-       - Footer file 'footer_include' can be created under DATA_ROOT.
-	 The contents of this file file will be appended to the footer of each
-	 web page after the information about last index update.
+
+  - Header file 'header_include' can be created under DATA_ROOT.
+    The contents of this file file will be appended to the header of each
+    web page after the OpenGrok logo element.
+  - Footer file 'footer_include' can be created under DATA_ROOT.
+    The contents of this file file will be appended to the footer of each
+    web page after the information about last index update.
+  - The body of the home page can be changed by updating index_body.html
+    under the webapp directory.
 
 5.4.3 - Path Descriptions (optional)
 ------------------------------------
@@ -439,7 +501,7 @@ Solaris 11:
 
 Debian/Ubuntu:
 
-  # apt-get install sun-java6-javadb
+  # apt-get install libderby-java
 
 Other:
 
@@ -638,13 +700,8 @@ being executed on) under the dist/ directory.
 Note: For full coverage report your system has to provide proper junit test 
 environment, that would mean:
 
-  - you have to use Ant 1.7 and above
-  - at least junit-4.10.jar has to be in ant's classpath (e.g. in ./lib)
-    - Example install in the top of the opengrok repository:
-
-      $ cd lib
-      $ wget http://.../junit-4.10.jar
-      $ jar -xf junit-4.10.jar
+  - you have to use Ant 1.9 and above
+  - at least junit-4.12.jar has to be in ant's classpath (e.g. in ./lib)    
 
   - install derby.jar to ant's classpath so that Java DB tests can be run
   - your PATH must contain directory with exuberant ctags binary
@@ -696,56 +753,20 @@ under the lib directory):
 There is also a findbugs-xml ant target that can be used to generate XML files
 that can later be parsed, e.g. by Jenkins.
 
-9.3 Using Emma
+9.3 Using Jacoco
 --------------
 
-If you want to check test coverage on OpenGrok, download Emma from
-http://emma.sourceforge.net/. Place emma.jar and emma-ant.jar in the
-opengrok/trunk/lib directory, or ~/.ant/lib.
+If you want to check test coverage on OpenGrok, download jacoco from
+http://www.eclemma.org/jacoco/. Place jacocoagent.jar and jacocoant.jar in the
+opengrok/lib ~/.ant/lib or into classpath (-lib option of ant).
 
-Now you can instrument your classes, and create a jar file:
+Now you can instrument your classes and test them run:
 
-  $ ant emma-instrument
+  $ ant -Djacoco=true -Djacoco.home=/<path_to>/jacoco jacoco-code-coverage
 
-If you are using NetBeans, select File - "opengrok" Properties 
-- libraries - Compile tab. Press the "Add JAR/Folder" and select
-lib/emma.jar and lib/emma_ant.jar
+Now you should get output data in jacoco.exec
 
-If you are not using netbeans, you have to edit the file 
-nbproject/project.properties, and add "lib/emma.jar" and 
-"lib/emma_ant.jar" to the javac.classpath inside it.
-
-Now you can put the classes into jars and generate distributable:
-
-  $ ant dist
-
-The classes inside opengrok.jar should now be instrumented.
-If you use opengrok.jar for your own set of tests, you need 
-emma.jar in the classpath.If you want to specify where to store 
-the run time analysis, use these properties:
-
-   emma.coverage.out.file=path/coverage.ec
-   emma.coverage.out.merge=true
-
-The coverage.ec file should be placed in the opengrok/trunk/coverage
-directory for easy analyze.
-
-If you want to test the coverage of the unit tests, you can
-run the tests:
-
-   $ ant test   
-   
-Alternatively press Alt+F6 in NetBeans to achieve the same.
-
-Now you should get some output saying that Emma is placing runtime 
-coverage data into coverage.ec.
-
-To generate reports, run ant again:
-
-  $ ant emma-report
-
-Look at coverage/coverage.txt, coverage/coverage.xml and 
-coverage/coverage.html to see how complete your tests are.
+Look at jacoco/index.html to see how complete your tests are.
 
 9.4 Using Checkstyle
 --------------------
@@ -754,19 +775,18 @@ To check that your code follows the standard coding conventions,
 you can use checkstyle from http://checkstyle.sourceforge.net/
 
 First you must download checkstyle from http://checkstyle.sourceforge.net/ ,
-You need Version 5.3 (or newer). Extract the package you have
+You need Version 6.8 (or newer). Extract the package you have
 downloaded, and create a symbolic link to it from ~/.ant/lib/checkstyle,
 e.g. like this:
 
    $ cd ~/.ant/lib
-   $ unzip ~/Desktop/checkstyle-5.3.zip
-   $ ln -s checkstyle-5.3 checkstyle
+   $ unzip ~/Desktop/checkstyle-6.8.zip
+   $ ln -s checkstyle-6.8 checkstyle
 
 You also have to create symbolic links to the jar files:
 
-   $ cd checkstyle
-   $ ln -s checkstyle-5.3.jar checkstyle.jar
-   $ ln -s checkstyle-all-5.3.jar checkstyle-all.jar
+   $ cd checkstyle   
+   $ ln -s checkstyle-6.8-all.jar checkstyle-all.jar
 
 To run checkstyle on the source code, just run ant checkstyle:
 
@@ -857,6 +877,7 @@ e.g. using bash:
 9.8 Using Travis CI
 -------------------
 
+Travis depends on updated and working maven build.
 Please see .travis.yml, if your branch has this file,
 you should be able to connect your Github to Travis CI.
 OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok
@@ -924,6 +945,9 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestLine 65536
   LimitRequestFieldSize 65536
 
+Open File hard and soft limits
+The initial index creation process is resource intensive and often the error "java.io.IOException: error=24, Too many open files" appears in the logs. To avoid this increase the ulimit value to a higher number. 
+It is noted that the hard and soft limit for open files of 10240 works for mid sized repositores and so the recommendation is to start with 10240.
 
 11. Authors
 -----------

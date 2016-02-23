@@ -27,15 +27,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.opensolaris.opengrok.OpenGrokLogger;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.StreamSource;
+import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
  * Analyzes GZip files Created on September 22, 2005
@@ -43,6 +44,8 @@ import org.opensolaris.opengrok.analysis.StreamSource;
  * @author Chandan
  */
 public class GZIPAnalyzer extends FileAnalyzer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GZIPAnalyzer.class);
 
     private Genre g;
 
@@ -72,7 +75,7 @@ public class GZIPAnalyzer extends FileAnalyzer {
             }
             if (fa == null) {
                 this.g = Genre.DATA;
-                OpenGrokLogger.getLogger().log(Level.WARNING, "Did not analyze {0}, detected as data.", newname);
+                LOGGER.log(Level.WARNING, "Did not analyze {0}, detected as data.", newname);
                 //TODO we could probably wrap tar analyzer here, need to do research on reader coming from gzis ...
             } else { // cant recurse!
                 //simple file gziped case captured here

@@ -18,9 +18,8 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedInputStream;
@@ -34,8 +33,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.opensolaris.opengrok.OpenGrokLogger;
+
+import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
 
@@ -44,11 +45,18 @@ import org.opensolaris.opengrok.util.IOUtils;
  *
  */
 public class ClearCaseRepository extends Repository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClearCaseRepository.class);
+
     private static final long serialVersionUID = 1L;
-    /** The property name used to obtain the client command for this repository. */
-    public static final String CMD_PROPERTY_KEY =
-        "org.opensolaris.opengrok.history.ClearCase";
-    /** The command to use to access the repository if none was given explicitly */
+    /**
+     * The property name used to obtain the client command for this repository.
+     */
+    public static final String CMD_PROPERTY_KEY
+            = "org.opensolaris.opengrok.history.ClearCase";
+    /**
+     * The command to use to access the repository if none was given explicitly
+     */
     public static final String CMD_FALLBACK = "cleartool";
 
     private boolean verbose;
@@ -60,6 +68,7 @@ public class ClearCaseRepository extends Repository {
 
     /**
      * Use verbose log messages, or just the summary
+     *
      * @return true if verbose log messages are used for this repository
      */
     public boolean isVerbose() {
@@ -68,15 +77,16 @@ public class ClearCaseRepository extends Repository {
 
     /**
      * Specify if verbose log messages or just the summary should be used
+     *
      * @param verbose set to true if verbose messages should be used
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-   /**
-     * Get an executor to be used for retrieving the history log for the
-     * named file.
+    /**
+     * Get an executor to be used for retrieving the history log for the named
+     * file.
      *
      * @param file The file to retrieve history for
      * @return An Executor ready to be started
@@ -88,9 +98,9 @@ public class ClearCaseRepository extends Repository {
             filename = abs.substring(directoryName.length() + 1);
         }
 
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        cmd.add(this.cmd);
+        cmd.add(RepoCommand);
         cmd.add("lshistory");
         if (file.isDirectory()) {
             cmd.add("-dir");
@@ -103,8 +113,7 @@ public class ClearCaseRepository extends Repository {
     }
 
     @Override
-    public InputStream getHistoryGet(String parent, String basename, String rev)
-    {
+    public InputStream getHistoryGet(String parent, String basename, String rev) {
         InputStream ret = null;
 
         File directory = new File(directoryName);
@@ -112,24 +121,24 @@ public class ClearCaseRepository extends Repository {
         Process process = null;
         try {
             String filename = (new File(parent, basename)).getCanonicalPath()
-                .substring(directoryName.length() + 1);
+                    .substring(directoryName.length() + 1);
             final File tmp = File.createTempFile("opengrok", "tmp");
             String tmpName = tmp.getCanonicalPath();
 
             // cleartool can't get to a previously existing file
             if (tmp.exists() && !tmp.delete()) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Failed to remove temporary file used by history cache");
+                LOGGER.log(Level.WARNING,
+                        "Failed to remove temporary file used by history cache");
             }
 
             String decorated = filename + "@@" + rev;
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String argv[] = {cmd, "get", "-to", tmpName, decorated};
+            String argv[] = {RepoCommand, "get", "-to", tmpName, decorated};
             process = Runtime.getRuntime().exec(argv, null, directory);
 
             drainStream(process.getInputStream());
 
-            if(waitFor(process) != 0) {
+            if (waitFor(process) != 0) {
                 return null;
             }
 
@@ -147,8 +156,8 @@ public class ClearCaseRepository extends Repository {
                 }
             };
         } catch (Exception exp) {
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "Failed to get history: " + exp.getClass().toString(), exp);
+            LOGGER.log(Level.SEVERE,
+                    "Failed to get history: " + exp.getClass().toString(), exp);
         } finally {
             // Clean up zombie-processes...
             if (process != null) {
@@ -166,19 +175,20 @@ public class ClearCaseRepository extends Repository {
 
     /**
      * Drain all data from a stream and close it.
+     *
      * @param in the stream to drain
      * @throws IOException if an I/O error occurs
      */
     private static void drainStream(InputStream in) throws IOException {
         while (true) {
             long skipped = 0;
-            try  {
+            try {
                 skipped = in.skip(32768L);
             } catch (IOException ioe) {
                 // ignored - stream isn't seekable, but skipped variable still
                 // has correct value.
-                OpenGrokLogger.getLogger().log(Level.FINEST,
-                    "Stream not seekable", ioe);
+                LOGGER.log(Level.FINEST,
+                        "Stream not seekable", ioe);
             }
             if (skipped == 0 && in.read() == -1) {
                 // No bytes skipped, checked that we've reached EOF with read()
@@ -194,13 +204,14 @@ public class ClearCaseRepository extends Repository {
      * @param file file to annotate
      * @param revision revision to annotate
      * @return file annotation
+     * @throws java.io.IOException
      */
     @Override
-public Annotation annotate(File file, String revision) throws IOException {
-        ArrayList<String> argv = new ArrayList<String>();
+    public Annotation annotate(File file, String revision) throws IOException {
+        ArrayList<String> argv = new ArrayList<>();
 
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-        argv.add(cmd);
+        argv.add(RepoCommand);
         argv.add("annotate");
         argv.add("-nheader");
         argv.add("-out");
@@ -267,7 +278,7 @@ public Annotation annotate(File file, String revision) throws IOException {
 
             // Check if this is a snapshot view
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            String[] argv = {cmd, "catcs"};
+            String[] argv = {RepoCommand, "catcs"};
             process = Runtime.getRuntime().exec(argv, null, directory);
             boolean snapshot = false;
             String line;
@@ -283,7 +294,7 @@ public Annotation annotate(File file, String revision) throws IOException {
             if (snapshot) {
                 // It is a snapshot view, we need to update it manually
                 ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-                argv = new String[]{cmd, "update", "-overwrite", "-f"};
+                argv = new String[]{RepoCommand, "update", "-overwrite", "-f"};
                 process = Runtime.getRuntime().exec(argv, null, directory);
                 try (BufferedReader in = new BufferedReader(
                         new InputStreamReader(process.getInputStream()))) {
@@ -320,9 +331,9 @@ public Annotation annotate(File file, String revision) throws IOException {
     public boolean isWorking() {
         if (working == null) {
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
-            working = checkCmd(cmd, "-version");
+            working = checkCmd(RepoCommand, "-version");
         }
-        return working.booleanValue();
+        return working;
     }
 
     @Override
@@ -344,14 +355,15 @@ public Annotation annotate(File file, String revision) throws IOException {
                     }
                 }
             } catch (IOException e) {
-                OpenGrokLogger.getLogger().log(Level.WARNING,
-                    "Could not get canonical path for \""+file+"\"", e);
+                LOGGER.log(Level.WARNING,
+                        "Could not get canonical path for \"" + file + "\"", e);
             }
         }
         return false;
     }
 
     private static class VobsHolder {
+
         public static String[] vobs = runLsvob();
     }
 
@@ -359,29 +371,30 @@ public Annotation annotate(File file, String revision) throws IOException {
         return VobsHolder.vobs;
     }
 
-    private static final ClearCaseRepository testRepo =
-            new ClearCaseRepository();
+    private static final ClearCaseRepository testRepo
+            = new ClearCaseRepository();
 
     private static String[] runLsvob() {
         if (testRepo.isWorking()) {
-            Executor exec = new Executor(new String[] {testRepo.cmd, "lsvob", "-s"});
+            Executor exec = new Executor(
+                    new String[]{testRepo.RepoCommand, "lsvob", "-s"});
             int rc;
             if ((rc = exec.exec(true)) == 0) {
                 String output = exec.getOutputString();
 
                 if (output == null) {
-                    OpenGrokLogger.getLogger().log(Level.SEVERE,
-                        "\"cleartool lsvob -s\" output was null");
+                    LOGGER.log(Level.SEVERE,
+                            "\"cleartool lsvob -s\" output was null");
                     return new String[0];
                 }
                 String sep = System.getProperty("line.separator");
                 String[] vobs = output.split(Pattern.quote(sep));
-                OpenGrokLogger.getLogger().log(Level.CONFIG, "Found VOBs: {0}",
-                    Arrays.asList(vobs));
+                LOGGER.log(Level.CONFIG, "Found VOBs: {0}",
+                        Arrays.asList(vobs));
                 return vobs;
             }
-            OpenGrokLogger.getLogger().log(Level.SEVERE,
-                "\"cleartool lsvob -s\" returned non-zero status: " + rc);
+            LOGGER.log(Level.SEVERE,
+                    "\"cleartool lsvob -s\" returned non-zero status: {0}", rc);
         }
         return new String[0];
     }
@@ -394,5 +407,15 @@ public Annotation annotate(File file, String revision) throws IOException {
     @Override
     History getHistory(File file) throws HistoryException {
         return new ClearCaseHistoryParser().parse(file, this);
+    }
+
+    @Override
+    String determineParent() throws IOException {
+        return null;
+    }
+
+    @Override
+    String determineBranch() {
+        return null;
     }
 }

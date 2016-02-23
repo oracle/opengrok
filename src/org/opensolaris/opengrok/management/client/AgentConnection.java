@@ -23,6 +23,8 @@
 
 package org.opensolaris.opengrok.management.client;
 
+import org.opensolaris.opengrok.logger.LoggerFactory;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -46,10 +48,11 @@ import javax.management.remote.JMXServiceURL;
  */
 public class AgentConnection implements NotificationListener {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentConnection.class);
+
     private MBeanServerConnection server = null;
     private final ObjectName objName;
     private static final String objStrName = "OGA:name=AgentIndexRunner,source=timer";
-    private static final Logger logger = Logger.getLogger("org.opensolaris.opengrok");
     private String agenturl = "";
     private JMXConnector jmxconn = null;
     private boolean connected = false;
@@ -81,7 +84,7 @@ public class AgentConnection implements NotificationListener {
             try {
                 reconnect(1);
             } catch (IOException ex) {
-                Logger.getLogger(AgentConnection.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
         return server;
@@ -133,47 +136,47 @@ public class AgentConnection implements NotificationListener {
 
         if (notification.getType().equals("ogaaction")) {
             if (handback instanceof String) {
-                logger.fine(sb.toString());
-                logger.finest(notif);
-                logger.finest(source);
+                LOGGER.fine(sb.toString());
+                LOGGER.finest(notif);
+                LOGGER.finest(source);
             } else if (handback instanceof ObjectName) {
                 handleObjectName(sb, notification, handback);
             }
         } else if (notification.getType().equals("ogainfostring")) {
             if (handback instanceof String) {
-                logger.finest(sb.toString());
-                logger.finest(notif);
-                logger.finest(source);
+                LOGGER.finest(sb.toString());
+                LOGGER.finest(notif);
+                LOGGER.finest(source);
             } else if (handback instanceof ObjectName) {
                 ObjectName pingBean = (ObjectName) handback;
-                logger.finest("Received notification from '" + pingBean + "' " + sb.toString());
+                LOGGER.finest("Received notification from '" + pingBean + "' " + sb.toString());
             }
         } else if (notification.getType().equals("ogainfolong")) {
             if (handback instanceof String) {
-                logger.finest(sb.toString());
-                logger.finest(notif);
-                logger.finest(source);
+                LOGGER.finest(sb.toString());
+                LOGGER.finest(notif);
+                LOGGER.finest(source);
             } else if (handback instanceof ObjectName) {
                 ObjectName pingBean = (ObjectName) handback;
-                logger.info("Received notification from '" + pingBean + "' " + sb.toString());
+                LOGGER.info("Received notification from '" + pingBean + "' " + sb.toString());
                 if ("StartIndexing".equals(notification.getMessage())) {
                     starttime = ((Long) notification.getUserData()).longValue();
                 } else if ("FinishedIndexing".equals(notification.getMessage())) {
                     endtime = ((Long) notification.getUserData()).longValue();
                 } else {
-                    logger.warning("Unknown message " + notification.getMessage());
+                    LOGGER.warning("Unknown message " + notification.getMessage());
                 }
             }
         } else {
-            logger.info(sb.toString());
-            logger.finest(notif);
-            logger.finest(source);
+            LOGGER.info(sb.toString());
+            LOGGER.finest(notif);
+            LOGGER.finest(source);
         }
     }
 
     private void handleObjectName(StringBuilder sb, Notification notification, Object handback) {
         ObjectName pingBean = (ObjectName) handback;
-        logger.fine("Received notification from '" + pingBean + "' " + sb.toString());
+        LOGGER.fine("Received notification from '" + pingBean + "' " + sb.toString());
         if (filesInfo.length() < FILESINFOMAX) {
             //filesInfo.append(notification.getMessage());
             filesInfo.append(notification.getUserData().toString());
@@ -185,14 +188,14 @@ public class AgentConnection implements NotificationListener {
 
     public void registerListener() throws IOException,
             InstanceNotFoundException {
-        logger.fine("Registering listener: " + this.getClass().getName() + " for ObjectName: " + objName);
+        LOGGER.fine("Registering listener: " + this.getClass().getName() + " for ObjectName: " + objName);
         server.addNotificationListener(objName, this, null, objName);
-        logger.fine("Listener Registered");
+        LOGGER.fine("Listener Registered");
         listenerRegistered = true;
     }
 
     public void reconnect(int retrytimes) throws MalformedURLException, IOException {
-        logger.fine("Doing reconnect on '" + agenturl + "'");
+        LOGGER.fine("Doing reconnect on '" + agenturl + "'");
         boolean notconnected = true;
         int triednumtimes = 0;
         while (notconnected) {
@@ -201,28 +204,28 @@ public class AgentConnection implements NotificationListener {
                 try {
                     jmxconn.close();
                 } catch (Exception ex) {
-                    logger.warning("Exception during close " + ex);
+                    LOGGER.warning("Exception during close " + ex);
                 }
             }
             try {
                 connect();
                 notconnected = false;
             } catch (MalformedURLException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
                 throw ex;
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
 
                 notconnected = true;
 
                 if (triednumtimes <= retrytimes) {
-                    logger.info("retry connect did try " + triednumtimes + ", retrying " +
+                    LOGGER.info("retry connect did try " + triednumtimes + ", retrying " +
                             retrytimes + " times, waiting " + RECONNECT_SLEEPTIME + " before" +
                             " next try.");
                     try {
                         Thread.sleep(RECONNECT_SLEEPTIME);
                     } catch (Exception sleepex) {
-                        logger.finest("Thread.sleep exception " + sleepex);
+                        LOGGER.finest("Thread.sleep exception " + sleepex);
                     }
 
                 } else {
@@ -235,12 +238,12 @@ public class AgentConnection implements NotificationListener {
 
     protected void connect() throws MalformedURLException, IOException {
         JMXServiceURL url = new JMXServiceURL(agenturl);
-        logger.info("jmx url " + url);
+        LOGGER.info("jmx url " + url);
         HashMap<String, Object> env = new HashMap<String, Object>();
         jmxconn = JMXConnectorFactory.connect(url, env);
-        logger.finer("jmx connect ok");
+        LOGGER.finer("jmx connect ok");
         server = jmxconn.getMBeanServerConnection();
-        logger.info("JMX connection ok");
+        LOGGER.info("JMX connection ok");
         connected = true;
     }
 
@@ -251,24 +254,24 @@ public class AgentConnection implements NotificationListener {
     public void unregister() {
         if ((server != null) && (objName != null) && listenerRegistered) {
             try {
-                logger.fine("Unregistering listener: " + this.getClass().getName() + " for ObjectName: " + objName);
+                LOGGER.fine("Unregistering listener: " + this.getClass().getName() + " for ObjectName: " + objName);
                 server.removeNotificationListener(objName, this, null, objName);
                 listenerRegistered = false;
             } catch (Exception remnlex) {
-                logger.severe("Exception unregister notif listener: '" + this.getClass().getName() + "' for ObjectName: " + objName + "'");
+                LOGGER.severe("Exception unregister notif listener: '" + this.getClass().getName() + "' for ObjectName: " + objName + "'");
             }
         }
 
         try {
 
             if (jmxconn != null) {
-                logger.fine("Closing connection");
+                LOGGER.fine("Closing connection");
                 jmxconn.close();
                 jmxconn = null;
                 server = null;
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Exception disconnecting " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Exception disconnecting " + e.getMessage(), e);
         }
 
     }

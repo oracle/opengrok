@@ -18,27 +18,30 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
 import java.io.Serializable;
 
 /**
- * Class to contain the common info for a repository. This object
- * will live on the server and the client side, so don't add logic
- * that will only work on one side in this object.
+ * Class to contain the common info for a repository. This object will live on
+ * the server and the client side, so don't add logic that will only work on one
+ * side in this object.
  *
  * @author Trond Norbye
  */
 public class RepositoryInfo implements Serializable {
-    private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = 2L;
 
     protected String directoryName; // absolute path
     protected Boolean working;
     protected String type;
     protected boolean remote;
     protected String datePattern;
+    protected String parent;
+    protected String branch;
 
     /**
      * Empty constructor to support serialization.
@@ -50,13 +53,16 @@ public class RepositoryInfo implements Serializable {
     public RepositoryInfo(RepositoryInfo orig) {
         this.directoryName = orig.directoryName;
         this.type = orig.type;
-        this.working = Boolean.valueOf(orig.isWorking());
+        this.working = orig.isWorking();
         this.remote = orig.isRemote();
         this.datePattern = orig.datePattern;
+        this.parent = orig.parent;
+        this.branch = orig.branch;
     }
 
     /**
      * Get the name of the root directory for this repository.
+     *
      * @return the name of the root directory
      */
     public String getDirectoryName() {
@@ -65,6 +71,7 @@ public class RepositoryInfo implements Serializable {
 
     /**
      * Specify the name of the root directory for this repository.
+     *
      * @param directoryName the new name of the root directory
      */
     public void setDirectoryName(String directoryName) {
@@ -78,7 +85,7 @@ public class RepositoryInfo implements Serializable {
      * @return true if the HistoryGuru may use the repository
      */
     public boolean isWorking() {
-        return working != null && working.booleanValue();
+        return working != null && working;
     }
 
     /**
@@ -91,8 +98,8 @@ public class RepositoryInfo implements Serializable {
     }
 
     /**
-     * Is the history and version information for this repository stored on
-     * a remote server?
+     * Is the history and version information for this repository stored on a
+     * remote server?
      *
      * @return true if the history is stored on a remote server.
      */
@@ -102,6 +109,7 @@ public class RepositoryInfo implements Serializable {
 
     /**
      * Set the property remote
+     *
      * @param remote
      */
     public void setRemote(boolean remote) {
@@ -110,6 +118,7 @@ public class RepositoryInfo implements Serializable {
 
     /**
      * get property type
+     *
      * @return type
      */
     public String getType() {
@@ -118,10 +127,29 @@ public class RepositoryInfo implements Serializable {
 
     /**
      * Set property type
+     *
      * @param type
      */
     public void setType(String type) {
         this.type = type;
+    }
+
+    /**
+     * get property type
+     *
+     * @return parent
+     */
+    public String getParent() {
+        return parent;
+    }
+
+    /**
+     * Set property parent
+     *
+     * @param parent
+     */
+    public void setParent(String parent) {
+        this.parent = parent;
     }
 
     public void setDatePattern(String datePattern) {
@@ -131,5 +159,12 @@ public class RepositoryInfo implements Serializable {
     public String getDatePattern() {
         return datePattern;
     }
-}
 
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
+    }
+}

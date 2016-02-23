@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.csharp;
 
@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -41,6 +42,11 @@ public class CSharpAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected CSharpAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+    }
+
+    @Override
+    protected JFlexScopeParser newScopeParser(Reader reader) {
+        return new CSharpScopeParser(reader);
     }
 
     @Override

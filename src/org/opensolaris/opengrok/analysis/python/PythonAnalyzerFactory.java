@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.python;
@@ -39,6 +39,9 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 
 public class PythonAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Python";
+    
     //TODO note that .PM below is kind of wrong, since perl already has this and is registered before python analyzer
     // unfortunately we miss code that would be able to share extensions between analyzers
     private static final String[] SUFFIXES = {
@@ -52,7 +55,7 @@ public class PythonAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PythonAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

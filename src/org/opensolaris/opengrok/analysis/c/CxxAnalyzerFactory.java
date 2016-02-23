@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.c;
 
@@ -33,6 +33,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class CxxAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "C++";
+    
     private static final String[] SUFFIXES = {
         "CPP",
         "HPP",
@@ -41,11 +44,12 @@ public class CxxAnalyzerFactory extends FileAnalyzerFactory {
         "HH",
         "CXX",
         "HXX",
-        "TXX"
+        "TXX",
+        "TCC"
     };
 
     public CxxAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, null, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

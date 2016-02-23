@@ -26,15 +26,18 @@ Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
 java.io.FileReader,
 java.util.logging.Level,
+java.util.logging.Logger,
 
-org.opensolaris.opengrok.OpenGrokLogger,
 org.apache.lucene.search.Query,
 org.opensolaris.opengrok.search.QueryBuilder,
-org.opensolaris.opengrok.search.context.Context"
+org.opensolaris.opengrok.search.context.Context,
+org.opensolaris.opengrok.logger.LoggerFactory"
 %><%@include
 
 file="mast.jsp"
 
+%><%!
+  static Logger LOGGER = LoggerFactory.getLogger(more_jsp.class);
 %><%
 /* ---------------------- more.jsp start --------------------- */
 {
@@ -55,7 +58,7 @@ file="mast.jsp"
 </div><%
         }
     } catch (Exception e) {
-        OpenGrokLogger.getLogger().log(Level.WARNING, e.getMessage());
+        LOGGER.log(Level.WARNING, e.getMessage());
     }
 }
 /* ---------------------- more.jsp end --------------------- */

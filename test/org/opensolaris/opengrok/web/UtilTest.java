@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -118,9 +118,9 @@ public class UtilTest {
         assertEquals("1 KiB", Util.readableSize(1024));
         assertEquals("2.4 KiB", Util.readableSize(2500));
         assertEquals("<b>1.4 MiB</b>", Util.readableSize(1474560));
-        assertEquals("<b>3,584.4 MiB</b>", Util.readableSize(3758489600L));
-        assertEquals("<b>8,796,093,022,208 MiB</b>",
-                     Util.readableSize(Long.MAX_VALUE));
+        assertEquals("<b>3.5 GiB</b>", Util.readableSize(3758489600L));
+        assertEquals("<b>8,589,934,592 GiB</b>",
+            Util.readableSize(Long.MAX_VALUE));
     }
 
     @Test

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.data;
@@ -32,12 +31,15 @@ import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
  * Factory for analyzer that tells that image files can be displayed.
  */
 public class ImageAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "Image file";
+    
     private static final String[] SUFFIXES = {
         "PNG", "GIF", "JPEG", "JPG", "TIFF", "BMP"
     };
 
     public ImageAnalyzerFactory() {
-        super(null, null, SUFFIXES, null, null, null, Genre.IMAGE);
+        super(null, null, SUFFIXES, null, null, null, Genre.IMAGE, name);
     }
 
     @Override

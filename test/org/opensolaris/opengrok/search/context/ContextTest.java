@@ -22,6 +22,11 @@
  */
 package org.opensolaris.opengrok.search.context;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayReader;
 import java.io.Reader;
@@ -30,10 +35,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.After;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.Definitions;
@@ -54,8 +60,8 @@ public class ContextTest {
     @Before
     public void setUp() {
         // Save initial value of the quick context scan flag.
-        savedQuickContextScanFlag =
-                RuntimeEnvironment.getInstance().isQuickContextScan();
+        savedQuickContextScanFlag
+                = RuntimeEnvironment.getInstance().isQuickContextScan();
     }
 
     @After
@@ -67,6 +73,8 @@ public class ContextTest {
 
     /**
      * Tests for the isEmpty() method.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
      */
     @Test
     public void testIsEmpty() throws ParseException {
@@ -105,6 +113,8 @@ public class ContextTest {
 
     /**
      * Tests for the getContext() method.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
      */
     @Test
     public void testGetContext() throws ParseException {
@@ -125,7 +135,7 @@ public class ContextTest {
             throws ParseException {
         StringReader in = new StringReader("abc def ghi\n");
         StringWriter out = hitList ? null : new StringWriter();
-        List<Hit> hits = hitList ? new ArrayList<Hit>() : null;
+        List<Hit> hits = hitList ? new ArrayList<>() : null;
 
         RuntimeEnvironment.getInstance().setQuickContextScan(limit);
 
@@ -153,7 +163,7 @@ public class ContextTest {
         defs.addTag(1, "def", "type", "text");
         in = new StringReader("abc def ghi\n");
         out = hitList ? null : new StringWriter();
-        hits = hitList ? new ArrayList<Hit>() : null;
+        hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setDefs("def");
         c = new Context(qb.build(), qb.getQueries());
         assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
@@ -169,25 +179,25 @@ public class ContextTest {
                 + "abc <b>def</b> ghi</a> <i> type</i> <br/>";
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
-        
+
         in = new StringReader("abc def ghi\nbah def foobar");
         out = hitList ? null : new StringWriter();
-        hits = hitList ? new ArrayList<Hit>() : null;
+        hits = hitList ? new ArrayList<>() : null;
         assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
 
         if (hitList) {
             assertEquals(1, hits.size());
             assertEquals("1", hits.get(0).getLineno());
         }
-        
+
         //test case - if this is def search, don't show false results (defs
         // weren't defined)
-        assertEquals(expectedOutput, actualOutput);        
-                        
+        assertEquals(expectedOutput, actualOutput);
+
         // Search with no input (will search definitions)
         in = null;
         out = hitList ? null : new StringWriter();
-        hits = hitList ? new ArrayList<Hit>() : null;
+        hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setDefs("def");
         c = new Context(qb.build(), qb.getQueries());
         assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
@@ -203,12 +213,12 @@ public class ContextTest {
                 + "text</a> <i>type</i><br/>";
         actualOutput = hitList ? hits.get(0).getLine() : out.toString();
         assertEquals(expectedOutput, actualOutput);
-        
+
         defs = new Definitions();
         defs.addTag(2, "def", "type", "text");
         in = new StringReader("abc1 def ghi\nabc def ghi\nabc3 def ghi\n");
         out = hitList ? null : new StringWriter();
-        hits = hitList ? new ArrayList<Hit>() : null;
+        hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setDefs("def");
         c = new Context(qb.build(), qb.getQueries());
         assertTrue(c.getContext(in, out, "", "", "", defs, limit, qb.isDefSearch(), hits));
@@ -228,7 +238,7 @@ public class ContextTest {
         // Search with no results
         in = new StringReader("abc def ghi\n");
         out = hitList ? null : new StringWriter();
-        hits = hitList ? new ArrayList<Hit>() : null;
+        hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setFreetext("no_match");
         c = new Context(qb.build(), qb.getQueries());
         assertFalse(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
@@ -241,7 +251,7 @@ public class ContextTest {
         // History search (should not show source context)
         in = new StringReader("abc def ghi\n");
         out = hitList ? null : new StringWriter();
-        hits = hitList ? new ArrayList<Hit>() : null;
+        hits = hitList ? new ArrayList<>() : null;
         qb = new QueryBuilder().setHist("abc");
         c = new Context(qb.build(), qb.getQueries());
         assertFalse(c.getContext(in, out, "", "", "", null, limit, qb.isDefSearch(), hits));
@@ -256,6 +266,8 @@ public class ContextTest {
      * Test that we don't get an {@code ArrayIndexOutOfBoundsException} when a
      * long (&gt;100 characters) line which contains a match is not terminated
      * with a newline character before the buffer boundary. Bug #383.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
      */
     @Test
     public void testLongLineNearBufferBoundary() throws ParseException {
@@ -269,8 +281,8 @@ public class ContextTest {
         QueryBuilder qb = new QueryBuilder().setFreetext("test");
         Context c = new Context(qb.build(), qb.getQueries());
         StringWriter out = new StringWriter();
-        boolean match =
-                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(),null);
+        boolean match
+                = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
         assertTrue("No match found", match);
         String s = out.toString();
         assertTrue("Match not written to Writer",
@@ -281,6 +293,8 @@ public class ContextTest {
     /**
      * Test that we get the [all...] link if a very long line crosses the buffer
      * boundary. Bug 383.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
      */
     @Test
     public void testAllLinkWithLongLines() throws ParseException {
@@ -297,8 +311,8 @@ public class ContextTest {
         QueryBuilder qb = new QueryBuilder().setFreetext("search_for_me");
         Context c = new Context(qb.build(), qb.getQueries());
 
-        boolean match =
-                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
+        boolean match
+                = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
         assertTrue("No match found", match);
         String s = out.toString();
         assertTrue("No [all...] link", s.contains(">[all...]</a>"));
@@ -308,6 +322,8 @@ public class ContextTest {
      * Test that a line with more than 100 characters after the first match is
      * truncated, and that &hellip; is appended to show that the line is
      * truncated. Bug 383.
+     *
+     * @throws org.apache.lucene.queryparser.classic.ParseException
      */
     @Test
     public void testLongTruncatedLine() throws ParseException {
@@ -324,8 +340,8 @@ public class ContextTest {
         QueryBuilder qb = new QueryBuilder().setFreetext("search_for_me");
         Context c = new Context(qb.build(), qb.getQueries());
 
-        boolean match =
-                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
+        boolean match
+                = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
         assertTrue("No match found", match);
         String s = out.toString();
         assertTrue("Match not listed", s.contains("<b>search_for_me</b>"));
@@ -336,6 +352,8 @@ public class ContextTest {
     /**
      * Test that valid HTML is generated for a match that spans multiple lines.
      * It used to nest the tags incorrectly. Bug #15632.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testMultiLineMatch() throws Exception {
@@ -372,8 +390,8 @@ public class ContextTest {
      * @throws Exception if the document cannot be parsed
      */
     private Document parseXML(String document) throws Exception {
-        ByteArrayInputStream in =
-                new ByteArrayInputStream(document.getBytes("UTF-8"));
+        ByteArrayInputStream in
+                = new ByteArrayInputStream(document.getBytes("UTF-8"));
         return DocumentBuilderFactory.newInstance().
                 newDocumentBuilder().parse(in);
     }
@@ -381,6 +399,8 @@ public class ContextTest {
     /**
      * Verify that the matching lines are shown in their original form and not
      * lower-cased (bug #16848).
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void bug16848() throws Exception {
@@ -396,6 +416,8 @@ public class ContextTest {
 
     /**
      * The results from mixed-case symbol search should contain tags.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void bug17582() throws Exception {
@@ -443,7 +465,7 @@ public class ContextTest {
         defs.addTag(3, "Bug17582", "type2", "text2");
 
         Context context = new Context(builder.build(), builder.getQueries());
-        ArrayList<Hit> hits = new ArrayList<Hit>();
+        ArrayList<Hit> hits = new ArrayList<>();
         assertEquals(lines.length != 0,
                 context.getContext(in, null, "", "", "", defs, false, builder.isDefSearch(), hits));
         assertEquals("Unexpected number of hits", lines.length, hits.size());
@@ -452,10 +474,11 @@ public class ContextTest {
             assertEquals(tags[i], hits.get(i).getTag());
         }
     }
-    
+
     /**
      * Test that regexp search has matched words in context.
-     * @throws ParseException 
+     *
+     * @throws ParseException
      */
     @Test
     public void regexpSearchContextTest() throws ParseException {
@@ -469,11 +492,13 @@ public class ContextTest {
 
     /**
      * Helper method for testing presence of expected words in search context
-     * 
+     *
      * @param searchInText Context of document we are searching in.
      * @param queryString Definition of search query.
-     * @param expectWordInContext Word expected to be found by 'queryString' in 'searchInText' and to be included in context. Set null if context is expected to be empty.
-     * @throws ParseException 
+     * @param expectWordInContext Word expected to be found by 'queryString' in
+     * 'searchInText' and to be included in context. Set null if context is
+     * expected to be empty.
+     * @throws ParseException
      */
     private void searchContextTestHelper(String searchInText, String queryString, String expectWordInContext) throws ParseException {
         Reader in = new StringReader(searchInText);
@@ -482,15 +507,15 @@ public class ContextTest {
         QueryBuilder qb = new QueryBuilder().setFreetext(queryString);
         Context c = new Context(qb.build(), qb.getQueries());
 
-        boolean match =
-                c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
-     
-        if( expectWordInContext == null ) {
+        boolean match
+                = c.getContext(in, out, "", "", "", null, true, qb.isDefSearch(), null);
+
+        if (expectWordInContext == null) {
             assertFalse("Match found", match);
-        } else {            
+        } else {
             assertTrue("No match found", match);
             String s = out.toString();
-            assertTrue("Searched word '"+expectWordInContext+"' not in context", s.contains("<b>"+expectWordInContext+"</b>"));
+            assertTrue("Searched word '" + expectWordInContext + "' not in context", s.contains("<b>" + expectWordInContext + "</b>"));
         }
-    } 
+    }
 }

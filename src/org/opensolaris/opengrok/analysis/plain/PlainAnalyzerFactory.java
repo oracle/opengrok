@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -37,6 +37,8 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
 
+    private static final String name = "Plain Text";
+    
     private static final Matcher MATCHER = new Matcher() {
             public FileAnalyzerFactory isMagic(byte[] content, InputStream in)
                     throws IOException {
@@ -89,7 +91,7 @@ public final class PlainAnalyzerFactory extends FileAnalyzerFactory {
             new PlainAnalyzerFactory();
 
     private PlainAnalyzerFactory() {
-        super(null, null, null, null, MATCHER, "text/plain", Genre.PLAIN);
+        super(null, null, null, null, MATCHER, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

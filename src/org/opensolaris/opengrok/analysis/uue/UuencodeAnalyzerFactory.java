@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2012, 2013 Constantine A. Murenin &lt;C++@Cns.SU&gt;
  */
 
@@ -39,6 +39,9 @@ import org.opensolaris.opengrok.history.Annotation;
  */
 
 public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "UUEncoded";
+    
     private static final String[] SUFFIXES = {
        /**
          * XXX:
@@ -52,11 +55,11 @@ public class UuencodeAnalyzerFactory extends FileAnalyzerFactory {
         "begin 4",
         "begin 6",
         "begin 7",
-        "begin-b" /* XXX: Should be "begin-base64 ", but there seems to be a bug somewhere... */
+        "begin-b" /* XXX: Should be "begin-base64 ", but there is a limit of magics size*/
     };
 
     public UuencodeAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

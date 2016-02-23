@@ -30,6 +30,8 @@ import org.opensolaris.opengrok.analysis.JFlexXref;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.Reader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.web.Util;
 
 %%
@@ -68,11 +70,17 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
     writeSymbol(id, CxxConsts.kwd, yyline);
 }
 
-"<" ({File}|{Path}|{Identifier}) ">" {
-        out.write("&lt;");
-        String path = yytext().substring(1, yylength() - 1);
-        out.write(Util.breadcrumbPath(urlPrefix + "path=", path));
-        out.write("&gt;");
+"#" {WhiteSpace}* "include" {WhiteSpace}* "<" ({File}|{Path}|{Identifier}) ">" {
+        Matcher match = Pattern.compile("(#.*)(include)(.*)<(.*)>").matcher(yytext());
+        if (match.matches()) {
+            out.write(match.group(1));
+            writeSymbol(match.group(2), CxxConsts.kwd, yyline);
+            out.write(match.group(3));
+            out.write("&lt;");
+            String path = match.group(4);
+            out.write(Util.breadcrumbPath(urlPrefix + "path=", path));
+            out.write("&gt;");
+        }
 }
 
 /*{Hier}

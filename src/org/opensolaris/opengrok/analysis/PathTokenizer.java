@@ -51,22 +51,22 @@ public class PathTokenizer extends Tokenizer {
     // to unix ones
     public static final char DEFAULT_DELIMITER = '/';
     private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
-    private final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);    
+    private final OffsetAttribute offsetAtt = addAttribute(OffsetAttribute.class);
     private int startPosition = 0;
     private final char delimiter;
     private int charsRead = 0;
     private boolean dot = false;
     private static final char cdot = '.';
 
-    public PathTokenizer() {        
-        this.delimiter = DEFAULT_DELIMITER;        
+    public PathTokenizer() {
+        this.delimiter = DEFAULT_DELIMITER;
     }
 
     @Override
     public final boolean incrementToken() throws IOException {
         clearAttributes();
         if (dot) {
-            dot = false;            
+            dot = false;
             termAtt.setEmpty();
             termAtt.append(cdot);
             termAtt.setLength(1);
@@ -93,10 +93,10 @@ public class PathTokenizer extends Tokenizer {
             buf[i++] = Character.toLowerCase((char) c);
             c = input.read();
             charsRead++;
-        } while ( c != delimiter && c != cdot && !Character.isWhitespace(c) && c != -1);
+        } while (c != delimiter && c != cdot && !Character.isWhitespace(c) && c != -1);
         if (c == cdot) {
             dot = true;
-        }        
+        }
         termAtt.copyBuffer(buf, 0, i);
         termAtt.setLength(i);
         offsetAtt.setOffset(correctOffset(startPosition), correctOffset(startPosition + i));
@@ -105,8 +105,8 @@ public class PathTokenizer extends Tokenizer {
     }
 
     @Override
-    public final void end() throws IOException {	
-	super.end();
+    public final void end() throws IOException {
+        super.end();
         // set final offset
         int finalOffset = correctOffset(charsRead);
         offsetAtt.setOffset(finalOffset, finalOffset);
@@ -115,11 +115,11 @@ public class PathTokenizer extends Tokenizer {
     @Override
     public void reset() throws IOException {
         super.reset();
-        dot=false;
+        dot = false;
         charsRead = 0;
         startPosition = 0;
     }
-    
+
     @Override
     public final void close() throws IOException {
         super.close();

@@ -16,7 +16,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page session="false" isErrorPage="true" import="
@@ -37,7 +37,10 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment"
     } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
         configError = "The source root specified in your configuration does "
             + "not point to a valid directory! Please configure your webapp.";
-    }
+    } else if (!cfg.hasHistory()) {
+        configError = "Resource lacks history info. Was remote SCM side up when indexing occurred? "
+            + "Cleanup history cache dir(or just the .gz for the file or db record) and rerun indexer making sure remote side will respond during indexing.";
+   }    
 %><%@
 
 include file="httpheader.jspf"
@@ -58,7 +61,8 @@ include file="menu.jspf"
         %></div>
     </div>
     <h3 class="error">Error: File not found!</h3>
-    <p>The requested resource is not available. <%= configError %></p>
+    <p>The requested resource is not available. </p>
+    <p> <%= configError %> </p>
 <%
 }
 /* ---------------------- enoent.jsp end --------------------- */

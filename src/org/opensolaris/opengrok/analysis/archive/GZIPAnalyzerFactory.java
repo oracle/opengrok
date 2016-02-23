@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.archive;
@@ -28,6 +27,9 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 
 public class GZIPAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "GZIP";
+    
     private static final String[] SUFFIXES = {
         "GZ"
     };
@@ -37,7 +39,7 @@ public class GZIPAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public GZIPAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, null, null);
+        super(null, null, SUFFIXES, MAGICS, null, null, null, name);
     }
 
     @Override

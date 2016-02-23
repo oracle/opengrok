@@ -18,17 +18,17 @@
  */
 
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,12 +38,13 @@ import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  * Test cleanup of renamed thread pool after indexing.
+ *
  * @author Vladimir Kotal
  */
 public class IndexerRepoTest {
 
     TestRepository repository;
-    private String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
 
     @BeforeClass
     public static void setUpClass() throws Exception {

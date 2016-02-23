@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.perl;
@@ -40,10 +40,13 @@ import org.opensolaris.opengrok.history.Annotation;
 
 public class PerlAnalyzerFactory extends FileAnalyzerFactory {
 
+    private static final String name = "Perl";
+    
     private static final String[] SUFFIXES = {
         "PL",
         "PERL",
-        "PM"
+        "PM",
+        "PH"
     };
     private static final String[] MAGICS = {
         "#!/usr/bin/env perl",
@@ -53,7 +56,7 @@ public class PerlAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public PerlAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override

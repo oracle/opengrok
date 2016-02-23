@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2007 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.csharp;
@@ -35,6 +34,9 @@ import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
 
 public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
+    
+    private static final String name = "C#";
+    
     private static final String[] SUFFIXES = {
         "CS"
     };
@@ -43,7 +45,7 @@ public class CSharpAnalyzerFactory extends FileAnalyzerFactory {
     };
 
     public CSharpAnalyzerFactory() {
-        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN);
+        super(null, null, SUFFIXES, MAGICS, null, "text/plain", Genre.PLAIN, name);
     }
 
     @Override
