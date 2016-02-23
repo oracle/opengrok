@@ -39,6 +39,8 @@ public class Sample {
         
         return i.InnerMethod().length() * res;
     }
+
+    public abstract int AbstractMethod(int test);
     
     private class InnerClass {
         

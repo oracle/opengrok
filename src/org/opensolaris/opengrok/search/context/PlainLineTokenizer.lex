@@ -328,7 +328,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                                 
                                 Scope scope = null;
                                 if (scopes != null) {
-                                    scope = scopes.getScope(markedLine);
+                                    scope = scopes.getScope(markedLine-1);
                                 }
                                 if (scope != null && scope != scopes.getScope(-1)) {
                                     out.write(" <a class=\"scope\" href=\"");
@@ -423,7 +423,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
                            Scope scope = null;
                            if (scopes != null) {
-                               scope = scopes.getScope(markedLine);
+                               scope = scopes.getScope(markedLine-1);
                            }
                            if (scope != null && scope != scopes.getScope(-1)) {
                                out.write(" <a class=\"scope\" href=\"");

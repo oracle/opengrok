@@ -60,7 +60,7 @@ public abstract class JFlexScopeParser {
     
     public void parse(Tag tag, Reader reader) throws IOException {
         try {
-            int lineNo = 0;            
+            int lineNo = 1; /* ctags count lines starting from 1 */
             int c;
             int oldc='\n';
             while (lineNo < tag.line) {
@@ -69,7 +69,7 @@ public abstract class JFlexScopeParser {
                     lineNo++;
                 }
                 if ( c == '\n') {
-                    if (oldc!='\r') {                                            
+                    if (oldc!='\r') {
                         lineNo++;
                     }
                 }
@@ -83,7 +83,7 @@ public abstract class JFlexScopeParser {
         }
 
         reInit(reader);
-        setLineNumber(tag.line+1);
+        setLineNumber(tag.line);
         start(tag.text);
 
         scope = new Scope(tag.line, tag.line, tag.symbol, tag.scope, tag.signature);

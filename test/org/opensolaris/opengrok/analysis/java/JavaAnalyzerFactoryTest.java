@@ -120,16 +120,19 @@ public class JavaAnalyzerFactoryTest {
         assertNotNull(scopesField);
         Scopes scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
         Scope globalScope = scopes.getScope(-1);
-        assertEquals(3, scopes.size()); // foo, bar, main
-
-        for (int i = 0; i < 50; ++i) {
+        assertEquals(4, scopes.size()); // foo, bar, main
+        
+        for (int i=0; i<60; ++i) {
             if (i >= 29 && i <= 31) {
                 assertEquals("Sample", scopes.getScope(i).name);
                 assertEquals("class:Sample", scopes.getScope(i).scope);
             } else if (i >= 33 && i <= 41) {
                 assertEquals("Method", scopes.getScope(i).name);
                 assertEquals("class:Sample", scopes.getScope(i).scope);
-            } else if (i >= 45 && i <= 54) {
+            } else if (i == 43) {                
+                assertEquals("AbstractMethod", scopes.getScope(i).name);
+                assertEquals("class:Sample", scopes.getScope(i).scope);
+            } else if (i >= 47 && i <= 56) {
                 assertEquals("InnerMethod", scopes.getScope(i).name);
                 assertEquals("class:Sample.InnerClass", scopes.getScope(i).scope);
             } else {
