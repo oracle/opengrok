@@ -133,7 +133,11 @@ public class CSharpAnalyzerFactoryTest {
             } else if (i >= 34 && i <= 36) {
                 assertEquals("M5", scopes.getScope(i).name);
                 assertEquals("class:MyNamespace.TopClass.InnerClass", scopes.getScope(i).scope);
+            } else {
+                assertEquals(scopes.getScope(i), globalScope);
+                assertNull(scopes.getScope(i).scope);
             }
+
         }
     }
     
