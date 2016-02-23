@@ -936,3 +936,52 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	background-position: -432px 0;
 }
 /* ############### end of footer ############## */
+
+/* *** scopes *** */
+
+span.scope-head {
+    display: block;
+}
+
+span.scope-body {
+    display: block;
+}
+
+span.unfold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-image: url('./img/unfolding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+}
+
+span.fold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-image: url('./img/folding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+}
+
+span.fold-space {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    width: 11px;
+    height: 11px;
+    display: inline-block;    
+}
+
+span.scope-signature {
+    display: none;
+}
+
+div#scope {
+    width: 100%;
+    min-height: 1em;
+    text-align: left;
+    background-color: #dddddd;
+    font-size: 0.9em;
+    padding: 0.5em 0.5em 0.5em 6.5ex;
+}

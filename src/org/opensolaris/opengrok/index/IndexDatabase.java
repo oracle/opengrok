@@ -615,6 +615,7 @@ public class IndexDatabase {
         fa.setCtags(ctags);
         fa.setProject(Project.getProject(path));
         fa.setScopesEnabled(RuntimeEnvironment.getInstance().isScopesEnabled());
+        fa.setFoldingEnabled(RuntimeEnvironment.getInstance().isFoldingEnabled());
 
         Document doc = new Document();
         try (Writer xrefOut = getXrefWriter(fa, path)) {

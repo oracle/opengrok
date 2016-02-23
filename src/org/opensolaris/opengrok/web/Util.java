@@ -535,10 +535,18 @@ public final class Util {
      */
     public static void readableLine(int num, Writer out, Annotation annotation,
             String userPageLink, String userPageSuffix, String project)
-            throws IOException {
+            throws IOException
+    {    
+        readableLine(num, out, annotation, userPageLink, userPageSuffix, project, false);
+    }
+    
+    public static void readableLine(int num, Writer out, Annotation annotation,
+            String userPageLink, String userPageSuffix, String project, boolean skipNewline)
+            throws IOException
+    {
         // this method should go to JFlexXref
         String snum = String.valueOf(num);
-        if (num > 1) {
+        if (num > 1 && !skipNewline) {
             out.write("\n");
         }
         out.write(anchorClassStart);

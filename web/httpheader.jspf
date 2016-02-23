@@ -82,6 +82,11 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
 <script type="text/javascript" src="<%=ctxPath%>/jquery.tablesorter-2.0.5b.js"></script>
 <%--<script type="text/javascript" src="<%=ctxPath%>/jquery.autocomplete-1.1.pack.js"></script> --%>
 <script type="text/javascript" src="<%=ctxPath%>/utils.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+       $("#content") .scroll(on_scroll);
+    });
+</script>
 <title><%=cfg.getTitle()%></title><%
     out.write(cfg.getHeaderData());
 %>
