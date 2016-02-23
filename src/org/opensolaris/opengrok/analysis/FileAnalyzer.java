@@ -57,6 +57,7 @@ public class FileAnalyzer extends Analyzer {
 
     protected Project project;
     protected boolean scopesEnabled;
+    protected boolean foldingEnabled;
     private final FileAnalyzerFactory factory;
 
     /**
@@ -117,6 +118,10 @@ public class FileAnalyzer extends Analyzer {
     
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
+    }
+    
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        this.foldingEnabled = foldingEnabled;
     }
 
     /**

@@ -86,7 +86,7 @@ public abstract class JFlexScopeParser {
         setLineNumber(tag.line);
         start(tag.text);
 
-        scope = new Scope(tag.line, tag.line, tag.symbol, tag.scope);
+        scope = new Scope(tag.line, tag.line, tag.symbol, tag.scope, tag.signature);
         while (yylex() != yyeof) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
         }

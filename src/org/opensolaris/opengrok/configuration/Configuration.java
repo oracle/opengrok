@@ -133,6 +133,9 @@ public final class Configuration {
     private int tabSize;
     private int command_timeout;
     private boolean scopesEnabled;
+    private boolean foldingEnabled;
+    private static final Logger logger = Logger.getLogger(Configuration.class.getName());
+    
     /*
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
@@ -253,6 +256,7 @@ public final class Configuration {
         setDataRoot(null);
         setCommandTimeout(600); // 10 minutes
         setScopesEnabled(true);
+        setFoldingEnabled(true);
         setFetchHistoryWhenNotInCache(true);
         setHandleHistoryOfRenamedFiles(true);
     }
@@ -816,7 +820,15 @@ public final class Configuration {
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
-
+    
+    public boolean isFoldingEnabled() {
+        return foldingEnabled;
+    }
+    
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        this.foldingEnabled = foldingEnabled;
+    }
+    
     /**
      * Write the current configuration to a file
      *
