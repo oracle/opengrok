@@ -276,67 +276,6 @@
     $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}));
 }) (window, window.jQuery);
 
-(function ($) {
-    var accordion = function ($parent, options) {
-        var inner = {
-            initialized: false,
-            options: {},
-            defaults: {
-                "showAllSelector": ".accordion_show_all",
-                "hideAllSelector": ".accordion_hide_all"
-            },
-            $pannels: [],
-            init: function () {
-                inner.$pannels = inner.options.parent.find(".panel-body-accordion");
-
-                inner.options.parent.find(".panel-heading-accordion").click(function (e) {
-                    $(this).parent().find(".panel-body-accordion").each(function () {
-                        if ($(this).data("accordion-visible") &&
-                                $(this).data("accordion-visible") === true) {
-                            $(this).hide().data("accordion-visible", false)
-                        } else {
-                            $(this).show().data("accordion-visible", true)
-                        }
-                    });
-                    return false
-                });
-
-                inner.options.parent.find(inner.options.showAllSelector).click(function (e) {
-                    inner.$pannels.data("accordion-visible", true).show()
-                    inner.options.parent.find(inner.options.hideAllSelector).show()
-                    inner.options.parent.find(inner.options.showAllSelector).hide()
-                    return false;
-                });
-
-                inner.options.parent.find(inner.options.hideAllSelector).click(function (e) {
-                    inner.$pannels.data("accordion-visible", false).hide();
-                    inner.options.parent.find(inner.options.hideAllSelector).hide()
-                    inner.options.parent.find(inner.options.showAllSelector).show()
-                    return false;
-                });
-
-                inner.options.parent.find(inner.options.hideAllSelector).hide();
-
-                inner.initialized = true;
-            }
-        }
-
-        var init = (function ($parent, options) {
-            if (inner.initialized)
-                return
-            inner.options = $.extend({}, {parent: $parent}, inner.defaults, options)
-            inner.init();
-        })($parent, options);
-    };
-
-    $.fn.accordion = function (options) {
-        return this.each(function () {
-            options = options || {}
-            new accordion($(this), options);
-        });
-    };
-})(jQuery);
-
 (function(window, $) {
    
     var hash = function () {
@@ -520,32 +459,10 @@
 }) (window, window.jQuery);
 
 $(document).ready(function () {
-    $(".projects").accordion()
-
     // starting spaces plugin
     $.spaces.init()
     
     $.hash.init({ parent: "pre"})
-    
-    $(".projects_select_all").click(function (e) {
-        var projects = $(this).closest(".panel").find("table tbody tr, .panel-heading table tbody tr")
-        var multiselect = $("select#project")
-        if (!multiselect.length) {
-            console.debug("No multiselect element with id = 'project'")
-            return false
-        }
-
-        multiselect.find("option").attr("selected", false)
-        projects.each(function () {
-            var key = $(this).find(".name")
-            if (!key.length)
-                return
-            key = key.text().replace(/^\s+|\s+$/g, '') // trim
-            multiselect.find("option[value=" + key + "]").attr("selected", true)
-            multiselect.change();
-        });
-        return false;
-    });
 });
 
 document.pageReady = [];
