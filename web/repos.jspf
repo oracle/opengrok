@@ -18,9 +18,10 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 
 --%>
+<script src="<%=request.getContextPath()%>/repos.js" type="text/javascript"></script>
 <%@page import="java.util.Set"%>
 <%@page import="org.opensolaris.opengrok.web.Prefix"%>
 <%@page import="org.opensolaris.opengrok.web.ProjectHelper"%>
