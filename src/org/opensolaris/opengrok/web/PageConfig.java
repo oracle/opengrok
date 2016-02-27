@@ -201,8 +201,8 @@ public final class PageConfig {
                     in[i] = HistoryGuru.getInstance().getRevision(f.getParent(), f.getName(), data.rev[i]);
                     if (in[i] == null) {
                         data.errorMsg = "Unable to get revision "
-                                + data.rev[i] + " for file: "
-                                + getResourceFile().getPath();
+                                + Util.htmlize(data.rev[i]) + " for file: "
+                                + Util.htmlize(getPath());
                         return data;
                     }
                 }
@@ -549,12 +549,12 @@ public final class PageConfig {
     /**
      * Get the revision parameter {@code r} from the request.
      *
-     * @return {@code "r=<i>revision</i>"} if found, an empty string otherwise.
+     * @return revision if found, an empty string otherwise.
      */
     public String getRequestedRevision() {
         if (rev == null) {
             String tmp = req.getParameter("r");
-            rev = (tmp != null && tmp.length() > 0) ? "r=" + tmp : "";
+            rev = (tmp != null && tmp.length() > 0) ? tmp : "";
         }
         return rev;
     }
@@ -682,16 +682,6 @@ public final class PageConfig {
             }
         }
         return requestedProjectsString;
-    }
-
-    /**
-     * Get the document hash provided by the request parameter {@code h}.
-     *
-     * @return {@code null} if the request does not contain such a parameter,
-     * its value otherwise.
-     */
-    public String getDocumentHash() {
-        return req.getParameter("h");
     }
 
     /**
