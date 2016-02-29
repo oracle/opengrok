@@ -491,11 +491,36 @@ function resizeContent() {
     }
 }
 
+/**
+ * Get a parameter value from the URL.
+ *
+ * @param p the name of the parameter
+ * @return the decoded value of parameter p
+ */
+function getParameter(p) {
+    // First split up the parameter list. That is, transform from
+    //       ?a=b&c=d
+    // to
+    //       [ ["a", "b"], ["c","d"] ]
+    if (getParameter.params === undefined) {
+        getParameter.params = window.location.search.substr(1).split("&").map(
+                function (x) { return x.split("="); });
+    }
+    var params = getParameter.params;
+    // Then look for the parameter.
+    for (var i in params) {
+        if (params[i][0] === p && params[i].length > 1) {
+            return decodeURIComponent(params[i][1]);
+        }
+    }
+    return undefined;
+}
+
 function domReadyMast() {
-    var h = document.hash;
     if (!window.location.hash) {
-        if (h != null && h != "null" && h != "")  {
-            window.location.hash=h
+        var h = getParameter("h");
+        if (h && h !== "") {
+            window.location.hash = h;
         } else {
             $('#content').focus();
         }
@@ -563,12 +588,19 @@ function domReadyHistory() {
 }
 
 function get_annotations() {
-    link = document.link +  "?a=true";
-    if (document.rev.length > 0) {
-        link += '&' + document.rev;
+    var link = window.location.pathname + "?a=true";
+    if (document.rev) {
+        link += "&r=" + encodeURIComponent(document.rev);
     }
-    hash = "&h=" + window.location.hash.substring(1, window.location.hash.length);
-    window.location = link + hash;
+    if (window.location.hash) {
+        // If a line is highlighted when "annotate" is clicked, we want to
+        // preserve the highlighting, but we don't want the page to scroll
+        // to the highlighted line. So put the line number in a URL parameter
+        // instead of in the hash.
+        link += "&h=";
+        link += window.location.hash.substring(1, window.location.hash.length);
+    }
+    window.location = link;
 }
 
 function toggle_annotations() {

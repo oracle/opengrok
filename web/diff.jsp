@@ -41,9 +41,10 @@ org.opensolaris.opengrok.web.DiffType"
 %><%!
 private String getAnnotateRevision(DiffData data) {
     if (data.type == DiffType.OLD || data.type == DiffType.NEW) {
+        String rev = data.rev[data.type == DiffType.NEW ? 1 : 0];
         return "<script type=\"text/javascript\">/* <![CDATA[ */ "
-            + "document.rev = 'r=" + data.rev[data.type == DiffType.NEW ? 1 : 0]
-            + "'; /* ]]> */</script>";
+            + "document.rev = " + Util.htmlize(Util.jsStringLiteral(rev))
+            + "; /* ]]> */</script>";
     }
     return "";
 }
