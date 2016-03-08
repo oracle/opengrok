@@ -3,7 +3,7 @@ jdk:
   - oraclejdk8
 before_install:
  - sudo apt-get update -qq
- - sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion
+ - sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone
 
 env:
   global:
