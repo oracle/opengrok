@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -678,11 +678,13 @@ public class IndexDatabase {
                 (!(file.isDirectory() || includedNames.match(file)))) {
             return false;
         }
-        if (ignoredNames.ignore(file)) {
-            return false;
-        }
 
         String absolutePath = file.getAbsolutePath();
+
+        if (ignoredNames.ignore(file)) {
+            LOGGER.log(Level.FINE, "ignoring {0}", absolutePath);
+            return false;
+        }
 
         if (!file.canRead()) {
             LOGGER.log(Level.WARNING, "Warning: could not read {0}", absolutePath);
