@@ -390,7 +390,7 @@
                 var lines = inner.getLinesParts(window.location.hash);
                 if(lines.length > 0) {
                    var line = lines[0] // first line
-                   $("*").animate({
+                   $("#content").animate({
                       scrollTop: $(inner.format(inner.options.linkSelectorTemplate, {
                           parent: inner.options.parent,
                           n: line
