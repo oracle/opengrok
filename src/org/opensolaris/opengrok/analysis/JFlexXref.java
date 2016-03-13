@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis;
@@ -419,7 +419,7 @@ public abstract class JFlexXref {
             }
         }
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-            getProjectPostfix(false), skipNl);
+            getProjectPostfix(true), skipNl);
         
         if (foldingEnabled) {
             if (iconId != null) {

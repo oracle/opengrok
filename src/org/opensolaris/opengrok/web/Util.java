@@ -543,10 +543,10 @@ public final class Util {
                 // Write link to search the revision in current project.
                 out.write(anchorClassStart);
                 out.write("search\" href=\"" + env.getUrlPrefix());
-                out.write("defs=&refs=&path=");
+                out.write("defs=&amp;refs=&amp;path=");
                 out.write(project);
-                out.write("&hist=" + URIEncode(r));
-                out.write("&type=\" title=\"Search history for this changeset");
+                out.write("&amp;hist=" + URIEncode(r));
+                out.write("&amp;type=\" title=\"Search history for this changeset");
                 out.write(closeQuotedTag);
                 out.write("S");
                 out.write(anchorEnd);
