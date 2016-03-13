@@ -533,6 +533,11 @@ function domReadyMast() {
         toggle_js.style.display = 'inline';
         toggle_ss.style.display = 'none';
     }
+
+    // When we move to a version of XHTML that supports the onscroll
+    // attribute in the div element, we should add an onscroll attribute
+    // in the generated XHTML in mast.jsp. For now, set it with jQuery.
+    $("#content").scroll(scope_on_scroll);
 }
 
 function pageReadyMast() {
@@ -1121,4 +1126,46 @@ function googleSymbol(symbol) {
 
 function escapeSingleQuote(string) {
     return string.replace("'", "\\'");
+}
+
+/**
+ * Fold or unfold a function definition.
+ */
+function fold(id) {
+    var e = document.getElementById(id + "_fold");
+    var i = document.getElementById(id + "_fold_icon").children[0];
+
+    if (e.style.display === "") {
+        e.style.display = "none";
+        i.className = "unfold-icon";
+    } else {
+        e.style.display = "";
+        i.className = "fold-icon";
+    }
+}
+
+/**
+ * Function that is called when the #content div element is scrolled. Checks
+ * if the top of the page is inside a function scope. If so, update the
+ * scope element to show the name of the function and a link to its definition.
+ */
+function scope_on_scroll() {
+    var cnt = document.getElementById("content");
+    var scope = document.getElementById("scope");
+    var y = cnt.getBoundingClientRect().top + 2;
+    var c = document.elementFromPoint(15, y + 1);
+    scope.innerHTML = "&nbsp;";
+    if (c.className === "l" || c.className === "hl") {
+        prev = c;
+        var par = c.parentNode;
+        while (par.className !== 'scope-body') {
+            par = par.parentNode;
+            if (par === null) {
+                return ;
+            }
+        }
+        var head = par.previousSibling;
+        var sig = head.children[0];
+        scope.innerHTML = "<a href='#" + head.id + "'>" + sig.innerHTML + "</a>";
+    }
 }

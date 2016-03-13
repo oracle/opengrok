@@ -80,41 +80,6 @@ include file="httpheader.jspf"
     document.annotate = <%= cfg.annotate() %>;
     document.domReady.push(domReadyMast);
     document.pageReady.push(pageReadyMast);
-    
-    function fold(id) {
-        var e = document.getElementById(id + "_fold");
-        var i = document.getElementById(id + "_fold_icon").children[0];
-        
-        if (e.style.display === "") {
-            e.style.display = "none";
-            i.className = "unfold-icon";
-        } else {
-            e.style.display = "";
-            i.className = "fold-icon";
-        }
-    }
-
-    function on_scroll() {
-        var cnt = document.getElementById("content");
-        var scope = document.getElementById("scope");
-        var y = cnt.getBoundingClientRect().top + 2;
-
-        var c = document.elementFromPoint(15, y+1);
-        scope.innerHTML = "&nbsp;";
-        if (c.className === "l" || c.className === "hl") {
-            prev = c;
-            var par = c.parentNode;
-            while( par.className !== 'scope-body') {
-                par = par.parentNode;
-                if (par === null) {
-                    return ;
-                }
-            }
-            var head = par.previousSibling;
-            var sig = head.children[0];
-            scope.innerHTML = "<a href='#" + head.id + "'>" + sig.innerHTML + "</a>";
-        }
-    }    
 /* ]]> */</script>
 <div id="page">
     <div id="whole_header">
