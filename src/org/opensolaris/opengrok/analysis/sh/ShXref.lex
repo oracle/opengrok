@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.sh;
@@ -289,10 +289,7 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*)+[a-zA-Z0-9]
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
 {
-    String url = yytext();
-    out.write("<a href=\"");
-    out.write(url);out.write("\">");
-    out.write(url);out.write("</a>");
+    appendLink(yytext());
 }
 
 {FNameChar}+ "@" {FNameChar}+ "." {FNameChar}+

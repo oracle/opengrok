@@ -199,6 +199,14 @@ public abstract class JFlexXref {
         }
     }
 
+    protected void appendLink(String url) throws IOException {
+        out.write("<a href=\"");
+        out.write(Util.formQuoteEscape(url));
+        out.write("\">");
+        Util.htmlize(url, out);
+        out.write("</a>");
+    }
+
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
         return project == null ? "" : (amp + "project=" + project.getDescription());
