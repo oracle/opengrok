@@ -604,15 +604,7 @@ function get_annotations() {
 }
 
 function toggle_annotations() {
-    $("span").each(
-        function() {
-            if (this.className == 'blame') {
-                this.className = 'blame-hidden';
-            } else if (this.className == 'blame-hidden') {
-                this.className = 'blame';
-            }
-        }
-    );
+    $(document.body).toggleClass("blame-hidden");
 }
 
 /** list.jsp */
@@ -736,45 +728,11 @@ function lsttoggle() {
  * Toggle the display of line numbers.
  */
 function lntoggle() {
-    if (typeof document.line_numbers_shown === 'undefined' || document.line_numbers_shown === 1) {
-        lnhide();
-    } else {
-        lnshow();
-    }
-}
-
-function lnhide() {
-    $("a.hl").each(
-        function() {
-            $(this).removeClass('hl').addClass('hl-hide');
-            this.setAttribute("tmp", this.innerHTML);
-            this.innerHTML = '';
-        }
-    );
-    $("a.l").each(
-        function() {
-            $(this).removeClass('l').addClass('l-hide');
-            this.setAttribute("tmp", this.innerHTML);
-            this.innerHTML = '';
-        }
-    );
-    document.line_numbers_shown = 0;
+    $(document.body).toggleClass("lines-hidden");
 }
 
 function lnshow() {
-    $("a.l-hide").each(
-        function () {
-            $(this).removeClass('l-hide').addClass('l');
-            this.innerHTML = this.getAttribute("tmp");
-        }
-    );
-    $("a.hl-hide").each(
-        function () {
-            $(this).removeClass('hl-hide').addClass('hl');
-            this.innerHTML = this.getAttribute("tmp");
-        }
-    );
-    document.line_numbers_shown = 1;
+    $(document.body).removeClass("lines-hidden");
 }
 
 /* ------ Highlighting ------ */
