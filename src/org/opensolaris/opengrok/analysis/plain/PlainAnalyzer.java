@@ -84,6 +84,7 @@ public class PlainAnalyzer extends TextAnalyzer {
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
+        Scopes scopes = null;
         doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
         String fullpath = doc.get(QueryBuilder.FULLPATH);
         if (fullpath != null && ctags != null) {
@@ -98,19 +99,20 @@ public class PlainAnalyzer extends TextAnalyzer {
                  * Parse all scopes for file if we know how
                  */
                 if (scopesEnabled) {
-                    addScopes(doc, src);
+                    scopes = addScopes(doc, src);
                 }
             }
         }
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
-                writeXref(in, xrefOut);
+                writeXref(in, xrefOut, scopes);
             }
         }
     }
     
-    private void addScopes(Document doc, StreamSource src) throws IOException {
+    private Scopes addScopes(Document doc, StreamSource src) throws IOException {
+        Scopes scopes = null;
         JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
         if (scopeParser != null) {
             for (Definitions.Tag tag : defs.getTags()) {
@@ -119,12 +121,13 @@ public class PlainAnalyzer extends TextAnalyzer {
                 }
             }
 
-            Scopes scopes = scopeParser.getScopes();
+            scopes = scopeParser.getScopes();
             if (scopes.size() > 0) {
                 byte[] scopesSerialized = scopes.serialize();
                 doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
             }
         }
+        return scopes;
     }
 
     /**
@@ -133,13 +136,15 @@ public class PlainAnalyzer extends TextAnalyzer {
      * @param in Input source
      * @param out Writer to write HTML cross-reference
      */
-    private void writeXref(Reader in, Writer out) throws IOException {
+    private void writeXref(Reader in, Writer out, Scopes scopes) throws IOException {
         if (xref == null) {
             xref = newXref(in);
         } else {
             xref.reInit(in);
         }
         xref.setDefs(defs);
+        xref.setScopes(scopes);
+        xref.setFoldingEnabled(foldingEnabled);
         xref.project = project;
         xref.write(out);
     }

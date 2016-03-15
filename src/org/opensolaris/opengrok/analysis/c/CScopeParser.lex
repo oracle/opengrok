@@ -43,11 +43,12 @@ import org.opensolaris.opengrok.analysis.JFlexScopeParser;
   @Override
   protected void setLineNumber(int x) { yyline = x; }
   @Override
-  protected void start(String defText) { level = defText.trim().endsWith("{") ? 1 : 0; }
+  protected void start(String defText) { level = 0; }
   
   private int level = 0;
   private void incScope() { level++; }
   private void decScope() { if (level > 0) { level--; if (level == 0) { scope.lineTo = yyline; } } }
+  private void endScope() { if (level == 0) { scope.lineTo = yyline; } }
 %}
 
 
@@ -59,6 +60,7 @@ import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 
  \{     { incScope(); }
  \}     { decScope(); if (level == 0) { return yyeof; } }
+ \;     { endScope(); if (level == 0) { return yyeof; } }
 
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }

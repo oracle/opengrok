@@ -231,26 +231,26 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                 String url;
                 if (count + start > revision1 || (count + start > revision2 && count + start <= revision1 - 1)) {
                     // revision1 enabled
-                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&start=" + start +"&r1="+(start + count) +"&r2="+revision2;
+                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&amp;start=" + start +"&amp;r1="+(start + count) +"&amp;r2="+revision2;
                     %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
                 } else if (count + start == revision1 ) {
                     // revision1 selected
-                    %><input type="radio" checked/><%
+                    %><input type="radio" checked="checked"/><%
                 } else if( count + start <= revision2 ) {
                     // revision1 disabled
-                    %><input type="radio" disabled/><%
+                    %><input type="radio" disabled="disabled"/><%
                 }
 
                 if( count + start < revision2 || (count + start > revision2 && count + start <= revision1 - 1) ) {
                     // revision2 enabled
-                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&start=" + start +"&r1="+revision1 +"&r2="+(start + count);
+                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&amp;start=" + start +"&amp;r1="+revision1 +"&amp;r2="+(start + count);
                     %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
                 } else if( count + start == revision2 ) {
                     // revision2 selected
-                    %><input type="radio" checked/><%
+                    %><input type="radio" checked="checked"/><%
                 } else if (count + start >= revision1 ) {
                     // revision2 disabled
-                    %><input type="radio" disabled/><%
+                    %><input type="radio" disabled="disabled"/><%
                 }
                 %></td><%
                     } else {

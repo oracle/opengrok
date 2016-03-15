@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis;
@@ -36,6 +36,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 import org.opensolaris.opengrok.analysis.Definitions.Tag;
+import org.opensolaris.opengrok.analysis.Scopes.Scope;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -53,6 +54,10 @@ public abstract class JFlexXref {
     public Annotation annotation;
     public Project project;
     protected Definitions defs;
+    protected Scopes scopes;
+    private boolean scopeOpen = false;
+    private boolean foldingEnabled = false;
+    
     /**
      * EOF value returned by yylex().
      */
@@ -178,12 +183,28 @@ public abstract class JFlexXref {
     public void setDefs(Definitions defs) {
         this.defs = defs;
     }
+    
+    public void setScopes(Scopes scopes) {
+        this.scopes = scopes;
+    }
+    
+    public void setFoldingEnabled(boolean foldingEnabled) {
+        this.foldingEnabled = foldingEnabled;
+    }
 
     protected void appendProject() throws IOException {
         if (project != null) {
             out.write("&amp;project=");
             out.write(project.getDescription());
         }
+    }
+
+    protected void appendLink(String url) throws IOException {
+        out.write("<a href=\"");
+        out.write(Util.formQuoteEscape(url));
+        out.write("\">");
+        Util.htmlize(url, out);
+        out.write("</a>");
     }
 
     protected String getProjectPostfix(boolean encoded) {
@@ -228,6 +249,12 @@ public abstract class JFlexXref {
         startNewLine();
         while (yylex() != yyeof) { // NOPMD while statement intentionally empty
             // nothing to do here, yylex() will do the work
+        }
+
+        // terminate scopes
+        if (scopeOpen) {
+            out.write("</div>");
+            scopeOpen = false;
         }
     }
 
@@ -325,6 +352,32 @@ public abstract class JFlexXref {
         }
         return null;
     }
+    
+    /**
+     * Generate span id for scope based on line number, name, and signature 
+     * (more functions with same name and signature can be defined in
+     * single file)
+     * @param scope Scope to generate id from
+     * @return generated span id
+     */
+    private String generateId(Scope scope) {
+        String name = Integer.toString(scope.lineFrom) + scope.getName() +
+                scope.signature;
+        int hash = name.hashCode();
+        return "scope_id_" + Integer.toHexString(hash);
+    }
+    
+    /**
+     * Simple escape of html characters in raw string.
+     * 
+     * @param raw Raw string
+     * @return String with escaped html characters
+     */
+    protected String htmlize(String raw) {
+        return raw.replace("&", "&amp;").replace("<", "&lt;")
+                .replace(">", "&gt;").replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
 
     /**
      * Terminate the current line and insert preamble for the next line. The
@@ -333,10 +386,59 @@ public abstract class JFlexXref {
      * @throws IOException on error when writing the xref
      */
     protected void startNewLine() throws IOException {
+        String iconId = null;
         int line = getLineNumber() + 1;
+        boolean skipNl = false;
         setLineNumber(line);
+        
+        if (scopes != null) {
+            Scope prevScope = scopes.getScope(line-1);
+            Scope newScope = scopes.getScope(line);
+            String scopeId = generateId(newScope);
+
+            if (prevScope != newScope) {
+                if (scopeOpen) {
+                    scopeOpen = false;
+                    out.write("</span>");
+                    skipNl = true;
+                }
+
+                if (newScope != scopes.GLOBAL_SCOPE) {
+                    out.write("<span id='");
+                    out.write(scopeId);
+                    out.write("' class='scope-head'><span class='scope-signature'>");
+                    out.write(htmlize(newScope.getName() + newScope.signature));
+                    out.write("</span>");
+                    scopeOpen = true;
+                    iconId = scopeId + "_fold_icon";
+                    skipNl = true;
+                }      
+            } else if (newScope != scopes.GLOBAL_SCOPE &&
+                    line == newScope.lineFrom+1) {
+                if (scopeOpen) {
+                    out.write("</span>");
+                }
+                
+                scopeOpen = true;
+                out.write("<span id='");
+                out.write(scopeId);
+                out.write("_fold' class='scope-body'>");
+                skipNl = true;
+            }
+        }
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-            getProjectPostfix(false));
+            getProjectPostfix(true), skipNl);
+        
+        if (foldingEnabled) {
+            if (iconId != null) {
+                out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
+                out.write(iconId);
+                /* space inside span for IE support */
+                out.write("'><span class='fold-icon'>&nbsp;</span></a>");
+            } else {
+                out.write("<span class='fold-space'>&nbsp;</span>");    
+            }
+        }
     }
 
     /**

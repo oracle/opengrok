@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -400,5 +400,19 @@ public class JFlexXrefTest {
         StringWriter out = new StringWriter();
         xref.write(out);
         assertTrue(out.toString().contains("<span class=\"s\">@\"\\some_windows_path_in_a_string\\\"</span>"));
+    }
+
+    /**
+     * Test that special characters in URLs are escaped in the xref.
+     */
+    @Test
+    public void testEscapeLink() throws IOException {
+        StringReader in = new StringReader("http://www.example.com/?a=b&c=d");
+        PlainXref xref = new PlainXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        assertTrue(out.toString().contains(
+                "<a href=\"http://www.example.com/?a=b&amp;c=d\">" +
+                "http://www.example.com/?a=b&amp;c=d</a>"));
     }
 }

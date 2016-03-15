@@ -140,7 +140,7 @@ public class Definitions implements Serializable {
      * Class that represents a single tag.
      */
     public static class Tag implements Serializable {
-        private static final long serialVersionUID = 1217869075425651464L;
+        private static final long serialVersionUID = 1217869075425651465L;
 
         /** Line number of the tag. */
         public final int line;
@@ -151,23 +151,26 @@ public class Definitions implements Serializable {
         /** The full line on which the definition occurs. */
         public final String text;
         /** Scope of tag definition */
-        public final String scope;
+        public final String scope;        
+        /** Scope of tag definition */
+        public final String signature;
 
-        protected Tag(int line, String symbol, String type, String text, String scope) {
+        protected Tag(int line, String symbol, String type, String text, String scope, String signature) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
             this.text = text;
             this.scope = scope;
+            this.signature = signature;
         }
     }
 
     public void addTag(int line, String symbol, String type, String text) {
-        addTag(line, symbol, type, text, null);
+        addTag(line, symbol, type, text, null, null);
     }
 
-    public void addTag(int line, String symbol, String type, String text, String scope) {
-        Tag new_tag = new Tag(line, symbol, type, text, scope);
+    public void addTag(int line, String symbol, String type, String text, String scope, String signature) {
+        Tag new_tag = new Tag(line, symbol, type, text, scope, signature);
         tags.add(new_tag);
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -70,6 +70,11 @@ public class IgnoredNamesTest {
         assertFalse(instance.ignore("usr/src/bar/obj/foo.ksh"));
         assertFalse(instance.ignore("usr/src/foo/bar/usr.lib/main.c"));
         assertFalse(instance.ignore("usr/src/foo/bar/usr.lib"));
+
+        /* Test handling of special directories. */
+        assertTrue(instance.ignore("usr/src/.git"));
+        assertFalse(instance.ignore("usr/src/.git/foo"));
+        assertFalse(instance.ignore("usr/src/foo.git"));
 
         /* cumulative test */
         names = new ArrayList<>();

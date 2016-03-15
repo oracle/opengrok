@@ -18,8 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -59,10 +58,9 @@ include file="pageconfig.jspf"
     }
     InputStream in = null;
     try {
-        Prefix prefix;
         if (revision != null) {
             in = HistoryGuru.getInstance().getRevision(f.getParent(),
-                f.getName(), revision.substring(2));
+                f.getName(), revision);
         } else {
             long flast = cfg.getLastModified();
             if (request.getDateHeader("If-Modified-Since") >= flast) {

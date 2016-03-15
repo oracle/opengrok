@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -193,7 +193,7 @@ public final class Indexer {
                                     AnalyzerGuru.addPrefix(
                                             arg[0],
                                             AnalyzerGuru.findFactory(arg[1]));
-                                } catch (Exception e) {
+                                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                                     LOGGER.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
                                     LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
@@ -203,7 +203,7 @@ public final class Indexer {
                                     AnalyzerGuru.addExtension(
                                             arg[0],
                                             AnalyzerGuru.findFactory(arg[1]));
-                                } catch (Exception e) {
+                                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                                     LOGGER.log(Level.SEVERE, "Unable to use {0} as a FileAnalyzerFactory", arg[1]);
                                     LOGGER.log(Level.SEVERE, "Stack: ", e.fillInStackTrace());
                                     System.exit(1);
@@ -889,7 +889,7 @@ public final class Indexer {
                 try {
                     InetAddress host = InetAddress.getByName(cfg[0]);
                     env.writeConfiguration(host, Integer.parseInt(cfg[1]));
-                } catch (Exception ex) {
+                } catch (NumberFormatException | IOException ex) {
                     LOGGER.log(Level.SEVERE, "Failed to send configuration to "
                             + configHost + " (is web application server running with opengrok deployed?)", ex);
                 }

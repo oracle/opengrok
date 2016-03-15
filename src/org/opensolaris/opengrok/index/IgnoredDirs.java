@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -35,11 +35,10 @@ public final class IgnoredDirs extends Filter {
     private static final String[] defaultPatternsDirs = {
         "SCCS",
         "CVS",
-        "RCS",  
-        // Teamware
-        "Codemgr_wsdata",
-        "deleted_files",
         "CVSROOT",
+        "RCS",
+        "Codemgr_wsdata", // Teamware
+        "deleted_files",  // Teamware
         ".svn",
         ".git",
         ".hg",

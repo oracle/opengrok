@@ -44,12 +44,18 @@ public class Scopes implements Serializable {
         public int lineTo;
         public String name;
         public String scope;
+        public String signature;
 
         public Scope(int lineFrom, int lineTo, String name, String scope) {
+            this(lineFrom, lineTo, name, scope, "");
+        }
+        
+        public Scope(int lineFrom, int lineTo, String name, String scope, String signature) {
             this.lineFrom = lineFrom;
             this.lineTo = lineTo;
             this.name = name;
             this.scope = scope;
+            this.signature = signature;
         }
         
         public Scope(int lineFrom) {
@@ -57,9 +63,13 @@ public class Scopes implements Serializable {
         }
         
         public String getName() {
-            return name; //(scope == null ? name : scope + "::" + name) + "()";
+            return name;
         }
 
+        public boolean matches(int line) {
+            return line >= lineFrom && line <= lineTo;
+        }
+        
         @Override
         public int compareTo(Scope o) {
             return lineFrom < o.lineFrom ? -1 : lineFrom > o.lineFrom ? 1 : 0;
@@ -67,7 +77,7 @@ public class Scopes implements Serializable {
     }
     
     // default global scope
-    private static Scope globalScope = new Scope(0, 0, "global", null);
+    public static final Scope GLOBAL_SCOPE = new Scope(0, 0, "global", null, null);
     
     // tree of scopes sorted by starting line
     private TreeSet<Scope> scopes = new TreeSet<>();
@@ -85,8 +95,8 @@ public class Scopes implements Serializable {
     
     public Scope getScope(int line) {
         // find closest scope that starts before or on given line
-        Scope s = scopes.lower(new Scope(line+1));        
-        return (s != null && s.lineTo >= line) ? s : globalScope;
+        Scope s = scopes.floor(new Scope(line));
+        return (s != null && s.matches(line)) ? s : GLOBAL_SCOPE;
     }
     
     /**

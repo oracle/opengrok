@@ -712,11 +712,12 @@ div[id^='src'] pre {
 	margin: 0;
 }
 
-div[id^='src'] .l-hide, div[id^='src'] .hl-hide, .blame-hidden { /* hidden line number/annotation block */
+/* hidden line number/annotation block */
+.lines-hidden .l, .lines-hidden .hl, .blame-hidden .blame {
 	display: none
 }
 
-div[id^='src'] .l, div[id^='src'] .hl, .blame .r, .blame .a,
+.l, .hl, .blame .r, .blame .a,
 #results .l, #more .l,
 #difftable i, del.d { /* line number/annotation block */
 	display: inline-block;
@@ -1014,3 +1015,52 @@ a.scope { /* scope */                   color: dodgerblue; font-weight: bold; pa
 	background-position: -425px 0;
 }
 /* ############### end of footer ############## */
+
+/* *** scopes *** */
+
+span.scope-head {
+    display: block;
+}
+
+span.scope-body {
+    display: block;
+}
+
+span.unfold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-image: url('./img/unfolding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+}
+
+span.fold-icon {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    background-image: url('./img/folding.png');
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+}
+
+span.fold-space {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    width: 11px;
+    height: 11px;
+    display: inline-block;    
+}
+
+span.scope-signature {
+    display: none;
+}
+
+div#scope {
+    width: 100%;
+    min-height: 1em;
+    text-align: left;
+    background-color: #dddddd;
+    font-size: 0.9em;
+    padding: 0.5em 0.5em 0.5em 6.5ex;
+}
