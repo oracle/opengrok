@@ -88,6 +88,7 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 */
 {Number} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
+ \\\" | \\\' { out.write(yytext()); }
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
  "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}

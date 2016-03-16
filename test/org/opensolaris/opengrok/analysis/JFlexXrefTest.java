@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,6 +54,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
 
 import static org.junit.Assert.*;
+import org.xml.sax.InputSource;
 
 /**
  * Unit tests for JFlexXref.
@@ -414,5 +416,23 @@ public class JFlexXrefTest {
         assertTrue(out.toString().contains(
                 "<a href=\"http://www.example.com/?a=b&amp;c=d\">" +
                 "http://www.example.com/?a=b&amp;c=d</a>"));
+    }
+
+    /**
+     * Test that JFlex rules that contain quotes don't cause invalid xref
+     * to be produced.
+     */
+    @Test
+    public void testJFlexRule() throws Exception {
+        StringReader in = new StringReader("\\\" { yybegin(STRING); }");
+        // JFlex files are usually analyzed with CAnalyzer.
+        CXref xref = new CXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        // Verify that the xref is well-formed XML. Used to throw
+        // SAXParseException: The element type "span" must be terminated
+        // by the matching end-tag "</span>".
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")));
     }
 }
