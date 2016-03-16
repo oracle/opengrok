@@ -26,12 +26,14 @@ package org.opensolaris.opengrok.analysis;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.lucene.document.Document;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,6 +57,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
 
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
 import org.xml.sax.InputSource;
 
 /**
@@ -455,5 +458,26 @@ public class JFlexXrefTest {
             DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                 new InputSource(new StringReader("<doc>" + out + "</doc>")));
         }
+    }
+
+    /**
+     * Test that JavaClassAnalyzer produces well-formed output.
+     */
+    @Test
+    public void testJavaClassAnalyzer() throws Exception {
+        StreamSource src = new StreamSource() {
+            @Override public InputStream getStream() throws IOException {
+                final String path = "/" +
+                    StringWriter.class.getName().replace('.', '/') +
+                    ".class";
+                return StringWriter.class.getResourceAsStream(path);
+            }
+        };
+        Document doc = new Document();
+        StringWriter out = new StringWriter();
+        new JavaClassAnalyzerFactory().getAnalyzer().analyze(doc, src, out);
+        // Used to throw SAXParseException.
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")));
     }
 }
