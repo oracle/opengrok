@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -434,5 +435,25 @@ public class JFlexXrefTest {
         // by the matching end-tag "</span>".
         DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                 new InputSource(new StringReader("<doc>" + out + "</doc>")));
+    }
+
+    /**
+     * Unterminated string literals or comments made CXref produce output
+     * that was not valid XML, due to missing end tags. Test that it is no
+     * longer so.
+     */
+    @Test
+    public void testUnterminatedElements() throws Exception {
+        for (String str : Arrays.asList("#define STR \"abc\n",
+                                        "void f(); /* unterminated comment\n",
+                                        "const char c = 'x\n")) {
+            StringReader in = new StringReader(str);
+            CXref xref = new CXref(in);
+            StringWriter out = new StringWriter();
+            xref.write(out);
+            // Used to throw SAXParseException.
+            DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")));
+        }
     }
 }

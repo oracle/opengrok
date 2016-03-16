@@ -256,6 +256,10 @@ public abstract class JFlexXref {
             out.write("</div>");
             scopeOpen = false;
         }
+
+        while (!stack.empty()) {
+            yypop();
+        }
     }
 
     /**

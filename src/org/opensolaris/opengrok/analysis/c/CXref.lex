@@ -89,15 +89,15 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 {Number} { out.write("<span class=\"n\">"); out.write(yytext()); out.write("</span>"); }
 
  \\\" | \\\' { out.write(yytext()); }
- \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
- \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "/*"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
- "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
+ \"     { out.write("<span class=\"s\">\""); yypush(STRING, "</span>"); }
+ \'     { out.write("<span class=\"s\">\'"); yypush(QSTRING, "</span>"); }
+ "/*"   { out.write("<span class=\"c\">/*"); yypush(COMMENT, "</span>"); }
+ "//"   { out.write("<span class=\"c\">//"); yypush(SCOMMENT, "</span>"); }
 }
 
 <STRING> {
  \" {WhiteSpace} \"  { out.write(yytext()); }
- \"     { yybegin(YYINITIAL); out.write("\"</span>"); }
+ \"     { out.write(yytext()); yypop(); }
  \\\\   { out.write("\\\\"); }
  \\\"   { out.write("\\\""); }
 }
@@ -106,16 +106,18 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
  "\\\\" { out.write("\\\\"); }
  "\\'" { out.write("\\\'"); }
  \' {WhiteSpace} \' { out.write(yytext()); }
- \'     { yybegin(YYINITIAL); out.write("'</span>"); }
+ \'     { out.write(yytext()); yypop(); }
 }
 
 <COMMENT> {
-"*/"    { yybegin(YYINITIAL); out.write("*/</span>"); }
+"*/"    { out.write(yytext()); yypop(); }
 }
 
 <SCOMMENT> {
-{WhiteSpace}*{EOL}      { yybegin(YYINITIAL); out.write("</span>");
-                  startNewLine();}
+{WhiteSpace}*{EOL}      {
+    out.write(yytext());
+    yypop();
+    startNewLine();}
 }
 
 
