@@ -200,7 +200,7 @@ public class Context {
                                     if (desc[4] != null) {
                                         out.write("<span class=\"scope\"><a href\"");
                                         out.write(scopeUrl);
-                                        out.write("\">");
+                                        out.write("\">in ");
                                         out.write(desc[4]);
                                         out.write("</a></span> ");
                                     }

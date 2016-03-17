@@ -979,9 +979,10 @@ span.scope-signature {
 
 div#scope {
     width: 100%;
-    min-height: 1em;
+    min-height: 1.2em;
     text-align: left;
     background-color: #dddddd;
-    font-size: 0.9em;
     padding: 0.5em 0.5em 0.5em 6.5ex;
+    font-family: monospace;
+    font-weight: bold;
 }
