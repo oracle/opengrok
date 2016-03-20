@@ -61,13 +61,13 @@ xml_begin() {
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><title></title></head>
 <body>
-<div>
+<div><pre>
 EOF
 }
 
 xml_end() {
     cat <<EOF
-</div>
+</pre></div>
 </body>
 </html>
 EOF
