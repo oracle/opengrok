@@ -854,6 +854,28 @@ function togglediffs() {
     );
 }
 
+$(document).ready(function() {
+  $(".rev-toggle-a").click(function() {
+    var toggleState = $(this).closest("p").attr("data-toggle-state");
+    var thisCell = $(this).closest("td");
+
+    if (toggleState == "less") {
+      $(this).closest("p").attr("data-toggle-state", "more");
+      thisCell.find(".rev-message-summary").addClass("rev-message-hidden");
+      thisCell.find(".rev-message-full").removeClass("rev-message-hidden");
+      $(this).html("... show less");
+    }
+    else if (toggleState == "more") {
+      $(this).closest("p").attr("data-toggle-state", "less");
+      thisCell.find(".rev-message-full").addClass("rev-message-hidden");
+      thisCell.find(".rev-message-summary").removeClass("rev-message-hidden");
+      $(this).html("show more ...");
+    }
+
+    return false;
+  });
+});
+
 function selectAllProjects() {
     $("#project *").attr("selected", "selected");
 }

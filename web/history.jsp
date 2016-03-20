@@ -279,8 +279,10 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                 %><%= author %><%
                 }
                 %></td>
-            <td><a name="<%= rev %>"></a><p><%
+            <td><a name="<%= rev %>"></a><%
+                int summaryLength = 200;
                 String cout = Util.htmlize(entry.getMessage());
+
                 if (bugPage != null && bugPage.length() > 0) {
                     cout = bugPattern.matcher(cout).replaceAll("<a href=\""
                         + bugPage + "$1\">$1</a>");
@@ -289,7 +291,26 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                     cout = reviewPattern.matcher(cout).replaceAll("<a href=\""
                         + reviewPage + "$1\">$1</a>");
                 }
-                %><%= cout %></p><%
+                
+                boolean showSummary = false;
+                String coutSummary = entry.getMessage();
+                if (coutSummary.length() > summaryLength) {
+                    showSummary = true;
+                    coutSummary = coutSummary.substring(0, summaryLength - 1);
+                    coutSummary = Util.htmlize(coutSummary);
+                }
+
+                if (showSummary) {
+                    %>
+                    <p class="rev-message-summary"><%= coutSummary %></p>
+                    <p class="rev-message-full rev-message-hidden"><%= cout %></p>
+                    <p class="rev-message-toggle" data-toggle-state="less"><a class="rev-toggle-a" href="#">show more ... </a></p>
+                    <%
+                }
+                else {
+                     %><p class="rev-message-full"><%= cout %></p><%
+                }
+
                 Set<String> files = entry.getFiles();
                 if (files != null) {
                 %><div class="filelist-hidden"><br/><%
