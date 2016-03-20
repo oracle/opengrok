@@ -480,4 +480,17 @@ public class JFlexXrefTest {
         DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
                 new InputSource(new StringReader("<doc>" + out + "</doc>")));
     }
+
+    /**
+     * Test that special characters in Fortran files are escaped.
+     */
+    @Test
+    public void testFortranSpecialCharacters() throws Exception {
+        FortranXref xref = new FortranXref(new StringReader("<?php?>"));
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        // Used to throw SAXParseException.
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+            new InputSource(new StringReader("<doc>" + out + "</doc>")));
+    }
 }
