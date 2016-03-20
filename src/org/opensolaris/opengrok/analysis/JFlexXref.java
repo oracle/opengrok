@@ -495,11 +495,19 @@ public abstract class JFlexXref {
             //    do this when there's exactly one definition of the symbol in
             //    this file? Otherwise, we may end up with multiple anchors with
             //    the same name.)
-            out.append("<a class=\"");
-            out.append(style_class);
-            out.append("\" name=\"");
-            out.append(symbol);
-            out.append("\"/>");
+            //
+            //    Note: In HTML 4, the name must start with a letter, and can
+            //    only contain letters, digits, hyphens, underscores, colons,
+            //    and periods. https://www.w3.org/TR/html4/types.html#type-name
+            //    Skip the anchor if the symbol name is not a valid anchor
+            //    name. This restriction is lifted in HTML 5.
+            if (symbol.matches("[a-zA-Z][a-zA-Z0-9_:.-]*")) {
+                out.append("<a class=\"");
+                out.append(style_class);
+                out.append("\" name=\"");
+                out.append(symbol);
+                out.append("\"/>");
+            }
 
             // 2) Create a link that searches for all references to this symbol.
             out.append("<a href=\"");
