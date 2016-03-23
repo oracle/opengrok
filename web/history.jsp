@@ -280,7 +280,8 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                 }
                 %></td>
             <td><a name="<%= rev %>"></a><%
-                int summaryLength = 200;
+                // revision message collapse threshold minimum of 10
+                int summaryLength = Math.max(10, cfg.getRevisionMessageCollapseThreshold());
                 String cout = Util.htmlize(entry.getMessage());
 
                 if (bugPage != null && bugPage.length() > 0) {

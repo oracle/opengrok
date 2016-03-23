@@ -957,6 +957,14 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHandleHistoryOfRenamedFiles(enable);
     }
 
+    public void setRevisionMessageCollapseThreshold(int threshold) {
+        threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
+    }
+
+    public int getRevisionMessageCollapseThreshold() {
+        return threadConfig.get().getRevisionMessageCollapseThreshold();
+    }
+
     public boolean isHandleHistoryOfRenamedFiles() {
         return threadConfig.get().isHandleHistoryOfRenamedFiles();
     }
