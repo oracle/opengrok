@@ -493,6 +493,10 @@ table#revisions tbody tr td p {
 	margin: 1ex 0;
 }
 
+.rev-message-hidden {
+  display: none;
+}
+
 
 /* *** diff page *** */
 #diffbar { /* diff navbar: contains the tabs to select diff format */

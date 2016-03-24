@@ -160,6 +160,12 @@ public final class Configuration {
     public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
     private transient File dtagsEftar = null;
 
+    /**
+     * Revision messages will be collapsible if they exceed this many number
+     * of characters. Front end enforces an appropriate minimum.
+     */
+    private int revisionMessageCollapseThreshold;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -259,6 +265,7 @@ public final class Configuration {
         setFoldingEnabled(true);
         setFetchHistoryWhenNotInCache(true);
         setHandleHistoryOfRenamedFiles(true);
+        setRevisionMessageCollapseThreshold(200);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -642,6 +649,14 @@ public final class Configuration {
 
     public void setTagsEnabled(boolean tagsEnabled) {
         this.tagsEnabled = tagsEnabled;
+    }
+
+    public void setRevisionMessageCollapseThreshold(int threshold) {
+        this.revisionMessageCollapseThreshold = threshold;
+    }
+
+    public int getRevisionMessageCollapseThreshold() {
+        return this.revisionMessageCollapseThreshold;
     }
 
     private transient Date lastModified;

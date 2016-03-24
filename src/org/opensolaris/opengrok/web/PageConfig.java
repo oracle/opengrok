@@ -439,6 +439,10 @@ public final class PageConfig {
         return getIntParam("n", getEnv().getHitsPerPage());
     }
 
+    public int getRevisionMessageCollapseThreshold() {
+        return getEnv().getRevisionMessageCollapseThreshold();
+    }
+
     /**
      * Get sort orders from the request parameter {@code sort} and if this list
      * would be empty from the cookie {@code OpenGrokorting}.
