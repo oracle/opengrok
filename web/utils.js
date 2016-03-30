@@ -590,6 +590,7 @@ function domReadyHistory() {
     // will go mad !
     $("#revisions input[type=radio]").bind("click",togglediffs);
     togglediffs();
+    togglerevs();
 }
 
 function get_annotations() {
@@ -854,7 +855,10 @@ function togglediffs() {
     );
 }
 
-$(document).ready(function() {
+/**
+ *  Function to toggle revision message length for long revision messages
+ */
+function togglerevs() {
   $(".rev-toggle-a").click(function() {
     var toggleState = $(this).closest("p").attr("data-toggle-state");
     var thisCell = $(this).closest("td");
@@ -874,7 +878,7 @@ $(document).ready(function() {
 
     return false;
   });
-});
+}
 
 function selectAllProjects() {
     $("#project *").attr("selected", "selected");

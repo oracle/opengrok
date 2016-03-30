@@ -488,15 +488,14 @@ table#revisions tbody tr td p {
     }
 }
 
-.rssbadge { /* RSS/XML Feed on history page */
-	text-align: right;
-	margin: 1ex 0;
-}
-
 .rev-message-hidden {
   display: none;
 }
 
+.rssbadge { /* RSS/XML Feed on history page */
+	text-align: right;
+	margin: 1ex 0;
+}
 
 /* *** diff page *** */
 #diffbar { /* diff navbar: contains the tabs to select diff format */
