@@ -29,6 +29,7 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import junit.framework.AssertionFailedError;
@@ -105,6 +106,13 @@ public class ProjectTest {
         env.setProjects(projects);
 
         // The matching of project name to project should be exact.
+        assertEquals(foo, Project.getProject("/foo"));
+        assertEquals(bar, Project.getProject("/foo-bar"));
+        assertEquals(foo, Project.getProject("/foo/blah.c"));
+        assertEquals(bar, Project.getProject("/foo-bar/ha.c"));
+
+        // Make sure that the matching is not dependent on list ordering.
+        Collections.reverse(projects);
         assertEquals(foo, Project.getProject("/foo"));
         assertEquals(bar, Project.getProject("/foo-bar"));
         assertEquals(foo, Project.getProject("/foo/blah.c"));
