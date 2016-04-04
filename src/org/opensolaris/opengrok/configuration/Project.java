@@ -18,14 +18,17 @@
  */
 
  /*
- * Copyright 2006, 2015, Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- */
+  * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+  */
 package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -124,28 +127,44 @@ public class Project implements Comparable<Project> {
         return tabSize > 0;
     }
 
+
     /**
      * Get the project for a specific file
      *
-     * @param path the file to lookup (relative from source root)
+     * @param path the file to lookup (relative to source root)
      * @return the project that this file belongs to (or null if the file
      * doesn't belong to a project)
      */
     public static Project getProject(String path) {
-        Project ret = null;
         String lpath = path;
+
+        Comparator<Project> cmp = new Comparator<Project>() {
+            @Override
+            public int compare(Project p1, Project p2) {
+                return p1.getPath().compareTo(p2.getPath());
+            }
+        };
+
         if (File.separatorChar != '/') {
             lpath = path.replace(File.separatorChar, '/');
         }
+
+        // Try to match each project path as prefix of the given path.
+        // This needs to be done from the longest project to the shortest
+        // otherwise we could get project mismatches.
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        List<Project> sortedProjects = new ArrayList<> (env.getProjects());
+        sortedProjects.sort(cmp);
+        Collections.reverse(sortedProjects);
         if (env.hasProjects()) {
-            for (Project proj : env.getProjects()) {
+            for (Project proj : sortedProjects) {
                 if (lpath.indexOf(proj.getPath()) == 0) {
-                    ret = proj;
+                    return proj;
                 }
             }
         }
-        return ret;
+
+        return null;
     }
 
     /**
