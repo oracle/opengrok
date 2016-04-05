@@ -135,6 +135,10 @@ label {
     display: none;
 }
 
+.projects .panel-body-accordion.favourite {
+    display: block;
+}
+
 .panel > .panel-heading, .panel > .panel-heading-accordion {
   padding: 0 15px;
   border-bottom: 1px solid transparent;

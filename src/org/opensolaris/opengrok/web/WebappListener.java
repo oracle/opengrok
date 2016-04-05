@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.WatchService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -35,8 +36,11 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+
+import static org.opensolaris.opengrok.configuration.Configuration.PLUGIN_DIRECTORY_DEFAULT;
 
 /**
  * Initialize webapp context
@@ -47,6 +51,9 @@ public final class WebappListener
         implements ServletContextListener, ServletRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebappListener.class);
+
+    private Thread thread;
+    private WatchService watcher;
 
     /**
      * {@inheritDoc}
@@ -87,6 +94,24 @@ public final class WebappListener
                 }
             }
         }
+
+        String pluginDirectory = context.getInitParameter("authorizationPluginDirectory");
+        if (pluginDirectory != null) {
+            env.getConfiguration().setPluginDirectory(pluginDirectory);
+            AuthorizationFramework.getInstance(); // start + load
+        } else {
+            if (env.getDataRootPath() == null) {
+                env.getConfiguration().setPluginDirectory(PLUGIN_DIRECTORY_DEFAULT);
+            } else {
+                env.getConfiguration().setPluginDirectory(env.getDataRootPath() + "/../" + PLUGIN_DIRECTORY_DEFAULT);
+            }
+            LOGGER.log(Level.INFO, "authorizationPluginDirectory is not set in web.xml. Default location will be used.");
+        }
+
+        String watchDog = context.getInitParameter("enableAuthorizationWatchDog");
+        if (pluginDirectory != null && watchDog != null && Boolean.parseBoolean(watchDog)) {
+            RuntimeEnvironment.getInstance().startWatchDogService(new File(pluginDirectory));
+        }
     }
 
     /**
@@ -95,6 +120,7 @@ public final class WebappListener
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
+        RuntimeEnvironment.getInstance().stopWatchDogService();
     }
 
     /**

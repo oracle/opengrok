@@ -35,15 +35,31 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.ClosedWatchServiceException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
@@ -51,6 +67,11 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -65,6 +86,8 @@ public final class RuntimeEnvironment {
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
+
+    private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -305,6 +328,7 @@ public final class RuntimeEnvironment {
      * @param projects the list of projects to use
      */
     public void setProjects(List<Project> projects) {
+        populateGroups(getGroups(), projects);
         threadConfig.get().setProjects(projects);
     }
 
@@ -332,6 +356,7 @@ public final class RuntimeEnvironment {
      * @param groups the set of groups to use
      */
     public void setGroups(Set<Group> groups) {
+        populateGroups(groups, getProjects());
         threadConfig.get().setGroups(groups);
     }
 
@@ -345,6 +370,16 @@ public final class RuntimeEnvironment {
     public RuntimeEnvironment register() {
         threadConfig.set(configuration);
         return this;
+    }
+
+    /**
+     * Returns constructed project - repositories map.
+     *
+     * @return the map
+     * @see #generateProjectRepositoriesMap
+     */
+    public Map<Project, List<RepositoryInfo>> getProjectRepositoriesMap() {
+        return repository_map;
     }
 
     /**
@@ -402,32 +437,32 @@ public final class RuntimeEnvironment {
     // cache these tests instead of reruning them for every call
     private transient Boolean exCtagsFound;
     private transient Boolean isUniversalCtagsVal;
-    
+
     /**
      * Validate that I have a Exuberant ctags program I may use
      *
      * @return true if success, false otherwise
      */
     public boolean validateExuberantCtags() {
-        if (exCtagsFound==null) {         
-         Executor executor = new Executor(new String[]{getCtags(), "--version"});
-         executor.exec(false);
-         String output = executor.getOutputString();
-         boolean isUnivCtags = output.contains("Universal Ctags");
-         if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
-            LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
-                    + "(tried running " + "{0}" + ")\n"
-                    + "Please use option -c to specify path to a good "
-                    + "Exuberant Ctags program.\n"
-                    + "Or set it in java property "
-                    + "org.opensolaris.opengrok.analysis.Ctags", getCtags());
-            exCtagsFound = false;
-         } else {
-             if (isUnivCtags) {
-                isUniversalCtagsVal = true;
-             }
-             exCtagsFound = true;
-         }
+        if (exCtagsFound == null) {
+            Executor executor = new Executor(new String[]{getCtags(), "--version"});
+            executor.exec(false);
+            String output = executor.getOutputString();
+            boolean isUnivCtags = output.contains("Universal Ctags");
+            if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
+                LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
+                        + "(tried running " + "{0}" + ")\n"
+                        + "Please use option -c to specify path to a good "
+                        + "Exuberant Ctags program.\n"
+                        + "Or set it in java property "
+                        + "org.opensolaris.opengrok.analysis.Ctags", getCtags());
+                exCtagsFound = false;
+            } else {
+                if (isUnivCtags) {
+                    isUniversalCtagsVal = true;
+                }
+                exCtagsFound = true;
+            }
         }
         return exCtagsFound;
     }
@@ -438,15 +473,15 @@ public final class RuntimeEnvironment {
      * @return true if we are using Universal ctags
      */
     public boolean isUniversalCtags() {
-        if (isUniversalCtagsVal==null) {
-         isUniversalCtagsVal = false;
-         Executor executor = new Executor(new String[]{getCtags(), "--version"});
+        if (isUniversalCtagsVal == null) {
+            isUniversalCtagsVal = false;
+            Executor executor = new Executor(new String[]{getCtags(), "--version"});
 
-         executor.exec(false);
-         String output = executor.getOutputString();
-         if (output.contains("Universal Ctags")) {
-             isUniversalCtagsVal = true;
-         }
+            executor.exec(false);
+            String output = executor.getOutputString();
+            if (output.contains("Universal Ctags")) {
+                isUniversalCtagsVal = true;
+            }
         }
         return isUniversalCtagsVal;
     }
@@ -603,6 +638,14 @@ public final class RuntimeEnvironment {
      */
     public void setRamBufferSize(double ramBufferSize) {
         threadConfig.get().setRamBufferSize(ramBufferSize);
+    }
+
+    public void setPluginDirectory(String pluginDirectory) {
+        threadConfig.get().setPluginDirectory(pluginDirectory);
+    }
+
+    public String getPluginDirectory() {
+        return threadConfig.get().getPluginDirectory();
     }
 
     /**
@@ -866,11 +909,11 @@ public final class RuntimeEnvironment {
     public void setScopesEnabled(boolean scopesEnabled) {
         threadConfig.get().setScopesEnabled(scopesEnabled);
     }
-    
+
     public boolean isFoldingEnabled() {
         return threadConfig.get().isFoldingEnabled();
     }
-    
+
     public void setFoldingEnabled(boolean foldingEnabled) {
         threadConfig.get().setFoldingEnabled(foldingEnabled);
     }
@@ -1007,8 +1050,76 @@ public final class RuntimeEnvironment {
         writeConfiguration(configServerSocket.getInetAddress(), configServerSocket.getLocalPort());
     }
 
+    /**
+     * Generate a TreeMap of projects with corresponding repository information.
+     *
+     * Project with some repository information is considered as a repository
+     * otherwise it is just a simple project.
+     */
+    private void generateProjectRepositoriesMap() throws IOException {
+        repository_map.clear();
+        for (RepositoryInfo r : configuration.getRepositories()) {
+            Project proj;
+            String repoPath;
+
+            repoPath = getPathRelativeToSourceRoot(
+                    new File(r.getDirectoryName()), 0);
+
+            if ((proj = Project.getProject(repoPath)) != null) {
+                List<RepositoryInfo> values = repository_map.get(proj);
+                if (values == null) {
+                    values = new ArrayList<>();
+                    repository_map.put(proj, values);
+                }
+                values.add(r);
+            }
+        }
+    }
+
+    /**
+     * Classifies projects and puts them in their groups.
+     */
+    private void populateGroups(Set<Group> groups, List<Project> projects) {
+        if (projects == null || groups == null) {
+            return;
+        }
+        for (Project project : projects) {
+            // filterProjects only groups which match project's description
+            Set<Group> copy = new TreeSet<Group>(groups);
+            copy.removeIf(new Predicate<Group>() {
+                @Override
+                public boolean test(Group g) {
+                    return !g.match(project);
+                }
+            });
+
+            // add project to the groups
+            for (Group group : copy) {
+                if (repository_map.get(project) == null) {
+                    group.addProject(project);
+                } else {
+                    group.addRepository(project);
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the configuration and performs necessary actions.
+     *
+     * Mainly it classifies the projects in their groups and generates project -
+     * repositories map
+     *
+     * @param configuration
+     */
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+        try {
+            generateProjectRepositoriesMap();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
+        }
+        populateGroups(getGroups(), getProjects());
         register();
         HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories());
@@ -1016,6 +1127,12 @@ public final class RuntimeEnvironment {
 
     public void setConfiguration(Configuration configuration, List<String> subFileList) {
         this.configuration = configuration;
+        try {
+            generateProjectRepositoriesMap();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
+        }
+        populateGroups(getGroups(), getProjects());
         register();
         HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);
@@ -1099,5 +1216,92 @@ public final class RuntimeEnvironment {
         }
 
         return ret;
+    }
+
+    private Thread watchDogThread;
+    private WatchService watchDogWatcher;
+
+    /**
+     * Starts a watch dog service for a directory. It automatically reloads the
+     * AuthorizationFramework if there was a change.
+     *
+     * You can control start of this service by context-parameter in web.xml
+     * param-name: enableAuthorizationWatchDog
+     *
+     * @param directory root directory for plugins
+     */
+    public void startWatchDogService(File directory) {
+        if (directory == null || !directory.isDirectory() || !directory.canRead()) {
+            LOGGER.log(Level.INFO, "Watch dog cannot be started - invalid directory: {0}", directory);
+            return;
+        }
+        watchDogThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    watchDogWatcher = FileSystems.getDefault().newWatchService();
+                    Path dir = Paths.get(directory.getAbsolutePath());
+
+                    Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path d, IOException exc) throws IOException {
+                            // attach monitor
+                            d.register(watchDogWatcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+                            return CONTINUE;
+                        }
+                    });
+
+                    while (true) {
+                        final WatchKey key;
+                        try {
+                            key = watchDogWatcher.take();
+                        } catch (ClosedWatchServiceException x) {
+                            break;
+                        }
+                        boolean reload = false;
+                        for (WatchEvent<?> event : key.pollEvents()) {
+                            final WatchEvent.Kind<?> kind = event.kind();
+
+                            if (kind == ENTRY_CREATE) {
+                                reload = true;
+                            } else if (kind == ENTRY_DELETE) {
+                                reload = true;
+                            } else if (kind == ENTRY_MODIFY) {
+                                reload = true;
+                            }
+                        }
+                        if (reload) {
+                            Thread.sleep(2000); // experimental wait if file is being written right now
+                            AuthorizationFramework.getInstance().reload();
+                        }
+                        if (!key.reset()) {
+                            break;
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, "Watchdog interupted (exiting): ", ex);
+                    Thread.currentThread().interrupt();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "Watchdog (exiting): ", ex);
+                }
+            }
+        });
+        watchDogThread.start();
+    }
+
+    /**
+     * Stops the watch dog service.
+     */
+    public void stopWatchDogService() {
+        if (watchDogWatcher != null) {
+            try {
+                watchDogWatcher.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Cannot close WatchDogService: ", ex);
+            }
+        }
+        if (watchDogThread != null) {
+            watchDogThread.interrupt();
+        }
     }
 }
