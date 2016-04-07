@@ -25,10 +25,6 @@ package org.opensolaris.opengrok.configuration;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -136,30 +132,20 @@ public class Project implements Comparable<Project> {
      * doesn't belong to a project)
      */
     public static Project getProject(String path) {
-        String lpath = path;
-
-        Comparator<Project> cmp = new Comparator<Project>() {
-            @Override
-            public int compare(Project p1, Project p2) {
-                return p1.getPath().compareTo(p2.getPath());
-            }
-        };
-
-        if (File.separatorChar != '/') {
-            lpath = path.replace(File.separatorChar, '/');
-        }
-
         // Try to match each project path as prefix of the given path.
-        // This needs to be done from the longest project to the shortest
-        // otherwise we could get project mismatches.
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        List<Project> sortedProjects = new ArrayList<> (env.getProjects());
-        sortedProjects.sort(cmp);
-        Collections.reverse(sortedProjects);
+        final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project proj : sortedProjects) {
-                if (lpath.indexOf(proj.getPath()) == 0) {
-                    return proj;
+            final String lpath = path.replace(File.separatorChar, '/');
+            for (Project p : env.getProjects()) {
+                String pp = p.getPath();
+                // Check if the project's path is a prefix of the given
+                // path. It has to be an exact match, or the project's path
+                // must be immediately followed by a separator. "/foo" is
+                // a prefix for "/foo" and "/foo/bar", but not for "/foof".
+                if (lpath.startsWith(pp) &&
+                        (pp.length() == lpath.length() ||
+                         lpath.charAt(pp.length()) == '/')) {
+                    return p;
                 }
             }
         }

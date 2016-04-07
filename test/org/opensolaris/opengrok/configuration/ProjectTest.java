@@ -110,6 +110,8 @@ public class ProjectTest {
         assertEquals(bar, Project.getProject("/foo-bar"));
         assertEquals(foo, Project.getProject("/foo/blah.c"));
         assertEquals(bar, Project.getProject("/foo-bar/ha.c"));
+        assertNull(Project.getProject("/foof"));
+        assertNull(Project.getProject("/foof/ha.c"));
 
         // Make sure that the matching is not dependent on list ordering.
         Collections.reverse(projects);
@@ -117,5 +119,7 @@ public class ProjectTest {
         assertEquals(bar, Project.getProject("/foo-bar"));
         assertEquals(foo, Project.getProject("/foo/blah.c"));
         assertEquals(bar, Project.getProject("/foo-bar/ha.c"));
+        assertNull(Project.getProject("/foof"));
+        assertNull(Project.getProject("/foof/ha.c"));
     }
 }
