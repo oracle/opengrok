@@ -69,21 +69,12 @@ Note that for the IPS package *.p5p the version names are translated this way:
 
 5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
 
-   Note that the files with packages have to be gzipped otherwise github
-   upload does not allow them.
-
-6) Generate cryptographic digests for all the binaries.
-
+   Also generate cryptographic digests for all the binaries,
    e.g. using openssl:
 
      openssl dgst -sha256 <file1> <file2> ..
 
-7) Modify the download links and add the digests to
-   http://opengrok.github.io/OpenGrok/
+   and paste them next to the uploaded files.
 
-   git fetch --all
-   git checkout gh-pages
-   < now edit index.html >
-   git commit index.html
-   git push
-
+   Note that the files with packages have to be gzipped otherwise github
+   upload does not allow them.
