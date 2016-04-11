@@ -43,7 +43,7 @@ to produce the archive
 
   ant dist
   ant package
-	
+
 The command above creates both formats of package .pkg and .p5p into the directory dist
 
 
@@ -69,7 +69,14 @@ Note that for the IPS package *.p5p the version names are translated this way:
 
 5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
 
-6) Modify the download links on http://opengrok.github.io/OpenGrok/
+6) Generate cryptographic digests for all the binaries.
+
+   e.g. using openssl:
+
+     openssl dgst -sha256 <file1> <file2> ..
+
+7) Modify the download links and add the digests to
+   http://opengrok.github.io/OpenGrok/
 
    git fetch --all
    git checkout gh-pages
