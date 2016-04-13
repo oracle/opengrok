@@ -20,7 +20,9 @@
       <param-value>/var/opengrok/plugins</param-value>
       <description>
           Directory with authorization plugins.
-          Default value is /var/opengrok/plugins
+          Default value is dataRoot/../plugins 
+            (can be /var/opengrok/plugins if
+             dataRoot is /var/opengrok/data)
       </description>
   </context-param>
   

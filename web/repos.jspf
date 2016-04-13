@@ -98,7 +98,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         
                         <h2><span class="name"><%= Util.htmlize(group.getName()) %></span> <small>[<a href="#" class="projects_select_all">select all</a>]</small></h2>
                     </div>
-                        <div class="panel-body-accordion <% if(pHelper.hasFavourite(group)) { %>favourite<% } %>"
+                        <div class="panel-body-accordion <% if(pHelper.hasFavourite(group)) { %> favourite<% } %>"
                         <% if(pHelper.hasFavourite(group)) { %>data-accordion-visible="true"<% } %>>
                 <%
                 if(pHelper.getRepositories(group).size() > 0 ) {
@@ -181,8 +181,8 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             </h2>
                         </div>
                     <% } %>
-                    <div class="panel-body<% if(groups.size() > 0) {%>-accordion<% } %> <% if(pHelper.hasUngroupedFavourite()) { %>favourite<% } %>"
-                        <% if(pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>">
+                    <div class="panel-body<% if(groups.size() > 0) {%>-accordion<% } %> <% if(pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
+                        <% if(pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
                         <table>
                             <thead>
                         <tr>

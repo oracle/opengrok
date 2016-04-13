@@ -267,7 +267,7 @@ public final class Configuration {
         setFetchHistoryWhenNotInCache(true);
         setHandleHistoryOfRenamedFiles(true);
         setRevisionMessageCollapseThreshold(200);
-        setPluginDirectory("/var/opengrok/plugins");
+        setPluginDirectory(null);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -290,6 +290,12 @@ public final class Configuration {
     }
 
     public String getPluginDirectory() {
+        if (pluginDirectory == null) {
+            if (getDataRoot() == null) {
+                return PLUGIN_DIRECTORY_DEFAULT;
+            }
+            return getDataRoot() + "/../" + PLUGIN_DIRECTORY_DEFAULT;
+        }
         return pluginDirectory;
     }
 

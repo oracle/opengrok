@@ -81,7 +81,6 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
                 try (JarFile jar = new JarFile(f)) {
                     String filename = classname.replace('.', File.separatorChar) + ".class";
                     JarEntry entry = (JarEntry) jar.getEntry(filename);
-                    //TODO incorect exception handling
                     if (entry != null && entry.getName().endsWith(".class")) {
                         try (InputStream is = jar.getInputStream(entry)) {
                             byte[] bytes = loadBytes(is);
