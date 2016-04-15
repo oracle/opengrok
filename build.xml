@@ -195,6 +195,8 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaScopeParser.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptXref.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lua/LuaSymbolTokenizer.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lua/LuaXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex"/>
