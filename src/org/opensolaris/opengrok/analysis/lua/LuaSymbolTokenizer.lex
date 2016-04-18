@@ -22,7 +22,7 @@
  */
 
 /*
- * Get Golang symbols - ignores comments, strings, keywords
+ * Get Lua symbols - ignores comments, strings, keywords
  */
 
 package org.opensolaris.opengrok.analysis.lua;

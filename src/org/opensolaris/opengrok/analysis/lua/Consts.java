@@ -30,9 +30,10 @@ import java.util.Set;
   * @author Evan Kinney
   */
 public class Consts{
-    public static final Set<String> kwd = new HashSet<String>() ;
+    public static final Set<String> kwd = new HashSet<>() ;
     static {
         // Lua 5.3 Reference Manual, Chapter 3.1
+        // http://www.lua.org/manual/5.3/manual.html
         kwd.add( "and" );
         kwd.add( "break" );
         kwd.add( "do" );
