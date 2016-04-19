@@ -181,7 +181,6 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CScopeParser.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex"/>
@@ -192,7 +191,6 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/haskell/HaskellXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaScopeParser.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex"/>
@@ -221,7 +219,6 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/vb/VBXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpScopeParser.lex"/>	
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/clojure/ClojureSymbolTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/clojure/ClojureXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeXref.lex"/>

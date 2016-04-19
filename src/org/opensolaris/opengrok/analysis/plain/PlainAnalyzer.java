@@ -33,7 +33,6 @@ import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.IteratorReader;
-import org.opensolaris.opengrok.analysis.JFlexScopeParser;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
@@ -73,18 +72,9 @@ public class PlainAnalyzer extends TextAnalyzer {
         return ExpandTabsReader.wrap(super.getReader(stream), project);
     }
     
-    /**
-     * Create new scope parser for given file type. Default implementation is none.
-     * @param reader
-     * @return new instance of scope parser
-     */
-    protected JFlexScopeParser newScopeParser(Reader reader) {
-        return null;
-    }
-
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        Scopes scopes = null;
+        //Scopes scopes = null;
         doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
         String fullpath = doc.get(QueryBuilder.FULLPATH);
         if (fullpath != null && ctags != null) {
@@ -93,41 +83,21 @@ public class PlainAnalyzer extends TextAnalyzer {
                 doc.add(new TextField(QueryBuilder.DEFS, new IteratorReader(defs.getSymbols())));
                 doc.add(new TextField(QueryBuilder.REFS, getReader(src.getStream())));
                 byte[] tags = defs.serialize();
-                doc.add(new StoredField(QueryBuilder.TAGS, tags));
-                
-                /*
-                 * Parse all scopes for file if we know how
-                 */
-                if (scopesEnabled) {
-                    scopes = addScopes(doc, src);
-                }
+                doc.add(new StoredField(QueryBuilder.TAGS, tags));                
             }
         }
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
-                writeXref(in, xrefOut, scopes);
+                writeXref(in, xrefOut);
             }
-        }
-    }
-    
-    private Scopes addScopes(Document doc, StreamSource src) throws IOException {
-        Scopes scopes = null;
-        JFlexScopeParser scopeParser = newScopeParser(getReader(src.getStream()));
-        if (scopeParser != null) {
-            for (Definitions.Tag tag : defs.getTags()) {
-                if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
-                    scopeParser.parse(tag, getReader(src.getStream()));
-                }
-            }
-
-            scopes = scopeParser.getScopes();
+            
+            Scopes scopes = xref.getScopes();
             if (scopes.size() > 0) {
                 byte[] scopesSerialized = scopes.serialize();
                 doc.add(new StoredField(QueryBuilder.SCOPES, scopesSerialized));
             }
         }
-        return scopes;
     }
 
     /**
@@ -136,14 +106,14 @@ public class PlainAnalyzer extends TextAnalyzer {
      * @param in Input source
      * @param out Writer to write HTML cross-reference
      */
-    private void writeXref(Reader in, Writer out, Scopes scopes) throws IOException {
+    private void writeXref(Reader in, Writer out) throws IOException {
         if (xref == null) {
             xref = newXref(in);
         } else {
             xref.reInit(in);
         }
         xref.setDefs(defs);
-        xref.setScopes(scopes);
+        xref.setScopesEnabled(scopesEnabled);
         xref.setFoldingEnabled(foldingEnabled);
         xref.project = project;
         xref.write(out);

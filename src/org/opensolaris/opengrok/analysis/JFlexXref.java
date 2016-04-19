@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -54,9 +55,13 @@ public abstract class JFlexXref {
     public Annotation annotation;
     public Project project;
     protected Definitions defs;
-    protected Scopes scopes;
+    //protected Scopes scopes;
     private boolean scopeOpen = false;
+    private boolean scopesEnabled = false;
     private boolean foldingEnabled = false;
+    protected Scopes scopes = new Scopes();
+    protected Scope scope;
+    private int scopeLevel = 0;
     
     /**
      * EOF value returned by yylex().
@@ -184,8 +189,8 @@ public abstract class JFlexXref {
         this.defs = defs;
     }
     
-    public void setScopes(Scopes scopes) {
-        this.scopes = scopes;
+    public void setScopesEnabled(boolean scopesEnabled) {
+        this.scopesEnabled = scopesEnabled;
     }
     
     public void setFoldingEnabled(boolean foldingEnabled) {
@@ -202,6 +207,50 @@ public abstract class JFlexXref {
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
         return project == null ? "" : (amp + "project=" + project.getDescription());
+    }
+       
+    protected void startScope() {
+        if (scopesEnabled && scope == null) {
+            int line = getLineNumber();
+            List<Tag> tags = defs.getTags(line);
+            if (tags != null) {
+                for (Tag tag : tags) {
+                    if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
+                        scope = new Scope(tag.line, tag.line, tag.symbol, tag.scope, tag.signature);
+                        scopeLevel = 0;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    protected void incScope() { 
+        if (scope != null)
+            scopeLevel++;
+    }
+    protected void decScope() {
+        if (scope != null && scopeLevel > 0) {
+            scopeLevel--;
+            if (scopeLevel == 0) {
+                scope.lineTo = getLineNumber();
+                scopes.addScope(scope);
+                scope = null;
+            }
+        }
+    }
+    protected void endScope() {
+        if (scope != null && scopeLevel == 0) {
+            scope.lineTo = getLineNumber();
+            scopes.addScope(scope);
+            scope = null;
+        }
+    }
+    
+    /**
+     * Get generated scopes.
+     */
+    public Scopes getScopes() {
+        return scopes;
     }
 
     /**
@@ -431,6 +480,8 @@ public abstract class JFlexXref {
                 out.write("<span class='fold-space'>&nbsp;</span>");    
             }
         }
+        
+        startScope();
     }
 
     /**
