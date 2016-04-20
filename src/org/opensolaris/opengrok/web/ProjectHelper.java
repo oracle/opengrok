@@ -33,13 +33,26 @@ import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 
+import static org.opensolaris.opengrok.web.PageConfig.OPEN_GROK_PROJECT;
+
 /**
  * Preprocessing of projects, repositories and groups for the UI
  *
  * @author Krystof Tulinger
  */
 public final class ProjectHelper {
-
+    
+    private static final String PROJECT_HELPER_GROUPS = "project_helper_groups";
+    private static final String PROJECT_HELPER_UNGROUPED_PROJECTS = "project_helper_ungrouped_projects";
+    private static final String PROJECT_HELPER_UNGROUPED_REPOSITORIES = "project_helper_ungrouped_repositories";
+    private static final String PROJECT_HELPER_GROUPED_PROJECT_GROUP = "project_helper_grouped_project_group_";
+    private static final String PROJECT_HELPER_GROUPED_REPOSITORIES = "project_helper_grouped_repositories";
+    private static final String PROJECT_HELPER_ALLOWED_SUBGROUP = "project_helper_allowed_subgroup";
+    private static final String PROJECT_HELPER_GROUPED_REPOSITORIES_GROUP = "project_helper_grouped_repositories_group_";
+    private static final String PROJECT_HELPER_GROUPED_PROJECTS = "project_helper_grouped_projects";
+    private static final String PROJECT_HELPER_SUBGROUPS_OF = "project_helper_subgroups_of_";
+    private static final String PROJECT_HELPER_FAVOURITE_GROUP = "project_helper_favourite_group";
+    
     private PageConfig cfg;
     /**
      * Set of groups
@@ -207,21 +220,21 @@ public final class ProjectHelper {
      * @return filtered groups
      */
     public Set<Group> getGroups() {
-        return cacheGroups("project_helper_groups", groups);
+        return cacheGroups(PROJECT_HELPER_GROUPS, groups);
     }
 
     /**
      * @return filtered ungrouped projects
      */
     public Set<Project> getProjects() {
-        return cacheProjects("project_helper_ungrouped_projects", projects);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, projects);
     }
 
     /**
      * @return filtered ungrouped repositories
      */
     public Set<Project> getRepositories() {
-        return cacheProjects("project_helper_ungrouped_repositories", repositories);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, repositories);
     }
 
     /**
@@ -232,9 +245,9 @@ public final class ProjectHelper {
         if (!cfg.isAllowed(g)) {
             return new TreeSet<>();
         }
-        return cacheProjects("project_helper_grouped_project_group_" + g.getName().toLowerCase(), g.getProjects());
+        return cacheProjects(PROJECT_HELPER_GROUPED_PROJECT_GROUP + g.getName().toLowerCase(), g.getProjects());
     }
-
+    
     /**
      * @param g group
      * @return filtered group's repositories
@@ -243,21 +256,21 @@ public final class ProjectHelper {
         if (!cfg.isAllowed(g)) {
             return new TreeSet<>();
         }
-        return cacheProjects("project_helper_grouped_repositories_group_" + g.getName().toLowerCase(), g.getRepositories());
+        return cacheProjects(PROJECT_HELPER_GROUPED_REPOSITORIES_GROUP + g.getName().toLowerCase(), g.getRepositories());
     }
 
     /**
      * @return filtered grouped projects
      */
     public Set<Project> getGroupedProjects() {
-        return cacheProjects("project_helper_grouped_projects", all_projects);
+        return cacheProjects(PROJECT_HELPER_GROUPED_PROJECTS, all_projects);
     }
 
     /**
      * @return filtered grouped repositories
      */
     public Set<Project> getGroupedRepositories() {
-        return cacheProjects("project_helper_grouped_repositories", all_repositories);
+        return cacheProjects(PROJECT_HELPER_GROUPED_REPOSITORIES, all_repositories);
     }
 
     /**
@@ -265,7 +278,7 @@ public final class ProjectHelper {
      * @return filtered ungrouped projects
      */
     public Set<Project> getUngroupedProjects() {
-        return cacheProjects("project_helper_ungrouped_projects", projects);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_PROJECTS, projects);
     }
 
     /**
@@ -273,7 +286,7 @@ public final class ProjectHelper {
      * @return filtered ungrouped projects
      */
     public Set<Project> getUngroupedRepositories() {
-        return cacheProjects("project_helper_ungrouped_repositories", repositories);
+        return cacheProjects(PROJECT_HELPER_UNGROUPED_REPOSITORIES, repositories);
     }
 
     /**
@@ -317,7 +330,7 @@ public final class ProjectHelper {
         if (!cfg.isAllowed(g)) {
             return new TreeSet<>();
         }
-        return cacheGroups("project_helper_subgroups_of_" + g.getName().toLowerCase(), g.getSubgroups());
+        return cacheGroups(PROJECT_HELPER_SUBGROUPS_OF + g.getName().toLowerCase(), g.getSubgroups());
     }
 
     /**
@@ -334,19 +347,19 @@ public final class ProjectHelper {
     @SuppressWarnings(value = "unchecked")
     public boolean hasAllowedSubgroup(Group group) {
         Boolean val;
-        Map<String, Boolean> p = (Map<String, Boolean>) cfg.getRequestAttribute("project_helper_allowed_subgroup");
+        Map<String, Boolean> p = (Map<String, Boolean>) cfg.getRequestAttribute(PROJECT_HELPER_ALLOWED_SUBGROUP);
         if (p == null) {
             p = new TreeMap<String, Boolean>();
-            cfg.setRequestAttribute("project_helper_allowed_subgroup", p);
+            cfg.setRequestAttribute(PROJECT_HELPER_ALLOWED_SUBGROUP, p);
         }
         val = p.get(group.getName());
         if (val == null) {
             val = cfg.isAllowed(group);
             val = val && !filterGroups(group.getDescendants()).isEmpty();
-            p = (Map<String, Boolean>) cfg.getRequestAttribute("project_helper_allowed_subgroup");
+            p = (Map<String, Boolean>) cfg.getRequestAttribute(PROJECT_HELPER_ALLOWED_SUBGROUP);
             p.put(group.getName(), val);
         }
-        cfg.setRequestAttribute("project_helper_allowed_subgroup", p);
+        cfg.setRequestAttribute(PROJECT_HELPER_ALLOWED_SUBGROUP, p);
         return val;
     }
 
@@ -365,10 +378,10 @@ public final class ProjectHelper {
     @SuppressWarnings(value = "unchecked")
     public boolean hasFavourite(Group group) {
         Boolean val;
-        Map<String, Boolean> p = (Map<String, Boolean>) cfg.getRequestAttribute("project_helper_favourite_group");
+        Map<String, Boolean> p = (Map<String, Boolean>) cfg.getRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP);
         if (p == null) {
             p = new TreeMap<String, Boolean>();
-            cfg.setRequestAttribute("project_helper_favourite_group", p);
+            cfg.setRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP, p);
         }
         val = p.get(group.getName());
         if (val == null) {
@@ -403,10 +416,10 @@ public final class ProjectHelper {
             val = !favourite.isEmpty();
             p.put(group.getName(), val);
         }
-        cfg.setRequestAttribute("project_helper_favourite_group", p);
+        cfg.setRequestAttribute(PROJECT_HELPER_FAVOURITE_GROUP, p);
         return val;
     }
-
+    
     /**
      * Checks if the project is a favourite project
      *
@@ -414,7 +427,7 @@ public final class ProjectHelper {
      * @return true if it is favourite
      */
     public boolean isFavourite(Project project) {
-        return cfg.getCookieVals("OpenGrokProject").contains(project.getDescription());
+        return cfg.getCookieVals(OPEN_GROK_PROJECT).contains(project.getDescription());
     }
 
     /**

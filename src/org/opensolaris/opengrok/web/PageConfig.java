@@ -85,6 +85,8 @@ public final class PageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
+    public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
+    
     // TODO if still used, get it from the app context
 
     private final AuthorizationFramework authFramework;
@@ -733,10 +735,11 @@ public final class PageConfig {
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects("project", "OpenGrokProject");
+                    = getRequestedProjects("project", OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
+    
     private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {

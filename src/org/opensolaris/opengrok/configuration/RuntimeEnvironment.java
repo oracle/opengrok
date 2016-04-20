@@ -1220,6 +1220,7 @@ public final class RuntimeEnvironment {
 
     private Thread watchDogThread;
     private WatchService watchDogWatcher;
+    public static final int THREAD_SLEEP_TIME = 2000;
 
     /**
      * Starts a watch dog service for a directory. It automatically reloads the
@@ -1271,7 +1272,7 @@ public final class RuntimeEnvironment {
                             }
                         }
                         if (reload) {
-                            Thread.sleep(2000); // experimental wait if file is being written right now
+                            Thread.sleep(THREAD_SLEEP_TIME); // experimental wait if file is being written right now
                             AuthorizationFramework.getInstance().reload();
                         }
                         if (!key.reset()) {
