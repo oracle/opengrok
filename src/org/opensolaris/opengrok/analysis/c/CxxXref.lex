@@ -64,9 +64,9 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 
 %%
 <YYINITIAL>{
- \{     { incScope(); }
- \}     { decScope(); }
- \;     { endScope(); }
+ \{     { incScope(); writeUnicodeChar(yycharat(0)); }
+ \}     { decScope(); writeUnicodeChar(yycharat(0)); }
+ \;     { endScope(); writeUnicodeChar(yycharat(0)); }
 
 {Identifier} {
     String id = yytext();

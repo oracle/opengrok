@@ -61,6 +61,7 @@ public abstract class JFlexXref {
     private boolean foldingEnabled = false;
     protected Scopes scopes = new Scopes();
     protected Scope scope;
+    protected Scope prevScope;
     private int scopeLevel = 0;
     
     /**
@@ -241,7 +242,7 @@ public abstract class JFlexXref {
     protected void endScope() {
         if (scope != null && scopeLevel == 0) {
             scope.lineTo = getLineNumber();
-            scopes.addScope(scope);
+            scopes.addScope(scope);            
             scope = null;
         }
     }
@@ -430,12 +431,42 @@ public abstract class JFlexXref {
         String iconId = null;
         int line = getLineNumber() + 1;
         boolean skipNl = false;
-        setLineNumber(line);
+        setLineNumber(line);               
         
-        if (scopes != null) {
-            Scope prevScope = scopes.getScope(line-1);
-            Scope newScope = scopes.getScope(line);
-            String scopeId = generateId(newScope);
+        startScope();
+
+        if (scopeOpen && scope == null) {
+            scopeOpen = false;
+            out.write("</span>");
+            skipNl = true;
+        } else if (scope != null) {
+            String scopeId = generateId(scope);
+            if (scope.lineFrom == line) {
+                out.write("<span id='");
+                out.write(scopeId);
+                out.write("' class='scope-head'><span class='scope-signature'>");
+                out.write(htmlize(scope.getName() + scope.signature));
+                out.write("</span>");
+                iconId = scopeId + "_fold_icon";
+                skipNl = true;
+            } else if (scope.lineFrom == line - 1) {
+                if (scopeOpen) {
+                    out.write("</span>");
+                }
+                
+                out.write("<span id='");
+                out.write(scopeId);
+                out.write("_fold' class='scope-body'>");
+                skipNl = true;
+            }
+            scopeOpen = true;
+        }
+
+        /*        
+        if (scope != null) {
+            //Scope prevScope = scopes.getScope(line-1);
+            //Scope newScope = scopes.getScope(line);
+            String scopeId = generateId(scope);
 
             if (prevScope != newScope) {
                 if (scopeOpen) {
@@ -467,6 +498,8 @@ public abstract class JFlexXref {
                 skipNl = true;
             }
         }
+        */
+        
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
             getProjectPostfix(false), skipNl);
         
@@ -479,9 +512,7 @@ public abstract class JFlexXref {
             } else {
                 out.write("<span class='fold-space'>&nbsp;</span>");    
             }
-        }
-        
-        startScope();
+        }        
     }
 
     /**
