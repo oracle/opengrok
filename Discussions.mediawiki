@@ -4,7 +4,12 @@ IRC channel #opengrok on [http://www.freenode.net Freenode]
 
 === Mailing lists ===
 
-The mailing lists are available on http://java.net/projects/opengrok/lists
+There are 2 mailing lists:
+
+* opengrok-users@yahoogroups.com (user topics)
+* opengrok-dev@yahoogroups.com (developers' discussion)
+
+To subscribe, send email to <mailing_list_name>-subscribe@yahoogroups.com
 
 ==== Old archives ====
 
