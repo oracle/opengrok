@@ -971,9 +971,10 @@ Vladimir Kotal, Oracle. http://blogs.oracle.com/vlad/
 12. Contact us
 --------------
 
-Feel free to participate in discussion on discuss@opengrok.java.net.
+Feel free to participate in discussion on the mailing lists:
 
-You can subscribe via web interface on:
+  opengrok-users@yahoogroups.com (user topics)
+  opengrok-dev@yahoogroups.com (developers' discussion)
 
-  http://java.net/projects/opengrok/lists
+To subscribe, send email to <mailing_list_name>-subscribe@@yahoogroups.com
 
