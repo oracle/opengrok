@@ -74,7 +74,6 @@ public class PlainAnalyzer extends TextAnalyzer {
     
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        //Scopes scopes = null;
         doc.add(new TextField(QueryBuilder.FULL, getReader(src.getStream())));
         String fullpath = doc.get(QueryBuilder.FULLPATH);
         if (fullpath != null && ctags != null) {

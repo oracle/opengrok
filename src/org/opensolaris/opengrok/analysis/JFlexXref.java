@@ -55,7 +55,6 @@ public abstract class JFlexXref {
     public Annotation annotation;
     public Project project;
     protected Definitions defs;
-    //protected Scopes scopes;
     private boolean scopeOpen = false;
     private boolean scopesEnabled = false;
     private boolean foldingEnabled = false;
@@ -431,7 +430,7 @@ public abstract class JFlexXref {
         String iconId = null;
         int line = getLineNumber() + 1;
         boolean skipNl = false;
-        setLineNumber(line);               
+        setLineNumber(line);
         
         startScope();
 
@@ -512,7 +511,7 @@ public abstract class JFlexXref {
             } else {
                 out.write("<span class='fold-space'>&nbsp;</span>");    
             }
-        }        
+        }
     }
 
     /**
