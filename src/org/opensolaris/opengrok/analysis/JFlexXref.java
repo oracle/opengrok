@@ -55,12 +55,12 @@ public abstract class JFlexXref {
     public Annotation annotation;
     public Project project;
     protected Definitions defs;
-    private boolean scopeOpen = false;
     private boolean scopesEnabled = false;
     private boolean foldingEnabled = false;
+
+    private boolean scopeOpen = false;
     protected Scopes scopes = new Scopes();
     protected Scope scope;
-    protected Scope prevScope;
     private int scopeLevel = 0;
     
     /**
@@ -183,6 +183,11 @@ public abstract class JFlexXref {
     public final void reInit(Reader reader) {
         this.yyreset(reader);
         annotation = null;
+        
+        scopes = new Scopes();
+        scope = null;
+        scopeLevel = 0;
+        scopeOpen = false;
     }
 
     public void setDefs(Definitions defs) {
@@ -461,44 +466,6 @@ public abstract class JFlexXref {
             scopeOpen = true;
         }
 
-        /*        
-        if (scope != null) {
-            //Scope prevScope = scopes.getScope(line-1);
-            //Scope newScope = scopes.getScope(line);
-            String scopeId = generateId(scope);
-
-            if (prevScope != newScope) {
-                if (scopeOpen) {
-                    scopeOpen = false;
-                    out.write("</span>");
-                    skipNl = true;
-                }
-
-                if (newScope != scopes.GLOBAL_SCOPE) {
-                    out.write("<span id='");
-                    out.write(scopeId);
-                    out.write("' class='scope-head'><span class='scope-signature'>");
-                    out.write(htmlize(newScope.getName() + newScope.signature));
-                    out.write("</span>");
-                    scopeOpen = true;
-                    iconId = scopeId + "_fold_icon";
-                    skipNl = true;
-                }      
-            } else if (newScope != scopes.GLOBAL_SCOPE &&
-                    line == newScope.lineFrom+1) {
-                if (scopeOpen) {
-                    out.write("</span>");
-                }
-                
-                scopeOpen = true;
-                out.write("<span id='");
-                out.write(scopeId);
-                out.write("_fold' class='scope-body'>");
-                skipNl = true;
-            }
-        }
-        */
-        
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
             getProjectPostfix(false), skipNl);
         
