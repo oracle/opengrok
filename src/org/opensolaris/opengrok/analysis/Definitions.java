@@ -135,6 +135,27 @@ public class Definitions implements Serializable {
     public List<Tag> getTags() {
         return tags;
     }
+    
+    /**
+     * Get a list of all tags on given line.
+     * @param line line number
+     * @return list of tags
+     */
+    public List<Tag> getTags(int line) {
+        LineTagMap line_map = line_maps.get(line);
+        List<Tag> result = null;
+
+        if (line_map != null) {
+            result = new ArrayList<>();
+            for (Set<Tag> tags : line_map.sym_tags.values()) {
+                for (Tag tag : tags) {
+                    result.add(tag);
+                }
+            }
+        }        
+        
+        return result;
+    }
 
     /**
      * Class that represents a single tag.

@@ -72,6 +72,9 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
 %%
 <YYINITIAL>{
+ \{     { incScope(); writeUnicodeChar(yycharat(0)); }
+ \}     { decScope(); writeUnicodeChar(yycharat(0)); }
+ \;     { endScope(); writeUnicodeChar(yycharat(0)); }
 
 {Identifier} {
     String id = yytext();
