@@ -70,7 +70,7 @@ called DATA_ROOT.
 
 OpenGrok has a concept of Projects - one project is one directory underneath
 SRC_ROOT directory which usually contains a checkout of a project sources.
-(this can be branch, version, ...) 
+(this can be branch, version, ...)
 
 Projects effectively replace the need to have more web applications, each with
 opengrok .war file. Instead it leaves you with one indexer and one web
@@ -161,13 +161,13 @@ of the tasks. It has been tested on Solaris and Linux distributions.
 First please change to opengrok directory where the OpenGrok shell script is
 stored (can vary on your system).
 
-Note that now you might need to change to user which owns the target 
+Note that now you might need to change to user which owns the target
 directories for data, e.g. on Solaris you'd do:
 
   # pfexec su - webservd
   $ cd /usr/opengrok/bin
 
-and run 
+and run
 
   $ ./OpenGrok deploy
 
@@ -232,14 +232,14 @@ E.g. if opengrok data directory is /tank/opengrok and source root is
 in /tank/source then to get more verbosity run the indexer as:
 
   $ OPENGROK_VERBOSE=true OPENGROK_INSTANCE_BASE=/tank/opengrok \
-       ./OpenGrok index /tank/source 
+       ./OpenGrok index /tank/source
 
 Since above will also change default location of config file, beforehands(or
 restart your web container after creating this symlink) I suggest doing
 below for our case of having opengrok instance in /tank/opengrok :
 
   $ ln -s /tank/opengrok/etc/configuration.xml \
-      /var/opengrok/etc/configuration.xml 
+      /var/opengrok/etc/configuration.xml
 
 More customizations can be found inside the script, you just need to
 have a look at it, eventually create a configuration out of it and use
@@ -316,7 +316,7 @@ service like this:
        opengrok/srcdir="/absolute/path/to/your/sourcetree"
   # svccfg -s opengrok setprop opengrok/maxmemory="2048"
 
-Then make the service start the indexing, at this point it would be nice if 
+Then make the service start the indexing, at this point it would be nice if
 the web application is already running.
 
 Now enable the service:
@@ -326,7 +326,7 @@ Now enable the service:
 Note that this will enable tomcat6 service as dependency.
 
 When the service starts indexing for first time, it's already enabled and
-depending on tomcat6, so at this point the web application should be 
+depending on tomcat6, so at this point the web application should be
 already running.
 
 Note that indexing is not done when the opengrok service is disabled.
@@ -424,13 +424,13 @@ file named source.war, you can change it as follows:
 
     * Option 1: Unzip the file to TOMCAT/webapps/source/ directory and
      change the source/WEB-INF/web.xml and other static html files like
-     index.html to customize to your project. 
-    
+     index.html to customize to your project.
+
     * Option 2: Extract the web.xml file from source.war file
 
      $ unzip source.war WEB-INF/web.xml
 
-     edit web.xml and re-package the jar file. 
+     edit web.xml and re-package the jar file.
 
      $ zip -u source.war WEB-INF/web.xml
 
@@ -440,8 +440,8 @@ file named source.war, you can change it as follows:
 
      Copy source.war to TOMCAT/webapps
 
-     When invoking OpenGrok to build the index, use -w <webapp> to set the 
-     context. If you change this(or set using OPENGROK_WEBAPP_CONTEXT) later, 
+     When invoking OpenGrok to build the index, use -w <webapp> to set the
+     context. If you change this(or set using OPENGROK_WEBAPP_CONTEXT) later,
      FULL clean reindex is needed.
 
      After the index is built, there's a couple different ways to set the
@@ -516,17 +516,17 @@ Other:
   Solaris 11:
 
     Use one of the following methods to start the database:
-  
+
     a) via SMF (preferred):
-  
+
        # svcadm enable javadb
-  
+
     b) from command line:
-  
+
        $ mkdir -p $DATA_ROOT/derby
        $ java -Dderby.system.home=$DATA_ROOT/derby \
            -jar /opt/SUNWjavadb/lib/derbynet.jar start
-  
+
   Debian:
 
     $ mkdir -p $DATA_ROOT/derby
@@ -534,7 +534,7 @@ Other:
           -jar /usr/lib/jvm/java-6-sun/db/lib/derbynet.jar start
 
 
-2) Copy derbyclient.jar to the lib directory 
+2) Copy derbyclient.jar to the lib directory
 
   The derbyclient.jar is provided with Java DB installation.
   The lib directory is the one where opengrok.jar is located.
@@ -583,8 +583,8 @@ the JavaDB data directory and add this line to it:
 OpenGrok script doesn't support this out of box, so you'd need to add it there.
 Usually to StdInvocation() function after line -jar ${OPENGROK_JAR} .
 It would look like this:
--A cs:org.opensolaris.opengrok.analysis.PlainAnalayzer 
-(this will map extension .cs to PlainAnalyzer) 
+-A cs:org.opensolaris.opengrok.analysis.PlainAnalayzer
+(this will map extension .cs to PlainAnalyzer)
 You should even be able to override OpenGroks analyzers using this option.
 
 
@@ -640,7 +640,7 @@ Deploy the modified .war file in glassfish/Sun Java App Server:
   * Option 2: Copy the source.war file to
     GLASSFISH/domains/YOURDOMAIN/autodeploy directory, glassfish will try
     to deploy it "auto magically".
-    
+
   * Option 3: Use cli from GLASSFISH directory:
 
     # ./bin/asadmin deploy /path/to/source.war
@@ -697,11 +697,11 @@ being executed on) under the dist/ directory.
 9.1 Unit testing
 ----------------
 
-Note: For full coverage report your system has to provide proper junit test 
+Note: For full coverage report your system has to provide proper junit test
 environment, that would mean:
 
   - you have to use Ant 1.9 and above
-  - at least junit-4.12.jar has to be in ant's classpath (e.g. in ./lib)    
+  - at least junit-4.12.jar has to be in ant's classpath (e.g. in ./lib)
 
   - install derby.jar to ant's classpath so that Java DB tests can be run
   - your PATH must contain directory with exuberant ctags binary
@@ -722,7 +722,7 @@ occurences in the TESTS-TestSuites.xml file produced by the test run.
 ------------------
 
 If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
-you have to download Findbugs to your machine, and install it where you have 
+you have to download Findbugs to your machine, and install it where you have
 checked out your OpenGrok source code, under the lib/findbugs directory,
 like this:
 
@@ -785,7 +785,7 @@ e.g. like this:
 
 You also have to create symbolic links to the jar files:
 
-   $ cd checkstyle   
+   $ cd checkstyle
    $ ln -s checkstyle-6.8-all.jar checkstyle-all.jar
 
 To run checkstyle on the source code, just run ant checkstyle:
@@ -796,7 +796,7 @@ Output from the command will be stored in the checkstyle directory.
 
 If you want to install checkstyle some other place than ~/.ant/lib, you can
 untar the .tar.gz file to a directory, and use the checkstyle.home property
-to tell ant where to find checkstyle, like this (if you have installed 
+to tell ant where to find checkstyle, like this (if you have installed
 checkstyle under the lib directory):
 
   $ ant checkstyle -Dcheckstyle.home=lib/checkstyle
@@ -824,7 +824,7 @@ Output from the command will be stored in the pmd subdirectory:
 
 If you want to install PMD some other place than ~/.ant/lib, you can
 unzip the .zip file to a directory, and use the pmd.home property
-to tell ant where to find PMD, like this (if you have installed 
+to tell ant where to find PMD, like this (if you have installed
 PMD under the ./ext_lib directory):
 
   $ ant pmd -Dpmd.home=ext_lib/pmd
@@ -864,14 +864,14 @@ Output is stored in the jdepend directory:
 9.7 Using SonarQube
 -------------------
 
-Use a sonar runner with included sonar-project.properties properties, 
+Use a sonar runner with included sonar-project.properties properties,
 e.g. using bash:
 
   $ cd <checkout_dir> # it has to contain sonar-project.properties!
   $ export SONAR_RUNNER_OPTS="-Xmx768m -XX:MaxPermSize=256m"
   $ export SERVERIP=10.163.26.78
   $ ~//Projects/sonar-runner-2.3/bin/sonar-runner \
-    -Dsonar.host.url=http://${SERVERIP}:9000 
+    -Dsonar.host.url=http://${SERVERIP}:9000
     -Dsonar.jdbc.url=jdbc:h2:tcp://${SERVERIP}:9092/sonar
 
 9.8 Using Travis CI
@@ -886,26 +886,28 @@ OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok
 10. Tuning OpenGrok for large code bases
 ---------------------------------------
 
-While indexing big source repos you might consider using ZFS filesystem to give 
+While indexing big source repos you might consider using ZFS filesystem to give
 you advantage of datasets which can be flipped over or cloned when needed.
-If the machine is strong enough it will also give you an option to 
+If the machine is strong enough it will also give you an option to
 incrementally index in parallel to having the current sources and index in sync.
-(So tomcat sees certain zfs datasets, then you just stop it, flip datasets to 
-the ones that were updated by SCM/index and start tomcat again - outage is 
+(So tomcat sees certain zfs datasets, then you just stop it, flip datasets to
+the ones that were updated by SCM/index and start tomcat again - outage is
 minimal, sources+indexes are ALWAYS in sync, users see the truth)
 
-OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of 
+OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of
 lucene docs indexing(when to flush to disk).
 It also uses default 32bit JRE.
 This MIGHT NOT be enough. You might need to consider this:
 Lucene 4.x sets indexer defaults:
+
  DEFAULT_RAM_PER_THREAD_HARD_LIMIT_MB = 1945;
  DEFAULT_MAX_THREAD_STATES = 8;
- DEFAULT_RAM_BUFFER_SIZE_MB = 16.0; 
+ DEFAULT_RAM_BUFFER_SIZE_MB = 16.0;
+
  - which might grow as big as 16GB (though DEFAULT_RAM_BUFFER_SIZE_MB shouldn't
  really allow it, but keep it around 1-2GB)
 
- - the lucenes RAM_BUFFER_SIZE_MB can be tuned now using the parameter -m, so 
+ - the lucenes RAM_BUFFER_SIZE_MB can be tuned now using the parameter -m, so
 running a 8GB 64 bit server JDK indexer with tuned docs flushing(on Solaris 11):
 
  # export JAVA=/usr/java/bin/`isainfo -k`/java
@@ -914,7 +916,7 @@ running a 8GB 64 bit server JDK indexer with tuned docs flushing(on Solaris 11):
  # OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 256" ./OpenGrok index /source
 
 Tomcat by default also supports only small deployments. For bigger ones you
-MIGHT need to increase its heap which might necessitate the switch to 64-bit 
+MIGHT need to increase its heap which might necessitate the switch to 64-bit
 Java. It will most probably be the same for other containers as well.
 For tomcat you can easily get this done by creating conf/setenv.sh:
 
@@ -931,7 +933,7 @@ For tomcat you can easily get this done by creating conf/setenv.sh:
  export JAVA_OPTS
 
 
-For tomcat you might also hit a limit for http header size (we use it to send 
+For tomcat you might also hit a limit for http header size (we use it to send
 the project list when requesting search results):
  - increase(add) in conf/server.xml maxHttpHeaderSize
   connectionTimeout="20000"
@@ -946,8 +948,12 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestFieldSize 65536
 
 Open File hard and soft limits
-The initial index creation process is resource intensive and often the error "java.io.IOException: error=24, Too many open files" appears in the logs. To avoid this increase the ulimit value to a higher number. 
-It is noted that the hard and soft limit for open files of 10240 works for mid sized repositores and so the recommendation is to start with 10240.
+The initial index creation process is resource intensive and often the error
+"java.io.IOException: error=24, Too many open files" appears in the logs. To
+avoid this increase the ulimit value to a higher number.
+
+It is noted that the hard and soft limit for open files of 10240 works for mid
+sized repositores and so the recommendation is to start with 10240.
 
 11. Authors
 -----------
