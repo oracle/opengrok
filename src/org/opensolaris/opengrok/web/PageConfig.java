@@ -51,6 +51,8 @@ import org.apache.commons.jrcs.diff.DifferentiationFailedException;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.ExpandTabsReader;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
+import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.Annotation;
@@ -83,8 +85,11 @@ public final class PageConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PageConfig.class);
 
+    public static final String OPEN_GROK_PROJECT = "OpenGrokProject";
+    
     // TODO if still used, get it from the app context
 
+    private final AuthorizationFramework authFramework;
     private RuntimeEnvironment env;
     private IgnoredNames ignoredNames;
     private String path;
@@ -113,8 +118,27 @@ public final class PageConfig {
     private boolean lastEditedDisplayMode = true;
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
-    private final HttpServletRequest req;
+    private HttpServletRequest req;
 
+    /**
+     * Sets current request's attribute.
+     * 
+     * @param attr attribute
+     * @param val value
+     */
+    public void setRequestAttribute(String attr, Object val) {
+        this.req.setAttribute(attr, val);
+    }
+    
+    /**
+     * Gets current request's attribute.
+     * @param attr attribute
+     * @return Object attribute value or null if attribute does not exist
+     */
+    public Object getRequestAttribute(String attr) {
+        return this.req.getAttribute(attr);
+    }    
+    
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
      * generate.
@@ -711,10 +735,11 @@ public final class PageConfig {
     public SortedSet<String> getRequestedProjects() {
         if (requestedProjects == null) {
             requestedProjects
-                    = getRequestedProjects("project", "OpenGrokProject");
+                    = getRequestedProjects("project", OPEN_GROK_PROJECT);
         }
         return requestedProjects;
     }
+    
     private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     private static void splitByComma(String value, List<String> result) {
@@ -785,31 +810,37 @@ public final class PageConfig {
         if (projects == null) {
             return set;
         }
-        if (projects.size() == 1) {
+        if (projects.size() == 1 && authFramework.isAllowed(req, projects.get(0))) {
             set.add(projects.get(0).getDescription());
             return set;
         }
         List<String> vals = getParamVals(paramName);
         for (String s : vals) {
-            if (Project.getByDescription(s) != null) {
+            Project x = Project.getByDescription(s);
+            if (x != null && authFramework.isAllowed(req, x)) {
                 set.add(s);
             }
         }
         if (set.isEmpty()) {
             List<String> cookies = getCookieVals(cookieName);
             for (String s : cookies) {
-                if (Project.getByDescription(s) != null) {
+                Project x = Project.getByDescription(s);
+                if (x != null && authFramework.isAllowed(req, x)) {
                     set.add(s);
                 }
             }
         }
         if (set.isEmpty()) {
             Project defaultProject = env.getDefaultProject();
-            if (defaultProject != null) {
+            if (defaultProject != null && authFramework.isAllowed(req, defaultProject)) {
                 set.add(defaultProject.getDescription());
             }
         }
         return set;
+    }
+    
+    public ProjectHelper getProjectHelper() {
+        return ProjectHelper.getInstance(this);
     }
 
     /**
@@ -1209,6 +1240,7 @@ public final class PageConfig {
 
     private PageConfig(HttpServletRequest req) {
         this.req = req;
+        this.authFramework = AuthorizationFramework.getInstance();
     }
 
     /**
@@ -1228,8 +1260,30 @@ public final class PageConfig {
         }
         sr.removeAttribute(ATTR_NAME);
         cfg.env = null;
+        cfg.req = null;
         if (cfg.eftarReader != null) {
             cfg.eftarReader.close();
         }
+        ProjectHelper.cleanup();
     }
+    
+    /**
+     * Checks if current request is allowed to access project.
+     * @param t project
+     * @return true if yes
+     */
+    public boolean isAllowed(Project t) {
+        return this.authFramework.isAllowed(this.req, t);
+    }
+    
+    /**
+     * Checks if current request is allowed to access group.
+     * @param g group
+     * @return true if yes
+     */
+    public boolean isAllowed(Group g) {
+        return this.authFramework.isAllowed(this.req, g);
+    }
+    
+
 }

@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project name="OpenGrok" default="jar" basedir=".">
@@ -30,6 +30,7 @@ Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
 
     <property name="test.repositories" value="../testdata/repositories"/>
     <property name="test.sources" value="../testdata/sources"/>
+    <property name="test.plugins" value="../testdata/plugins"/>
     <property name="test.cvs" value="${test.repositories}/cvs_test"/>
     <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
     <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
@@ -38,10 +39,11 @@ Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
     <property name="test.razor.repo" value="../ext/SampleRazorRepository/"/>
+    <property name="test.plugins_jar" value="${test.plugins}/plugins.jar"/>
     <property name="build.test.reposroots" value="target/reposroot"/>
     <property name="build.test.classes.dir" value="target/test-classes"/>
 
-                 
+
     <path id="lib.search.path">
         <pathelement path="${user.home}/.ant/lib"/>
         <pathelement path="${java.class.path}"/>
@@ -122,6 +124,10 @@ Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
                 excludes="mercurial/hg/**, mercurial/hgignore, git/git"
                 update="false"
                 defaultexcludes="no"/>
+
+        <copy 
+            file="${test.plugins_jar}" 
+            tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar" />
 
         <antcall target="-delete-generated-repository-files"/>
     </target>

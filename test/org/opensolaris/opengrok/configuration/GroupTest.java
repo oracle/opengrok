@@ -27,8 +27,8 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.TreeSet;
 import junit.framework.AssertionFailedError;
 import org.junit.Test;
 
@@ -160,7 +160,7 @@ public class GroupTest {
         assertFalse(g3.match(t));
 
         t.setDescription("xyz");
-        g1.setSubgroups(new ArrayList<Group>());
+        g1.setSubgroups(new TreeSet<Group>());
         g1.getSubgroups().add(g2);
         g2.getSubgroups().add(g3);
 

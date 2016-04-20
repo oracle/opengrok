@@ -220,5 +220,4 @@ public class Project implements Comparable<Project> {
                 && (this.description == null
                 || !this.description.toUpperCase(Locale.getDefault()).equals(other.description.toUpperCase(Locale.getDefault()))));
     }
-
 }

@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
@@ -102,6 +102,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
 
     <property name="test.repositories" value="testdata/repositories"/>
     <property name="test.sources" value="testdata/sources"/>
+    <property name="test.plugins" value="testdata/plugins"/>
     <property name="test.cvs" value="${test.repositories}/cvs_test"/>
     <property name="test.cvs.repo" value="${test.cvs}/cvsrepo"/>
     <property name="test.cvs.root" value="${test.cvs}/cvsroot"/>
@@ -109,6 +110,7 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
     <property name="test.git" value="${test.repositories}/git"/>
     <property name="test.svn" value="${test.repositories}/svn"/>
     <property name="test.razor" value="${test.repositories}/razor"/>
+    <property name="test.plugins_jar" value="${test.plugins}/plugins.jar"/>
 
     <property name="mvn.repository" value="http://repo1.maven.org/maven2"/>
 
@@ -666,11 +668,29 @@ Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
             </not>
         </condition>
     </target>
-
-    <target depends="create_repos" name="-post-compile-test">
+    
+    <target name="check_plugins_jar" description="check if plugins.jar was generated">
+        <available
+            file="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar"
+            type="file" property="plugins_exists">
+        </available>
+        <condition property="plugins_missing">
+            <not>
+                <isset property="plugins_exists" />
+            </not>
+        </condition>
     </target>
 
-    <target depends="create_repos" name="-post-compile-test-single">
+    <target depends="create_repos, create_plugins" name="-post-compile-test">
+    </target>
+
+    <target depends="create_repos, create_plugins" name="-post-compile-test-single">
+    </target>
+    
+    <target depends="check_plugins_jar" name="create_plugins" if="plugins_missing">
+        <copy 
+            file="${test.plugins_jar}" 
+            tofile="${build.test.classes.dir}/org/opensolaris/opengrok/authorization/plugins.jar" />
     </target>
 
     <target depends="check_repositories_zip" name="create_repos" if="repos_missing">

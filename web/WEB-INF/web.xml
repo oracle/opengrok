@@ -14,9 +14,38 @@
     <description>An address where OpenGrok can receive new configuration</description>
   </context-param>
 
+  <context-param>
+      <param-name>authorizationPluginDirectory</param-name>
+      <param-value>/var/opengrok/plugins</param-value>
+      <description>
+          Directory with authorization plugins.
+          Default value is dataRoot/../plugins 
+            (can be /var/opengrok/plugins if dataRoot is /var/opengrok/data).
+      </description>
+  </context-param>
+  
+  <context-param>
+      <param-name>enableAuthorizationWatchDog</param-name>
+      <param-value>false</param-value>
+      <description>
+          Enable watching the plugin directory for changes in real time.
+          Suitable for development.
+      </description>
+  </context-param>
+  
   <listener>
    <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
   </listener>
+
+  <filter>
+      <filter-name>AuthorizationFilter</filter-name>
+      <filter-class>org.opensolaris.opengrok.web.AuthorizationFilter</filter-class>
+  </filter>
+      
+  <filter-mapping>
+      <filter-name>AuthorizationFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+  </filter-mapping>    
     
   <servlet>
     <servlet-name>search</servlet-name>

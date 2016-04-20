@@ -49,7 +49,7 @@
                     });
                     return false
                 });
-
+                
                 inner.options.parent.find(inner.options.showAllSelector).click(function (e) {
                     inner.$pannels.data("accordion-visible", true).show()
                     inner.options.parent.find(inner.options.hideAllSelector).show()
@@ -98,7 +98,9 @@ $(document).ready(function () {
             return false
         }
 
-        multiselect.find("option").attr("selected", false)
+        if(! e.ctrlKey) {
+            multiselect.find("option").attr("selected", false)
+        }
         projects.each(function () {
             var key = $(this).find(".name")
             if (!key.length)
