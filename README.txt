@@ -976,5 +976,5 @@ Feel free to participate in discussion on the mailing lists:
   opengrok-users@yahoogroups.com (user topics)
   opengrok-dev@yahoogroups.com (developers' discussion)
 
-To subscribe, send email to <mailing_list_name>-subscribe@@yahoogroups.com
+To subscribe, send email to <mailing_list_name>-subscribe@yahoogroups.com
 
