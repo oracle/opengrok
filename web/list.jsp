@@ -21,7 +21,8 @@ CDDL HEADER END
 Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%>
+<%@page import="
 java.io.BufferedInputStream,
 java.io.BufferedReader,
 java.io.FileInputStream,
@@ -29,6 +30,7 @@ java.io.FileReader,
 java.io.InputStream,
 java.io.InputStreamReader,
 java.io.Reader,
+java.net.URLEncoder,
 java.util.ArrayList,
 java.util.Arrays,
 java.util.List,
@@ -91,8 +93,8 @@ document.pageReady.push(function() { pageReadyList();});
                 // update cookie
                 cookieValue = cookieValue.length() == 0
                     ? activeProject.getDescription()
-                    : activeProject.getDescription() + '/' + cookieValue;
-                Cookie cookie = new Cookie("OpenGrokProject", cookieValue);
+                    : activeProject.getDescription() + ',' + cookieValue;
+                Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');
                 response.addCookie(cookie);

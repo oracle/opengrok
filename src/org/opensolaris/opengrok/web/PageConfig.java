@@ -29,8 +29,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -767,7 +769,12 @@ public final class PageConfig {
         if (cookies != null) {
             for (int i = cookies.length - 1; i >= 0; i--) {
                 if (cookies[i].getName().equals(cookieName)) {
-                    splitByComma(cookies[i].getValue(), res);
+                    try {
+                        String value = URLDecoder.decode(cookies[i].getValue(), "utf-8");
+                        splitByComma(value, res);
+                    } catch (UnsupportedEncodingException ex) {
+                        LOGGER.log(Level.INFO, "decoding cookie failed", ex);
+                    }
                 }
             }
         }
