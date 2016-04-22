@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page session="false" errorPage="error.jsp" import="
@@ -69,7 +69,7 @@ include file="projects.jspf"
     } else {
         cfg.setTitle("Search");
     }
-    response.addCookie(new Cookie("OpenGrokSorting", searchHelper.order.toString()));
+    response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
 %><%@
 
 include file="httpheader.jspf"
