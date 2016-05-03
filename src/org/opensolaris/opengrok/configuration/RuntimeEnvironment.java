@@ -88,6 +88,7 @@ public final class RuntimeEnvironment {
     private static ExecutorService historyRenamedExecutor = null;
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
+    private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -1100,10 +1101,11 @@ public final class RuntimeEnvironment {
                 } else {
                     group.addRepository(project);
                 }
+                project.addGroup(group);
             }
         }
     }
-
+    
     /**
      * Sets the configuration and performs necessary actions.
      *
