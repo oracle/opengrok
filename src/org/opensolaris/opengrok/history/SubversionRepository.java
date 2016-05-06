@@ -162,7 +162,8 @@ public class SubversionRepository extends Repository {
      *
      * @param file The file to retrieve history for
      * @param sinceRevision the revision number immediately preceding the first
-     * revision we want, or {@code null} to fetch the entire history
+     *                      revision we want, or {@code null} to fetch the entire
+     *                      history
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision) {
@@ -199,7 +200,7 @@ public class SubversionRepository extends Repository {
             cmd.add(escapeFileName(filename));
         }
 
-        return new Executor(cmd, new File(directoryName));
+        return new Executor(cmd, new File(directoryName), sinceRevision != null);
     }
 
     @Override

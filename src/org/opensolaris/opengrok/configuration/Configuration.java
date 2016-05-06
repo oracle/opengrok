@@ -133,7 +133,7 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String, String> cmds;
     private int tabSize;
-    private int command_timeout;
+    private int command_timeout; // in seconds
     private boolean scopesEnabled;
     private boolean foldingEnabled;
 

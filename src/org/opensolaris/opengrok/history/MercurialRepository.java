@@ -139,11 +139,11 @@ public class MercurialRepository extends Repository {
      * file or directory.
      *
      * @param file The file or directory to retrieve history for
-     * @param changeset the oldest changeset to return from the executor, or
-     * {@code null} if all changesets should be returned
+     * @param sinceRevision the oldest changeset to return from the executor, or
+     *                  {@code null} if all changesets should be returned
      * @return An Executor ready to be started
      */
-    Executor getHistoryLogExecutor(File file, String changeset)
+    Executor getHistoryLogExecutor(File file, String sinceRevision)
             throws HistoryException, IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
@@ -167,15 +167,15 @@ public class MercurialRepository extends Repository {
 
         // If this is non-default branch we would like to get the changesets
         // on that branch and also any changesets from the parent branch(es).
-        if (changeset != null) {
+        if (sinceRevision != null) {
             cmd.add("-r");
-            String[] parts = changeset.split(":");
+            String[] parts = sinceRevision.split(":");
             if (parts.length == 2) {
                 cmd.add("reverse(" + parts[0] + "::'" + getBranch() + "')");
             } else {
                 throw new HistoryException(
                         "Don't know how to parse changeset identifier: "
-                        + changeset);
+                        + sinceRevision);
             }
         } else {
             cmd.add("-r");
@@ -193,7 +193,7 @@ public class MercurialRepository extends Repository {
             cmd.add(filename);
         }
 
-        return new Executor(cmd, new File(directoryName));
+        return new Executor(cmd, new File(directoryName), sinceRevision != null);
     }
 
     /**
