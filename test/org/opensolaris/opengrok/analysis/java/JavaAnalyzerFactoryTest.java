@@ -124,23 +124,23 @@ public class JavaAnalyzerFactoryTest {
         
         for (int i=0; i<74; ++i) {
             if (i >= 29 && i <= 31) {
-                assertEquals("Sample", scopes.getScope(i).name);
-                assertEquals("class:Sample", scopes.getScope(i).scope);
+                assertEquals("Sample", scopes.getScope(i).getName());
+                assertEquals("class:Sample", scopes.getScope(i).getScope());
             } else if (i >= 33 && i <= 41) {
-                assertEquals("Method", scopes.getScope(i).name);
-                assertEquals("class:Sample", scopes.getScope(i).scope);
+                assertEquals("Method", scopes.getScope(i).getName());
+                assertEquals("class:Sample", scopes.getScope(i).getScope());
             } else if (i == 43) {                
-                assertEquals("AbstractMethod", scopes.getScope(i).name);
-                assertEquals("class:Sample", scopes.getScope(i).scope);
+                assertEquals("AbstractMethod", scopes.getScope(i).getName());
+                assertEquals("class:Sample", scopes.getScope(i).getScope());
             } else if (i >= 47 && i <= 56) {
-                assertEquals("InnerMethod", scopes.getScope(i).name);
-                assertEquals("class:Sample.InnerClass", scopes.getScope(i).scope);
+                assertEquals("InnerMethod", scopes.getScope(i).getName());
+                assertEquals("class:Sample.InnerClass", scopes.getScope(i).getScope());
             } else if (i >= 60 && i <= 72) {
-                assertEquals("main", scopes.getScope(i).name);
-                assertEquals("class:Sample", scopes.getScope(i).scope);                
+                assertEquals("main", scopes.getScope(i).getName());
+                assertEquals("class:Sample", scopes.getScope(i).getScope());                
             } else {
                 assertEquals(scopes.getScope(i), globalScope);
-                assertNull(scopes.getScope(i).scope);
+                assertNull(scopes.getScope(i).getScope());
             }
         }
     }

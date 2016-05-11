@@ -75,21 +75,6 @@ public class Scopes implements Serializable {
             return lineFrom < o.lineFrom ? -1 : lineFrom > o.lineFrom ? 1 : 0;
         }
         
-        @Override
-        public boolean equals(Object o) {
-            if (o == null)
-                return false;
-            if (o instanceof Scope) {
-                Scope s = (Scope)o;
-                return lineFrom == s.lineFrom &&
-                        lineTo == s.lineTo &&
-                        name.equals(s.name) &&
-                        scope.equals(s.scope) &&
-                        signature.equals(s.signature);
-            }
-            return false;
-        }
-
         public int getLineFrom() { return lineFrom; }
         public void setLineFrom(int lineFrom) { this.lineFrom = lineFrom; }
         public int getLineTo() { return lineTo; }
