@@ -682,7 +682,7 @@ public class IndexDatabase {
         String absolutePath = file.getAbsolutePath();
 
         if (ignoredNames.ignore(file)) {
-            LOGGER.log(Level.FINE, "ignoring {0}", absolutePath);
+            LOGGER.log(Level.FINER, "ignoring {0}", absolutePath);
             return false;
         }
 
