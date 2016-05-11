@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.TreeSet;
 
 /**
@@ -37,14 +38,17 @@ import java.util.TreeSet;
 public class Scopes implements Serializable {
     private static final long serialVersionUID = 1191703801007779489L;
     
+    /**
+     * Note: this class has a natural ordering that is inconsistent with equals.
+     */
     public static class Scope implements Serializable, Comparable<Scope> {
         private static final long serialVersionUID = 1191703801007779489L;
 
-        public int lineFrom;
-        public int lineTo;
-        public String name;
-        public String scope;
-        public String signature;
+        private int lineFrom;
+        private int lineTo;
+        private String name;
+        private String scope;
+        private String signature;
 
         public Scope(int lineFrom, int lineTo, String name, String scope) {
             this(lineFrom, lineTo, name, scope, "");
@@ -62,10 +66,6 @@ public class Scopes implements Serializable {
             this.lineFrom = lineFrom;
         }
         
-        public String getName() {
-            return name;
-        }
-
         public boolean matches(int line) {
             return line >= lineFrom && line <= lineTo;
         }
@@ -74,6 +74,32 @@ public class Scopes implements Serializable {
         public int compareTo(Scope o) {
             return lineFrom < o.lineFrom ? -1 : lineFrom > o.lineFrom ? 1 : 0;
         }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (o == null)
+                return false;
+            if (o instanceof Scope) {
+                Scope s = (Scope)o;
+                return lineFrom == s.lineFrom &&
+                        lineTo == s.lineTo &&
+                        name.equals(s.name) &&
+                        scope.equals(s.scope) &&
+                        signature.equals(s.signature);
+            }
+            return false;
+        }
+
+        public int getLineFrom() { return lineFrom; }
+        public void setLineFrom(int lineFrom) { this.lineFrom = lineFrom; }
+        public int getLineTo() { return lineTo; }
+        public void setLineTo(int lineTo) { this.lineTo = lineTo; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getScope() { return scope; }
+        public void setScope(String scope) { this.scope = scope; }
+        public String getSignature() { return signature; }
+        public void setSignature(String signature) { this.signature = signature; }
     }
     
     // default global scope
@@ -82,7 +108,8 @@ public class Scopes implements Serializable {
     // tree of scopes sorted by starting line
     private TreeSet<Scope> scopes = new TreeSet<>();
     
-    public Scopes() {        
+    public Scopes() {
+        // nothing to do here
     }
     
     public int size() {
