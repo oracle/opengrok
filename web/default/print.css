@@ -99,6 +99,9 @@ label {
     display: none;
 }
 
+.projects .subrepository {
+    padding-left: 20px;
+}
 /* ############### start of header ############## */
 #whole_header {
 	display: none;

@@ -103,6 +103,10 @@ label {
 	display: none;
 }
 
+.projects .subrepository {
+    padding-left: 20px;
+}
+
 #pagetitle { /* short verbal summary/description of the shown content */
 }
 

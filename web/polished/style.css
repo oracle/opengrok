@@ -158,6 +158,10 @@ label {
     display: block;
 }
 
+.projects .subrepository {
+    padding-left: 20px;
+}
+
 .panel > .panel-heading, .panel > .panel-heading-accordion {
   padding: 0 15px;
   border-bottom: 1px solid transparent;
