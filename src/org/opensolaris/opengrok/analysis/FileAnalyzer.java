@@ -117,11 +117,15 @@ public class FileAnalyzer extends Analyzer {
     }
     
     public void setScopesEnabled(boolean scopesEnabled) {
-        this.scopesEnabled = scopesEnabled;
+        this.scopesEnabled = supportsScopes() && scopesEnabled;
     }
     
     public void setFoldingEnabled(boolean foldingEnabled) {
-        this.foldingEnabled = foldingEnabled;
+        this.foldingEnabled = supportsScopes() && foldingEnabled;
+    }
+    
+    protected boolean supportsScopes() {
+        return false;
     }
 
     /**

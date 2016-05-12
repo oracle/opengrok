@@ -303,6 +303,18 @@ public abstract class JFlexXref {
             out.write("</div>");
             scopeOpen = false;
         }
+
+        writeScopesFooter();
+    }
+
+    /**
+     * Write a JavaScript function that display scopes panel if scopes are
+     * available
+     */
+    private void writeScopesFooter() throws IOException {
+        if (scopesEnabled && scopes != null && scopes.size() > 0) {
+            out.append("<script type=\"text/javascript\">document.getElementById(\"scope\").style.display = \"block\";</script>");
+        }
     }
 
     /**
@@ -437,40 +449,42 @@ public abstract class JFlexXref {
         int line = getLineNumber() + 1;
         boolean skipNl = false;
         setLineNumber(line);
-        
-        startScope();
 
-        if (scopeOpen && scope == null) {
-            scopeOpen = false;
-            out.write("</span>");
-            skipNl = true;
-        } else if (scope != null) {
-            String scopeId = generateId(scope);
-            if (scope.getLineFrom() == line) {
-                out.write("<span id='");
-                out.write(scopeId);
-                out.write("' class='scope-head'><span class='scope-signature'>");
-                out.write(htmlize(scope.getName() + scope.getSignature()));
+        if (scopesEnabled) {
+            startScope();
+
+            if (scopeOpen && scope == null) {
+                scopeOpen = false;
                 out.write("</span>");
-                iconId = scopeId + "_fold_icon";
                 skipNl = true;
-            } else if (scope.getLineFrom() == line - 1) {
-                if (scopeOpen) {
+            } else if (scope != null) {
+                String scopeId = generateId(scope);
+                if (scope.getLineFrom() == line) {
+                    out.write("<span id='");
+                    out.write(scopeId);
+                    out.write("' class='scope-head'><span class='scope-signature'>");
+                    out.write(htmlize(scope.getName() + scope.getSignature()));
                     out.write("</span>");
+                    iconId = scopeId + "_fold_icon";
+                    skipNl = true;
+                } else if (scope.getLineFrom() == line - 1) {
+                    if (scopeOpen) {
+                        out.write("</span>");
+                    }
+
+                    out.write("<span id='");
+                    out.write(scopeId);
+                    out.write("_fold' class='scope-body'>");
+                    skipNl = true;
                 }
-                
-                out.write("<span id='");
-                out.write(scopeId);
-                out.write("_fold' class='scope-body'>");
-                skipNl = true;
+                scopeOpen = true;
             }
-            scopeOpen = true;
         }
 
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
             getProjectPostfix(false), skipNl);
         
-        if (foldingEnabled) {
+        if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {
                 out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
                 out.write(iconId);
