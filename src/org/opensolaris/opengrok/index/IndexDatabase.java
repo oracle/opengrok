@@ -226,7 +226,7 @@ public class IndexDatabase {
                             dbs.add(db);
                         }
                     } else {
-                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Directory does not exist \"{0}\" .", path);
                     }
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, "An error occured while updating index", e);
@@ -687,7 +687,7 @@ public class IndexDatabase {
         }
 
         if (!file.canRead()) {
-            LOGGER.log(Level.WARNING, "Warning: could not read {0}", absolutePath);
+            LOGGER.log(Level.WARNING, "Could not read {0}", absolutePath);
             return false;
         }
 
@@ -702,12 +702,12 @@ public class IndexDatabase {
             }
             //below will only let go files and directories, anything else is considered special and is not added
             if (!file.isFile() && !file.isDirectory()) {
-                LOGGER.log(Level.WARNING, "Warning: ignored special file {0}",
+                LOGGER.log(Level.WARNING, "Ignored special file {0}",
                     absolutePath);
                 return false;
             }
         } catch (IOException exp) {
-            LOGGER.log(Level.WARNING, "Warning: Failed to resolve name: {0}",
+            LOGGER.log(Level.WARNING, "Failed to resolve name: {0}",
                 absolutePath);
             LOGGER.log(Level.FINE, "Stack Trace: ", exp);
         }
@@ -748,7 +748,7 @@ public class IndexDatabase {
 
             return accept(file);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Warning: Failed to resolve name: {0} {1}",
+            LOGGER.log(Level.WARNING, "Failed to resolve name: {0} {1}",
                     new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
         }
         return false;
@@ -957,7 +957,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        LOGGER.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listFiles();
@@ -1023,7 +1023,7 @@ public class IndexDatabase {
                 for (String path : subFiles) {
                     Project project = Project.getProject(path);
                     if (project == null) {
-                        LOGGER.log(Level.WARNING, "Warning: Could not find a project for \"{0}\"", path);
+                        LOGGER.log(Level.WARNING, "Could not find a project for \"{0}\"", path);
                     } else {
                         IndexDatabase db = new IndexDatabase(project);
                         db.listTokens(4);
