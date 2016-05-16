@@ -314,6 +314,7 @@ public abstract class JFlexXref {
 
         while (!stack.empty()) {
             yypop();
+        }
 
         writeScopesFooter();
     }
