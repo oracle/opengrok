@@ -147,6 +147,8 @@ class GitHistoryParser implements Executor.StreamHandler {
      *
      * @param file the file to parse history for
      * @param repos Pointer to the SubversionReporitory
+     * @param sinceRevision the oldest changeset to return from the executor, or
+     *                      {@code null} if all changesets should be returned
      * @return object representing the file's history
      */
     History parse(File file, Repository repos, String sinceRevision) throws HistoryException {

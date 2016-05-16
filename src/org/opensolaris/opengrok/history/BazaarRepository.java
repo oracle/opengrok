@@ -70,6 +70,8 @@ public class BazaarRepository extends Repository {
      * file.
      *
      * @param file The file to retrieve history for
+     * @param sinceRevision the oldest changeset to return from the executor, or
+     *                      {@code null} if all changesets should be returned
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, final String sinceRevision)
@@ -95,7 +97,7 @@ public class BazaarRepository extends Repository {
             cmd.add(sinceRevision + "..-1");
         }
 
-        return new Executor(cmd, new File(getDirectoryName()));
+        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
     }
 
     @Override

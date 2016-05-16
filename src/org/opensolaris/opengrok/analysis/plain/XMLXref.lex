@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -112,10 +112,9 @@ NameChar = {FileChar}|"."
   }
 
 ("http" | "https" | "ftp" ) "://" ({FNameChar}|{URIChar})+[a-zA-Z0-9/]
-        {String s=yytext();
-         out.write("<a href=\"");
-         out.write(s);out.write("\">");
-         out.write(s);out.write("</a>");}
+        {
+          appendLink(yytext());
+        }
 
 {NameChar}+ "@" {NameChar}+ "." {NameChar}+
         {

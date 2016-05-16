@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis;
@@ -209,6 +209,14 @@ public abstract class JFlexXref {
         }
     }
 
+    protected void appendLink(String url) throws IOException {
+        out.write("<a href=\"");
+        out.write(Util.formQuoteEscape(url));
+        out.write("\">");
+        Util.htmlize(url, out);
+        out.write("</a>");
+    }
+
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
         return project == null ? "" : (amp + "project=" + project.getDescription());
@@ -303,6 +311,9 @@ public abstract class JFlexXref {
             out.write("</div>");
             scopeOpen = false;
         }
+
+        while (!stack.empty()) {
+            yypop();
 
         writeScopesFooter();
     }
@@ -482,7 +493,7 @@ public abstract class JFlexXref {
         }
 
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-            getProjectPostfix(false), skipNl);
+            getProjectPostfix(true), skipNl);
         
         if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {
@@ -546,11 +557,19 @@ public abstract class JFlexXref {
             //    do this when there's exactly one definition of the symbol in
             //    this file? Otherwise, we may end up with multiple anchors with
             //    the same name.)
-            out.append("<a class=\"");
-            out.append(style_class);
-            out.append("\" name=\"");
-            out.append(symbol);
-            out.append("\"/>");
+            //
+            //    Note: In HTML 4, the name must start with a letter, and can
+            //    only contain letters, digits, hyphens, underscores, colons,
+            //    and periods. https://www.w3.org/TR/html4/types.html#type-name
+            //    Skip the anchor if the symbol name is not a valid anchor
+            //    name. This restriction is lifted in HTML 5.
+            if (symbol.matches("[a-zA-Z][a-zA-Z0-9_:.-]*")) {
+                out.append("<a class=\"");
+                out.append(style_class);
+                out.append("\" name=\"");
+                out.append(symbol);
+                out.append("\"/>");
+            }
 
             // 2) Create a link that searches for all references to this symbol.
             out.append("<a href=\"");

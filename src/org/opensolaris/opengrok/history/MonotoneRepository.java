@@ -111,7 +111,16 @@ public class MonotoneRepository extends Repository {
         return ret;
     }
 
-    Executor getHistoryLogExecutor(File file, String changeset)
+    /**
+     * Get an executor to be used for retrieving the history log for the named
+     * file or directory.
+     *
+     * @param file The file or directory to retrieve history for
+     * @param sinceRevision the oldest changeset to return from the executor, or
+     *                  {@code null} if all changesets should be returned
+     * @return An Executor ready to be started
+     */
+    Executor getHistoryLogExecutor(File file, String sinceRevision)
             throws IOException {
         String abs = file.getCanonicalPath();
         String filename = "";
@@ -124,9 +133,9 @@ public class MonotoneRepository extends Repository {
         cmd.add(RepoCommand);
         cmd.add("log");
 
-        if (changeset != null) {
+        if (sinceRevision != null) {
             cmd.add("--to");
-            cmd.add(changeset);
+            cmd.add(sinceRevision);
         }
 
         cmd.add("--no-graph");
@@ -134,7 +143,7 @@ public class MonotoneRepository extends Repository {
         cmd.add("--no-format-dates");
         cmd.add(filename);
 
-        return new Executor(cmd, new File(directoryName));
+        return new Executor(cmd, new File(directoryName), sinceRevision != null);
     }
     /**
      * Pattern used to extract author/revision from hg annotate.

@@ -136,6 +136,8 @@ public class GitRepository extends Repository {
      * file.
      *
      * @param file The file to retrieve history for
+     * @param sinceRevision the oldest changeset to return from the executor, or
+     *                      {@code null} if all changesets should be returned
      * @return An Executor ready to be started
      */
     Executor getHistoryLogExecutor(final File file, String sinceRevision)
@@ -163,7 +165,8 @@ public class GitRepository extends Repository {
         if (filename.length() > 0) {
             cmd.add(filename);
         }
-        return new Executor(cmd, new File(getDirectoryName()));
+
+        return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
     }
 
     /**

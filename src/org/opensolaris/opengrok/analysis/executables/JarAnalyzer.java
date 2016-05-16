@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -64,16 +64,11 @@ public class JarAnalyzer extends FileAnalyzer {
                 FileAnalyzerFactory fac = AnalyzerGuru.find(ename);
                 if (fac instanceof JavaClassAnalyzerFactory) {
                     if (xrefOut != null) {
-                        xrefOut.append("<pre>");
+                        xrefOut.append("<br/>");
                     }
-
                     JavaClassAnalyzer jca =
                             (JavaClassAnalyzer) fac.getAnalyzer();
                     jca.analyze(doc, new BufferedInputStream(zis), xrefOut);
-
-                    if (xrefOut != null) {
-                        xrefOut.append("</pre>");
-                    }
                 }
             }
         }

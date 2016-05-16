@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2014, 2015 Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2014, 2016 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -26,12 +26,10 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.tools.ant.util.Base64Converter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -111,7 +109,7 @@ public class JSONSearchServlet extends HttpServlet {
         if (valid) {
             long start = System.currentTimeMillis();
 
-            int numResults = engine.search();
+            int numResults = engine.search(req);
             int maxResults = MAX_RESULTS;
             String maxResultsParam = req.getParameter(PARAM_MAXRESULTS);
             if (maxResultsParam != null) {

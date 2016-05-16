@@ -18,10 +18,11 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2011, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%>
+<%@page import="
 java.io.BufferedInputStream,
 java.io.BufferedReader,
 java.io.FileInputStream,
@@ -29,6 +30,7 @@ java.io.FileReader,
 java.io.InputStream,
 java.io.InputStreamReader,
 java.io.Reader,
+java.net.URLEncoder,
 java.util.ArrayList,
 java.util.Arrays,
 java.util.List,
@@ -91,8 +93,8 @@ document.pageReady.push(function() { pageReadyList();});
                 // update cookie
                 cookieValue = cookieValue.length() == 0
                     ? activeProject.getDescription()
-                    : activeProject.getDescription() + '/' + cookieValue;
-                Cookie cookie = new Cookie("OpenGrokProject", cookieValue);
+                    : activeProject.getDescription() + ',' + cookieValue;
+                Cookie cookie = new Cookie(PageConfig.OPEN_GROK_PROJECT, URLEncoder.encode(cookieValue, "utf-8"));
                 // TODO hmmm, projects.jspf doesn't set a path
                 cookie.setPath(request.getContextPath() + '/');
                 response.addCookie(cookie);
@@ -127,7 +129,7 @@ document.pageReady.push(function() { pageReadyList();});
             InputStream in = null;
             try {
                 in = HistoryGuru.getInstance()
-                    .getRevision(resourceFile.getParent(), basename, rev.substring(2));
+                    .getRevision(resourceFile.getParent(), basename, rev);
             } catch (Exception e) {
                 // fall through to error message
                 error = e.getMessage();
@@ -143,14 +145,12 @@ document.pageReady.push(function() { pageReadyList();});
                     {
 %>
 <div id="src">
-    Binary file [Click <a href="<%= rawPath %>?<%= rev
-        %>">here</a> to download]
+Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
 </div><%
                     } else {
 %>
 <div id="src">
-    <span class="pagetitle"><%= basename %> revision <%=
-        rev.substring(2) %></span>
+    <span class="pagetitle"><%= basename %> revision <%= Util.htmlize(rev) %></span>
     <pre><%
                         if (g == Genre.PLAIN) {
                             // We don't have any way to get definitions
@@ -164,13 +164,13 @@ document.pageReady.push(function() { pageReadyList();});
                                 annotation, Project.getProject(resourceFile));
                         } else if (g == Genre.IMAGE) {
     %></pre>
-    <img src="<%= rawPath %>?<%= rev %>"/>
+    <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
     <pre><%
                         } else if (g == Genre.HTML) {
                             r = new InputStreamReader(in);
                             Util.dump(out, r);
                         } else {
-        %> Click <a href="<%= rawPath %>?<%= rev %>">download <%= basename %></a><%
+    %> Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">download <%= basename %></a><%
                         }
                     }
                 } catch (IOException e) {
@@ -198,13 +198,12 @@ document.pageReady.push(function() { pageReadyList();});
         } else if (g == Genre.IMAGE) {
 %>
 <div id="src">
-    <img src="<%= rawPath %>?<%= rev %>"/>
+    <img src="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>"/>
 </div><%
         } else {
 %>
 <div id="src">
-    Binary file [Click <a href="<%= rawPath %>?<%= rev
-        %>">here</a> to download]
+Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a> to download]
 </div><%
         }
     } else {
