@@ -18,12 +18,10 @@
  */
 
  /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,7 +40,8 @@ public class Group implements Comparable<Group> {
     private Group parent;
     private int flag;
 
-    private List<Group> subgroups = new ArrayList<>();
+    private Set<Group> subgroups = new TreeSet<>();
+    private Set<Group> descendants = new TreeSet<>();
     private Set<Project> projects = new TreeSet<>();
     private Set<Project> repositories = new TreeSet<>();
 
@@ -58,11 +57,27 @@ public class Group implements Comparable<Group> {
         this.repositories.add(p);
     }
 
+    public Set<Group> getDescendants() {
+        return descendants;
+    }
+
+    public void setDescendants(Set<Group> descendants) {
+        this.descendants = descendants;
+    }
+
+    public void addDescendant(Group g) {
+        this.descendants.add(g);
+    }
+
+    public void removeDescendant(Group g) {
+        this.descendants.remove(g);
+    }
+
     public Set<Project> getRepositories() {
         return repositories;
     }
 
-    public void setSubgroups(List<Group> subgroups) {
+    public void setSubgroups(Set<Group> subgroups) {
         this.subgroups = subgroups;
     }
 
@@ -74,13 +89,14 @@ public class Group implements Comparable<Group> {
         this.repositories = repositories;
     }
 
-    public List<Group> getSubgroups() {
+    public Set<Group> getSubgroups() {
         return subgroups;
     }
 
     public void addGroup(Group g) {
         g.setParent(this);
         subgroups.add(g);
+        descendants.add(g);
     }
 
     public Group getParent() {
@@ -127,7 +143,8 @@ public class Group implements Comparable<Group> {
 
     @Override
     public int compareTo(Group o) {
-        return getName().toUpperCase(Locale.getDefault()).compareTo(o.getName().toUpperCase(Locale.getDefault()));
+        return getName().toUpperCase(Locale.getDefault())
+                .compareTo(o.getName().toUpperCase(Locale.getDefault()));
     }
 
     @Override
@@ -154,4 +171,22 @@ public class Group implements Comparable<Group> {
                 || !this.name.toUpperCase(Locale.getDefault()).equals(other.name.toUpperCase(Locale.getDefault()))));
     }
 
+    /**
+     * Returns group object by its name
+     *
+     * @param name name of a group
+     * @return group that fits the name
+     */
+    public static Group getByName(String name) {
+        Group ret = null;
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        if (env.hasGroups()) {
+            for (Group grp : env.getGroups()) {
+                if (name.equals(grp.getName())) {
+                    ret = grp;
+                }
+            }
+        }
+        return ret;
+    }
 }

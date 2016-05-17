@@ -76,43 +76,10 @@ include file="httpheader.jspf"
 
         %><body>
 <script type="text/javascript">/* <![CDATA[ */
-    document.hash = '<%= Util.escapeXml(cfg.getDocumentHash())
-    %>';document.rev = '<%= Util.escapeXml(rev)
-    %>';document.link = '<%= context + Prefix.XREF_P + uriEncodedPath
-    %>';document.annotate = <%= cfg.annotate() %>;
-    document.domReady.push(function() {domReadyMast();});
-    document.pageReady.push(function() { pageReadyMast();});
-    
-    var scope_visible = 0;
-    var scope_text = '';
-    
-    function fold(id) {        
-        var i = document.getElementById(id + "_fold_icon").children[0];
-        i.className = i.className === 'fold-icon' ? 'unfold-icon' : 'fold-icon';
-        $("#" + id + "_fold").toggle('fold');
-    }
-    
-    function on_scroll() {
-        var cnt = document.getElementById("content");
-        var scope_cnt = document.getElementById("scope_content");
-        var y = cnt.getBoundingClientRect().top + 2;
-
-        var c = document.elementFromPoint(15, y+1);
-        scope_cnt.innerHTML = '';
-        if (c.className === "l" || c.className === "hl") {
-            prev = c;
-            var par = c.parentNode;
-            while( par.className !== 'scope-body' && par.className !== 'scope-head' ) {
-                par = par.parentNode;
-                if (par === null) {
-                    return ;
-                }
-            }
-            var head = par.className === 'scope-body' ? par.previousSibling : par;
-            var sig = head.children[0];
-            scope_cnt.innerHTML = '<a href="#' + head.id + '">' + sig.innerHTML + '</a>';
-        }
-    }    
+    document.rev = getParameter("r");
+    document.annotate = <%= cfg.annotate() %>;
+    document.domReady.push(domReadyMast);
+    document.pageReady.push(pageReadyMast);
 /* ]]> */</script>
 <div id="page">
     <div id="whole_header">
@@ -151,10 +118,8 @@ include file="pageheader.jspf"
             href="#" onclick="javascript:toggle_annotations(); return false;"
             title="Show or hide line annotation(commit revisions,authors)."
             ><span class="annotate"></span>Annotate</a></span><span
-            id="toggle-annotate"><a href="<%=
-                context + Prefix.XREF_P + uriEncodedPath
-                + (rev.length() == 0 ? "" : "?") + Util.escapeXml(rev)
-            %>"><span class="annotate"></span>Annotate</a></span></li><%
+            id="toggle-annotate"><a href="#"><span class="annotate"></span>
+            Annotate</a></span></li><%
     } else {
         %><li><a href="#" onclick="javascript:get_annotations(); return false;"
             ><span class="annotate"></span>Annotate</a></li><%
@@ -171,10 +136,10 @@ include file="pageheader.jspf"
         }
         %>
 	<li><a href="<%= context + Prefix.RAW_P + uriEncodedPath
-            + (rev.length() == 0 ? "" : "?") + Util.escapeXml(rev)
+            + (rev.length() == 0 ? "" : "?r=" + Util.URIEncode(rev))
             %>"><span id="raw"></span>Raw</a></li>
 	<li><a href="<%= context + Prefix.DOWNLOAD_P + uriEncodedPath
-            + (rev.length() == 0 ? "" : "?") + Util.escapeXml(rev)
+            + (rev.length() == 0 ? "" : "?r=" + Util.URIEncode(rev))
             %>"><span id="download"></span>Download</a></li>
 	<%
     }
@@ -192,11 +157,7 @@ include file="pageheader.jspf"
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
 </div>
-<div id="scope">
-        <span id="scope_content">
-            &nbsp;
-        </span>
-</div>
+<div id="scope"><span id="scope_content">&nbsp;</span></div>
         </form>
     </div>
 <div id="content">

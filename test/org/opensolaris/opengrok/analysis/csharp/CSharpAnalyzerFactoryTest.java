@@ -118,22 +118,26 @@ public class CSharpAnalyzerFactoryTest {
         
         for (int i=0; i<41; ++i) {
             if (i >= 10 && i <= 10) {
-                assertEquals("M1", scopes.getScope(i).name);
-                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).scope);
+                assertEquals("M1", scopes.getScope(i).getName());
+                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).getScope());
             } else if (i >= 12 && i <= 14) {
-                assertEquals("M2", scopes.getScope(i).name);
-                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).scope);
+                assertEquals("M2", scopes.getScope(i).getName());
+                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).getScope());
             } else if (i >= 19 && i <= 25) {
-                assertEquals("M3", scopes.getScope(i).name);
-                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).scope);
+                assertEquals("M3", scopes.getScope(i).getName());
+                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).getScope());
 //TODO add support for generic classes                
 //            } else if (i >= 28 && i <= 30) { 
 //                assertEquals("M4", scopes.getScope(i).name);
 //                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).scope);
             } else if (i >= 34 && i <= 36) {
-                assertEquals("M5", scopes.getScope(i).name);
-                assertEquals("class:MyNamespace.TopClass.InnerClass", scopes.getScope(i).scope);
+                assertEquals("M5", scopes.getScope(i).getName());
+                assertEquals("class:MyNamespace.TopClass.InnerClass", scopes.getScope(i).getScope());
+            } else {
+                assertEquals(scopes.getScope(i), globalScope);
+                assertNull(scopes.getScope(i).getScope());
             }
+
         }
     }
     

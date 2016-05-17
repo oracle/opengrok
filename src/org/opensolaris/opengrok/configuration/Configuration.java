@@ -64,6 +64,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
+    public static final String PLUGIN_DIRECTORY_DEFAULT = "plugins";
 
     private String ctags;
     /**
@@ -80,6 +81,7 @@ public final class Configuration {
      */
     private boolean historyCacheInDB;
 
+    private String pluginDirectory;
     private List<Project> projects;
     private Set<Group> groups;
     private String sourceRoot;
@@ -131,11 +133,10 @@ public final class Configuration {
     private boolean chattyStatusPage;
     private final Map<String, String> cmds;
     private int tabSize;
-    private int command_timeout;
+    private int command_timeout; // in seconds
     private boolean scopesEnabled;
     private boolean foldingEnabled;
-    private static final Logger logger = Logger.getLogger(Configuration.class.getName());
-    
+
     /*
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
@@ -159,6 +160,12 @@ public final class Configuration {
      */
     public static final String EFTAR_DTAGS_FILE = "index/dtags.eftar";
     private transient File dtagsEftar = null;
+
+    /**
+     * Revision messages will be collapsible if they exceed this many number of
+     * characters. Front end enforces an appropriate minimum.
+     */
+    private int revisionMessageCollapseThreshold;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -259,6 +266,8 @@ public final class Configuration {
         setFoldingEnabled(true);
         setFetchHistoryWhenNotInCache(true);
         setHandleHistoryOfRenamedFiles(true);
+        setRevisionMessageCollapseThreshold(200);
+        setPluginDirectory(null);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -278,6 +287,20 @@ public final class Configuration {
     // just to satisfy bean/de|encoder stuff
     public Map<String, String> getCmds() {
         return Collections.unmodifiableMap(cmds);
+    }
+
+    public String getPluginDirectory() {
+        if (pluginDirectory == null) {
+            if (getDataRoot() == null) {
+                return PLUGIN_DIRECTORY_DEFAULT;
+            }
+            return getDataRoot() + "/../" + PLUGIN_DIRECTORY_DEFAULT;
+        }
+        return pluginDirectory;
+    }
+
+    public void setPluginDirectory(String pluginDirectory) {
+        this.pluginDirectory = pluginDirectory;
     }
 
     public void setCmds(Map<String, String> cmds) {
@@ -644,6 +667,14 @@ public final class Configuration {
         this.tagsEnabled = tagsEnabled;
     }
 
+    public void setRevisionMessageCollapseThreshold(int threshold) {
+        this.revisionMessageCollapseThreshold = threshold;
+    }
+
+    public int getRevisionMessageCollapseThreshold() {
+        return this.revisionMessageCollapseThreshold;
+    }
+
     private transient Date lastModified;
 
     /**
@@ -820,15 +851,15 @@ public final class Configuration {
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
-    
+
     public boolean isFoldingEnabled() {
         return foldingEnabled;
     }
-    
+
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
     }
-    
+
     /**
      * Write the current configuration to a file
      *
@@ -919,6 +950,13 @@ public final class Configuration {
                 throw new IOException(
                         String.format("Duplicate group name '%s' in configuration.",
                                 group.getName()));
+            }
+
+            // populate groups where the current group in in their subtree
+            Group tmp = group.getParent();
+            while (tmp != null) {
+                tmp.addDescendant(group);
+                tmp = tmp.getParent();
             }
         }
         conf.setGroups(copy);

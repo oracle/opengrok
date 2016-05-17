@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.executables;
 
@@ -60,6 +60,7 @@ import org.opensolaris.opengrok.analysis.IteratorReader;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.web.Util;
 
 /**
  * Analyzes Java Class files Created on September 23, 2005
@@ -137,17 +138,31 @@ public class JavaClassAnalyzer extends FileAnalyzer {
     private final StringBuffer rstring=new StringBuffer(512);
     protected String linkPath(String path) {
         rstring.setLength(0);
-        return rstring.append(AHREF).append(urlPrefix).append(APATH).append(path).append(AHREFT_END).append(path).append(AHREFEND).toString();
+        return rstring.append(AHREF).append(urlPrefix).append(APATH)
+                .append(Util.URIEncodePath(path)).append(AHREFT_END)
+                .append(Util.htmlize(path)).append(AHREFEND).toString();
     }
 
     protected String linkDef(String def) {
         rstring.setLength(0);
-        return rstring.append(AHREF).append(urlPrefix).append(ADEFS).append(def).append(AHREFT_END).append(def).append(AHREFEND).toString();
+        return rstring.append(AHREF).append(urlPrefix).append(ADEFS)
+                .append(Util.URIEncode(def)).append(AHREFT_END)
+                .append(Util.htmlize(def)).append(AHREFEND).toString();
     }
 
     protected String tagDef(String def) {
+        // The fragment identifiers in HTML 4 must start with a letter, so
+        // <init> (for constructors) or <clinit> (for class initializers)
+        // cannot be used as identifiers. Also the $ character in inner
+        // classes is not allowed. Strip away such characters for now.
+        // HTML 5 does not have these restrictions.
+        String name = def.replaceAll("[<>$]", "");
+
         rstring.setLength(0);
-        return rstring.append(ADHREF).append(def).append(AIHREF).append(urlPrefix).append(ADEFS).append(def).append(AHREFT_END).append(def).append(AHREFEND).toString();
+        return rstring.append(ADHREF).append(Util.formQuoteEscape(name))
+                .append(AIHREF).append(urlPrefix).append(ADEFS)
+                .append(Util.URIEncode(def)).append(AHREFT_END)
+                .append(Util.htmlize(def)).append(AHREFEND).toString();
     }
 
 private static final String PACKAGE="package ";
@@ -167,7 +182,7 @@ private static final String RCBREOL="}\n";
 //TODO this class needs to be thread safe to avoid bug 13364, which was fixed by just updating bcel to 5.2
     private void getContent(Writer out, Writer fout, JavaClass c,
             List<String> defs, List<String> refs, List<String> full)
-            throws IOException {        
+            throws IOException {
         String t;
         ConstantPool cp = c.getConstantPool();
         int[] v = new int[cp.getLength() + 1];

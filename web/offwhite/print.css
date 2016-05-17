@@ -98,6 +98,10 @@ label {
     display: none;
 }
 
+.projects .subrepository {
+    padding-left: 20px;
+}
+
 /* ############### start of header ############## */
 #whole_header {
 	display: none;
@@ -347,11 +351,12 @@ table#dirlist { /* the "Name" column */
 	font-size: small;
 }
 
-#src .l-hide, #src .hl-hide, .blame-hidden { /* hidden line number/annotation block */
+/* hidden line number/annotation block */
+.lines-hidden .l, .lines-hidden .hl, .blame-hidden .blame {
 	display: none
 }
 
-#src .l, #src .hl, .blame .r, .blame .a,
+.l, .hl, .blame .r, .blame .a,
 #results .l, #more .l,
 #difftable i, del.d { /* line number/annotation block */
 	display: inline-block;

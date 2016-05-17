@@ -18,270 +18,10 @@
  */
 
 /*
- * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Portions Copyright 2011 Jens Elkner.
  */
-
-(function(window, $){
-    /*
-     * DiffJumper module
-     * 
-     * called for example like
-     * $("#difftable").diffTable(options)
-     * where options are
-     * {
-     *  $parent: // jQuery object for common anchestor of all diff features
-     *  $content: // jQuery object which is anchestor and scrollable - fixing animation
-     *  chunkSelector: // String describing chunk selection
-     *  addSelector: // String describing added lines
-     *  delSelector: // String describin deleted lines
-     *  $toggleButton: // jQuery object of button to toggle the jumper window
-     *  animationDuration: // duration of toggling the jumper window
-     * }
-     */
-    var diff = function($parent, options) {
-        var inner = {
-            initialized: false,
-            currentIndex: -1,
-            $changes: $(),
-            options: {},
-            defaults: {
-                $parent: $("#difftable"),
-                $content: $("#content"), //first scrollable div
-                chunkSelector: ".chunk",
-                addSelector: ".a",
-                delSelector: ".d",
-                $toggleButton: $("#toggle-jumper"),
-                animationDuration: 500
-            },
-            /*
-             * Whole panel looks like this in code
-             * Other css rules are described in style.css
-             * <div class="diff_navigation">
-             *  <div class="header">
-             *      <span class="prev summary">4/30 chunks</span>
-             *      <a href="#" class="minimize">_</a>
-             *  </div>
-             *  <div class="controls">
-             *      <a href="#" class="prev">&lt;&lt; Previous</a>
-             *      <a href="#" class="next">Next &gt;&gt;</a>
-             *  </div>
-             *  <div class="progress">
-             *  </div>
-             *  <div class="errors">
-             *  </div>
-             * </div>
-             */
-            $panel: null,
-            $summary: null,
-            $errors: null,
-            $progress: null,
-            scrollTop: function (top) {
-                $('*').scrollTop(top);                             
-            },
-            prevHandler: function (e) {
-                e.preventDefault()
-
-                inner.initChanges();
-
-                var $current = $(inner.$changes[inner.currentIndex - 1])
-
-                if(!$current.length) {
-                    inner.$errors.error ( "No previous chunk!" )
-                    return false
-                }
-
-                inner.currentIndex --;    
-                
-                inner.$progress.progress("Going to chunk " + (inner.currentIndex+1) + "/" + inner.$changes.length )
-
-                inner.scrollTop($current.offset().top - inner.options.$parent.offset().top);
-                
-                inner.$summary.trigger("diff.summary.refresh");
-                
-                return false
-            },
-            nextHandler: function(e) {
-                e.preventDefault()
-                
-                inner.initChanges();
-
-                var $current = $(inner.$changes[inner.currentIndex + 1])
-
-                if(!$current.length) {
-                    inner.$errors.error ( "No next chunk!" )
-                    return false
-                }
-                
-                inner.currentIndex ++;        
-                                
-                inner.$progress.progress("Going to chunk " + (inner.currentIndex+1) + "/" + inner.$changes.length )
-                
-                inner.scrollTop($current.offset().top - inner.options.$parent.offset().top);
-                
-                inner.$summary.trigger("diff.summary.refresh");
-                
-                return false
-            },               
-            createPanel: function(){
-                inner.$panel = $("<div></div>")
-                            .appendTo($("body"))
-                            .addClass("diff_navigation_style")
-                            .addClass("diff_navigation")
-                            .hide()
-
-                inner.createHeader()
-                inner.createButtons()
-                inner.createProgress()
-                inner.createErrors()
-            },
-            createHeader: function() {
-                var $cancel = $("<a href='#' class='minimize'>_</a>")
-                        .click(function(e){
-                            inner.$panel.stop().animate({
-                                top: inner.options.$content.scrollTop() + 
-                                     inner.options.$toggleButton.offset().top,
-                                left: inner.options.$toggleButton.offset().left + 
-                                      inner.options.$toggleButton.width(),
-                                opacity: 0
-                            }, inner.options.animationDuration, function() {
-                                inner.$panel.hide()
-                                inner.options.$toggleButton.data("animation-in-progress", null );
-                            });
-                            inner.options.$toggleButton.data("animation-in-progress", "hiding" );
-                        });
-                inner.$summary = $("<span class='prev summary'></span>")
-                        .text(inner.$changes.length + " chunks")
-                        .bind("diff.summary.refresh", function (e) {
-                                var index = inner.currentIndex < 0 ? 1 : ( inner.currentIndex + 1 );
-                                $(this).text ( index + "/" + inner.$changes.length + " chunks" ) 
-                             });
-                
-                var $controls = $("<div class=\"header\"></div>")
-                $controls.append(inner.$summary)
-                $controls.append($cancel)
-                inner.$panel.append($controls)
-            },
-            createButtons: function() {
-                var $prev = $("<a href='#' class='prev' title='Jump to previous chunk (shortcut b)'><< Previous</a>")
-                        .click(inner.prevHandler)
-                var $next = $("<a href='#' class='next' title='Jump to next chunk (shortcut n)'>Next >></a>")
-                        .click(inner.nextHandler)
-
-                var $controls = $("<div class=\"controls\"></div>")
-                $controls.append($prev)
-                $controls.append($next)
-                inner.$panel.append($controls)
-            },
-            createErrors: function(){
-                var $errors = $("<div class=\"errors\"></div>")
-                $errors.error = function(str) {
-                    var $span = $("<p class='error'>" + str + "</p>")
-                            .animate({opacity: "0.2"}, 3000)
-                    $span.hide('slow', function(){ $span.remove(); });
-
-                    $errors.html($span)
-                }                
-                inner.$panel.append($errors)
-                inner.$errors = $errors
-            },
-            createProgress: function(){
-                var $progress = $("<div class=\"progress\"></div>")
-                $progress.progress = function(str) {
-                    var $span = $("<p>" + str + "</p>")
-                            .animate({opacity: "0.2"}, 1000)
-                    $span.hide('fast', function(){ $span.remove(); });
-                    $progress.html($span)
-                    inner.$errors.html("")
-                }
-                inner.$panel.append($progress)   
-                inner.$progress = $progress
-            },
-            initChanges: function(){
-                if(inner.$changes.length)
-                    return
-                // is diff in table (udiff/sdiff) or just html text (new/old diff)?
-                var isTable = inner.options.$parent.find("table").length > 0
-                // get all changes
-                inner.$changes = isTable ? inner.options.$parent.find(inner.options.chunkSelector) : 
-                           inner.options.$parent.find(inner.options.addSelector + "," + inner.options.delSelector)
-                   
-                inner.$summary.trigger("diff.summary.refresh");
-            },
-            init: function(){
-                inner.createPanel();
-                // set initial position by the toggle button
-                inner.options.$toggleButton.each(function(){
-                    inner.$panel.css({
-                            top: $(this).offset().top,
-                            left: $(this).offset().left + $(this).width(),
-                            opacity: 0
-                        }).hide();                  
-                });
-                // bind animation features
-                inner.options.$toggleButton.click(function(e){
-                   inner.initChanges();
-                   var flag = $(this).data("animation-in-progress");
-                   if(flag == "showing") {
-                        inner.$panel.stop().animate({
-                            top: inner.options.$content.scrollTop() +
-                                 $(this).offset().top,
-                            left: $(this).offset().left + $(this).width(),
-                            opacity: 0
-                        }, inner.options.animationDuration, function() {
-                            inner.$panel.hide()
-                            $(this).data("animation-in-progress", null );
-                        });
-                        $(this).data("animation-in-progress", "hiding" );
-                   } else {
-                        inner.$panel.stop().show().animate({
-                            top: inner.options.$content.scrollTop() +
-                                 inner.options.$parent.offset().top,
-                            left: $(window).width() - inner.$panel.width() - 25,
-                            opacity: 1
-                        }, inner.options.animationDuration, function(){
-                            $(this).data("animation-in-progress", null );
-                        })
-                        $(this).data("animation-in-progress", "showing" );
-                   }
-                   return false
-                });
-            }
-        }
-        
-        this.init = (function($parent, options){
-            if (inner.initialized)
-                return
-            inner.options = $.extend({}, inner.defaults, options)
-            
-            inner.init ()
-            
-            // bind n and b to special events
-            $(document).keypress(function(e){
-               var key = e.keyCode || e.which
-               switch(key) {
-                   case 110: // n
-                     inner.nextHandler(e)
-                   break;
-                   case 98: // b
-                     inner.prevHandler(e)
-                   break;
-                   default:
-               }
-            });            
-            
-            inner.initialized = true
-            
-            return this
-        })($parent, options)
-    }
-    
-    $.fn.diffTable = function(options){
-        return this.each(function(){
-           new diff($(this), options);
-        });
-    }
-    
-}(window, window.jQuery));
 
 (function(window, $) {
    
@@ -536,67 +276,6 @@
     $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}));
 }) (window, window.jQuery);
 
-(function ($) {
-    var accordion = function ($parent, options) {
-        var inner = {
-            initialized: false,
-            options: {},
-            defaults: {
-                "showAllSelector": ".accordion_show_all",
-                "hideAllSelector": ".accordion_hide_all"
-            },
-            $pannels: [],
-            init: function () {
-                inner.$pannels = inner.options.parent.find(".panel-body-accordion");
-
-                inner.options.parent.find(".panel-heading-accordion").click(function (e) {
-                    $(this).parent().find(".panel-body-accordion").each(function () {
-                        if ($(this).data("accordion-visible") &&
-                                $(this).data("accordion-visible") === true) {
-                            $(this).hide().data("accordion-visible", false)
-                        } else {
-                            $(this).show().data("accordion-visible", true)
-                        }
-                    });
-                    return false
-                });
-
-                inner.options.parent.find(inner.options.showAllSelector).click(function (e) {
-                    inner.$pannels.data("accordion-visible", true).show()
-                    inner.options.parent.find(inner.options.hideAllSelector).show()
-                    inner.options.parent.find(inner.options.showAllSelector).hide()
-                    return false;
-                });
-
-                inner.options.parent.find(inner.options.hideAllSelector).click(function (e) {
-                    inner.$pannels.data("accordion-visible", false).hide();
-                    inner.options.parent.find(inner.options.hideAllSelector).hide()
-                    inner.options.parent.find(inner.options.showAllSelector).show()
-                    return false;
-                });
-
-                inner.options.parent.find(inner.options.hideAllSelector).hide();
-
-                inner.initialized = true;
-            }
-        }
-
-        var init = (function ($parent, options) {
-            if (inner.initialized)
-                return
-            inner.options = $.extend({}, {parent: $parent}, inner.defaults, options)
-            inner.init();
-        })($parent, options);
-    };
-
-    $.fn.accordion = function (options) {
-        return this.each(function () {
-            options = options || {}
-            new accordion($(this), options);
-        });
-    };
-})(jQuery);
-
 (function(window, $) {
    
     var hash = function () {
@@ -711,7 +390,7 @@
                 var lines = inner.getLinesParts(window.location.hash);
                 if(lines.length > 0) {
                    var line = lines[0] // first line
-                   $("*").animate({
+                   $("#content").animate({
                       scrollTop: $(inner.format(inner.options.linkSelectorTemplate, {
                           parent: inner.options.parent,
                           n: line
@@ -780,39 +459,12 @@
 }) (window, window.jQuery);
 
 $(document).ready(function () {
-    $(".projects").accordion()
-
-    $("#difftable").diffTable()
-
     // starting spaces plugin
     $.spaces.init()
     
     $.hash.init({ parent: "pre"})
-    
-    $(".projects_select_all").click(function (e) {
-        var projects = $(this).closest(".panel").find("table tbody tr, .panel-heading table tbody tr")
-        var multiselect = $("select#project")
-        if (!multiselect.length) {
-            console.debug("No multiselect element with id = 'project'")
-            return false
-        }
-
-        multiselect.find("option").attr("selected", false)
-        projects.each(function () {
-            var key = $(this).find(".name")
-            if (!key.length)
-                return
-            key = key.text().replace(/^\s+|\s+$/g, '') // trim
-            multiselect.find("option[value=" + key + "]").attr("selected", true)
-            multiselect.change();
-        });
-        return false;
-    });
 });
 
-/*
- * Portions Copyright 2011 Jens Elkner.
- */
 document.pageReady = [];
 document.domReady = [];
 
@@ -839,11 +491,36 @@ function resizeContent() {
     }
 }
 
+/**
+ * Get a parameter value from the URL.
+ *
+ * @param p the name of the parameter
+ * @return the decoded value of parameter p
+ */
+function getParameter(p) {
+    // First split up the parameter list. That is, transform from
+    //       ?a=b&c=d
+    // to
+    //       [ ["a", "b"], ["c","d"] ]
+    if (getParameter.params === undefined) {
+        getParameter.params = window.location.search.substr(1).split("&").map(
+                function (x) { return x.split("="); });
+    }
+    var params = getParameter.params;
+    // Then look for the parameter.
+    for (var i in params) {
+        if (params[i][0] === p && params[i].length > 1) {
+            return decodeURIComponent(params[i][1]);
+        }
+    }
+    return undefined;
+}
+
 function domReadyMast() {
-    var h = document.hash;
     if (!window.location.hash) {
-        if (h != null && h != "null" && h != "")  {
-            window.location.hash=h
+        var h = getParameter("h");
+        if (h && h !== "") {
+            window.location.hash = h;
         } else {
             $('#content').focus();
         }
@@ -856,6 +533,11 @@ function domReadyMast() {
         toggle_js.style.display = 'inline';
         toggle_ss.style.display = 'none';
     }
+
+    // When we move to a version of XHTML that supports the onscroll
+    // attribute in the div element, we should add an onscroll attribute
+    // in the generated XHTML in mast.jsp. For now, set it with jQuery.
+    $("#content").scroll(scope_on_scroll);
 }
 
 function pageReadyMast() {
@@ -908,27 +590,27 @@ function domReadyHistory() {
     // will go mad !
     $("#revisions input[type=radio]").bind("click",togglediffs);
     togglediffs();
+    togglerevs();
 }
 
 function get_annotations() {
-    link = document.link +  "?a=true";
-    if (document.rev.length > 0) {
-        link += '&' + document.rev;
+    var link = window.location.pathname + "?a=true";
+    if (document.rev) {
+        link += "&r=" + encodeURIComponent(document.rev);
     }
-    hash = "&h=" + window.location.hash.substring(1, window.location.hash.length);
-    window.location = link + hash;
+    if (window.location.hash) {
+        // If a line is highlighted when "annotate" is clicked, we want to
+        // preserve the highlighting, but we don't want the page to scroll
+        // to the highlighted line. So put the line number in a URL parameter
+        // instead of in the hash.
+        link += "&h=";
+        link += window.location.hash.substring(1, window.location.hash.length);
+    }
+    window.location = link;
 }
 
 function toggle_annotations() {
-    $("span").each(
-        function() {
-            if (this.className == 'blame') {
-                this.className = 'blame-hidden';
-            } else if (this.className == 'blame-hidden') {
-                this.className = 'blame';
-            }
-        }
-    );
+    $(document.body).toggleClass("blame-hidden");
 }
 
 /** list.jsp */
@@ -1052,45 +734,11 @@ function lsttoggle() {
  * Toggle the display of line numbers.
  */
 function lntoggle() {
-    if (typeof document.line_numbers_shown === 'undefined' || document.line_numbers_shown === 1) {
-        lnhide();
-    } else {
-        lnshow();
-    }
-}
-
-function lnhide() {
-    $("a.hl").each(
-        function() {
-            $(this).removeClass('hl').addClass('hl-hide');
-            this.setAttribute("tmp", this.innerHTML);
-            this.innerHTML = '';
-        }
-    );
-    $("a.l").each(
-        function() {
-            $(this).removeClass('l').addClass('l-hide');
-            this.setAttribute("tmp", this.innerHTML);
-            this.innerHTML = '';
-        }
-    );
-    document.line_numbers_shown = 0;
+    $(document.body).toggleClass("lines-hidden");
 }
 
 function lnshow() {
-    $("a.l-hide").each(
-        function () {
-            $(this).removeClass('l-hide').addClass('l');
-            this.innerHTML = this.getAttribute("tmp");
-        }
-    );
-    $("a.hl-hide").each(
-        function () {
-            $(this).removeClass('hl-hide').addClass('hl');
-            this.innerHTML = this.getAttribute("tmp");
-        }
-    );
-    document.line_numbers_shown = 1;
+    $(document.body).removeClass("lines-hidden");
 }
 
 /* ------ Highlighting ------ */
@@ -1205,6 +853,31 @@ function togglediffs() {
             }
         }
     );
+}
+
+/**
+ *  Function to toggle revision message length for long revision messages
+ */
+function togglerevs() {
+  $(".rev-toggle-a").click(function() {
+    var toggleState = $(this).closest("p").attr("data-toggle-state");
+    var thisCell = $(this).closest("td");
+
+    if (toggleState == "less") {
+      $(this).closest("p").attr("data-toggle-state", "more");
+      thisCell.find(".rev-message-summary").addClass("rev-message-hidden");
+      thisCell.find(".rev-message-full").removeClass("rev-message-hidden");
+      $(this).html("... show less");
+    }
+    else if (toggleState == "more") {
+      $(this).closest("p").attr("data-toggle-state", "less");
+      thisCell.find(".rev-message-full").addClass("rev-message-hidden");
+      thisCell.find(".rev-message-summary").removeClass("rev-message-hidden");
+      $(this).html("show more ...");
+    }
+
+    return false;
+  });
 }
 
 function selectAllProjects() {
@@ -1437,4 +1110,44 @@ function googleSymbol(symbol) {
 
 function escapeSingleQuote(string) {
     return string.replace("'", "\\'");
+}
+
+
+var scope_visible = 0;
+var scope_text = '';
+
+/**
+ * Fold or unfold a function definition.
+ */
+function fold(id) {        
+    var i = document.getElementById(id + "_fold_icon").children[0];
+    i.className = i.className === 'fold-icon' ? 'unfold-icon' : 'fold-icon';
+    $("#" + id + "_fold").toggle('fold');
+}
+
+/**
+ * Function that is called when the #content div element is scrolled. Checks
+ * if the top of the page is inside a function scope. If so, update the
+ * scope element to show the name of the function and a link to its definition.
+ */
+function scope_on_scroll() {
+    var cnt = document.getElementById("content");
+    var scope_cnt = document.getElementById("scope_content");
+    var y = cnt.getBoundingClientRect().top + 2;
+
+    var c = document.elementFromPoint(15, y+1);
+    scope_cnt.innerHTML = '';
+    if (c.className === "l" || c.className === "hl") {
+        prev = c;
+        var par = c.parentNode;
+        while( par.className !== 'scope-body' && par.className !== 'scope-head' ) {
+            par = par.parentNode;
+            if (par === null) {
+                return ;
+            }
+        }
+        var head = par.className === 'scope-body' ? par.previousSibling : par;
+        var sig = head.children[0];
+        scope_cnt.innerHTML = '<a href="#' + head.id + '">' + sig.innerHTML + '</a>';
+    }
 }

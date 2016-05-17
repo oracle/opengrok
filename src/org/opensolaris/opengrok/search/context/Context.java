@@ -160,7 +160,7 @@ public class Context {
                             if (scopes != null) {
                                 Scope scp = scopes.getScope(tag.line);
                                 scope = scp.getName() + "()";
-                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" + Integer.toString(scp.lineFrom) + "\">" + scope + "</a>";
+                                scopeUrl = "<a href=\"" + urlPrefixE + pathE + "#" + Integer.toString(scp.getLineFrom()) + "\">" + scope + "</a>";
                             }
 
                             /* desc[0] is matched symbol

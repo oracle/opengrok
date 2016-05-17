@@ -18,9 +18,8 @@
  */
 
  /*
- * Copyright 2006, 2015, Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
- */
+  * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+  */
 package org.opensolaris.opengrok.configuration;
 
 import java.io.File;
@@ -124,28 +123,34 @@ public class Project implements Comparable<Project> {
         return tabSize > 0;
     }
 
+
     /**
      * Get the project for a specific file
      *
-     * @param path the file to lookup (relative from source root)
+     * @param path the file to lookup (relative to source root)
      * @return the project that this file belongs to (or null if the file
      * doesn't belong to a project)
      */
     public static Project getProject(String path) {
-        Project ret = null;
-        String lpath = path;
-        if (File.separatorChar != '/') {
-            lpath = path.replace(File.separatorChar, '/');
-        }
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        // Try to match each project path as prefix of the given path.
+        final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
         if (env.hasProjects()) {
-            for (Project proj : env.getProjects()) {
-                if (lpath.indexOf(proj.getPath()) == 0) {
-                    ret = proj;
+            final String lpath = path.replace(File.separatorChar, '/');
+            for (Project p : env.getProjects()) {
+                String pp = p.getPath();
+                // Check if the project's path is a prefix of the given
+                // path. It has to be an exact match, or the project's path
+                // must be immediately followed by a separator. "/foo" is
+                // a prefix for "/foo" and "/foo/bar", but not for "/foof".
+                if (lpath.startsWith(pp) &&
+                        (pp.length() == lpath.length() ||
+                         lpath.charAt(pp.length()) == '/')) {
+                    return p;
                 }
             }
         }
-        return ret;
+
+        return null;
     }
 
     /**
@@ -215,5 +220,4 @@ public class Project implements Comparable<Project> {
                 && (this.description == null
                 || !this.description.toUpperCase(Locale.getDefault()).equals(other.description.toUpperCase(Locale.getDefault()))));
     }
-
 }

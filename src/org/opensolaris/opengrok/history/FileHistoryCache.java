@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -366,7 +366,7 @@ class FileHistoryCache implements HistoryCache {
 
                 List<HistoryEntry> list = map.get(s);
                 if (list == null) {
-                    list = new ArrayList<HistoryEntry>();
+                    list = new ArrayList<>();
                     map.put(s, list);
                 }
                 /*
@@ -396,7 +396,7 @@ class FileHistoryCache implements HistoryCache {
                 }
             } catch (IOException ex) {
                LOGGER.log(Level.WARNING,
-                   "isRenamedFile() got exception: " + ex);
+                   "isRenamedFile() got exception " , ex);
             }
 
             doFileHistory(map_entry, env, repository, null, root, false);
@@ -411,7 +411,7 @@ class FileHistoryCache implements HistoryCache {
          * Now handle renamed files (in parallel).
          */
         HashMap<String, List<HistoryEntry>> renamed_map =
-                new HashMap<String, List<HistoryEntry>>();
+                new HashMap<>();
         for (final Map.Entry<String, List<HistoryEntry>> map_entry : map.entrySet()) {
             try {
                 if (isRenamedFile(map_entry, env, repository, history)) {
@@ -419,7 +419,7 @@ class FileHistoryCache implements HistoryCache {
                 }
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING,
-                    "isRenamedFile() got exception: " + ex);
+                    "isRenamedFile() got exception ", ex);
             }
         }
         // The directories for the renamed files have to be created before
@@ -432,7 +432,7 @@ class FileHistoryCache implements HistoryCache {
 
             if (!dir.isDirectory() && !dir.mkdirs()) {
                 LOGGER.log(Level.WARNING,
-                   "Unable to create cache directory '" + dir + "'.");
+                   "Unable to create cache directory ' {0} '.", dir);
             }
         }
         final Repository repositoryF = repository;
@@ -448,7 +448,7 @@ class FileHistoryCache implements HistoryCache {
                     } catch (Exception ex) {
                         // We want to catch any exception since we are in thread.
                         LOGGER.log(Level.WARNING,
-                            "doFileHistory() got exception: " + ex);
+                            "doFileHistory() got exception ", ex);
                     } finally {
                         latch.countDown();
                     }
@@ -461,7 +461,7 @@ class FileHistoryCache implements HistoryCache {
             // Wait for the executors to finish.
             latch.await();
         } catch (InterruptedException ex) {
-            LOGGER.log(Level.SEVERE, "latch exception" + ex);
+            LOGGER.log(Level.SEVERE, "latch exception ",ex);
         }
         finishStore(repository, latestRev);
     }
@@ -595,15 +595,15 @@ class FileHistoryCache implements HistoryCache {
                   new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "cannot write latest cached revision to file: " +
-                ex.getCause());
+            LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for "+repository.getDirectoryName(),
+                ex);
         } finally {
            try {
                if (writer != null) {
                    writer.close();
                }
            } catch (IOException ex) {
-               LOGGER.log(Level.INFO, "cannot close file: " + ex);
+               LOGGER.log(Level.FINEST, "Cannot close file", ex);
            }
         }
     }
@@ -618,18 +618,18 @@ class FileHistoryCache implements HistoryCache {
             try {
                 rev = input.readLine();
             } catch (java.io.IOException e) {
-                LOGGER.log(Level.WARNING, "failed to load: {0}", e);
+                LOGGER.log(Level.WARNING, "failed to load ", e);
                 return null;
             } finally {
                 try {
                     input.close();
                 } catch (java.io.IOException e) {
-                    LOGGER.log(Level.INFO, "failed to close: {0}", e);
+                    LOGGER.log(Level.FINEST, "failed to close", e);
                 }
             }
         } catch (java.io.FileNotFoundException e) {
-            LOGGER.log(Level.FINE, "not loading latest cached revision file from "
-                + getRepositoryCachedRevPath(repository));
+            LOGGER.log(Level.FINE, "not loading latest cached revision file from {0}",
+                getRepositoryCachedRevPath(repository));
             return null;
         }
 

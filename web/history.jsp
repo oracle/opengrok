@@ -231,26 +231,26 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                 String url;
                 if (count + start > revision1 || (count + start > revision2 && count + start <= revision1 - 1)) {
                     // revision1 enabled
-                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&start=" + start +"&r1="+(start + count) +"&r2="+revision2;
+                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&amp;start=" + start +"&amp;r1="+(start + count) +"&amp;r2="+revision2;
                     %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
                 } else if (count + start == revision1 ) {
                     // revision1 selected
-                    %><input type="radio" checked/><%
+                    %><input type="radio" checked="checked"/><%
                 } else if( count + start <= revision2 ) {
                     // revision1 disabled
-                    %><input type="radio" disabled/><%
+                    %><input type="radio" disabled="disabled"/><%
                 }
 
                 if( count + start < revision2 || (count + start > revision2 && count + start <= revision1 - 1) ) {
                     // revision2 enabled
-                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&start=" + start +"&r1="+revision1 +"&r2="+(start + count);
+                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&amp;start=" + start +"&amp;r1="+revision1 +"&amp;r2="+(start + count);
                     %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
                 } else if( count + start == revision2 ) {
                     // revision2 selected
-                    %><input type="radio" checked/><%
+                    %><input type="radio" checked="checked"/><%
                 } else if (count + start >= revision1 ) {
                     // revision2 disabled
-                    %><input type="radio" disabled/><%
+                    %><input type="radio" disabled="disabled"/><%
                 }
                 %></td><%
                     } else {
@@ -279,8 +279,11 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                 %><%= author %><%
                 }
                 %></td>
-            <td><a name="<%= rev %>"></a><p><%
+            <td><a name="<%= rev %>"></a><%
+                // revision message collapse threshold minimum of 10
+                int summaryLength = Math.max(10, cfg.getRevisionMessageCollapseThreshold());
                 String cout = Util.htmlize(entry.getMessage());
+
                 if (bugPage != null && bugPage.length() > 0) {
                     cout = bugPattern.matcher(cout).replaceAll("<a href=\""
                         + bugPage + "$1\">$1</a>");
@@ -289,7 +292,26 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                     cout = reviewPattern.matcher(cout).replaceAll("<a href=\""
                         + reviewPage + "$1\">$1</a>");
                 }
-                %><%= cout %></p><%
+                
+                boolean showSummary = false;
+                String coutSummary = entry.getMessage();
+                if (coutSummary.length() > summaryLength) {
+                    showSummary = true;
+                    coutSummary = coutSummary.substring(0, summaryLength - 1);
+                    coutSummary = Util.htmlize(coutSummary);
+                }
+
+                if (showSummary) {
+                    %>
+                    <p class="rev-message-summary"><%= coutSummary %></p>
+                    <p class="rev-message-full rev-message-hidden"><%= cout %></p>
+                    <p class="rev-message-toggle" data-toggle-state="less"><a class="rev-toggle-a" href="#">show more ... </a></p>
+                    <%
+                }
+                else {
+                     %><p class="rev-message-full"><%= cout %></p><%
+                }
+
                 Set<String> files = entry.getFiles();
                 if (files != null) {
                 %><div class="filelist-hidden"><br/><%

@@ -50,7 +50,7 @@ public class JavaAnalyzerFactory extends FileAnalyzerFactory {
     protected FileAnalyzer newAnalyzer() {
         return new JavaAnalyzer(this);
     }
-
+    
     @Override
     public void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project)
         throws IOException {

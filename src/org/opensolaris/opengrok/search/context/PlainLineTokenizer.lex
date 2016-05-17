@@ -328,12 +328,12 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                                 
                                 Scope scope = null;
                                 if (scopes != null) {
-                                    scope = scopes.getScope(markedLine);
+                                    scope = scopes.getScope(markedLine-1);
                                 }
                                 if (scope != null && scope != scopes.getScope(-1)) {
                                     out.write(" <a class=\"scope\" href=\"");
                                     out.write(url);
-                                    out.write(String.valueOf(scope.lineFrom));
+                                    out.write(String.valueOf(scope.getLineFrom()));
                                     out.write("\">in ");
                                     out.write(scope.getName());
                                     out.write("()</a> ");
@@ -423,12 +423,12 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
 
                            Scope scope = null;
                            if (scopes != null) {
-                               scope = scopes.getScope(markedLine);
+                               scope = scopes.getScope(markedLine-1);
                            }
                            if (scope != null && scope != scopes.getScope(-1)) {
                                out.write(" <a class=\"scope\" href=\"");
                                out.write(url);
-                               out.write(String.valueOf(scope.lineFrom));
+                               out.write(String.valueOf(scope.getLineFrom()));
                                out.write("\">in ");
                                out.write(scope.getName());
                                out.write("()</a> ");

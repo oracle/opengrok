@@ -115,6 +115,15 @@ public class SSCMRepository extends Repository {
         return props;
     }
 
+    /**
+     * Get an executor to be used for retrieving the history log for the named
+     * file or directory.
+     *
+     * @param file The file or directory to retrieve history for
+     * @param sinceRevision  the oldest changeset to return from the executor, or
+     *                  {@code null} if all changesets should be returned
+     * @return An Executor ready to be started
+     */
     Executor getHistoryLogExecutor(final File file, String sinceRevision) throws IOException {
 
         List<String> argv = new ArrayList<>();
@@ -141,7 +150,7 @@ public class SSCMRepository extends Repository {
             argv.add("-p" + repo);
         }
 
-        return new Executor(argv, new File(getDirectoryName()));
+        return new Executor(argv, new File(getDirectoryName()), sinceRevision != null);
     }
 
     @Override

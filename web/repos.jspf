@@ -18,9 +18,10 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 
 --%>
+<script src="<%=request.getContextPath()%>/repos.js" type="text/javascript"></script>
 <%@page import="java.util.Set"%>
 <%@page import="org.opensolaris.opengrok.web.Prefix"%>
 <%@page import="org.opensolaris.opengrok.web.ProjectHelper"%>
@@ -39,13 +40,14 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
 <%@page import="org.opensolaris.opengrok.web.PageConfig"%>
 <%
 {
+    PageConfig cfg = PageConfig.get(request);
     Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
         public int compare(RepositoryInfo r1, RepositoryInfo r2) {
             return r1.getDirectoryName().compareTo(r2.getDirectoryName());
         }
     };
     
-    ProjectHelper pHelper = ProjectHelper.getInstance(cfg);
+    ProjectHelper pHelper = cfg.getProjectHelper();
     if (pHelper.getAllProjects().size() > 0) {
         Set<Group> groups = pHelper.getGroups();
         Set<Project> repositories = pHelper.getUngroupedRepositories();
@@ -65,11 +67,10 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
             <%
             LinkedList<Group> stack = new LinkedList<Group>();
             for ( Group x : groups ) {
-                if(x.getParent() != null) {
-                    continue;
+                if(x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
+                    x.setFlag(0);
+                    stack.addLast(x);
                 }
-                x.setFlag(0);
-                stack.addLast(x);
             }
             
             while ( ! stack.isEmpty() ) {
@@ -85,9 +86,11 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
                 
                 stack.element().setFlag(1);
                 
-                for ( Group x : group.getSubgroups()) {
-                    x.setFlag(0);
-                    stack.addFirst(x);
+                for ( Group x : pHelper.getSubgroups(group)) {
+                    if(cfg.isAllowed(x) || pHelper.hasAllowedSubgroup(x)) {
+                        x.setFlag(0);
+                        stack.addFirst(x);
+                    }
                 }
                 
                 %><div class="panel">
@@ -95,9 +98,10 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
                         
                         <h2><span class="name"><%= Util.htmlize(group.getName()) %></span> <small>[<a href="#" class="projects_select_all">select all</a>]</small></h2>
                     </div>
-                    <div class="panel-body-accordion">
+                        <div class="panel-body-accordion <% if(pHelper.hasFavourite(group)) { %> favourite<% } %>"
+                        <% if(pHelper.hasFavourite(group)) { %>data-accordion-visible="true"<% } %>>
                 <%
-                if(group.getRepositories().size() > 0 ) {
+                if(pHelper.getRepositories(group).size() > 0 ) {
                 %>
                     <table>
                     <thead>
@@ -109,7 +113,7 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
                     </thead>
                     <tbody>
                     <%
-                    for ( Project project : group.getRepositories()) {
+                    for ( Project project : pHelper.getRepositories(group)) {
                         List<RepositoryInfo> repos = pHelper.getRepositoryInfo(project);
                         String projDesc = project.getDescription();
                         Integer cnt = 0;
@@ -117,12 +121,16 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
                         %>
                         <%
                         for (RepositoryInfo ri : repos) {
+                            if(cnt > 0 && ri.getParent() == null)
+                                // discard repositories without a parent url
+                                continue;
                             if (cnt != 0) {
-                                projDesc = "";
+                                projDesc = ri.getDirectoryName()
+                                             .replace(cfg.getSourceRootPath() + File.separator, "");
                             }
                             %>
                             <tr>
-                                <td class="name">
+                                <td class="name <%= cnt > 0 ? "subrepository" : "repository" %>">
                     <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
@@ -149,13 +157,13 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
 
                     %></tbody>
                     </table><%
-                } else if ( group.getRepositories().size() <= 0 && group.getSubgroups().size() <= 0 ) {
+                } else if ( pHelper.getRepositories(group).size() <= 0 && !pHelper.hasAllowedSubgroup(group) ) {
                     %>No projects<%
                 }
             }
             %></div><%
-        }    
-    
+        }
+
         // print the rest of projects which don't have a group
         if (repositories.size() > 0) { %>
             <div class="panel-group projects">
@@ -177,7 +185,8 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
                             </h2>
                         </div>
                     <% } %>
-                    <div class="panel-body<% if(groups.size() > 0) {%>-accordion<% } %>">
+                    <div class="panel-body<% if(groups.size() > 0) {%>-accordion<% } %> <% if(pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
+                        <% if(pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
                         <table>
                             <thead>
                         <tr>
@@ -188,22 +197,26 @@ Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
                             </thead>
                             <tbody>
                         <%
-                        for ( Project proj : repositories) {
+                        for (Project proj : repositories) {
                             List<RepositoryInfo> repos = pHelper.getRepositoryInfo(proj);
                             String projDesc = proj.getDescription();
                             Integer cnt = 0;
                             Collections.sort(repos, comparatorRepo);
                             for (RepositoryInfo ri : repos) {
+                                if(cnt > 0 && ri.getParent() == null)
+                                    // discard repositories without a parent url
+                                    continue;
                                 if (cnt != 0) {
-                                    projDesc = "";
+                                    projDesc = ri.getDirectoryName()
+                                                 .replace(cfg.getSourceRootPath() + File.separator, "");
                                 }
                                 %>
-                                <tr><td class="name">
-                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc%>"
+                                <tr><td class="name <%= cnt > 0 ? "subrepository" : "repository" %>">
+                    <a href="<%= request.getContextPath() + Prefix.XREF_P + "/" + projDesc %>"
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
                     </a>
-                                    </td><%
+                    </td><%
                                 String parent = ri.getParent();
                                 if (parent == null) {
                                     parent = "N/A";

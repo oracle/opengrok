@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
-<web-app>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
   <display-name>OpenGrok</display-name>
   <description>A wicked fast source browser</description>
   <context-param>
@@ -15,9 +14,38 @@
     <description>An address where OpenGrok can receive new configuration</description>
   </context-param>
 
+  <context-param>
+      <param-name>authorizationPluginDirectory</param-name>
+      <param-value>/var/opengrok/plugins</param-value>
+      <description>
+          Directory with authorization plugins.
+          Default value is dataRoot/../plugins 
+            (can be /var/opengrok/plugins if dataRoot is /var/opengrok/data).
+      </description>
+  </context-param>
+  
+  <context-param>
+      <param-name>enableAuthorizationWatchDog</param-name>
+      <param-value>false</param-value>
+      <description>
+          Enable watching the plugin directory for changes in real time.
+          Suitable for development.
+      </description>
+  </context-param>
+  
   <listener>
    <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
   </listener>
+
+  <filter>
+      <filter-name>AuthorizationFilter</filter-name>
+      <filter-class>org.opensolaris.opengrok.web.AuthorizationFilter</filter-class>
+  </filter>
+      
+  <filter-mapping>
+      <filter-name>AuthorizationFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+  </filter-mapping>    
     
   <servlet>
     <servlet-name>search</servlet-name>
@@ -169,4 +197,10 @@
     <error-code>500</error-code>
     <location>/error</location>
   </error-page>
+  <jsp-config>
+    <jsp-property-group>
+      <url-pattern>*.jsp</url-pattern>
+      <trim-directive-whitespaces>true</trim-directive-whitespaces>
+    </jsp-property-group>
+  </jsp-config>
 </web-app>

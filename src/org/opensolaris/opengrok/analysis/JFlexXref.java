@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis;
@@ -30,6 +30,7 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -54,9 +55,13 @@ public abstract class JFlexXref {
     public Annotation annotation;
     public Project project;
     protected Definitions defs;
-    protected Scopes scopes;
-    private boolean scopeOpen = false;
+    private boolean scopesEnabled = false;
     private boolean foldingEnabled = false;
+
+    private boolean scopeOpen = false;
+    protected Scopes scopes = new Scopes();
+    protected Scope scope;
+    private int scopeLevel = 0;
     
     /**
      * EOF value returned by yylex().
@@ -178,14 +183,19 @@ public abstract class JFlexXref {
     public final void reInit(Reader reader) {
         this.yyreset(reader);
         annotation = null;
+        
+        scopes = new Scopes();
+        scope = null;
+        scopeLevel = 0;
+        scopeOpen = false;
     }
 
     public void setDefs(Definitions defs) {
         this.defs = defs;
     }
     
-    public void setScopes(Scopes scopes) {
-        this.scopes = scopes;
+    public void setScopesEnabled(boolean scopesEnabled) {
+        this.scopesEnabled = scopesEnabled;
     }
     
     public void setFoldingEnabled(boolean foldingEnabled) {
@@ -199,9 +209,62 @@ public abstract class JFlexXref {
         }
     }
 
+    protected void appendLink(String url) throws IOException {
+        out.write("<a href=\"");
+        out.write(Util.formQuoteEscape(url));
+        out.write("\">");
+        Util.htmlize(url, out);
+        out.write("</a>");
+    }
+
     protected String getProjectPostfix(boolean encoded) {
         String amp = encoded ? "&amp;" : "&";
         return project == null ? "" : (amp + "project=" + project.getDescription());
+    }
+       
+    protected void startScope() {
+        if (scopesEnabled && scope == null) {
+            int line = getLineNumber();
+            List<Tag> tags = defs.getTags(line);
+            if (tags != null) {
+                for (Tag tag : tags) {
+                    if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
+                        scope = new Scope(tag.line, tag.line, tag.symbol, tag.scope, tag.signature);
+                        scopeLevel = 0;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    protected void incScope() { 
+        if (scope != null) {
+            scopeLevel++;
+        }
+    }
+    protected void decScope() {
+        if (scope != null && scopeLevel > 0) {
+            scopeLevel--;
+            if (scopeLevel == 0) {
+                scope.setLineTo(getLineNumber());
+                scopes.addScope(scope);
+                scope = null;
+            }
+        }
+    }
+    protected void endScope() {
+        if (scope != null && scopeLevel == 0) {
+            scope.setLineTo(getLineNumber());
+            scopes.addScope(scope);            
+            scope = null;
+        }
+    }
+    
+    /**
+     * Get generated scopes.
+     */
+    public Scopes getScopes() {
+        return scopes;
     }
 
     /**
@@ -247,6 +310,22 @@ public abstract class JFlexXref {
         if (scopeOpen) {
             out.write("</div>");
             scopeOpen = false;
+        }
+
+        while (!stack.empty()) {
+            yypop();
+        }
+
+        writeScopesFooter();
+    }
+
+    /**
+     * Write a JavaScript function that display scopes panel if scopes are
+     * available
+     */
+    private void writeScopesFooter() throws IOException {
+        if (scopesEnabled && scopes != null && scopes.size() > 0) {
+            out.append("<script type=\"text/javascript\">document.getElementById(\"scope\").style.display = \"block\";</script>");
         }
     }
 
@@ -353,8 +432,8 @@ public abstract class JFlexXref {
      * @return generated span id
      */
     private String generateId(Scope scope) {
-        String name = Integer.toString(scope.lineFrom) + scope.getName() +
-                scope.signature;
+        String name = Integer.toString(scope.getLineFrom()) + scope.getName() +
+                scope.getSignature();
         int hash = name.hashCode();
         return "scope_id_" + Integer.toHexString(hash);
     }
@@ -382,46 +461,42 @@ public abstract class JFlexXref {
         int line = getLineNumber() + 1;
         boolean skipNl = false;
         setLineNumber(line);
-        
-        if (scopes != null) {
-            Scope prevScope = scopes.getScope(line-1);
-            Scope newScope = scopes.getScope(line);
-            String scopeId = generateId(newScope);
 
-            if (prevScope != newScope) {
-                if (scopeOpen) {
-                    scopeOpen = false;
-                    out.write("</span>");
-                    skipNl = true;
-                }
+        if (scopesEnabled) {
+            startScope();
 
-                if (newScope != scopes.GLOBAL_SCOPE) {
+            if (scopeOpen && scope == null) {
+                scopeOpen = false;
+                out.write("</span>");
+                skipNl = true;
+            } else if (scope != null) {
+                String scopeId = generateId(scope);
+                if (scope.getLineFrom() == line) {
                     out.write("<span id='");
                     out.write(scopeId);
                     out.write("' class='scope-head'><span class='scope-signature'>");
-                    out.write(htmlize(newScope.getName() + newScope.signature));
+                    out.write(htmlize(scope.getName() + scope.getSignature()));
                     out.write("</span>");
-                    scopeOpen = true;
                     iconId = scopeId + "_fold_icon";
                     skipNl = true;
-                }      
-            } else if (newScope != scopes.GLOBAL_SCOPE &&
-                    line == newScope.lineFrom+1) {
-                if (scopeOpen) {
-                    out.write("</span>");
+                } else if (scope.getLineFrom() == line - 1) {
+                    if (scopeOpen) {
+                        out.write("</span>");
+                    }
+
+                    out.write("<span id='");
+                    out.write(scopeId);
+                    out.write("_fold' class='scope-body'>");
+                    skipNl = true;
                 }
-                
                 scopeOpen = true;
-                out.write("<span id='");
-                out.write(scopeId);
-                out.write("_fold' class='scope-body'>");
-                skipNl = true;
             }
         }
+
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-            getProjectPostfix(false), skipNl);
+            getProjectPostfix(true), skipNl);
         
-        if (foldingEnabled) {
+        if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {
                 out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
                 out.write(iconId);
@@ -483,11 +558,19 @@ public abstract class JFlexXref {
             //    do this when there's exactly one definition of the symbol in
             //    this file? Otherwise, we may end up with multiple anchors with
             //    the same name.)
-            out.append("<a class=\"");
-            out.append(style_class);
-            out.append("\" name=\"");
-            out.append(symbol);
-            out.append("\"/>");
+            //
+            //    Note: In HTML 4, the name must start with a letter, and can
+            //    only contain letters, digits, hyphens, underscores, colons,
+            //    and periods. https://www.w3.org/TR/html4/types.html#type-name
+            //    Skip the anchor if the symbol name is not a valid anchor
+            //    name. This restriction is lifted in HTML 5.
+            if (symbol.matches("[a-zA-Z][a-zA-Z0-9_:.-]*")) {
+                out.append("<a class=\"");
+                out.append(style_class);
+                out.append("\" name=\"");
+                out.append(symbol);
+                out.append("\"/>");
+            }
 
             // 2) Create a link that searches for all references to this symbol.
             out.append("<a href=\"");
