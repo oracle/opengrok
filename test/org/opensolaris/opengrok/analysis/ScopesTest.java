@@ -50,16 +50,16 @@ public class ScopesTest {
         
         assertEquals(instance.size(), 6);
         assertEquals(instance.getScope(1), globalScope);
-        assertEquals(instance.getScope(10).name, "scope1");
-        assertEquals(instance.getScope(15).name, "scope1");
-        assertEquals(instance.getScope(20).name, "scope1");
+        assertEquals(instance.getScope(10).getName(), "scope1");
+        assertEquals(instance.getScope(15).getName(), "scope1");
+        assertEquals(instance.getScope(20).getName(), "scope1");
         assertEquals(instance.getScope(21), globalScope);
         assertEquals(instance.getScope(24), globalScope);
         assertEquals(instance.getScope(39), globalScope);
-        assertEquals(instance.getScope(40).name, "scope3");
+        assertEquals(instance.getScope(40).getName(), "scope3");
         assertEquals(instance.getScope(41), globalScope);
-        assertEquals(instance.getScope(90).name, "scope5");
-        assertEquals(instance.getScope(100).name, "scope6");
+        assertEquals(instance.getScope(90).getName(), "scope5");
+        assertEquals(instance.getScope(100).getName(), "scope6");
         assertEquals(instance.getScope(101), globalScope);
         assertEquals(instance.getScope(500), globalScope);
     }

@@ -58,6 +58,11 @@ public class CAnalyzer extends AbstractSourceCodeAnalyzer {
     protected JFlexXref newXref(Reader reader) {
         return new CXref(reader);
     }
+    
+    @Override
+    protected boolean supportsScopes() {
+        return true;
+    }
 
     static void writeXref(Reader in, Writer out, Definitions defs, Annotation annotation, Project project) throws IOException {
         CXref xref = new CXref(in);

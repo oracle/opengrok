@@ -1087,7 +1087,7 @@ span.scope-signature {
 }
 
 div#scope {
-    width: 100%;
+    display: none;
     min-height: 1em;
     text-align: left;
     background-color: #dddddd;

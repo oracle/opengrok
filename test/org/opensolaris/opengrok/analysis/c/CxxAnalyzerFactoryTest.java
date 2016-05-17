@@ -124,35 +124,35 @@ public class CxxAnalyzerFactoryTest {
         
         for (int i=0; i<50; ++i) {
             if (i >= 11 && i <= 15) {
-                assertEquals("SomeClass", scopes.getScope(i).name);
-                assertEquals("class:SomeClass", scopes.getScope(i).scope);
+                assertEquals("SomeClass", scopes.getScope(i).getName());
+                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
             } else if (i >= 17 && i <= 20) {                
-                assertEquals("~SomeClass", scopes.getScope(i).name);
-                assertEquals("class:SomeClass", scopes.getScope(i).scope);
+                assertEquals("~SomeClass", scopes.getScope(i).getName());
+                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
             } else if (i >= 22 && i <= 25) {
-                assertEquals("MemberFunc", scopes.getScope(i).name);
-                assertEquals("class:SomeClass", scopes.getScope(i).scope);
+                assertEquals("MemberFunc", scopes.getScope(i).getName());
+                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
             } else if (i >= 27 && i <= 29) {
-                assertEquals("operator ++", scopes.getScope(i).name);
-                assertEquals("class:SomeClass", scopes.getScope(i).scope);
+                assertEquals("operator ++", scopes.getScope(i).getName());
+                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
             } else if (i >= 32 && i <= 34) {
-                assertEquals("TemplateMember", scopes.getScope(i).name);
-                assertEquals("class:SomeClass", scopes.getScope(i).scope);
+                assertEquals("TemplateMember", scopes.getScope(i).getName());
+                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
             } else if (i >= 44 && i <= 46) {
-                assertEquals("SomeFunc", scopes.getScope(i).name);
-                assertEquals("class:ns1::NamespacedClass", scopes.getScope(i).scope);
+                assertEquals("SomeFunc", scopes.getScope(i).getName());
+                assertEquals("class:ns1::NamespacedClass", scopes.getScope(i).getScope());
             } else if (i >= 51 && i <= 54) {
-                assertEquals("foo", scopes.getScope(i).name);
-                assertNull(scopes.getScope(i).scope);
+                assertEquals("foo", scopes.getScope(i).getName());
+                assertNull(scopes.getScope(i).getScope());
             } else if (i >= 59 && i <= 73) {
-                assertEquals("bar", scopes.getScope(i).name);
-                assertNull(scopes.getScope(i).scope);
+                assertEquals("bar", scopes.getScope(i).getName());
+                assertNull(scopes.getScope(i).getScope());
             } else if (i >= 76 && i <= 87) {
-                assertEquals("main", scopes.getScope(i).name);
-                assertNull(scopes.getScope(i).scope);
+                assertEquals("main", scopes.getScope(i).getName());
+                assertNull(scopes.getScope(i).getScope());
             } else {
                 assertEquals(scopes.getScope(i), globalScope);
-                assertNull(scopes.getScope(i).scope);
+                assertNull(scopes.getScope(i).getScope());
             }
         }
     }
