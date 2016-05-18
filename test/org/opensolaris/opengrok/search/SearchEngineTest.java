@@ -244,6 +244,19 @@ public class SearchEngineTest {
         // file name search is case insensitive
         instance = new SearchEngine();
         instance.setFile("JaVa"); // should match java
-        assertEquals(7, instance.search());
+        assertEquals(8, instance.search());
+        
+        //test eol and eof        
+        instance = new SearchEngine();
+        instance.setFreetext("makeW"); 
+        assertEquals(1, instance.search());        
+        instance = new SearchEngine();
+        instance.setFreetext("WeirdEOL");
+        assertEquals(1, instance.search());
+        
+        //test bcel jar parser
+        instance = new SearchEngine();
+        instance.setFreetext("InstConstraintVisitor");
+        assertEquals(1, instance.search());        
     }
 }
