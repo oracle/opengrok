@@ -1112,20 +1112,17 @@ function escapeSingleQuote(string) {
     return string.replace("'", "\\'");
 }
 
+
+var scope_visible = 0;
+var scope_text = '';
+
 /**
  * Fold or unfold a function definition.
  */
-function fold(id) {
-    var e = document.getElementById(id + "_fold");
+function fold(id) {        
     var i = document.getElementById(id + "_fold_icon").children[0];
-
-    if (e.style.display === "") {
-        e.style.display = "none";
-        i.className = "unfold-icon";
-    } else {
-        e.style.display = "";
-        i.className = "fold-icon";
-    }
+    i.className = i.className === 'fold-icon' ? 'unfold-icon' : 'fold-icon';
+    $("#" + id + "_fold").toggle('fold');
 }
 
 /**
@@ -1135,21 +1132,22 @@ function fold(id) {
  */
 function scope_on_scroll() {
     var cnt = document.getElementById("content");
-    var scope = document.getElementById("scope");
+    var scope_cnt = document.getElementById("scope_content");
     var y = cnt.getBoundingClientRect().top + 2;
-    var c = document.elementFromPoint(15, y + 1);
-    scope.innerHTML = "&nbsp;";
+
+    var c = document.elementFromPoint(15, y+1);
+    scope_cnt.innerHTML = '';
     if (c.className === "l" || c.className === "hl") {
         prev = c;
         var par = c.parentNode;
-        while (par.className !== 'scope-body') {
+        while( par.className !== 'scope-body' && par.className !== 'scope-head' ) {
             par = par.parentNode;
             if (par === null) {
                 return ;
             }
         }
-        var head = par.previousSibling;
+        var head = par.className === 'scope-body' ? par.previousSibling : par;
         var sig = head.children[0];
-        scope.innerHTML = "<a href='#" + head.id + "'>" + sig.innerHTML + "</a>";
+        scope_cnt.innerHTML = '<a href="#' + head.id + '">' + sig.innerHTML + '</a>';
     }
 }

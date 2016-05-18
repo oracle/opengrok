@@ -334,7 +334,7 @@ import org.opensolaris.opengrok.analysis.Scopes.Scope;
                                     out.write(" <a class=\"scope\" href=\"");
                                     out.write(url);
                                     out.write(String.valueOf(scope.getLineFrom()));
-                                    out.write("\">");
+                                    out.write("\">in ");
                                     out.write(scope.getName());
                                     out.write("()</a> ");
                                 }
@@ -429,7 +429,7 @@ Printable = [\@\$\%\^\&\-+=\?\.\:]
                                out.write(" <a class=\"scope\" href=\"");
                                out.write(url);
                                out.write(String.valueOf(scope.getLineFrom()));
-                               out.write("\">");
+                               out.write("\">in ");
                                out.write(scope.getName());
                                out.write("()</a> ");
                            }

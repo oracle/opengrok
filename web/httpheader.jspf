@@ -128,6 +128,7 @@ $.tablesorter.addParser({
 
 $(document).ready(function()
     {
+        $("#content").scroll(scope_on_scroll);
         $("#dirlist").tablesorter({
             sortList: [[0,0]],
             cancelSelection: true,

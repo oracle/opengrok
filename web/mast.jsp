@@ -157,7 +157,7 @@ include file="pageheader.jspf"
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
 </div>
-<div id="scope">&nbsp;</div>
+<div id="scope"><span id="scope_content">&nbsp;</span></div>
         </form>
     </div>
 <div id="content">
