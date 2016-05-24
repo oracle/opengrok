@@ -358,7 +358,7 @@ public class BazaarRepository extends Repository {
         cmd.add("config");
         cmd.add("parent_location");
         Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
+        if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
 

@@ -122,16 +122,18 @@ public class MercurialRepository extends Repository {
      * Return name of the branch or "default"
      */
     @Override
-    String determineBranch() {
+    String determineBranch() throws IOException {
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("branch");
 
-        Executor e = new Executor(cmd, new File(directoryName));
-        e.exec();
+        Executor executor = new Executor(cmd, new File(directoryName));
+        if (executor.exec(false) != 0) {
+            throw new IOException(executor.getErrorString());
+        }
 
-        return e.getOutputString().trim();
+        return executor.getOutputString().trim();
     }
 
     /**
@@ -673,7 +675,7 @@ public class MercurialRepository extends Repository {
         cmd.add("paths");
         cmd.add("default");
         Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
+        if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
 

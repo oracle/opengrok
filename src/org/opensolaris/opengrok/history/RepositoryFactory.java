@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -92,7 +92,8 @@ public final class RepositoryFactory {
                     res.setDirectoryName(file.getCanonicalPath());
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE,
-                        "Failed to get canonical path name for " + file.getAbsolutePath(), e);
+                        "Failed to get canonical path name for " +
+			file.getAbsolutePath(), e);
                 }
 
                 if (!res.isWorking()) {
@@ -113,9 +114,9 @@ public final class RepositoryFactory {
                     try {
                         res.setParent(res.determineParent());
                     } catch (IOException ex) {
-                        LOGGER.log(Level.SEVERE, null, ex);
                         LOGGER.log(Level.WARNING,
-                            "Failed to get parent for " + file.getAbsolutePath());
+                            "Failed to get parent for {0}: {1}",
+                            new Object[]{file.getAbsolutePath(), ex});
                     }
                 }
 
@@ -124,7 +125,8 @@ public final class RepositoryFactory {
                         res.setBranch(res.determineBranch());
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
-                            "Failed to get branch for " + file.getAbsolutePath());
+                            "Failed to get branch for {0}: {1}",
+                            new Object[]{file.getAbsolutePath(), ex});
                     }
                 }
 
