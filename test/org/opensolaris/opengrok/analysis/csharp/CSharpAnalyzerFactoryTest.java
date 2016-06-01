@@ -17,12 +17,11 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.csharp;
 
-import org.opensolaris.opengrok.analysis.c.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -50,9 +49,9 @@ import org.opensolaris.opengrok.util.TestRepository;
  * @author kotal
  */
 public class CSharpAnalyzerFactoryTest {
-    
+
     FileAnalyzer analyzer;
-    private String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
+    private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
     private static TestRepository repository;
 
@@ -65,7 +64,7 @@ public class CSharpAnalyzerFactoryTest {
             this.analyzer.setCtags(new Ctags());
         }
     }
-    
+
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
             @Override
@@ -74,7 +73,7 @@ public class CSharpAnalyzerFactoryTest {
             }
         };
     }
-    
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
@@ -86,7 +85,7 @@ public class CSharpAnalyzerFactoryTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {        
+    public static void tearDownClass() throws Exception {
         ctags.close();
         ctags = null;
     }
@@ -101,44 +100,44 @@ public class CSharpAnalyzerFactoryTest {
         if (!(f.canRead() && f.isFile())) {
             fail("csharp testfile " + f + " not found");
         }
-        
+
         Document doc = new Document();
         doc.add(new Field(QueryBuilder.FULLPATH, path,
-            string_ft_nstored_nanalyzed_norms));
+                string_ft_nstored_nanalyzed_norms));
         StringWriter xrefOut = new StringWriter();
         analyzer.setCtags(ctags);
         analyzer.setScopesEnabled(true);
         analyzer.analyze(doc, getStreamSource(path), xrefOut);
-        
+
         IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
         assertNotNull(scopesField);
         Scopes scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
         Scope globalScope = scopes.getScope(-1);
         assertEquals(4, scopes.size()); //TODO 5
-        
-        for (int i=0; i<41; ++i) {
+
+        for (int i = 0; i < 41; ++i) {
             if (i >= 10 && i <= 10) {
                 assertEquals("M1", scopes.getScope(i).getName());
-                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).getScope());
+                assertEquals("MyNamespace.TopClass", scopes.getScope(i).getNamespace());
             } else if (i >= 12 && i <= 14) {
                 assertEquals("M2", scopes.getScope(i).getName());
-                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).getScope());
+                assertEquals("MyNamespace.TopClass", scopes.getScope(i).getNamespace());
             } else if (i >= 19 && i <= 25) {
                 assertEquals("M3", scopes.getScope(i).getName());
-                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).getScope());
+                assertEquals("MyNamespace.TopClass", scopes.getScope(i).getNamespace());
 //TODO add support for generic classes                
 //            } else if (i >= 28 && i <= 30) { 
 //                assertEquals("M4", scopes.getScope(i).name);
-//                assertEquals("class:MyNamespace.TopClass", scopes.getScope(i).scope);
+//                assertEquals("MyNamespace.TopClass", scopes.getScope(i).namespace);
             } else if (i >= 34 && i <= 36) {
                 assertEquals("M5", scopes.getScope(i).getName());
-                assertEquals("class:MyNamespace.TopClass.InnerClass", scopes.getScope(i).getScope());
+                assertEquals("MyNamespace.TopClass.InnerClass", scopes.getScope(i).getNamespace());
             } else {
                 assertEquals(scopes.getScope(i), globalScope);
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             }
 
         }
     }
-    
+
 }

@@ -125,16 +125,16 @@ public class CAnalyzerFactoryTest {
         for (int i = 0; i < 50; ++i) {
             if (i >= 8 && i <= 22) {
                 assertEquals("foo", scopes.getScope(i).getName());
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             } else if (i >= 24 && i <= 38) {
                 assertEquals("bar", scopes.getScope(i).getName());
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             } else if (i >= 41 && i <= 48) {
                 assertEquals("main", scopes.getScope(i).getName());
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             } else {
                 assertEquals(scopes.getScope(i), globalScope);
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             }
         }
     }

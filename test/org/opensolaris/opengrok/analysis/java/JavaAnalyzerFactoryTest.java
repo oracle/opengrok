@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.java;
@@ -121,26 +121,26 @@ public class JavaAnalyzerFactoryTest {
         Scopes scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
         Scope globalScope = scopes.getScope(-1);
         assertEquals(5, scopes.size()); // foo, bar, main
-        
-        for (int i=0; i<74; ++i) {
+
+        for (int i = 0; i < 74; ++i) {
             if (i >= 29 && i <= 31) {
                 assertEquals("Sample", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());
+                assertEquals("Sample", scopes.getScope(i).getNamespace());
             } else if (i >= 33 && i <= 41) {
                 assertEquals("Method", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());
-            } else if (i == 43) {                
+                assertEquals("Sample", scopes.getScope(i).getNamespace());
+            } else if (i == 43) {
                 assertEquals("AbstractMethod", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());
+                assertEquals("Sample", scopes.getScope(i).getNamespace());
             } else if (i >= 47 && i <= 56) {
                 assertEquals("InnerMethod", scopes.getScope(i).getName());
-                assertEquals("class:Sample.InnerClass", scopes.getScope(i).getScope());
+                assertEquals("Sample.InnerClass", scopes.getScope(i).getNamespace());
             } else if (i >= 60 && i <= 72) {
                 assertEquals("main", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());                
+                assertEquals("Sample", scopes.getScope(i).getNamespace());
             } else {
                 assertEquals(scopes.getScope(i), globalScope);
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             }
         }
     }

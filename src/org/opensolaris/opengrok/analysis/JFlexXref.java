@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -62,7 +62,7 @@ public abstract class JFlexXref {
     protected Scopes scopes = new Scopes();
     protected Scope scope;
     private int scopeLevel = 0;
-    
+
     /**
      * EOF value returned by yylex().
      */
@@ -83,8 +83,8 @@ public abstract class JFlexXref {
      * @see #startNewLine()
      */
     protected String userPageSuffix;
-    protected Stack<Integer> stack = new Stack<Integer>();
-    protected Stack<String> stackPopString = new Stack<String>();
+    protected Stack<Integer> stack = new Stack<>();
+    protected Stack<String> stackPopString = new Stack<>();
 
     /**
      * Description of the style to use for a type of definitions.
@@ -183,7 +183,7 @@ public abstract class JFlexXref {
     public final void reInit(Reader reader) {
         this.yyreset(reader);
         annotation = null;
-        
+
         scopes = new Scopes();
         scope = null;
         scopeLevel = 0;
@@ -193,11 +193,11 @@ public abstract class JFlexXref {
     public void setDefs(Definitions defs) {
         this.defs = defs;
     }
-    
+
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
-    
+
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
     }
@@ -221,7 +221,7 @@ public abstract class JFlexXref {
         String amp = encoded ? "&amp;" : "&";
         return project == null ? "" : (amp + "project=" + project.getDescription());
     }
-       
+
     protected void startScope() {
         if (scopesEnabled && scope == null) {
             int line = getLineNumber();
@@ -229,7 +229,7 @@ public abstract class JFlexXref {
             if (tags != null) {
                 for (Tag tag : tags) {
                     if (tag.type.startsWith("function") || tag.type.startsWith("method")) {
-                        scope = new Scope(tag.line, tag.line, tag.symbol, tag.scope, tag.signature);
+                        scope = new Scope(tag.line, tag.line, tag.symbol, tag.namespace, tag.signature);
                         scopeLevel = 0;
                         break;
                     }
@@ -237,11 +237,13 @@ public abstract class JFlexXref {
             }
         }
     }
-    protected void incScope() { 
+
+    protected void incScope() {
         if (scope != null) {
             scopeLevel++;
         }
     }
+
     protected void decScope() {
         if (scope != null && scopeLevel > 0) {
             scopeLevel--;
@@ -252,16 +254,18 @@ public abstract class JFlexXref {
             }
         }
     }
+
     protected void endScope() {
         if (scope != null && scopeLevel == 0) {
             scope.setLineTo(getLineNumber());
-            scopes.addScope(scope);            
+            scopes.addScope(scope);
             scope = null;
         }
     }
-    
+
     /**
      * Get generated scopes.
+     * @return 
      */
     public Scopes getScopes() {
         return scopes;
@@ -269,21 +273,26 @@ public abstract class JFlexXref {
 
     /**
      * Get the next token from the scanner.
+     * @return 
+     * @throws java.io.IOException
      */
     public abstract int yylex() throws IOException;
 
     /**
      * Reset the scanner.
+     * @param reader
      */
     public abstract void yyreset(Reader reader);
 
     /**
      * Get the value of {@code yyline}.
+     * @return 
      */
     protected abstract int getLineNumber();
 
     /**
      * Set the value of {@code yyline}.
+     * @param x
      */
     protected abstract void setLineNumber(int x);
 
@@ -324,6 +333,7 @@ public abstract class JFlexXref {
      * available
      */
     private void writeScopesFooter() throws IOException {
+        //TODO try to get rid of included js scripts generated from here (all js should ideally be in util)
         if (scopesEnabled && scopes != null && scopes.size() > 0) {
             out.append("<script type=\"text/javascript\">document.getElementById(\"scope\").style.display = \"block\";</script>");
         }
@@ -356,8 +366,8 @@ public abstract class JFlexXref {
             }
         };
 
-        Map<String, SortedSet<Tag>> symbols =
-                new HashMap<String, SortedSet<Tag>>();
+        Map<String, SortedSet<Tag>> symbols
+                = new HashMap<>();
 
         for (Tag tag : defs.getTags()) {
             Style style = getStyle(tag.type);
@@ -371,6 +381,7 @@ public abstract class JFlexXref {
             }
         }
 
+        //TODO try to get rid of included js scripts generated from here (all js should ideally be in util)
         out.append("<script type=\"text/javascript\">/* <![CDATA[ */\n");
         out.append("function get_sym_list(){return [");
 
@@ -423,24 +434,25 @@ public abstract class JFlexXref {
         }
         return null;
     }
-    
+
     /**
-     * Generate span id for scope based on line number, name, and signature 
-     * (more functions with same name and signature can be defined in
-     * single file)
+     * Generate span id for namespace based on line number, name, and signature
+     * (more functions with same name and signature can be defined in single
+     * file)
+     *
      * @param scope Scope to generate id from
      * @return generated span id
      */
     private String generateId(Scope scope) {
-        String name = Integer.toString(scope.getLineFrom()) + scope.getName() +
-                scope.getSignature();
+        String name = Integer.toString(scope.getLineFrom()) + scope.getName()
+                + scope.getSignature();
         int hash = name.hashCode();
         return "scope_id_" + Integer.toHexString(hash);
     }
-    
+
     /**
      * Simple escape of html characters in raw string.
-     * 
+     *
      * @param raw Raw string
      * @return String with escaped html characters
      */
@@ -494,8 +506,8 @@ public abstract class JFlexXref {
         }
 
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-            getProjectPostfix(true), skipNl);
-        
+                getProjectPostfix(true), skipNl);
+
         if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {
                 out.write("<a href=\"#\" onclick='fold(this.parentNode.id)' id='");
@@ -503,7 +515,7 @@ public abstract class JFlexXref {
                 /* space inside span for IE support */
                 out.write("'><span class='fold-icon'>&nbsp;</span></a>");
             } else {
-                out.write("<span class='fold-space'>&nbsp;</span>");    
+                out.write("<span class='fold-space'>&nbsp;</span>");
             }
         }
     }
@@ -539,8 +551,8 @@ public abstract class JFlexXref {
         strs[0] = "";
         String jsEscapedSymbol = symbol.replace("'", "\\'");
 
-        if (keywords != null && keywords.contains(
-                caseSensitive ? symbol : symbol.toLowerCase())) {
+        String check = caseSensitive ? symbol : symbol.toLowerCase();
+        if (keywords != null && keywords.contains( check )) {
             // This is a keyword, so we don't create a link.
             out.append("<b>").append(symbol).append("</b>");
 
