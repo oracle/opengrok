@@ -460,7 +460,8 @@
 
 $(document).ready(function () {
     // starting spaces plugin
-    $.spaces.init()
+    // TODO: disabled until fixed
+    // $.spaces.init()
     
     $.hash.init({ parent: "pre"})
 });
