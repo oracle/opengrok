@@ -71,6 +71,14 @@ number (0.12))
 
 5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
 
+   Note that the files has to be stored in a ZIP file for github to accept
+   them so use incantation like follows:
+
+     echo opengrok-0.13-rc1.tar.gz | zip -0 -@ opengrok-0.13-rc1.zip
+
+   Uploading from behing a proxy does not work so it is recommended to use
+   direct internet connection.
+
    Also generate cryptographic digests for all the binaries,
    e.g. using openssl:
 
