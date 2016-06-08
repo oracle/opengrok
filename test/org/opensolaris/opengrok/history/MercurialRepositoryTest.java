@@ -36,14 +36,22 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RunCondition;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.TestRepository;
 
 /**
  * Tests for MercurialRepository.
  */
+@ConditionalRun(condition = RunCondition.MercurialInstalled.class)
 public class MercurialRepositoryTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     /**
      * Revision numbers present in the Mercurial test repository, in the order
