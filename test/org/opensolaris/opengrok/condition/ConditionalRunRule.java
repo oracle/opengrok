@@ -8,13 +8,17 @@ import org.junit.runners.model.Statement;
 import java.lang.reflect.Modifier;
 
 /**
+ * 
+ * This rule can be added to a Junit test and will look for the annotation {@link ConditionalRun} on either the test class
+ * or method. The test is then skipped through Junit's {@link Assume} capabilities if the {@link RunCondition} provided in the
+ * annotation is not satisfied.
+ *
  * Cobbled together from:
  * http://www.codeaffine.com/2013/11/18/a-junit-rule-to-conditionally-ignore-tests/
  * https://gist.github.com/yinzara/9980184
  * http://cwd.dhemery.com/2010/12/junit-rules/
  * http://stackoverflow.com/questions/28145735/androidjunit4-class-org-junit-assume-assumetrue-assumptionviolatedexception/
  */
-
 public class ConditionalRunRule implements TestRule {
 
     @Override
