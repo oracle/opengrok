@@ -883,6 +883,24 @@ you should be able to connect your Github to Travis CI.
 OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok
 
 
+9.9 Maven
+------------------
+The build can now be done through Maven (https://maven.apache.org/) which takes care of the dependency management
+and setup (calls Ant for certain actions).
+
+
+9.9.1 Unit Testing
+-------------------------
+You can test the code at the moment by running `./mvn test` which will execute *all* tests.
+Conditionally, if you don't have every type of repository installed, you can set it to unit-test only those which are
+found to be working on your system.
+
+> mvn test -Djunit-force-all=false
+
+You can also force a specific repository test from running through the following system property
+
+> mvn test -Djunit-force-all=false -Djunit-force-git=true
+
 10. Tuning OpenGrok for large code bases
 ---------------------------------------
 

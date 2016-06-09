@@ -150,7 +150,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.4</version>
+                <version>0.7.7.201606060606</version>
             </plugin>
 	    <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

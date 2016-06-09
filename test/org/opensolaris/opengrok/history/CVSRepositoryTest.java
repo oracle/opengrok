@@ -29,14 +29,24 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.condition.RunCondition;
+
 import static org.junit.Assert.*;
 
 /**
  *
  * @author austvik
  */
+@ConditionalRun(condition = RepositoryInstalled.CvsInstalled.class)
 public class CVSRepositoryTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     CVSRepository instance;
 
