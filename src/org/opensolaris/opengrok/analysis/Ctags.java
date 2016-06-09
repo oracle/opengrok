@@ -18,15 +18,19 @@
  */
 
  /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,6 +61,8 @@ public class Ctags {
     private final int MAX_METHOD_LINE_LENGTH = 1030; //96 is used by universal ctags for some lines, but it's too low, OpenGrok can theoretically handle 50000 with 8G heap    
     // also this might break scopes functionality, if set too low
 
+    private boolean junit_testing = false;
+
     public void setBinary(String binary) {
         this.binary = binary;
     }
@@ -79,15 +85,15 @@ public class Ctags {
 
             command.add(binary);
             command.add("--c-kinds=+l");
-                        
-            if (env.isUniversalCtags()) {                                
+
+            if (env.isUniversalCtags()) {
                 command.add("--langmap=clojure:+.cljs");
                 command.add("--langmap=clojure:+.cljx");
-                
-            // Workaround for bug #14924: Don't get local variables in Java
-            // code since that creates many false positives.
-            // CtagsTest : bug14924 "too many methods" guards for this
-            // universal ctags are however safe, so enabling for them
+
+                // Workaround for bug #14924: Don't get local variables in Java
+                // code since that creates many false positives.
+                // CtagsTest : bug14924 "too many methods" guards for this
+                // universal ctags are however safe, so enabling for them
                 command.add("--java-kinds=+l");
             }
             command.add("--sql-kinds=+l");
@@ -231,16 +237,125 @@ public class Ctags {
         return ret;
     }
 
+    /**
+     * produce definitions for the text in the buffer String ctags process is
+     * mocked, not real mostly used for junit testing
+     *
+     * @param bufferTags tags file output
+     * @return definitions parsed from buffer
+     */
+    public Definitions testCtagsParser(String bufferTags) {
+        junit_testing = true;
+        ctagsOut = new BufferedReader(new StringReader(bufferTags));
+        ctags = new Process() {
+            @Override
+            public OutputStream getOutputStream() {
+                return null;
+            }
+
+            @Override
+            public InputStream getInputStream() {
+                return null;
+            }
+
+            @Override
+            public InputStream getErrorStream() {
+                return null;
+            }
+
+            @Override
+            public int waitFor() throws InterruptedException {
+                return 0;
+            }
+
+            @Override
+            public int exitValue() {
+                return 0;
+            }
+
+            @Override
+            public void destroy() {
+            }
+        };
+
+        Definitions ret;
+        ret = new Definitions();
+        readTags(ret);
+        return ret;
+    }
+
+    // this should mimic https://github.com/universal-ctags/ctags/blob/master/docs/format.rst
+    // or http://ctags.sourceforge.net/FORMAT (for backwards compatibility)
+    //uncomment only those that are used ... (to avoid populating the hashmap for every record)
+    public enum tagFields {
+//        ARITY("arity"),
+        CLASS("class"),
+        //        INHERIT("inherit"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        //        INTERFACE("interface"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        //        ENUM("enum"),
+        //        FILE("file"),
+        //        FUNCTION("function"),
+        //        KIND("kind"),
+        LINE("line"),
+        //        NAMESPACE("namespace"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        //        PROGRAM("program"), //this is not defined in above format docs, but both universal and exuberant ctags use it
+        SIGNATURE("signature");
+//        STRUCT("struct"),
+//        TYPEREF("typeref"),
+//        UNION("union");
+
+        //NOTE: if you edit above, always consult below charCmpEndOffset
+        private final String name;
+
+        tagFields(String name) {
+            this.name = name;
+        }
+
+        //this is very important, we only compare that amount of chars from field types with input to save time,
+        //this number has to be long enough to get rid of disambiguation (so currently 2 characters)
+        //TODO:
+        //NOTE this is a big tradeoff in terms of input data, e.g. field "find"
+        //will be considered "file" and overwrite the value, so if ctags will send us buggy input
+        //we will output buggy data TOO!
+        //NO VALIDATION happens of input - but then we gain LOTS of speed, due to not comparing the same field names again and again fully
+        // 1 - means only 2 first chars are compared
+        public static int charCmpEndOffset = 0; // make this MAX. 8 chars! (backwards compat to DOS/Win )        
+
+        //quickly get if the field name matches allowed/consumed ones
+        public static Ctags.tagFields quickValueOf(String fullName) {
+            int i;
+            boolean match;
+            for (tagFields x : tagFields.values()) {
+                match = true;
+                for (i = 0; i <= charCmpEndOffset; i++) {
+                    if (x.name.charAt(i) != fullName.charAt(i)) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    return x;
+                }
+            }
+            return null;
+        }
+    }
+
     private void readTags(Definitions defs) {
+        EnumMap<tagFields, String> fields = new EnumMap<>(tagFields.class);
         try {
             do {
                 String tagLine = ctagsOut.readLine();
                 //log.fine("Tagline:-->" + tagLine+"<----ONELINE");
                 if (tagLine == null) {
-                    LOGGER.warning("Unexpected end of file!");
+                    if (!junit_testing) {
+                        LOGGER.warning("Unexpected end of file!");
+                    }
                     try {
                         int val = ctags.exitValue();
-                        LOGGER.log(Level.WARNING, "ctags exited with code: {0}", val);
+                        if (!junit_testing) {
+                            LOGGER.log(Level.WARNING, "ctags exited with code: {0}", val);
+                        }
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Ctags problem: ", e);
                     }
@@ -265,43 +380,50 @@ public class Ctags {
                 }
                 String def = tagLine.substring(0, p);
                 int mstart = tagLine.indexOf('\t', p + 1);
-                String lnum = "-1";
-                String signature = null;
+
                 String kind = null;
-                String inher = null;
 
                 int lp = tagLine.length();
                 while ((p = tagLine.lastIndexOf('\t', lp - 1)) > 0) {
                     //log.fine(" p = " + p + " lp = " + lp);
                     String fld = tagLine.substring(p + 1, lp);
-                    //log.fine("FIELD===" + fld);
+                    //log.fine("FIELD===" + fld);                    
                     lp = p;
-                    if (fld.startsWith("line:")) {
-                        int sep = fld.indexOf(':');
-                        lnum = fld.substring(sep + 1);
-                    } else if (fld.startsWith("signature:")) {
-                        int sep = fld.indexOf(':');
-                        signature = fld.substring(sep + 1);
-                    } else if (fld.indexOf(':') < 0) {
+
+                    int sep = fld.indexOf(':');
+                    if (sep != -1) {
+                        tagFields pos = tagFields.quickValueOf(fld);
+                        if (pos != null) {
+                            String val = fld.substring(sep + 1);
+                            fields.put(pos, val);
+                        } else {
+                            //unknown field name                            
+                            //don't log on purpose, since we don't consume all possible fields, so just ignore this error for now
+//                            LOGGER.log(Level.WARNING, "Unknown field name found: {0}", fld.substring(0, sep - 1));
+                        }
+                    } else {
+                        //TODO no separator, assume this is the kind
                         kind = fld;
                         break;
-                    } else {
-                        inher = fld;
                     }
                 }
+
+                String lnum = fields.get(tagFields.LINE);
+                String signature = fields.get(tagFields.SIGNATURE);
+                String classInher = fields.get(tagFields.CLASS);
 
                 final String match;
                 int mlength = p - mstart;
                 if ((p > 0) && (mlength > MIN_METHOD_LINE_LENGTH)) {
                     if (mlength < MAX_METHOD_LINE_LENGTH) {
                         match = tagLine.substring(mstart + 3, p - 4).
-                                replace("\\/", "/").replaceAll("[ \t]+", " ");
+                                replace("\\/", "/").replaceAll("[ \t]+", " "); //TODO per format we should also recognize \r and \n and \\
                     } else {
-                        LOGGER.log(Level.FINEST, "Ctags: stripping method body for def {0} line {1}(scopes might break)", new Object[]{def, lnum});
+                        LOGGER.log(Level.FINEST, "Ctags: stripping method body for def {0} line {1}(scopes/highlight might break)", new Object[]{def, lnum});
                         match = tagLine.substring(mstart + 3, mstart + MAX_METHOD_LINE_LENGTH - 1). // +3 - 4 = -1
                                 replace("\\/", "/").replaceAll("[ \t]+", " ");
                     }
-                } else {
+                } else { //tag is in wrong format, cannot extract tagaddress from it, skip
                     continue;
                 }
 
@@ -310,8 +432,8 @@ public class Ctags {
                 final Interner<String> seenSymbols = new Interner<>();
 
                 final String type
-                        = inher == null ? kind : kind + " in " + inher;
-                addTag(defs, seenSymbols, lnum, def, type, match, inher, signature);
+                        = classInher == null ? kind : kind + " in " + classInher;
+                addTag(defs, seenSymbols, lnum, def, type, match, classInher, signature);
                 if (signature != null) {
                     //TODO if some languages use different character for separating arguments, below needs to be adjusted
                     String[] args = signature.split(",");
@@ -323,17 +445,18 @@ public class Ctags {
                             //FIXME this will not work for typeless languages such as python or assignments inside signature ... but since ctags doesn't provide signatures for python yet and assigning stuff in signature is not the case for c or java, we don't care ...
                             String[] names = afters.split("[\\W]"); //this should just parse out variables, we assume first non empty text is the argument name
                             for (String name : names) {
-                                if (name.length()>0) {
-                                     //log.fine("Param Def = "+ string);
-                                     addTag(defs, seenSymbols, lnum, name, "argument",
+                                if (name.length() > 0) {
+                                    //log.fine("Param Def = "+ string);
+                                    addTag(defs, seenSymbols, lnum, name, "argument",
                                             def.trim() + signature.trim(), null, signature);
-                                     break;
+                                    break;
                                 }
                             }
                         }
                     }
                 }
                 //log.fine("Read = " + def + " : " + lnum + " = " + kind + " IS " + inher + " M " + match);
+                fields.clear();
             } while (true);
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "CTags parsing problem: ", e);
@@ -345,13 +468,13 @@ public class Ctags {
      * Add a tag to a {@code Definitions} instance.
      */
     private void addTag(Definitions defs, Interner<String> seenSymbols,
-            String lnum, String symbol, String type, String text, String scope, String signature) {
+            String lnum, String symbol, String type, String text, String namespace, String signature) {
         // The strings are frequently repeated (a symbol can be used in
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
         defs.addTag(Integer.parseInt(lnum), seenSymbols.intern(symbol.trim()),
                 seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
-                scope == null ? null : seenSymbols.intern(scope.trim()), signature);
+                namespace == null ? null : seenSymbols.intern(namespace.trim()), signature);
     }
 }

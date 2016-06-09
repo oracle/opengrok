@@ -8,7 +8,7 @@ import org.junit.runners.model.Statement;
 import java.lang.reflect.Modifier;
 
 /**
- * 
+ *
  * This rule can be added to a Junit test and will look for the annotation {@link ConditionalRun} on either the test class
  * or method. The test is then skipped through Junit's {@link Assume} capabilities if the {@link RunCondition} provided in the
  * annotation is not satisfied.

@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.condition.RunCondition;
 
 import static org.junit.Assert.*;
@@ -41,7 +42,7 @@ import static org.junit.Assert.*;
  *
  * @author austvik
  */
-@ConditionalRun(condition = RunCondition.GitInstalled.class)
+@ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
 public class GitRepositoryTest {
 
     @Rule

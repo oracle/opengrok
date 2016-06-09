@@ -74,7 +74,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <dependency>
                 <groupId>org.apache.bcel</groupId>
                 <artifactId>bcel</artifactId>
-                <version>5.2</version>
+                <version>6.0-20150726.222224-123</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
@@ -150,7 +150,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.4.201502262128</version>
+                <version>0.7.7.201606060606</version>
             </plugin>
 	    <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -253,6 +253,12 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
             <id>maven.org</id>
             <name>maven.org</name>
             <url>http://repo.maven.apache.org/maven2/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>apache.snapshots</name>
+            <url>http://repository.apache.org/snapshots/</url>
             <layout>default</layout>
         </repository>
     </repositories>

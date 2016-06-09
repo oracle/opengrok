@@ -23,22 +23,32 @@
  */
 package org.opensolaris.opengrok.history;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.util.FileUtilities;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.opensolaris.opengrok.util.FileUtilities;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Do basic testing of the Perforce support
  *
  * @author Trond Norbye
  */
+@ConditionalRun(condition = RepositoryInstalled.PerforceInstalled.class)
 public class PerforceRepositoryTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     private static boolean skip;
     private static List<File> files;

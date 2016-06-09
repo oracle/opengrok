@@ -17,10 +17,9 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.analysis;
 
 import java.io.ByteArrayInputStream;
@@ -37,33 +36,40 @@ import java.util.Map;
 import java.util.Set;
 
 public class Definitions implements Serializable {
+
     private static final long serialVersionUID = 1191703801007779489L;
 
     // Per line sym -> tags mapping
     public static class LineTagMap implements Serializable {
+
         private static final long serialVersionUID = 1191703801007779481L;
         private final Map<String, Set<Tag>> sym_tags; //NOPMD
 
         protected LineTagMap() {
-            this.sym_tags = new HashMap<String, Set<Tag>>();
+            this.sym_tags = new HashMap<>();
         }
     }
     // line -> tag_map
     private final Map<Integer, LineTagMap> line_maps;
 
-    /** Map from symbol to the line numbers on which the symbol is defined. */
+    /**
+     * Map from symbol to the line numbers on which the symbol is defined.
+     */
     private final Map<String, Set<Integer>> symbols;
-    /** List of all the tags. */
+    /**
+     * List of all the tags.
+     */
     private final List<Tag> tags;
 
     public Definitions() {
-        symbols = new HashMap<String, Set<Integer>>();
-        line_maps = new HashMap<Integer, LineTagMap>();
-        tags = new ArrayList<Tag>();
+        symbols = new HashMap<>();
+        line_maps = new HashMap<>();
+        tags = new ArrayList<>();
     }
 
     /**
      * Get all symbols used in definitions.
+     *
      * @return a set containing all the symbols
      */
     public Set<String> getSymbols() {
@@ -72,8 +78,9 @@ public class Definitions implements Serializable {
 
     /**
      * Check if there is a tag for a symbol.
+     *
      * @param symbol the symbol to check
-     * @return {@code true} iff there is a tag for {@code symbol}
+     * @return {@code true} if there is a tag for {@code symbol}
      */
     public boolean hasSymbol(String symbol) {
         return symbols.containsKey(symbol);
@@ -81,10 +88,11 @@ public class Definitions implements Serializable {
 
     /**
      * Check whether the specified symbol is defined on the given line.
+     *
      * @param symbol the symbol to look for
      * @param lineNumber the line to check
      * @param strs type of definition(to be passed back to caller)
-     * @return {@code true} iff {@code symbol} is defined on the specified line
+     * @return {@code true} if {@code symbol} is defined on the specified line
      */
     public boolean hasDefinitionAt(String symbol, int lineNumber, String[] strs) {
         Set<Integer> lines = symbols.get(symbol);
@@ -112,6 +120,7 @@ public class Definitions implements Serializable {
     /**
      * Return the number of occurrences of definitions with the specified
      * symbol.
+     *
      * @param symbol the symbol to count the occurrences of
      * @return the number of times the specified symbol is defined
      */
@@ -122,6 +131,7 @@ public class Definitions implements Serializable {
 
     /**
      * Return the number of distinct symbols.
+     *
      * @return number of distinct symbols
      */
     public int numberOfSymbols() {
@@ -130,14 +140,16 @@ public class Definitions implements Serializable {
 
     /**
      * Get a list of all tags.
+     *
      * @return all tags
      */
     public List<Tag> getTags() {
         return tags;
     }
-    
+
     /**
      * Get a list of all tags on given line.
+     *
      * @param line line number
      * @return list of tags
      */
@@ -147,13 +159,13 @@ public class Definitions implements Serializable {
 
         if (line_map != null) {
             result = new ArrayList<>();
-            for (Set<Tag> tags : line_map.sym_tags.values()) {
-                for (Tag tag : tags) {
+            for (Set<Tag> ltags : line_map.sym_tags.values()) {
+                for (Tag tag : ltags) {
                     result.add(tag);
                 }
             }
-        }        
-        
+        }
+
         return result;
     }
 
@@ -161,27 +173,40 @@ public class Definitions implements Serializable {
      * Class that represents a single tag.
      */
     public static class Tag implements Serializable {
+
         private static final long serialVersionUID = 1217869075425651465L;
 
-        /** Line number of the tag. */
+        /**
+         * Line number of the tag.
+         */
         public final int line;
-        /** The symbol used in the definition. */
+        /**
+         * The symbol used in the definition.
+         */
         public final String symbol;
-        /** The type of the tag. */
+        /**
+         * The type of the tag.
+         */
         public final String type;
-        /** The full line on which the definition occurs. */
+        /**
+         * The full line on which the definition occurs.
+         */
         public final String text;
-        /** Scope of tag definition */
-        public final String scope;        
-        /** Scope of tag definition */
+        /**
+         * Namespace/class of tag definition
+         */
+        public final String namespace;
+        /**
+         * Scope of tag definition
+         */
         public final String signature;
 
-        protected Tag(int line, String symbol, String type, String text, String scope, String signature) {
+        protected Tag(int line, String symbol, String type, String text, String namespace, String signature) {
             this.line = line;
             this.symbol = symbol;
             this.type = type;
             this.text = text;
-            this.scope = scope;
+            this.namespace = namespace;
             this.signature = signature;
         }
     }
@@ -190,15 +215,15 @@ public class Definitions implements Serializable {
         addTag(line, symbol, type, text, null, null);
     }
 
-    public void addTag(int line, String symbol, String type, String text, String scope, String signature) {
-        Tag new_tag = new Tag(line, symbol, type, text, scope, signature);
+    public void addTag(int line, String symbol, String type, String text, String namespace, String signature) {
+        Tag new_tag = new Tag(line, symbol, type, text, namespace, signature);
         tags.add(new_tag);
         Set<Integer> lines = symbols.get(symbol);
         if (lines == null) {
-            lines = new HashSet<Integer>();
+            lines = new HashSet<>();
             symbols.put(symbol, lines);
         }
-        Integer aLine = Integer.valueOf(line);
+        Integer aLine = line;
         lines.add(aLine);
 
         // Get per line map
@@ -209,16 +234,17 @@ public class Definitions implements Serializable {
         }
 
         // Insert sym->tag map for this line
-        Set<Tag> tags = line_map.sym_tags.get(symbol);
-        if (tags == null) {
-            tags = new HashSet<Tag>();
-            line_map.sym_tags.put(symbol, tags);
+        Set<Tag> ltags = line_map.sym_tags.get(symbol);
+        if (ltags == null) {
+            ltags = new HashSet<>();
+            line_map.sym_tags.put(symbol, ltags);
         }
-        tags.add(new_tag);
+        ltags.add(new_tag);
     }
 
     /**
      * Create a binary representation of this object.
+     *
      * @return a byte array representing this object
      * @throws IOException if an error happens when writing to the array
      */
@@ -229,7 +255,8 @@ public class Definitions implements Serializable {
     }
 
     /**
-     * Deserialize a binary representation of a {@code Definitions} object.
+     * De-serialize a binary representation of a {@code Definitions} object.
+     *
      * @param bytes a byte array containing the {@code Definitions} object
      * @return a {@code Definitions} object
      * @throws IOException if an I/O error happens when reading the array
@@ -240,8 +267,8 @@ public class Definitions implements Serializable {
      */
     public static Definitions deserialize(byte[] bytes)
             throws IOException, ClassNotFoundException {
-        ObjectInputStream in =
-                new ObjectInputStream(new ByteArrayInputStream(bytes));
+        ObjectInputStream in
+                = new ObjectInputStream(new ByteArrayInputStream(bytes));
         return (Definitions) in.readObject();
     }
 }
