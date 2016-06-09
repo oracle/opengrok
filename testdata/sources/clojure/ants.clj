@@ -10,6 +10,8 @@
 ;   Ant Simulator
 ;   @see https://gist.github.com/spacemanaki/1093917
 
+(ns opengrok-test)
+
 ;dimensions of square world
 (def dim 80)
 ;number of ants = nants-sqrt^2

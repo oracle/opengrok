@@ -27,10 +27,8 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_nanalyzed_norms;
 
 /**
@@ -99,54 +97,18 @@ public class ClojureAnalyzerFactoryTest {
         analyzer.analyze(doc, getStreamSource(path), xrefOut);
 
         Definitions definitions = Definitions.deserialize(doc.getField(QueryBuilder.TAGS).binaryValue().bytes);
-        // Construct a RAMDirectory to hold the in-memory representation
-        // of the index.
-        RAMDirectory inMemoryIndex = new RAMDirectory();
-        IndexWriter writer = new IndexWriter(inMemoryIndex, new IndexWriterConfig(analyzer));
-        writer.addDocument(doc);
-        writer.close();
 
-        // Build an IndexSearcher using the in-memory index
-        IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(inMemoryIndex));
-
-        IndexableField defsField = doc.getField(QueryBuilder.DEFS);
-        assertNotNull(defsField);
-
-        int intValueOfChar;
-        String targetString = "";
-        while ((intValueOfChar = defsField.readerValue().read()) != -1) {
-            targetString += (char) intValueOfChar;
-        }
-        defsField.readerValue().close();
-
-        Definitions scopes = Definitions.deserialize(defsField.binaryValue().bytes);
-
-        /*
-        Scopes.Scope globalScope = scopes.getScope(-1);
-        assertEquals(5, scopes.size()); // foo, bar, main
-
-        for (int i=0; i<74; ++i) {
-            if (i >= 29 && i <= 31) {
-                assertEquals("Sample", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());
-            } else if (i >= 33 && i <= 41) {
-                assertEquals("Method", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());
-            } else if (i == 43) {
-                assertEquals("AbstractMethod", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());
-            } else if (i >= 47 && i <= 56) {
-                assertEquals("InnerMethod", scopes.getScope(i).getName());
-                assertEquals("class:Sample.InnerClass", scopes.getScope(i).getScope());
-            } else if (i >= 60 && i <= 72) {
-                assertEquals("main", scopes.getScope(i).getName());
-                assertEquals("class:Sample", scopes.getScope(i).getScope());
-            } else {
-                assertEquals(scopes.getScope(i), globalScope);
-                assertNull(scopes.getScope(i).getScope());
-            }
-        }
-        */
+        String[] type = new String[1];
+        assertTrue(definitions.hasDefinitionAt("opengrok-test", 13, type));
+        assertThat(type[0], is("namespace"));
+        assertTrue(definitions.hasDefinitionAt("dim", 16, type));
+        assertThat(type[0], is("definition"));
+        assertTrue(definitions.hasDefinitionAt("nants-sqrt", 18, type));
+        assertThat(type[0], is("definition"));
+        assertTrue(definitions.hasDefinitionAt("cell", 36, type));
+        assertThat(type[0], is("struct"));
+        assertTrue(definitions.hasDefinitionAt("create-ant", 51, type));
+        assertThat(type[0], is("function"));
     }
 
 
