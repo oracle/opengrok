@@ -176,6 +176,9 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <systemPropertyVariables>
+                        <junit-force-all>true</junit-force-all>
+                    </systemPropertyVariables>
                     <excludes>
                         <!-- Test helper class with name that confuses surefire -->
                         <exclude>**/TestRepository.java</exclude>

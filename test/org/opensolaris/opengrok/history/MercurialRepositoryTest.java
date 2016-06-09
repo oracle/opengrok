@@ -22,10 +22,14 @@
  */
 package org.opensolaris.opengrok.history;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.TestRepository;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,19 +39,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.opensolaris.opengrok.condition.ConditionalRun;
-import org.opensolaris.opengrok.condition.ConditionalRunRule;
-import org.opensolaris.opengrok.condition.RunCondition;
-import org.opensolaris.opengrok.util.Executor;
-import org.opensolaris.opengrok.util.TestRepository;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for MercurialRepository.
  */
-@ConditionalRun(condition = RunCondition.MercurialInstalled.class)
+@ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
 public class MercurialRepositoryTest {
 
     @Rule
