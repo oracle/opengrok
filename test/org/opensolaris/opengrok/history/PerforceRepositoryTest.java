@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -49,29 +48,26 @@ public class PerforceRepositoryTest {
 
     @Rule
     public ConditionalRunRule rule = new ConditionalRunRule();
-
+    
     private static boolean skip;
     private static List<File> files;
-    private static File root = new File("/export/opengrok_p4_test");
+    private static final File root = new File("/export/opengrok_p4_test");
 
     public PerforceRepositoryTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        if (!root.exists() || !(new PerforceRepository()).isWorking()) {
-            skip = true;
+        if (!root.exists()) {
+            skip=true;
             return;
         }
-        files = new ArrayList<File>();
+        files = new ArrayList<>();
         FileUtilities.getAllFiles(root, files, false);
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
-        if (skip) {
-            return;
-        }
+    public static void tearDownClass() throws Exception {        
     }
 
     @Test

@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -34,7 +33,6 @@ import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
-import org.opensolaris.opengrok.condition.RunCondition;
 
 import static org.junit.Assert.*;
 
@@ -91,6 +89,7 @@ public class CVSRepositoryTest {
 
     /**
      * Test of parseAnnotation method, of class CVSRepository.
+     * @throws java.lang.Exception
      */
     @Test
     public void testParseAnnotation() throws Exception {

@@ -558,7 +558,11 @@ public final class Indexer {
                  * For the check we need to have 'env' already set.
                  */
                 for (String path : subFilesList) {
-                    path = path.substring(env.getSourceRootPath().length());
+                    String srcPath=env.getSourceRootPath();
+                    if (srcPath==null) { System.err.println("Error getting source root from environment. Exiting.");
+                    System.exit(1);
+                      }
+                    path = path.substring(srcPath.length());
                     if (env.hasProjects()) {
                         // The paths need to correspond to a project.
                         if (Project.getProject(path) != null) {

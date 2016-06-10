@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -72,6 +71,7 @@ public class BazaarRepositoryTest {
 
     /**
      * Test of parseAnnotation method, of class GitRepository.
+     * @throws java.lang.Exception
      */
     @Test
     public void parseAnnotation() throws Exception {

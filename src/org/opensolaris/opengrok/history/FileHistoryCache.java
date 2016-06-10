@@ -340,7 +340,7 @@ class FileHistoryCache implements HistoryCache {
             new Object[] {repository.getDirectoryName()});
 
         HashMap<String, List<HistoryEntry>> map =
-                new HashMap<String, List<HistoryEntry>>();
+                new HashMap<>();
 
         /*
          * Go through all history entries for this repository (acquired through
