@@ -83,7 +83,7 @@ public class ClojureAnalyzerFactoryTest {
      */
     @Test
     public void testScopeAnalyzer() throws Exception {
-        String path = repository.getSourceRoot() + "/clojure/ants.clj";
+        String path = repository.getSourceRoot() + "/clojure/sample.clj";
         File f = new File(path);
         if (!(f.canRead() && f.isFile())) {
             fail("clojure testfile " + f + " not found");
@@ -99,16 +99,18 @@ public class ClojureAnalyzerFactoryTest {
         Definitions definitions = Definitions.deserialize(doc.getField(QueryBuilder.TAGS).binaryValue().bytes);
 
         String[] type = new String[1];
-        assertTrue(definitions.hasDefinitionAt("opengrok-test", 13, type));
+        assertTrue(definitions.hasDefinitionAt("opengrok", 4, type));
         assertThat(type[0], is("namespace"));
-        assertTrue(definitions.hasDefinitionAt("dim", 16, type));
-        assertThat(type[0], is("definition"));
-        assertTrue(definitions.hasDefinitionAt("nants-sqrt", 18, type));
-        assertThat(type[0], is("definition"));
-        assertTrue(definitions.hasDefinitionAt("cell", 36, type));
-        assertThat(type[0], is("struct"));
-        assertTrue(definitions.hasDefinitionAt("create-ant", 51, type));
+        assertTrue(definitions.hasDefinitionAt("power-set", 8, type));
         assertThat(type[0], is("function"));
+        assertTrue(definitions.hasDefinitionAt("power-set-private", 14, type));
+        assertThat(type[0], is("private function"));
+        assertTrue(definitions.hasDefinitionAt("author", 19, type));
+        assertThat(type[0], is("struct"));
+        assertTrue(definitions.hasDefinitionAt("author-first-name", 22, type));
+        assertThat(type[0], is("definition"));
+        assertTrue(definitions.hasDefinitionAt("Farid", 24, type));
+        assertThat(type[0], is("definition"));
     }
 
 
