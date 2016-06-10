@@ -25,7 +25,11 @@ package org.opensolaris.opengrok.web;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -36,6 +40,9 @@ import static org.junit.Assert.*;
  */
 public class PageConfigTest {
     private static TestRepository repository = new TestRepository();
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -60,30 +67,45 @@ public class PageConfigTest {
         assertEquals("Some value", cfg.getRequestAttribute("attr1"));
     }
 
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
     @Test
-    public void canProcess() {
+    public void canProcessHistory() {
         // Expect no redirection (that is, empty string is returned) for a
         // file that exists.
-        assertCanProcess("", "/source", "/xref", "/mercurial/main.c");
         assertCanProcess("", "/source", "/history", "/mercurial/main.c");
 
         // Expect directories without trailing slash to get a trailing slash
         // appended.
-        assertCanProcess("/source/xref/mercurial/",
-                         "/source", "/xref", "/mercurial");
         assertCanProcess("/source/history/mercurial/",
                          "/source", "/history", "/mercurial");
 
         // Expect no redirection (that is, empty string is returned) if the
         // directories already have a trailing slash.
-        assertCanProcess("", "/source", "/xref", "/mercurial/");
         assertCanProcess("", "/source", "/history", "/mercurial/");
 
         // Expect null if the file or directory doesn't exist.
-        assertCanProcess(null, "/source", "/xref", "/mercurial/xyz");
         assertCanProcess(null, "/source", "/history", "/mercurial/xyz");
-        assertCanProcess(null, "/source", "/xref", "/mercurial/xyz/");
         assertCanProcess(null, "/source", "/history", "/mercurial/xyz/");
+    }
+
+    @Test
+    public void canProcessXref() {
+        // Expect no redirection (that is, empty string is returned) for a
+        // file that exists.
+        assertCanProcess("", "/source", "/xref", "/mercurial/main.c");
+
+        // Expect directories without trailing slash to get a trailing slash
+        // appended.
+        assertCanProcess("/source/xref/mercurial/",
+                         "/source", "/xref", "/mercurial");
+
+        // Expect no redirection (that is, empty string is returned) if the
+        // directories already have a trailing slash.
+        assertCanProcess("", "/source", "/xref", "/mercurial/");
+
+        // Expect null if the file or directory doesn't exist.
+        assertCanProcess(null, "/source", "/xref", "/mercurial/xyz");
+        assertCanProcess(null, "/source", "/xref", "/mercurial/xyz/");
     }
 
     /**
