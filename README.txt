@@ -895,11 +895,11 @@ You can test the code at the moment by running `./mvn test` which will execute *
 Conditionally, if you don't have every type of repository installed, you can set it to unit-test only those which are
 found to be working on your system.
 
-> mvn test -Djunit-force-all=false
+> ./mvnw test -Djunit-force-all=false
 
 You can also force a specific repository test from running through the following system property
 
-> mvn test -Djunit-force-all=false -Djunit-force-git=true
+> ./mvnw test -Djunit-force-all=false -Djunit-force-git=true
 
 10. Tuning OpenGrok for large code bases
 ---------------------------------------

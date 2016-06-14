@@ -28,6 +28,7 @@ import org.opensolaris.opengrok.history.GitRepository;
 import org.opensolaris.opengrok.history.MercurialRepository;
 import org.opensolaris.opengrok.history.PerforceRepository;
 import org.opensolaris.opengrok.history.Repository;
+import org.opensolaris.opengrok.history.SubversionRepository;
 
 /**
  * A template {@link org.opensolaris.opengrok.condition.RunCondition} that will disable certain tests
@@ -89,6 +90,12 @@ public abstract class RepositoryInstalled implements RunCondition {
     public static class PerforceInstalled extends RepositoryInstalled {
         public PerforceInstalled() {
             super("perforce", new PerforceRepository());
+        }
+    }
+
+    public static class SubvsersionInstalled extends RepositoryInstalled {
+        public SubvsersionInstalled() {
+            super("svn", new SubversionRepository());
         }
     }
 
