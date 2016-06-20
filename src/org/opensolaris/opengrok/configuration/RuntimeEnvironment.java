@@ -73,6 +73,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
+
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
  * configuration this execution context (classloader) is using.
@@ -1205,7 +1206,7 @@ public final class RuntimeEnvironment {
                         }
                     }
                 }
-            });
+            }, "conigurationListener");
             t.start();
         } catch (UnknownHostException ex) {
             LOGGER.log(Level.FINE, "Problem resolving sender: ", ex);
@@ -1253,8 +1254,9 @@ public final class RuntimeEnvironment {
                             return CONTINUE;
                         }
                     });
-
-                    while (true) {
+                    
+                    LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
+                    while (!Thread.currentThread().isInterrupted()) {
                         final WatchKey key;
                         try {
                             key = watchDogWatcher.take();
@@ -1282,13 +1284,13 @@ public final class RuntimeEnvironment {
                         }
                     }
                 } catch (InterruptedException ex) {
-                    LOGGER.log(Level.INFO, "Watchdog interupted (exiting): ", ex);
                     Thread.currentThread().interrupt();
                 } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Watchdog (exiting): ", ex);
+                    Thread.currentThread().interrupt();
                 }
+                LOGGER.log(Level.INFO, "Watchdog finishing (exiting)");
             }
-        });
+        }, "watchDogService");
         watchDogThread.start();
     }
 
@@ -1296,15 +1298,16 @@ public final class RuntimeEnvironment {
      * Stops the watch dog service.
      */
     public void stopWatchDogService() {
+        if (watchDogThread != null) {
+            watchDogThread.interrupt();
+        }
+        
         if (watchDogWatcher != null) {
             try {
                 watchDogWatcher.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "Cannot close WatchDogService: ", ex);
             }
-        }
-        if (watchDogThread != null) {
-            watchDogThread.interrupt();
         }
     }
 }

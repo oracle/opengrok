@@ -215,6 +215,8 @@ public final class AuthorizationFramework {
             LOGGER.log(Level.INFO, "Class couldn not be instantiated: ", ex);
         } catch (IllegalAccessException ex) {
             LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
+        } catch (Throwable ex) {
+            LOGGER.log(Level.INFO, "Class loader threw an uknown error: ", ex);
         }
     }
 
@@ -278,6 +280,15 @@ public final class AuthorizationFramework {
                 return new AuthorizationPluginClassLoader(directory);
             }
         });
+        
+        for (IAuthorizationPlugin plugin : getPlugins()) {
+            try {
+                plugin.unload();
+            } catch (Throwable ex) {
+                LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while unloading with exception:", ex);
+            }
+        }
+        
         plugins = new ArrayList<>();
 
         List<File> classfiles = listFilesRec(".class");
@@ -306,8 +317,15 @@ public final class AuthorizationFramework {
                 LOGGER.log(Level.INFO, "Could not manipulate with file because of: ", ex);
             }
         }
-        for (IAuthorizationPlugin plugin : plugins) {
-            plugin.reload();
+        
+        for (IAuthorizationPlugin plugin : getPlugins()) {
+            try {
+                plugin.load();
+            } catch (Throwable ex) {
+                // remove faulty plugin
+                removePlugin(plugin);
+                LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while loading with exception:", ex);
+            }
         }
     }
 

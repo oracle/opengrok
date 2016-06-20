@@ -36,12 +36,18 @@ import org.opensolaris.opengrok.configuration.Project;
 public interface IAuthorizationPlugin {
 
     /**
-     * Called when the plugins in the application has been reloaded.
-     *
-     * This can be used for marking that the user data, such as session, cache
-     * and others should be invalidated on next call to {@code isAllowed}
+     * Called when the plugin is loaded into memory.
+     * 
+     * This can be used for establishing db/ldap connection or other init stuff.
      */
-    void reload();
+    void load();
+    
+    /**
+     * Called when the plugin is about to be deleted from the memory.
+     * 
+     * This can be used for releasing connections and/or other release stuff.
+     */
+    void unload();
 
     /**
      * This method should decide if given request should be allowed to view or

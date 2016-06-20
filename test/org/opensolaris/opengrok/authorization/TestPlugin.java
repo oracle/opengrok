@@ -29,17 +29,21 @@ import org.opensolaris.opengrok.configuration.Project;
 public class TestPlugin implements IAuthorizationPlugin {
 
     @Override
-    public void reload() {
+    public void load() {
+    }
+
+    @Override
+    public void unload() {
     }
 
     @Override
     public boolean isAllowed(HttpServletRequest request, Project project) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public boolean isAllowed(HttpServletRequest request, Group group) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
