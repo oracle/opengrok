@@ -57,6 +57,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -262,7 +263,7 @@ public class SearchHelper {
                 }
                 MultiReader searchables = new MultiReader(subreaders, true);
                 if (parallel) {
-                    int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this
+                    int noThreads = RuntimeEnvironment.getInstance().getMaxSearchThreadCount();
                     executor = Executors.newFixedThreadPool(noThreads);
                 }
                 searcher = parallel

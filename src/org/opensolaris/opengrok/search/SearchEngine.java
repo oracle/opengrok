@@ -212,7 +212,7 @@ public class SearchEngine {
         }
         MultiReader searchables = new MultiReader(subreaders, true);
         if (Runtime.getRuntime().availableProcessors() > 1) {
-            int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this - or we should honor the command line option here too!
+            int noThreads = RuntimeEnvironment.getInstance().getMaxSearchThreadCount();
             ExecutorService executor = Executors.newFixedThreadPool(noThreads);
             searcher = new IndexSearcher(searchables, executor);
         } else {

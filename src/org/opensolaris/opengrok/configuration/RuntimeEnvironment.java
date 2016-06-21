@@ -1000,6 +1000,10 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHandleHistoryOfRenamedFiles(enable);
     }
 
+    public boolean isHandleHistoryOfRenamedFiles() {
+        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+    }
+
     public void setRevisionMessageCollapseThreshold(int threshold) {
         threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
     }
@@ -1008,8 +1012,12 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getRevisionMessageCollapseThreshold();
     }
 
-    public boolean isHandleHistoryOfRenamedFiles() {
-        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+    public void setMaxSearchThreadCount(int count) {
+        threadConfig.get().setMaxSearchThreadCount(count);
+    }
+
+    public int getMaxSearchThreadCount() {
+        return threadConfig.get().getMaxSearchThreadCount();
     }
 
     /**

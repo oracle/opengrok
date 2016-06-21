@@ -167,6 +167,12 @@ public final class Configuration {
      */
     private int revisionMessageCollapseThreshold;
 
+    /**
+     * Upper bound for number of threads used for performing multi-project
+     * searches. This is total for the whole webapp/CLI utility.
+     */
+    private int MaxSearchThreadCount;
+
     /*
      * types of handling history for remote SCM repositories:
      *  ON - index history and display it in webapp
@@ -268,6 +274,7 @@ public final class Configuration {
         setHandleHistoryOfRenamedFiles(true);
         setRevisionMessageCollapseThreshold(200);
         setPluginDirectory(null);
+        setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
     }
 
     public String getRepoCmd(String clazzName) {
@@ -858,6 +865,14 @@ public final class Configuration {
 
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
+    }
+
+    public int getMaxSearchThreadCount() {
+        return MaxSearchThreadCount;
+    }
+
+    public void setMaxSearchThreadCount(int count) {
+        this.MaxSearchThreadCount = count;
     }
 
     /**
