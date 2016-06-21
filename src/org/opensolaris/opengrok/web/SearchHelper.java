@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -57,6 +55,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -193,7 +192,6 @@ public class SearchHelper {
      * Default query parse error message prefix
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
-    private ExecutorService executor = null;
 
     /**
      * User readable description for file types. Only those listed in
@@ -261,12 +259,9 @@ public class SearchHelper {
                     subreaders[ii++] = DirectoryReader.open(dir);
                 }
                 MultiReader searchables = new MultiReader(subreaders, true);
-                if (parallel) {
-                    int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this
-                    executor = Executors.newFixedThreadPool(noThreads);
-                }
                 searcher = parallel
-                        ? new IndexSearcher(searchables, executor)
+                        ? new IndexSearcher(searchables,
+                            RuntimeEnvironment.getInstance().getSearchExecutor())
                         : new IndexSearcher(searchables);
             }
             // TODO check if below is somehow reusing sessions so we don't
@@ -491,15 +486,6 @@ public class SearchHelper {
     public void destroy() {
         if (searcher != null) {
             IOUtils.close(searcher.getIndexReader());
-        }
-
-        if (executor != null) {
-            try {
-                executor.shutdown();
-            } catch (SecurityException se) {
-                LOGGER.warning(se.getLocalizedMessage());
-                LOGGER.log(Level.FINE, "destroy", se);
-            }
         }
     }
 }

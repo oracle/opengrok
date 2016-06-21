@@ -32,8 +32,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -212,9 +210,8 @@ public class SearchEngine {
         }
         MultiReader searchables = new MultiReader(subreaders, true);
         if (Runtime.getRuntime().availableProcessors() > 1) {
-            int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this - or we should honor the command line option here too!
-            ExecutorService executor = Executors.newFixedThreadPool(noThreads);
-            searcher = new IndexSearcher(searchables, executor);
+            searcher = new IndexSearcher(searchables,
+                RuntimeEnvironment.getInstance().getSearchExecutor());
         } else {
             searcher = new IndexSearcher(searchables);
         }

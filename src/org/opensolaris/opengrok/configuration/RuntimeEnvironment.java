@@ -86,6 +86,7 @@ public final class RuntimeEnvironment {
     private static RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
+    private static ExecutorService searchExecutor = null;
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
 
@@ -141,6 +142,23 @@ public final class RuntimeEnvironment {
         }
 
         return historyRenamedExecutor;
+    }
+
+    /* Get thread pool used for multi-project searches. */
+    public synchronized ExecutorService getSearchExecutor() {
+        if (searchExecutor == null) {
+            searchExecutor = Executors.newFixedThreadPool(
+                this.getMaxSearchThreadCount(),
+                new ThreadFactory() {
+                public Thread newThread(Runnable runnable) {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("search-" + thread.getId());
+                    return thread;
+                }
+            });
+        }
+
+        return searchExecutor;
     }
 
     public static synchronized void freeHistoryExecutor() {
@@ -1000,6 +1018,10 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHandleHistoryOfRenamedFiles(enable);
     }
 
+    public boolean isHandleHistoryOfRenamedFiles() {
+        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+    }
+
     public void setRevisionMessageCollapseThreshold(int threshold) {
         threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
     }
@@ -1008,8 +1030,12 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getRevisionMessageCollapseThreshold();
     }
 
-    public boolean isHandleHistoryOfRenamedFiles() {
-        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+    public void setMaxSearchThreadCount(int count) {
+        threadConfig.get().setMaxSearchThreadCount(count);
+    }
+
+    public int getMaxSearchThreadCount() {
+        return threadConfig.get().getMaxSearchThreadCount();
     }
 
     /**
