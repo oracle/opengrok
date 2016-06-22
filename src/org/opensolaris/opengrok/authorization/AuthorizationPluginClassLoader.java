@@ -45,7 +45,9 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     private final static String[] classWhitelist = new String[]{
         "org.opensolaris.opengrok.configuration.Group",
         "org.opensolaris.opengrok.configuration.Project",
-        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin"
+        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
+        "org.opensolaris.opengrok.util.*",
+        "org.opensolaris.opengrok.logger.*",
     };
 
     private final static String[] packageBlacklist = new String[]{
@@ -131,10 +133,22 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
         in.read(bytes);
         return bytes;
     }
+    
+    private boolean checkWhiteList(String name) {
+        for (int i = 0; i < classWhitelist.length; i++) {
+            String pattern = classWhitelist[i];
+            pattern = pattern.replaceAll("\\.", "\\\\.");
+            pattern = pattern.replaceAll("\\*", ".*");
+            if (name.matches(pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private void checkClassname(String name) throws SecurityException {
         if (name.startsWith("org.opensolaris.opengrok.")
-                && !Arrays.asList(classWhitelist).contains(name)) {
+                && !checkWhiteList(name)) {
             throw new SecurityException("Tried to load a blacklisted class \"" + name + "\"\n"
                     + "Allowed classes from opengrok package are only: "
                     + Arrays.toString(classWhitelist));
@@ -161,8 +175,11 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * @see #packageBlacklist Classes whitelist:
      * @see #classWhitelist
      *
-     * Order of lookup: 1) already loaded classes 2) parent class loader 3)
-     * loading from .class files 4) loading from .jar files
+     * Order of lookup: 
+     * 1) already loaded classes 
+     * 2) parent class loader 
+     * 3) loading from .class files 
+     * 4) loading from .jar files
      *
      * @param name
      * @return loaded class or null
@@ -207,7 +224,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
             }
         } catch (ClassNotFoundException ex) {
         }
-
+        
         throw new ClassNotFoundException("Class \"" + name + "\" was not found");
     }
 
