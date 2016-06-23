@@ -262,9 +262,10 @@ public final class AuthorizationFramework {
      * Plugins are taken from the pluginDirectory (set in web.xml).
      *
      * Old instances of plugins are removed and new list of plugins is
-     * constructed. Reload event is fired on each plugin.
+     * constructed. Unload and load event is fired on each plugin.
      *
-     * @see IAuthorizationPlugin#reload()
+     * @see IAuthorizationPlugin#load() 
+     * @see IAuthorizationPlugin#unload() 
      */
     @SuppressWarnings("unchecked")
     public synchronized void reload() {
