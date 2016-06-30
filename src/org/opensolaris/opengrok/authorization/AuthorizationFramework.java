@@ -244,11 +244,10 @@ public final class AuthorizationFramework {
     }
 
     private String getClassName(File f) {
-        // TODO recursively discover classes
         String classname = f.getAbsolutePath().substring(directory.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
         classname = classname.replace(File.separatorChar, '.'); // convert to package name
-        classname = classname.substring(0, classname.lastIndexOf('.'));
-        return classname; // strip .class
+        classname = classname.substring(0, classname.lastIndexOf('.')); // strip .class
+        return classname;
     }
 
     private String getClassName(JarEntry f) {
@@ -275,7 +274,7 @@ public final class AuthorizationFramework {
         LOGGER.log(Level.INFO, "Plugins are being reloaded from " + directory.getAbsolutePath());
         removeAll();
         // trashing out the old instance of the loaded enables us
-        // to reaload the plugins on runtime
+        // to reaload the plugins at runtime
         loader = (AuthorizationPluginClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
                 return new AuthorizationPluginClassLoader(directory);

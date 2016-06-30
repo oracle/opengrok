@@ -1324,15 +1324,19 @@ public final class RuntimeEnvironment {
      * Stops the watch dog service.
      */
     public void stopWatchDogService() {
-        if (watchDogThread != null) {
-            watchDogThread.interrupt();
-        }
-        
         if (watchDogWatcher != null) {
             try {
                 watchDogWatcher.close();
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "Cannot close WatchDogService: ", ex);
+            }
+        }
+        if (watchDogThread != null) {
+            watchDogThread.interrupt();
+            try {
+                watchDogThread.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, "Cannot join WatchDogService thread: ", ex);
             }
         }
     }
