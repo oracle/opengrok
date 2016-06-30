@@ -225,7 +225,7 @@ PKG pkgsend add file dist/opengrok.1 mode=0444 owner=root group=bin path=/usr/op
 
 # install default configuration
 PKG pkgsend add depend fmri=pkg:/runtime/java/jre-8 type=require
-PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat type=require
+PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat-8 type=require
 
 # Following line gets commented by that the developer/tool/exuberant-ctags has been removed from IPS
 # This has to stay commented until the next release of Solaris will contain the exhuberant ctags package
