@@ -582,10 +582,10 @@ DetermineWarDirectoryTomcat()
 
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
-        /var/tomcat6            \
-        /var/lib/tomcat6        \
+        /var/lib/tomcat8	\
         /var/lib/tomcat7        \
-        /var/lib/tomcat8
+        /var/lib/tomcat6	\
+        /var/tomcat6
     do
         if [ -d "${prefix}/webapps" ]
         then
