@@ -19,11 +19,11 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.bcel-6.0-20150726.222224-123.jar}</file>
+                    <file>${reference.opengrok.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${reference.opengrok.jar}</file>
+                    <file>${file.reference.bcel-6.0-20160625.223717-148.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
