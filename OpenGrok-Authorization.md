@@ -1,7 +1,7 @@
 # Using OpenGrok authorization
 
 This howto provides information about opengrok authorization with authorization framework.
-You can use this module along with project groupings which allows
+You can use this module along with [project groupings](https://github.com/OpenGrok/OpenGrok/wiki/OpenGrok-Groupings) which allows
 you to create various project structures.
 
 ## Compatibility
