@@ -149,14 +149,15 @@ The framework consists of three parts
 
 1. PluginFramework
 
-   Plugin container
+   This is the plugin container
    - performs the authorization decision
    - cache the decisions so that for each request the particular
      plugin's `isAllowed` for particular project/group is called only once
 
 2. ProjectHelper
+
    UI facade for filtered (authorized) projects/groups/repositories
-   which should be ONLY used for displaying information on main page
+   which should be **ONLY** used for displaying filtered information anywhere
    - provides methods how to get filtered projects/groups/repositories
    - cache the filtered results for each request so that it does not have
      to call the framework unnecessarily
