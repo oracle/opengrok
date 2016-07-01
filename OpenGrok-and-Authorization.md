@@ -178,7 +178,7 @@ how to interpret the request to get the user from it.
 When using IDE (NetBeans) to build your plugin; you can face a problem when the framework does not load your .jar file with `ClassFormatError` resulting to `ClassNotFoundException`.
 
 Possible solutions are:
-  1. disable debugging symbols/compile from command line (project/properities/build/compile/uncheck generate debugging info)
+  1. disable debugging symbols (project/properities/build/compile/uncheck generate debugging info)
   2. compile the .java files with `javac` manually and then package it into .jar manually (command above)
   3. compile the .java files with `javac` manually and use this directory structure (without packaging)
 
