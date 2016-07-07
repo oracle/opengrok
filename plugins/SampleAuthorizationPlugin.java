@@ -32,8 +32,13 @@ import org.opensolaris.opengrok.configuration.Project;
 public class SampleAuthorizationPlugin implements IAuthorizationPlugin {
 
     @Override
-    public void reload() {
+    public void load() {
     }
+
+    @Override
+    public void unload() {
+    }
+
     
     @Override
     public boolean isAllowed(HttpServletRequest request, Project project) {
