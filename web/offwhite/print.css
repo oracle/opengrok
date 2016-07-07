@@ -521,3 +521,33 @@ a.xsr	{ /* subroutine */		color: #00f; font-weight: bold; }
 	background-position: -432px 0;
 }
 /* ############### end of footer ############## */
+
+/* *** scopes *** */
+
+span.scope-head {
+    display: block;
+}
+
+span.scope-body {
+    display: block;
+}
+
+span.unfold-icon {
+    display: none;
+}
+
+span.fold-icon {
+    display: none;
+}
+
+span.fold-space {
+    display: none;
+}
+
+span.scope-signature {
+    display: none;
+}
+
+div#scope {
+    display: none;
+}
