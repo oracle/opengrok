@@ -70,6 +70,7 @@ import org.opensolaris.opengrok.analysis.lua.LuaAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.java.JavaAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.javascript.JavaScriptAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.lisp.LispAnalyzerFactory;
+import org.opensolaris.opengrok.analysis.pascal.PascalAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.perl.PerlAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.php.PhpAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.plain.PlainAnalyzerFactory;
@@ -188,7 +189,8 @@ public class AnalyzerGuru {
             new FortranAnalyzerFactory(),
             new HaskellAnalyzerFactory(),
             new GolangAnalyzerFactory(),
-            new LuaAnalyzerFactory()
+            new LuaAnalyzerFactory(),
+            new PascalAnalyzerFactory()
         };
 
         for (FileAnalyzerFactory analyzer : analyzers) {

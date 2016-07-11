@@ -227,6 +227,8 @@ Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/clojure/ClojureXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeFullTokenizer.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/pascal/PascalSymbolTokenizer.lex"/>
+        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/pascal/PascalXref.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex"/>
         <run-jflex file="${src.dir}/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex"/>
     </target>
