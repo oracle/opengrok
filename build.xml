@@ -417,7 +417,7 @@ Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
         dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
-    <target name="-post-jar" depends="-copy-lib-without-netbeans">
+    <target name="-post-jar" depends="-copy-lib-without-netbeans, sample-plugins">
         <war destfile="${dist.war}" webxml="web/WEB-INF/web.xml">
             <fileset dir="web" excludes="META-INF/context.xml"/>
             <lib dir="${dist.dir}" includes="opengrok.jar"/>
@@ -861,6 +861,17 @@ Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
         </jar>
     </target>
 
+    <!-- Build the sample plugins. -->
+    <target name="sample-plugins" depends="-pre-pre-compile">
+        <mkdir dir="${build.dir}/plugins"/>
+        <javac srcdir="plugins/" 
+               destdir="${build.dir}/plugins"
+               includes="**/*.java"
+               classpath="${javac.classpath}:${dist.jar}"
+               compiler="javac${javac.source}">
+            <compilerarg value="-Xlint:deprecation,unchecked" />
+        </javac>
+    </target>
 
     <!-- compile jsp - just to test -->
     <property name="debug" value="on" />
