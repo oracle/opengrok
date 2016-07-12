@@ -57,7 +57,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
               }
  \"     { yybegin(STRING); }
  \'     { yybegin(QSTRING); }
- "{"   { yybegin(COMMENT); }
+ \{     { yybegin(COMMENT); }
  "//"   { yybegin(SCOMMENT); }
 }
 
@@ -70,7 +70,7 @@ Identifier = [a-zA-Z_] [a-zA-Z0-9_]*
 }
 
 <COMMENT> {
-"}"    { yybegin(YYINITIAL);}
+\}    { yybegin(YYINITIAL);}
 }
 
 <SCOMMENT> {

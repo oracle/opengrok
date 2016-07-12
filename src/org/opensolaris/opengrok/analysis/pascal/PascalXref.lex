@@ -62,15 +62,12 @@ Path = "/"? [a-zA-Z]{FNameChar}* ("/" [a-zA-Z]{FNameChar}*[a-zA-Z0-9])+
 
 Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*)?
 
-ClassName = ({Identifier} ".")* {Identifier}
-ParamName = {Identifier} | "<" {Identifier} ">"
-
 %state  STRING COMMENT SCOMMENT QSTRING
 
 %%
 <YYINITIAL>{
- \{     { incScope(); writeUnicodeChar(yycharat(0)); }
- \}     { decScope(); writeUnicodeChar(yycharat(0)); }
+ "begin"     { incScope(); writeUnicodeChar(yycharat(0)); writeUnicodeChar(yycharat(1));writeUnicodeChar(yycharat(2)); writeUnicodeChar(yycharat(3));writeUnicodeChar(yycharat(4)); }
+ "end"     { decScope(); writeUnicodeChar(yycharat(0)); writeUnicodeChar(yycharat(1)); writeUnicodeChar(yycharat(2));}
  \;     { endScope(); writeUnicodeChar(yycharat(0)); }
 
 {Identifier} {
@@ -98,7 +95,7 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 
  \"     { yybegin(STRING);out.write("<span class=\"s\">\"");}
  \'     { yybegin(QSTRING);out.write("<span class=\"s\">\'");}
- "{"   { yybegin(COMMENT);out.write("<span class=\"c\">/*");}
+ \{     { yybegin(COMMENT);out.write("<span class=\"c\">{");}
  "//"   { yybegin(SCOMMENT);out.write("<span class=\"c\">//");}
 }
 
@@ -112,13 +109,14 @@ ParamName = {Identifier} | "<" {Identifier} ">"
 <QSTRING> {
  "\\\\" { out.write("\\\\"); }
  "\\\'" { out.write("\\\'"); }
- \' {WhiteSpace} \' { out.write(yytext()); }
+ \'     {WhiteSpace} \' { out.write(yytext()); }
  \'     { yybegin(YYINITIAL); out.write("'</span>"); }
 }
 
 <COMMENT> {
-"}"    { yybegin(YYINITIAL); out.write("*/</span>"); }
+\}      { yybegin(YYINITIAL); out.write("}</span>"); }
 }
+
 
 <SCOMMENT> {
   {WhiteSpace}*{EOL} {
