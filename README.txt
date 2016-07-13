@@ -904,13 +904,19 @@ You can also force a specific repository test from running through the following
 10. Tuning OpenGrok for large code bases
 ---------------------------------------
 
+10.1 Almost atomic index flip using ZFS
+---------------------------------------
+
 While indexing big source repos you might consider using ZFS filesystem to give
 you advantage of datasets which can be flipped over or cloned when needed.
 If the machine is strong enough it will also give you an option to
 incrementally index in parallel to having the current sources and index in sync.
-(So tomcat sees certain zfs datasets, then you just stop it, flip datasets to
+(So Tomcat sees certain zfs datasets, then you just stop it, flip datasets to
 the ones that were updated by SCM/index and start tomcat again - outage is
 minimal, sources+indexes are ALWAYS in sync, users see the truth)
+
+10.2 JVM tuning
+---------------
 
 OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of
 lucene docs indexing(when to flush to disk).
@@ -950,6 +956,8 @@ For tomcat you can easily get this done by creating conf/setenv.sh:
 
  export JAVA_OPTS
 
+10.3 Tomcat/Apache tuning
+-------------------------
 
 For tomcat you might also hit a limit for http header size (we use it to send
 the project list when requesting search results):
@@ -965,13 +973,23 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestLine 65536
   LimitRequestFieldSize 65536
 
-Open File hard and soft limits
+10.4 Open File hard and soft limits
+-----------------------------------
+
 The initial index creation process is resource intensive and often the error
 "java.io.IOException: error=24, Too many open files" appears in the logs. To
 avoid this increase the ulimit value to a higher number.
 
 It is noted that the hard and soft limit for open files of 10240 works for mid
 sized repositores and so the recommendation is to start with 10240.
+
+10.5 Multi-project search speed tip
+-----------------------------------
+
+If multi-project search is performed frequently, it might be good to warm
+up file system cache after each reindex. This can be done e.g. with
+https://github.com/hoytech/vmtouch
+
 
 11. Authors
 -----------
