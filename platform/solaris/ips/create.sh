@@ -210,13 +210,18 @@ PKG pkgsend add file doc/ctags.config mode=0444 owner=root group=sys path=/usr/o
 
 # install libs
 LV=6.1.0
-for file in ant.jar bcel-6.0-20150726.222224-123.jar \
-            lucene-analyzers-common-${LV}.jar lucene-core-${LV}.jar lucene-queryparser-${LV}.jar lucene-suggest-${LV}.jar \
-            jrcs.jar \
-            swing-layout-0.9.jar \
-	    json-simple-1.1.1.jar
+for file in ant.jar \
+    bcel*.jar \
+    lucene-analyzers-common-${LV}.jar \
+    lucene-core-${LV}.jar \
+    lucene-queryparser-${LV}.jar \
+    lucene-suggest-${LV}.jar \
+    jrcs.jar \
+    swing-layout-0.9.jar \
+    json-simple-1.1.1.jar
 do
-   PKG pkgsend add file dist/lib/${file} mode=0444 owner=root group=bin path=/usr/opengrok/lib/${file}
+   PKG pkgsend add file dist/lib/${file} mode=0444 owner=root group=bin \
+       path=/usr/opengrok/lib/${file}
 done
 
 
