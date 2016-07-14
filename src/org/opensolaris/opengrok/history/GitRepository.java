@@ -153,6 +153,7 @@ public class GitRepository extends Repository {
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("log");
+        cmd.add("--follow");
         cmd.add("--abbrev-commit");
         cmd.add(ABBREV_LOG);
         cmd.add("--name-only");
