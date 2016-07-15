@@ -548,11 +548,7 @@ FindApplicationServerType()
     # Maybe a better implementation would be to call Application
     # Server specific WAR Directory and see if they exist.
 
-    if [    -d "/var/tomcat6/webapps"        \
-         -o -d "/var/tomcat7/webapps"    \
-         -o -d "/var/tomcat8/webapps"    \
-         -o -d "/var/lib/tomcat6/webapps"    \
-         -o -d "/var/lib/tomcat7/webapps"    \
+    if [    -d "/var/tomcat8/webapps"        \
          -o -d "/var/lib/tomcat8/webapps"    \
        ]
     then
@@ -585,11 +581,7 @@ DetermineWarDirectoryTomcat()
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
         /var/lib/tomcat8	\
-        /var/lib/tomcat7        \
-        /var/lib/tomcat6	\
-        /var/tomcat8		\
-        /var/tomcat7		\
-        /var/tomcat6
+        /var/tomcat8
     do
         if [ -d "${prefix}/webapps" ]
         then
@@ -723,11 +715,11 @@ ValidateConfiguration()
     then
         if [ "`uname -s`" = "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
 	then
-	    if [ -d "/var/tomcat6" -a \
-	        ! -r "/var/tomcat6/webapps/source/WEB-INF/lib/derbyclient.jar" ];
+	    if [ -d "/var/tomcat8" -a \
+	        ! -r "/var/tomcat8/webapps/source/WEB-INF/lib/derbyclient.jar" ];
 	    then
 	        FatalError "JavaDB on but no derbyclient.jar under" \
-		    "/var/tomcat6/webapps/source/WEB-INF/lib"
+		    "/var/tomcat8/webapps/source/WEB-INF/lib"
 	    fi
 	    if [ ! -r "/usr/opengrok/lib/derbyclient.jar" ]; then
 	        FatalError "JavaDB on but no derbyclient.jar under" \

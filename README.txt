@@ -323,10 +323,10 @@ Now enable the service:
 
   # svcadm enable -rs opengrok
 
-Note that this will enable tomcat6 service as dependency.
+Note that this will enable tomcat service as dependency.
 
 When the service starts indexing for first time, it's already enabled and
-depending on tomcat6, so at this point the web application should be
+depending on tomcat, so at this point the web application should be
 already running.
 
 Note that indexing is not done when the opengrok service is disabled.
@@ -550,7 +550,7 @@ Copy it over from:
   installed from the OSOLopengrok package the command will be:
 
     # cp /opt/SUNWjavadb/lib/derbyclient.jar \
-          /var/tomcat6/webapps/source/WEB-INF/lib/
+          /var/tomcat8/webapps/source/WEB-INF/lib/
     # cp /opt/SUNWjavadb/lib/derbyclient.jar \
           /usr/opengrok/lib
 
