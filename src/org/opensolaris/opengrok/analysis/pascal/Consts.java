@@ -98,6 +98,7 @@ public class Consts{
         kwd.add( "set" );
         kwd.add( "shl" );
         kwd.add( "shr" );
+        kwd.add( "strict" );
         kwd.add( "string" );
         kwd.add( "then" );
         kwd.add( "threadvar" );
