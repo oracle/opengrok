@@ -43,6 +43,7 @@ public class Consts{
         kwd.add( "const" );
         kwd.add( "constructor" );
         kwd.add( "continue" );
+        kwd.add( "default" );
         kwd.add( "destructor" );
         kwd.add( "dispinterface" );
         kwd.add( "div" );
@@ -81,6 +82,7 @@ public class Consts{
         kwd.add( "operator" );
         kwd.add( "or" );
         kwd.add( "out" );
+        kwd.add( "override" );
         kwd.add( "packed" );
         kwd.add( "private" );
         kwd.add( "procedure" );
