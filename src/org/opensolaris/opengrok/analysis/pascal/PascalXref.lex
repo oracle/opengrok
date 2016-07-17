@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 /*
@@ -66,8 +66,8 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[0-9]+)(([eE][+-]?[0-9]+)?[ufdlUFDL]*
 
 %%
 <YYINITIAL>{
- "begin"     { incScope(); writeUnicodeChar(yycharat(0)); writeUnicodeChar(yycharat(1));writeUnicodeChar(yycharat(2)); writeUnicodeChar(yycharat(3));writeUnicodeChar(yycharat(4)); }
- "end"     { decScope(); writeUnicodeChar(yycharat(0)); writeUnicodeChar(yycharat(1)); writeUnicodeChar(yycharat(2));}
+ "begin"     { incScope(); out.write(yytext()); }
+ "end"     { decScope(); out.write(yytext());}
  \;     { endScope(); writeUnicodeChar(yycharat(0)); }
 
 {Identifier} {
