@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.pascal;
@@ -35,7 +35,7 @@ import org.opensolaris.opengrok.history.Annotation;
 
 /**
  *
- * @author Lubos Kosco
+ * @author Alex Anthony
  */
 
 public class PascalAnalyzerFactory extends FileAnalyzerFactory {

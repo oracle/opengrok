@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2006 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.pascal;
 
@@ -27,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
-  * Holds static hash set containing the Java keywords
+  * Holds static hash set containing the Pascal keywords
   */
 public class Consts{
     public static final Set<String> kwd = new HashSet<String>() ;
