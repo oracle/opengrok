@@ -124,7 +124,7 @@ include file="menu.jspf"
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
     if (searchHelper.errorMsg != null) {
-        %><h3>Error</h3><p><%
+        %><h3>Error</h3><p class="pagetitle"><%
         if (searchHelper.errorMsg.startsWith((SearchHelper.PARSE_ERROR_MSG))) {
             %><%= Util.htmlize(SearchHelper.PARSE_ERROR_MSG) %>
             <br/>You might try to enclose your search term in quotes,
@@ -137,7 +137,7 @@ include file="menu.jspf"
             %><%= Util.htmlize(searchHelper.errorMsg) %><%
         }%></p><%
     } else if (searchHelper.hits == null) {
-        %><p>No hits</p><%
+        %><p class="pagetitle">No hits</p><%
     } else if (searchHelper.hits.length == 0) {
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
@@ -163,7 +163,7 @@ include file="menu.jspf"
         %></p><%
         }
         %>
-        <p> Your search <b><%
+        <p class="pagetitle"> Your search <b><%
             Util.htmlize(searchHelper.query.toString(), out); %></b>
             did not match any files.
             <br/> Suggestions:<br/>
