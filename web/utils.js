@@ -464,6 +464,14 @@ $(document).ready(function () {
     // $.spaces.init()
     
     $.hash.init({ parent: "pre"})
+    
+    $("#sbox input[type='submit']").click(function(e){
+        $("#results > p.pagetitle").hide(); // description
+        $("#results > p.slider").hide(); // pagination
+        $("#results > h3").hide(); // error
+        $("#results > table, #results > ul").hide(); // results + empty
+        $("#results > table + p, #results > ul + p").hide(); // results + empty timing
+    })
 });
 
 document.pageReady = [];
