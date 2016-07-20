@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -52,6 +52,7 @@ Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
 
     <modules>
         <module>jrcs</module>
+        <module>plugins</module>
         <module>opengrok-indexer</module>
         <module>opengrok-web</module>
     </modules>
