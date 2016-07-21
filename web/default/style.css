@@ -212,16 +212,16 @@ label {
  * by setting those classes in style.css (or generating them) you can adjust 
  * the colorification for more versions than 10 versions
  */
-.version_color_1 {  background-color: rgb( 0, 256, 0 ) !important;  }
-.version_color_2 {  background-color: rgb( 30, 256, 0 ) !important; }
-.version_color_3 {  background-color: rgb( 60, 256, 0 ) !important; }
-.version_color_4 {  background-color: rgb( 90, 256, 0 ) !important; }
-.version_color_5 {  background-color: rgb( 120, 256, 20 ) !important;}
-.version_color_6 {  background-color: rgb( 150, 256, 40 ) !important;}
-.version_color_7 {  background-color: rgb( 180, 256, 60 ) !important;}
-.version_color_8 {  background-color: rgb( 210, 256, 80 ) !important;}
-.version_color_9 {  background-color: rgb( 240, 256, 100 ) !important;}
-.version_color_10{  background-color: rgb( 256, 256, 120 ) !important;}
+.version_color_1 {  background-color: rgb( 255, 231, 38 ) !important;  }
+.version_color_2 {  background-color: rgb( 255, 221, 38 ) !important; }
+.version_color_3 {  background-color: rgb( 255, 215, 38 ) !important; }
+.version_color_4 {  background-color: rgb( 255, 204, 38 ) !important; }
+.version_color_5 {  background-color: rgb( 255, 199, 38 ) !important;}
+.version_color_6 {  background-color: rgb( 255, 187, 38 ) !important;}
+.version_color_7 {  background-color: rgb( 255, 183, 38 ) !important;}
+.version_color_8 {  background-color: rgb( 255, 170, 38 ) !important;}
+.version_color_9 {  background-color: rgb( 255, 167, 38 ) !important;}
+.version_color_10{  background-color: rgb( 255, 153, 38 ) !important;}
 
 /* ############### start of header ############## */
 #whole_header { }
