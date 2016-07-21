@@ -475,14 +475,14 @@ $(document).ready(function () {
             }
         }
     });
-    
+
     // starting spaces plugin
     // TODO: disabled until fixed
     // $.spaces.init()
-    
-    $.hash.init({ parent: "pre"})
-    
-    $("#sbox input[type='submit']").click(function(e){
+
+    $.hash.init({parent: "pre"})
+
+    $("#sbox input[type='submit']").click(function (e) {
         $("#results > p.pagetitle").hide(); // description
         $("#results > p.slider").hide(); // pagination
         $("#results > h3").hide(); // error
@@ -552,27 +552,29 @@ function domReadyMast() {
         }
     }
     if (document.annotate) {
-       $('a.r').tooltip({
-            content: function() {
-               var element = $(this);
-               var title = element.attr("title") || ""
-               var parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
-               if(parts.length <= 0) return "";
-               var $el = $("<dl>");
-               for(var i = 0; i < parts.length; i ++) {
-                   var definitions = parts[i].split(":");
-                   if(definitions.length < 2) continue;
-                   $("<dt>").text(definitions.shift().trim()).appendTo($el);
-                   var $dd = $("<dd>");
-                   $.each(definitions.join("").split("<br/>"), function(i, el) {
-                       $dd.append(el.trim());
-                       $dd.append($("<br/>"));
-                   });
-                   $dd.appendTo($el);
-               }
-               return $el;
+        $('a.r').tooltip({
+            content: function () {
+                var element = $(this);
+                var title = element.attr("title") || ""
+                var parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
+                if (parts.length <= 0)
+                    return "";
+                var $el = $("<dl>");
+                for (var i = 0; i < parts.length; i++) {
+                    var definitions = parts[i].split(":");
+                    if (definitions.length < 2)
+                        continue;
+                    $("<dt>").text(definitions.shift().trim()).appendTo($el);
+                    var $dd = $("<dd>");
+                    $.each(definitions.join("").split("<br/>"), function (i, el) {
+                        $dd.append(el.trim());
+                        $dd.append($("<br/>"));
+                    });
+                    $dd.appendTo($el);
+                }
+                return $el;
             },
-       })
+        })
         //$('a.r').tooltip({ left: 5, showURL: false });
         var toggle_js = document.getElementById('toggle-annotate-by-javascript');
         var toggle_ss = document.getElementById('toggle-annotate');
@@ -928,16 +930,16 @@ function togglerevs() {
 }
 
 function selectAllProjects() {
-    $("#project *").attr("selected", "selected");
+    $("#project *").prop("selected", true);
 }
 
 function invertAllProjects() {
     $("#project *").each(
         function() {
-            if ($(this).attr("selected")) {
-                $(this).attr("selected", false);
+            if ($(this).prop("selected")) {
+                $(this).prop("selected", false);
             } else {
-                $(this).attr("selected", "true");
+                $(this).prop("selected", true);
             }
         }
     );
@@ -953,9 +955,9 @@ function goFirstProject(e) {
         window.location = document.xrefPath + '/' + selected[0];
     } else if ( $(e.target).is("optgroup") ) {
         if(! e.shiftKey) {
-            $("#project :selected").attr("selected", false).change();
+            $("#project :selected").prop("selected", false).change();
         }
-        $(e.target).children().attr("selected", true).change();
+        $(e.target).children().prop("selected", true).change();
     }
 }
 
@@ -965,7 +967,7 @@ function clearSearchFrom() {
                 $(this).attr("value", "");
         }
     );
-    $("#type :selected").attr("selected", false);
+    $("#type :selected").prop("selected", false);
 }
 
 function checkEnter(event) {
