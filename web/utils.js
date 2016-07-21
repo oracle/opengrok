@@ -260,7 +260,7 @@
                     return
                 
                 inner.mouse.init()
-                $(document).bind("select", inner.selectHandler );
+                $(document).on("select", inner.selectHandler );
             }
         } // inner
         
@@ -440,7 +440,7 @@
 
             inner.options = $.extend(inner.defaults, options, {})
             
-            $(window).bind("hashchange", inner.reload )
+            $(window).on("hashchange", inner.reload)
             
             inner.reload()
             
@@ -459,6 +459,23 @@
 }) (window, window.jQuery);
 
 $(document).ready(function () {
+    $("#content").scroll(scope_on_scroll);
+    $("#dirlist").tablesorter({
+        sortList: [[0, 0]],
+        cancelSelection: true,
+        headers: {
+            1: {
+                sorter: 'text'
+            },
+            3: {
+                sorter: 'dates'
+            },
+            4: {
+                sorter: 'groksizes'
+            }
+        }
+    });
+    
     // starting spaces plugin
     // TODO: disabled until fixed
     // $.spaces.init()
@@ -535,7 +552,28 @@ function domReadyMast() {
         }
     }
     if (document.annotate) {
-        $('a.r').tooltip({ left: 5, showURL: false });
+       $('a.r').tooltip({
+            content: function() {
+               var element = $(this);
+               var title = element.attr("title") || ""
+               var parts = title.split(/<br\/>(?=[a-zA-Z0-9]+:)/g);
+               if(parts.length <= 0) return "";
+               var $el = $("<dl>");
+               for(var i = 0; i < parts.length; i ++) {
+                   var definitions = parts[i].split(":");
+                   if(definitions.length < 2) continue;
+                   $("<dt>").text(definitions.shift().trim()).appendTo($el);
+                   var $dd = $("<dd>");
+                   $.each(definitions.join("").split("<br/>"), function(i, el) {
+                       $dd.append(el.trim());
+                       $dd.append($("<br/>"));
+                   });
+                   $dd.appendTo($el);
+               }
+               return $el;
+            },
+       })
+        //$('a.r').tooltip({ left: 5, showURL: false });
         var toggle_js = document.getElementById('toggle-annotate-by-javascript');
         var toggle_ss = document.getElementById('toggle-annotate');
 
@@ -597,7 +635,7 @@ function domReadyHistory() {
     // second row: r1 clicked, (r2 hidden)(optionally)
     // I cannot say what will happen if they are not like that, togglediffs
     // will go mad !
-    $("#revisions input[type=radio]").bind("click",togglediffs);
+    $("#revisions input[type=radio]").click(togglediffs);
     togglediffs();
     togglerevs();
 }
@@ -897,7 +935,7 @@ function invertAllProjects() {
     $("#project *").each(
         function() {
             if ($(this).attr("selected")) {
-                $(this).removeAttr("selected");
+                $(this).attr("selected", false);
             } else {
                 $(this).attr("selected", "true");
             }
@@ -927,7 +965,7 @@ function clearSearchFrom() {
                 $(this).attr("value", "");
         }
     );
-    $("#type :selected").removeAttr("selected");
+    $("#type :selected").attr("selected", false);
 }
 
 function checkEnter(event) {
