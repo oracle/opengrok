@@ -147,7 +147,8 @@ Note that OpenGrok ignores symbolic links.
 If you want to skip indexing the history of a particular directory
 (and all of it's subdirectories), you can touch '.opengrok_skip_history' file
 at the root of that directory.
-
+If you want to disable history generation for all repositories globally, then
+set OPENGROK_GENERATE_HISTORY environment variable to "off" during indexing.
 
 5.2 Using Opengrok shell wrapper script to create indexes
 ---------------------------------------------------------
