@@ -155,7 +155,7 @@
                         });
                 inner.$summary = $("<span class='prev summary'></span>")
                         .text(inner.$changes.length + " chunks")
-                        .bind("diff.summary.refresh", function (e) {
+                        .on("diff.summary.refresh", function (e) {
                                 var index = inner.currentIndex < 0 ? 1 : ( inner.currentIndex + 1 );
                                 $(this).text ( index + "/" + inner.$changes.length + " chunks" )
                              });

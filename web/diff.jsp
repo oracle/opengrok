@@ -52,7 +52,7 @@ private String getAnnotateRevision(DiffData data) {
 
 include file="mast.jsp"
 
-%><script src="<%=request.getContextPath()%>/diff.js" type="text/javascript"></script><%
+%><script src="<%=request.getContextPath()%>/js/diff.js" type="text/javascript"></script><%
 /* ---------------------- diff.jsp start --------------------- */
 {
     cfg = PageConfig.get(request);

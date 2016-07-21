@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -120,10 +120,16 @@ public class DirectoryListing {
             }
         }
 
-        out.write("<table id=\"dirlist\" class=\"tablesorter\">\n");
-        out.write("<thead>\n<tr><th></th><th>Name</th><th></th><th>Date</th><th>Size</th>");
+        out.write("<table id=\"dirlist\" class=\"tablesorter tablesorter-default\">\n");
+        out.write("<thead>\n");
+        out.write("<tr>\n");
+        out.write("<th class=\"sorter-false\"></th>\n");
+        out.write("<th>Name</th>\n");
+        out.write("<th class=\"sorter-false\"></th>\n");
+        out.write("<th class=\"sort-dates\">Date</th>\n");
+        out.write("<th class=\"sort-groksizes\">Size</th>\n");
         if (offset > 0) {
-            out.write("<th><tt>Description</tt></th>");
+            out.write("<th><tt>Description</tt></th>\n");
         }
         out.write("</tr>\n</thead>\n<tbody>\n");
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
