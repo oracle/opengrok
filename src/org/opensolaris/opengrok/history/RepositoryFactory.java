@@ -17,10 +17,9 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.history;
 
 import java.io.File;
@@ -42,7 +41,7 @@ public final class RepositoryFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryFactory.class);
 
-    private static Repository repositories[] = {
+    private static final Repository repositories[] = {
         new MercurialRepository(),
         new AccuRevRepository(),
         new BazaarRepository(),
@@ -56,8 +55,7 @@ public final class RepositoryFactory {
         new RCSRepository(),
         new CVSRepository(),
         new RepoRepository(),
-        new SSCMRepository(),
-    };
+        new SSCMRepository(),};
 
     private RepositoryFactory() {
         // Factory class, should not be constructed
@@ -65,22 +63,28 @@ public final class RepositoryFactory {
 
     /**
      * Get a list of all available repository handlers.
+     *
      * @return a list which contains none-{@code null} values, only.
      */
     public static List<Class<? extends Repository>> getRepositoryClasses() {
-        ArrayList<Class<? extends Repository>> list =
-            new ArrayList<Class<? extends Repository>>(repositories.length);
-        for (int i=repositories.length-1; i >= 0; i--) {
+        ArrayList<Class<? extends Repository>> list
+                = new ArrayList<>(repositories.length);
+        for (int i = repositories.length - 1; i >= 0; i--) {
             list.add(repositories[i].getClass());
         }
         return list;
     }
 
     /**
-     * Returns a repository for the given file, or null if no repository was found.
+     * Returns a repository for the given file, or null if no repository was
+     * found.
      *
      * @param file File that might contain a repository
      * @return Correct repository for the given file
+     * @throws java.lang.InstantiationException in case we cannot create the
+     * repo object
+     * @throws java.lang.IllegalAccessException in case no permissions to repo
+     * file
      */
     public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -92,15 +96,15 @@ public final class RepositoryFactory {
                     res.setDirectoryName(file.getCanonicalPath());
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE,
-                        "Failed to get canonical path name for " +
-			file.getAbsolutePath(), e);
+                            "Failed to get canonical path name for "
+                            + file.getAbsolutePath(), e);
                 }
 
                 if (!res.isWorking()) {
                     LOGGER.log(
                             Level.WARNING,
                             "{0} not working (missing binaries?): {1}",
-                            new Object[] {
+                            new Object[]{
                                 res.getClass().getSimpleName(),
                                 file.getPath()
                             });
@@ -115,8 +119,8 @@ public final class RepositoryFactory {
                         res.setParent(res.determineParent());
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
-                            "Failed to get parent for {0}: {1}",
-                            new Object[]{file.getAbsolutePath(), ex});
+                                "Failed to get parent for {0}: {1}",
+                                new Object[]{file.getAbsolutePath(), ex});
                     }
                 }
 
@@ -125,8 +129,8 @@ public final class RepositoryFactory {
                         res.setBranch(res.determineBranch());
                     } catch (IOException ex) {
                         LOGGER.log(Level.WARNING,
-                            "Failed to get branch for {0}: {1}",
-                            new Object[]{file.getAbsolutePath(), ex});
+                                "Failed to get branch for {0}: {1}",
+                                new Object[]{file.getAbsolutePath(), ex});
                     }
                 }
 
@@ -143,10 +147,14 @@ public final class RepositoryFactory {
     }
 
     /**
-     * Returns a repository for the given file, or null if no repository was found.
+     * Returns a repository for the given file, or null if no repository was
+     * found.
      *
      * @param info Information about the repository
      * @return Correct repository for the given file
+     * @throws java.lang.InstantiationException in case we cannot create the
+     * repo object
+     * @throws java.lang.IllegalAccessException in case no permissions to repo
      */
     public static Repository getRepository(RepositoryInfo info) throws InstantiationException, IllegalAccessException {
         return getRepository(new File(info.getDirectoryName()));

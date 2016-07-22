@@ -31,9 +31,10 @@ import java.lang.reflect.Modifier;
 
 /**
  *
- * This rule can be added to a Junit test and will look for the annotation {@link ConditionalRun} on either the test class
- * or method. The test is then skipped through Junit's {@link Assume} capabilities if the {@link RunCondition} provided in the
- * annotation is not satisfied.
+ * This rule can be added to a Junit test and will look for the annotation
+ * {@link ConditionalRun} on either the test class or method. The test is then
+ * skipped through Junit's {@link Assume} capabilities if the
+ * {@link RunCondition} provided in the annotation is not satisfied.
  *
  * Cobbled together from:
  * http://www.codeaffine.com/2013/11/18/a-junit-rule-to-conditionally-ignore-tests/
@@ -62,25 +63,26 @@ public class ConditionalRunRule implements TestRule {
         return aStatement;
     }
 
-    private static boolean hasConditionalIgnoreAnnotationOnClass( Description aDescription ) {
+    private static boolean hasConditionalIgnoreAnnotationOnClass(Description aDescription) {
         return aDescription.getTestClass().getAnnotation(ConditionalRun.class) != null;
     }
 
-    private static RunCondition getIgnoreConditionOnClass( Description aDescription ) {
+    private static RunCondition getIgnoreConditionOnClass(Description aDescription) {
         ConditionalRun annotation = aDescription.getTestClass().getAnnotation(ConditionalRun.class);
-        return new IgnoreConditionCreator(aDescription.getTestClass(), annotation ).create();
+        return new IgnoreConditionCreator(aDescription.getTestClass(), annotation).create();
     }
 
-    private static boolean hasConditionalIgnoreAnnotationOnMethod( Description aDescription ) {
+    private static boolean hasConditionalIgnoreAnnotationOnMethod(Description aDescription) {
         return aDescription.getAnnotation(ConditionalRun.class) != null;
     }
 
-    private static RunCondition getIgnoreConditionOnMethod( Description aDescription ) {
+    private static RunCondition getIgnoreConditionOnMethod(Description aDescription) {
         ConditionalRun annotation = aDescription.getAnnotation(ConditionalRun.class);
-        return new IgnoreConditionCreator(aDescription.getTestClass(), annotation ).create();
+        return new IgnoreConditionCreator(aDescription.getTestClass(), annotation).create();
     }
 
     private static class IgnoreConditionCreator {
+
         private final Class<?> mTestClass;
         private final Class<? extends RunCondition> conditionType;
 
@@ -93,16 +95,16 @@ public class ConditionalRunRule implements TestRule {
             checkConditionType();
             try {
                 return createCondition();
-            } catch( RuntimeException re ) {
+            } catch (RuntimeException re) {
                 throw re;
-            } catch( Exception e ) {
-                throw new RuntimeException( e );
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
 
         private RunCondition createCondition() throws Exception {
             RunCondition result;
-            if(isConditionTypeStandalone()) {
+            if (isConditionTypeStandalone()) {
                 result = conditionType.newInstance();
             } else {
                 result = conditionType.getDeclaredConstructor(mTestClass).newInstance(mTestClass);
@@ -111,14 +113,14 @@ public class ConditionalRunRule implements TestRule {
         }
 
         private void checkConditionType() {
-            if(!isConditionTypeStandalone() && !isConditionTypeDeclaredInTarget()) {
+            if (!isConditionTypeStandalone() && !isConditionTypeDeclaredInTarget()) {
                 String msg
                         = "Conditional class '%s' is a member class "
                         + "but was not declared inside the test case using it.\n"
                         + "Either make this class a static class, "
                         + "standalone class (by declaring it in it's own file) "
                         + "or move it inside the test case using it";
-                throw new IllegalArgumentException( String.format (msg, conditionType.getName()) );
+                throw new IllegalArgumentException(String.format(msg, conditionType.getName()));
             }
         }
 
@@ -133,6 +135,7 @@ public class ConditionalRunRule implements TestRule {
     }
 
     private static class IgnoreStatement extends Statement {
+
         private final RunCondition condition;
 
         IgnoreStatement(RunCondition condition) {
@@ -141,7 +144,7 @@ public class ConditionalRunRule implements TestRule {
 
         @Override
         public void evaluate() {
-            Assume.assumeTrue("Ignored by " + condition.getClass().getSimpleName(), false );
+            Assume.assumeTrue("Ignored by " + condition.getClass().getSimpleName(), false);
         }
     }
 }
