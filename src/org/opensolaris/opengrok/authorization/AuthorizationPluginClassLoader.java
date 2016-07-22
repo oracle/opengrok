@@ -184,10 +184,10 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * 3) loading from .class files 
      * 4) loading from .jar files
      *
-     * @param name
+     * @param name class name
      * @return loaded class or null
-     * @throws ClassNotFoundException
-     * @throws SecurityException
+     * @throws ClassNotFoundException if class is not found
+     * @throws SecurityException if the loader cannot access the class
      */
     @Override
     public Class loadClass(String name) throws ClassNotFoundException, SecurityException {
@@ -209,15 +209,15 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * 3) loading from .class files 
      * 4) loading from .jar files
      *
-     * @param name
+     * @param name class name
      * @param resolveIt if the class should be resolved
      * @return loaded class or null
-     * @throws ClassNotFoundException
-     * @throws SecurityException
+     * @throws ClassNotFoundException if class is not found
+     * @throws SecurityException if the loader cannot access the class
      */
     @Override
     public Class loadClass(String name, boolean resolveIt) throws ClassNotFoundException, SecurityException {
-        Class c = null;
+        Class c;
 
         if ((c = cache.get(name)) != null) {
             if (resolveIt) {

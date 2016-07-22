@@ -87,7 +87,7 @@ public interface ManagementMBean {
 
     /**
      * Set subfiles
-     * @param sublist
+     * @param sublist array of filenames
      */
     public void setSubFiles(String[] sublist);
 

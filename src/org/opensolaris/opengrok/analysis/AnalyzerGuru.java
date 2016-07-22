@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -644,7 +644,7 @@ public class AnalyzerGuru {
      * @param sig a sequence of bytes from which to remove the BOM
      * @return a string without the byte-order marker, or <code>null</code> if
      * the string doesn't start with a BOM
-     * @throws java.io.IOException
+     * @throws java.io.IOException in case of any read error
      */
     public static String stripBOM(byte[] sig) throws IOException {
         for (Map.Entry<String, byte[]> entry : BOMS.entrySet()) {

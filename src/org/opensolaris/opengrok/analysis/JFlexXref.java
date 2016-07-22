@@ -153,15 +153,16 @@ public abstract class JFlexXref {
             if (userPageSuffix != null && userPageSuffix.length() == 0) {
                 userPageSuffix = null;
             }
-        } catch (Exception e) {
+        } catch (NoSuchFieldException | SecurityException 
+                | IllegalArgumentException | IllegalAccessException e) {
             // The auto-generated constructors for the Xref classes don't
             // expect a checked exception, so wrap it in an AssertionError.
             // This should never happen, since all the Xref classes will get
             // a public static YYEOF field from JFlex.
-            AssertionError ae = new AssertionError("Couldn't initialize yyeof");
-            ae.initCause(e);
-            throw ae; // NOPMD (stack trace is preserved by initCause(), but
-            // PMD thinks it's lost)
+                        
+            // NOPMD (stack trace is preserved by initCause(), but
+            // PMD thinks it's lost)            
+            throw new AssertionError("Couldn't initialize yyeof", e); 
         }
     }
 
@@ -190,14 +191,26 @@ public abstract class JFlexXref {
         scopeOpen = false;
     }
 
+    /**
+     * set definitions
+     * @param defs definitions
+     */
     public void setDefs(Definitions defs) {
         this.defs = defs;
     }
 
+    /**
+     * set scopes
+     * @param scopesEnabled if they should be enabled or disabled
+     */
     public void setScopesEnabled(boolean scopesEnabled) {
         this.scopesEnabled = scopesEnabled;
     }
 
+    /**
+     * set folding of code
+     * @param foldingEnabled whether to fold or not
+     */
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
     }
@@ -265,7 +278,7 @@ public abstract class JFlexXref {
 
     /**
      * Get generated scopes.
-     * @return 
+     * @return scopes for current line
      */
     public Scopes getScopes() {
         return scopes;
@@ -273,31 +286,39 @@ public abstract class JFlexXref {
 
     /**
      * Get the next token from the scanner.
-     * @return 
-     * @throws java.io.IOException
+     * @return state number (e.g. YYEOF)
+     * @throws java.io.IOException in case of any I/O prob
      */
     public abstract int yylex() throws IOException;
 
     /**
      * Reset the scanner.
-     * @param reader
+     * @param reader new reader to reinit this 
      */
     public abstract void yyreset(Reader reader);
 
     /**
      * Get the value of {@code yyline}.
-     * @return 
+     * @return line number
      */
     protected abstract int getLineNumber();
 
     /**
      * Set the value of {@code yyline}.
-     * @param x
+     * @param x line number
      */
     protected abstract void setLineNumber(int x);
 
+    /**
+     * start new analysis
+     * @param newState state to begin from
+     */
     public abstract void yybegin(int newState);
 
+    /**
+     * returns current state of analysis
+     * @return id of state
+     */
     public abstract int yystate();
 
     /**
@@ -374,7 +395,7 @@ public abstract class JFlexXref {
             if (style != null && style.title != null) {
                 SortedSet<Tag> tags = symbols.get(style.name);
                 if (tags == null) {
-                    tags = new TreeSet<Tag>(cmp);
+                    tags = new TreeSet<>(cmp);
                     symbols.put(style.name, tags);
                 }
                 tags.add(tag);
@@ -663,12 +684,21 @@ public abstract class JFlexXref {
         }
     }
 
+    /**
+     * save current yy state to stack
+     * @param newState state id
+     * @param popString string for the state
+     */
     public void yypush(int newState, String popString) {
         this.stack.push(yystate());
         this.stackPopString.push(popString);
         yybegin(newState);
     }
 
+    /**
+     * pop last state from stack
+     * @throws IOException in case of any I/O problem
+     */
     public void yypop() throws IOException {
         yybegin(this.stack.pop());
         String popString = this.stackPopString.pop();

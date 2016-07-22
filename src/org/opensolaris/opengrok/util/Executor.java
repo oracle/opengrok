@@ -237,7 +237,9 @@ public class Executor {
                     ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
-                process.destroy();
+                if (process!=null) { 
+                    process.destroy();
+                }
             }
         }
 
@@ -318,9 +320,9 @@ public class Executor {
     }
 
     /**
-     * Get an inputstreamto read the output the process wrote to the error stream.
+     * Get an input stream to read the output the process wrote to the error stream.
      *
-     * @return An inputstream for reading the process error stream
+     * @return An input stream for reading the process error stream
      */
     public InputStream getErrorStream() {
         return new ByteArrayInputStream(stderr);
@@ -338,7 +340,7 @@ public class Executor {
          * process all of the input you want before returning from the function.
          *
          * @param in The InputStream containing the data
-         * @throws java.io.IOException
+         * @throws java.io.IOException if any read error
          */
         public void processStream(InputStream in) throws IOException;
     }

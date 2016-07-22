@@ -73,8 +73,8 @@ public final class AuthorizationFramework {
     /**
      * Checks if the request should have an access to project.
      *
-     * @param request
-     * @param project
+     * @param request request object
+     * @param project project object
      * @return true if yes
      */
     public boolean isAllowed(HttpServletRequest request, Project project) {
@@ -93,8 +93,8 @@ public final class AuthorizationFramework {
     /**
      * Checks if the request should have an access to group.
      *
-     * @param request
-     * @param group
+     * @param request request object
+     * @param group group object
      * @return true if yes
      */
     public boolean isAllowed(HttpServletRequest request, Group group) {
@@ -163,7 +163,7 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * @param suffix
+     * @param suffix suffix for the files
      * @return list of file with suffix
      */
     private List<File> listFiles(String suffix) {
@@ -180,7 +180,7 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * @param suffix
+     * @param suffix suffix for the files
      * @return recursively traversed list of files with given suffix
      */
     private List<File> listFilesRec(String suffix) {
@@ -334,8 +334,10 @@ public final class AuthorizationFramework {
      *
      * Internally performed with a predicate. Using cache in request attributes.
      *
-     * @param request
-     * @param project
+     * @param request request object
+     * @param cache cache
+     * @param name name
+     * @param predicate predicate
      * @return true if yes
      */
     @SuppressWarnings("unchecked")

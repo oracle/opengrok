@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -65,7 +65,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
 
     /**
      * Reinitialize the tokenizer with new reader.
-     * @throws java.io.IOException
+     * @throws java.io.IOException in case of I/O error
      */
     @Override
     public void reset() throws IOException {
@@ -89,7 +89,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
      * end of input Reader ...
      *
      * @return false if no more tokens, otherwise true
-     * @throws IOException
+     * @throws IOException in case of I/O error
      */
     @Override
     public final boolean incrementToken() throws IOException {
