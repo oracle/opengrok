@@ -268,6 +268,11 @@ DefaultInstanceConfiguration()
         GENERATE_HISTORY="-r ${OPENGROK_GENERATE_HISTORY}"
     fi
 
+    if [ "$OPENGROK_GENERATE_HISTORY" != "off" ]
+    then
+        GENERATE_HISTORY="${GENERATE_HISTORY} -H"
+    fi
+
     # OPTIONAL: override depth of scanning for repositories
     if [ -n "${OPENGROK_SCAN_DEPTH}" ]
     then
@@ -835,7 +840,7 @@ StdInvocation()
 
 UpdateGeneratedData()
 {
-    StdInvocation -H
+    StdInvocation
 }
 
 UpdateDataPartial()
