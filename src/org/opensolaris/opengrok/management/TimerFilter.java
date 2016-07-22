@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.management;
 
@@ -35,11 +34,13 @@ public class TimerFilter implements NotificationFilter {
 
     private final Integer id;
 
-    /** Creates a new instance of TimerFilter */
+    /** Creates a new instance of TimerFilter
+     * @param id  new id*/
     public TimerFilter(Integer id) {
         this.id = id;
     }
 
+    @Override
     public boolean isNotificationEnabled(Notification n) {
 
         if (n instanceof TimerNotification) {

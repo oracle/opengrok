@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.jdbc;
@@ -41,7 +41,7 @@ public class ConnectionResource {
 
     /** Statement cache. */
     private final Map<StatementCreator, PreparedStatement> statements =
-            new HashMap<StatementCreator, PreparedStatement>();
+            new HashMap<>();
 
     /**
      * Create a new {@code ConnectionResource} instance.
@@ -109,7 +109,7 @@ public class ConnectionResource {
     /**
      * Create a new {@code Statement} object.
      * @return a {@code Statement} object
-     * @throws java.sql.SQLException
+     * @throws java.sql.SQLException if we cannot allocate the statement
      */
     public Statement createStatement() throws SQLException {
         return conn.createStatement();

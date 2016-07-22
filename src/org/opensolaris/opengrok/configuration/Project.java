@@ -146,7 +146,7 @@ public class Project implements Comparable<Project> {
     /**
      * Adds a group where this project belongs
      *
-     * @param group
+     * @param group group to add
      */
     public void addGroup(Group group) {
         while (group != null) {

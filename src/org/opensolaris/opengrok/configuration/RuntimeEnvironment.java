@@ -84,7 +84,7 @@ public final class RuntimeEnvironment {
 
     private Configuration configuration;
     private final ThreadLocal<Configuration> threadConfig;
-    private static RuntimeEnvironment instance = new RuntimeEnvironment();
+    private static final RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
     private static ExecutorService searchExecutor = null;
@@ -108,6 +108,7 @@ public final class RuntimeEnvironment {
 
             historyExecutor = Executors.newFixedThreadPool(num,
                     new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable runnable) {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("history-handling-" + thread.getId());
@@ -135,6 +136,7 @@ public final class RuntimeEnvironment {
 
             historyRenamedExecutor = Executors.newFixedThreadPool(num,
                     new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable runnable) {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("renamed-handling-" + thread.getId());
@@ -152,6 +154,7 @@ public final class RuntimeEnvironment {
             searchExecutor = Executors.newFixedThreadPool(
                 this.getMaxSearchThreadCount(),
                 new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable runnable) {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("search-" + thread.getId());
@@ -468,7 +471,7 @@ public final class RuntimeEnvironment {
             Executor executor = new Executor(new String[]{getCtags(), "--version"});
             executor.exec(false);
             String output = executor.getOutputString();
-            boolean isUnivCtags = output.contains("Universal Ctags");
+            boolean isUnivCtags = output!=null?output.contains("Universal Ctags"):false;
             if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
                 LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
                         + "(tried running " + "{0}" + ")\n"
@@ -751,7 +754,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Get the client command to use to access the repository for the given
-     * fully quallified classname.
+     * fully qualified classname.
      *
      * @param clazzName name of the targeting class
      * @return {@code null} if not yet set, the client command otherwise.
@@ -976,6 +979,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Return whether e-mail addresses should be obfuscated in the xref.
+     * @return if we obfuscate emails
      */
     public boolean isObfuscatingEMailAddresses() {
         return threadConfig.get().isObfuscatingEMailAddresses();
@@ -983,6 +987,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Set whether e-mail addresses should be obfuscated in the xref.
+     * @param obfuscate should we obfuscate emails?
      */
     public void setObfuscatingEMailAddresses(boolean obfuscate) {
         threadConfig.get().setObfuscatingEMailAddresses(obfuscate);
@@ -1113,7 +1118,7 @@ public final class RuntimeEnvironment {
         }
         for (Project project : projects) {
             // filterProjects only groups which match project's description
-            Set<Group> copy = new TreeSet<Group>(groups);
+            Set<Group> copy = new TreeSet<>(groups);
             copy.removeIf(new Predicate<Group>() {
                 @Override
                 public boolean test(Group g) {
@@ -1139,7 +1144,7 @@ public final class RuntimeEnvironment {
      * Mainly it classifies the projects in their groups and generates project -
      * repositories map
      *
-     * @param configuration
+     * @param configuration what configuration to use
      */
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
@@ -1309,9 +1314,7 @@ public final class RuntimeEnvironment {
                             break;
                         }
                     }
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (IOException ex) {
+                } catch (InterruptedException | IOException ex) {
                     Thread.currentThread().interrupt();
                 }
                 LOGGER.log(Level.INFO, "Watchdog finishing (exiting)");

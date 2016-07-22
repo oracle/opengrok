@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.management;
 
@@ -76,11 +75,13 @@ public interface ManagementMBean {
 
     /**
      * Set number of Threads to use for indexing
+     * @param val how many indexing threads to use
      */
     public void setNumberOfThreads(Integer val);
 
     /**
      * Get number of Threads to use for indexing
+     * @return number of current indexing threads
      */
     public Integer getNumberOfThreads();
 
@@ -98,6 +99,7 @@ public interface ManagementMBean {
 
     /**
      * Get a selected property from JAG configuration.
+     * @param key name of key needed
      * @return String with property value
      */
     public String getProperty(String key);
@@ -108,11 +110,13 @@ public interface ManagementMBean {
      * property is set.
      * @param key the String key for the property to be set.
      * $param value the String value for the property to be set.
+     * @param value what to set for the key
      */
     public void setProperty(String key, String value);
 
     /**
      * Get the selected System property
+     * @param key key of the property
      * @return String with property value
      */
     public String getSystemProperty(String key);
@@ -121,11 +125,13 @@ public interface ManagementMBean {
      * Set a selected System property
      * @param key the String key for the property to be set.
      * $param value the String value for the property to be set.
+     * @param value what to set for the key
      */
     public void setSystemProperty(String key, String value);
 
     /**
      * Get the selected Environment property
+     * @param key key of the property
      * @return String with Environment property value
      */
     public String getSystemEnvProperty(String key);

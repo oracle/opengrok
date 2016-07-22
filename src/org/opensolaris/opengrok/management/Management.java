@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.management;
 
@@ -43,7 +42,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     private final Properties ogaProperties;
     private final long startTime; // Stores the time this bean is created
     private Boolean update = Boolean.FALSE;
-    private Integer noThreads = Integer.valueOf(1);
+    private Integer noThreads = 1;
     private String[] subFiles = new String[]{};
     private String configurationFile = null;
     private String publishHost = null;
@@ -86,6 +85,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     /**
      * Static factory method to get an instance of management.
      * Returns null if Management has not been initialized yet.
+     * @return singleton of the instance
      */
     public static Management getInstance() {
         return managementInstance;
@@ -95,6 +95,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      * Get a selected property from  configuration.
      * @return String with property value
      */
+    @Override
     public String getProperty(String key) {
         return ogaProperties.getProperty(key);
     }
@@ -104,6 +105,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      * @param key the String key for the property to be set.
      * $param value the String value for the property to be set.
      */
+    @Override
     public void setProperty(String key, String value) {
         if (key == null) {
             LOGGER.severe("Trying to set property with key == null");
@@ -117,18 +119,22 @@ public final class Management implements ManagementMBean, MBeanRegistration {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    @Override
     public ObjectName preRegister(MBeanServer server, ObjectName name) {
         return name;
     }
 
+    @Override
     public void postRegister(Boolean registrationDone) {
         // not used
     }
 
+    @Override
     public void preDeregister() {
         // not used
     }
 
+    @Override
     public void postDeregister() {
         // not used
     }
@@ -136,15 +142,18 @@ public final class Management implements ManagementMBean, MBeanRegistration {
     /**
      * Stops the  agent, so it is not restarted.
      */
+    @Override
     public void stop() {
         LOGGER.warning("STOPPING AGENT!");
     //WrapperManager.stop(0);
     }
 
+    @Override
     public String getSystemProperty(String key) {
         return System.getProperty(key);
     }
 
+    @Override
     public void setSystemProperty(String key, String value) {
         if (key == null) {
             LOGGER.severe("Trying to set property with key == null");
@@ -157,6 +166,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
         return System.getProperties().toString();
     }
 
+    @Override
     public String getSystemEnvProperty(String key) {
         return System.getenv(key);
     }
@@ -169,6 +179,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      * Get the time (in milliseconds since 1970) when the agent was started
      * @return long time when the agent was started, in milliseconds.
      */
+    @Override
     public long getStartTime() {
         return startTime;
     }
@@ -177,6 +188,7 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      * Get a Date object with the time the agent was started.
      * @return Date with the starting date
      */
+    @Override
     public Date getStartDate() {
         return new Date(startTime);
     }
@@ -185,71 +197,88 @@ public final class Management implements ManagementMBean, MBeanRegistration {
      * Get the version tag for the agent
      * @return String the version tag for this agent
      */
+    @Override
     public String getVersion() {
         return Info.getFullVersion();
     }
 
+    @Override
     public void setUpdateIndexDatabase(Boolean val) {
         this.update = val;
     }
 
+    @Override
     public Boolean getUpdateIndexDatabase() {
         return update;
     }
 
+    @Override
     public void setNumberOfThreads(Integer val) {
         this.noThreads = val;
     }
 
+    @Override
     public Integer getNumberOfThreads() {
         return noThreads;
     }
 
+    @Override
     public void setSubFiles(String[] sublist) {
         this.subFiles = (sublist == null) ? null : (String[]) sublist.clone();
     }
 
     @SuppressWarnings("PMD.MethodReturnsInternalArray")
+    @Override
     public String[] getSubFiles() {
         return (subFiles == null) ? null : (String[]) subFiles.clone();
     }
 
+    @Override
     public String getConfigurationFile() {
         return configurationFile;
     }
 
+    @Override
     public String getPublishServerURL() {
         return publishHost;
     }
 
+    @Override
     public void setFileLogLevel(Level level) {
         LoggerUtil.setBaseFileLogLevel(level);
     }
 
+    @Override
     public void setFileLogPath(String path) throws IOException {
         LoggerUtil.setFileHandlerLogPath(path);
     }
 
+    @Override
     public Level getConsoleLogLevel() {
         return LoggerUtil.getBaseConsoleLogLevel();
     }
 
+    @Override
     public Level getFileLogLevel() {
         return LoggerUtil.getBaseFileLogLevel();
     }
 
+    @Override
     public String getFileLogPath() {
         return LoggerUtil.getFileHandlerLogPath();
     }
 
+    @Override
     public void setPublishServerURL(String url) {
         publishHost = url;
     }
 
+    @Override
     public void setConsoleLogLevel(Level level) {
         LoggerUtil.setBaseConsoleLogLevel(level);
     }
 
+    @Override
     public void setConfigurationFile(String filename) {
        configurationFile = filename;
     }

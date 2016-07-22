@@ -18,10 +18,8 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
-
 package org.opensolaris.opengrok.management;
 
 import java.io.IOException;
@@ -43,6 +41,7 @@ public interface JMXConfigurationMBean {
     /**
      * Deploy a new configuration for OpenGrok
      * @param config String the configuration object in xml to set
+     * @throws java.io.IOException in case of io problem
      */
     public void setConfiguration(String config) throws IOException;
 }
