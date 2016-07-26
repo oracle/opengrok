@@ -37,6 +37,7 @@ public class Consts{
         kwd.add( "as" );
         kwd.add( "asm" );
         kwd.add( "begin" );
+        kwd.add( "boolean" );
         kwd.add( "break" );
         kwd.add( "case" );
         kwd.add( "class" );
@@ -49,6 +50,7 @@ public class Consts{
         kwd.add( "div" );
         kwd.add( "dispose" );
         kwd.add( "do" );
+        kwd.add( "double" );
         kwd.add( "downto" );
         kwd.add( "else" );
         kwd.add( "end" );
@@ -68,6 +70,7 @@ public class Consts{
         kwd.add( "inherited" );
         kwd.add( "initialization" );
         kwd.add( "inline" );
+        kwd.add( "integer" );
         kwd.add( "interface" );
         kwd.add( "is" );
         kwd.add( "label" );
@@ -100,8 +103,8 @@ public class Consts{
         kwd.add( "set" );
         kwd.add( "shl" );
         kwd.add( "shr" );
-        kwd.add( "strict" );
         kwd.add( "string" );
+        kwd.add( "strict" );
         kwd.add( "then" );
         kwd.add( "threadvar" );
         kwd.add( "to" );
