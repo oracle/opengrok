@@ -134,6 +134,7 @@ public final class Configuration {
     private final Map<String, String> cmds;
     private int tabSize;
     private int command_timeout; // in seconds
+    private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
     private boolean foldingEnabled;
 
@@ -225,6 +226,14 @@ public final class Configuration {
         this.command_timeout = timeout;
     }
 
+    public int getIndexRefreshPeriod() {
+        return indexRefreshPeriod;
+    }
+
+    public void setIndexRefreshPeriod(int seconds) {
+        this.indexRefreshPeriod = seconds;
+    }
+
     /**
      * Creates a new instance of Configuration
      */
@@ -275,6 +284,7 @@ public final class Configuration {
         setRevisionMessageCollapseThreshold(200);
         setPluginDirectory(null);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
+        setIndexRefreshPeriod(60);
     }
 
     public String getRepoCmd(String clazzName) {

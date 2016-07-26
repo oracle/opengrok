@@ -513,18 +513,8 @@ public final class PageConfig {
                     .setPath(req.getParameter(QueryBuilder.PATH))
                     .setHist(req.getParameter(QueryBuilder.HIST))
                     .setType(req.getParameter(QueryBuilder.TYPE));
-
-            // This is for backward compatibility with links created by OpenGrok
-            // 0.8.x and earlier. We used to concatenate the entire query into a
-            // single string and send it in the t parameter. If we get such a
-            // link, just add it to the freetext field, and we'll get the old
-            // behaviour. We can probably remove this code in the first feature
-            // release after 0.9.
-            String t = req.getParameter("t");
-            if (t != null) {
-                queryBuilder.setFreetext(t);
-            }
         }
+
         return queryBuilder;
     }
 

@@ -141,6 +141,8 @@ public class JSONSearchServlet extends HttpServlet {
             result.put(ATTRIBUTE_RESULT_COUNT, results.size());
 
             result.put(ATTRIBUTE_RESULTS, resultsArray);
+
+            engine.destroy();
         }
         resp.getWriter().write(result.toString());
     }
