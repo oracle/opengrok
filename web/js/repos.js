@@ -88,6 +88,7 @@
 
 // Code to be called when the DOM is ready.
 $(document).ready(function () {
+    $("#footer").addClass("main_page");
     $(".projects").accordion();
 
     $(".projects_select_all").click(function (e) {

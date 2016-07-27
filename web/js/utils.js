@@ -483,6 +483,7 @@ $(document).ready(function () {
     $.hash.init({parent: "pre"})
 
     $("#sbox input[type='submit']").click(function (e) {
+        $("#footer").not(".main_page").hide(); // footer
         $("#results > p.pagetitle").hide(); // description
         $("#results > p.slider").hide(); // pagination
         $("#results > h3").hide(); // error
