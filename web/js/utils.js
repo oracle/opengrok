@@ -23,258 +23,129 @@
  * Portions Copyright 2011 Jens Elkner.
  */
 
-(function(window, $) {
-   
+/**
+ * Spaces plugin.
+ * 
+ * Inserts a dummy space between line number and the text so that on copy-paste
+ * the white space is preserved.
+ * 
+ * Internally listens on scroll events and autofills the spaces only for the visible
+ * elements.
+ * 
+ * IMPORTANT: This plugin is strictly dependent on ascending order of lines
+ * and on their attribute "name". It performs a binary search which boosts performance
+ * of this plugin for really long files.
+ * 
+ * @author Krystof Tulinger
+ */
+(function (w, $) {
     var spaces = function () {
         var inner = {
-            self: this,
-            initialized: false,
-            /**
-             * Mouse selection event
-             * - upon a user's selection triggers a select event
-             */
-            mouse: {
-                dragging: false,
-                init: function () {
-                    var that = this
-                    $(document).mousedown(function (e) {
-                       that.dragging = false
-                    }).mousemove(function(e){
-                        that.dragging = true
-                    }).mouseup(function(e){
-                        var wasDragging = that.dragging
-                        that.dragging = false
-                        if(wasDragging) {
-                            $(document).trigger("select");
-                        }
-                    }).dblclick(function(e){
-                        //$(document).trigger("select")
-                    });
-                },
-            },           
             defaults: {
-                "selector": "a.l, a.hl",
-                "parent": "div#src pre",
-                "selectedClass": "selected",
-                "sourceContainer": "pre",
-            },
-            options: {},
-            indent: function($el){
-                return $el.each(function() {
-                    if(! $(this).is("." + inner.options.selectedClass))
-                        $(this).html($(this).html() + "&nbsp");
-                    $(this).addClass(inner.options.selectedClass)
-                });
-            },
-            /**
-             * @returns {Boolean} if client is IE
-             */
-            ie: function() {
-                var ua = window.navigator.userAgent;
-                if (ua.indexOf('MSIE ') > 0 || 
-                    ua.indexOf('Trident/') > 0 ||
-                    ua.indexOf('Edge/') > 0 )
-                    return true;
-                return false;
-            },            
-            getSelection: function () {
-                if (window.getSelection)
-                    return window.getSelection()
-                return null
-            },
-            /**
-
-             * Select closest element giben by options.selector to the actual
-             * element
-             * 
-             * @param {jQuery Object} $el actual element
-             * @param {boolean} next direction
-             * @param {boolean} last if it is the last element in array
-             * @param {int} depth max distance from the path between the actual
-             *                    element and the root element
-             * @returns {Object} of {element found, used given direction}
-             */
-            around: function ($el, next, last, depth) {
-              var slc = inner.options.selector
-              depth = depth || 10
-              next = next || false      
-              last = last || false
-
-                if($el.is(slc)) {
-                  return { "element": $el, "directionUsed": false };
-              }  
-
-              var $tmp = $el;
-              var $result = null
-              var parentDepth = 10
-              // scan every previous parent up to partentDepth
-              // and scan every #depth nodes around a particular parent
-              while ( $tmp.length && 
-                      !$tmp.is (inner.options.sourceContainer) && 
-                      parentDepth >= 0 ) {
-                  if($tmp.is(slc))
-                      return { "element": $tmp, "directionUsed": false }
-                  if(!next) {
-                      // scan #depth previous nodes if they are desired
-                      for ( var i = 0, $tmp2 = $tmp; i < depth && $tmp2.length; i ++ ) {
-                          if ($tmp2.is(slc))
-                              return { "element": $tmp2, "directionUsed": true }
-                          $tmp2 = $tmp2.prev()
-                      }
-                  } else {
-                      // scan #depth next nodes if they are desired
-                      for ( var i = 0, $tmp2 = $tmp; i < depth && $tmp2.length; i ++ ) {
-                          if ($tmp2.is(slc))
-                              return { "element": $tmp2, "directionUsed": true }
-                          $tmp2 = $($tmp2.get(0).nextElementSibling)
-                      }              
-                  }
-                  // going level up
-                  $tmp = $tmp.parent()
-                  parentDepth --;
-              }
-              // no luck in parents -> find links within this node
-              var $down = $el.find(slc)
-              if($down.length){
-                  if(last) {
-                     return { "element": $down.last(), "directionUsed": false }
-                  } else {
-                     return { "element": $down.first (), "directionUsed": false }
-                  }
-              }      
-              return { "element": null, "directionUsed": false }
-            },
-            /**
-             * Handle select event by extracting a range, element lookup,
-             * extending range to approximate bounds and updating range back
-             * to the client
-             * 
-             * @param {Event} e
-             * @returns {undefined} nothing
-             */
-            selectHandler: function(e) {
-                var selection = null
-                if ( ( selection = inner.getSelection() ) == null ) {
-                    console.debug ( "No selection returned. No browser support?")
-                    return
-                }
-                var selector = inner.options.selector
-                var parentSelectorWithLinks = inner.options.selector
-                        .replace( /,/g, ", " + inner.options.parent + " ")
-                        .replace( /^/, inner.options.parent + " ");
-                
-                if(selection.rangeCount <= 0){
-                    //nothing to process
-                    return
-                }
-
-                var range = selection.getRangeAt(0)
-
-                for ( var i = 0; i < selection.rangeCount; i ++ ) {
-                    // if there were more ranges, select the one which is inside 
-                    // the parent element
-                    // default: div#src pre
-                    var r = selection.getRangeAt(i)
-                    if($(r.commonAncestorContainer).has(inner.options.parent).length){
-                        range = r;
+                interval: 750,
+                selector: "a.l, a.hl",
+                $parent: null,
+                callback: function () {
+                    if (!$(this).hasClass("selected")) {
+                        $(this).addClass("selected");
+                        $(this).text($(this).text() + " ");
                     }
                 }
-                // clone range (so it works in chrome)
-                range = range.cloneRange()
-
-                // finding closest starting node based on inner.options.selector
-                // by default it's the closest line link
-                $start = $(range.startContainer);
-                $start = inner.around($start, next = false, last = false)
-                $start = $start.element;
-                if($start == null){
-                    // not successful
-                    // - no line link
-                    // - range is larger than the whole source container
-                    // find the first link in the source container
-                    $start = $(parentSelectorWithLinks).filter(":first")
-                }
-
-                if(! $start.length) {
-                    console.debug ( "Cannot determine start link");
-                    return
-                }
-
-                $end = $(range.endContainer);
-                if($end.is(inner.options.sourceContainer) && selection.toString().length <= 5) {
-                    // probably on the same line
-                    $end = $start.next().nextUntil(selector).next()
-                    $end_indir = true
-                } else {
-                    // not on the same line so find closest node according to 
-                    // selector in next nodes
-                    $end = inner.around($end, next = true, last = true)
-                    $end_indir = $end.directionUsed;
-                    $end = $end.element;            
-                }
-                if($end == null){
-                    // not successful
-                    // - no line link
-                    // - range is larger than the whole source container
-                    // find the last link in the source container
-                    $end = $(parentSelectorWithLinks).filter(":last")
-                    $end_dir = false
-                }
-                
-                if (!$end.length) {
-                    console.debug("Cannot determine end link")
-                    return
-                }          
-                
-                range.setStartBefore($start.get(0))
-                
-                if ($end_indir){
-                    range.setEndBefore($end.get(0))
-                } else {
-                    range.setEndAfter($end.get(0))
-                }
-
-                // extract contents (html now has dissapeared)
-                var content = range.extractContents()
-
-                try {
-                    // select all links in the content
-                    // indent link by one space
-                    inner.indent($(content.querySelectorAll(selector)))
-
-                } finally {
-                    // even if there was an error fill the html back to the site
-                    for( var i = 0; i < $(content).length; i ++ )
-                        range.insertNode(content)  
-                }
-
-                // clears the selection
-                selection.removeAllRanges()
-                // inserts the new updated range
-                selection.addRange(range)
             },
-            init: function() {
-                
-                // IE does not need this feature
-                if( inner.ie () )
-                    return
-                
-                inner.mouse.init()
-                $(document).on("select", inner.selectHandler );
+            options: {},
+            $collection: $(),
+            initialized: false,
+            lock: false,
+            binarySearch: function (array, key, compare) {
+                var lo = 0,
+                        hi = array.length - 1,
+                        mid,
+                        element,
+                        cmp;
+                while (lo <= hi) {
+                    mid = ((lo + hi) >> 1);
+                    cmp = compare(array[mid], key)
+                    if (cmp === 0) {
+                        return mid;
+                    } else if (cmp < 0) {
+                        lo = mid + 1;
+                    } else {
+                        hi = mid - 1;
+                    }
+                }
+                return -1;
+            },
+            handleScrollEvent: function () {
+                inner.lock = false;
+
+                var expectations = {
+                    // the first element in viewport
+                    start: Math.floor(inner.options.$parent.scrollTop() / inner.$collection.first().height()),
+                    // the last element in viewport
+                    end: Math.ceil((inner.options.$parent.scrollTop() 
+                                    + inner.options.$parent.height()) / inner.$collection.first().height())
+                };
+
+                var indices = {
+                    start: 0,
+                    end: inner.$collection.length
+                };
+
+                var cmp = function (a, key) {
+                    return $(a).attr("name") - key; // comparing the "name" attribute with the desired value
+                };
+
+
+                indices.start = inner.binarySearch(inner.$collection, expectations.start, cmp);
+                indices.end = inner.binarySearch(inner.$collection, expectations.end, cmp);
+
+                /** cutoffs */
+                indices.start = Math.max(0, indices.start);
+                indices.start = Math.min(inner.$collection.length - 1, indices.start);
+
+                if (indices.end === -1)
+                    indices.end = inner.$collection.length - 1;
+                indices.end = Math.min(inner.$collection.length - 1, indices.end);
+
+                /** calling callback for every element in the viewport */
+                for (var i = indices.start; i <= indices.end; i++) {
+                    inner.options.callback.apply(inner.$collection[i])
+                }
+            },
+            init: function () {
+
+                if (inner.initialized) {
+                    return;
+                }
+
+                inner.$collection = inner.options.$parent.find(inner.options.selector);
+
+                if (inner.$collection.length <= 0) {
+                    return;
+                }
+
+                var scrollHandler = function (e) {
+                    if (inner.lock) {
+                        return;
+                    }
+                    inner.lock = true;
+                    setTimeout(inner.handleScrollEvent, inner.options.interval);
+                };
+                inner.options.$parent.scroll(scrollHandler)
+                        .resize(scrollHandler)
+                inner.initialized = true;
             }
-        } // inner
-        
+        };
+
         this.init = function (options) {
-            if ( inner.initialized )
-                return this;
-            inner.options = $.extend(inner.defaults, options, {})
-            inner.init()
-            inner.initialized = true
+            inner.options = $.extend({}, inner.defaults, {$parent: $("#content")}, options)
+            inner.init();
             return this;
         }
-    }
+    };
+
     $.spaces = new ($.extend(spaces, $.spaces ? $.spaces : {}));
-}) (window, window.jQuery);
+})(window, window.jQuery);
 
 (function(window, $) {
    
@@ -477,8 +348,7 @@ $(document).ready(function () {
     });
 
     // starting spaces plugin
-    // TODO: disabled until fixed
-    // $.spaces.init()
+    $.spaces.init()
 
     $.hash.init({parent: "pre"})
 
