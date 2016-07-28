@@ -198,14 +198,13 @@ public final class PageConfig {
          * The code below extracts file path and revision from the URI.
          */
         for (int i = 1; i <= 2; i++) {
-            String[] tmp = null;
             String p = req.getParameter("r" + i);
             if (p != null) {
-                tmp = p.split("@");
-            }
-            if (tmp != null && tmp.length == 2) {
-                filepath[i - 1] = tmp[0];
-                data.rev[i - 1] = tmp[1];
+                int j = p.lastIndexOf("@");
+                if (j != -1) {
+                    filepath[i - 1] = p.substring(0, j);
+                    data.rev[i - 1] = p.substring(j + 1);
+                }
             }
         }
         if (data.rev[0] == null || data.rev[1] == null
