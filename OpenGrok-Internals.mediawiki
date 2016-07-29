@@ -34,7 +34,7 @@ Analyzer Guru on getting his Document returned back with different information l
 
 === Index Update ===
 
-The index is the inverted index of all files in the source trees. For every unique word in the source tree it contains a list of files where the word can be found. While tools like cscope and ctags also build indexes, they can't incrementally update it. They just rebuild it from scratch. OpenGrok uses the modern indexing methods and can incrementally update its index. (i.e update only the changed/added/deleted files since last index build)
+The index is the [http://opensourceconnections.com/blog/2013/05/20/how-does-a-search-engine-work-an-educational-trek-through-a-lucene-postings-format/ inverted index] of all files in the source trees. For every unique word in the source tree it contains a list of files where the word can be found. While tools like cscope and ctags also build indexes, they can't incrementally update it. They just rebuild it from scratch. OpenGrok uses the modern indexing methods and can incrementally update its index. (i.e update only the changed/added/deleted files since last index build)
 
 To know what files changed or got created or deleted we keep a sorted list of files in the index tagged with the files last modified date (converted in to a alphanumeric string such that dateString(date1) < dateString(date2) if date1 < date2. We traverse the file tree depth first at each stage sorting the child nodes, by which we get a sorted list of file paths.
 
