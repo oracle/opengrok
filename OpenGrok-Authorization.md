@@ -372,37 +372,31 @@ The plugin framework which works above our plugin has no idea how specific our p
 
 This is the most important part - if you have found a group for the user then add all of its projects, repositories, subgroups and their underlying objects.
 ```java
-private void init(HttpServletRequest request) {
-
-        // ...
-
-        if ((g = Group.getByName(group)) != null) {
-            // group discovery
-            for (Project p : g.getRepositories()) {
-                userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
-            }
-            for (Project p : g.getProjects()) {
-                userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
-            }
-            for (Group grp : g.getDescendants()) {
-                for (Project p : grp.getRepositories()) {
-                    userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
-                }
-                for (Project p : grp.getProjects()) {
-                    userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
-                }
-                descendants.add(grp.getName());
-            }
-            while (g != null) {
-                descendants.add(g.getName());
-                g = g.getParent();
-            }
-
-        }
+if ((g = Group.getByName(group)) != null) {
+    // group discovery
+    for (Project p : g.getRepositories()) {
+        userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
     }
-    userGroups.get(request.getUserPrincipal().getName()).addAll(descendants);
+    for (Project p : g.getProjects()) {
+        userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
+    }
+    for (Group grp : g.getDescendants()) {
+        for (Project p : grp.getRepositories()) {
+            userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
+        }
+        for (Project p : grp.getProjects()) {
+            userProjects.get(request.getUserPrincipal().getName()).add(p.getDescription());
+        }
+        descendants.add(grp.getName());
+    }
+    while (g != null) {
+        descendants.add(g.getName());
+        g = g.getParent();
+    }
+
 }
 ```
+
 Eventually, the `userProjects` and `userGroups` are maps of type User-Projects/Groups where we can quickly decide whether the user has the permission for the given entity
 by just looking into the map and the corresponding set.
 
