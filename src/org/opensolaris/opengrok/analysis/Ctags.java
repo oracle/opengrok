@@ -171,9 +171,9 @@ public class Ctags {
             command.add("--regex-pascal=/(\\w+)\\s*=\\s*interface\\s*[^;]*$/\\1/c,interface/");
             command.add("--regex-pascal=/^constructor\\s+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/n,Constructor/");
             command.add("--regex-pascal=/^destructor\\s+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/d,Destructor/");
-            command.add("--regex-pascal=/^(procedure|function)\\s+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/m,Method/");
-            command.add("--regex-pascal=/^procedure\\s+([a-zA-Z0-9_<>, ]+)[;(]/\\1/p,Procedure/");
-            command.add("--regex-pascal=/^function\\s+([a-zA-Z0-9_<>, ]+)[;(]/\\1/f,Function/");
+            command.add("--regex-pascal=/^(procedure)\\s+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/m,procedure/");
+            command.add("--regex-pascal=/^(function)\\s+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/m,function/");
+            command.add("--regex-pascal=/^\\s*property\\s+([a-zA-Z0-9_<>, ]+)\\s*\\:(.*)/\\1/m,property/");
             command.add("--regex-pascal=/^(uses|interface|implementation)$/\\1/s,Section/");
             command.add("--regex-pascal=/^unit\\s+([a-zA-Z0-9_<>, ]+)[;(]/\\1/s,unit/");
             /* Add extra command line options for ctags. */
