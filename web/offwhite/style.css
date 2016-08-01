@@ -14,11 +14,13 @@ div#src a.l, div#src a.hl {
     padding: 0;
 }
 
-div#src a.l:after, div#src a.hl:after {
+div#src a.l:after, div#src a.hl:after,
+div#src0 a.l:after, div#src0 a.hl:after {
     content: "\0020";
 }
 
-div#src a.l.selected:after, div#src a.hl.selected:after {
+div#src a.l.selected:after, div#src a.hl.selected:after,
+div#src0 a.l.selected:after, div#src0 a.hl.selected:after{
     content: "";
 }
 

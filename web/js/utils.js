@@ -77,13 +77,27 @@
             },
             handleScrollEvent: function () {
                 inner.lock = false;
-
+                
+                var myOffset = inner.$collection.first().offset() ? inner.$collection.first().offset().top : 0
+                var myHeight = inner.$collection.first().height() || 0
+                var parentOffset = inner.options.$parent.offset() ? inner.options.$parent.offset().top : 0
+                var parentHeight = inner.options.$parent.height() || 0
+                
                 var expectations = {
                     // the first element in viewport
-                    start: Math.floor(inner.options.$parent.scrollTop() / inner.$collection.first().height()),
+                    start: Math.floor(
+                            Math.abs(
+                                Math.min(myOffset - parentOffset, 0)
+                                ) / myHeight
+                           ),
                     // the last element in viewport
-                    end: Math.ceil((inner.options.$parent.scrollTop() 
-                                    + inner.options.$parent.height()) / inner.$collection.first().height())
+                    end: Math.ceil(
+                            (Math.abs(
+                                Math.min(myOffset - parentOffset, 0)
+                                ) + parentHeight
+                            ) / myHeight
+                         ),
+                    
                 };
 
                 var indices = {
@@ -131,8 +145,10 @@
                     inner.lock = true;
                     setTimeout(inner.handleScrollEvent, inner.options.interval);
                 };
-                inner.options.$parent.scroll(scrollHandler)
+                inner.options.$parent
+                        .scroll(scrollHandler)
                         .resize(scrollHandler)
+                        .scroll() // fire the event if user has not scrolled
                 inner.initialized = true;
             }
         };
