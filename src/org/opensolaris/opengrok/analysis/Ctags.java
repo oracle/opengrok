@@ -485,8 +485,15 @@ public class Ctags {
         // multiple definitions, multiple definitions can have the same type,
         // one line can contain multiple definitions). Intern them to minimize
         // the space consumed by them (see bug #809).
-        defs.addTag(Integer.parseInt(lnum), seenSymbols.intern(symbol.trim()),
+        int lineno=0;
+        try {
+            lineno=Integer.parseInt(lnum);
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.WARNING, "CTags line number parsing problem(but I will continue with line # 0) for symbol {0}", symbol);
+        }
+        defs.addTag(lineno, seenSymbols.intern(symbol.trim()),
                 seenSymbols.intern(type.trim()), seenSymbols.intern(text.trim()),
                 namespace == null ? null : seenSymbols.intern(namespace.trim()), signature);
+        
     }
 }
