@@ -166,16 +166,19 @@ public class Ctags {
 
             command.add("--langdef=pascal");
             command.add("--langmap=pascal:.pas");
-            command.add("--regex-pascal=/(\\w+)\\s*=\\s*\\(\\s*\\w\\s*\\)/\\1/t,Type/");
-            command.add("--regex-pascal=/(\\w+)\\s*=\\s*class\\s*[^;]*$/\\1/c,Class/");
-            command.add("--regex-pascal=/(\\w+)\\s*=\\s*interface\\s*[^;]*$/\\1/c,interface/");
-            command.add("--regex-pascal=/^constructor\\s+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/n,Constructor/");
-            command.add("--regex-pascal=/^destructor\\s+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/d,Destructor/");
-            command.add("--regex-pascal=/^(procedure)\\s+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/m,procedure/");
-            command.add("--regex-pascal=/^(function)\\s+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/m,function/");
-            command.add("--regex-pascal=/^\\s*property\\s+([a-zA-Z0-9_<>, ]+)\\s*\\:(.*)/\\1/m,property/");
+            command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*\\([[:space:]]*[[:alnum:]_][[:space:]]*\\)/\\1/t,Type/");
+            command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*class[[:space:]]*[^;]*$/\\1/c,Class/");
+            command.add("--regex-pascal=/([[:alnum:]_]+)[[:space:]]*=[[:space:]]*interface[[:space:]]*[^;]*$/\\1/c,interface/");
+            command.add("--regex-pascal=/^constructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/n,Constructor/");
+            command.add("--regex-pascal=/^destructor[[:space:]]+(T[a-zA-Z0-9_]+(<[a-zA-Z0-9_, ]+>)?\\.)([a-zA-Z0-9_<>, ]+)(.*)+/\\1\\3/d,Destructor/");
+            command.add("--regex-pascal=/^(procedure)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/m,procedure/");
+            command.add("--regex-pascal=/^(function)[[:space:]]+T[a-zA-Z0-9_<>, ]+\\.([a-zA-Z0-9_<>, ]+)(.*)/\\2/m,function/");
+            command.add("--regex-pascal=/^[[:space:]]*property[[:space:]]+([a-zA-Z0-9_<>, ]+)[[:space:]]*\\:(.*)/\\1/m,property/");
             command.add("--regex-pascal=/^(uses|interface|implementation)$/\\1/s,Section/");
-            command.add("--regex-pascal=/^unit\\s+([a-zA-Z0-9_<>, ]+)[;(]/\\1/s,unit/");
+            command.add("--regex-pascal=/^unit[[:space:]]+([a-zA-Z0-9_<>, ]+)[;(]/\\1/s,unit/");
+            
+            //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
+            
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
                 LOGGER.log(Level.INFO, "Adding extra options to ctags");

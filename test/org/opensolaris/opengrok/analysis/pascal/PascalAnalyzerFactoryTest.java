@@ -29,12 +29,9 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexableField;
 import static org.hamcrest.CoreMatchers.is;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -44,7 +41,6 @@ import static org.opensolaris.opengrok.analysis.AnalyzerGuru.string_ft_nstored_n
 import org.opensolaris.opengrok.analysis.Ctags;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
-import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -83,7 +79,7 @@ public class PascalAnalyzerFactoryTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
-        ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());
+        ctags.setBinary(RuntimeEnvironment.getInstance().getCtags());        
 
         repository = new TestRepository();
         repository.create(PascalAnalyzerFactoryTest.class.getResourceAsStream(
