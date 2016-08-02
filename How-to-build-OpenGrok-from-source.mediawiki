@@ -9,7 +9,7 @@ You need the following:
 * [http://java.sun.com/javase/downloads/index.jsp JDK] 1.7 or higher
 * [http://ant.apache.org/ Apache Ant] 1.8 or later
 * The source code is located in a [http://git-scm.com/ git] repository
-* The analyzers are generated from lex by using [http://jflex.de/ JFlex]
+* First build has to happen with ant/mvn which downloads all dependencies
 * [http://www.junit.org/ Junit] 4.x for testing if you don't have [http://www.netbeans.org/ Netbeans]
 
 == Check out the source ==
@@ -22,11 +22,11 @@ The first thing you need to do is to check out the source code. You might do thi
 
 == Prepare the source for compilation ==
 
-Copy <code>JFlex.jar</code> into the <code>lib</code> directory in the OpenGrok source. (If you are using NetBeans, you could alternatively add <code>JFlex.jar</code> to Ant's classpath at Tools->Options->Miscellaneous->Ant. If you are running Ant from the command line, it should also work if you put <code>JFlex.jar</code> into your <code>~/.ant/lib</code> directory.) Optionally you need <code>junit*.jar</code> there too.
+First build should download all needed dependencies, so don't get scared about missing jars.
 
 == Compile the source ==
 
-If you use NetBeans you should be able to open OpenGrok as a project and build it from there. If you want to build from the command line, execute the following command:
+If you use NetBeans you should be able to open OpenGrok as a project and build it from there(ignore "Resolve problem" for jar files other than junit, but setup a webapp server for the -web-nbproject application). If you want to build from the command line, execute the following command(it will need internet connection first time, so setup any proxies if needed):
 
  ant
 
