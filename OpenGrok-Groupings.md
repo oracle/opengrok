@@ -1,3 +1,22 @@
+# Table of contents
+
+<!-- toc -->
+
+- [Using OpenGrok groupings](#using-opengrok-groupings)
+  * [Compatibility](#compatibility)
+  * [Simple configuration](#simple-configuration)
+  * [Display](#display)
+    + [Listing](#listing)
+    + [Select Box](#select-box)
+  * [Group class](#group-class)
+    + [Method summary](#method-summary)
+    + [Property summary](#property-summary)
+  * [Tools](#tools)
+    + [Usage:](#usage)
+  * [Other sample configuration](#other-sample-configuration)
+
+<!-- tocstop -->
+
 # Using OpenGrok groupings
 
 This is a howto to introduce new feature in OpenGrok which allows
