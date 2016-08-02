@@ -358,6 +358,35 @@ label {
 	padding: 0 1ex;
 }
 
+
+#qtbl {
+    float: left;
+    width: 35%;
+    min-width: 300px;
+    margin-left: unset;
+    margin-top: 0.5em;
+    margin-right: 2em;
+    height: 100%;
+}
+
+#ptbl {
+    float: left;
+    width: 30%;
+    margin-right: 2em;
+    margin-top: 0.5em;
+    margin-left: unset;
+    min-width: 300px;
+    height: 100%;
+}
+
+#ltbl {
+    float: left;
+    width: 30%;
+    min-width: 300px;
+    margin-top: 0.5em;
+    height: 100%;
+}
+
 #sbox {
 	padding: 1ex 0;
 	background-color: #D8DBD7;
@@ -1098,6 +1127,7 @@ div#scope {
     font-weight: bold;
 }
 
+<<<<<<< HEAD
 /** --------------- fold arrows for main page ------------ */
 
 .fold-down:before {
@@ -1124,6 +1154,8 @@ div#scope {
     float: right;
 }
 
+=======
+>>>>>>> 22efa19... adding a nice select box
 /** --------------- clear fix class ------------ */
 
 .clearfix:after {

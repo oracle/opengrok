@@ -317,6 +317,34 @@ label {
 	padding: 0 1ex;
 }
 
+#qtbl {
+    float: left;
+    width: 35%;
+    min-width: 300px;
+    margin-left: unset;
+    margin-top: 0.5em;
+    margin-right: 2em;
+    height: 100%;
+}
+
+#ptbl {
+    float: left;
+    width: 30%;
+    margin-right: 2em;
+    margin-top: 0.5em;
+    margin-left: unset;
+    min-width: 300px;
+    height: 100%;
+}
+
+#ltbl {
+    float: left;
+    width: 30%;
+    min-width: 300px;
+    margin-top: 0.5em;
+    height: 100%;
+}
+
 #sbox > p:last-of-type {
 	white-space: nowrap;
 	/* 11ex = width(#qtbl td:first-child) + margin-left(body) */
@@ -1060,4 +1088,3 @@ div#scope {
 .clearfix {
     *zoom: 1;
 }
-

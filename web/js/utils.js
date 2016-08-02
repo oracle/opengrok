@@ -365,7 +365,7 @@ $(document).ready(function () {
 
     // starting spaces plugin
     $.spaces.init()
-
+    
     $.hash.init({parent: "pre"})
 
     $("#sbox input[type='submit']").click(function (e) {
@@ -377,6 +377,44 @@ $(document).ready(function () {
         $("#results > table, #results > ul").hide(); // results + empty
         $("#results > table + p, #results > ul + p").hide(); // results + empty timing
     })
+
+    var searchableOptionListOptions = {
+        maxHeight: '300px',
+        showSelectionBelowList: false,
+        showSelectAll: false,
+        maxShow: 30,
+        resultsContainer: $("#ltbl"),
+        events: {
+            // override the default onScroll positioning event if neccessary
+            onScroll: function () {
+
+                var posY = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight(),
+                        selectionContainerWidth = this.$innerContainer.outerWidth(false) - parseInt(this.$selectionContainer.css('border-left-width'), 10) - parseInt(this.$selectionContainer.css('border-right-width'), 10);
+
+                if (this.$innerContainer.css('display') !== 'block') {
+                    // container has a certain width
+                    // make selection container a bit wider
+                    selectionContainerWidth = Math.ceil(selectionContainerWidth * 1.2);
+                } else {
+                    // no border radius on top
+                    this.$selectionContainer
+                            .css('border-top-right-radius', 'initial');
+
+                    if (this.$actionButtons) {
+                        this.$actionButtons
+                                .css('border-top-right-radius', 'initial');
+                    }
+                }
+
+                this.$selectionContainer
+                        .css('top', Math.floor(posY))
+                        .css('left', Math.floor(this.$container.offset().left))
+                        .css('width', selectionContainerWidth);
+            }
+        }
+    };
+
+    $('#project').searchableOptionList(searchableOptionListOptions);
 });
 
 document.pageReady = [];
@@ -818,38 +856,15 @@ function togglerevs() {
 }
 
 function selectAllProjects() {
-    $("#project *").prop("selected", true);
+    $("#project").searchableOptionList().selectAll();
 }
 
 function invertAllProjects() {
-    $("#project *").each(
-        function() {
-            if ($(this).prop("selected")) {
-                $(this).prop("selected", false);
-            } else {
-                $(this).prop("selected", true);
-            }
-        }
-    );
+    $("#project").searchableOptionList().invert();
 }
 
-function goFirstProject(e) {
-    e = e || window.event
-
-    var selected = $.map($('#project :selected'), function (e) {
-        return $(e).text();
-    });
-
-    if ($(e.target).is("select")) {
-        window.location = document.xrefPath + '/' + selected[0];
-    } else if ($(e.target).is("option")) {
-        window.location = document.xrefPath + '/' + selected[0];
-    } else if ($(e.target).is("optgroup")) {
-        if (!e.shiftKey) {
-            $("#project :selected").prop("selected", false).change();
-        }
-        $(e.target).children().prop("selected", true).change();
-    }
+function deselectAllProjects(){
+    $("#project").searchableOptionList().deselectAll();
 }
 
 function clearSearchFrom() {
@@ -857,21 +872,6 @@ function clearSearchFrom() {
         $(this).val("");
     });
     $("#type :selected").prop("selected", false);
-}
-
-function checkEnter(event) {
-    concat='';
-    $("#sbox input[type='text']").each(
-        function() {
-                concat+=$.trim($(this).val());
-        }
-    );
-    if (event.keyCode == '13' && concat=='')
-    {
-        goFirstProject(event);
-    } else if (event.keyCode == '13') {
-        $("#sbox").submit();
-    }
 }
 
 // Intelligence Window code starts from here
