@@ -370,6 +370,7 @@ $(document).ready(function () {
 
     $("#sbox input[type='submit']").click(function (e) {
         $("#footer").not(".main_page").hide(); // footer
+        $("#results > p.suggestions").hide(); // suggestions
         $("#results > p.pagetitle").hide(); // description
         $("#results > p.slider").hide(); // pagination
         $("#results > h3").hide(); // error
@@ -834,14 +835,17 @@ function invertAllProjects() {
 
 function goFirstProject(e) {
     e = e || window.event
-    
-    if($(e.target).is("option")) {
-        var selected=$.map($('#project :selected'), function(e) {
-                return $(e).text();
-            });
+
+    var selected = $.map($('#project :selected'), function (e) {
+        return $(e).text();
+    });
+
+    if ($(e.target).is("select")) {
         window.location = document.xrefPath + '/' + selected[0];
-    } else if ( $(e.target).is("optgroup") ) {
-        if(! e.shiftKey) {
+    } else if ($(e.target).is("option")) {
+        window.location = document.xrefPath + '/' + selected[0];
+    } else if ($(e.target).is("optgroup")) {
+        if (!e.shiftKey) {
             $("#project :selected").prop("selected", false).change();
         }
         $(e.target).children().prop("selected", true).change();
@@ -849,17 +853,15 @@ function goFirstProject(e) {
 }
 
 function clearSearchFrom() {
-    $("#sbox :input[type=text]").each(
-        function() {
-                $(this).attr("value", "");
-        }
-    );
+    $("#sbox input[type='text']").each(function () {
+        $(this).val("");
+    });
     $("#type :selected").prop("selected", false);
 }
 
 function checkEnter(event) {
     concat='';
-    $("#sbox :input[type=text]").each(
+    $("#sbox input[type='text']").each(
         function() {
                 concat+=$.trim($(this).val());
         }
