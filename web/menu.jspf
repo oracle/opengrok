@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -91,27 +91,27 @@ org.opensolaris.opengrok.web.Util"
 <table>
     <tr>
         <td><label for="s1" title="The text token(s) or other fields to be found (lucene query, this is not full text!)">Full&nbsp;Search</label></td>
-        <td><input tabindex="1" class="q" name="q" id="q" value="<%=
+        <td><input tabindex="1" class="q" name="q" id="q" type="text" value="<%=
                 Util.formQuoteEscape(queryParams.getFreetext()) %>"/></td>
     </tr>
     <tr>
 	    <td><label for="s2" title="Definition of function/variable/class">Definition</label></td>
-        <td><input class="q" tabindex="2" name="defs" id="defs" value="<%=
+        <td><input class="q" tabindex="2" name="defs" id="defs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getDefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s3" title="Usage of function/variable/class">Symbol</label></td>
-        <td><input class="q" tabindex="3" name="refs" id="refs" value="<%=
+        <td><input class="q" tabindex="3" name="refs" id="refs" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getRefs()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s4" title="path or parts of it, no need to use dividers">File&nbsp;Path</label></td>
-        <td><input class="q" tabindex="4" name="path" id="path" value="<%=
+        <td><input class="q" tabindex="4" name="path" id="path" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getPath()) %>"/></td>
     </tr>
     <tr>
         <td><label for="s5" title="Search in log messages">History</label></td>
-        <td><input class="q" tabindex="5" name="hist" id="hist" value="<%=
+        <td><input class="q" tabindex="5" name="hist" id="hist" type="text" value="<%=
             Util.formQuoteEscape(queryParams.getHist()) %>"/></td>
     </tr>
     <tr>

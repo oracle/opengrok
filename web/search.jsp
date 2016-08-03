@@ -141,7 +141,7 @@ include file="menu.jspf"
     } else if (searchHelper.hits.length == 0) {
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
-        %><p><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
+        %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
 	  if (hint.freetext!=null) { 
 	    for (String word : hint.freetext) {
             %> <a href="search?q=<%= Util.URIEncode(word) %>"><%=
