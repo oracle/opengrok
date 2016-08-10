@@ -223,7 +223,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 | 
 |Y
-|
+|Y
 |-
 |Integration with vim
 | 
