@@ -64,7 +64,10 @@
                 quickDelete: '&times;',
                 searchplaceholder: 'Click here to search',
                 loadingData: 'Still loading data...',
-                itemsSelected: '{$a} items selected'
+                /*
+                 * Modified 2016
+                 */
+                itemsSelected: '{$a} more items selected'
             },
 
             events: {
@@ -756,7 +759,7 @@
 
                     var currentBatch = 0,
                         item;
-
+                    
                     while (currentBatch++ < self.config.asyncBatchSize && nextIndex < solItems.length) {
                         item = solItems[nextIndex++];
                         if (item.type === self.SOL_OPTION_FORMAT.type) {
@@ -852,7 +855,7 @@
             solOption.displayElement = $displayElement;
 
             $actualTargetContainer.append($displayElement);
-
+            
             if (solOption.selected) {
                 this._addSelectionDisplayItem($inputElement);
             }
@@ -881,6 +884,11 @@
                     self.$selection.scrollTop(self.$selection.scrollTop() + $(this).position().top)
                 }
             });
+            
+            /*
+             * Modified 2016
+             */
+            this.$selection.append($groupItem);
 
             if ($.isArray(solOptiongroup.children)) {
                 $.each(solOptiongroup.children, function (index, item) {
@@ -889,7 +897,6 @@
             }
 
             solOptiongroup.displayElement = $groupItem;
-            this.$selection.append($groupItem);
         },
 
         _initializeSelectAll: function () {
@@ -947,18 +954,6 @@
                 this.close();
             }
 
-            var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
-            if (this.config.maxShow != 0 && selected.length > this.config.maxShow) {
-                selected.hide();
-                var xitemstext = this.config.texts.itemsSelected.replace('{$a}', selected.length);
-                this.$xItemsSelected.html('<div class="sol-selected-display-item-text">' + xitemstext + '<div>');
-                this.$showSelectionContainer.append(this.$xItemsSelected);
-                this.$xItemsSelected.show();
-            } else {
-                selected.show();
-                this.$xItemsSelected.hide();
-            }
-
             if (!skipCallback && $.isFunction(this.config.events.onChange)) {
                 this.config.events.onChange.call(this, this, $changeItem);
             }
@@ -970,6 +965,11 @@
                 $displayItemText;
 
             if (!$existingDisplayItem) {
+                /*
+                 * Modified 2016
+                 */
+                var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
+                
                 $displayItemText = $('<span class="sol-selected-display-item-text" />').html(solOptionItem.label);
                 $existingDisplayItem = $('<div class="sol-selected-display-item"/>')
                     .append($displayItemText)
@@ -987,7 +987,17 @@
                         })
                         .prependTo($existingDisplayItem);
                 }
-
+                /*
+                 * Modified 2016
+                 */
+                if (this.config.maxShow != 0 && selected.length + 1 > this.config.maxShow) {
+                    var xitemstext = this.config.texts.itemsSelected.replace('{$a}', selected.length + 1 - this.config.maxShow);
+                    this.$xItemsSelected.html('<div class="sol-selected-display-item-text">' + xitemstext + '<div>');
+                    this.$showSelectionContainer.append(this.$xItemsSelected);
+                    this.$xItemsSelected.show();
+                    $existingDisplayItem.hide();
+                }
+                
                 solOptionItem.displaySelectionItem = $existingDisplayItem;
             }
         },
@@ -997,6 +1007,28 @@
                 $myDisplayItem = solOptionItem.displaySelectionItem;
 
             if ($myDisplayItem) {
+                /*
+                 * Modified 2016
+                 */
+                var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
+                if (this.config.maxShow != 0 && selected.length - 1 > this.config.maxShow) {
+                    var xitemstext = this.config.texts.itemsSelected.replace('{$a}', selected.length - 1 - this.config.maxShow);
+                    this.$xItemsSelected.html('<div class="sol-selected-display-item-text">' + xitemstext + '<div>');
+                    this.$showSelectionContainer.append(this.$xItemsSelected);
+                    this.$xItemsSelected.show();
+                } else {
+                    this.$xItemsSelected.hide();
+                }
+
+                if ($myDisplayItem.is(":visible")) {
+                    $myDisplayItem
+                            .siblings('.sol-selected-display-item')
+                            .not(":visible")
+                            .not(this.$xItemsSelected)
+                            .first()
+                            .show();
+                }
+                
                 $myDisplayItem.remove();
                 solOptionItem.displaySelectionItem = undefined;
             }
