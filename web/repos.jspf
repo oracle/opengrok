@@ -96,7 +96,15 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                 %><div class="panel">
                     <div class="panel-heading-accordion">
                         
-                        <h2><span class="name"><%= Util.htmlize(group.getName()) %></span> <small>[<a href="#" class="projects_select_all">select all</a>]</small></h2>
+                        <h2 class="clearfix">
+                            <span class="pull-left">
+                                <span class="name"><%= Util.htmlize(group.getName())%></span>
+                                <small>[<a href="#" class="projects_select_all">select all</a>]</small>
+                            </span>
+                            <span class="pull-right">
+                                <span class="fold <%= pHelper.hasFavourite(group) ? "fold-up" : "fold-down"%>"></span>
+                            </span>
+                        </h2>
                     </div>
                         <div class="panel-body-accordion <% if(pHelper.hasFavourite(group)) { %> favourite<% } %>"
                         <% if(pHelper.hasFavourite(group)) { %>data-accordion-visible="true"<% } %>>
@@ -180,8 +188,14 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                 <div class="panel">
                     <% if(groups.size() > 0) {%>
                         <div class="panel-heading-accordion">
-                            <h2><span class="name">Other</span> 
-                                <small>[<a href="#" class="projects_select_all">select all</a>]</small>
+                            <h2 class="clearfix">
+                                <span class="pull-left">
+                                    <span class="name">Other</span> 
+                                    <small>[<a href="#" class="projects_select_all">select all</a>]</small>
+                                </span>
+                                <span class="pull-right">
+                                    <span class="fold <%= pHelper.hasUngroupedFavourite() ? "fold-up" : "fold-down"%>"></span>
+                                </span>
                             </h2>
                         </div>
                     <% } %>
