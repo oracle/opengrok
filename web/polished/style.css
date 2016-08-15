@@ -1127,7 +1127,6 @@ div#scope {
     font-weight: bold;
 }
 
-<<<<<<< HEAD
 /** --------------- fold arrows for main page ------------ */
 
 .fold-down:before {
@@ -1154,8 +1153,6 @@ div#scope {
     float: right;
 }
 
-=======
->>>>>>> 22efa19... adding a nice select box
 /** --------------- clear fix class ------------ */
 
 .clearfix:after {
