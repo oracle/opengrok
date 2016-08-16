@@ -1141,7 +1141,7 @@
                 this.options.closeOnClick && this.close();
 
                 if ($.isFunction(this.config.events.onChange)) {
-                    this.config.events.onChange.call(this, this, $changedInputs);
+                    this.config.events.onChange.call(this, this, $openedInputs.add($closedInputs));
                 }
             }
         },
