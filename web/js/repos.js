@@ -35,36 +35,71 @@
                 "hideAllSelector": ".accordion_hide_all"
             },
             $pannels: [],
+            determineButtonsVisibility: function() {
+                var decision = inner.$pannels.filter(":visible").length === inner.$pannels.length;
+                return {
+                    hide: decision ? inner.options.showAllSelector : inner.options.hideAllSelector,
+                    show: decision ? inner.options.hideAllSelector : inner.options.showAllSelector,
+                };
+            },
             init: function () {
                 inner.$pannels = inner.options.parent.find(".panel-body-accordion");
 
                 inner.options.parent.find(".panel-heading-accordion").click(function (e) {
                     $(this).parent().find(".panel-body-accordion").each(function () {
-                        if ($(this).data("accordion-visible") &&
-                                $(this).data("accordion-visible") === true) {
-                            $(this).hide().data("accordion-visible", false)
+                        if ($(this).data("accordion-visible")) {
+                            $(this).hide()
+                                    .data("accordion-visible", false)
+                                    .parent()
+                                    .find(".panel-heading-accordion .fold")
+                                        .removeClass('fold-up')
+                                        .addClass('fold-down')
                         } else {
-                            $(this).show().data("accordion-visible", true)
+                            $(this).show()
+                                    .data("accordion-visible", true)
+                                    .parent()
+                                    .find(".panel-heading-accordion .fold")
+                                        .removeClass('fold-down')
+                                        .addClass('fold-up')
                         }
                     });
+
+                    var btn = inner.determineButtonsVisibility();
+                    inner.options.parent.find(btn.hide).hide();
+                    inner.options.parent.find(btn.show).show();
                     return false
                 });
                 
                 inner.options.parent.find(inner.options.showAllSelector).click(function (e) {
-                    inner.$pannels.data("accordion-visible", true).show()
+                    inner.$pannels
+                            .data("accordion-visible", true)
+                            .show()
+                            .parent()
+                            .find(".panel-heading-accordion .fold")
+                                .removeClass('fold-down')
+                                .addClass('fold-up')
                     inner.options.parent.find(inner.options.hideAllSelector).show()
                     inner.options.parent.find(inner.options.showAllSelector).hide()
                     return false;
                 });
 
                 inner.options.parent.find(inner.options.hideAllSelector).click(function (e) {
-                    inner.$pannels.data("accordion-visible", false).hide();
+                    inner.$pannels
+                            .data("accordion-visible", false)
+                            .hide()
+                            .parent()
+                            .find(".panel-heading-accordion .fold")
+                                .removeClass('fold-up')
+                                .addClass('fold-down')
                     inner.options.parent.find(inner.options.hideAllSelector).hide()
                     inner.options.parent.find(inner.options.showAllSelector).show()
                     return false;
                 });
-
-                inner.options.parent.find(inner.options.hideAllSelector).hide();
+                
+                
+                var btn = inner.determineButtonsVisibility();
+                inner.options.parent.find(btn.hide).hide();
+                inner.options.parent.find(btn.show).show();
 
                 inner.initialized = true;
             }
@@ -86,9 +121,9 @@
     };
 })(jQuery);
 
-// Code to be called when the DOM is ready.
 $(document).ready(function () {
     $("#footer").addClass("main_page");
+    
     $(".projects").accordion();
 
     $(".projects_select_all").click(function (e) {
@@ -99,15 +134,15 @@ $(document).ready(function () {
             return false
         }
 
-        if(! e.ctrlKey) {
-            multiselect.find("option").attr("selected", false)
+        if(!e.ctrlKey) {
+            multiselect.find("option").prop("selected", false)
         }
         projects.each(function () {
             var key = $(this).find(".name")
             if (!key.length)
                 return
             key = key.text().replace(/^\s+|\s+$/g, '') // trim
-            multiselect.find("option[value=" + key + "]").attr("selected", true)
+            multiselect.find("option[value=" + key + "]").prop("selected", true)
             multiselect.change();
         });
         return false;

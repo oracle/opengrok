@@ -1007,3 +1007,44 @@ div#scope {
     font-family: monospace;
     font-weight: bold;
 }
+
+/** --------------- fold arrows for main page ------------ */
+
+.fold-down:before {
+    content: url(./img/button1.png);
+}
+
+.fold-up:before {
+    content: url(./img/button3.png);
+}
+
+.fold {
+    vertical-align: central;
+}
+
+/** --------------- quick pull class ------------ */
+
+.pull-left {
+    display: inline-block;
+    float: left;
+}
+
+.pull-right {
+    display: inline-block;
+    float: right;
+}
+
+/** --------------- clear fix class ------------ */
+
+.clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+.clearfix {
+    *zoom: 1;
+}
