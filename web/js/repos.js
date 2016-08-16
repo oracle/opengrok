@@ -127,24 +127,15 @@ $(document).ready(function () {
     $(".projects").accordion();
 
     $(".projects_select_all").click(function (e) {
-        var projects = $(this).closest(".panel").find("table tbody tr, .panel-heading table tbody tr")
-        var multiselect = $("select#project")
-        if (!multiselect.length) {
-            console.debug("No multiselect element with id = 'project'")
-            return false
-        }
+        $("#project .name")
 
-        if(!e.ctrlKey) {
-            multiselect.find("option").prop("selected", false)
+        if (!e.ctrlKey) {
+            $("#project").searchableOptionList().deselectAll()
         }
-        projects.each(function () {
-            var key = $(this).find(".name")
-            if (!key.length)
-                return
-            key = key.text().replace(/^\s+|\s+$/g, '') // trim
-            multiselect.find("option[value=" + key + "]").prop("selected", true)
-            multiselect.change();
-        });
+        $(this).closest('.panel').find('.name').each(function(){
+          $("#project").searchableOptionList().selectAll($(this).text())  
+        })
+
         return false;
     });
 });

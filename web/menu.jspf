@@ -86,7 +86,6 @@ org.opensolaris.opengrok.web.Util"
     }
 %>
 <form action="search" id="sbox">
-
 <div id="qtbl">
 <table>
     <tr>
@@ -171,13 +170,15 @@ org.opensolaris.opengrok.web.Util"
     if (projects.size() != 0) {
 %>
 <div id="ptbl">
-    <p><label for="project">In Project(s)</label> <button tabindex="6" type="button"
+    <p><label for="project">In Project(s)</label> 
+        <button tabindex="6" type="button"
         onclick="javascript: selectAllProjects(); return false;"
         >select all</button>&nbsp;<button tabindex="7" type="button"
         onclick="javascript: invertAllProjects(); return false;"
-        >invert selection</button> </p>
-    <select tabindex="8" ondblclick="javascript: goFirstProject(event);"
-        onkeyup="javascript: checkEnter(event);" class="q" id="project"
+        >invert selection</button>&nbsp;<button tabindex="8" type="button"
+        onclick="javascript: deselectAllProjects(); return false;"
+        >clear</button></p>
+    <select tabindex="8" class="q" id="project"
         name="project" multiple="multiple" size="<%=
         Math.min(15, projectsSize) %>"><%
         SortedSet<String> pRequested = cfg.getRequestedProjects();
@@ -187,8 +188,7 @@ org.opensolaris.opengrok.web.Util"
                 %><optgroup label="<%= group.getName() %>"><%
                 for (Project p : groupProjects) {
                 // TODO below "selected" has no effect if one refreshes the page
-                // with F5 also below ondblclick doesn't work in IE ...
-                // ondblclick="javascript:goFirstProject();"
+                // with F5
 
                 %><option value="<%= p.getDescription() %>"<%
                     if (pRequested.contains(p.getDescription())) {
@@ -219,7 +219,10 @@ org.opensolaris.opengrok.web.Util"
 </div><%
     }
     %>
-
+<div id="ltbl">
+    <!-- filled with javascript -->
+</div>
+    <div class="clearfix"></div>
     <p><input tabindex="9" class="submit" type="submit" value="Search"/>
     <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();"
 	   type="button" value=" Clear "/>
@@ -227,6 +230,8 @@ org.opensolaris.opengrok.web.Util"
     </button>
     </p>
 </form>
+    
+    <div class="clearfix"></div>
 <%
 }
 /* ---------------------- menu.jspf end --------------------- */

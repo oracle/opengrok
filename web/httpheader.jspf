@@ -64,6 +64,7 @@ include file="pageconfig.jspf"
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery-ui-1.12.0-custom.min.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tooltip.css" />
 <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.tablesorter.css" />
+<link rel="stylesheet" type="text/css" href="<%=styleDir%>/searchable-option-list-2.0.2.min.css" />
 <%-- TODO  Bug 11749
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.autocomplete.css" />
     <link rel="stylesheet" type="text/css" href="<%=styleDir%>/jquery.combo.css%>" />
@@ -82,6 +83,7 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
 <script type="text/javascript" src="<%=ctxPath%>/js/jquery-ui-1.12.0-custom.min.js"></script>
 <script type="text/javascript" src="<%=ctxPath%>/js/jquery.tablesorter-2.26.6.min.js"></script>
 <script type="text/javascript" src="<%=ctxPath%>/js/tablesorter.parsers.js"></script>
+<script type="text/javascript" src="<%=ctxPath%>/js/searchable-option-list-2.0.2.min.js"></script>
 <%--<script type="text/javascript" src="<%=ctxPath%>/js/jquery.autocomplete-1.1.pack.js"></script> --%>
 <script type="text/javascript" src="<%=ctxPath%>/js/utils.js"></script>
 <title><%=cfg.getTitle()%></title><%
