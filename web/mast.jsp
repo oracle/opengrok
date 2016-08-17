@@ -120,6 +120,20 @@ include file="pageheader.jspf"
             ><span class="annotate"></span>Annotate</a></span><span
             id="toggle-annotate"><a href="#"><span class="annotate"></span>
             Annotate</a></span></li><%
+    } else if (cfg.getPrefix() == Prefix.HIST_L) {
+        %><li>
+            <a href="#"
+               onclick="javascript:
+                           window.location = '<%= context + Prefix.XREF_P + uriEncodedPath %>'
+                           // taken from get_annotations() from utils.js
+                           + '?a=true'
+                           + (document.rev ? '&amp;r=' + encodeURIComponent(document.rev) : '')
+                           + (window.location.hash ? '&amp;h=' + window.location.hash.substring(1, window.location.hash.length) : '');
+                           return false;">
+                <span class="annotate"></span>
+                Annotate
+            </a>
+        </li><%
     } else {
         %><li><a href="#" onclick="javascript:get_annotations(); return false;"
             ><span class="annotate"></span>Annotate</a></li><%
