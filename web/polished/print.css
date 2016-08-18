@@ -1,11 +1,11 @@
 /* common stuff */
 body {
-	font-family: sans-serif;
-	margin: 1ex 1ex 0 1ex;
+    font-family: sans-serif;
+    margin: 1ex 1ex 0 1ex;
 }
 
 a {
-	text-decoration: none;
+    text-decoration: none;
 }
 
 div#src a.l, div#src a.hl {
@@ -21,55 +21,55 @@ div#src a.l.selected:after, div#src a.hl.selected:after {
 }
 
 a:link {
-	color: #2030A2;
+    color: #2030A2;
 }
 
 a:visited, a:active, a:hover {
-	color: #202062;
+    color: #202062;
 }
 
 a:active, a:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 img, tt, form, pre {
-	border: 0;
+    border: 0;
 }
 
 del {
-	text-decoration: line-through;
+    text-decoration: line-through;
 }
 
 caption {
-	caption-side:top;
-	margin: 1ex 0;
-	text-align: left;
+    caption-side:top;
+    margin: 1ex 0;
+    text-align: left;
 }
 
 thead {
-	color: white;
-	background-color: #616ca7;
+    color: white;
+    background-color: #616ca7;
 }
 
 tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
-	background-color: #e5e5e5;
+    background-color: #e5e5e5;
 }
 
 input, button {
-	border: 1px solid #755;
-	border-radius: 0.75ex;
-	-moz-border-radius: 0.75ex;
-	background-color: #e5e5e5;
+    border: 1px solid #755;
+    border-radius: 0.75ex;
+    -moz-border-radius: 0.75ex;
+    background-color: #e5e5e5;
 }
 
 label {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .pre { /* the diff content */
-	white-space: pre-wrap;
-	font-family: monospace;
-	margin: 0;
+    white-space: pre-wrap;
+    font-family: monospace;
+    margin: 0;
 }
 
 .edited {
@@ -80,14 +80,14 @@ label {
 #page { }
 
 .error { /* error messages */
-	color: #a52a2a;
+    color: #a52a2a;
 }
 
 /*
  * Project list on the index page
  */
 .projects {
-    list-style-type: none; 
+    list-style-type: none;
 }
 
 .projects .panel-body {
@@ -98,13 +98,13 @@ label {
     display: none;
 }
 
-/* ############### start of header ############## */
-#whole_header {
-	display: none;
-}
-
 .projects .subrepository {
     padding-left: 20px;
+}
+
+/* ############### start of header ############## */
+#whole_header {
+    display: none;
 }
 
 #pagetitle { /* short verbal summary/description of the shown content */
@@ -112,27 +112,27 @@ label {
 
 /* required for help page, only */
 #sbar { /* full search navbar */
-	border-bottom: 1px solid #bba;
-	border-top: 1px solid #bba;
-	background-color: #FFFFE5;
-	margin: 0;
-	clear: both;
+    border-bottom: 1px solid #bba;
+    border-top: 1px solid #bba;
+    background-color: #FFFFE5;
+    margin: 0;
+    clear: both;
 }
 
 /* *** full search navbar *** */
 #qtbl, #ptbl {
-	display: inline-block;
-	vertical-align: top;
-} 
+    display: inline-block;
+    vertical-align: top;
+}
 
 #qtbl tr {
-	background: none; /* remove alternating colors */
+    background: none; /* remove alternating colors */
 }
 
 #ptbl > p {
-	text-align: center;
-	white-space: nowrap;
-	margin: 0.5ex 1ex;
+    text-align: center;
+    white-space: nowrap;
+    margin: 0.5ex 1ex;
 }
 
 #qtbl td:first-child {
@@ -141,168 +141,173 @@ label {
 }
 
 #qtbl td:nth-child(2) {
-	width: 45ex;
+    width: 45ex;
 }
 
 #qtbl input.q {
-	width: 100%;
+    width: 100%;
 }
 
 #ptbl {
-	margin-left: 2em;
+    margin-left: 2em;
 }
 
 #ptbl button {
-	font-size: small;
-}	
+    font-size: small;
+}
 
 #ptbl button:first-of-type {
-	margin-left: 1em;
+    margin-left: 1em;
 }
 
 #ptbl select {
-	width: 100%;
+    width: 100%;
 }
 
 #ptbl option {
-	padding: 0 1ex;
+    padding: 0 1ex;
 }
 
 #sbox > p:last-of-type {
-	white-space: nowrap;
-	/* 11ex = width(#qtbl td:first-child) + margin-left(body) */
-	margin: 1ex 0 0.5ex 11ex;
+    white-space: nowrap;
+    /* 11ex = width(#qtbl td:first-child) + margin-left(body) */
+    margin: 1ex 0 0.5ex 11ex;
 }
 
 #sbox > p:last-of-type > :nth-child(n+2) {
-	margin-left: 1ex;
+    margin-left: 1ex;
 }
 
 input.q { /* text input fields */
-	background-color: #ffffff;
+    background-color: #ffffff;
 }
 
 input.submit { /* start search button */
-	font-weight: bold;
+    font-weight: bold;
 }
 /* ############### end of header ############## */
 
 
 /* ############### start of content ############## */
 #content {
-  position: static;
-  overflow-x: hidden;
+    position: static;
+    overflow-x: hidden;
 }
 
 
 /* *** help page *** */
+#help h4 {
+    font-style: italic;
+    text-decoration: underline;
+}
+
 #help dfn { /* definitions */
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 #help .fields, #help .example {
-	margin-left: 3em;
+    margin-left: 3em;
 }
 
 #help dt {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 
 /* *** more page ***/
 #more {
-	line-height: 1.25em;
+    line-height: 1.25em;
 }
 
-#more b { /* highlight matches */ 
-	background-color: #e5e5e5;
+#more b { /* highlight matches */
+    background-color: #e5e5e5;
 }
 
 
 /* *** history page *** */
 table#revisions {
-	/* width: 100%; */ /* table with the history info for a file */
-	/* border-collapse: collapse; */ /* looks better with a small divider */
+    /* width: 100%; */ /* table with the history info for a file */
+    /* border-collapse: collapse; */ /* looks better with a small divider */
 }
 
-#revisions a.h	{ /* modified file list content */
-	font-size: small;
-	margin-left: 2em;
+#revisions a.h    { /* modified file list content */
+    font-size: small;
+    margin-left: 2em;
 }
 
 #revisions .filelist { /* "Show modified files" */
-	display: inline;
+    display: inline;
 }
 
 #revisions .filelist-hidden { /* "Hide modified files" */
-	display: none;
+    display: none;
 }
 
 #revisions tbody td:first-child {
-	/* rev number - git/mercurial revs numbers look bad with prop. fonts */
-	font-family: monospace;
-	text-align: right;
+    /* rev number - git/mercurial revs numbers look bad with prop. fonts */
+    font-family: monospace;
+    text-align: right;
 }
 
 #revisions tbody td:nth-child(2), #revisions tbody td:nth-child(3) {
-	/* Compare and Date column */
-	text-align: center;
+    /* Compare and Date column */
+    text-align: center;
 }
 
 #revisions tbody td:nth-child(4) { /* author column */
-	padding: 0 1ex;
-	text-align: center;
+    padding: 0 1ex;
+    text-align: center;
 }
 
 .rssbadge { /* RSS/XML Feed on history page */
-	text-align: right;
-	margin: 1ex 0;
+    text-align: right;
+    margin: 1ex 0;
 }
 
 
 /* *** diff page *** */
 #diffbar { /* diff navbar: contains the tabs to select diff format */
-	display: none;
-}
-
-#difftable {
-	font-size: small;
+    display: none;
 }
 
 #difftable .d {
-	/* "Deleted" heading + highlight of deleted text in diff lines */
-	background-color: #ffcc40;
+    /* "Deleted" heading + highlight of deleted text in diff lines */
+    background-color: #ffcc40;
 }
 
 #difftable .a {
-	/* "Added" heading + highlight of added text in diff lines */
-	background-color: #8bd98b;
+    /* "Added" heading + highlight of added text in diff lines */
+    background-color: #8bd98b;
+}
+
+#difftable {
+    font-size: small;
 }
 
 #difftable table { /* left side == prev. rev; right side "current" rev */
-	table-layout: fixed;
-	border-collapse: collapse;
+    table-layout: fixed;
+    border-collapse: collapse;
 }
 
 #difftable table th { /* usually both rev. have changes: eq. space for both */
-	padding-top: 1ex;
-	width: 50%;
+    padding-top: 1ex;
+    width: 50%;
 }
 
 #difftable th:last-child, #difftable td:last-child {
-	border-left: 1px solid black;
+    border-left: 1px solid black;
 }
 
 #difftable .plain td {
-	padding: 2px;
+    padding: 2px;
 }
 
 #difftable .image td {
-	padding: 5px;
+    padding: 5px;
 }
 
 #difftable .k { /* border between the context and real diff lines */
-	border-bottom: 1px dashed #ccc;
+    border-bottom: 1px dashed #ccc;
 }
 
 
@@ -310,35 +315,35 @@ table#revisions {
 
 /* directory listing */
 table#dirlist { /* the "Name" column */
-	font-family: monospace;
-	border-style: none;
-	border-collapse: collapse;
+    font-family: monospace;
+    border-style: none;
+    border-collapse: collapse;
 }
 
 #dirlist .r, #dirlist .p {
-	background-image: url(./img/combined.png);
-	background-repeat: no-repeat;
-	width: 15px;
-	height: 15px;
-	padding: 0;
-	vertical-align: middle;
-	margin: 0 1ex 0 1em;
+    background-image: url(./img/combined.png);
+    background-repeat: no-repeat;
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    vertical-align: middle;
+    margin: 0 1ex 0 1em;
 }
 
 #dirlist .r { /* directory name, d.gif */
-	background-position: -54px 0;
+    background-position: -54px 0;
 }
 
 #dirlist .p { /* file name, p.gif */
-	background-position: -69px 0;
+    background-position: -69px 0;
 }
 
 #dirlist td:nth-child(n+2) { /* all but the first column */
-	padding-right: 1em;
+    padding-right: 1em;
 }
 
 #dirlist tbody td:nth-child(4) {
-	text-align: right; /* CSS3 may allow " " (single space char) */
+    text-align: right; /* CSS3 may allow " " (single space char) */
 }
 
 
@@ -347,91 +352,91 @@ table#dirlist { /* the "Name" column */
 }
 
 #src pre {
-	margin: 0;
-	font-size: small;
+    margin: 0;
+    font-size: small;
 }
 
 /* hidden line number/annotation block */
 .lines-hidden .l, .lines-hidden .hl, .blame-hidden .blame {
-	display: none
+    display: none
 }
 
 .l, .hl, .blame .r, .blame .a,
 #results .l, #more .l,
 #difftable i, del.d { /* line number/annotation block */
-	display: inline-block;
-	width: 6ex;
-	text-align: right;
-	padding: 0 1ex;
-	margin-right: .5ex;
-	background-color: #ffffcc;
-	border-right: 1px solid #ddd;
-	color: #888;
+    display: inline-block;
+    width: 6ex;
+    text-align: right;
+    padding: 0 1ex;
+    margin-right: .5ex;
+    background-color: #ffffcc;
+    border-right: 1px solid #ddd;
+    color: #888;
 }
 
 #src .hl { /* highlighted line number */
-	color: #000;
+    color: #000;
 }
 
 .blame .r { /* revision number "column" (annotation) */
-	text-align: right;
+    text-align: right;
 }
 
 .blame .a { /* author name "column" (annotation) */
-	text-align: center;
+    text-align: center;
 }
 
 /* source code highlighting - see org/opengrok/analysis/$lang/*Xref.lex */
-#src .n		{ /* numbers/label */	color: #a52a2a; } 
-#src .s		{ /* strings */			color: green; } 
-#src .c		{ /* comment */			color: #666; }
-#src .b		{ /* heading/title/bold */	color: #000; font-weight: bold; }
-#src .k		{ /* block display */ 	color: #000; font-family: monospace; }
-#src a.d	{ /* symbol definition */	color: #909; font-weight: bold; }
+#src .n  { /* numbers/label */      color: #a52a2a;                                     }
+#src .s  { /* strings */            color: green;                                       }
+#src .c  { /* comment */            color: #666;                                        }
+#src .b  { /* heading/title/bold */ color: #000; font-weight: bold;                     }
+#src .k  { /* block display */      color: #000; font-family: monospace;                }
+#src a.d { /* symbol definition */  color: #909; font-weight: bold;                     }
 
-a.xm	{ /* macro */			color: #c66; font-weight: bold; }
-a.xa	{ /* argument */		color: #60c; font-weight: bold; }
-a.xl	{ /* local */			color: #963; font-weight: bold; }
-a.xv	{ /* variable */		color: #c30; font-weight: bold; }
-a.xc	{ /* class */			color: #909; font-weight: bold; font-style: italic; }
-a.xp	{ /* package */			color: #909; font-weight: bold; font-style: italic; }
-a.xi	{ /* interface */		color: #909; font-weight: bold; font-style: italic; }
-a.xn	{ /* namespace */		color: #909; font-weight: bold; font-style: italic; }
-a.xe	{ /* enum */			color: #909; font-weight: bold; font-style: italic; }
-a.xer	{ /* enumerator */		color: #909; font-weight: bold; font-style: italic; }
-a.xs	{ /* struct */			color: #909; font-weight: bold; font-style: italic; }
-a.xt	{ /* typedef */			color: #909; font-weight: bold; font-style: italic; }
-a.xts	{ /* typedefs */		color: #909; font-weight: bold; font-style: italic; }
-a.xu	{ /* union */			color: #909; font-weight: bold; font-style: italic; }
-a.xfld	{ /* field */			color: #090; font-weight: bold; }
-a.xmb	{ /* member */			color: #090; font-weight: bold; }
-a.xf	{ /* function */		color: #00f; font-weight: bold; }
-a.xmt	{ /* method */			color: #00f; font-weight: bold; }
-a.xsr	{ /* subroutine */		color: #00f; font-weight: bold; }
+a.xm     { /* macro */              color: #c66; font-weight: bold;                     }
+a.xa     { /* argument */           color: #60c; font-weight: bold;                     }
+a.xl     { /* local */              color: #963; font-weight: bold;                     }
+a.xv     { /* variable */           color: #c30; font-weight: bold;                     }
+a.xc     { /* class */              color: #909; font-weight: bold; font-style: italic; }
+a.xp     { /* package */            color: #909; font-weight: bold; font-style: italic; }
+a.xi     { /* interface */          color: #909; font-weight: bold; font-style: italic; }
+a.xn     { /* namespace */          color: #909; font-weight: bold; font-style: italic; }
+a.xe     { /* enum */               color: #909; font-weight: bold; font-style: italic; }
+a.xer    { /* enumerator */         color: #909; font-weight: bold; font-style: italic; }
+a.xs     { /* struct */             color: #909; font-weight: bold; font-style: italic; }
+a.xt     { /* typedef */            color: #909; font-weight: bold; font-style: italic; }
+a.xts    { /* typedefs */           color: #909; font-weight: bold; font-style: italic; }
+a.xu     { /* union */              color: #909; font-weight: bold; font-style: italic; }
+a.xfld   { /* field */              color: #090; font-weight: bold;                     }
+a.xmb    { /* member */             color: #090; font-weight: bold;                     }
+a.xf     { /* function */           color: #00f; font-weight: bold;                     }
+a.xmt    { /* method */             color: #00f; font-weight: bold;                     }
+a.xsr    { /* subroutine */         color: #00f; font-weight: bold;                     }
 
 #man table, #man td  { /* #man == troff src */
-	background-color: #e5e5e5;
-	border: 1px;
-	padding: 2px;
+    background-color: #e5e5e5;
+    border: 1px;
+    padding: 2px;
 }
 
 #man p { /* a troff paragraph */
-	margin-top: 0.5em;
-	margin-bottom: 0;
+    margin-top: 0.5em;
+    margin-bottom: 0;
 }
 
 #man div.b { /* man section headings etc. */
-	margin-top: 2em;
+    margin-top: 2em;
 }
 
 #man div.rs { /* a right-shifted block */
-	margin-left: 3em;
-	margin-bottom: 1em;
+    margin-left: 3em;
+    margin-bottom: 1em;
 }
 
 /* "Navigate" Popup */
 .sym_list_style_hide, .sym_list_style {
-	display: none;
+    display: none;
 }
 
 /* search result page */
@@ -439,86 +444,86 @@ a.xsr	{ /* subroutine */		color: #00f; font-weight: bold; }
 }
 
 #results p { /* pagetitle and slider */
-	padding: 0.5em;
+    padding: 0.5em;
 }
 
 #results .dir { /* directory row above matched files */
-	background-color: #cccccc;
+    background-color: #cccccc;
 }
 
 #results .dir td { /* directory link */
-	padding-left: 1em;
+    padding-left: 1em;
 }
 
 #results td.q { /* 1st column: H A D */
-	white-space: nowrap;
-	font-size: xx-small;
-	padding: 0 1ex;
+    white-space: nowrap;
+    font-size: xx-small;
+    padding: 0 1ex;
 }
 
 #results td.f { /* 2nd column: filename */
-	min-width: 5em;
-	margin-left: 1em;
-	padding: 0 1ex;
+    min-width: 5em;
+    margin-left: 1em;
+    padding: 0 1ex;
 }
 
 #results .con { /* 3rd column: line number + matched line contents */
-	font-size: small;
+    font-size: small;
 }
 
 #results .s, #more .s { /* matched line contents */
-	color: #000;
+    color: #000;
 }
 
-#results i { /* match type description (method, interface etc.) */ 
-	color: green;
-	font-weight: bold;
+#results i { /* match type description (method, interface etc.) */
+    color: green;
+    font-weight: bold;
 }
 
 #results .sel { /* slider item for the shown search result page */
-	background-color: #e5e5e5;
-	border: 1px #998 solid;
-	padding: .5em;
-	margin: 1px;
+    background-color: #e5e5e5;
+    border: 1px #998 solid;
+    padding: .5em;
+    margin: 1px;
 }
 
 #results .more { /* slider item for the n-th search result page */
-	border: 1px #bba solid;
-	padding: .3em;
-	margin: 1px;
+    border: 1px #bba solid;
+    padding: .3em;
+    margin: 1px;
 }
 
 /* ############### start of footer ############## */
 #footer {
-	color: #755;
-	font-size: small;
-	margin: 1ex 0;
-	border-top: 1px solid #bba;
+    color: #755;
+    font-size: small;
+    margin: 1ex 0;
+    border-top: 1px solid #bba;
 }
 
 #footer p { /* footer text */
-	padding: 0;
-	margin: 0.2em;
-	text-align: center;
+    padding: 0;
+    margin: 0.2em;
+    text-align: center;
 }
 
 #fti { /* servedby.png */
-	display: inline-block;
-	width: 177px;
-	height: 37px;
-	vertical-align: middle;
-	background-image: url(./img/combined.png);
-	background-repeat: no-repeat;
-	background-position: -255px 0;
+    display: inline-block;
+    width: 177px;
+    height: 37px;
+    vertical-align: middle;
+    background-image: url(./img/combined.png);
+    background-repeat: no-repeat;
+    background-position: -255px 0;
 }
 #rssi { /* rss.png */
-	display: inline-block;
-	width: 80px;
-	height: 15px;
-	vertical-align: middle;
-	background-image: url(./img/combined.png);
-	background-repeat: no-repeat;
-	background-position: -425px 0;
+    display: inline-block;
+    width: 80px;
+    height: 15px;
+    vertical-align: middle;
+    background-image: url(./img/combined.png);
+    background-repeat: no-repeat;
+    background-position: -425px 0;
 }
 /* ############### end of footer ############## */
 

@@ -55,7 +55,7 @@ include file="menu.jspf"
         <div id="help">
 <p>
 
-<dfn><b>Examples:</b></dfn>
+<h4>Examples:</h4>
 <pre class="example">
 
 To find where setResourceMonitors is defined:
@@ -91,7 +91,7 @@ To find all main methods in all files analyzed by C analyzer (so .c, .h, ...) do
 <a href="search?q=main&type=c">main type:c</a>
 </pre>
 <br/>
-<dfn><b>More info:</b></dfn><br/><br/>
+<h4>More info:</h4>
 A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
 <ul>
     <li>a plus "<b>+</b>" or a minus "<b>-</b>" sign, indicating that the clause
@@ -100,7 +100,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:</p>
         <dfn>field</dfn> to be searched. This enables one to construct queries
         which search multiple <dfn>fields</dfn>.</li>
 </ul>
-<p>A clause may be either:</p>
+<p>A <dfn>clause</dfn> may be either:</p>
 <ul>
     <li>a <dfn>term</dfn>, indicating all the documents that contain this term;
         or</li>
@@ -162,7 +162,7 @@ reverse slash as noted above.<br/>
 So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</b>.
 </p>
 
-<p>valid <dfn>FIELDs</dfn> are</p>
+<p>Valid <dfn>FIELDs</dfn> are</p>
     <dl class="fields">
 <dt>full</dt>
 <dd>Search through all text tokens (words,strings,identifiers,numbers) in index.</dd>
@@ -185,7 +185,7 @@ So searching for <b>\+1</b> or <b>\+ 1</b> will both find <b>+1</b> and <b>+ 1</
     </dl>
 
 <p>
-the term (phrases) can be boosted (making it more relevant) using a caret
+The term (phrases) can be boosted (making it more relevant) using a caret
 <b>^</b> , e.g. help^4 opengrok - will make term help boosted
 </p>
 
