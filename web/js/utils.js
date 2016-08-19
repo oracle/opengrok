@@ -345,6 +345,357 @@
     $.hash = new ($.extend(hash, $.hash ? $.hash : {}));
 }) (window, window.jQuery);
 
+/**
+ * Intelligence window plugin.
+ * 
+ * Reworked to use Jquery in 2016
+ */
+(function (window, document, $) {
+    var intelliWindow = function () {
+        var inner = {
+            // private
+            initialized: false,
+            $window: undefined,
+            $errors: undefined,
+            symbol: undefined,
+            contextPath: undefined,
+            project: undefined,
+            $symbols: undefined,
+            $current: undefined,
+            $last_highlighted_current: $(),
+            $search_defs: undefined,
+            $search_refs: undefined,
+            $search_full: undefined,
+            $search_files: undefined,
+            $search_google: undefined,
+            // public
+            defaults: {
+                parent: undefined,
+                draggable: true,
+                appendDraggable: '#content',
+                draggableScript: 'js/jquery-ui-1.12.0-draggable.min.js', // relative to context
+                selector: 'a.intelliWindow-symbol',
+                google_url: 'https://www.google.com/search?q=',
+                contextPath: undefined,
+                project: undefined,
+            },
+            options: {},
+            // private
+            changeSymbol: function ($el) {
+                inner.$current = $el
+                inner.$last_highlighted_current = $el.hasClass("symbol-highlighted") ? $el : inner.$last_highlighted_current
+                inner.symbol = $el.text()
+                inner.place = $el.data("definition-place")
+                inner.$window.find('.hidden-on-start').show()
+                inner.$window.find(".symbol-name").text(inner.symbol);
+                inner.$window.find(".symbol-description").text(inner.getSymbolDescription(inner.place))
+                inner.modifyLinks();
+            },
+            modifyLinks: function () {
+                inner.$search_defs = inner.$search_defs || inner.$window.find('.search-defs')
+                inner.$search_refs = inner.$search_refs || inner.$window.find('.search-refs')
+                inner.$search_full = inner.$search_full || inner.$window.find('.search-full')
+                inner.$search_files = inner.$search_files || inner.$window.find('.search-files')
+                inner.$search_google = inner.$search_google || inner.$window.find('.search-google')
+
+                inner.$search_defs.attr('href', inner.getSearchLink('defs'));
+                inner.$search_refs.attr('href', inner.getSearchLink('refs'));
+                inner.$search_full.attr('href', inner.getSearchLink('q'));
+                inner.$search_files.attr('href', inner.getSearchLink('path'));
+                inner.$search_google.attr('href', inner.options.google_url + inner.symbol)
+            },
+            getSearchLink: function (query) {
+                return inner.contextPath + '/search?' + query + '=' + inner.symbol + '&project=' + inner.project;
+            },
+            getSymbolDescription: function (place) {
+                switch (place) {
+                    case "def":
+                        return "A declaration or definition.";
+                    case "defined-in-file":
+                        return "A symbol declared or defined in this file.";
+                    case "undefined-in-file":
+                        return "A symbol declared or defined elsewhere.";
+                    default:
+                        // should not happen
+                        return "Something I have no idea about.";
+                }
+            },
+            getSymbols: function () {
+                return (inner.$symbols = inner.$symbols || $(inner.options.selector));
+            },
+            highlight: function (symbol) {
+                if (inner.$current.text() === symbol) {
+                    inner.$last_highlighted_current = inner.$current;
+                }
+                return inner.getSymbols().filter(function () {
+                    return $(this).text() === symbol;
+                }).addClass('symbol-highlighted')
+            },
+            unhighlight: function (symbol) {
+                if (inner.$last_highlighted_current &&
+                        inner.$last_highlighted_current.text() === symbol &&
+                        inner.$last_highlighted_current.hasClass('symbol-highlighted')) {
+                    var i = inner.getSymbols().index(inner.$last_highlighted_current)
+                    inner.$last_highlighted_jump = inner.getSymbols().slice(0, i).filter('.symbol-highlighted').last();
+                }
+                return inner.getSymbols().filter(".symbol-highlighted").filter(function () {
+                    return $(this).text() === symbol;
+                }).removeClass('symbol-highlighted')
+
+            },
+            unhighlightAll: function () {
+                inner.$last_highlighted_current = undefined
+                return inner.getSymbols().filter(".symbol-highlighted").removeClass("symbol-highlighted")
+            },
+            scrollTop: function ($el) {
+                if (inner.options.scrollTop) {
+                    inner.options.scrollTop($el)
+                } else {
+                    $("#content").stop().animate({
+                        scrollTop: $el.offset().top - $("#src").offset().top
+                    }, 500);
+                }
+            },
+            scrollToNextElement: function (direction) {
+                var UP = -1;
+                var DOWN = 1;
+                var $highlighted = inner.getSymbols().filter(".symbol-highlighted");
+                var $el = $highlighted.length && inner.$last_highlighted_current
+                        ? inner.$last_highlighted_current
+                        : inner.$current;
+                var indexOfCurrent = inner.getSymbols().index($el);
+
+                switch (direction) {
+                    case DOWN:
+                        $el = inner.getSymbols().slice(indexOfCurrent + 1);
+                        if ($highlighted.length) {
+                            $el = $el.filter('.symbol-highlighted')
+                            if (!$el.length) {
+                                inner.error("This is the last occurence!")
+                                return;
+                            }
+                        }
+                        $el = $el.first();
+                        break;
+                    case UP:
+                        $el = inner.getSymbols().slice(0, indexOfCurrent);
+                        if ($highlighted.length) {
+                            $el = $el.filter('.symbol-highlighted')
+                            if (!$el.length) {
+                                inner.error("This is the first occurence!")
+                                return;
+                            }
+                        }
+                        $el = $el.last();
+                        break;
+                    default:
+                        inner.error("Uknown direction")
+                        return;
+                }
+
+                inner.scrollTop($el)
+                inner.changeSymbol($el)
+            },
+            error: function (msg) {
+                var $span = $("<p class='error'>" + msg + "</p>")
+                        .animate({opacity: "0.2"}, 3000)
+                $span.hide('slow', function () {
+                    $span.remove();
+                });
+                inner.$errors.html($span)
+            },
+            toggle: function () {
+                return inner.$window.toggle();
+            },
+            hide: function () {
+                return inner.$window.hide();
+            },
+            show: function () {
+                return inner.$window.show();
+            },
+            determinePosition: function () {
+                var position = {}
+                var $w = inner.$window;
+                if (inner.clientY + $w.height() + 40 > $(window).height()) {
+                    position.top = $(window).height() - $w.height() - 40;
+                } else {
+                    position.top = inner.clientY;
+                }
+                if (inner.clientX + $w.width() + 40 > $(window).width()) {
+                    position.left = $(window).width() - $w.width() - 40;
+                } else {
+                    position.left = inner.clientX;
+                }
+                return position;
+            },
+            registerHandlers: function () {
+                $(document).mousemove(function (e) {
+                    inner.clientX = e.clientX;
+                    inner.clientY = e.clientY;
+                })
+                $(document).keypress(function (e) {
+                    var key = e.which
+                    switch (key) {
+                        case 49: // 1
+                            if (inner.symbol) {
+                                var position = inner.determinePosition()
+                                inner.toggle().offset(position)
+                            }
+                            break;
+                        case 50: // 2
+                            if (inner.symbol) {
+                                inner.unhighlight(inner.symbol).length === 0 && inner.highlight(inner.symbol)
+                            }
+                            break;
+                        case 51: // 3
+                            inner.unhighlightAll()
+                            break;
+                        case 110: // n
+                            inner.scrollToNextElement(1)
+                            break;
+                        case 98: // b
+                            inner.scrollToNextElement(-1)
+                            break;
+                        default:
+                    }
+                    return true;
+                });
+                $(document).keyup(function (e) {
+                    var key = e.keyCode
+                    switch (key) {
+                        case 27: // esc
+                            inner.hide();
+                            break;
+                        default:
+                    }
+                    return true;
+                });
+                inner.getSymbols().mouseover(function () {
+                    inner.changeSymbol($(this));
+                });
+            },
+            bindOnClick: function ($el, callback, param) {
+                $el.click(function (e) {
+                    e.preventDefault()
+                    callback(param || inner.symbol)
+                    return false;
+                })
+            },
+            createWindow: function () {
+                var $close, $highlight, $unhighlight, $unhighlighAll, $prev, $next
+                var $top = $("<div>").addClass('clearfix')
+                        .append($("<div>").addClass("pull-left").append($("<b>").text("Intelligence Window")))
+                        .append($close = $("<a href=\"#\" class=\"pull-right minimize\">x</a>"))
+
+                var $firstList = $("<ul>")
+                        .append($("<li>").append(
+                                $highlight = $("<a href=\"#\" title=\"Highlight\">" +
+                                        "<span>Highlight</span> <b class=\"symbol-name\"></b></a>")))
+                        .append($("<li>").append(
+                                $unhighlight = $("<a href=\"#\" title=\"Unhighlight\">" +
+                                        "<span>Unhighlight</span> <b class=\"symbol-name\"></b></a>")))
+                        .append($("<li>").append(
+                                $unhighlighAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
+                                        "<span>Unhighlight all</span></a>")))
+
+                inner.bindOnClick($close, inner.toggle);
+                inner.bindOnClick($highlight, inner.highlight)
+                inner.bindOnClick($unhighlight, inner.unhighlight)
+                inner.bindOnClick($unhighlighAll, inner.unhighlightAll);
+
+                var $secondList = $("<ul>")
+                        .append($("<li>").append(
+                                $("<a class=\"search-defs\" href=\"#\" target=\"_blank\">" +
+                                        "<span>Search for definitions of</span> <b class=\"symbol-name\"></b></a>")))
+                        .append($("<li>").append(
+                                $("<a class=\"search-refs\" href=\"#\" target=\"_blank\">" +
+                                        "<span>Search for references of</span> <b class=\"symbol-name\"></b></a>")))
+                        .append($("<li>").append(
+                                $("<a class=\"search-full\" href=\"#\" target=\"_blank\">" +
+                                        "<span>Do a full search with</span> <b class=\"symbol-name\"></b></a>")))
+                        .append($("<li>").append(
+                                $("<a class=\"search-files\" href=\"#\" target=\"_blank\">" +
+                                        "<span>Search for file names that contain</span> <b class=\"symbol-name\"></b></a>")))
+
+                var $thirdList = $("<ul>")
+                        .append($("<li>").append(
+                                $("<a class=\"search-google\" href=\"#\" target=\"_blank\">" +
+                                        "<span>Google</span> <b class=\"symbol-name\"></b></a>")))
+
+                var $controls = $("<div class=\"pull-right\">")
+                        .append($next = $("<a href=\"#\" title=\"next\" class=\"pull-right\">Next >></a>"))
+                        .append("<span class=\"pull-right\"> | </span>")
+                        .append($prev = $("<a href=\"#\" title=\"prev\" class=\"pull-right\"><< Prev </a>"))
+                        .append($("<div class=\"clearfix\">"))
+                        .append(inner.$errors = $("<span class=\"clearfix\">"))
+
+                inner.bindOnClick($next, inner.scrollToNextElement, 1);
+                inner.bindOnClick($prev, inner.scrollToNextElement, -1);
+
+                return $("<div>")
+                        .attr('id', 'intelli_win')
+                        .addClass('intelli-window')
+                        .addClass('diff_navigation_style')
+                        .hide()
+                        .append($top)
+                        .append($("<hr>"))
+                        .append($controls)
+                        .append($("<h2>").addClass('symbol-name'))
+                        .append($("<span>").addClass('symbol-description'))
+                        .append($("<hr>"))
+                        .append($("<h5>").text("In current file"))
+                        .append($firstList)
+                        .append($("<h5>").text("In project \"" + inner.project + "\""))
+                        .append($secondList)
+                        .append($("<h5>").text("On Google"))
+                        .append($thirdList)
+            },
+            init: function () {
+                if (inner.initialized) {
+                    return
+                }
+                inner.initialized = true
+                inner.contextPath = inner.options.contextPath || $("#contextpath").val();
+                inner.project = inner.options.project || $("input[name='project']").val();
+
+                inner.$window = inner.$window || inner.createWindow()
+                inner.$window.appendTo(inner.parent ? $(inner.parent) : $("#content"));
+                inner.registerHandlers()
+
+                if (inner.options.draggable && inner.contextPath) {
+                    $.ajax({
+                        url: inner.contextPath + '/' + inner.options.draggableScript,
+                        dataType: 'script',
+                        cache: true
+                    }).done(function () {
+                        inner.$window.draggable({
+                            appendTo: inner.options.draggableAppendTo,
+                            helper: 'clone',
+                            start: function () {
+                                $(this).hide();
+                            },
+                            stop: function (e, ui) {
+                                $(this).show().offset(ui.offset).css('position', 'fixed');
+                            },
+                            create: function (e, ui) {
+                                $(this).css('position', 'fixed');
+                            }
+                        });
+                    }).fail(function () {
+                        console.log('Failed to download draggable module')
+                    });
+                }
+            }
+        };
+
+        this.init = function (options) {
+            inner.options = $.extend({}, inner.defaults, options);
+            inner.init();
+        }
+    };
+    $.intelliWindow = new ($.extend(intelliWindow, $.intelliWindow ? $.intelliWindow : {}));
+})(window, document, jQuery);
+
 $(document).ready(function () {
     $("#content").scroll(scope_on_scroll);
     $("#dirlist").tablesorter({
@@ -362,6 +713,12 @@ $(document).ready(function () {
             }
         }
     });
+    
+    // intelligence window plugin
+    $("#contextpath").each(function() {
+        $.intelliWindow.init();
+        return false
+    })
 
     // starting spaces plugin
     $.spaces.init()
@@ -873,183 +1230,6 @@ function clearSearchFrom() {
     });
     $("#type :selected").prop("selected", false);
 }
-
-// Intelligence Window code starts from here
-document.onmousemove = function(event) {
-    event = event || window.event; // cover IE
-    document.intelliWindowMouseX = event.clientX;
-    document.intelliWindowMouseY = event.clientY;
-};
-
-$(document).keypress(function(e) {
-    if (document.activeElement.id === 'search' ||
-        typeof document.intelliWindow === 'undefined') {
-        return true;
-    }
-
-    if (e.which === 49) { // '1' pressed
-        if (document.intelliWindow.className === "intelli_window_style") {
-            hideIntelliWindow();
-        } else if (document.intelliWindow.className === "intelli_window_style_hide") {
-            showIntelliWindow();
-        }
-    }
-    if (e.which === 50) { // '2' pressed
-        var symbol = document.intelliWindow.symbol;
-        var highlighted_symbols_with_same_name = $("a").filter(function(index) {
-            var bgcolor = $(this).css("background-color");
-            return $(this).text() === symbol &&
-                (bgcolor === "rgb(255, 215, 0)" || bgcolor === "rgb(255,215,0)" || bgcolor === "#ffd700"); // gold.  the last two cover IE
-        })
-        if (highlighted_symbols_with_same_name.length === 0) {
-            highlightSymbol(symbol);
-        } else {
-            unhighlightSymbol(symbol);
-        }
-    }
-    return true;
-});
-
-function onMouseOverSymbol(symbol, symbolType) {
-    updateIntelliWindow(symbol, symbolType);
-}
-
-function updateIntelliWindow(symbol, symbolType) {
-    if (!document.intelliWindow) {
-        createIntelliWindow();
-    }
-    var header = [
-        createCapitionHTML(),
-        createSymbolHTML(symbol),
-        createDescriptionHTML(symbolType),
-    ].join("");
-
-    document.intelliWindow.innerHTML = header + createActionHTML(symbol, symbolType);
-    document.intelliWindow.symbol = symbol;
-}
-
-function showIntelliWindow() {
-    var iw = document.intelliWindow;
-    iw.className = "intelli_window_style";
-
-    var top;
-    var left;
-    if (document.intelliWindowMouseY + iw.offsetHeight + 20 > $(window).height()) {
-        top = $(window).height() - iw.offsetHeight - 20;
-    } else {
-        top = document.intelliWindowMouseY;
-    }
-    if (document.intelliWindowMouseX + iw.offsetWidth + 20 > $(window).width()) {
-        left = $(window).width() - iw.offsetWidth - 20;
-    } else {
-        left = document.intelliWindowMouseX;
-    }
-    iw.style.top = top + "px";
-    iw.style.left = left + "px";
-}
-
-function createIntelliWindow() {
-    document.intelliWindow = document.createElement("div");
-    document.intelliWindow.id = "intelli_win";
-    document.body.appendChild(document.intelliWindow);
-    hideIntelliWindow();
-}
-
-function hideIntelliWindow() {
-    document.intelliWindow.className = "intelli_window_style_hide";
-}
-
-function createCapitionHTML() {
-    return '<a onclick="hideIntelliWindow()">[Close]</a><br/><b>Intelligence Window</b><br/>';
-}
-
-function createSymbolHTML(symbol) {
-    return "<i><h2>" + symbol + "</h2></i>";
-}
-
-function createDescriptionHTML(symbolType) {
-    switch (symbolType) {
-        case "def":
-            return "A declaration or definition.<hr/>";
-        case "defined-in-file":
-            return "A symbol declared or defined in this file.<hr/>";
-        case "undefined-in-file":
-            return "A symbol declared or defined elsewhere.<hr/>";
-        default:
-            // should not happen
-            return "Something I have no idea about.<hr/>";
-    }
-}
-
-function createActionHTML(symbol, symbolType) {
-    var escapedSymbol = escapeSingleQuote(symbol);
-    var project = $("input[name='project']").val();
-    return [
-        "In current file:<br/><ul>",
-        "<li><a onclick=\"highlightSymbol('", escapedSymbol, "')\">Highlight <b><i>", symbol,
-            "</i></b></a>.</li>",
-        "<li><a onclick=\"unhighlightSymbol('", escapedSymbol, "')\">Unhighlight <b><i>", symbol,
-            "</i></b></a>.</li>",
-        "<li><a onclick=\"unhighlightAll()\">Unhighlight all.</li></ul>",
-        "In project ", project, ":<br/><ul>",
-        "<li><a onclick=\"intelliWindowSearch('defs=', '", escapedSymbol, "', '", symbolType,
-            "')\">Search for definitions of <i><b>", symbol,
-            "</b></i>.</a></li>",
-        "<li><a onclick=\"intelliWindowSearch('refs=', '", escapedSymbol, "', '", symbolType,
-            "')\">Search for references of <i><b>", symbol,
-            "</b></i>.</a></li>",
-        "<li><a onclick=\"intelliWindowSearch('q=', '", escapedSymbol, "', '", symbolType,
-            "')\">Do a full search with <i><b>", symbol,
-            "</b></i>.</a></li>",
-        "<li><a onclick=\"intelliWindowSearch('path=', '", escapedSymbol, "', '", symbolType,
-            "')\">Search for file names that contain <i><b>", symbol,
-            "</b></i>.</a></li></ul>",
-        "<a onclick=\"googleSymbol('", escapedSymbol, "')\">Google <b><i>", symbol, "</i></b>.</a>"
-    ].join("");
-}
-
-function highlightSymbol(symbol) {
-    var symbols_with_same_name = $("a").filter(function(index) {
-        return $(this).text() === symbol;
-    })
-    symbols_with_same_name.css("background-color",  "rgb(255, 215, 0)"); // gold
-    return false;
-}
-
-function unhighlightSymbol(symbol) {
-    var symbols_with_same_name = $("a").filter(function(index) {
-        return $(this).text() === symbol;
-    })
-    symbols_with_same_name.css("background-color", "rgb(255, 255, 255)"); // white
-    return false;
-}
-
-function unhighlightAll() {
-    $("a").filter(function(index) {
-        var bgcolor = $(this).css("background-color");
-        return bgcolor === "rgb(255, 215, 0)" || bgcolor === "rgb(255,215,0)" || bgcolor === "#ffd700";  // gold.  the last two cover IE
-    }).css("background-color", "rgb(255, 255, 255)"); // white
-    return false;
-}
-
-function intelliWindowSearch(param, symbol, symbolType) {
-    var contextPath = $("#contextpath").val();
-    var project = $("input[name='project']").val();
-    var url = contextPath + "/s?" + param + symbol + "&project=" + project;
-    window.open(url, '_blank');
-    return false;
-}
-
-function googleSymbol(symbol) {
-    var url = "https://www.google.com/search?q=" + symbol;
-    window.open(url, '_blank');
-    return false;
-}
-
-function escapeSingleQuote(string) {
-    return string.replace("'", "\\'");
-}
-
 
 var scope_visible = 0;
 var scope_text = '';
