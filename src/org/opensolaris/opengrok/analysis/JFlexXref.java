@@ -613,8 +613,7 @@ public abstract class JFlexXref {
             appendProject();
             out.append("\" class=\"");
             out.append(style_class);
-            out.append(" intelliWindow-symbol");
-            out.append("\"");
+            out.append(" intelliWindow-symbol\"");
             out.append(" data-definition-place=\"def\"");
             out.append(">");
             out.append(symbol);
@@ -627,9 +626,8 @@ public abstract class JFlexXref {
             // Generate a direct link to the symbol definition.
             out.append("<a class=\"");
             out.append(style_class);
-            out.append("\" href=\"#");
+            out.append(" intelliWindow-symbol\" href=\"#");
             out.append(symbol);
-            out.append(" intelliWindow-symbol");
             out.append("\"");
             out.append(" data-definition-place=\"defined-in-file\"");
             out.append(">");

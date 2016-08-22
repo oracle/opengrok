@@ -41,6 +41,7 @@ import org.opensolaris.opengrok.analysis.c.CXref;
 import org.opensolaris.opengrok.analysis.c.CxxXref;
 import org.opensolaris.opengrok.analysis.csharp.CSharpXref;
 import org.opensolaris.opengrok.analysis.document.TroffXref;
+import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.fortran.FortranXref;
 import org.opensolaris.opengrok.analysis.haskell.HaskellXref;
 import org.opensolaris.opengrok.analysis.java.JavaXref;
@@ -55,10 +56,9 @@ import org.opensolaris.opengrok.analysis.tcl.TclXref;
 import org.opensolaris.opengrok.analysis.uue.UuencodeXref;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
+import org.xml.sax.InputSource;
 
 import static org.junit.Assert.*;
-import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
-import org.xml.sax.InputSource;
 
 /**
  * Unit tests for JFlexXref.
@@ -368,7 +368,7 @@ public class JFlexXrefTest {
         xref.write(out);
 
         assertEquals("<a class=\"l\" name=\"1\" href=\"#1\">1</a>"
-            + "<a href=\"/source/s?defs=cat\" onmouseover=\"onMouseOverSymbol('cat', 'undefined-in-file')\">cat</a> &lt;&lt; EOF"
+            + "<a href=\"/source/s?defs=cat\" class=\"intelliWindow-symbol\" data-definition-place=\"undefined-in-file\">cat</a> &lt;&lt; EOF"
             + "<span class=\"s\">\n"
             + "<a class=\"l\" name=\"2\" href=\"#2\">2</a>"
             + "unterminated heredoc</span>",
