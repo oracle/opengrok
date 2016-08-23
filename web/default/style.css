@@ -801,22 +801,19 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
     display: none;
 }
 
-.intelli_window_style {
+.intelli-window {
     position: absolute;
     width: 504px;
-    height: 300px;
+    max-height: 400px;
     overflow: auto;
     z-index: 10;
-    border: solid 1px #c0c0c0;
-    background-color: rgba(233,255,219,0.75);
-    color: #000;
     font-size: 12px;
     font-family: monospace;
-    padding: 5px;
 }
 
-.intelli_window_style_hide {
-    display: none;
+.symbol-highlighted {
+    background-color: #ffd700;
+    background-color: rgb(255, 215, 0);
 }
 
 /**** DIFF NAVIGATION/JUMPER *****/
@@ -841,18 +838,21 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
     padding: 0;
 }
 
-.diff_navigation div:nth-child(2) {
+.diff_navigation div.controls {
     margin-top: 1.5em;
     border-top: solid 2px #c0c0c0;
 }
 
-.diff_navigation .header .minimize {
-    float: right;
+.diff_navigation_style .minimize {
     padding: 1px;
     padding-left: 4px;
     padding-right: 4px;
     border: 2px outset black;
     border-radius: 3px;
+}
+
+.diff_navigation .header .minimize {
+    float: right;
 }
 
 .diff_navigation div {

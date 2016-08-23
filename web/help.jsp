@@ -197,13 +197,40 @@ for more detail on query syntax refer to <a href="http://lucene.apache.org/core/
 <p>
 Key "1" toggles <dfn>Intelligence Window</dfn>.  It gives the user many helper actions on the last symbol pointed by the mouse cursor.
 </p>
-<img src="default/img/intelli-window.png"/>
+<img src="<%= cfg.getCssDir() %>/img/intelli-window.png"/>
 
-<h4>Symbol Highlighting</h4>
+<h5>Symbol Highlighting</h5>
 <p>
 Key "2" toggles highlighting of the last symbol pointed by the mouse cursor.  This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
 </p>
-<img src="default/img/symbol-highlighting.png"/>
+<p>
+Key "3" toggles unhighlighting all symbols. This functionality is also accessible via the <dfn>Intelligence Window</dfn>.
+</p>
+<img src="<%= cfg.getCssDir() %>/img/symbol-highlighting.png"/>
+
+<p>
+    You can close the intelligence window either by mouse in the right upper corner or by keyboard with "Esc" key.
+</p>
+
+<h5>Symbol jumping</h5>
+<p>
+By 'n' for next and 'b' for back you can jump between the symbols easily only with keyboard. When there is no symbol highlighted then the jump
+is made to the next symbol in the file from the current one. If you have highlighted a specific symbol then the jump is done only among the highlighted symbols.
+</p>
+
+<h4>Diff jumper</h4>
+
+<p>
+The OpenGrok also provides an easy way how to jump through the large diffs finding the interesting pieces of code. In the diff mode you can enable diff jumper by hitting the "jumper" button.
+</p>
+<img src="<%= cfg.getCssDir() %>/img/diff-jumper.png"/>
+
+<h5>Mouse and keyboard navigation</h5>
+<p>
+You can then use your mouse to intuitively navigate yourself through the diff. Also there is a convenient shortcut for moving on your keyboard,
+you can use 'n' for next and 'b' for back to jump over to the next chunk. This is available even when the jumper window is not opened.
+</p>
+<img src="<%= cfg.getCssDir() %>/img/diff-jumping.png"/>
 
         </div>
 <%

@@ -613,10 +613,9 @@ public abstract class JFlexXref {
             appendProject();
             out.append("\" class=\"");
             out.append(style_class);
-            out.append("\" onmouseover=\"onMouseOverSymbol('");
-            out.append(jsEscapedSymbol);
-            out.append("', 'def')");
-            out.append("\">");
+            out.append(" intelliWindow-symbol\"");
+            out.append(" data-definition-place=\"def\"");
+            out.append(">");
             out.append(symbol);
             out.append("</a>");
 
@@ -627,12 +626,11 @@ public abstract class JFlexXref {
             // Generate a direct link to the symbol definition.
             out.append("<a class=\"");
             out.append(style_class);
-            out.append("\" href=\"#");
+            out.append(" intelliWindow-symbol\" href=\"#");
             out.append(symbol);
-            out.append("\" onmouseover=\"onMouseOverSymbol('");
-            out.append(jsEscapedSymbol);
-            out.append("', 'defined-in-file')");
-            out.append("\">");
+            out.append("\"");
+            out.append(" data-definition-place=\"defined-in-file\"");
+            out.append(">");
             out.append(symbol);
             out.append("</a>");
 
@@ -646,10 +644,10 @@ public abstract class JFlexXref {
             out.append("defs=");
             out.append(symbol);
             appendProject();
-            out.append("\" onmouseover=\"onMouseOverSymbol('");
-            out.append(jsEscapedSymbol);
-            out.append("', 'undefined-in-file')");
-            out.append("\">");
+            out.append("\"");
+            out.append(" class=\"intelliWindow-symbol\"");
+            out.append(" data-definition-place=\"undefined-in-file\"");
+            out.append(">");
             out.append(symbol);
             out.append("</a>");
         }
