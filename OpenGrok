@@ -30,14 +30,16 @@
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
 #                                 or enabling server JDK)
 #                                 JAVA_OPTS=-Xmx2048m is the default!
-#   - OPENGROK_APP_SERVER         Application Server ("Tomcat" or "Glassfish")
+#   - OPENGROK_APP_SERVER         Application Server ("Tomcat", "Glassfish" or "Resin")
 #   - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
+#   - OPENGROK_WAR_TARGET_RESIN   Resin Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET         Fallback WAR Target Directory
 #   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
 #   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish
 #                                 (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
+#   - OPENGROK_RESIN_BASE         Base Directory for Resin (contains webapps)
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
 #   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
 #                                 through project, it's good to have Verbose
@@ -567,6 +569,12 @@ FindApplicationServerType()
         return
     fi
 
+    if [ -d "/etc/resin" -o -d "/usr/local/share/resin" ]
+    then
+        echo "Resin"
+        return
+    fi
+
     # Assume Tomcat
     echo "Tomcat"
 }
@@ -652,6 +660,31 @@ DetermineWarDirectoryGlassfish()
     fi
 
     echo "${domainDirectory}/${firstDomain}/autodeploy"
+}
+
+DetermineWarDirectoryResin()
+{
+    if [ -n "${OPENGROK_WAR_TARGET_RESIN}" ]
+    then
+        echo "${OPENGROK_WAR_TARGET_RESIN}"
+        return
+    elif [ -n "${OPENGROK_WAR_TARGET}" ]
+    then
+        echo "${OPENGROK_WAR_TARGET}"
+        return
+    fi
+
+    for prefix in               \
+        ${OPENGROK_RESIN_BASE} \
+        /var/resin	\
+        /opt/resin
+    do
+        if [ -d "${prefix}/webapps" ]
+        then
+            echo "${prefix}/webapps"
+            return
+        fi
+    done
 }
 
 #
@@ -881,6 +914,7 @@ DeployWar()
 
         Tomcat)    warTarget="`DetermineWarDirectoryTomcat`"    ;;
         Glassfish) warTarget="`DetermineWarDirectoryGlassfish`" ;;
+        Resin)     warTarget="`DetermineWarDirectoryResin`" ;;
 
         *) FatalError "Unsupported Application Server ${applicationServer}" ;;
 
