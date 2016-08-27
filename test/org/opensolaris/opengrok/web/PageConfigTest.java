@@ -18,10 +18,11 @@
  */
 
 /*
- * Copyright (c) 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2016 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
+import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.opensolaris.opengrok.condition.ConditionalRun;
 import org.opensolaris.opengrok.condition.ConditionalRunRule;
 import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.util.TestRepository;
 
@@ -57,14 +59,34 @@ public class PageConfigTest {
         repository.destroy();
         repository = null;
     }
-    
+
     @Test
     public void testRequestAttributes() {
-        PageConfig cfg = PageConfig.get(new DummyHttpServletRequest());
-        assertNull(cfg.getRequestAttribute("attr1"));
-        cfg.setRequestAttribute("attr1", "Some value");
-        assertNotNull(cfg.getRequestAttribute("attr1"));
-        assertEquals("Some value", cfg.getRequestAttribute("attr1"));
+        HttpServletRequest req = new DummyHttpServletRequest();
+        PageConfig cfg = PageConfig.get(req);
+
+        String[] attrs = {"a", "b", "c", "d"};
+
+        Object[] values = {
+            "some object",
+            new DummyHttpServletRequest(),
+            1,
+            this
+        };
+
+        assertEquals(attrs.length, values.length);
+
+        for (int i = 0; i < attrs.length; i++) {
+            cfg.setRequestAttribute(attrs[i], values[i]);
+
+            Object attribute = req.getAttribute(attrs[i]);
+            assertNotNull(attribute);
+            assertEquals(values[i], attribute);
+
+            attribute = cfg.getRequestAttribute(attrs[i]);
+            assertNotNull(attribute);
+            assertEquals(values[i], attribute);
+        }
     }
 
     @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
@@ -106,6 +128,116 @@ public class PageConfigTest {
         // Expect null if the file or directory doesn't exist.
         assertCanProcess(null, "/source", "/xref", "/mercurial/xyz");
         assertCanProcess(null, "/source", "/xref", "/mercurial/xyz/");
+    }
+
+    @Test
+    public void testGetIntParam() {
+        String[] attrs = {"a", "b", "c", "d", "e", "f", "g", "h"};
+        int[] values = {1, 100, -1, 2, 200, 3000, -200, 3000};
+        DummyHttpServletRequest req = new DummyHttpServletRequest() {
+            @Override
+            public String getParameter(String name) {
+                switch(name) {
+                    case "a": return "1";
+                    case "b": return "100";
+                    case "c": return null;
+                    case "d": return "2";
+                    case "e": return "200";
+                    case "f": return "3000";
+                    case "g": return null;
+                    case "h": return "abcdef";
+                }
+                return null;
+            }
+        };
+        PageConfig cfg = PageConfig.get(req);
+
+        assertEquals(attrs.length, values.length);
+        for (int i = 0; i < attrs.length; i++) {
+            assertEquals(values[i], cfg.getIntParam(attrs[i], values[i]));
+        }
+    }
+
+    @Test
+    public void testGetRequestedRevision() {
+        final String[] params = {"r", "h", "r", "r", "r"};
+        final String[] revisions = {
+            "6c5588de", "", "6c5588de", "6c5588de", "6c5588de"
+        };
+        assertEquals(params.length, revisions.length);
+        for (int i = 0; i < revisions.length; i++) {
+            final int index = i;
+            DummyHttpServletRequest req = new DummyHttpServletRequest() {
+                @Override
+                public String getParameter(String name) {
+                    if (name.equals("r")) {
+                        return revisions[index];
+                    }
+                    return null;
+                }
+            };
+
+            PageConfig cfg = PageConfig.get(req);
+            String rev = cfg.getRequestedRevision();
+
+            assertNotNull(rev);
+            assertEquals(revisions[i], rev);
+            assertFalse(rev.contains("r="));
+
+            PageConfig.cleanup(req);
+        }
+    }
+
+    @Test
+    @ConditionalRun(condition = RepositoryInstalled.GitInstalled.class)
+    public void testGetAnnotation() {
+        final String[] revisions = {"aa35c258", "bb74b7e8"};
+
+        for (int i = 0; i < revisions.length; i++) {
+            final int index = i;
+            HttpServletRequest req = new DummyHttpServletRequest() {
+                @Override
+                public String getContextPath() {
+                    return "/source";
+                }
+
+                @Override
+                public String getServletPath() {
+                    return "/history";
+                }
+
+                @Override
+                public String getPathInfo() {
+                    return "/git/main.c";
+                }
+
+                @Override
+                public String getParameter(String name) {
+                    switch(name) {
+                        case "r": return revisions[index];
+                        case "a": return "true";
+                    }
+                    return null;
+                }
+            };
+            PageConfig cfg = PageConfig.get(req);
+
+            Annotation annotation = cfg.getAnnotation();
+            assertNotNull(annotation);
+            assertEquals("main.c", annotation.getFilename());
+            assertEquals(revisions.length - i, annotation.getFileVersionsCount());
+
+            for(int j = 1; j <= annotation.size(); j ++ ){
+                String tmp = annotation.getRevision(j);
+                assertTrue(Arrays.asList(revisions).contains(tmp));
+            }
+
+            assertEquals("The version should be reflected through the revision",
+                    revisions.length - i,
+                    annotation.getFileVersion(revisions[i]));
+
+            PageConfig.cleanup(req);
+        }
     }
 
     /**
@@ -151,5 +283,4 @@ public class PageConfigTest {
             }
         };
     }
-    
 }
