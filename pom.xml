@@ -58,7 +58,7 @@ Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
     </modules>
 
     <properties>
-	<lucene.version>6.1.0</lucene.version>
+	<lucene.version>6.2.0</lucene.version>
 	<mavenjavadocplugin.version>2.10.4</mavenjavadocplugin.version>
         <compileSource>1.8</compileSource>
         <compileTarget>1.8</compileTarget>
