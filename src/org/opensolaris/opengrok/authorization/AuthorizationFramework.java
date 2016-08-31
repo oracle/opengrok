@@ -145,6 +145,11 @@ public final class AuthorizationFramework {
 
     private void removePlugin(IAuthorizationPlugin plugin) {
         synchronized (this) {
+            try {
+                plugin.unload();
+            } catch (Throwable ex) {
+                LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while unloading with exception:", ex);
+            }
             plugins.remove(plugin);
         }
 
@@ -158,6 +163,13 @@ public final class AuthorizationFramework {
 
     private void removeAll() {
         synchronized (this) {
+            for (IAuthorizationPlugin plugin : getPlugins()) {
+                try {
+                    plugin.unload();
+                } catch (Throwable ex) {
+                    LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while unloading with exception:", ex);
+                }
+            }
             plugins.clear();
         }
     }
@@ -281,14 +293,7 @@ public final class AuthorizationFramework {
             }
         });
         
-        for (IAuthorizationPlugin plugin : getPlugins()) {
-            try {
-                plugin.unload();
-            } catch (Throwable ex) {
-                LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while unloading with exception:", ex);
-            }
-        }
-        
+        removeAll();
         plugins = new ArrayList<>();
 
         List<File> classfiles = listFilesRec(".class");
@@ -323,8 +328,8 @@ public final class AuthorizationFramework {
                 plugin.load();
             } catch (Throwable ex) {
                 // remove faulty plugin
-                removePlugin(plugin);
                 LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while loading with exception:", ex);
+                removePlugin(plugin);
             }
         }
     }
@@ -363,8 +368,8 @@ public final class AuthorizationFramework {
                     return false;
                 }
             } catch (Throwable ex) {
-                removePlugin(plugin);
                 LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed with exception:", ex);
+                removePlugin(plugin);
             }
         }
 

@@ -297,12 +297,6 @@ public final class Configuration {
     }
 
     public String getPluginDirectory() {
-        if (pluginDirectory == null) {
-            if (getDataRoot() == null) {
-                return PLUGIN_DIRECTORY_DEFAULT;
-            }
-            return getDataRoot() + "/../" + PLUGIN_DIRECTORY_DEFAULT;
-        }
         return pluginDirectory;
     }
 
@@ -462,6 +456,9 @@ public final class Configuration {
     }
 
     public void setDataRoot(String dataRoot) {
+        if(this.pluginDirectory == null) {
+            this.pluginDirectory = dataRoot + "/../" + PLUGIN_DIRECTORY_DEFAULT;
+        }
         this.dataRoot = dataRoot;
     }
 
