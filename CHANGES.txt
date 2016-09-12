@@ -1,3 +1,10 @@
+September 2016 update 0.12.1.5 (0.12-stable)
+-------------------------------------------------
+This is bug fix release based on 0.12.1.
+
+Bug fixes:
+    fixing inconsistent behaviour of opengrok cookie (master cset 9158900b)
+
 March 2015 update 0.12.1.5 (0.12-stable)
 -------------------------------------------------
 
