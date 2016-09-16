@@ -83,6 +83,7 @@ import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherFactory;
 import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.index.IndexDatabase;
@@ -1383,6 +1384,9 @@ public final class RuntimeEnvironment {
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
             try {
                 entry.getValue().maybeRefresh();
+            } catch (AlreadyClosedException ex) {
+                // This is a case of removed project.
+                // See refreshSearcherManagerMap() for details.
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
             }
@@ -1493,14 +1497,17 @@ public final class RuntimeEnvironment {
                 for (Project proj : getProjects()) {
                     if (entry.getKey().compareTo(proj.getDescription()) == 0) {
                         // XXX Ideally we would like to remove the entry from the map here.
-                        // However, if some thread acquired an IndexSearcher and then reindex happened
+                        // However, if some thread acquired an IndexSearcher and then config change happened
                         // and the corresponding searcherManager was removed from the map,
                         // returnIndexSearcher() will have no place to return the indexSearcher to.
-                        // This would likely lead to leaks.
+                        // This would likely lead to leaks since the corresponding IndexReader
+                        // will remain open.
                         // So, we cannot remove searcherManager from the map until all threads
-                        // are done with it. However, there does not seem to be any way how
-                        // to know this without implementing yet another layer of reference counting.
-                        // For the time being, simply let the map to grow.
+                        // are done with it. We could handle this by inserting the pair into
+                        // special to-be-removed list and then check reference count
+                        // of corresponding IndexReader object in returnIndexSearcher().
+                        // If 0, the SearcherManager can be safely removed from the searcherManagerMap.
+                        // For the time being, let the map to grow unbounded to keep things simple.
                         entry.getValue().close();
                     }
                 }
