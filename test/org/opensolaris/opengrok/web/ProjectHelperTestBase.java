@@ -196,7 +196,7 @@ public class ProjectHelperTestBase {
      *  allowed_ungrouped_project_2_1, allowed_ungrouped_project_3_1
      *
      * ungrouped repositories: 
-     *  ungrouped_repository_1_1,
+     *  ungrouped_repository_0_1, ungrouped_repository_1_1,
      *  allowed_ungrouped_repository_2_1, allowed_ungrouped_repository_3_1
      *
      */
@@ -282,8 +282,7 @@ public class ProjectHelperTestBase {
 
     @Before
     public void setUp() {
-
-        Assert.assertEquals("Should contain 5 groups", 4, env.getGroups().size());
+        Assert.assertEquals("Should contain 4 groups", 4, env.getGroups().size());
         Assert.assertEquals("Should contain 40 project", 40, env.getProjects().size());
         Assert.assertEquals("Should contain 20 repositories", 20, env.getRepositories().size());
         Assert.assertNotNull("Repository map should not be null", env.getProjectRepositoriesMap());

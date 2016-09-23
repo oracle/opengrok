@@ -41,7 +41,9 @@ import static org.opensolaris.opengrok.web.PageConfig.OPEN_GROK_PROJECT;
  * @author Krystof Tulinger
  */
 public final class ProjectHelper {
-    
+
+    private static final String ATTR_NAME = "project_helper";
+
     private static final String PROJECT_HELPER_GROUPS = "project_helper_groups";
     private static final String PROJECT_HELPER_UNGROUPED_PROJECTS = "project_helper_ungrouped_projects";
     private static final String PROJECT_HELPER_UNGROUPED_REPOSITORIES = "project_helper_ungrouped_repositories";
@@ -52,7 +54,7 @@ public final class ProjectHelper {
     private static final String PROJECT_HELPER_GROUPED_PROJECTS = "project_helper_grouped_projects";
     private static final String PROJECT_HELPER_SUBGROUPS_OF = "project_helper_subgroups_of_";
     private static final String PROJECT_HELPER_FAVOURITE_GROUP = "project_helper_favourite_group";
-    
+
     private PageConfig cfg;
     /**
      * Set of groups
@@ -75,8 +77,6 @@ public final class ProjectHelper {
      */
     private final Set<Project> all_repositories = new TreeSet<>();
 
-    private static ProjectHelper instance;
-
     private ProjectHelper(PageConfig cfg) {
         this.cfg = cfg;
         groups = new TreeSet<>(cfg.getEnv().getGroups());
@@ -95,10 +95,11 @@ public final class ProjectHelper {
      * @see PageConfig#getProjectHelper()
      */
     public static ProjectHelper getInstance(PageConfig cfg) {
+        ProjectHelper instance = (ProjectHelper) cfg.getRequestAttribute(ATTR_NAME);
         if (instance == null) {
-            return instance = new ProjectHelper(cfg);
+            instance = new ProjectHelper(cfg);
+            cfg.setRequestAttribute(ATTR_NAME, instance);
         }
-        instance.cfg = cfg; // refresh
         return instance;
     }
 
@@ -121,6 +122,7 @@ public final class ProjectHelper {
      * Generates ungrouped projects and repositories.
      */
     private void populateGroups() {
+        groups.addAll(cfg.getEnv().getGroups());
         for (Project project : cfg.getEnv().getProjects()) {
             // filterProjects only groups which match project's description
             Set<Group> copy = new TreeSet<>(groups);
@@ -454,9 +456,14 @@ public final class ProjectHelper {
         return set;
     }
 
-    public static void cleanup() {
-        if (ProjectHelper.instance != null) {
-            ProjectHelper.instance.cfg = null;
+    public static void cleanup(PageConfig cfg) {
+        if (cfg != null) {
+            ProjectHelper helper = (ProjectHelper) cfg.getRequestAttribute(ATTR_NAME);
+            if (helper == null) {
+                return;
+            }
+            cfg.removeAttribute(ATTR_NAME);
+            helper.cfg = null;
         }
     }
 }
