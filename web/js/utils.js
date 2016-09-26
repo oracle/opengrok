@@ -1237,10 +1237,13 @@ var scope_text = '';
 /**
  * Fold or unfold a function definition.
  */
-function fold(id) {        
-    var i = document.getElementById(id + "_fold_icon").children[0];
-    i.className = i.className === 'fold-icon' ? 'unfold-icon' : 'fold-icon';
-    $("#" + id + "_fold").toggle('fold');
+function fold(id) {
+    $('#' + id + '_fold_icon')
+            .children()
+            .first()
+            .toggleClass('unfold-icon')
+            .toggleClass('fold-icon')
+    $('#' + id + '_fold').toggle('fold');
 }
 
 /**
@@ -1250,22 +1253,20 @@ function fold(id) {
  */
 function scope_on_scroll() {
     var cnt = document.getElementById("content");
-    var scope_cnt = document.getElementById("scope_content");
     var y = cnt.getBoundingClientRect().top + 2;
+    var $scope_cnt_el = $('#scope_content');
 
-    var c = document.elementFromPoint(15, y+1);
-    scope_cnt.innerHTML = '';
-    if (c.className === "l" || c.className === "hl") {
-        prev = c;
-        var par = c.parentNode;
-        while( par.className !== 'scope-body' && par.className !== 'scope-head' ) {
-            par = par.parentNode;
-            if (par === null) {
-                return ;
-            }
+    var c = document.elementFromPoint(15, y + 1);
+    $scope_cnt_el.empty();
+    if ($(c).is('.l, .hl')) {
+        var $par = $(c).closest('.scope-body, .scope-head')
+
+        if (!$par.length) {
+            return;
         }
-        var head = par.className === 'scope-body' ? par.previousSibling : par;
-        var sig = head.children[0];
-        scope_cnt.innerHTML = '<a href="#' + head.id + '">' + sig.innerHTML + '</a>';
+
+        var $head = $par.hasClass('scope-body') ? $par.prev() : $par;
+        var $sig = $head.children().first()
+        $scope_cnt_el.html('<a href="#' + $head.attr('id') + '">' + $sig.html() + '</a>');
     }
 }
