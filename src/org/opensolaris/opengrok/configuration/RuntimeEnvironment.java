@@ -1091,7 +1091,7 @@ public final class RuntimeEnvironment {
      */
     private void generateProjectRepositoriesMap() throws IOException {
         repository_map.clear();
-        for (RepositoryInfo r : configuration.getRepositories()) {
+        for (RepositoryInfo r : getRepositories()) {
             Project proj;
             String repoPath;
 
@@ -1148,26 +1148,26 @@ public final class RuntimeEnvironment {
      */
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+        register();
         try {
             generateProjectRepositoriesMap();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
         populateGroups(getGroups(), getProjects());
-        register();
         HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories());
     }
 
     public void setConfiguration(Configuration configuration, List<String> subFileList) {
         this.configuration = configuration;
+        register();
         try {
             generateProjectRepositoriesMap();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
         populateGroups(getGroups(), getProjects());
-        register();
         HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);
     }

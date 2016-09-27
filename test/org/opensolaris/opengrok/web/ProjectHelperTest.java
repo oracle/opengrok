@@ -22,13 +22,18 @@
  */
 package org.opensolaris.opengrok.web;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.history.RepoRepository;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 
 public class ProjectHelperTest extends ProjectHelperTestBase {
@@ -41,6 +46,83 @@ public class ProjectHelperTest extends ProjectHelperTestBase {
         ProjectHelper result = ProjectHelper.getInstance(cfg);
         Assert.assertNotNull("Project helper should not be null", result);
         Assert.assertSame(result.getClass(), ProjectHelper.class);
+    }
+    
+    /**
+     * Test if projects and groups are always reloaded fully from the env.
+     * 
+     * This ensures that when the RuntimeEnvironment changes that it also
+     * updates the projects in the ui.
+     */
+    @Test
+    public void testSynchronization() {
+        List<Project> oldProjects = new ArrayList<>(env.getProjects());
+        List<RepositoryInfo> oldRepositories = new ArrayList<>(env.getRepositories());
+        Set<Group> oldGroups = new TreeSet<>(env.getGroups());
+        Map<Project, List<RepositoryInfo>> oldMap = new TreeMap<>(getRepositoriesMap());
+        invokeRemoveAll();
+
+        cfg = PageConfig.get(getRequest());
+        helper = cfg.getProjectHelper();
+
+        // basic setup
+        Assert.assertEquals("There should be 40 env projects", 40, env.getProjects().size());
+        Assert.assertEquals("There should be 20 env repositories", 20, env.getRepositories().size());
+        Assert.assertEquals("There should be 4 env groups", 4, env.getGroups().size());
+
+        Assert.assertEquals("There are 8 ungrouped projects", 8, helper.getAllUngrouped().size());
+        Assert.assertEquals("There are 40 projects", 40, helper.getAllProjects().size());
+        Assert.assertEquals("There are 4 projects", 4, helper.getRepositories().size());
+        Assert.assertEquals("There are 4 groups", 4, helper.getGroups().size());
+
+        // project
+        Project p = new Project();
+        p.setDescription("some random name not in any group");
+
+        // group
+        Group g = new Group();
+        g.setName("some random name of a group");
+
+        // repository
+        Project repo = new Project();
+        repo.setDescription("some random name not in any other group");
+
+        RepositoryInfo info = new RepoRepository();
+        info.setParent(repo.getDescription());
+        info.setDirectoryName(null);
+
+        List<RepositoryInfo> infos = getRepositoriesMap().get(repo);
+        if (infos == null) {
+            infos = new ArrayList<>();
+        }
+        infos.add(info);
+
+        getRepositoriesMap().put(repo, infos);
+        env.getRepositories().add(info);
+        env.getProjects().add(p);
+        env.getProjects().add(repo);
+        env.getGroups().add(g);
+        env.register();
+
+        Assert.assertEquals(42, env.getProjects().size());
+        Assert.assertEquals(21, env.getRepositories().size());
+        Assert.assertEquals(5, env.getGroups().size());
+
+        // simulate another request
+        cfg = PageConfig.get(getRequest());
+        helper = cfg.getProjectHelper();
+
+        // check for updates
+        Assert.assertEquals("The helper state should refresh", 10, helper.getAllUngrouped().size());
+        Assert.assertEquals("The helper state should refresh", 42, helper.getAllProjects().size());
+        Assert.assertEquals("The helper state should refresh", 5, helper.getRepositories().size());
+        Assert.assertEquals("The helper state should refresh", 5, helper.getGroups().size());
+
+        setRepositoriesMap(oldMap);
+        env.setProjects(oldProjects);
+        env.setRepositories(oldRepositories);
+        env.setGroups(oldGroups);
+        env.register();
     }
 
     /**

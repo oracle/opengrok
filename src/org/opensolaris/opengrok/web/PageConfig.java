@@ -139,7 +139,15 @@ public final class PageConfig {
      */
     public Object getRequestAttribute(String attr) {
         return this.req.getAttribute(attr);
-    }    
+    }  
+    
+    /**
+     * Removes an attribute from the current request
+     * @param string the attribute 
+     */
+    public void removeAttribute(String string) {
+        req.removeAttribute(string);
+    }
     
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
@@ -1264,13 +1272,13 @@ public final class PageConfig {
         if (cfg == null) {
             return;
         }
+        ProjectHelper.cleanup(cfg);
         sr.removeAttribute(ATTR_NAME);
         cfg.env = null;
         cfg.req = null;
         if (cfg.eftarReader != null) {
             cfg.eftarReader.close();
         }
-        ProjectHelper.cleanup();
     }
     
     /**
