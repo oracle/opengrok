@@ -461,7 +461,7 @@ input.submit { /* start search button */
     left: 0;
     right: 0;
     overflow: auto;
-    padding: 1ex; /* should be the same as body's margin */
+    padding: 0 1ex 1ex 1ex; /* should be the same as body's margin */
 }
 
 
@@ -1067,7 +1067,7 @@ div#scope {
     display: none;
     min-height: 1em;
     text-align: left;
-    background-color: #dddddd;
+    background-color: #e4e4c8;
     padding: 0.5em 0.5em 0.5em 6.5ex;
     font-family: monospace;
     font-weight: bold;

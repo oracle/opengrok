@@ -831,7 +831,10 @@ function domReadyMast() {
         if (h && h !== "") {
             window.location.hash = h;
         } else {
-            $('#content').focus();
+            $("#content")
+                    .attr("tabindex", 1)
+                    .focus()
+                    .css('outline', 'none')
         }
     }
     if (document.annotate) {
@@ -1255,9 +1258,8 @@ function scope_on_scroll() {
     var cnt = document.getElementById("content");
     var y = cnt.getBoundingClientRect().top + 2;
     var $scope_cnt_el = $('#scope_content');
-
     var c = document.elementFromPoint(15, y + 1);
-    $scope_cnt_el.empty();
+
     if ($(c).is('.l, .hl')) {
         var $par = $(c).closest('.scope-body, .scope-head')
 

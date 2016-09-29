@@ -512,7 +512,7 @@ button.help {
     left: 0;
     right: 0;
     overflow: auto;
-    padding: 1ex; /* should be the same as body's margin */
+    padding: 0 1ex 1ex 1ex; /* should be the same as body's margin */
 }
 
 
