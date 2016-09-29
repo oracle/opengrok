@@ -22,7 +22,9 @@ Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="java.util.TreeSet"%>
+--%><%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
+<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
+<%@page import="java.util.TreeSet"%>
 <%@page import="java.util.Set"%>
 <%@page import="java.util.LinkedList"%>
 <%@page import="org.opensolaris.opengrok.configuration.Group"%>
@@ -166,7 +168,7 @@ org.opensolaris.opengrok.web.Util"
 --%>
 </table>
 </div><%
-
+SortedSet<Message> messages;
     if (projects.size() != 0) {
 %>
 <div id="ptbl">
@@ -194,6 +196,10 @@ org.opensolaris.opengrok.web.Util"
                     if (pRequested.contains(p.getDescription())) {
                         %> selected="selected"<%
                     }
+                    messages = cfg.getEnv().getMessages(p.getDescription());
+                    if (!messages.isEmpty()) {
+                    %> data-messages='<%= Util.messagesToJson(messages).toJSONString()%>' <%
+                        }
                     %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
                 }
                 %></optgroup><%
@@ -207,6 +213,10 @@ org.opensolaris.opengrok.web.Util"
         %><option value="<%= p.getDescription() %>"<%
             if (pRequested.contains(p.getDescription())) {
                 %> selected="selected"<%
+            }
+            messages = cfg.getEnv().getMessages(p.getDescription());
+            if(!messages.isEmpty()) {
+                %> data-messages='<%= Util.messagesToJson(messages).toJSONString() %>' <%
             }
             %>><%= Util.formQuoteEscape(p.getDescription()) %></option><%
         }

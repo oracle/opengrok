@@ -92,6 +92,41 @@ Each of these directories was created with 'cvs checkout' command (with
 appropriate arguments to get given branch) and will be treated by OpenGrok
 as a project.
 
+3.2 Messages
+------------
+
+Deployed OpenGrok can receive couple of messages through the active socket which
+usually listens for the main configuration file. These are used in the web
+application and displayed to the users. One can easily notify users about some
+important events, for example that the reindex is being in progress and that
+the searched information can be inconsistent.
+
+The OpenGrok comes with a tool which allows you to send these messages without
+any problem. It is called Messages and it is located under the tools directory.
+See the file for usage and more information.
+
+3.2.1 Tags
+----------
+
+Any message can use tags which makes it more specific for the application.
+Messages which tag match some OpenGrok project are considered project specific
+and the information contained in them are displayed only for the specific projects.
+
+There is a key tag "main" which is exclusive for displaying
+messages on the OpenGrok landing page - like a common information.
+
+3.2.2 Types
+-----------
+
+Currently supported message types:
+1) NormalMessage (normal)
+    This message is designed to display some information in the web application.
+    Use tags to target a specific project.
+2) AbortMessage (abort)
+    This message can delete some already published information in
+    the web application.
+    Use tags to restrict the deletion only to specific projects.
+
 
 4. OpenGrok install
 -----------------

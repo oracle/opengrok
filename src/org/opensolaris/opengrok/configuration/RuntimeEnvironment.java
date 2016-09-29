@@ -50,8 +50,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -59,36 +65,29 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
-import org.opensolaris.opengrok.configuration.ThreadpoolSearcherFactory;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiReader;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.SearcherFactory;
-import org.apache.lucene.search.SearcherManager;
-import org.apache.lucene.store.AlreadyClosedException;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.opensolaris.opengrok.index.IndexDatabase;
-
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -108,6 +107,17 @@ public final class RuntimeEnvironment {
     private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
     private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
+    
+    private static final String MESSAGES_MAIN_PAGE_TAG = "main";
+    /*
+    initial capacity - default 16
+    initial load factor - default 0.75f
+    initial concurrency level - number of concurrently updating threads (default 16)
+        - just two (the timer, configuration listener) so set it to small value
+    */
+    private final ConcurrentMap<String, SortedSet<Message>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
+    private static final int MESSAGE_LIMIT = 500;
+    private int messagesInTheSystem = 0;
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -1210,6 +1220,167 @@ public final class RuntimeEnvironment {
     public Configuration getConfiguration() {
         return this.threadConfig.get();
     }
+
+    private Timer expirationTimer;
+
+    private static SortedSet<Message> emptyMessageSet(SortedSet<Message> toRet) {
+        return toRet == null ? new TreeSet<>() : toRet;
+    }
+
+    /**
+     * Get the default set of messages for the main tag.
+     *
+     * @return set of messages
+     */
+    public SortedSet<Message> getMessages() {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return emptyMessageSet(tagMessages.get(MESSAGES_MAIN_PAGE_TAG));
+    }
+
+    /**
+     * Get the set of messages for the arbitrary tag
+     *
+     * @param tag the message tag
+     * @return set of messages
+     */
+    public SortedSet<Message> getMessages(String tag) {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return emptyMessageSet(tagMessages.get(tag));
+    }
+
+    /**
+     * Add a message to the application Also schedules a expirationTimer to
+     * remove this message after its expiration.
+     *
+     * @param m the message
+     */
+    public void addMessage(Message m) {
+        if (!canAcceptMessage(m)) {
+            return;
+        }
+
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+
+        boolean added = false;
+        for (String tag : m.getTags()) {
+            if (!tagMessages.containsKey(tag)) {
+                tagMessages.put(tag, new ConcurrentSkipListSet<>());
+            }
+            if (tagMessages.get(tag).add(m)) {
+                messagesInTheSystem++;
+                added = true;
+            }
+        }
+
+        if (added) {
+            if (expirationTimer != null) {
+                expirationTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        expireMessages();
+                    }
+                }, new Date(m.getExpiration().getTime() + 10));
+            }
+        }
+    }
+
+    /**
+     * Immediately remove all messages in the application.
+     */
+    public void removeAllMessages() {
+        tagMessages.clear();
+        messagesInTheSystem = 0;
+    }
+
+    /**
+     * Remove all messages containing at least on of the tags.
+     *
+     * @param tags set of tags
+     */
+    public void removeAnyMessage(Set<String> tags) {
+        removeAnyMessage(new Predicate<Message>() {
+            @Override
+            public boolean test(Message t) {
+                return t.hasAny(tags);
+            }
+        });
+    }
+
+    /**
+     * Remove messages which have expired.
+     */
+    private void expireMessages() {
+        removeAnyMessage(new Predicate<Message>() {
+            @Override
+            public boolean test(Message t) {
+                return t.isExpired();
+            }
+        });
+    }
+
+    /**
+     * Generic function to remove any message according to the result of the
+     * predicate.
+     *
+     * @param predicate the testing predicate
+     */
+    private void removeAnyMessage(Predicate<Message> predicate) {
+        int size;
+        for (Map.Entry<String, SortedSet<Message>> set : tagMessages.entrySet()) {
+            size = set.getValue().size();
+            set.getValue().removeIf(predicate);
+            messagesInTheSystem -= size - set.getValue().size();
+        }
+
+        tagMessages.entrySet().removeIf(new Predicate<Map.Entry<String, SortedSet<Message>>>() {
+            @Override
+            public boolean test(Map.Entry<String, SortedSet<Message>> t) {
+                return t.getValue().isEmpty();
+            }
+        });
+    }
+
+    /**
+     * Test if the application can receive this messages.
+     *
+     * @param m the message
+     * @return true if it can
+     */
+    public boolean canAcceptMessage(Message m) {
+        return messagesInTheSystem < getMessageLimit() && !m.isExpired();
+    }
+
+    /**
+     * Get the maximum number of messages in the application
+     *
+     * @return the number
+     */
+    public int getMessageLimit() {
+        return MESSAGE_LIMIT;
+    }
+
+    /**
+     * Return number of messages present in the hash map.
+     *
+     * DISCLAIMER: This is not the real number of messages in the application
+     * because the same message is stored for all of the tags in the map. Also
+     * one can bypass the counter by not calling {@link #addMessage(Message)}
+     *
+     * @return number of messages
+     */
+    public int getMessagesInTheSystem() {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return messagesInTheSystem;
+    }
+
     private ServerSocket configServerSocket;
 
     /**
@@ -1239,7 +1410,7 @@ public final class RuntimeEnvironment {
             configurationListenerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 13);
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 15);
                     while (!sock.isClosed()) {
                         try (Socket s = sock.accept();
                                 BufferedInputStream in = new BufferedInputStream(s.getInputStream())) {
@@ -1265,7 +1436,7 @@ public final class RuntimeEnvironment {
                                 ((Configuration) obj).refreshDateForLastIndexRun();
                                 setConfiguration((Configuration) obj);
                                 LOGGER.log(Level.INFO, "Configuration updated: {0}",
-                                    configuration.getSourceRoot());
+                                        configuration.getSourceRoot());
 
                                 // We are assuming that each update of configuration
                                 // means reindex. If dedicated thread is introduced
@@ -1274,6 +1445,18 @@ public final class RuntimeEnvironment {
                                 // be moved there.
                                 refreshSearcherManagerMap();
                                 maybeRefreshIndexSearchers();
+                            } else if (obj instanceof Message) {
+                                Message m = ((Message) obj);
+                                if (canAcceptMessage(m)) {
+                                    m.apply(RuntimeEnvironment.getInstance());
+                                    LOGGER.log(Level.FINER, "Message received: {0}",
+                                            m.getTags());
+                                    LOGGER.log(Level.FINER, "Messages in the system: {0}",
+                                            getMessagesInTheSystem());
+                                } else {
+                                    LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system",
+                                            m.getTags());
+                                }
                             }
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
@@ -1386,6 +1569,24 @@ public final class RuntimeEnvironment {
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.INFO, "Cannot join WatchDogService thread: ", ex);
             }
+        }
+    }
+
+    public void startExpirationTimer() {
+        if (expirationTimer != null) {
+            stopExpirationTimer();
+        }
+        expirationTimer = new Timer("expirationThread");
+        expireMessages();
+    }
+
+    /**
+     * Stops the watch dog service.
+     */
+    public void stopExpirationTimer() {
+        if (expirationTimer != null) {
+            expirationTimer.cancel();
+            expirationTimer = null;
         }
     }
 

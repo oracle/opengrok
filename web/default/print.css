@@ -519,6 +519,10 @@ a.xsr    { /* subroutine */         color: #00f; font-weight: bold;             
 }
 /* ############### end of footer ############## */
 
+.important-note {
+    display: none;
+}
+
 /* *** scopes *** */
 
 span.scope-head {

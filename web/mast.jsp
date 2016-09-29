@@ -25,7 +25,11 @@ Portions Copyright 2011 Jens Elkner.
 
 After include you are here: /body/div#page/div#content/
 
---%><%@ page session="false" errorPage="error.jsp" import="
+--%>
+<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
+<%@page import="java.util.SortedSet"%>
+<%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
+<%@ page session="false" errorPage="error.jsp" import="
 java.io.File,
 java.io.IOException,
 
@@ -98,9 +102,21 @@ include file="pageheader.jspf"
     %></div>
 </div>
 <div id="Masthead">
-    <tt><a href="<%= context + Prefix.XREF_P %>/">xref</a>: <%= Util
-        .breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir())
-    %></tt>
+    <kbd>
+    <%
+        SortedSet<Message> messages = RuntimeEnvironment.getInstance().getMessages(cfg.getProject().getDescription());
+    %>
+    <% if(!messages.isEmpty()) { %>
+    <span class="important-note">
+    <% } %>
+        <a href="<%= context + Prefix.XREF_P %>/">xref</a>: <%= Util
+        .breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+    <% if(!messages.isEmpty()) { %>
+    </span>
+    <span class="important-note important-note-rounded"
+          data-messages='<%= Util.messagesToJson(messages).toJSONString() %>'>!</span>
+    <% } %>
+</kbd>
 </div>
 <div id="bar">
     <ul>
@@ -171,7 +187,11 @@ include file="pageheader.jspf"
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
 </div>
-<div id="scope"><span id="scope_content">&nbsp;</span></div>
+<% if(proj != null) {
+    %><div style="display: none"><%
+    Util.printMessages(out, cfg.getMessages(proj.getDescription()), true);
+    %></div><%
+} %>    <div id="scope"><span id="scope_content">&nbsp;</span></div>
         </form>
     </div>
 <div id="content">

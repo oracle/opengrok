@@ -57,6 +57,7 @@ import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -1288,6 +1289,14 @@ public final class PageConfig {
     public boolean isAllowed(Group g) {
         return this.authFramework.isAllowed(this.req, g);
     }
-    
 
+    
+    public SortedSet<Message> getMessages() {
+        return env.getMessages();
+    }
+    
+    public SortedSet<Message> getMessages(String tag) {
+        return env.getMessages(tag);
+    }
+    
 }

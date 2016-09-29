@@ -37,6 +37,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -50,6 +51,9 @@ import org.apache.lucene.search.ScoreDoc;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.Scopes;
+import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.Prefix;
@@ -146,6 +150,7 @@ public final class Results {
     public static void prettyPrint(Writer out, SearchHelper sh, int start,
             int end)
             throws HistoryException, IOException, ClassNotFoundException {
+        Project p;
         String ctxE = Util.URIEncodePath(sh.contextPath);
         String xrefPrefix = sh.contextPath + Prefix.XREF_P;
         String morePrefix = sh.contextPath + Prefix.MORE_P;
@@ -165,6 +170,14 @@ public final class Results {
                 out.write(" - <i>");
                 out.write(sh.desc.get(parent)); // htmlize ???
                 out.write("</i>");
+            }
+            SortedSet<Message> messages;
+            if ((p = Project.getProject(parent)) != null
+                    && (messages = RuntimeEnvironment.getInstance().getMessages(p.getDescription())).size() > 0) {
+                out.write(" <a ");
+                out.write("href=\"" + xrefPrefix + "/" + p.getDescription() + "\">");
+                out.write("<span class=\"important-note important-note-rounded\" data-messages='" + Util.messagesToJson(messages) + "'>!</span>");
+                out.write("</a>");
             }
             out.write("</td></tr>");
             for (Document doc : entry.getValue()) {
