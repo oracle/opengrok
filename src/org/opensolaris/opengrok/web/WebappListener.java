@@ -134,6 +134,10 @@ public final class WebappListener
     @Override
     public void requestDestroyed(ServletRequestEvent e) {
         PageConfig.cleanup(e.getServletRequest());
+        SearchHelper sh = (SearchHelper) e.getServletRequest().getAttribute("SearchHelper");
+        if (sh != null) {
+            sh.destroy();
+        }
     }
 
     /**
