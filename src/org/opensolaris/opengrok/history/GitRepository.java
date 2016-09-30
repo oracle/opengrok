@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -30,16 +30,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.text.DateFormat;
+import java.text.FieldPosition;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
@@ -75,6 +80,8 @@ public class GitRepository extends Repository {
     private static final String ABBREV_LOG = "--abbrev=" + CSET_LEN;
     private static final String ABBREV_BLAME = "--abbrev=" + (CSET_LEN - 1);
 
+    private static final String[] backupDatePatterns = new String[]{"d MMM yyyy HH:mm:ss Z"};
+
     /**
      * Pattern used to extract author/revision from git blame.
      */
@@ -83,7 +90,7 @@ public class GitRepository extends Repository {
 
     public GitRepository() {
         type = "git";
-        datePattern = "EEE MMM dd hh:mm:ss yyyy ZZZZ";
+        datePattern = "EE, d MMM yyyy HH:mm:ss Z";
     }
 
     /**
@@ -157,6 +164,7 @@ public class GitRepository extends Repository {
         cmd.add(ABBREV_LOG);
         cmd.add("--name-only");
         cmd.add("--pretty=fuller");
+        cmd.add("--date=rfc");
 
         if (sinceRevision != null) {
             cmd.add(sinceRevision + "..");
@@ -167,6 +175,54 @@ public class GitRepository extends Repository {
         }
 
         return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
+    }
+
+    /**
+     * Formatter for rfc 2822 which allows (as rfc) the optional day at the
+     * beginning.
+     *
+     * @link https://tools.ietf.org/html/rfc2822#page-14
+     *
+     * @return DateFormat which accepts the optional day format
+     */
+    @Override
+    public DateFormat getDateFormat() {
+        return new DateFormat() {
+
+            private DateFormat formatter = new SimpleDateFormat(datePattern, Locale.getDefault());
+            private DateFormat[] backupFormatters = new DateFormat[backupDatePatterns.length];
+
+            {
+                for (int i = 0; i < backupDatePatterns.length; i++) {
+                    backupFormatters[i] = new SimpleDateFormat(backupDatePatterns[i], Locale.getDefault());
+                }
+            }
+
+            @Override
+            public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
+                return formatter.format(date, toAppendTo, fieldPosition);
+            }
+
+            @Override
+            public Date parse(String source) throws ParseException {
+                try {
+                    return formatter.parse(source);
+                } catch (ParseException ex) {
+                    for (int i = 0; i < backupFormatters.length; i++) {
+                        try {
+                            return backupFormatters[i].parse(source);
+                        } catch (ParseException ex1) {
+                        }
+                    }
+                    throw ex;
+                }
+            }
+
+            @Override
+            public Date parse(String source, ParsePosition pos) {
+                return formatter.parse(source, pos);
+            }
+        };
     }
 
     /**
