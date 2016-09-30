@@ -130,7 +130,7 @@ public final class Results {
      * <li>{@link SearchHelper#searcher}</li> <li>{@link SearchHelper#hits}</li>
      * <li>{@link SearchHelper#historyContext} (ignored if {@code null})</li>
      * <li>{@link SearchHelper#sourceContext} (ignored if {@code null})</li>
-     * <li>{@link SearchHelper#summerizer} (if sourceContext is not
+     * <li>{@link SearchHelper#summarizer} (if sourceContext is not
      * {@code null})</li> <li>{@link SearchHelper#compressed} (if sourceContext
      * is not {@code null})</li> <li>{@link SearchHelper#sourceRoot} (if
      * sourceContext or historyContext is not {@code null})</li> </ul>
@@ -207,15 +207,15 @@ public final class Results {
                     } else {
                         scopes = new Scopes();
                     }
-                    if (Genre.XREFABLE == genre && sh.summerizer != null) {
+                    if (Genre.XREFABLE == genre && sh.summarizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
                         // FIXME use Highlighter from lucene contrib here,
                         // instead of summarizer, we'd also get rid of
                         // apache lucene in whole source ...
-                        out.write(sh.summerizer.getSummary(xtags).toString());
-                    } else if (Genre.HTML == genre && sh.summerizer != null) {
+                        out.write(sh.summarizer.getSummary(xtags).toString());
+                    } else if (Genre.HTML == genre && sh.summarizer != null) {
                         String htags = getTags(sh.sourceRoot, rpath, false);
-                        out.write(sh.summerizer.getSummary(htags).toString());
+                        out.write(sh.summarizer.getSummary(htags).toString());
                     } else {
                         FileReader r = genre == Genre.PLAIN
                                 ? new FileReader(new File(sh.sourceRoot, rpath))

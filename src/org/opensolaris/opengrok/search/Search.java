@@ -49,8 +49,8 @@ final class Search {
 
     private SearchEngine engine;
     final List<Hit> results = new ArrayList<>();
-    int totalResults =0;
-    int nhits=0;
+    int totalResults = 0;
+    int nhits = 0;
 
     @SuppressWarnings({"PMD.SwitchStmtsShouldHaveDefault"})
     protected boolean parseCmdLine(String[] argv) {
@@ -119,6 +119,7 @@ final class Search {
             engine.results(0, nhits, results);
         }
         totalResults = engine.totalHits;
+        engine.destroy();
 
         return true;
     }

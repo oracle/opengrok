@@ -161,6 +161,7 @@ public class SearchEngineTest {
         }
 
         List<Hit> hits = new ArrayList<Hit>();
+
         SearchEngine instance = new SearchEngine();
         instance.setHistory("\"Add lint make target and fix lint warnings\"");
         int noHits =  instance.search();
@@ -168,6 +169,7 @@ public class SearchEngineTest {
             instance.results(0, noHits, hits);
             assertEquals(noHits, hits.size());
         }
+        instance.destroy();
 
         instance = new SearchEngine();
         instance.setSymbol("printf");
@@ -180,10 +182,10 @@ public class SearchEngineTest {
             assertEquals("main.c", hit.getFilename());
             assertEquals(1, 1);
         }
-
         instance.setFile("main.c OR Makefile");
         noHits = instance.search();
         assertEquals(8, noHits);
+        instance.destroy();
 
         instance = new SearchEngine();
         instance.setFreetext("arguments");
@@ -198,6 +200,7 @@ public class SearchEngineTest {
             }
         }
         assertEquals(8, noHits);
+        instance.destroy();
 
         instance = new SearchEngine();
         instance.setDefinition("main");
@@ -212,6 +215,7 @@ public class SearchEngineTest {
             }
         }
         assertEquals(8, noHits);
+        instance.destroy();
 
         // wildcards and case sensitivity of definition search
         instance = new SearchEngine();
@@ -224,6 +228,7 @@ public class SearchEngineTest {
         instance.setDefinition("MaI*"); // should not match Main
         instance.search();
         assertEquals(0, instance.search());
+        instance.destroy();
 
         // wildcards and case sensitivity of symbol search
         instance = new SearchEngine();
@@ -234,29 +239,36 @@ public class SearchEngineTest {
         instance.setSymbol("MaI*"); // should not match Main
         instance.search();
         assertEquals(0, instance.search());
+        instance.destroy();
 
         // wildcards and case insensitivity of freetext search
         instance = new SearchEngine();
         instance.setFreetext("MaI*"); // should match both Main and main
         instance.setFile("\"Main.java\" OR \"main.c\"");
         assertEquals(10, instance.search());
+        instance.destroy();
 
         // file name search is case insensitive
         instance = new SearchEngine();
         instance.setFile("JaVa"); // should match java
         assertEquals(8, instance.search());
+        instance.destroy();
         
         //test eol and eof        
         instance = new SearchEngine();
         instance.setFreetext("makeW"); 
-        assertEquals(1, instance.search());        
+        assertEquals(1, instance.search());
+        instance.destroy();
+
         instance = new SearchEngine();
         instance.setFreetext("WeirdEOL");
         assertEquals(1, instance.search());
+        instance.destroy();
         
         //test bcel jar parser
         instance = new SearchEngine();
         instance.setFreetext("InstConstraintVisitor");
-        assertEquals(1, instance.search());        
+        assertEquals(1, instance.search());
+        instance.destroy();
     }
 }

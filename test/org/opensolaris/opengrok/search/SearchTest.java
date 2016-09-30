@@ -42,7 +42,7 @@ import org.opensolaris.opengrok.index.IndexerTest;
 import org.opensolaris.opengrok.util.TestRepository;
 
 /**
- * Basic testing of the Search class
+ * Basic testing of the Search class, i.e. the command line utility.
  *
  * @author Trond Norbye
  */
@@ -139,7 +139,9 @@ public class SearchTest {
         if (skip) {
             return;
         }
+
         Search instance = new Search();
+
         assertFalse(instance.search());
         assertTrue(instance.parseCmdLine(new String[]{"-p", "Makefile"}));
         assertTrue(instance.search());

@@ -18,8 +18,8 @@
  */
 
  /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
- */
+  * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+  */
 package org.opensolaris.opengrok.configuration;
 
 import java.beans.XMLDecoder;
@@ -67,11 +67,26 @@ import org.opensolaris.opengrok.index.IgnoredNames;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.configuration.ThreadpoolSearcherFactory;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.SearcherFactory;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.opensolaris.opengrok.index.IndexDatabase;
 
 
 /**
@@ -91,6 +106,7 @@ public final class RuntimeEnvironment {
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
     private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
+    private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -230,6 +246,14 @@ public final class RuntimeEnvironment {
 
     public void setCommandTimeout(int timeout) {
         threadConfig.get().setCommandTimeout(timeout);
+    }
+
+    public int getIndexRefreshPeriod() {
+        return threadConfig.get().getIndexRefreshPeriod();
+    }
+
+    public void setIndexRefreshPeriod(int seconds) {
+        threadConfig.get().setIndexRefreshPeriod(seconds);
     }
 
     /**
@@ -1184,6 +1208,8 @@ public final class RuntimeEnvironment {
         IOUtils.close(configServerSocket);
     }
 
+    private Thread configurationListenerThread;
+
     /**
      * Start a thread to listen on a socket to receive new configurations to
      * use.
@@ -1199,7 +1225,7 @@ public final class RuntimeEnvironment {
             configServerSocket.bind(endpoint);
             ret = true;
             final ServerSocket sock = configServerSocket;
-            Thread t = new Thread(new Runnable() {
+            configurationListenerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 13);
@@ -1228,7 +1254,15 @@ public final class RuntimeEnvironment {
                                 ((Configuration) obj).refreshDateForLastIndexRun();
                                 setConfiguration((Configuration) obj);
                                 LOGGER.log(Level.INFO, "Configuration updated: {0}",
-                                        configuration.getSourceRoot());
+                                    configuration.getSourceRoot());
+
+                                // We are assuming that each update of configuration
+                                // means reindex. If dedicated thread is introduced
+                                // in the future solely for the purpose of getting
+                                // the event of reindex, the 2 calls below should
+                                // be moved there.
+                                refreshSearcherManagerMap();
+                                maybeRefreshIndexSearchers();
                             }
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
@@ -1237,12 +1271,12 @@ public final class RuntimeEnvironment {
                         }
                     }
                 }
-            }, "conigurationListener");
-            t.start();
+            }, "configurationListener");
+            configurationListenerThread.start();
         } catch (UnknownHostException ex) {
-            LOGGER.log(Level.FINE, "Problem resolving sender: ", ex);
+            LOGGER.log(Level.WARNING, "Problem resolving sender: ", ex);
         } catch (IOException ex) {
-            LOGGER.log(Level.FINE, "I/O error when waiting for config: ", ex);
+            LOGGER.log(Level.WARNING, "I/O error when waiting for config: ", ex);
         }
 
         if (!ret && configServerSocket != null) {
@@ -1341,6 +1375,202 @@ public final class RuntimeEnvironment {
             } catch (InterruptedException ex) {
                 LOGGER.log(Level.INFO, "Cannot join WatchDogService thread: ", ex);
             }
+        }
+    }
+
+    private Thread indexReopenThread;
+
+    public void maybeRefreshIndexSearchers() {
+        for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
+            try {
+                entry.getValue().maybeRefresh();
+            } catch (AlreadyClosedException ex) {
+                // This is a case of removed project.
+                // See refreshSearcherManagerMap() for details.
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
+            }
+        }
+    }
+
+    /**
+     * Call maybeRefresh() on each SearcherManager object from dedicated thread
+     * periodically.
+     * If the corresponding index has changed in the meantime, it will be safely
+     * reopened, i.e. without impacting existing IndexSearcher/IndexReader
+     * objects, thus not disrupting searches in progress.
+     */
+    public void startIndexReopenThread() {
+        indexReopenThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        maybeRefreshIndexSearchers();
+                        Thread.sleep(getIndexRefreshPeriod() * 1000);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }, "indexReopenThread");
+
+        indexReopenThread.start();
+    }
+
+    public void stopIndexReopenThread() {
+        if (indexReopenThread != null) {
+            indexReopenThread.interrupt();
+            try {
+                indexReopenThread.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, "Cannot join indexReopen thread: ", ex);
+            }
+        }
+    }
+
+    /**
+     * Get IndexSearcher for given project.
+     * Each IndexSearcher is born from a SearcherManager object. There is
+     * one SearcherManager for every project.
+     * This schema makes it possible to reuse IndexSearcher/IndexReader objects
+     * so the heavy lifting (esp. system calls) performed in FSDirectory
+     * and DirectoryReader happens only once for a project.
+     * The caller has to make sure that the IndexSearcher is returned back
+     * to the SearcherManager. This is done with returnIndexSearcher().
+     * The return of the IndexSearcher should happen only after the search
+     * result data are read fully.
+     *
+     * @param proj project
+     * @return SearcherManager for given project
+     */
+    public IndexSearcher getIndexSearcher(String proj) throws IOException {
+        SearcherManager mgr = searcherManagerMap.get(proj);
+        IndexSearcher searcher = null;
+        if (mgr == null) {
+            File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
+
+            try {
+                Directory dir = FSDirectory.open(new File(indexDir, proj).toPath());
+                mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
+                searcherManagerMap.put(proj, mgr);
+                searcher = mgr.acquire();
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot construct IndexSearcher for project " + proj, ex);
+            }
+        } else {
+            searcher = mgr.acquire();
+        }
+
+        return searcher;
+    }
+
+    /**
+     * Return IndexSearcher object back to corresponding SearcherManager.
+     * @param proj project name which belongs to the searcher
+     * @param searcher searcher object to release
+     */
+    public void returnIndexSearcher(String proj, IndexSearcher searcher) {
+        SearcherManager mgr = searcherManagerMap.get(proj);
+        if (mgr != null) {
+            try {
+                mgr.release(searcher);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "cannot release IndexSearcher for project " + proj, ex);
+            }
+        } else {
+            LOGGER.log(Level.SEVERE, "cannot find SearcherManager for project " + proj);
+        }
+    }
+
+    /**
+     * After new configuration is put into place, the set of projects might
+     * change so we go through the SearcherManager objects and close those where
+     * the corresponding project is no longer present.
+     */
+    private void refreshSearcherManagerMap() {
+        for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
+            try {
+                // If a project is gone, close the corresponding SearcherManager
+                // so that it cannot produce new IndexSearcher objects.
+                for (Project proj : getProjects()) {
+                    if (entry.getKey().compareTo(proj.getDescription()) == 0) {
+                        // XXX Ideally we would like to remove the entry from the map here.
+                        // However, if some thread acquired an IndexSearcher and then config change happened
+                        // and the corresponding searcherManager was removed from the map,
+                        // returnIndexSearcher() will have no place to return the indexSearcher to.
+                        // This would likely lead to leaks since the corresponding IndexReader
+                        // will remain open.
+                        // So, we cannot remove searcherManager from the map until all threads
+                        // are done with it. We could handle this by inserting the pair into
+                        // special to-be-removed list and then check reference count
+                        // of corresponding IndexReader object in returnIndexSearcher().
+                        // If 0, the SearcherManager can be safely removed from the searcherManagerMap.
+                        // For the time being, let the map to grow unbounded to keep things simple.
+                        entry.getValue().close();
+                    }
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot close IndexReader for project" + entry.getKey(), ex);
+            }
+        }
+    }
+
+    /**
+     * Return collection of IndexReader objects as MultiReader object
+     * for given list of projects.
+     * The caller is responsible for releasing the IndexSearcher objects
+     * so we add them to the map.
+     *
+     * @param projects list of projects
+     * @param map each IndexSearcher produced will be put into this map
+     * @return MultiReader for the projects
+     */
+    public MultiReader getMultiReader(SortedSet<String> projects, Map<String, IndexSearcher> map) {
+        IndexReader[] subreaders = new IndexReader[projects.size()];
+        int ii = 0;
+
+        // TODO might need to rewrite to Project instead of
+        // String , need changes in projects.jspf too
+        for (String proj : projects) {
+            try {
+                IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                subreaders[ii++] = searcher.getIndexReader();
+                map.put(proj, searcher);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot get IndexReader for project" + proj, ex);
+            }
+        }
+        MultiReader multiReader = null;
+        try {
+            multiReader = new MultiReader(subreaders, true);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE,
+                "cannot construct MultiReader for set of projects", ex);
+        }
+        return multiReader;
+    }
+
+    /**
+     * Helper method for the consumers of getMultiReader() to be called when
+     * destroying search context. This will make sure all indexSearcher
+     * objects are properly released.
+     *
+     * @param map map of project to indexSearcher
+     */
+    public void freeIndexSearcherMap(Map<String, IndexSearcher> map) {
+        List<String> toRemove = new ArrayList<>();
+
+        for (Map.Entry<String, IndexSearcher> entry : map.entrySet()) {
+            RuntimeEnvironment.getInstance().returnIndexSearcher(entry.getKey(), entry.getValue());
+            toRemove.add(entry.getKey());
+        }
+
+        for (String key : toRemove) {
+            map.remove(key);
         }
     }
 }

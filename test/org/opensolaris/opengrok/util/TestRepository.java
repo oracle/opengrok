@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
@@ -88,13 +89,19 @@ public class TestRepository {
         return dataRoot.getAbsolutePath();
     }
 
-    private final static String dummyS = "dummy";
+    private final static String dummyS = "dummy.txt";
 
-    public void addDummyFile(String project) throws IOException {
+    public File addDummyFile(String project) throws IOException {
         File dummy = new File(getSourceRoot() + File.separator + project + File.separator + dummyS);
         if (!dummy.exists()) {
             dummy.createNewFile();
         }
+        return dummy;
+    }
+
+    public void addDummyFile(String project, String contents) throws IOException {
+        File dummy = addDummyFile(project);
+        Files.write(dummy.toPath(), contents.getBytes());
     }
 
     public void removeDummyFile(String project) {
