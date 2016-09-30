@@ -18,16 +18,19 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -156,4 +159,62 @@ public class SubversionHistoryParserTest {
         assertTrue(e3.getMessage().contains("line3"));
     }
 
+    @Test
+    public void testDateFormats() {
+        String[][] dates = new String[][]{
+            new String[]{"2007-09-11T11:48:56.123456Z", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", null},
+            new String[]{"2007-09-11T11:48:56.000000Z", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", null},
+            new String[]{"2007-09-11T11:48:56.Z", "yyyy-MM-dd'T'HH:mm:ss.'Z'", null},
+            new String[]{"2007-09-11 11:48:56Z", null, "throws exception"},
+            new String[]{"2007-09-11T11:48:56", null, "throws exception"},
+            new String[]{"2007-09-11T11:48:56.123456", null, "throws exception"},
+            new String[]{"2007-09-11T11:48:56.000000", null, "throws exception"},
+        };
+
+        for (int i = 0; i < dates.length; i++) {
+            String revId = "12345";
+            String author = "username1";
+            String date = dates[i][0];
+            String format = dates[i][1];
+            boolean expectedException = dates[i][2] != null;
+            String file = "trunk/project/filename.ext";
+            try {
+                String output = "<?xml version=\"1.0\"?>\n"
+                        + "<log>\n"
+                        + "<logentry\n"
+                        + "   revision=\"" + revId + "\">\n"
+                        + "<author>" + author + "</author>\n"
+                        + "<date>" + date + "</date>\n"
+                        + "<paths>\n"
+                        + "<path\n"
+                        + "   action=\"M\">" + file + "</path>\n"
+                        + "</paths>\n"
+                        + "<msg>* " + file + "\n"
+                        + "  Description.\n"
+                        + "</msg>\n"
+                        + "</logentry>\n"
+                        + "</log>";
+                History result = instance.parse(output);
+                assertNotNull(result);
+                assertNotNull(result.getHistoryEntries());
+                assertEquals(1, result.getHistoryEntries().size());
+
+                HistoryEntry e = result.getHistoryEntries().get(0);
+                assertEquals(revId, e.getRevision());
+                assertEquals(author, e.getAuthor());
+
+                if (expectedException) {
+                    assertNull(e.getDate());
+                } else {
+                    assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
+                }
+                assertEquals(1, e.getFiles().size());
+                assertEquals("/" + file, e.getFiles().first());
+            } catch (IOException ex) {
+                fail("Should not throw an IO exception");
+            } catch (ParseException ex) {
+                fail("Parsing the date " + date + " should not throw a parse exception");
+            }
+        }
+    }
 }
