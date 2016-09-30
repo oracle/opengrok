@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -29,10 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
@@ -200,7 +198,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @throws IOException if we fail to parse the buffer
      */
     History parse(String buffer) throws IOException {
-        handler = new Handler("/", "", 0, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()));
+        handler = new Handler("/", "", 0, new SubversionRepository().getDateFormat());
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
         return new History(handler.entries);
     }
