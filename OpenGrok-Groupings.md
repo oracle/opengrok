@@ -176,10 +176,10 @@ so that the whole structure can be traversed.
 
 - `String Group::name` - displayed group name
 
-- `String Group::pattern` - regexp which is tested for each project
-                        empty pattern implies that no project matches this group thus
-                        it can be used as a superior group without repeating the projects
-                        from subgroups
+- `String Group::pattern` - regexp which is tested for each project.
+                            empty pattern implies that no project matches this group thus
+                            it can be used as a superior group without repeating the projects
+                            from subgroups
 
 
 ## Tools
