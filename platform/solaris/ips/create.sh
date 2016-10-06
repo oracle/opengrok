@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -196,7 +196,10 @@ PKG pkgsend add link path=/usr/opengrok/lib/lib target=../lib
 PKG pkgsend add file platform/solaris/smf/opengrok.xml mode=0444 owner=root group=sys path=/var/svc/manifest/application/opengrok.xml restart_fmri=svc:/system/manifest-import:default
 PKG pkgsend add file platform/solaris/smf/svc-opengrok mode=0555 owner=root group=bin path=/lib/svc/method/svc-opengrok
 PKG pkgsend add file platform/solaris/smf/ogindexd mode=0555 owner=root group=bin path=/usr/opengrok/lib/ogindexd
+
 PKG pkgsend add file OpenGrok mode=0555 owner=root group=bin path=/usr/opengrok/bin/OpenGrok
+PKG pkgsend add file tools/Groups mode=0555 owner=root group=sys path=/usr/opengrok/bin/Groups
+
 PKG pkgsend add file dist/opengrok.jar mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
 
 PKG pkgsend add file logging.properties mode=0444 owner=root group=sys path=/usr/opengrok/doc/logging.properties
@@ -206,6 +209,7 @@ PKG pkgsend add file LICENSE.txt mode=0444 owner=root group=sys path=/usr/opengr
 PKG pkgsend add file NOTICE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/NOTICE.txt
 PKG pkgsend add file doc/EXAMPLE.txt mode=0444 owner=root group=sys path=/usr/opengrok/doc/EXAMPLE.txt
 PKG pkgsend add file doc/ctags.config mode=0444 owner=root group=sys path=/usr/opengrok/doc/ctags.config
+
 
 
 # install libs
