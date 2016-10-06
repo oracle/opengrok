@@ -77,6 +77,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
@@ -367,6 +368,16 @@ public final class RuntimeEnvironment {
      */
     public List<Project> getProjects() {
         return threadConfig.get().getProjects();
+    }
+
+    /**
+     * Get descriptions of all projects.
+     *
+     * @return a list containing descriptions of all projects.
+     */
+    public List<String> getProjectDescriptions() {
+        return threadConfig.get().getProjects().stream().
+            map(Project::getDescription).collect(Collectors.toList());
     }
 
     /**
@@ -1491,29 +1502,29 @@ public final class RuntimeEnvironment {
      */
     private void refreshSearcherManagerMap() {
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
-            try {
-                // If a project is gone, close the corresponding SearcherManager
-                // so that it cannot produce new IndexSearcher objects.
-                for (Project proj : getProjects()) {
-                    if (entry.getKey().compareTo(proj.getDescription()) == 0) {
-                        // XXX Ideally we would like to remove the entry from the map here.
-                        // However, if some thread acquired an IndexSearcher and then config change happened
-                        // and the corresponding searcherManager was removed from the map,
-                        // returnIndexSearcher() will have no place to return the indexSearcher to.
-                        // This would likely lead to leaks since the corresponding IndexReader
-                        // will remain open.
-                        // So, we cannot remove searcherManager from the map until all threads
-                        // are done with it. We could handle this by inserting the pair into
-                        // special to-be-removed list and then check reference count
-                        // of corresponding IndexReader object in returnIndexSearcher().
-                        // If 0, the SearcherManager can be safely removed from the searcherManagerMap.
-                        // For the time being, let the map to grow unbounded to keep things simple.
-                        entry.getValue().close();
-                    }
+            // If a project is gone, close the corresponding SearcherManager
+            // so that it cannot produce new IndexSearcher objects.
+            if (!getProjectDescriptions().contains(entry.getKey())) {
+                try {
+                    // XXX Ideally we would like to remove the entry from the map here.
+                    // However, if some thread acquired an IndexSearcher and then config change happened
+                    // and the corresponding searcherManager was removed from the map,
+                    // returnIndexSearcher() will have no place to return the indexSearcher to.
+                    // This would likely lead to leaks since the corresponding IndexReader
+                    // will remain open.
+                    // So, we cannot remove searcherManager from the map until all threads
+                    // are done with it. We could handle this by inserting the pair into
+                    // special to-be-removed list and then check reference count
+                    // of corresponding IndexReader object in returnIndexSearcher().
+                    // If 0, the SearcherManager can be safely removed from the searcherManagerMap.
+                    // For the time being, let the map to grow unbounded to keep things simple.
+                    LOGGER.log(Level.FINE,
+                        "closing SearcherManager for project" + entry.getKey());
+                    entry.getValue().close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.SEVERE,
+                        "cannot close IndexReader for project" + entry.getKey(), ex);
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE,
-                    "cannot close IndexReader for project" + entry.getKey(), ex);
             }
         }
     }
