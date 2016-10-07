@@ -346,6 +346,39 @@
 }) (window, window.jQuery);
 
 /**
+ * General on-demand script downloader
+ */
+(function (window, document, $) {
+    var script = function () {
+        var self = this
+        this.scriptsDownloaded = {};
+        this.defaults = {
+            contextPath: window.contextPath,
+        }
+
+        this.options = $.extend(this.defaults, {});
+
+        this.loadScript = function (url) {
+            if (!/^[a-z]{3,5}:\/\//.test(url)) { // dummy test for remote prefix
+                url = this.options.contextPath + '/' + url
+            }
+            if (url in this.scriptsDownloaded) {
+                return this.scriptsDownloaded[url]
+            }
+            return this.scriptsDownloaded[url] = $.ajax({
+                url: url,
+                dataType: 'script',
+                cache: true,
+                timeout: 10000
+            }).fail(function () {
+                console.debug('Failed to download "' + url + '" module')
+            });
+        }
+    };
+    $.script = new ($.extend(script, $.script ? $.script : {}));
+})(window, document, jQuery);
+
+/**
  * General window
  */
 (function (window, document, $) {
@@ -386,11 +419,7 @@
             }
 
             this.makeMeDraggable = function () {
-                $.ajax({
-                    url: this.options.contextPath + '/' + this.options.draggableScript,
-                    dataType: 'script',
-                    cache: true
-                }).done(function () {
+                $.script.loadScript(this.options.draggableScript).done(function () {
                     self.$window.draggable({
                         appendTo: self.options.draggableAppendTo || $('body'),
                         helper: 'clone',
@@ -404,8 +433,6 @@
                             $(this).css('position', 'fixed');
                         }
                     });
-                }).fail(function () {
-                    console.debug('Failed to download draggable module')
                 });
             }
 
