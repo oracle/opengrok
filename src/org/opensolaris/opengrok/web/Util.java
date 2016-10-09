@@ -35,17 +35,21 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -430,9 +434,12 @@ public final class Util {
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             switch (c) {
+                case '\'':
+                    sb.append("&#39;");
+                    break;
                 case '"':
-                    sb.append('\'');
-                    break; // \\\"
+                    sb.append("&#39;");
+                    break; // \\\
                 case '&':
                     sb.append("&amp;");
                     break;
@@ -908,6 +915,77 @@ public final class Util {
                     "An error occured while piping file " + file + ": ", e);
         }
         return false;
+    }
+    
+    /**
+     * Print list of messages into output
+     *
+     * @param out output
+     * @param set set of messages
+     */
+    public static void printMessages(Writer out, SortedSet<Message> set) {
+        printMessages(out, set, false);
+    }
+
+    /**
+     * Print set of messages into output
+     *
+     * @param out output
+     * @param set set of messages
+     * @param limited if the container should be limited
+     */
+    public static void printMessages(Writer out, SortedSet<Message> set, boolean limited) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        if (!set.isEmpty()) {
+            try {
+                out.write("<ul class=\"message-group");
+                if (limited) {
+                    out.write(" limited");
+                }
+                out.write("\">\n");
+                for (Message m : set) {
+                    out.write("<li class=\"message-group-item ");
+                    out.write(Util.encode(m.getClassName()));
+                    out.write("\" title=\"Expires on ");
+                    out.write(Util.encode(df.format(m.getExpiration())));
+                    out.write("\">");
+                    out.write(Util.encode(df.format(m.getCreated())));
+                    out.write(": ");
+                    out.write(m.getText());
+                    out.write("</li>");
+                }
+                out.write("</ul>");
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING,
+                        "An error occured for a group of messages", ex);
+            }
+        }
+    }
+
+    /**
+     * Print set of messages into json array
+     *
+     * @param set set of messages
+     * @return json array containing the set of messages
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONArray messagesToJson(SortedSet<Message> set) {
+        JSONArray array = new JSONArray();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        for (Message m : set) {
+            JSONObject message = new JSONObject();
+            message.put("class", Util.encode(m.getClassName()));
+            message.put("expiration", Util.encode(df.format(m.getExpiration())));
+            message.put("created", Util.encode(df.format(m.getCreated())));
+            message.put("text", Util.encode(m.getText()));
+            JSONArray tags = new JSONArray();
+            for (String t : m.getTags()) {
+                tags.add(Util.encode(t));
+            }
+            message.put("tags", tags);
+            array.add(message);
+        }
+        return array;
     }
 
     /**

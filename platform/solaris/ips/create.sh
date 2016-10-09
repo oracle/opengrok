@@ -198,7 +198,8 @@ PKG pkgsend add file platform/solaris/smf/svc-opengrok mode=0555 owner=root grou
 PKG pkgsend add file platform/solaris/smf/ogindexd mode=0555 owner=root group=bin path=/usr/opengrok/lib/ogindexd
 
 PKG pkgsend add file OpenGrok mode=0555 owner=root group=bin path=/usr/opengrok/bin/OpenGrok
-PKG pkgsend add file tools/Groups mode=0555 owner=root group=sys path=/usr/opengrok/bin/Groups
+PKG pkgsend add file tools/Groups mode=0555 owner=root group=bin path=/usr/opengrok/bin/Groups
+PKG pkgsend add file tools/Messages mode=0555 owner=root group=bin path=/usr/opengrok/bin/Messages
 
 PKG pkgsend add file dist/opengrok.jar mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
 

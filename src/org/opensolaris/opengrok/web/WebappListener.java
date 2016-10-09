@@ -116,6 +116,7 @@ public final class WebappListener
         }
 
         RuntimeEnvironment.getInstance().startIndexReopenThread();
+        RuntimeEnvironment.getInstance().startExpirationTimer();
     }
 
     /**
@@ -126,6 +127,7 @@ public final class WebappListener
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
         RuntimeEnvironment.getInstance().stopWatchDogService();
         RuntimeEnvironment.getInstance().stopIndexReopenThread();
+        RuntimeEnvironment.getInstance().stopExpirationTimer();
     }
 
     /**

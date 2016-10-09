@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -29,13 +29,17 @@ import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.plain.PlainXref;
+import org.opensolaris.opengrok.configuration.messages.Message;
+import org.opensolaris.opengrok.configuration.messages.NormalMessage;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 
 import static org.junit.Assert.assertEquals;
@@ -480,5 +484,54 @@ public class RuntimeEnvironmentTest {
 
         env.setChattyStatusPage(false);
         assertFalse(env.isChattyStatusPage());
+    }
+
+    @Test
+    public void testCanAcceptMessage() {
+        RuntimeEnvironment instance = RuntimeEnvironment.getInstance();
+        instance.removeAllMessages();
+
+        Message m1 = new NormalMessage();
+        m1.addTag("main");
+
+        m1.setExpiration(new Date(System.currentTimeMillis() - 3000));
+        Assert.assertFalse(instance.canAcceptMessage(m1));
+        m1.setExpiration(new Date(System.currentTimeMillis() - 2000));
+        Assert.assertFalse(instance.canAcceptMessage(m1));
+        m1.setExpiration(new Date(System.currentTimeMillis() - 1000));
+        Assert.assertFalse(instance.canAcceptMessage(m1));
+        m1.setExpiration(new Date(System.currentTimeMillis() - 1));
+        Assert.assertFalse(instance.canAcceptMessage(m1));
+        m1.setExpiration(new Date(System.currentTimeMillis() - 0));
+        Assert.assertTrue(instance.canAcceptMessage(m1));
+        m1.setExpiration(new Date(System.currentTimeMillis() + 1));
+        Assert.assertTrue(instance.canAcceptMessage(m1));
+
+        m1.setExpiration(new Date(System.currentTimeMillis() + 5000));
+        Assert.assertEquals(0, instance.getMessagesInTheSystem());
+        for (int i = 0; i < instance.getMessageLimit(); i++) {
+            Message m2 = new NormalMessage();
+            m2.addTag("main");
+            m2.setExpiration(new Date(System.currentTimeMillis() + 5000));
+            m2.setCreated(new Date(System.currentTimeMillis() + i));
+
+            Assert.assertTrue(instance.canAcceptMessage(m2));
+            m2.apply(instance);
+            Assert.assertEquals(i + 1, instance.getMessagesInTheSystem());
+        }
+        Assert.assertEquals(instance.getMessageLimit(), instance.getMessagesInTheSystem());
+
+        for (int i = 0; i < instance.getMessageLimit() * 2; i++) {
+            Message m2 = new NormalMessage();
+            m2.addTag("main");
+            m2.setExpiration(new Date(System.currentTimeMillis() + 5000));
+            m2.setCreated(new Date(System.currentTimeMillis() + i + instance.getMessageLimit()));
+
+            Assert.assertFalse(instance.canAcceptMessage(m2));
+            m2.apply(instance);
+            Assert.assertEquals(instance.getMessageLimit(), instance.getMessagesInTheSystem());
+        }
+
+        instance.removeAllMessages();
     }
 }

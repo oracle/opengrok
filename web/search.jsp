@@ -21,7 +21,8 @@ CDDL HEADER END
 Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page session="false" errorPage="error.jsp" import="
+--%>
+<%@page session="false" errorPage="error.jsp" import="
 org.opensolaris.opengrok.search.Results,
 org.opensolaris.opengrok.web.SearchHelper,
 org.opensolaris.opengrok.web.SortOrder,
@@ -121,7 +122,8 @@ include file="menu.jspf"
 %>
         </div>
     </div>
-    <div id="results"><%
+
+    <div id="results"> <%
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
     if (searchHelper.errorMsg != null) {

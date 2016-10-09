@@ -794,6 +794,17 @@
                 $displayElement,
                 inputName = this._getNameAttribute();
 
+            var data = $(solOption.element).data('messages');
+            if (data && data.length) {
+                $labelText.append(
+                        $('<span>')
+                        .addClass('pull-right important-note important-note-rounded')
+                        .data("messages", data)
+                        .attr('data-messages', '')
+                        .text('!')
+                        );
+            }
+
             if (this.config.multiple) {
                 // use checkboxes
                 $inputElement = $('<input type="checkbox" class="sol-checkbox"/>');
@@ -851,7 +862,9 @@
                 // go first project
                 window.location = document.xrefPath + '/' + $(this).text();
             }).append($label);
-            
+
+            $inputElement.data('messages-available', data && data.length);
+
             solOption.displayElement = $displayElement;
 
             $actualTargetContainer.append($displayElement);
@@ -969,8 +982,14 @@
                  * Modified 2016
                  */
                 var selected = this.$showSelectionContainer.children('.sol-selected-display-item');
-                
-                $displayItemText = $('<span class="sol-selected-display-item-text" />').html(solOptionItem.label);
+                var label = solOptionItem.label
+                if ($changedItem.data('messages-available')) {
+                    label += ' <span class="important-note important-note-rounded" ';
+                    label += 'title="Some message is important in this project.';
+                    label += ' Find more info in the project list below.">!</span>'
+                }
+
+                $displayItemText = $('<span class="sol-selected-display-item-text" />').html(label);
                 $existingDisplayItem = $('<div class="sol-selected-display-item"/>')
                     .append($displayItemText)
                     .attr('title', solOptionItem.tooltip)
