@@ -60,7 +60,21 @@ tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
     background-color: #e8e8f0;
 }
 
-input, button {
+.btn {
+    padding-left: 7px;
+    padding-right: 7px;
+    text-align: center;
+}
+
+.btn:hover, .btn:active {
+    text-decoration: none;
+}
+
+a.btn {
+    color: rgb(76, 76, 76);
+}
+
+input, button, .btn {
     border: 1px solid #bbbbff;
     border-radius: 0.75ex;
     -moz-border-radius: 0.75ex;
@@ -72,7 +86,7 @@ input, button {
  * buttons will make it part of submit class ONLY
  */
 input.submit:hover, input.submit:active,
-button:hover, button:active {
+button:hover, button:active, .btn:hover, .btn:active {
     color: #ffffff;
 }
 
@@ -344,13 +358,13 @@ label {
     height: 100%;
 }
 
-#sbox > p:last-of-type {
+#form-controls {
     white-space: nowrap;
     /* 11ex = width(#qtbl td:first-child) + margin-left(body) */
     margin: 1ex 0 0.5ex 11ex;
 }
 
-#sbox > p:last-of-type > :nth-child(n+2) {
+#form-controls > :nth-child(n+2) {
     margin-left: 1ex;
 }
 

@@ -167,6 +167,12 @@ org.opensolaris.opengrok.web.Util"
 %>
 --%>
 </table>
+<div id="form-controls">
+    <input tabindex="9" class="submit" type="submit" value="Search"/>
+    <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();"
+           type="button" value="Clear"/>
+    <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
+</div>
 </div><%
 SortedSet<Message> messages;
     if (projects.size() != 0) {
@@ -232,16 +238,8 @@ SortedSet<Message> messages;
 <div id="ltbl">
     <!-- filled with javascript -->
 </div>
-    <div class="clearfix"></div>
-    <p><input tabindex="9" class="submit" type="submit" value="Search"/>
-    <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();"
-	   type="button" value=" Clear "/>
-    <button class="help" tabindex="11" onclick="window.open('help.jsp');">Help
-    </button>
-    </p>
 </form>
-    
-    <div class="clearfix"></div>
+<div class="clearfix"></div>
 <%
 }
 /* ---------------------- menu.jspf end --------------------- */
