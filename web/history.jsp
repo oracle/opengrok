@@ -169,10 +169,10 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
             %>
             <th><input type="submit" value=" Compare "/>
             <% if (hist.getHistoryEntries().size() > revision1 && revision1 >= 0) { %>
-                <input type="hidden" name="r1" value="<%= path + '@' + hist.getHistoryEntries().get(revision1).getRevision() %>" />
+                <input type="hidden" id="input_r1" name="r1" value="<%= path + '@' + hist.getHistoryEntries().get(revision1).getRevision() %>" />
             <% } %>
             <% if (hist.getHistoryEntries().size() > revision2 && revision2 >= 0) { %>
-                <input type="hidden" name="r2" value="<%= path + '@' + hist.getHistoryEntries().get(revision2).getRevision() %>" />
+                <input type="hidden" id="input_r2" name="r2" value="<%= path + '@' + hist.getHistoryEntries().get(revision2).getRevision() %>" />
             <% } %>
             </th><%
             }
@@ -228,30 +228,39 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
                 <a href="<%= context + Prefix.XREF_P + rp + "?r=" + Util.URIEncode(rev) %>"><%=
                     rev %></a></td>
             <td><%
-                String url;
+                %><input type="radio"
+                        data-revision-1="<%= (start + count) %>"
+                        data-revision-2="<%= revision2 %>"
+                        data-diff-revision="r1"
+                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision()%>"
+                <%
                 if (count + start > revision1 || (count + start > revision2 && count + start <= revision1 - 1)) {
                     // revision1 enabled
-                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&amp;start=" + start +"&amp;r1="+(start + count) +"&amp;r2="+revision2;
-                    %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
                 } else if (count + start == revision1 ) {
                     // revision1 selected
-                    %><input type="radio" checked="checked"/><%
+                    %> checked="checked"<%
                 } else if( count + start <= revision2 ) {
                     // revision1 disabled
-                    %><input type="radio" disabled="disabled"/><%
+                    %> disabled="disabled" <%
                 }
+                %>/><%
 
+                %><input type="radio"
+                        data-revision-1="<%= revision1 %>"
+                        data-revision-2="<%= (start + count) %>"
+                        data-diff-revision="r2"
+                        data-revision-path="<%= path + '@' + hist.getHistoryEntries().get(start + count).getRevision() %>"
+                <%
                 if( count + start < revision2 || (count + start > revision2 && count + start <= revision1 - 1) ) {
                     // revision2 enabled
-                    url = context + Prefix.HIST_L + uriEncodedName + "?n=" + max + "&amp;start=" + start +"&amp;r1="+revision1 +"&amp;r2="+(start + count);
-                    %><input type="radio" onclick="javascript: window.location.assign('<%= url %>');"/><%
                 } else if( count + start == revision2 ) {
                     // revision2 selected
-                    %><input type="radio" checked="checked"/><%
+                    %> checked="checked" <%
                 } else if (count + start >= revision1 ) {
                     // revision2 disabled
-                    %><input type="radio" disabled="disabled"/><%
+                    %> disabled="disabled" <%
                 }
+                %>/><%
                 %></td><%
                     } else {
                         striked = true;
@@ -333,7 +342,15 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
             }
         %>
     </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5">
+                <p class="slider"><%= slider %></p>
+            </td>
+        </tr>
+    </tfoot>
 </table>
+
 </form><%
             if (striked) {
 %><p><b>Note:</b> No associated file changes are available for
@@ -343,6 +360,7 @@ revisions with strike-through numbers (eg. <del>1.45</del>)</p><%
 <p class="rssbadge"><a href="<%=context + Prefix.RSS_P + uriEncodedName
 %>" title="RSS XML Feed of latest changes"><span id="rssi"></span></a></p><%
         }
+
     }
 }
 /* ---------------------- history.jsp end --------------------- */

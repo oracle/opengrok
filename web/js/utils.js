@@ -885,46 +885,7 @@
     $.messagesWindow = new ($.extend(messagesWindow, $.messagesWindow ? $.messagesWindow : {}));
 })(window, document, jQuery);
 
-$(document).ready(function () {
-    $("#content").scroll(scope_on_scroll);
-    $("#dirlist").tablesorter({
-        sortList: [[0, 0]],
-        cancelSelection: true,
-        headers: {
-            1: {
-                sorter: 'text'
-            },
-            3: {
-                sorter: 'dates'
-            },
-            4: {
-                sorter: 'groksizes'
-            }
-        }
-    });
-
-    // intelligence window plugin
-    $("#contextpath").each(function() {
-        $.intelliWindow.init();
-        return false
-    })
-
-    // messages window plugin
-    $.messagesWindow.init();
-
-    $("[data-messages]").mouseenter(function () {
-        var data = $(this).data('messages') || []
-        $.messagesWindow.update(data)
-        $.messagesWindow.show()
-    }).mouseleave(function (e) {
-        $.messagesWindow.hide()
-    })
-
-    // starting spaces plugin
-    $.spaces.init()
-    
-    $.hash.init({parent: "pre"})
-
+function init_results_autohide() {
     $("#sbox input[type='submit']").click(function (e) {
         $("#footer").not(".main_page").hide(); // footer
         $("#results > .message-group").hide(); // messages
@@ -935,7 +896,9 @@ $(document).ready(function () {
         $("#results > table, #results > ul").hide(); // results + empty
         $("#results > table + p, #results > ul + p").hide(); // results + empty timing
     })
+}
 
+function init_searchable_option_list() {
     var searchableOptionListOptions = {
         maxHeight: '300px',
         showSelectionBelowList: false,
@@ -982,6 +945,136 @@ $(document).ready(function () {
     };
 
     $('#project').searchableOptionList(searchableOptionListOptions);
+}
+
+function init_history_input() {
+    $('input[data-revision-path]').click(function () {
+        var $this = $(this)
+        $("a.more").each(function () {
+            $(this).attr('href', setParameter($(this).attr('href'), 'r1', $this.data('revision-1')))
+            $(this).attr('href', setParameter($(this).attr('href'), 'r2', $this.data('revision-2')))
+        })
+
+        var $revisions = $('input[data-revision-path]'),
+                index = -1;
+
+        // change the correct revision on every element
+        // (every element keeps a track which revision is selected)
+        $revisions.filter('[data-diff-revision=\'r1\']')
+                .data('revision-2', $this.data('revision-2'))
+        $revisions.filter('[data-diff-revision=\'r2\']')
+                .data('revision-1', $this.data('revision-1'))
+
+        // set the correct revision for the form submittion
+        $("#input_" + $this.data('diff-revision')).val($this.data('revision-path'))
+
+        // enable all input
+        $revisions.prop('disabled', false),
+                // uncheck all input in my column
+                $revisions.filter('[data-diff-revision=\'' + $this.data('diff-revision') + '\']').prop('checked', false)
+        // set me as checked
+        $this.prop('checked', true)
+
+        // disable from top to r2
+        index = Math.max($revisions.index($('input[data-revision-path][data-diff-revision=\'r2\']:checked')), 0)
+        $revisions.slice(0, index).filter('[data-diff-revision=\'r1\']').prop('disabled', true)
+
+        // disable from bottom to r1
+        index = Math.max($revisions.index($('input[data-revision-path][data-diff-revision=\'r1\']:checked')), index)
+        $revisions.slice(index + 1).filter('[data-diff-revision=\'r2\']').prop('disabled', true)
+    })
+}
+
+function init_tablesorter() {
+    $("#dirlist").tablesorter({
+        sortList: [[0, 0]],
+        cancelSelection: true,
+        headers: {
+            1: {
+                sorter: 'text'
+            },
+            3: {
+                sorter: 'dates'
+            },
+            4: {
+                sorter: 'groksizes'
+            }
+        }
+    });
+}
+
+$(document).ready(function () {
+    /**
+     * Initialize scope scroll event to display scope information correctly when
+     * the element comes into the viewport.
+     */
+    $("#content").scroll(scope_on_scroll);
+
+    /**
+     * Initialize table sorter on every directory listing.
+     */
+    init_tablesorter()
+
+    /**
+     * Initialize inteligence window plugin. Presence of #contextpath indicates
+     * that we use the code view.
+     */
+    $("#contextpath").each(function () {
+        $.intelliWindow.init();
+        return false
+    })
+
+    /**
+     * Initialize the messages plugin to display
+     * message onhover on every affected element.
+     */
+    $.messagesWindow.init();
+
+    /**
+     * Attaches a onhover listener to display messages for affected elements.
+     */
+    $("[data-messages]").mouseenter(function () {
+        var data = $(this).data('messages') || []
+        $.messagesWindow.update(data)
+        $.messagesWindow.show()
+    }).mouseleave(function (e) {
+        $.messagesWindow.hide()
+    })
+
+    /**
+     * Initialize spaces plugin which automaticaly inserts a single space between
+     * the line number and the following text. It strongly relies on the fact
+     * that the line numbers are stored in 'name' attribute on each line link.
+     */
+    $.spaces.init()
+
+    /**
+     * Initialize the window hash management. Mainly this allows users to select
+     * multiple lines of code and use that url to send it to somebody else.
+     */
+    $.hash.init({parent: "pre"})
+
+    /**
+     * After hitting the search button, the results or projects are temporarily hidden
+     * until the new page is loaded. That helps to distinguish if search is being in process.
+     *
+     */
+    init_results_autohide()
+
+    /**
+     * Initialize the new project picker
+     */
+    init_searchable_option_list()
+
+    /**
+     * Initialize the history input picker.
+     * Checkboxes are automaticaly covered with a click event and automaticaly
+     * colored as disabled or checked.
+     *
+     * Also works for paging where it stores the actual selected revision range in the
+     * pagination links.
+     */
+    init_history_input()
 });
 
 document.pageReady = [];
@@ -1033,6 +1126,35 @@ function getParameter(p) {
         }
     }
     return undefined;
+}
+
+/**
+ * Set parameter in the given url.
+ * @param string url
+ * @param string p parameter name
+ * @param string v parameter value
+ * @returns string the modified url
+ */
+function setParameter(url, p, v) {
+    var base = url.substr(0, url.indexOf('?'))
+    var params = url.substr(base.length + 1).split("&").map(
+            function (x) {
+                return x.split("=");
+            });
+    var found = false;
+    for (var i in params) {
+        if (params[i][0] === p && params[i].length > 1) {
+            params[i][1] = encodeURIComponent(v);
+            found = true
+        }
+    }
+    if (!found) {
+        params.push([p, encodeURIComponent(v)])
+    }
+
+    return base + '?' + params.map(function (x) {
+        return x[0] + '=' + x[1];
+    }).join('&');
 }
 
 function domReadyMast() {
@@ -1133,8 +1255,6 @@ function domReadyHistory() {
     // second row: r1 clicked, (r2 hidden)(optionally)
     // I cannot say what will happen if they are not like that, togglediffs
     // will go mad !
-    $("#revisions input[type=radio]").click(togglediffs);
-    togglediffs();
     togglerevs();
 }
 
@@ -1365,36 +1485,6 @@ function toggle_revtags() {
             } else if (this.className == "revtags-hidden") {
                 this.setAttribute("style", "display: inline;");
                 this.className = "revtags";
-            }
-        }
-    );
-}
-
-function togglediffs() {
-    var cr2 = false;
-    var cr1 = false;
-    $("#revisions input[type=radio]").each(
-        function() {
-            if (this.name=="r1") {
-                if (this.checked) {
-                    cr1 = true;
-                    return true;
-                }
-                if (cr2) {
-                    this.disabled = ''
-                } else {
-                    this.disabled = 'true'
-                }
-            } else if (this.name=="r2") {
-                if (this.checked) {
-                    cr2=true;
-                    return true;
-                }
-                if (!cr1) {
-                    this.disabled = ''
-                } else {
-                    this.disabled = 'true'
-                }
             }
         }
     );
