@@ -181,7 +181,7 @@ public class GitRepository extends Repository {
      * Formatter for rfc 2822 which allows (as rfc) the optional day at the
      * beginning.
      *
-     * @link https://tools.ietf.org/html/rfc2822#page-14
+     * @see <a href="https://tools.ietf.org/html/rfc2822#page-14" target="_blank">https://tools.ietf.org/html/rfc2822#page-14</a>
      *
      * @return DateFormat which accepts the optional day format
      */
