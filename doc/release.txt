@@ -18,6 +18,7 @@ jars/dirs for tests
 
    ant clean
    ant # defaults to jar currently
+   ant package
 
 2) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
