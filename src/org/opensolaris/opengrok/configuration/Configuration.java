@@ -81,6 +81,7 @@ public final class Configuration {
      */
     private boolean historyCacheInDB;
 
+    private int messageLimit;
     private String pluginDirectory;
     private List<Project> projects;
     private Set<Group> groups;
@@ -285,6 +286,7 @@ public final class Configuration {
         setPluginDirectory(null);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setIndexRefreshPeriod(60);
+        setMessageLimit(500);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -304,6 +306,24 @@ public final class Configuration {
     // just to satisfy bean/de|encoder stuff
     public Map<String, String> getCmds() {
         return Collections.unmodifiableMap(cmds);
+    }
+
+    /**
+     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     *
+     * @return int the current message limit
+     */
+    public int getMessageLimit() {
+        return messageLimit;
+    }
+
+    /**
+     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     *
+     * @param limit the limit
+     */
+    public void setMessageLimit(int limit) {
+        this.messageLimit = limit;
     }
 
     public String getPluginDirectory() {

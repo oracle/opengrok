@@ -116,7 +116,6 @@ public final class RuntimeEnvironment {
         - just two (the timer, configuration listener) so set it to small value
     */
     private final ConcurrentMap<String, SortedSet<Message>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
-    private static final int MESSAGE_LIMIT = 500;
     private int messagesInTheSystem = 0;
 
     /* Get thread pool used for top-level repository history generation. */
@@ -1359,18 +1358,35 @@ public final class RuntimeEnvironment {
     /**
      * Get the maximum number of messages in the application
      *
+     * @see #getMessagesInTheSystem()
      * @return the number
      */
     public int getMessageLimit() {
-        return MESSAGE_LIMIT;
+        return threadConfig.get().getMessageLimit();
+    }
+
+    /**
+     * Set the maximum number of messages in the application
+     *
+     * @see #getMessagesInTheSystem()
+     * @param limit the new limit
+     */
+    public void setMessageLimit(int limit) {
+        threadConfig.get().setMessageLimit(limit);
     }
 
     /**
      * Return number of messages present in the hash map.
      *
-     * DISCLAIMER: This is not the real number of messages in the application
-     * because the same message is stored for all of the tags in the map. Also
-     * one can bypass the counter by not calling {@link #addMessage(Message)}
+     * DISCLAIMER: This is not the real number of unique messages in the
+     * application because the same message is duplicated for all of the tags in
+     * the map.
+     *
+     * This is just a cheap counter to indicate how many messages are stored in
+     * total under different tags.
+     *
+     * Also one can bypass the counter by not calling
+     * {@link #addMessage(Message)}
      *
      * @return number of messages
      */
