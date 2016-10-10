@@ -13,7 +13,7 @@ The following minimum criteria must be fulfilled before a new version may be rel
 
 Feature freeze: TBD
 
-Feature	Status: https://github.com/OpenGrok/OpenGrok/issues?q=is%3Aopen+is%3Aissue+milestone%3A0.13
+[https://github.com/OpenGrok/OpenGrok/issues?q=is%3Aopen+is%3Aissue+milestone%3A0.13 Feature Status]
 
 
 Please send your ideas for improvement or contributions to discuss forum. Bugs or feature requests should be reported in the Issues.
