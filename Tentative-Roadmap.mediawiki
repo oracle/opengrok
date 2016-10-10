@@ -9,20 +9,11 @@ The following minimum criteria must be fulfilled before a new version may be rel
 * No stoppers
 * All bugs and enhancements must be evaluated
 
-=== Release 0.12 (end of 2013) ===
-
-Feature	Status
-* Lucene 0.4 (Lubos Kosco) 	 done, in trunk
-
 === Release 0.13 ===
 
 Feature freeze: TBD
 
-Feature	Status
-* bug 327 - per-project configuration
-* bug #17189 - grouping of projects (Vladimir Kotal) 	 in progress
-* pdf/office analyzer (Lubos Kosco) 	 in progress
-* ??? 	
+Feature	Status: https://github.com/OpenGrok/OpenGrok/issues?q=is%3Aopen+is%3Aissue+milestone%3A0.13
 
 
 Please send your ideas for improvement or contributions to discuss forum. Bugs or feature requests should be reported in the Issues.
