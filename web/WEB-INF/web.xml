@@ -7,7 +7,7 @@
     <param-name>CONFIGURATION</param-name>
     <param-value>/var/opengrok/etc/configuration.xml</param-value>
   </context-param>
-  
+
   <context-param>
     <description>An address where OpenGrok can receive new configuration</description>
     <param-name>ConfigAddress</param-name>
@@ -17,13 +17,13 @@
   <context-param>
       <description>
           Directory with authorization plugins.
-          Default value is dataRoot/../plugins 
+          Default value is dataRoot/../plugins
             (can be /var/opengrok/plugins if dataRoot is /var/opengrok/data).
       </description>
       <param-name>authorizationPluginDirectory</param-name>
       <param-value>/var/opengrok/plugins</param-value>
   </context-param>
-  
+
   <context-param>
       <description>
           Enable watching the plugin directory for changes in real time.
@@ -32,7 +32,7 @@
       <param-name>enableAuthorizationWatchDog</param-name>
       <param-value>false</param-value>
   </context-param>
-  
+
   <listener>
    <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
   </listener>
@@ -41,22 +41,22 @@
       <filter-name>AuthorizationFilter</filter-name>
       <filter-class>org.opensolaris.opengrok.web.AuthorizationFilter</filter-class>
   </filter>
-      
+
   <filter-mapping>
       <filter-name>AuthorizationFilter</filter-name>
       <url-pattern>/*</url-pattern>
-  </filter-mapping>    
-    
+  </filter-mapping>
+
   <servlet>
     <display-name>Source Finder</display-name>
     <servlet-name>search</servlet-name>
     <jsp-file>/search.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
 <init-param>
 <param-name>lastEditedDisplayMode</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
   <servlet-name>json</servlet-name>
@@ -68,7 +68,7 @@
     <jsp-file>/history.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
     <display-name>Source lister</display-name>
@@ -129,7 +129,7 @@
     <jsp-file>/error.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
     <display-name>File not found handler</display-name>
@@ -137,7 +137,7 @@
     <jsp-file>/enoent.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>search</servlet-name>
