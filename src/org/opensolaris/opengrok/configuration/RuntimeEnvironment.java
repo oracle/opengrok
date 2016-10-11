@@ -1672,9 +1672,10 @@ public final class RuntimeEnvironment {
      * @param proj project
      * @return SearcherManager for given project
      */
-    public IndexSearcher getIndexSearcher(String proj) throws IOException {
+    public SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
         SearcherManager mgr = searcherManagerMap.get(proj);
-        IndexSearcher searcher = null;
+        SuperIndexSearcher searcher = null;
+
         if (mgr == null) {
             File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
 
@@ -1682,34 +1683,18 @@ public final class RuntimeEnvironment {
                 Directory dir = FSDirectory.open(new File(indexDir, proj).toPath());
                 mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
                 searcherManagerMap.put(proj, mgr);
-                searcher = mgr.acquire();
+                searcher = (SuperIndexSearcher) mgr.acquire();
+                searcher.setSearcherManager(mgr);
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE,
                     "cannot construct IndexSearcher for project " + proj, ex);
             }
         } else {
-            searcher = mgr.acquire();
+            searcher = (SuperIndexSearcher) mgr.acquire();
+            searcher.setSearcherManager(mgr);
         }
 
         return searcher;
-    }
-
-    /**
-     * Return IndexSearcher object back to corresponding SearcherManager.
-     * @param proj project name which belongs to the searcher
-     * @param searcher searcher object to release
-     */
-    public void returnIndexSearcher(String proj, IndexSearcher searcher) {
-        SearcherManager mgr = searcherManagerMap.get(proj);
-        if (mgr != null) {
-            try {
-                mgr.release(searcher);
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, "cannot release IndexSearcher for project " + proj, ex);
-            }
-        } else {
-            LOGGER.log(Level.SEVERE, "cannot find SearcherManager for project " + proj);
-        }
     }
 
     /**
@@ -1718,23 +1703,13 @@ public final class RuntimeEnvironment {
      * the corresponding project is no longer present.
      */
     private void refreshSearcherManagerMap() {
+        ArrayList<String> toRemove = new ArrayList<>();
+
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
             // If a project is gone, close the corresponding SearcherManager
             // so that it cannot produce new IndexSearcher objects.
             if (!getProjectDescriptions().contains(entry.getKey())) {
                 try {
-                    // XXX Ideally we would like to remove the entry from the map here.
-                    // However, if some thread acquired an IndexSearcher and then config change happened
-                    // and the corresponding searcherManager was removed from the map,
-                    // returnIndexSearcher() will have no place to return the indexSearcher to.
-                    // This would likely lead to leaks since the corresponding IndexReader
-                    // will remain open.
-                    // So, we cannot remove searcherManager from the map until all threads
-                    // are done with it. We could handle this by inserting the pair into
-                    // special to-be-removed list and then check reference count
-                    // of corresponding IndexReader object in returnIndexSearcher().
-                    // If 0, the SearcherManager can be safely removed from the searcherManagerMap.
-                    // For the time being, let the map to grow unbounded to keep things simple.
                     LOGGER.log(Level.FINE,
                         "closing SearcherManager for project" + entry.getKey());
                     entry.getValue().close();
@@ -1742,7 +1717,12 @@ public final class RuntimeEnvironment {
                     LOGGER.log(Level.SEVERE,
                         "cannot close IndexReader for project" + entry.getKey(), ex);
                 }
+                toRemove.add(entry.getKey());
             }
+        }
+
+        for (String proj : toRemove) {
+            searcherManagerMap.remove(proj);
         }
     }
 
@@ -1753,10 +1733,12 @@ public final class RuntimeEnvironment {
      * so we add them to the map.
      *
      * @param projects list of projects
-     * @param map each IndexSearcher produced will be put into this map
+     * @param list each SuperIndexSearcher produced will be put into this list
      * @return MultiReader for the projects
      */
-    public MultiReader getMultiReader(SortedSet<String> projects, Map<String, IndexSearcher> map) {
+    public MultiReader getMultiReader(SortedSet<String> projects,
+        ArrayList<SuperIndexSearcher> searcherList) {
+
         IndexReader[] subreaders = new IndexReader[projects.size()];
         int ii = 0;
 
@@ -1764,9 +1746,9 @@ public final class RuntimeEnvironment {
         // String , need changes in projects.jspf too
         for (String proj : projects) {
             try {
-                IndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
                 subreaders[ii++] = searcher.getIndexReader();
-                map.put(proj, searcher);
+                searcherList.add(searcher);
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE,
                     "cannot get IndexReader for project" + proj, ex);
@@ -1780,25 +1762,5 @@ public final class RuntimeEnvironment {
                 "cannot construct MultiReader for set of projects", ex);
         }
         return multiReader;
-    }
-
-    /**
-     * Helper method for the consumers of getMultiReader() to be called when
-     * destroying search context. This will make sure all indexSearcher
-     * objects are properly released.
-     *
-     * @param map map of project to indexSearcher
-     */
-    public void freeIndexSearcherMap(Map<String, IndexSearcher> map) {
-        List<String> toRemove = new ArrayList<>();
-
-        for (Map.Entry<String, IndexSearcher> entry : map.entrySet()) {
-            RuntimeEnvironment.getInstance().returnIndexSearcher(entry.getKey(), entry.getValue());
-            toRemove.add(entry.getKey());
-        }
-
-        for (String key : toRemove) {
-            map.remove(key);
-        }
     }
 }

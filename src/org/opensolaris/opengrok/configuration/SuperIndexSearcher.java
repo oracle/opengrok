@@ -22,23 +22,33 @@
   */
 package org.opensolaris.opengrok.configuration;
 
-import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.SearcherFactory;
+import org.apache.lucene.search.SearcherManager;
 
 /**
- * Factory for producing IndexSearcher objects.
- * This is used inside getIndexSearcher() to produce new SearcherManager objects
- * to make sure the searcher threads are constrained to single thread pool.
+ * Wrapper class over IndexSearcher which keeps SearcherManager around so
+ * that we can simply return the indexSearcher to it.
+ *
  * @author vkotal
  */
-class ThreadpoolSearcherFactory extends SearcherFactory {
-    @Override
-    public SuperIndexSearcher newSearcher(IndexReader r, IndexReader prev) throws IOException {
-        // The previous IndexReader is not used here.
-        SuperIndexSearcher searcher = new SuperIndexSearcher(r,
-            RuntimeEnvironment.getInstance().getSearchExecutor());
-        return searcher;
+public class SuperIndexSearcher extends IndexSearcher {
+    SearcherManager searcherManager;
+
+    public SuperIndexSearcher(IndexReader r) {
+        super(r);
+    }
+
+    SuperIndexSearcher(IndexReader r, ExecutorService searchExecutor) {
+        super(r, searchExecutor);
+    }
+
+    public void setSearcherManager(SearcherManager s) {
+        searcherManager = s;
+    }
+
+    public SearcherManager getSearcherManager() {
+        return (searcherManager);
     }
 }

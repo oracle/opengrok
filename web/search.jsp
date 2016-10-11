@@ -247,7 +247,7 @@ include file="menu.jspf"
         %>
     </div><%
     }
-    searchHelper.destroy();
+    // Note that searchHelper.destroy() is called via WebappListener.requestDestroyed().
 }
 /* ---------------------- search.jsp end --------------------- */
 %><%@
