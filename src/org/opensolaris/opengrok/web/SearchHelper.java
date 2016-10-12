@@ -58,6 +58,7 @@ import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -151,7 +152,7 @@ public class SearchHelper {
      * tracked by the indexSearcherMap so that they can be properly released
      * once the results are read.
      */
-    private final Map<String, IndexSearcher> indexSearcherMap = new TreeMap<>();
+    private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
     /**
      * close IndexReader associated with searches on destroy()
      */
@@ -262,7 +263,7 @@ public class SearchHelper {
                 // around set of IndexReader objects.
                 closeOnDestroy = false;
                 searcher = new IndexSearcher(RuntimeEnvironment.getInstance().
-                    getMultiReader(projects, indexSearcherMap));
+                    getMultiReader(projects, searcherList));
             }
 
             // TODO check if below is somehow reusing sessions so we don't
@@ -408,13 +409,8 @@ public class SearchHelper {
             Suggestion s = new Suggestion(proj);
             try {
                 if (!closeOnDestroy) {
-                    // Likely, the IndexSearcher has already been created by prepareExec()
-                    // so just reuse it.
-                    IndexSearcher searcher = indexSearcherMap.get(proj);
-                    if (searcher == null) {
-                        searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
-                        indexSearcherMap.put(proj, searcher);
-                    }
+                    SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                    searcherList.add(searcher);
                     ir = searcher.getIndexReader();
                 } else {
                     dir = FSDirectory.open(new File(indexDir, proj).toPath());
@@ -502,6 +498,12 @@ public class SearchHelper {
             IOUtils.close(searcher.getIndexReader());
         }
 
-        RuntimeEnvironment.getInstance().freeIndexSearcherMap(this.indexSearcherMap);
+        for (SuperIndexSearcher is : searcherList) {
+            try {
+                is.getSearcherManager().release(is);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "cannot release indexSearcher", ex);
+            }
+        }
     }
 }

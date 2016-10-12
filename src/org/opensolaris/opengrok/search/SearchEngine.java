@@ -61,6 +61,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -139,7 +140,7 @@ public class SearchEngine {
     private TopScoreDocCollector collector;
     private IndexSearcher searcher;
     boolean allCollected;
-    private final Map<String, IndexSearcher> indexSearcherMap = new TreeMap<>();
+    private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
 
     /**
      * Creates a new instance of SearchEngine
@@ -217,7 +218,7 @@ public class SearchEngine {
         // not matter given that MultiReader is just a cheap wrapper
         // around set of IndexReader objects.
         MultiReader searchables = RuntimeEnvironment.getInstance().
-            getMultiReader(projects, indexSearcherMap);
+            getMultiReader(projects, searcherList);
         searcher = new IndexSearcher(searchables);
         collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
         searcher.search(query, collector);
@@ -465,7 +466,13 @@ public class SearchEngine {
     }
 
     public void destroy() {
-        RuntimeEnvironment.getInstance().freeIndexSearcherMap(this.indexSearcherMap);
+        for (SuperIndexSearcher is : searcherList) {
+            try {
+                is.getSearcherManager().release(is);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "cannot release indexSearcher", ex);
+            }
+        }
     }
 
     /**
