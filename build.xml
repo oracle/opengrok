@@ -458,8 +458,12 @@ Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
                 <include name="paths.tsv"/>
                 <include name="logging.properties"/>
             </tarfileset>
-            <tarfileset dir="." prefix="${distname}-${version}/bin" mode="755">
+            <tarfileset dir="." prefix="${distname}-${version}/bin" mode="555">
                 <include name="OpenGrok"/>
+            </tarfileset>
+            <tarfileset dir="tools" prefix="${distname}-${version}/bin/" mode="555">
+                <include name="Messages"/>
+                <include name="Groups"/>
             </tarfileset>
             <tarfileset dir="doc" prefix="${distname}-${version}/doc">
                 <include name="EXAMPLE.txt"/>
