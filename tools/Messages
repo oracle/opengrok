@@ -6,15 +6,20 @@
 #
 # Supported Environment Variables for configuring the default setup:
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
-#                                   - containing the opengrok.jar
+#                                   - containing the lib/opengrok.jar
 #   - OPENGROK_JAR                OpenGrok java package
-#                                 switch), default is DATA_ROOT/etc/ctags.config
+#   - DATE                        GNU date binary (supporting --date switch)
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase view
 
 PROGNAME=`basename $0`
-DATE="${DATE:-date}"
+if date --date="+5 min" +"%s" >/dev/null 2>&1
+then
+    DATE="${DATE:-date}"
+else
+    DATE="${DATE:-gdate}"
+fi
 
 SCRIPT_DIRECTORY=`dirname "${0}"`
 SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
