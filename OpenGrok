@@ -54,6 +54,9 @@
 #                                                 directory
 #                                   local	- for local repos only
 #                                   uionly	- enabled for UI only
+#   - OPENGROK_ENABLE_PROJECTS    Enable projects (set it to true or false)
+#                                 Every directory in SRC_ROOT is
+#                                   considered a separate project
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
 #                                 (by default 3 directories from SRC_ROOT)
@@ -254,7 +257,12 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Enable Projects
     #           (Every directory in SRC_ROOT is considered a separate project)
-    ENABLE_PROJECTS="-P"
+    OPENGROK_ENABLE_PROJECTS="${OPENGROK_ENABLE_PROJECTS:-true}"
+    case $OPENGROK_ENABLE_PROJECTS in
+        true) ENABLE_PROJECTS="-P" ;;
+        false) ENABLE_PROJECTS="" ;;
+        *) ENABLE_PROJECTS="-P" ;;
+    esac
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
     SCAN_FOR_REPOSITORY="-S"
