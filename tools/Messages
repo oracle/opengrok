@@ -26,14 +26,15 @@ Usage()
     echo "Usage: ${PROGNAME} [options] <text>"
     echo ""
     echo "[OPTIONS]:"
-    echo "  -e|--expire                   human readable date string of expiration (default +5 min) (*)"
-    echo "  --expire-timestamp            explicit UTC timestamp for expiration in sec"
     echo "  -c|--class                    css class to apply for the message (default info)"
+    echo "  -e|--expire                   human readable date string of expiration (default +5 min) (*)"
+    echo "  -h|--help                     display this message and exit"
+    echo "  -n|--type                     type of the message (default normal)"
     echo "  -p|--port                     remote port number of the application (default 2424)"
     echo "  -s|--server                   remote server of the application (default localhost)"
     echo "  -t|--tag                      tag the message/multiple options (default main)"
-    echo "  --type                        type of the message (default normal)"
-    echo "  -v                            verbose"
+    echo "  -u|--expire-timestamp         explicit UTC timestamp for expiration in sec"
+    echo "  -v|--verbose                  verbose"
     echo ""
     echo "  (*) see man date: option --date (requires GNU date - use DATE env variable)"
     echo "  css classes: success, info, warning, error"
@@ -257,26 +258,6 @@ while [ $# -gt 0 ]
 do
     opt="$1"
     case $opt in
-        -s|--server)
-            ExpectOption "$@"
-            shift
-            REMOTE_SERVER=$(OneArgument "$@")
-        ;;
-        -p|--port)
-            ExpectOption "$@"
-            shift
-            REMOTE_PORT_NUM=$(OneArgument "$@")
-        ;;
-        --type)
-            ExpectOption "$@"
-            shift
-            MESSAGE_TYPE=$(OneArgument "$@")
-        ;;
-        -t|--tag)
-            ExpectOption "$@"
-            shift
-            MESSAGE_TAGS+=(-g "$(OneArgument "$@")")
-        ;;
         -c|--class)
             ExpectOption "$@"
             shift
@@ -287,17 +268,37 @@ do
             shift
             MESSAGE_EXPIRE=$(OneArgument "$@")
         ;;
-        --expire-timestamp)
+        -h|--help)
+            Usage
+            exit 0
+        ;;
+        -n|--type)
+            ExpectOption "$@"
+            shift
+            MESSAGE_TYPE=$(OneArgument "$@")
+        ;;
+        -p|--port)
+            ExpectOption "$@"
+            shift
+            REMOTE_PORT_NUM=$(OneArgument "$@")
+        ;;
+        -s|--server)
+            ExpectOption "$@"
+            shift
+            REMOTE_SERVER=$(OneArgument "$@")
+        ;;
+        -t|--tag)
+            ExpectOption "$@"
+            shift
+            MESSAGE_TAGS+=(-g "$(OneArgument "$@")")
+        ;;
+        -u|--expire-timestamp)
             ExpectOption "$@"
             shift
             MESSAGE_EXPIRE_TIMESTAMP=$(OneArgument "$@")
         ;;
         -v|--verbose)
             VERBOSE=true
-        ;;
-        -h|--help)
-            Usage
-            exit 0
         ;;
         -*)
             echo "Uknown option \"$opt\"" && Usage && exit 5
