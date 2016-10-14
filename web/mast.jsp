@@ -105,15 +105,18 @@ include file="pageheader.jspf"
 <div id="Masthead">
     <kbd>
     <%
-    JSONArray messages = Util.messagesToJson(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG,
+    JSONArray messages = new JSONArray();
+    if (cfg.getProject() != null) {
+        messages = Util.messagesToJson(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG,
                             cfg.getProject().getDescription());
+    }
     %>
-    <% if(!messages.isEmpty()) { %>
+    <% if (!messages.isEmpty()) { %>
     <span class="important-note">
     <% } %>
         <a href="<%= context + Prefix.XREF_P %>/">xref</a>: <%= Util
         .breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
-    <% if(!messages.isEmpty()) { %>
+    <% if (!messages.isEmpty()) { %>
     </span>
     <span class="important-note important-note-rounded"
           data-messages='<%= messages %>'>!</span>
