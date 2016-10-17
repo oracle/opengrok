@@ -278,7 +278,7 @@
                 .keydown(function (e) {
                     if (e.keyCode == 13) {
                         var concat = '';
-                        $("#sbox #qtbl input").each(function () {
+                        $("#sbox #qtbl input[type='text']").each(function () {
                             concat += $.trim($(this).val());
                         });
                         if (e.keyCode == 13 && concat === '') {
@@ -287,22 +287,22 @@
                                 window.location = document.xrefPath + '/' + self.$input.val();
                                 return false;
                             }
-                            var $el = $(".keyboard-selection").first()
+                            var $el = $(".keyboard-selection").first().find(".sol-checkbox")
                             // follow the actual project
-                            if($el.length) {
+                            if($el.length && $el.data('sol-item') &&
+                                    $el.data('sol-item').label) {
                                 window.location = document.xrefPath + 
                                                     '/' + 
-                                                    $el.find(".sol-label-text").text();
+                                                    $el.data('sol-item').label;
                                 return false;
                             }
                             // follow first selected project
-                            $el = $(".sol-selected-display-item-text").first()
-                            if($el.length) {
-                                window.location = document.xrefPath + '/' + $el.text();
+                            $el = $(".sol-selected-display-item").first()
+                            if($el.length && $el.data('label')) {
+                               window.location = document.xrefPath + '/' + $el.data('label');
                                 return false;
                             }
                             return false;
-                        } else if (e.keyCode == 13) {
                         }
                         return true;
                     }
@@ -787,13 +787,18 @@
             var self = this,
                 $actualTargetContainer = $optionalTargetContainer || this.$selection,
                 $inputElement,
+               /*
+                * Modified 2016
+                */
                 $labelText = $('<div class="sol-label-text"/>')
-                    .html(solOption.label.trim().length === 0 ? '&nbsp;' : solOption.label)
+                        .html(solOption.label.trim().length === 0 ? '&nbsp;' : solOption.label)
                     .addClass(solOption.cssClass),
                 $label,
                 $displayElement,
                 inputName = this._getNameAttribute();
-
+            /*
+             * Modified 2016
+             */
             var data = $(solOption.element).data('messages');
             if (data && data.length) {
                 $labelText.append(
@@ -859,10 +864,15 @@
              * Modified 2016
              */
             $displayElement = $('<div class="sol-option"/>').dblclick(function (e) {
-                // go first project
-                window.location = document.xrefPath + '/' + $(this).text();
+                var $el = $(this).find('.sol-checkbox');
+                if ($el.length && $el.data('sol-item') && $el.data('sol-item').label) {
+                    // go first project
+                    window.location = document.xrefPath + '/' + $(this).find('.sol-checkbox').data('sol-item').label;
+                }
             }).append($label);
-
+            /*
+             * Modified 2016
+             */
             $inputElement.data('messages-available', data && data.length);
 
             solOption.displayElement = $displayElement;
@@ -993,6 +1003,7 @@
                 $existingDisplayItem = $('<div class="sol-selected-display-item"/>')
                     .append($displayItemText)
                     .attr('title', solOptionItem.tooltip)
+                    .data('label', solOptionItem.label)
                     .appendTo(this.$showSelectionContainer);
 
                 // show remove button on display items if not disabled and null selection allowed

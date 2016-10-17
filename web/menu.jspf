@@ -68,20 +68,9 @@ org.opensolaris.opengrok.web.Util"
             String esc = Util.formQuoteEscape(p.getDescription());
             pMap.put(name, esc);
         }
-        StringBuilder jsProjects = new StringBuilder(64);
-        jsProjects.append('\'');
-        for (String name : cfg.getRequestedProjects()) {
-            jsProjects.append(name).append("','");
-        }
-        if (jsProjects.length() > 1) {
-            jsProjects.setLength(jsProjects.length()-2);
-        } else {
-            jsProjects.setLength(0);
-        }
 %>
 <script type="text/javascript">/* <![CDATA[ */
-    document.projects = [ <%= Util.encode(jsProjects.toString())
-    %> ];document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P
+    document.xrefPath = '<%= request.getContextPath() + Prefix.XREF_P
     %>';document.domReady.push(function() { domReadyMenu(); });
 /* ]]> */
 </script><%
