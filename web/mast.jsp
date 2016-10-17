@@ -26,6 +26,7 @@ Portions Copyright 2011 Jens Elkner.
 After include you are here: /body/div#page/div#content/
 
 --%>
+<%@page import="org.json.simple.JSONArray"%>
 <%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
 <%@page import="org.opensolaris.opengrok.configuration.RuntimeEnvironment"%>
@@ -104,7 +105,8 @@ include file="pageheader.jspf"
 <div id="Masthead">
     <kbd>
     <%
-        SortedSet<Message> messages = RuntimeEnvironment.getInstance().getMessages(cfg.getProject().getDescription());
+    JSONArray messages = Util.messagesToJson(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG,
+                            cfg.getProject().getDescription());
     %>
     <% if(!messages.isEmpty()) { %>
     <span class="important-note">
@@ -114,7 +116,7 @@ include file="pageheader.jspf"
     <% if(!messages.isEmpty()) { %>
     </span>
     <span class="important-note important-note-rounded"
-          data-messages='<%= Util.messagesToJson(messages).toJSONString() %>'>!</span>
+          data-messages='<%= messages %>'>!</span>
     <% } %>
 </kbd>
 </div>
@@ -187,11 +189,7 @@ include file="pageheader.jspf"
 %>
     <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
 </div>
-<% if(proj != null) {
-    %><div style="display: none"><%
-    Util.printMessages(out, cfg.getMessages(proj.getDescription()), true);
-    %></div><%
-} %>    <div id="scope"><span id="scope_content">&nbsp;</span></div>
+<div id="scope"><span id="scope_content">&nbsp;</span></div>
         </form>
     </div>
 <div id="content">

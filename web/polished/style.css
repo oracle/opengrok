@@ -1226,6 +1226,11 @@ div#scope {
     margin-bottom: 3px;
 }
 
+h4.message-group-caption, h5.message-group-caption,
+h6.message-group-caption {
+    margin: 6px;
+}
+
 .message-group.limited .message-group-item {
     margin-left: auto;
     margin-right: auto;

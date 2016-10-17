@@ -68,7 +68,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
@@ -108,7 +107,7 @@ public final class RuntimeEnvironment {
     private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
     private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
     
-    private static final String MESSAGES_MAIN_PAGE_TAG = "main";
+    public static final String MESSAGES_MAIN_PAGE_TAG = "main";
     /*
     initial capacity - default 16
     initial load factor - default 0.75f

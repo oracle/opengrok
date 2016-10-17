@@ -36,8 +36,11 @@ import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
 import java.util.logging.Level;
@@ -48,6 +51,8 @@ import java.util.zip.GZIPInputStream;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.opensolaris.opengrok.Info;
+import org.opensolaris.opengrok.configuration.Group;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
@@ -986,6 +991,93 @@ public final class Util {
             array.add(message);
         }
         return array;
+    }
+
+    /**
+     * Print set of messages into json object for given tag.
+     *
+     * @param tag return messages in json format for the given tag
+     * @return json object with 'tag' and 'messages' attribute or null
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONObject messagesToJsonObject(String tag) {
+        SortedSet<Message> messages = RuntimeEnvironment.getInstance().getMessages(tag);
+        if (messages.isEmpty()) {
+            return null;
+        }
+        JSONObject toRet = new JSONObject();
+        toRet.put("tag", tag);
+        toRet.put("messages", messagesToJson(messages));
+        return toRet;
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param array the array where the result should be stored
+     * @param tags list of tags
+     * @return json array of the messages (the same as the parameter)
+     * @see #messagesToJsonObject(String)
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONArray messagesToJson(JSONArray array, String... tags) {
+        array = array == null ? new JSONArray() : array;
+        for (String tag : tags) {
+            JSONObject messages = messagesToJsonObject(tag);
+            if (messages == null || messages.isEmpty()) {
+                continue;
+            }
+            array.add(messages);
+        }
+        return array;
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param tags list of tags
+     * @return json array of the messages
+     * @see #messagesToJson(JSONArray, String...)
+     * @see #messagesToJsonObject(String)
+     */
+    public static JSONArray messagesToJson(String... tags) {
+        return messagesToJson((JSONArray) null, tags);
+    }
+
+    /**
+     * Print messages for given project into json array. These messages are
+     * tagged by project description or tagged by any of the project's group
+     * name.
+     *
+     * @param project the project
+     * @param additionalTags additional list of tags
+     * @return the json array
+     * @see #messagesToJson(String...)
+     */
+    public static JSONArray messagesToJson(Project project, String... additionalTags) {
+        if (project == null) {
+            return new JSONArray();
+        }
+        List<String> tags = new ArrayList<>();
+        tags.addAll(Arrays.asList(additionalTags));
+        tags.add(project.getDescription());
+        project.getGroups().stream().forEach((Group t) -> {
+            tags.add(t.getName());
+        });
+        return messagesToJson((String[]) tags.toArray());
+    }
+
+    /**
+     * Print messages for given project into json array. These messages are
+     * tagged by project description or tagged by any of the project's group
+     * name
+     *
+     * @param project the project
+     * @return the json array
+     * @see #messagesToJson(Project, String...)
+     */
+    public static JSONArray messagesToJson(Project project) {
+        return messagesToJson(project, new String[0]);
     }
 
     /**
