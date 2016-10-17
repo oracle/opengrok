@@ -436,13 +436,13 @@ SetupInstanceConfiguration()
 
     if [ -z "${OPENGROK_DISTRIBUTION_BASE}" ]
     then
-        if [ -d "${SCRIPT_DIRECTORY}/dist" -a \
-             -f "${SCRIPT_DIRECTORY}/dist/opengrok.jar" -a \
-             -f "${SCRIPT_DIRECTORY}/dist/source.war" \
+        if [ -d "${SCRIPT_DIRECTORY}/../dist" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/opengrok.jar" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/source.war" \
            ]
         then
             # Handle Developer Build Environments
-            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/dist"
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../dist"
         else
             # Handle Binary Distributions
             OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../lib"
@@ -450,7 +450,7 @@ SetupInstanceConfiguration()
     fi
 
     # REQUIRED: Java Archive of OpenGrok (Installation Location)
-    OPENGROK_JAR="${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar"
+    OPENGROK_JAR="${OPENGROK_JAR:-${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar}"
 
     JAVA_CLASSPATH="$CLASSPATH"
     JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
