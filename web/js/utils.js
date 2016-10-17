@@ -1221,7 +1221,6 @@ function pageReadyMast() {
 }
 
 function domReadyMenu() {
-    var projects = document.projects;
     var sbox = document.getElementById('sbox');
 /*
     $("#project").autocomplete(projects, {
