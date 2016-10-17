@@ -21,6 +21,7 @@ CDDL HEADER END
 Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 
 --%>
+<%@page import="org.json.simple.JSONArray"%>
 <%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
 <%@page import="java.util.SortedSet"%>
@@ -60,7 +61,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
     if (pHelper.getAllProjects().size() > 0) {
         Set<Group> groups = pHelper.getGroups();
         Set<Project> repositories = pHelper.getUngroupedRepositories();
-        if(groups.size() > 0) {
+        if (groups.size() > 0) {
             // recursively print all groups
             %>
 
@@ -76,7 +77,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
             <%
             LinkedList<Group> stack = new LinkedList<Group>();
             for ( Group x : groups ) {
-                if(x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
+                if (x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
                     x.setFlag(0);
                     stack.addLast(x);
                 }
@@ -85,7 +86,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
             while ( ! stack.isEmpty() ) {
                 Group group = stack.element();
                 
-                if(group.getFlag() > 0) {
+                if (group.getFlag() > 0) {
                     // already processed
                     stack.pollFirst();
                     %></div><!-- body -->
@@ -95,8 +96,8 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                 
                 stack.element().setFlag(1);
                 
-                for ( Group x : pHelper.getSubgroups(group)) {
-                    if(cfg.isAllowed(x) || pHelper.hasAllowedSubgroup(x)) {
+                for (Group x : pHelper.getSubgroups(group)) {
+                    if (cfg.isAllowed(x) || pHelper.hasAllowedSubgroup(x)) {
                         x.setFlag(0);
                         stack.addFirst(x);
                     }
@@ -115,10 +116,10 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             </span>
                         </h2>
                     </div>
-                        <div class="panel-body-accordion <% if(pHelper.hasFavourite(group)) { %> favourite<% } %>"
-                        <% if(pHelper.hasFavourite(group)) { %>data-accordion-visible="true"<% } %>>
+                        <div class="panel-body-accordion <% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
+                        <% if (pHelper.hasFavourite(group)) { %>data-accordion-visible="true"<% } %>>
                 <%
-                if(pHelper.getRepositories(group).size() > 0 ) {
+                if (pHelper.getRepositories(group).size() > 0 ) {
                 %>
                     <table>
                     <thead>
@@ -138,7 +139,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         %>
                         <%
                         for (RepositoryInfo ri : repos) {
-                            if(cnt > 0 && ri.getParent() == null)
+                            if (cnt > 0 && ri.getParent() == null)
                                 // discard repositories without a parent url
                                 continue;
                             if (cnt != 0) {
@@ -153,10 +154,9 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                        SortedSet<Message> messages = cfg.getEnv().getMessages(project.getDescription());
-                    %>
-                    <% if(!messages.isEmpty()) { %>
-                        <span class="important-note important-note-rounded" data-messages='<%= Util.messagesToJson(messages).toJSONString() %>'>!</span>
+                    JSONArray messages = Util.messagesToJson(project.getDescription());
+                    if (!messages.isEmpty()) { %>
+                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                                 </td><%
                             String parent = ri.getParent();
@@ -190,7 +190,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
         // print the rest of projects which don't have a group
         if (repositories.size() > 0) { %>
             <div class="panel-group projects">
-                <% if(groups.size() > 0) { %>
+                <% if (groups.size() > 0) { %>
                     <div class="toggle-buttons">
                         <a href="#" class="accordion_show_all">
                             <button>Show all</button>
@@ -201,7 +201,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                     </div>
                 <% } %>
                 <div class="panel">
-                    <% if(groups.size() > 0) {%>
+                    <% if (groups.size() > 0) {%>
                         <div class="panel-heading-accordion">
                             <h2 class="clearfix">
                                 <span class="pull-left">
@@ -214,8 +214,8 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             </h2>
                         </div>
                     <% } %>
-                    <div class="panel-body<% if(groups.size() > 0) {%>-accordion<% } %> <% if(pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
-                        <% if(pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
+                    <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
+                        <% if (pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
                         <table>
                             <thead>
                         <tr>
@@ -232,7 +232,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             Integer cnt = 0;
                             Collections.sort(repos, comparatorRepo);
                             for (RepositoryInfo ri : repos) {
-                                if(cnt > 0 && ri.getParent() == null)
+                                if (cnt > 0 && ri.getParent() == null)
                                     // discard repositories without a parent url
                                     continue;
                                 if (cnt != 0) {
@@ -246,10 +246,9 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                        SortedSet<Message> messages = cfg.getEnv().getMessages(proj.getDescription());
-                    %>
-                    <% if(!messages.isEmpty()) { %>
-                        <span class="important-note important-note-rounded" data-messages='<%= Util.messagesToJson(messages).toJSONString() %>'>!</span>
+                    JSONArray messages = Util.messagesToJson(proj.getDescription());
+                    if (!messages.isEmpty()) { %>
+                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                     </td><%
                                 String parent = ri.getParent();

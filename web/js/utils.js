@@ -836,7 +836,7 @@
                         .addClass('diff_navigation_style')
                         .css({top: '150px', right: '20px'})
                         //.append($("<h5>").text("System messages"))
-                        .append(inner.$messages = $("<ul>").addClass('message-group limited'))
+                        .append(inner.$messages = $("<div>"))
             },
             init: function () {
                 if (inner.initialized) {
@@ -862,14 +862,27 @@
         this.update = function (data) {
             inner.$messages.empty()
             for (var i = 0; i < data.length; i++) {
-                var message = data[i]
-                inner.$messages.append(
-                        $('<li>')
-                        .addClass('message-group-item')
-                        .addClass(message.class)
-                        .attr('title', 'Expires on ' + message.expiration)
-                        .html(message.created + ': ' + message.text)
-                        )
+                var tag = data[i]
+                if (!tag || tag.messages.length === 0) {
+                    continue;
+                }
+                inner.$messages.append($("<h5>")
+                        .addClass('message-group-caption')
+                        .text(tag.tag.charAt(0).toUpperCase() + tag.tag.slice(1)))
+                var $ul = $("<ul>").addClass('message-group limited');
+                for (var j = 0; j < tag.messages.length; j++) {
+                    if (!tag.messages[j]) {
+                        continue;
+                    }
+                    $ul.append(
+                            $('<li>')
+                            .addClass('message-group-item')
+                            .addClass(tag.messages[j].class)
+                            .attr('title', 'Expires on ' + tag.messages[j].expiration)
+                            .html(tag.messages[j].created + ': ' + tag.messages[j].text)
+                            )
+                }
+                inner.$messages.append($ul);
             }
         }
 

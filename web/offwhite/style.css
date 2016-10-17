@@ -1138,6 +1138,11 @@ div#scope {
     margin-right: auto;
 }
 
+h4.message-group-caption, h5.message-group-caption,
+h6.message-group-caption {
+    margin: 6px;
+}
+
 .message-group-item {
     position: relative;
     display: block;
