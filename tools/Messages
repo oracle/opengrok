@@ -53,25 +53,25 @@ Usage()
 
 CommonInvocation()
 {
-	${DO} \
-	${JAVA} \
-	${JAVA_OPTS} \
-	${JAVA_CLASSPATH:+-classpath} ${JAVA_CLASSPATH} \
-	${MAIN_CLASS} \
-	"${@}"
+    ${DO} \
+    ${JAVA} \
+    ${JAVA_OPTS} \
+    ${JAVA_CLASSPATH:+-classpath} ${JAVA_CLASSPATH} \
+    ${MAIN_CLASS} \
+    "${@}"
 }
 
 StdInvocation()
 {
-	CommonInvocation \
-        ${MESSAGE_TYPE:+-m} ${MESSAGE_TYPE:+"$MESSAGE_TYPE"} \
-        ${MESSAGE_CLASS:+-c} ${MESSAGE_CLASS:+"$MESSAGE_CLASS"} \
-        ${MESSAGE_TAGS:+"${MESSAGE_TAGS[@]}"} \
-        ${MESSAGE_EXPIRE_TIMESTAMP:+-e} ${MESSAGE_EXPIRE_TIMESTAMP:+"$MESSAGE_EXPIRE_TIMESTAMP"} \
-        ${REMOTE_SERVER:+-s} ${REMOTE_SERVER:+"$REMOTE_SERVER"} \
-        ${REMOTE_PORT_NUM:+-p} ${REMOTE_PORT_NUM:+"$REMOTE_PORT_NUM"} \
-        ${MESSAGE_TEXT:+-t} ${MESSAGE_TEXT:+"$MESSAGE_TEXT"} \
-	"${@}"
+    CommonInvocation \
+    ${MESSAGE_TYPE:+-m} ${MESSAGE_TYPE:+"$MESSAGE_TYPE"} \
+    ${MESSAGE_CLASS:+-c} ${MESSAGE_CLASS:+"$MESSAGE_CLASS"} \
+    ${MESSAGE_TAGS:+"${MESSAGE_TAGS[@]}"} \
+    ${MESSAGE_EXPIRE_TIMESTAMP:+-e} ${MESSAGE_EXPIRE_TIMESTAMP:+"$MESSAGE_EXPIRE_TIMESTAMP"} \
+    ${REMOTE_SERVER:+-s} ${REMOTE_SERVER:+"$REMOTE_SERVER"} \
+    ${REMOTE_PORT_NUM:+-p} ${REMOTE_PORT_NUM:+"$REMOTE_PORT_NUM"} \
+    ${MESSAGE_TEXT:+-t} ${MESSAGE_TEXT:+"$MESSAGE_TEXT"} \
+    "${@}"
 }
 
 
@@ -94,44 +94,44 @@ ExpectOption()
 
 Info()
 {
-	if $VERBOSE
-	then
-		echo "Configuration loaded"
-		echo -e "\tJAVA_HOME = "${JAVA_HOME}
-		if [ -n "$JAVA_HOME" ]
-		then
-			echo -e "\tJAVA = $JAVA_HOME/bin/java"
-		else
-			echo -e "\tJAVA ="
-		fi
-		echo -e "\tJAVA_OPTS = "${JAVA_OPTS}
-		echo -e "\tJAVA_CLASSPATH = "${JAVA_CLASSPATH}
-		echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
-		echo -e "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
-		echo -e "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
-		echo -e "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
-		echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
-		echo ""
-		echo "Files used"
-                echo -e "\tDATE = "${DATE:-$DATE}
-		echo -e "\tREMOTE_SERVER = "${REMOTE_SERVER:-$REMOTE_SERVER}
-		echo -e "\tREMOTE_PORT_NUM = "${REMOTE_PORT_NUM:-$REMOTE_PORT_NUM}
-		echo -e "\tMESSAGE_TYPE = "${MESSAGE_TYPE:-$MESSAGE_TYPE}
-		echo -e "\tMESSAGE_TAGS = "${MESSAGE_TAGS[*]:-${MESSAGE_TAGS[*]}}
-		echo -e "\tMESSAGE_CLASS = "${MESSAGE_CLASS:-$MESSAGE_CLASS}
-		echo -e "\tMESSAGE_EXPIRE = "${MESSAGE_EXPIRE:-$MESSAGE_EXPIRE}
-		echo -e "\tMESSAGE_EXPIRE_TIMESTAMP = "${MESSAGE_EXPIRE_TIMESTAMP:-$MESSAGE_EXPIRE_TIMESTAMP}
-		echo -e "\tMESSAGE_TEXT = "${MESSAGE_TEXT:-$MESSAGE_TEXT}
-		echo ""
-	fi
+    if $VERBOSE
+    then
+            echo "Configuration loaded"
+            echo -e "\tJAVA_HOME = "${JAVA_HOME}
+            if [ -n "$JAVA_HOME" ]
+            then
+                    echo -e "\tJAVA = $JAVA_HOME/bin/java"
+            else
+                    echo -e "\tJAVA ="
+            fi
+            echo -e "\tJAVA_OPTS = "${JAVA_OPTS}
+            echo -e "\tJAVA_CLASSPATH = "${JAVA_CLASSPATH}
+            echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
+            echo -e "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
+            echo -e "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
+            echo -e "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
+            echo -e "\tOPENGROK_JAR = "${OPENGROK_JAR}
+            echo ""
+            echo "Files used"
+            echo -e "\tDATE = "${DATE:-$DATE}
+            echo -e "\tREMOTE_SERVER = "${REMOTE_SERVER:-$REMOTE_SERVER}
+            echo -e "\tREMOTE_PORT_NUM = "${REMOTE_PORT_NUM:-$REMOTE_PORT_NUM}
+            echo -e "\tMESSAGE_TYPE = "${MESSAGE_TYPE:-$MESSAGE_TYPE}
+            echo -e "\tMESSAGE_TAGS = "${MESSAGE_TAGS[*]:-${MESSAGE_TAGS[*]}}
+            echo -e "\tMESSAGE_CLASS = "${MESSAGE_CLASS:-$MESSAGE_CLASS}
+            echo -e "\tMESSAGE_EXPIRE = "${MESSAGE_EXPIRE:-$MESSAGE_EXPIRE}
+            echo -e "\tMESSAGE_EXPIRE_TIMESTAMP = "${MESSAGE_EXPIRE_TIMESTAMP:-$MESSAGE_EXPIRE_TIMESTAMP}
+            echo -e "\tMESSAGE_TEXT = "${MESSAGE_TEXT:-$MESSAGE_TEXT}
+            echo ""
+    fi
 }
 
 Progress()
 {
-	if $VERBOSE
-	then
-		echo "$@"
-	fi
+    if $VERBOSE
+    then
+            echo "$@"
+    fi
 }
 
 # Find and load relevant configuration
@@ -201,31 +201,31 @@ SetupInstanceConfiguration()
 #
 FindJavaHome()
 {
-	if [ -x "/bin/uname" ]; then
-		OS_NAME="`/bin/uname -s`"
-		OS_VERSION="`/bin/uname -r`"
-	elif [ -x "/usr/bin/uname" ]; then
-		OS_NAME="`/usr/bin/uname -s`"
-		OS_VERSION="`/usr/bin/uname -r`"
-	else
-		echo "Cannot determine operating system version"
-		exit 3
-	fi
+    if [ -x "/bin/uname" ]; then
+        OS_NAME="`/bin/uname -s`"
+        OS_VERSION="`/bin/uname -r`"
+    elif [ -x "/usr/bin/uname" ]; then
+        OS_NAME="`/usr/bin/uname -s`"
+        OS_VERSION="`/usr/bin/uname -r`"
+    else
+        echo "Cannot determine operating system version"
+        exit 3
+    fi
 
     javaHome=""
     case "${OS_NAME}:${OS_VERSION}" in
-		SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
-		SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
-		SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
-		Darwin:*)    javaHome=`/usr/libexec/java_home`     ;;
-		Linux:*)
+        SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
+        SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
+        SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
+        Darwin:*)    javaHome=`/usr/libexec/java_home`     ;;
+        Linux:*)
             if [ -f /etc/alternatives/java ]
             then
                javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
                javaHome=`dirname $javaHome`
                javaHome=`dirname $javaHome`
             fi
-            ;;
+        ;;
     esac
 
     if [ -z "${javaHome}" ]
