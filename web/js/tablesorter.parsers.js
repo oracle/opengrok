@@ -45,8 +45,32 @@ $.tablesorter.addParser({
         return false;
     },
     format: function (s) {
-        var parts = s.match(/^([\d\.]+) ?(\w*)$/);
-        var num = parts[1];
+        /*
+         * This correctly handles thousand separator
+         * in a big number (either ',' or ' ' or none)
+         *
+         * In our case there is a little gap between 1000 and 1023 which
+         * is still smaller than the next order unit. This should accept all
+         * values like:
+         * 1,000 or 1 000 or 1,023
+         *
+         * However it is more generic just in case. It should not have trouble
+         * with:
+         * 1,000,123,133.235
+         * 1 000.4564
+         * and with even mispelled numbers:
+         * 1,00,345,0.123 (wrong number of digits between the separator)
+         * 13,456 13 45.1234 (mixed separators)
+         * 1000,123 (wrong number of digits between the separator)
+         * 1,123534435,134547435.165165165 (again)
+         */
+        var parts = s.match(/^(\d{1,3}(?:[, ]?\d{1,3})*(?:\.\d+)?|\.\d+) ?(\w*)$/);
+
+        if (parts === null || parts.length < 3) {
+            return 0;
+        }
+
+        var num = parts[1].replace(/[, ]/g, "")
         var unit = parts[2];
 
         // convert to bytes
