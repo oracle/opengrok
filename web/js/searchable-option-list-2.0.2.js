@@ -142,6 +142,7 @@
             maxHeight: undefined,
             converter: undefined,
             asyncBatchSize: 300,
+            searchTimeout: 300,
             maxShow: 0
         },
 
@@ -454,7 +455,13 @@
                         valueChanged = e.originalEvent.propertyName.toLowerCase()=='value';
                     }
                     if (valueChanged) {
-                        self._applySearchTermFilter();
+                        if ($(this).data('timeout')) {
+                            clearTimeout($(this).data('timeout'));
+                        }
+                        $(this).data('timeout', setTimeout(function () {
+                            self._applySearchTermFilter();
+                        }, self.config.searchTimeout))
+
                     }
                 });
 
@@ -586,30 +593,49 @@
                 return;
             }
 
-            var self = this;
+            var self = this,
+                    amountOfUnfilteredItems = dataArray.length
 
             // reset keyboard navigation mode when applying new filter
             this._setKeyBoardNavigationMode(false);
 
-            $.each(dataArray, function (index, item) {
+            /*
+             * Modified 2016
+             * recursion was very slow (however good lookin')
+             */
+            for (var itemIndex = 0; itemIndex < dataArray.length; itemIndex++) {
+                var item = dataArray[itemIndex];
                 if (item.type === 'option') {
                     var $element = item.displayElement,
-                        elementSearchableTerms = (item.label + ' ' + item.tooltip).trim().toLowerCase();
+                            elementSearchableTerms = (item.label + ' ' + item.tooltip).trim().toLowerCase();
 
                     if (elementSearchableTerms.indexOf(searchTerm) === -1) {
                         $element.addClass('sol-filtered-search');
+                        amountOfUnfilteredItems--;
                     }
                 } else {
-                    self._findTerms(item.children, searchTerm);
-                    var amountOfUnfilteredChildren = item.displayElement.find('.sol-option:not(.sol-filtered-search)');
+                    var amountOfUnfilteredChildren = item.children.length
+                    for (var childrenIndex = 0; childrenIndex < item.children.length; childrenIndex++) {
+                        var child = item.children[childrenIndex];
+                        if (child.type === 'option') {
+                            var $element = child.displayElement,
+                                    elementSearchableTerms = (child.label + ' ' + child.tooltip).trim().toLowerCase();
 
-                    if (amountOfUnfilteredChildren.length === 0) {
+                            if (elementSearchableTerms.indexOf(searchTerm) === -1) {
+                                $element.addClass('sol-filtered-search');
+                                amountOfUnfilteredChildren--;
+                            }
+                        }
+                    }
+
+                    if (amountOfUnfilteredChildren === 0) {
                         item.displayElement.addClass('sol-filtered-search');
+                        amountOfUnfilteredItems--;
                     }
                 }
-            });
+            }
 
-            this._setNoResultsItemVisible(this.$selectionContainer.find('.sol-option:not(.sol-filtered-search)').length === 0);
+            this._setNoResultsItemVisible(amountOfUnfilteredItems === 0);
         },
 
         _initializeData: function () {
@@ -1146,7 +1172,7 @@
                             .prop('checked', true)
                             .trigger('change', true);
 
-                this.options.closeOnClick && this.close();
+                this.config.closeOnClick && this.close();
 
                 if ($.isFunction(this.config.events.onChange)) {
                     this.config.events.onChange.call(this, this, $changedInputs);
@@ -1168,7 +1194,7 @@
                 $closedInputs.prop('checked', true)
                              .trigger('change', true)
 
-                this.options.closeOnClick && this.close();
+                this.config.closeOnClick && this.close();
 
                 if ($.isFunction(this.config.events.onChange)) {
                     this.config.events.onChange.call(this, this, $openedInputs.add($closedInputs));
