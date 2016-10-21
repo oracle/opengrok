@@ -956,6 +956,27 @@ public final class PageConfig {
     }
 
     /**
+     * Get the on disk file for the given path.
+     *
+     * NOTE: If a repository contains hard or symbolic links, the returned file
+     * may finally point to a file outside of the source root directory.
+     *
+     * @param path the path to the file relatively to the source root
+     * @return null if the related file or directory is not
+     * available (can not be find below the source root directory), the readable
+     * file or directory otherwise.
+     * @see #getSourceRootPath()
+     */
+    public File getResourceFile(String path) {
+        File f;
+        f = new File(getSourceRootPath(), path);
+        if (!f.canRead()) {
+            return null;
+        }
+        return f;
+    }
+
+    /**
      * Get the on disk file to the request related file or directory.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
@@ -969,8 +990,8 @@ public final class PageConfig {
      */
     public File getResourceFile() {
         if (resourceFile == null) {
-            resourceFile = new File(getSourceRootPath(), getPath());
-            if (!resourceFile.canRead()) {
+            resourceFile = getResourceFile(getPath());
+            if (resourceFile == null) {
                 resourceFile = new File("/");
             }
         }
