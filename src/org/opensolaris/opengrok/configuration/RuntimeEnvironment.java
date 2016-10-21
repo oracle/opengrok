@@ -1732,7 +1732,7 @@ public final class RuntimeEnvironment {
      * so we add them to the map.
      *
      * @param projects list of projects
-     * @param list each SuperIndexSearcher produced will be put into this list
+     * @param searcherList each SuperIndexSearcher produced will be put into this list
      * @return MultiReader for the projects
      */
     public MultiReader getMultiReader(SortedSet<String> projects,
