@@ -41,9 +41,12 @@
 
 .sol-inner-container {
     position: relative;
-    height: 30px;
-    line-height: 30px;
-   
+    /*
+     * Modified 2016
+     */
+    height: 1.3em;
+    line-height: 1.3em;
+
     border: 1px solid #ccc;
     border-radius: 4px;
 
@@ -106,6 +109,10 @@
     outline: none;
     width: 100%;
     height: 100%;
+    /*
+     * Modified 2016
+     */
+    font-size: 16px;
 }
 
 .sol-input-container input[type="text"]:-ms-input-placeholder {
@@ -224,9 +231,10 @@
     /*
      * Modified 2016
      */
-    padding: 5px 10px;
+    padding: 3px 8px;
     display: block;
     position: relative;
+    font-size: 14px;
 }
 
 .sol-label-text {
@@ -235,7 +243,7 @@
 }
 
 .sol-selection:not(.sol-keyboard-navigation) .sol-option:hover, .sol-option.keyboard-selection {
-    background: #0088CC;
+    background: #a3b8cb;
     color: #fff;
 }
 
@@ -252,6 +260,10 @@
     padding: 3px 5px;
     border-top: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
+    /*
+     * Modified 2016
+     */
+    font-size: 14px;
 }
 
 .sol-optiongroup.disabled {

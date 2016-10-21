@@ -1104,7 +1104,7 @@ function init_searchable_option_list() {
             // override the default onScroll positioning event if neccessary
             onScroll: function () {
 
-                var posY = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight(),
+                var posY = this.$input.offset().top - this.config.scrollTarget.scrollTop() + this.$input.outerHeight() + 1,
                         selectionContainerWidth = this.$innerContainer.outerWidth(false) - parseInt(this.$selectionContainer.css('border-left-width'), 10) - parseInt(this.$selectionContainer.css('border-right-width'), 10);
 
                 if (this.$innerContainer.css('display') !== 'block') {

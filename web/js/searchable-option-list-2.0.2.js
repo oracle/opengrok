@@ -1165,8 +1165,9 @@
                 var $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
                         .find(".sol-optiongroup-label")
-                        .filter(':contains("' + optgroup + '")')
-                        .closest('.sol-optiongroup')
+                        .filter(function () {
+                            return $(this).text() === optgroup;
+                        }).closest('.sol-optiongroup')
 
                 $changedInputs = $changedInputs.find('input[type="checkbox"]:not([disabled], :checked)')
                             .prop('checked', true)
@@ -1209,8 +1210,9 @@
                 var $changedInputs = !optgroup ? this.$selectionContainer
                         : this.$selectionContainer
                         .find(".sol-optiongroup-label")
-                        .filter(':contains("' + optgroup + '")')
-                        .closest('.sol-optiongroup')
+                        .filter(function () {
+                            return $(this).text() === optgroup;
+                        }).closest('.sol-optiongroup')
 
                 $changedInputs = $changedInputs.find('.sol-option input[type="checkbox"]:not([disabled]):checked')
                             .prop('checked', false)
