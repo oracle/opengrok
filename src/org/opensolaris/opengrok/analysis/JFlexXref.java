@@ -345,19 +345,6 @@ public abstract class JFlexXref {
         while (!stack.empty()) {
             yypop();
         }
-
-        writeScopesFooter();
-    }
-
-    /**
-     * Write a JavaScript function that display scopes panel if scopes are
-     * available
-     */
-    private void writeScopesFooter() throws IOException {
-        //TODO try to get rid of included js scripts generated from here (all js should ideally be in util)
-        if (scopesEnabled && scopes != null && scopes.size() > 0) {
-            out.append("<script type=\"text/javascript\">document.getElementById(\"scope\").style.display = \"block\";</script>");
-        }
     }
 
     /**

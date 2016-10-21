@@ -858,14 +858,17 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
     display: none;
 }
 
-.intelli-window {
+.window {
     position: absolute;
-    width: 504px;
-    max-height: 400px;
-    overflow: auto;
-    z-index: 10;
     font-size: 12px;
     font-family: monospace;
+    overflow: auto;
+    z-index: 10;
+}
+
+.intelli-window {
+    width: 504px;
+    max-height: 400px;
 }
 
 .symbol-highlighted {
@@ -874,13 +877,13 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
 }
 
 .messages-window {
-    position: absolute;
     width: 40%;
     max-height: 400px;
-    overflow: auto;
-    z-index: 10;
-    font-size: 12px;
-    font-family: monospace;
+}
+
+.scopes-window {
+    min-width: 150px;
+    max-height: 400px;
 }
 
 .important-note {
@@ -1098,16 +1101,6 @@ span.fold-space {
 
 span.scope-signature {
     display: none;
-}
-
-div#scope {
-    display: none;
-    min-height: 1em;
-    text-align: left;
-    background-color: #e4e4c8;
-    padding: 0.5em 0.5em 0.5em 6.5ex;
-    font-family: monospace;
-    font-weight: bold;
 }
 
 /** --------------- fold arrows for main page ------------ */

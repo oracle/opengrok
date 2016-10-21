@@ -550,7 +550,7 @@
                         .append($controls)
 
                 $close.click(function () {
-                    $window.toggle()
+                    $window.hide()
                     return false;
                 });
 
@@ -687,8 +687,6 @@
         this.init = function (options, context) {
             return $.intelliWindow = $window.create($.extend({
                 title: 'Intelligence window',
-                parent: undefined,
-                draggable: true,
                 selector: 'a.intelliWindow-symbol',
                 google_url: 'https://www.google.com/search?q=',
                 project: undefined,
@@ -942,7 +940,6 @@
         this.init = function (options, context) {
             return $.messagesWindow = $window.create(options = $.extend({
                 title: 'Messages Window',
-                parent: undefined,
                 draggable: false,
                 init: function ($window) {
                     return $window
@@ -1000,6 +997,66 @@
     };
     $.messagesWindow = new ($.extend(messagesWindow, $.messagesWindow ? $.messagesWindow : {}));
 })(window, document, jQuery, jQuery.window);
+
+/**
+ * Scopes window plugin.
+ *
+ * @author Kryštof Tulinger
+ */
+(function (browserWindow, document, $, $window) {
+    if (!$window || typeof $window.create !== 'function') {
+        console.log("The scopesWindow plugin requires $.window plugin")
+        return;
+    }
+
+    var scopesWindow = function () {
+        this.init = function (options, context) {
+            return $.scopesWindow = $window.create($.extend({
+                title: 'Scopes Window',
+                draggable: false,
+                init: function ($window) {
+                    return $window
+                            .attr('id', 'scopes_win')
+                            .addClass('scopes-window')
+                            .addClass('diff_navigation_style')
+                            .css({top: '150px', right: '20px'})
+                            .append(this.$scopes = $("<div>"))
+                },
+                load: function ($window) {
+                    $window.hide().css('top', parseFloat($("#content").css('top').replace('px', '')) + 10 + 'px')
+
+                    // override the hide and show to throw an event
+                    $.each(['hide', 'show'], function () {
+                        var event = this
+                        var old = $window[event];
+                        $window[event] = function () {
+                            return old.call($window).trigger(event);
+                        }
+                    });
+                },
+                update: function (data) {
+                    if(!this.$window.is(':visible') && !this.$window.data('shown-once')) {
+                        console.log(data)
+                        this.$window.show().data('shown-once', true);
+                    }
+                    this.$scopes.empty()
+                    this.$scopes.html(this.buildLink(data.id, data.link))
+                }
+            }, options || {}), $.extend({
+                $scopes: $(),
+                buildLink: function (href, name) {
+                    return $('<a>').attr('href', '#' + href).attr('title', name).text(name)
+                }
+            }, context || {}));
+        }
+    }
+    $.scopesWindow = new ($.extend(scopesWindow, $.scopesWindow ? $.scopesWindow : {}));
+})(window, document, jQuery, jQuery.window);
+
+function init_scopes() {
+    $.scopesWindow.init();
+    $("#content").scroll(scope_on_scroll);
+}
 
 function init_results_autohide() {
     $("#sbox input[type='submit']").click(function (e) {
@@ -1126,7 +1183,9 @@ $(document).ready(function () {
      * Initialize scope scroll event to display scope information correctly when
      * the element comes into the viewport.
      */
-    $("#content").scroll(scope_on_scroll);
+    $('#src').each(function () {
+        init_scopes();
+    })
 
     /**
      * Initialize table sorter on every directory listing.
@@ -1501,6 +1560,23 @@ function lsttoggle() {
 
         document.body.appendChild(document.sym_div);
         document.sym_div_shown = 1;
+
+        if ($.scopesWindow.initialized) {
+            $.scopesWindow.on('show', function () {
+                document.sym_div_top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20
+                document.sym_div.style.height = get_sym_div_height() + "px";
+                $(document.sym_div).css('top', $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20);
+            }).on('hide', function () {
+                document.sym_div_top = 100
+                document.sym_div.style.height = get_sym_div_height() + "px";
+                $(document.sym_div).css('top', get_sym_div_top());
+            })
+            if ($.scopesWindow.is(':visible')) {
+                document.sym_div_top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20
+                document.sym_div.style.height = get_sym_div_height() + "px";
+                $(document.sym_div).css('top', $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20);
+            }
+        }
     } else if (document.sym_div_shown == 1) {
         document.sym_div.className = "sym_list_style_hide";
         document.sym_div_shown = 0;
@@ -1676,7 +1752,6 @@ function fold(id) {
 function scope_on_scroll() {
     var cnt = document.getElementById("content");
     var y = cnt.getBoundingClientRect().top + 2;
-    var $scope_cnt_el = $('#scope_content');
     var c = document.elementFromPoint(15, y + 1);
 
     if ($(c).is('.l, .hl')) {
@@ -1688,6 +1763,11 @@ function scope_on_scroll() {
 
         var $head = $par.hasClass('scope-body') ? $par.prev() : $par;
         var $sig = $head.children().first()
-        $scope_cnt_el.html('<a href="#' + $head.attr('id') + '">' + $sig.html() + '</a>');
+        if ($.scopesWindow.initialized) {
+            $.scopesWindow.update({
+                'id': $head.attr('id'),
+                'link': $sig.html(),
+            })
+        }
     }
 }
