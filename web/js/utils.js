@@ -1412,10 +1412,12 @@ function lsttoggle() {
  */
 function lntoggle() {
     $(document.body).toggleClass("lines-hidden");
+    $('.fold-space, .fold-icon, .unfold-icon').toggle()
 }
 
 function lnshow() {
     $(document.body).removeClass("lines-hidden");
+    $('.fold-space, .fold-icon, .unfold-icon').show()
 }
 
 /* ------ Highlighting ------ */
