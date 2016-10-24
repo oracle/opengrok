@@ -1528,15 +1528,29 @@ function togglerevs() {
 }
 
 function selectAllProjects() {
-    $("#project").searchableOptionList().selectAll();
+    if ($("#project").data(SearchableOptionList.prototype.DATA_KEY)) {
+        $("#project").searchableOptionList().selectAll();
+    } else {
+        $("#project option").prop('selected', true)
+    }
 }
 
 function invertAllProjects() {
-    $("#project").searchableOptionList().invert();
+    if ($("#project").data(SearchableOptionList.prototype.DATA_KEY)) {
+        $("#project").searchableOptionList().invert();
+    } else {
+        $("#project option").each(function () {
+            $(this).prop('selected', !$(this).prop('selected'));
+        })
+    }
 }
 
-function deselectAllProjects(){
-    $("#project").searchableOptionList().deselectAll();
+function deselectAllProjects() {
+    if ($("#project").data(SearchableOptionList.prototype.DATA_KEY)) {
+        $("#project").searchableOptionList().deselectAll();
+    } else {
+        $("#project option").prop('selected', false)
+    }
 }
 
 function clearSearchFrom() {
