@@ -8,6 +8,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |'''ViewVC'''
 |'''GNU GLOBAL'''
 |'''OpenGrok'''
+|'''Woboq'''
 |-
 |Full text Search
 |Y
@@ -16,12 +17,14 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |Y
+|
 |-
 |Definition Search
 |P
 |Y
 |Y
 | 
+|Y
 |Y
 |Y
 |-
@@ -32,12 +35,14 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |Y
+|Y
 |-
 |Path search
 |Y
 | 
 |Y
 | 
+|Y
 |Y
 |Y
 |-
@@ -48,6 +53,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |Y
+|
 |-
 |Caller/Callee Search
 | 
@@ -55,6 +61,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 | 
 |P
+|
 |
 |-
 |RegExp Search
@@ -64,6 +71,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |P (only wildcards)
+|
 |-
 |Shows matching lines
 | 
@@ -72,6 +80,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |Y
+|
 |-
 |Hierarchical Search
 | 
@@ -80,6 +89,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |Y
+|
 |-
 |query syntax like AND, OR, field:
 | 
@@ -88,6 +98,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |Y
+|
 |-
 |Incremental update
 | 
@@ -96,6 +107,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |Y
+|
 |-
 |RSS Feed
 | 
@@ -104,6 +116,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 | 
 |Y
+|
 |-
 |Syntax highlighting-Xref
 |Y
@@ -112,6 +125,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |P
 |Y
 |Y
+|
 |-
 |Interface for SCM
 | 
@@ -120,6 +134,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 |Y
 |Y
+|
 |-
 |open source
 |Y
@@ -128,12 +143,14 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 |Y
 |Y
+|
 |-
 |Usable URLs
 |Y
 |N/A
 |N/A
 | 
+|Y
 |Y
 |Y
 |-
@@ -144,6 +161,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |Y
 |N/A
 |Y
+|
 |-
 |Changes at directory level
 | 
@@ -152,6 +170,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |P
 |N/A
 |Y
+|
 |-
 |Multi language support
 |P
@@ -160,12 +179,14 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |N/A
 |Y
 |Y
+|
 |-
 |User interface
 |WEB
 |CLI
 |CLI
 |WEB
+|WEB / CLI
 |WEB / CLI
 |WEB / CLI
 |-
@@ -176,6 +197,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |P (for xrefs)
+|Y
 |-
 |Input completion
 | 
@@ -184,6 +206,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |P (with greasemonkey script)
+|
 |-
 |Built-in parser
 | 
@@ -192,6 +215,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |P (lexical analysis)
+|
 |-
 |Plug-in parser
 | 
@@ -199,6 +223,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |Y
+|
 |
 |-
 |Integration with (exuberant) ctags
@@ -208,6 +233,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |Y
+|
 |-
 |Integration with cscope
 | 
@@ -215,6 +241,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 |N/A
 | 
 |Y
+|
 |
 |-
 |Integration with emacs
@@ -224,6 +251,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |Y
+|
 |-
 |Integration with vim
 | 
@@ -232,6 +260,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |P (through [https://github.com/jdevera/vim-opengrok-search])
+|
 |-
 |Integration with doxygen
 | 
@@ -239,6 +268,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |Y
+|
 |
 |-
 |Integration with Netbeans
@@ -248,6 +278,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |
+|
 |-
 |Integration with Eclipse
 | 
@@ -256,6 +287,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |Y
+|
 |-
 |Integration with less
 | 
@@ -263,6 +295,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |Y
+|
 |
 |-
 |Integration with bash
@@ -272,6 +305,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |
+|
 |-
 |Integration with idutils
 | 
@@ -280,6 +314,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 |Y
 |
+|
 |-
 |Integration with Elvis
 | 
@@ -287,6 +322,7 @@ Disclaimer: this table might be obsolete, if you think it needs adjusting, pleas
 | 
 | 
 |Y
+|
 |
 |-
 |}
