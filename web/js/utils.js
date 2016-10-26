@@ -379,39 +379,127 @@
 })(window, document, jQuery);
 
 /**
- * General window
+ * General window plugin
+ *
+ * This plugin allows you to create a new window inside the browser. The main
+ * interface is create function.
+ *
+ * Usage:
+ * $myWindow = $.window.create({
+ *  // default options (later available via this.options)
+ *  project: 'abcd', // not existing in window options and will be filled
+ *  draggable: false, // override the window defaults
+ *  // callbacks for events
+ *  init: function ($window) {
+ *      // called when creating the new window
+ *      // you can modify the new window object - it's jquery object
+ *  },
+ *  load: function ($window) {
+ *      // called when the page is successfully loaded
+ *      // you can attach some handlers and fill some options with DOM values
+ *  },
+ *  update: function(data) {
+ *      // called when update is called on your window bypassing the data param
+ *      // you can modify the window content or other DOM content
+ *  }
+ * }, {
+ *      // context object - can contain other helper variables and functions
+ *      // it's available in the callbacks as the 'this' variable
+ *      // the window itself is available as this.$window
+ *      modified: false,
+ *      modify: function () {
+ *          this.modified = true;
+ *      },
+ * })
+ *
+ * The new $myWindow object is jQuery object - you can call jQuery functions on it.
+ * It doesn't really make sense to call all of the jQuery functions however
+ * some of them might be useful: toggle, hide, show and so on.
+ *
+ * The window object also provides some userful functions like
+ * $myWindow.error(message) to display an error in this.$errors element or
+ * $myWindow.update(data) to trigger your update callback with given data or
+ * $myWindow.move(position) to move the window to the given position
+ *    if no position is given it may be determined from the mouse position
+ *
+ * @author Kryštof Tulinger
  */
-(function (window, document, $) {
+(function (browserWindow, document, $, $script) {
     var window = function () {
-        var inner = function (options) {
-            var self = this
+        var inner = function (options, context) {
+            var self = this;
             // private
-            this.initialized = false
-            this.$window = undefined
-            this.$errors = undefined
-            this.active = false
-            this.clientX = 0
-            this.clientY = 0
-            // public
+            this.context = context;
+            this.callbacks = {
+                init: [],
+                load: [],
+                update: [],
+            };
+            this.initialised = false;
+            this.$window = undefined;
+            this.$errors = undefined;
+            this.clientX = 0;
+            this.clientY = 0;
+
+            /**
+             * Default values for the window options.
+             */
             this.defaults = {
                 title: 'Window',
                 appendDraggable: '#content',
                 draggable: true,
                 draggableScript: 'js/jquery-ui-1.12.0-draggable.min.js', // relative to context
-                contextPath: window.contextPath,
+                contextPath: browserWindow.contextPath,
+                parent: undefined,
+                load: undefined,
+                init: undefined,
+                handlers: undefined
             }
-            this.options = $.extend({}, self.defaults, options);
+
+            this.options = $.extend({}, this.defaults, options);
+
+            this.addCallback = function (name, callback, context) {
+                context = context || this.getSelfContext;
+                if (!this.callbacks || !$.isArray(this.callbacks[name])) {
+                    this.callbacks[name] = []
+                }
+                this.callbacks[name].push({
+                    'callback': callback,
+                    'context': context
+                })
+            }
+
+            this.fire = function (name, args) {
+                if (!this.callbacks || !$.isArray(this.callbacks[name])) {
+                    return;
+                }
+
+                for (var i = 0; i < this.callbacks[name].length; i++) {
+                    this.$window = (this.callbacks[name][i].callback.apply(
+                            this.callbacks[name][i].context.call(this),
+                            args || [this.$window])) || this.$window
+                }
+            }
+
+            this.getContext = function () {
+                return $.extend(this.context, {options: this.options});
+            }
+
+            this.getSelfContext = function () {
+                return this;
+            }
+
             // private
             this.determinePosition = function () {
                 var position = {}
                 var $w = this.$window;
-                if (this.clientY + $(window).scrollTop() + $w.height() + 40 > $(window).height()) {
-                    position.top = $(window).height() - $w.height() - 40;
+                if (this.clientY + $w.height() + 40 > $(browserWindow).height()) {
+                    position.top = $(browserWindow).height() - $w.height() - 40;
                 } else {
-                    position.top = this.clientY + $(window).scrollTop()
+                    position.top = this.clientY
                 }
-                if (this.clientX + $w.width() + 40 > $(window).width()) {
-                    position.left = $(window).width() - $w.width() - 40;
+                if (this.clientX + $w.width() + 40 > $(browserWindow).width()) {
+                    position.left = $(browserWindow).width() - $w.width() - 40;
                 } else {
                     position.left = this.clientX;
                 }
@@ -419,7 +507,12 @@
             }
 
             this.makeMeDraggable = function () {
-                $.script.loadScript(this.options.draggableScript).done(function () {
+                if (!$script || typeof $script.loadScript !== 'function') {
+                    console.log("The window plugin requires $.script plugin when draggable option is 'true'")
+                    return;
+                }
+
+                $script.loadScript(this.options.draggableScript).done(function () {
                     self.$window.draggable({
                         appendTo: self.options.draggableAppendTo || $('body'),
                         helper: 'clone',
@@ -436,26 +529,8 @@
                 });
             }
 
-            this.registerHandlers = function () {
-                $(document).mousemove(function (e) {
-                    self.clientX = e.clientX;
-                    self.clientY = e.clientY;
-                    //console.log(self.clientX, self.clientY)
-                })
-                $(document).keyup(function (e) {
-                    var key = e.keyCode
-                    switch (key) {
-                        case 27: // esc
-                            self.$window.hide();
-                            break;
-                        default:
-                    }
-                    return true;
-                });
-            }
-
-            this.createWindow = function () {
-                var $window, $top, $close, $controls
+            this.addCallback('init', function ($window) {
+                var $top, $close, $controls
 
                 $top = $("<div>").addClass('clearfix')
                         .append($("<div>").addClass("pull-left").append($("<b>").text(this.options.title || "Window")))
@@ -475,428 +550,513 @@
                         .append($controls)
 
                 $close.click(function () {
-                    $window.toggle()
+                    $window.hide()
                     return false;
                 });
 
+                /**
+                 * Display custom error message in the window
+                 * @param {string} msg message
+                 * @returns self
+                 */
+                $window.error = function (msg) {
+                    var $span = $("<p class='error'>" + msg + "</p>")
+                            .animate({opacity: "0.2"}, 3000)
+                    $span.hide('slow', function () {
+                        $span.remove();
+                    });
+                    self.$errors.html($span)
+                    return this;
+                }
+
+                /**
+                 * Move the window to the position. If no position is given
+                 * it may be determined from the mouse position.
+                 *
+                 * @param {object} position object with top and left attributes
+                 * @returns self
+                 */
+                $window.move = function (position) {
+                    position = position || self.determinePosition()
+                    return this.css(position);
+                };
+
+                /**
+                 * Toggle and move the window to the current mouse position
+                 *
+                 * @returns self
+                 */
+                $window.toggleAndMove = function () {
+                    return this.toggle().move();
+                }
+
+                /**
+                 * Update the window with given data.
+                 *
+                 * @param {mixed} data
+                 * @returns {undefined}
+                 */
+                $window.update = function (data) {
+                    self.fire('update', [data])
+                    return this;
+                }
+
+                // insert window into context
+                this.context = $.extend(this.context, {$window: $window});
+
+                // set us as initialized
+                $window.initialized = true;
+
                 return $window;
-            }
+            });
 
-            // main
-            this.$window = this.$window || this.createWindow()
-            this.registerHandlers()
-
-            if (this.options.draggable && this.options.contextPath) {
-                this.makeMeDraggable()
-            }
-
-            this.$window.error = function (msg) {
-                var $span = $("<p class='error'>" + msg + "</p>")
-                        .animate({opacity: "0.2"}, 3000)
-                $span.hide('slow', function () {
-                    $span.remove();
+            this.addCallback('load', function ($window) {
+                var that = this
+                $(document).mousemove(function (e) {
+                    that.clientX = e.clientX;
+                    that.clientY = e.clientY;
+                })
+                $(document).keyup(function (e) {
+                    var key = e.keyCode
+                    switch (key) {
+                        case 27: // esc
+                            that.$window.hide();
+                            break;
+                        default:
+                    }
+                    return true;
                 });
-                self.$errors.html($span)
+            })
+
+            if (this.options.draggable) {
+                this.addCallback('load', this.makeMeDraggable)
             }
 
-            this.$window.move = function (position) {
-                position = position || self.determinePosition()
-                return this.css(position)
-            };
+            this.addCallback('load', function ($window) {
+                this.$window.appendTo(this.options.parent ? $(this.options.parent) : $("body"));
+            })
 
-            this.$window.toggleAndMove = function () {
-                return this.toggle().move()
+            if (this.options.init && typeof this.options.init === 'function') {
+                this.addCallback('init', this.options.init, this.getContext)
             }
 
-            this.$window.isActive = function () {
-                return self.active
+            if (self.options.load && typeof self.options.load === 'function') {
+                this.addCallback('load', this.options.load, this.getContext)
             }
+
+            if (self.options.update && typeof self.options.update === 'function') {
+                this.addCallback('update', this.options.update, this.getContext)
+            }
+
+            $(function () {
+                self.fire('load');
+            })
+
+            this.fire('init')
 
             return this.$window;
         };
 
-        this.create = function (options) {
-            return new inner(options)
+        /**
+         * Create a window.
+         *
+         * @param {hash} options containing default options and callbacks
+         * @param {hash} context other helper variables and functions
+         * @returns new window object
+         */
+        this.create = function (options, context) {
+            return new inner(options, context)
         }
     };
     $.window = new ($.extend(window, $.window ? $.window : {}));
-})(window, document, jQuery);
+})(window, document, jQuery, jQuery.script);
 
 /**
  * Intelligence window plugin.
  * 
  * Reworked to use Jquery in 2016
  */
-(function (window, document, $) {
+(function (browserWindow, document, $, $window) {
+    if (!$window || typeof $window.create !== 'function') {
+        console.log("The intelligenceWindow plugin requires $.window plugin")
+        return;
+    }
+
     var intelliWindow = function () {
-        var inner = {
-            // private
-            initialized: false,
-            $window: undefined,
-            symbol: undefined,
-            contextPath: undefined,
-            project: undefined,
-            $symbols: undefined,
-            $current: undefined,
-            $last_highlighted_current: $(),
-            $search_defs: undefined,
-            $search_refs: undefined,
-            $search_full: undefined,
-            $search_files: undefined,
-            $search_google: undefined,
-            // public
-            defaults: {
+        this.initialised = false;
+        this.init = function (options, context) {
+            return $.intelliWindow = $window.create($.extend({
                 title: 'Intelligence window',
-                parent: undefined,
-                draggable: true,
                 selector: 'a.intelliWindow-symbol',
                 google_url: 'https://www.google.com/search?q=',
-                contextPath: window.contextPath,
                 project: undefined,
-            },
-            options: {},
-            // private
-            changeSymbol: function ($el) {
-                inner.$current = $el
-                inner.$last_highlighted_current = $el.hasClass("symbol-highlighted") ? $el : inner.$last_highlighted_current
-                inner.symbol = $el.text()
-                inner.place = $el.data("definition-place")
-                inner.$window.find('.hidden-on-start').show()
-                inner.$window.find(".symbol-name").text(inner.symbol);
-                inner.$window.find(".symbol-description").text(inner.getSymbolDescription(inner.place))
-                inner.modifyLinks();
-            },
-            modifyLinks: function () {
-                inner.$search_defs = inner.$search_defs || inner.$window.find('.search-defs')
-                inner.$search_refs = inner.$search_refs || inner.$window.find('.search-refs')
-                inner.$search_full = inner.$search_full || inner.$window.find('.search-full')
-                inner.$search_files = inner.$search_files || inner.$window.find('.search-files')
-                inner.$search_google = inner.$search_google || inner.$window.find('.search-google')
+                init: function ($window) {
+                    var $highlight, $unhighlight, $unhighlighAll, $prev, $next
 
-                inner.$search_defs.attr('href', inner.getSearchLink('defs'));
-                inner.$search_refs.attr('href', inner.getSearchLink('refs'));
-                inner.$search_full.attr('href', inner.getSearchLink('q'));
-                inner.$search_files.attr('href', inner.getSearchLink('path'));
-                inner.$search_google.attr('href', inner.options.google_url + inner.symbol)
-            },
-            getSearchLink: function (query) {
-                return inner.options.contextPath + '/search?' + query + '=' + inner.symbol + '&project=' + inner.project;
-            },
-            getSymbolDescription: function (place) {
-                switch (place) {
-                    case "def":
-                        return "A declaration or definition.";
-                    case "defined-in-file":
-                        return "A symbol declared or defined in this file.";
-                    case "undefined-in-file":
-                        return "A symbol declared or defined elsewhere.";
-                    default:
-                        // should not happen
-                        return "Something I have no idea about.";
-                }
-            },
-            getSymbols: function () {
-                return (inner.$symbols = inner.$symbols || $(inner.options.selector));
-            },
-            highlight: function (symbol) {
-                if (inner.$current.text() === symbol) {
-                    inner.$last_highlighted_current = inner.$current;
-                }
-                return inner.getSymbols().filter(function () {
-                    return $(this).text() === symbol;
-                }).addClass('symbol-highlighted')
-            },
-            unhighlight: function (symbol) {
-                if (inner.$last_highlighted_current &&
-                        inner.$last_highlighted_current.text() === symbol &&
-                        inner.$last_highlighted_current.hasClass('symbol-highlighted')) {
-                    var i = inner.getSymbols().index(inner.$last_highlighted_current)
-                    inner.$last_highlighted_jump = inner.getSymbols().slice(0, i).filter('.symbol-highlighted').last();
-                }
-                return inner.getSymbols().filter(".symbol-highlighted").filter(function () {
-                    return $(this).text() === symbol;
-                }).removeClass('symbol-highlighted')
+                    var $firstList = $("<ul>")
+                            .append($("<li>").append(
+                                    $highlight = $("<a href=\"#\" title=\"Highlight\">" +
+                                            "<span>Highlight</span> <b class=\"symbol-name\"></b></a>")))
+                            .append($("<li>").append(
+                                    $unhighlight = $("<a href=\"#\" title=\"Unhighlight\">" +
+                                            "<span>Unhighlight</span> <b class=\"symbol-name\"></b></a>")))
+                            .append($("<li>").append(
+                                    $unhighlighAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
+                                            "<span>Unhighlight all</span></a>")))
 
-            },
-            unhighlightAll: function () {
-                inner.$last_highlighted_current = undefined
-                return inner.getSymbols().filter(".symbol-highlighted").removeClass("symbol-highlighted")
-            },
-            scrollTop: function ($el) {
-                if (inner.options.scrollTop) {
-                    inner.options.scrollTop($el)
-                } else {
-                    $("#content").stop().animate({
-                        scrollTop: $el.offset().top - $("#src").offset().top
-                    }, 500);
-                }
-            },
-            scrollToNextElement: function (direction) {
-                var UP = -1;
-                var DOWN = 1;
-                var $highlighted = inner.getSymbols().filter(".symbol-highlighted");
-                var $el = $highlighted.length && inner.$last_highlighted_current
-                        ? inner.$last_highlighted_current
-                        : inner.$current;
-                var indexOfCurrent = inner.getSymbols().index($el);
+                    this.bindOnClick($highlight, this.highlight)
+                    this.bindOnClick($unhighlight, this.unhighlight)
+                    this.bindOnClick($unhighlighAll, this.unhighlightAll);
 
-                switch (direction) {
-                    case DOWN:
-                        $el = inner.getSymbols().slice(indexOfCurrent + 1);
-                        if ($highlighted.length) {
-                            $el = $el.filter('.symbol-highlighted')
-                        }
-                        if (!$el.length) {
-                            inner.$window.error("This is the last occurence!")
-                            return;
-                        }
-                        $el = $el.first();
-                        break;
-                    case UP:
-                        $el = inner.getSymbols().slice(0, indexOfCurrent);
-                        if ($highlighted.length) {
-                            $el = $el.filter('.symbol-highlighted')
-                        }
-                        if (!$el.length) {
-                            inner.$window.error("This is the first occurence!")
-                            return;
-                        }
-                        $el = $el.last();
-                        break;
-                    default:
-                        inner.$window.error("Uknown direction")
-                        return;
-                }
+                    var $secondList = $("<ul>")
+                            .append($("<li>").append(
+                                    $("<a class=\"search-defs\" href=\"#\" target=\"_blank\">" +
+                                            "<span>Search for definitions of</span> <b class=\"symbol-name\"></b></a>")))
+                            .append($("<li>").append(
+                                    $("<a class=\"search-refs\" href=\"#\" target=\"_blank\">" +
+                                            "<span>Search for references of</span> <b class=\"symbol-name\"></b></a>")))
+                            .append($("<li>").append(
+                                    $("<a class=\"search-full\" href=\"#\" target=\"_blank\">" +
+                                            "<span>Do a full search with</span> <b class=\"symbol-name\"></b></a>")))
+                            .append($("<li>").append(
+                                    $("<a class=\"search-files\" href=\"#\" target=\"_blank\">" +
+                                            "<span>Search for file names that contain</span> <b class=\"symbol-name\"></b></a>")))
 
-                inner.scrollTop($el)
-                inner.changeSymbol($el)
-            },
-            toggle: function () {
-                return inner.$window.toggle();
-            },
-            hide: function () {
-                return inner.$window.hide();
-            },
-            show: function () {
-                return inner.$window.show();
-            },
-            registerHandlers: function () {
-                $(document).keypress(function (e) {
-                    var key = e.which
-                    switch (key) {
-                        case 49: // 1
-                            if (inner.symbol) {
-                                inner.$window.toggleAndMove()
+                    var $thirdList = $("<ul>")
+                            .append($("<li>").append(
+                                    $("<a class=\"search-google\" href=\"#\" target=\"_blank\">" +
+                                            "<span>Google</span> <b class=\"symbol-name\"></b></a>")))
+
+                    var $controls = $("<div class=\"pull-right\">")
+                            .append($next = $("<a href=\"#\" title=\"next\" class=\"pull-right\">Next >></a>"))
+                            .append("<span class=\"pull-right\"> | </span>")
+                            .append($prev = $("<a href=\"#\" title=\"prev\" class=\"pull-right\"><< Prev </a>"))
+                            .append($("<div class=\"clearfix\">"))
+                            .append(this.$errors = $("<span class=\"clearfix\">"))
+
+                    this.bindOnClick($next, this.scrollToNextElement, 1);
+                    this.bindOnClick($prev, this.scrollToNextElement, -1);
+
+                    return $window
+                            .attr('id', 'intelli_win')
+                            .addClass('intelli-window')
+                            .append($controls)
+                            .append($("<h2>").addClass('symbol-name'))
+                            .append($("<span>").addClass('symbol-description'))
+                            .append($("<hr>"))
+                            .append($("<h5>").text("In current file"))
+                            .append($firstList)
+                            .append($("<h5>").text("In project \"" + this.project + "\""))
+                            .append($secondList)
+                            .append($("<h5>").text("On Google"))
+                            .append($thirdList);
+                },
+                load: function ($window) {
+                    var that = this;
+                    $(document).keypress(function (e) {
+                        var key = e.which;
+                        switch (key) {
+                            case 49: // 1
+                                if (that.symbol) {
+                                    that.$window.toggleAndMove();
+                                }
+                                break;
+                            case 50: // 2
+                                if (that.symbol) {
+                                    that.unhighlight(that.symbol).length === 0 && that.highlight(that.symbol);
+                                }
+                                break;
+                            case 51: // 3
+                                that.unhighlightAll();
+                                break;
+                            case 110: // n
+                                that.scrollToNextElement(1);
+                                break;
+                            case 98: // b
+                                that.scrollToNextElement(-1);
+                                break;
+                            default:
+                        }
+                        return true;
+                    });
+                    this.getSymbols().mouseover(function () {
+                        that.changeSymbol($(this));
+                    });
+                    this.project = this.options.project || $("input[name='project']").val();
+                    this.contextPath = browserWindow.contextPath;
+                },
+            }, options || {}), $.extend({
+                symbol: undefined,
+                project: undefined,
+                $symbols: undefined,
+                $current: undefined,
+                $last_highlighted_current: $(),
+                $search_defs: undefined,
+                $search_refs: undefined,
+                $search_full: undefined,
+                $search_files: undefined,
+                $search_google: undefined,
+                changeSymbol: function ($el) {
+                    this.$current = $el
+                    this.$last_highlighted_current = $el.hasClass("symbol-highlighted") ? $el : this.$last_highlighted_current
+                    this.symbol = $el.text()
+                    this.place = $el.data("definition-place")
+                    this.$window.find('.hidden-on-start').show()
+                    this.$window.find(".symbol-name").text(this.symbol);
+                    this.$window.find(".symbol-description").text(this.getSymbolDescription(this.place))
+                    this.modifyLinks();
+                },
+                modifyLinks: function () {
+                    this.$search_defs = this.$search_defs || this.$window.find('.search-defs')
+                    this.$search_refs = this.$search_refs || this.$window.find('.search-refs')
+                    this.$search_full = this.$search_full || this.$window.find('.search-full')
+                    this.$search_files = this.$search_files || this.$window.find('.search-files')
+                    this.$search_google = this.$search_google || this.$window.find('.search-google')
+
+                    this.$search_defs.attr('href', this.getSearchLink('defs'));
+                    this.$search_refs.attr('href', this.getSearchLink('refs'));
+                    this.$search_full.attr('href', this.getSearchLink('q'));
+                    this.$search_files.attr('href', this.getSearchLink('path'));
+                    this.$search_google.attr('href', this.options.google_url + this.symbol)
+                },
+                getSearchLink: function (query) {
+                    return this.options.contextPath + '/search?' + query + '=' + this.symbol + '&project=' + this.project;
+                },
+                getSymbolDescription: function (place) {
+                    switch (place) {
+                        case "def":
+                            return "A declaration or definition.";
+                        case "defined-in-file":
+                            return "A symbol declared or defined in this file.";
+                        case "undefined-in-file":
+                            return "A symbol declared or defined elsewhere.";
+                        default:
+                            // should not happen
+                            return "Something I have no idea about.";
+                    }
+                },
+                getSymbols: function () {
+                    return (this.$symbols = this.$symbols || $(this.options.selector));
+                },
+                highlight: function (symbol) {
+                    if (this.$current.text() === symbol) {
+                        this.$last_highlighted_current = this.$current;
+                    }
+                    return this.getSymbols().filter(function () {
+                        return $(this).text() === symbol;
+                    }).addClass('symbol-highlighted')
+                },
+                unhighlight: function (symbol) {
+                    if (this.$last_highlighted_current &&
+                            this.$last_highlighted_current.text() === symbol &&
+                            this.$last_highlighted_current.hasClass('symbol-highlighted')) {
+                        var i = this.getSymbols().index(this.$last_highlighted_current)
+                        this.$last_highlighted_jump = this.getSymbols().slice(0, i).filter('.symbol-highlighted').last();
+                    }
+                    return this.getSymbols().filter(".symbol-highlighted").filter(function () {
+                        return $(this).text() === symbol;
+                    }).removeClass('symbol-highlighted')
+
+                },
+                unhighlightAll: function () {
+                    this.$last_highlighted_current = undefined
+                    return this.getSymbols().filter(".symbol-highlighted").removeClass("symbol-highlighted")
+                },
+                scrollTop: function ($el) {
+                    if (this.options.scrollTop) {
+                        this.options.scrollTop($el)
+                    } else {
+                        $("#content").stop().animate({
+                            scrollTop: $el.offset().top - $("#src").offset().top
+                        }, 500);
+                    }
+                },
+                scrollToNextElement: function (direction) {
+                    var UP = -1;
+                    var DOWN = 1;
+                    var $highlighted = this.getSymbols().filter(".symbol-highlighted");
+                    var $el = $highlighted.length && this.$last_highlighted_current
+                            ? this.$last_highlighted_current
+                            : this.$current;
+                    var indexOfCurrent = this.getSymbols().index($el);
+
+                    switch (direction) {
+                        case DOWN:
+                            $el = this.getSymbols().slice(indexOfCurrent + 1);
+                            if ($highlighted.length) {
+                                $el = $el.filter('.symbol-highlighted')
                             }
-                            break;
-                        case 50: // 2
-                            if (inner.symbol) {
-                                inner.unhighlight(inner.symbol).length === 0 && inner.highlight(inner.symbol)
+                            if (!$el.length) {
+                                this.$window.error("This is the last occurence!")
+                                return;
                             }
+                            $el = $el.first();
                             break;
-                        case 51: // 3
-                            inner.unhighlightAll()
-                            break;
-                        case 110: // n
-                            inner.scrollToNextElement(1)
-                            break;
-                        case 98: // b
-                            inner.scrollToNextElement(-1)
+                        case UP:
+                            $el = this.getSymbols().slice(0, indexOfCurrent);
+                            if ($highlighted.length) {
+                                $el = $el.filter('.symbol-highlighted')
+                            }
+                            if (!$el.length) {
+                                this.$window.error("This is the first occurence!")
+                                return;
+                            }
+                            $el = $el.last();
                             break;
                         default:
+                            this.$window.error("Uknown direction")
+                            return;
                     }
-                    return true;
-                });
-                inner.getSymbols().mouseover(function () {
-                    inner.changeSymbol($(this));
-                });
-            },
-            bindOnClick: function ($el, callback, param) {
-                $el.click(function (e) {
-                    e.preventDefault()
-                    callback(param || inner.symbol)
-                    return false;
-                })
-            },
-            apply: function ($window) {
-                var $highlight, $unhighlight, $unhighlighAll, $prev, $next
 
-                var $firstList = $("<ul>")
-                        .append($("<li>").append(
-                                $highlight = $("<a href=\"#\" title=\"Highlight\">" +
-                                        "<span>Highlight</span> <b class=\"symbol-name\"></b></a>")))
-                        .append($("<li>").append(
-                                $unhighlight = $("<a href=\"#\" title=\"Unhighlight\">" +
-                                        "<span>Unhighlight</span> <b class=\"symbol-name\"></b></a>")))
-                        .append($("<li>").append(
-                                $unhighlighAll = $("<a href=\"#\" title=\"Unhighlight all\">" +
-                                        "<span>Unhighlight all</span></a>")))
-
-                inner.bindOnClick($highlight, inner.highlight)
-                inner.bindOnClick($unhighlight, inner.unhighlight)
-                inner.bindOnClick($unhighlighAll, inner.unhighlightAll);
-
-                var $secondList = $("<ul>")
-                        .append($("<li>").append(
-                                $("<a class=\"search-defs\" href=\"#\" target=\"_blank\">" +
-                                        "<span>Search for definitions of</span> <b class=\"symbol-name\"></b></a>")))
-                        .append($("<li>").append(
-                                $("<a class=\"search-refs\" href=\"#\" target=\"_blank\">" +
-                                        "<span>Search for references of</span> <b class=\"symbol-name\"></b></a>")))
-                        .append($("<li>").append(
-                                $("<a class=\"search-full\" href=\"#\" target=\"_blank\">" +
-                                        "<span>Do a full search with</span> <b class=\"symbol-name\"></b></a>")))
-                        .append($("<li>").append(
-                                $("<a class=\"search-files\" href=\"#\" target=\"_blank\">" +
-                                        "<span>Search for file names that contain</span> <b class=\"symbol-name\"></b></a>")))
-
-                var $thirdList = $("<ul>")
-                        .append($("<li>").append(
-                                $("<a class=\"search-google\" href=\"#\" target=\"_blank\">" +
-                                        "<span>Google</span> <b class=\"symbol-name\"></b></a>")))
-
-                var $controls = $("<div class=\"pull-right\">")
-                        .append($next = $("<a href=\"#\" title=\"next\" class=\"pull-right\">Next >></a>"))
-                        .append("<span class=\"pull-right\"> | </span>")
-                        .append($prev = $("<a href=\"#\" title=\"prev\" class=\"pull-right\"><< Prev </a>"))
-                        .append($("<div class=\"clearfix\">"))
-                        .append(inner.$errors = $("<span class=\"clearfix\">"))
-
-                inner.bindOnClick($next, inner.scrollToNextElement, 1);
-                inner.bindOnClick($prev, inner.scrollToNextElement, -1);
-
-                return $window
-                        .attr('id', 'intelli_win')
-                        .addClass('intelli-window')
-                        .append($controls)
-                        .append($("<h2>").addClass('symbol-name'))
-                        .append($("<span>").addClass('symbol-description'))
-                        .append($("<hr>"))
-                        .append($("<h5>").text("In current file"))
-                        .append($firstList)
-                        .append($("<h5>").text("In project \"" + inner.project + "\""))
-                        .append($secondList)
-                        .append($("<h5>").text("On Google"))
-                        .append($thirdList)
-            },
-            init: function () {
-                if (inner.initialized) {
-                    return
-                }
-                inner.initialized = true
-                inner.project = inner.options.project || $("input[name='project']").val();
-
-                inner.$window = inner.$window || $.window.create(inner.options)
-                inner.$window = inner.apply(inner.$window)
-                inner.$window.appendTo(inner.parent ? $(inner.parent) : $("#content"));
-                inner.registerHandlers()
-            }
-        };
-
-        this.init = function (options) {
-            inner.options = $.extend({}, inner.defaults, options);
-            inner.init();
+                    this.scrollTop($el)
+                    this.changeSymbol($el)
+                },
+                bindOnClick: function ($el, callback, param) {
+                    var that = this
+                    $el.click(function (e) {
+                        e.preventDefault()
+                        callback.call(that, param || that.symbol)
+                        return false;
+                    })
+                },
+            }, context || {}));
         }
-    };
+    }
     $.intelliWindow = new ($.extend(intelliWindow, $.intelliWindow ? $.intelliWindow : {}));
-})(window, document, jQuery);
+})(window, document, jQuery, jQuery.window);
 
 /**
  * Messages window plugin.
  *
  * @author Kryštof Tulinger
  */
-(function (window, document, $) {
+(function (browserWindow, document, $, $window) {
+    if (!$window || typeof $window.create !== 'function') {
+        console.log("The messagesWindow plugin requires $.window plugin")
+        return;
+    }
+    
     var messagesWindow = function () {
-        var inner = {
-            // private
-            initialized: false,
-            $window: undefined,
-            $messages: $(),
-            // public
-            defaults: {
+        this.init = function (options, context) {
+            return $.messagesWindow = $window.create(options = $.extend({
                 title: 'Messages Window',
-                parent: undefined,
                 draggable: false,
-                contextPath: window.contextPath,
-            },
-            options: {},
-            // private
-            registerHandlers: function () {
-                inner.$window.mouseenter(function () {
-                    inner.$window.show()
-                }).mouseleave(function () {
-                    inner.$window.hide()
-                })
-            },
-            apply: function ($window) {
-                return $window
-                        .attr('id', 'messages_win')
-                        .addClass('messages-window')
-                        .addClass('diff_navigation_style')
-                        .css({top: '150px', right: '20px'})
-                        //.append($("<h5>").text("System messages"))
-                        .append(inner.$messages = $("<div>"))
-            },
-            init: function () {
-                if (inner.initialized) {
-                    return
-                }
-                inner.initialized = true
+                init: function ($window) {
+                    return $window
+                            .attr('id', 'messages_win')
+                            .addClass('messages-window')
+                            .addClass('diff_navigation_style')
+                            .css({top: '150px', right: '20px'})
+                            .append(this.$messages = $("<div>"))
+                },
+                load: function ($window) {
+                    $window.mouseenter(function () {
+                        $window.show()
+                    }).mouseleave(function () {
+                        $window.hide()
+                    })
 
-                inner.$window = inner.$window || $.window.create(inner.options)
-                inner.$window = inner.apply(inner.$window)
-                inner.$window.appendTo(inner.parent ? $(inner.parent) : $("body"));
-                inner.registerHandlers()
-            }
-        };
-
-        this.toggle = function () {
-            return inner.$window.toggle().move()
-        }
-
-        this.hide = function () {
-            return inner.$window.hide();
-        }
-
-        this.update = function (data) {
-            inner.$messages.empty()
-            for (var i = 0; i < data.length; i++) {
-                var tag = data[i]
-                if (!tag || tag.messages.length === 0) {
-                    continue;
-                }
-                inner.$messages.append($("<h5>")
-                        .addClass('message-group-caption')
-                        .text(tag.tag.charAt(0).toUpperCase() + tag.tag.slice(1)))
-                var $ul = $("<ul>").addClass('message-group limited');
-                for (var j = 0; j < tag.messages.length; j++) {
-                    if (!tag.messages[j]) {
-                        continue;
+                    // simulate show/toggle and move
+                    $.each(['show', 'toggle'], function () {
+                        var old = $window[this]
+                        $window[this] = function () {
+                            return old.call($window).move();
+                        }
+                    })
+                },
+                update: function (data) {
+                    this.$messages.empty()
+                    for (var i = 0; i < data.length; i++) {
+                        var tag = data[i]
+                        if (!tag || tag.messages.length === 0) {
+                            continue;
+                        }
+                        this.$messages.append($("<h5>")
+                                .addClass('message-group-caption')
+                                .text(tag.tag.charAt(0).toUpperCase() + tag.tag.slice(1)))
+                        var $ul = $("<ul>").addClass('message-group limited');
+                        for (var j = 0; j < tag.messages.length; j++) {
+                            if (!tag.messages[j]) {
+                                continue;
+                            }
+                            $ul.append(
+                                    $('<li>')
+                                    .addClass('message-group-item')
+                                    .addClass(tag.messages[j].class)
+                                    .attr('title', 'Expires on ' + tag.messages[j].expiration)
+                                    .html(tag.messages[j].created + ': ' + tag.messages[j].text)
+                                    )
+                        }
+                        this.$messages.append($ul);
                     }
-                    $ul.append(
-                            $('<li>')
-                            .addClass('message-group-item')
-                            .addClass(tag.messages[j].class)
-                            .attr('title', 'Expires on ' + tag.messages[j].expiration)
-                            .html(tag.messages[j].created + ': ' + tag.messages[j].text)
-                            )
                 }
-                inner.$messages.append($ul);
-            }
-        }
-
-        this.show = function () {
-            return inner.$window.show().move()
-        }
-
-        this.init = function (options) {
-            inner.options = $.extend({}, inner.defaults, options);
-            inner.init();
+            }, options || {}), $.extend({
+                $messages: $(),
+            }, context || {}));
         }
     };
     $.messagesWindow = new ($.extend(messagesWindow, $.messagesWindow ? $.messagesWindow : {}));
-})(window, document, jQuery);
+})(window, document, jQuery, jQuery.window);
+
+/**
+ * Scopes window plugin.
+ *
+ * @author Kryštof Tulinger
+ */
+(function (browserWindow, document, $, $window) {
+    if (!$window || typeof $window.create !== 'function') {
+        console.log("The scopesWindow plugin requires $.window plugin")
+        return;
+    }
+
+    var scopesWindow = function () {
+        this.init = function (options, context) {
+            return $.scopesWindow = $window.create($.extend({
+                title: 'Scopes Window',
+                draggable: false,
+                init: function ($window) {
+                    return $window
+                            .attr('id', 'scopes_win')
+                            .addClass('scopes-window')
+                            .addClass('diff_navigation_style')
+                            .css({top: '150px', right: '20px'})
+                            .append(this.$scopes = $("<div>"))
+                },
+                load: function ($window) {
+                    $window.hide().css('top', parseFloat($("#content").css('top').replace('px', '')) + 10 + 'px')
+
+                    // override the hide and show to throw an event
+                    $.each(['hide', 'show'], function () {
+                        var event = this
+                        var old = $window[event];
+                        $window[event] = function () {
+                            return old.call($window).trigger(event);
+                        }
+                    });
+                },
+                update: function (data) {
+                    if(!this.$window.is(':visible') && !this.$window.data('shown-once')) {
+                        console.log(data)
+                        this.$window.show().data('shown-once', true);
+                    }
+                    this.$scopes.empty()
+                    this.$scopes.html(this.buildLink(data.id, data.link))
+                }
+            }, options || {}), $.extend({
+                $scopes: $(),
+                buildLink: function (href, name) {
+                    return $('<a>').attr('href', '#' + href).attr('title', name).text(name)
+                }
+            }, context || {}));
+        }
+    }
+    $.scopesWindow = new ($.extend(scopesWindow, $.scopesWindow ? $.scopesWindow : {}));
+})(window, document, jQuery, jQuery.window);
+
+function init_scopes() {
+    $.scopesWindow.init();
+    $("#content").scroll(scope_on_scroll);
+}
 
 function init_results_autohide() {
     $("#sbox input[type='submit']").click(function (e) {
@@ -920,13 +1080,15 @@ function init_searchable_option_list() {
         resultsContainer: $("#ltbl"),
         events: {
             onInitialized: function () {
-                this.$selectionContainer.find("[data-messages]").mouseenter(function () {
-                    var data = $(this).data('messages') || []
-                    $.messagesWindow.update(data)
-                    $.messagesWindow.show()
-                }).mouseleave(function (e) {
-                    $.messagesWindow.hide()
-                })
+                if ($.messagesWindow.initialized) {
+                    this.$selectionContainer.find("[data-messages]").mouseenter(function () {
+                        var data = $(this).data('messages') || []
+                        $.messagesWindow.update(data)
+                        $.messagesWindow.show()
+                    }).mouseleave(function (e) {
+                        $.messagesWindow.hide()
+                    })
+                }
             },
             // override the default onScroll positioning event if neccessary
             onScroll: function () {
@@ -1021,7 +1183,9 @@ $(document).ready(function () {
      * Initialize scope scroll event to display scope information correctly when
      * the element comes into the viewport.
      */
-    $("#content").scroll(scope_on_scroll);
+    $('#src').each(function () {
+        init_scopes();
+    })
 
     /**
      * Initialize table sorter on every directory listing.
@@ -1034,7 +1198,7 @@ $(document).ready(function () {
      */
     $("#contextpath").each(function () {
         $.intelliWindow.init();
-        return false
+        return false;
     })
 
     /**
@@ -1046,13 +1210,15 @@ $(document).ready(function () {
     /**
      * Attaches a onhover listener to display messages for affected elements.
      */
-    $("[data-messages]").mouseenter(function () {
-        var data = $(this).data('messages') || []
-        $.messagesWindow.update(data)
-        $.messagesWindow.show()
-    }).mouseleave(function (e) {
-        $.messagesWindow.hide()
-    })
+    if ($.messagesWindow.initialized) {
+        $("[data-messages]").mouseenter(function () {
+            var data = $(this).data('messages') || []
+            $.messagesWindow.update(data)
+            $.messagesWindow.show()
+        }).mouseleave(function (e) {
+            $.messagesWindow.hide()
+        })
+    }
 
     /**
      * Initialize spaces plugin which automaticaly inserts a single space between
@@ -1394,6 +1560,23 @@ function lsttoggle() {
 
         document.body.appendChild(document.sym_div);
         document.sym_div_shown = 1;
+
+        if ($.scopesWindow.initialized) {
+            $.scopesWindow.on('show', function () {
+                document.sym_div_top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20
+                document.sym_div.style.height = get_sym_div_height() + "px";
+                $(document.sym_div).css('top', $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20);
+            }).on('hide', function () {
+                document.sym_div_top = 100
+                document.sym_div.style.height = get_sym_div_height() + "px";
+                $(document.sym_div).css('top', get_sym_div_top());
+            })
+            if ($.scopesWindow.is(':visible')) {
+                document.sym_div_top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20
+                document.sym_div.style.height = get_sym_div_height() + "px";
+                $(document.sym_div).css('top', $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20);
+            }
+        }
     } else if (document.sym_div_shown == 1) {
         document.sym_div.className = "sym_list_style_hide";
         document.sym_div_shown = 0;
@@ -1569,7 +1752,6 @@ function fold(id) {
 function scope_on_scroll() {
     var cnt = document.getElementById("content");
     var y = cnt.getBoundingClientRect().top + 2;
-    var $scope_cnt_el = $('#scope_content');
     var c = document.elementFromPoint(15, y + 1);
 
     if ($(c).is('.l, .hl')) {
@@ -1581,6 +1763,11 @@ function scope_on_scroll() {
 
         var $head = $par.hasClass('scope-body') ? $par.prev() : $par;
         var $sig = $head.children().first()
-        $scope_cnt_el.html('<a href="#' + $head.attr('id') + '">' + $sig.html() + '</a>');
+        if ($.scopesWindow.initialized) {
+            $.scopesWindow.update({
+                'id': $head.attr('id'),
+                'link': $sig.html(),
+            })
+        }
     }
 }
