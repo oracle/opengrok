@@ -479,7 +479,6 @@ public abstract class JFlexXref {
     protected void startNewLine() throws IOException {
         String iconId = null;
         int line = getLineNumber() + 1;
-        boolean skipNl = false;
         setLineNumber(line);
 
         if (scopesEnabled) {
@@ -488,7 +487,6 @@ public abstract class JFlexXref {
             if (scopeOpen && scope == null) {
                 scopeOpen = false;
                 out.write("</span>");
-                skipNl = true;
             } else if (scope != null) {
                 String scopeId = generateId(scope);
                 if (scope.getLineFrom() == line) {
@@ -498,7 +496,6 @@ public abstract class JFlexXref {
                     out.write(htmlize(scope.getName() + scope.getSignature()));
                     out.write("</span>");
                     iconId = scopeId + "_fold_icon";
-                    skipNl = true;
                 } else if (scope.getLineFrom() == line - 1) {
                     if (scopeOpen) {
                         out.write("</span>");
@@ -507,14 +504,13 @@ public abstract class JFlexXref {
                     out.write("<span id='");
                     out.write(scopeId);
                     out.write("_fold' class='scope-body'>");
-                    skipNl = true;
                 }
                 scopeOpen = true;
             }
         }
 
         Util.readableLine(line, out, annotation, userPageLink, userPageSuffix,
-                getProjectPostfix(true), skipNl);
+                getProjectPostfix(true));
 
         if (foldingEnabled && scopesEnabled) {
             if (iconId != null) {

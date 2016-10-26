@@ -1035,11 +1035,11 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
 /* *** scopes *** */
 
 span.scope-head {
-    display: block;
+    display: inline;
 }
 
 span.scope-body {
-    display: block;
+    display: inline;
 }
 
 span.unfold-icon {
