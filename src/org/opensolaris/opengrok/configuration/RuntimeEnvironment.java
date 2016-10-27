@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -82,6 +83,7 @@ import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.XmlEofInputStream;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -1436,7 +1438,8 @@ public final class RuntimeEnvironment {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 15);
                     while (!sock.isClosed()) {
                         try (Socket s = sock.accept();
-                                BufferedInputStream in = new BufferedInputStream(s.getInputStream())) {
+                                BufferedInputStream in = new BufferedInputStream(new XmlEofInputStream(s.getInputStream()));
+                                OutputStream output = s.getOutputStream()) {
                             bos.reset();
                             LOGGER.log(Level.FINE, "OpenGrok: Got request from {0}",
                                     s.getInetAddress().getHostAddress());
@@ -1476,9 +1479,11 @@ public final class RuntimeEnvironment {
                                             m.getTags());
                                     LOGGER.log(Level.FINER, "Messages in the system: {0}",
                                             getMessagesInTheSystem());
+                                    output.write(Message.MESSAGE_OK);
                                 } else {
                                     LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system",
                                             m.getTags());
+                                    output.write(Message.MESSAGE_LIMIT);
                                 }
                             }
                         } catch (IOException e) {

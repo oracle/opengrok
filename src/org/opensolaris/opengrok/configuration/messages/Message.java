@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
- /*
+/*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.XmlEofOutputStream;
 
 /**
  * If you extend this file, don't forget to add an information into the root
@@ -55,6 +56,10 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 public abstract class Message implements Comparable<Message> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Message.class);
+
+    public static final int MESSAGE_OK = 0x1;
+    public static final int MESSAGE_LIMIT = 0x2;
+    public static final int MESSAGE_ERROR = 0x4;
 
     protected static final int SECOND = 1000;
     protected static final int MINUTE = 60 * SECOND;
@@ -237,12 +242,23 @@ public abstract class Message implements Comparable<Message> {
     }
 
     /**
-     * XML SERIALIZATION
+     * Serialize the message as XML and send it into the socket.
+     *
+     * @param host host
+     * @param port port number
+     * @throws IOException
+     *
+     * @see #throwIfError(int)
      */
     public void write(String host, int port) throws IOException {
-        try (Socket sock = new Socket(host, port);
-                XMLEncoder e = new XMLEncoder(sock.getOutputStream())) {
-            e.writeObject(this);
+        try (Socket sock = new Socket(host, port)) {
+            try (XMLEncoder e = new XMLEncoder(new XmlEofOutputStream(sock.getOutputStream()))) {
+                e.writeObject(this);
+            }
+
+            try (InputStream input = sock.getInputStream()) {
+                throwIfError(input.read());
+            }
         }
     }
 
@@ -294,4 +310,26 @@ public abstract class Message implements Comparable<Message> {
         return conf;
     }
 
+    /**
+     * Decode the return code from the remote server.
+     *
+     * @param c the code
+     * @throws IOException if the return code meant an error
+     */
+    private void throwIfError(int c) throws IOException {
+        switch (c) {
+            case MESSAGE_OK:
+                break;
+            case MESSAGE_LIMIT:
+                throw new IOException(
+                        String.format(
+                                "Message was not accepted by the remote server - "
+                                + "too many messages in the system (error %#x).", c));
+            default:
+                throw new IOException(
+                        String.format(
+                                "Message was not accepted by the remote server "
+                                + "(error %#x).", c));
+        }
+    }
 }
