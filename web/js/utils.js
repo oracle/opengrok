@@ -1020,17 +1020,28 @@ function init_markdown_converter() {
     var converter = null;
     $('[data-markdown]').each(function () {
         var $that = $(this);
-        $.script.loadScript('js/showdown-1.4.2.min.js').done(function () {
-            $that.find('.markdown-content').each(function () {
-                if (converter === null) {
-                    converter = new showdown.Converter();
-                }
-                $(this).html(converter.makeHtml($(this).find('pre').text()))
-                       .show()
+        $.script.loadScript('js/xss-0.2.16.min.js').done(function () {
+            $.script.loadScript('js/showdown-1.4.2.min.js').done(function () {
+                $that.find('.markdown-content[data-markdown-download]').each(function () {
+                    var $thet = $(this)
+                    if (converter === null) {
+                        converter = new showdown.Converter();
+                    }
+
+                    $.ajax({
+                        url: $(this).data('markdown-download'),
+                        dataType: 'text',
+                        timeout: 5000,
+                        mimeType: 'text/plain',
+                    }).done(function (payload) {
+                        $thet.html(filterXSS(converter.makeHtml(payload)))
+                                .show()
+                        $that.addClass('markdown')
+                                .find('[data-markdown-original]')
+                                .hide()
+                    })
+                });
             });
-            $that.addClass('markdown')
-                 .find('[data-markdown-original]')
-                    .hide()
         });
     });
 }

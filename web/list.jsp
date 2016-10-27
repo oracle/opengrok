@@ -119,10 +119,8 @@ document.pageReady.push(function() { pageReadyList();});
         <div class="markdown-heading">
             <h3><%= readMes.get(i) %></h3>
         </div>
-        <div class="markdown-content">
-            <pre><%
-                Util.dump(out, cfg.getResourceFile(cfg.getPath() + readMes.get(i)), false);
-            %></pre>
+        <div class="markdown-content"
+             data-markdown-download="<%= request.getContextPath() + Prefix.DOWNLOAD_P + Util.URIEncodePath(cfg.getPath() + readMes.get(i)) %>">
         </div>
         <pre data-markdown-original><%
             Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
