@@ -435,11 +435,11 @@
                 load: [],
                 update: [],
             };
-            this.initialised = false;
             this.$window = undefined;
             this.$errors = undefined;
             this.clientX = 0;
             this.clientY = 0;
+            this.pendingUpdates = []
 
             /**
              * Default values for the window options.
@@ -597,7 +597,11 @@
                  * @returns {undefined}
                  */
                 $window.update = function (data) {
-                    self.fire('update', [data])
+                    if (this.loaded) {
+                        self.fire('update', [data])
+                    } else {
+                        self.pendingUpdates.push({data: data})
+                    }
                     return this;
                 }
 
@@ -606,6 +610,8 @@
 
                 // set us as initialized
                 $window.initialized = true;
+                // set us as not loaded
+                $window.loaded = false;
 
                 return $window;
             });
@@ -650,6 +656,12 @@
 
             $(function () {
                 self.fire('load');
+                self.$window.loaded = true;
+
+                for (var i = 0; i < self.pendingUpdates.length; i++) {
+                    self.fire('update', [self.pendingUpdates[i].data])
+                }
+                self.pendingUpdates = []
             })
 
             this.fire('init')
@@ -1036,7 +1048,6 @@
                 },
                 update: function (data) {
                     if(!this.$window.is(':visible') && !this.$window.data('shown-once')) {
-                        console.log(data)
                         this.$window.show().data('shown-once', true);
                     }
                     this.$scopes.empty()
