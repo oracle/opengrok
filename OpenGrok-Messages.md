@@ -3,14 +3,14 @@
 <!-- toc -->
 
 - [Using OpenGrok messages](#using-opengrok-messages)
-  * [Messages](#messages)
-    + [Types](#types)
-    + [Tags](#tags)
-      - [Normal and Abort messages](#normal-and-abort-messages)
-  * [Tools](#tools)
-    + [Usage:](#usage)
-    + [Examples](#examples)
-  * [XSS Vulnerability](#xss-vulnerability)
+- [Messages](#messages)
+  * [Types](#types)
+  * [Tags](#tags)
+    + [Normal and Abort messages](#normal-and-abort-messages)
+- [Tools](#tools)
+  * [Usage:](#usage)
+  * [Examples](#examples)
+- [XSS Vulnerability](#xss-vulnerability)
 
 <!-- tocstop -->
 
@@ -18,7 +18,7 @@
 
 This is a howto to introduce a new feature in OpenGrok which allows you to display custom messages in the OpenGrok web interface.
 
-## Messages
+# Messages
 
 Deployed OpenGrok can receive couple of messages through the active socket which
 usually listens for the main configuration file. These are used in the web
@@ -26,7 +26,7 @@ application and displayed to the users. One can easily notify users about some
 important events, for example that the reindex is being in progress and that
 the searched information can be inconsistent.
 
-### Types
+## Types
 
 Currently supported message types:
 
@@ -38,23 +38,23 @@ Currently supported message types:
     the web application.
     Use tags to restrict the deletion only to specific projects.
 
-### Tags
+## Tags
 
 Every message can have set of tags which give the closer specification to the message. Their meaning is specific for the particular message type.
 
-#### Normal and Abort messages
+### Normal and Abort messages
 
 The tag can target specific project in the application. The exact string match is neccessary.
 
 The tag "main" is reserved for the global information.
 
-## Tools
+# Tools
 
 There is a tool in tools directory ([Messages](https://github.com/OpenGrok/OpenGrok/blob/master/tools/Messages)) which is suitable to send messages to OpenGrok web application.
 
 The script has documented usage.
 
-### Usage:
+## Usage:
 ```
 $ tools/Messages --help
 
@@ -85,7 +85,7 @@ Usage: Messages [options] <text>
 
 ```
 
-### Examples
+## Examples
 
 ``` bash
 $ tools/Messages --help # see usage and defaults
@@ -105,6 +105,6 @@ $ /usr/opengrok/bin/Messages --help
 
 You can also specify different instance base with environment variables, like it is when using the OpenGrok shell wrapper.
 
-## XSS Vulnerability
+# XSS Vulnerability
 
 The messages can contain custom HTML markup and there is no XSS filter or any other kind of restriction for the displayed result. You should restrict the configuration listener (localhost:2424) only to users who you trust. Furter information [here](https://github.com/OpenGrok/OpenGrok/wiki/How-to-install-OpenGrok#cli---command-line-interface-usage), under the configuration.
