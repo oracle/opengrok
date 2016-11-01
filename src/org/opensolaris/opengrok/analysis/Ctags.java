@@ -176,9 +176,22 @@ public class Ctags {
             command.add("--regex-pascal=/^[[:space:]]*property[[:space:]]+([a-zA-Z0-9_<>, ]+)[[:space:]]*\\:(.*)/\\1/p,property/");
             command.add("--regex-pascal=/^(uses|interface|implementation)$/\\1/s,Section/");
             command.add("--regex-pascal=/^unit[[:space:]]+([a-zA-Z0-9_<>, ]+)[;(]/\\1/u,unit/");
-            
+
+            command.add("--langdef=rust");
+            command.add("--langmap=rust:.rs");
+            command.add("--regex-rust=/^[[:space:]]*(#\\[[^\\]]\\][[:space:]]*)*(pub[[:space:]]+)?(extern[[:space:]]+)?(\"[^\"]+\"[[:space:]]+)?(unsafe[[:space:]]+)?fn[[:space:]]+([[:alnum:]_]+)/\\6/f,functions,function definitions/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?type[[:space:]]+([[:alnum:]_]+)/\\2/T,types,type definitions/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?enum[[:space:]]+([[:alnum:]_]+)/\\2/g,enum,enumeration names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?struct[[:space:]]+([[:alnum:]_]+)/\\2/s,structure names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?mod[[:space:]]+([[:alnum:]_]+)/\\2/m,modules,module names/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(static|const)[[:space:]]+(mut[[:space:]]+)?([[:alnum:]_]+)/\\4/c,consts,static constants/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?trait[[:space:]]+([[:alnum:]_]+)/\\3/t,traits,traits/");
+            command.add("--regex-rust=/^[[:space:]]*(pub[[:space:]]+)?(unsafe[[:space:]]+)?impl([[:space:]\n]*<[^>]*>)?[[:space:]]+(([[:alnum:]_:]+)[[:space:]]*(<[^>]*>)?[[:space:]]+(for)[[:space:]]+)?([[:alnum:]_]+)/\\5 \\7 \\8/i,impls,trait implementations/");
+            command.add("--regex-rust=/^[[:space:]]*macro_rules![[:space:]]+([[:alnum:]_]+)/\\1/d,macros,macro definitions/");
+            command.add("--regex-rust=/^[[:space:]]*let[[:space:]]+(mut)?[[:space:]]+([[:alnum:]_]+)/\\2/v,variables/");
+
             //PLEASE add new languages ONLY with POSIX syntax (see above wiki link)
-            
+
             /* Add extra command line options for ctags. */
             if (CTagsExtraOptionsFile != null) {
                 LOGGER.log(Level.INFO, "Adding extra options to ctags");
