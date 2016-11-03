@@ -131,6 +131,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                     <td><b>Mirror</b></td>
                     <td><b>SCM type</b></td>
                     <td><b>Parent (branch)</b></td>
+                    <td><b>Current version</b></td>
                     </tr>
                     </thead>
                     <tbody>
@@ -175,8 +176,36 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             if (branch == null) {
                                 branch = "N/A";
                             }
+                            String currentVersion = ri.getCurrentVersion();
+                            if (currentVersion == null) {
+                                currentVersion = "N/A";
+                            }
                             %><td><%= Util.htmlize(type) %></td><%
                             %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                            %><td><%
+
+                            // Current index collapse threshold minimum of 10
+                            int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
+                            String cout = Util.htmlize(currentVersion);
+
+                            boolean showSummary = false;
+                            String coutSummary = currentVersion;
+                            if (coutSummary.length() > summaryLength) {
+                                showSummary = true;
+                                coutSummary = coutSummary.substring(0, summaryLength - 1);
+                                coutSummary = Util.htmlize(coutSummary);
+                            }
+                            if (showSummary) {
+                                %>
+                                <span class="rev-message-summary"><%= coutSummary %></span>
+                                <span class="rev-message-full rev-message-hidden"><%= cout %></span>
+                                <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
+                                <%
+                            }
+                            else {
+                                 %><span class="rev-message-full"><%= cout %></span><%
+                            }
+                            %></td><%
                             %></tr><%
                             cnt++;
                         }
@@ -224,11 +253,12 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                     <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
                         <% if (pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
                         <table>
-                            <thead>
+                        <thead>
                         <tr>
                         <td><b>Mirror</b></td>
                         <td><b>SCM type</b></td>
                         <td><b>Parent (branch)</b></td>
+                        <td><b>Current version</b></td>
                         </tr>
                             </thead>
                             <tbody>
@@ -270,8 +300,37 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                                 if (branch == null) {
                                     branch = "N/A";
                                 }
+                                String currentVersion = ri.getCurrentVersion();
+                                if (currentVersion == null) {
+                                    currentVersion = "N/A";
+                                }
                                 %><td><%= Util.htmlize(type) %></td><%
                                 %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                %><td><%
+
+                                // Current index message collapse threshold minimum of 10
+                                int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
+                                String cout = Util.htmlize(currentVersion);
+
+                                boolean showSummary = false;
+                                String coutSummary = currentVersion;
+                                if (coutSummary.length() > summaryLength) {
+                                    showSummary = true;
+                                    coutSummary = coutSummary.substring(0, summaryLength - 1);
+                                    coutSummary = Util.htmlize(coutSummary);
+                                }
+
+                                if (showSummary) {
+                                    %>
+                                    <span class="rev-message-summary"><%= coutSummary %></span>
+                                    <span class="rev-message-full rev-message-hidden"><%= cout %></span>
+                                    <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
+                                    <%
+                                }
+                                else {
+                                     %><span class="rev-message-full"><%= cout %></span><%
+                                }
+                                %></td><%
                                 %></tr><%
                                 cnt++;
                             }

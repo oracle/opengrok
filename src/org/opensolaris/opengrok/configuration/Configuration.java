@@ -170,6 +170,13 @@ public final class Configuration {
     private int revisionMessageCollapseThreshold;
 
     /**
+     * Current indexed message will be collapsible if they exceed this many number of
+     * characters. Front end enforces an appropriate minimum.
+     */
+    private int currentIndexedCollapseThreshold;
+
+
+    /**
      * Upper bound for number of threads used for performing multi-project
      * searches. This is total for the whole webapp/CLI utility.
      */
@@ -287,6 +294,7 @@ public final class Configuration {
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setIndexRefreshPeriod(60);
         setMessageLimit(500);
+        setCurrentIndexedCollapseThreshold(27);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -707,6 +715,14 @@ public final class Configuration {
 
     public int getRevisionMessageCollapseThreshold() {
         return this.revisionMessageCollapseThreshold;
+    }
+
+    public int getCurrentIndexedCollapseThreshold() {
+        return currentIndexedCollapseThreshold;
+    }
+
+    public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
+        this.currentIndexedCollapseThreshold = currentIndexedCollapseThreshold;
     }
 
     private transient Date lastModified;

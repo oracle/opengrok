@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -363,6 +363,18 @@ public abstract class Repository extends RepositoryInfo {
      * Determine branch of this repository.
      */
     abstract String determineBranch() throws IOException;
+
+    /**
+     * Determine and return the current version of the repository.
+     *
+     * This operation is consider "heavy" so this function should not be
+     * called on every web request.
+     *
+     * @return the version
+     */
+    String determineCurrentVersion() throws IOException {
+        return null;
+    }
 
     /**
      * Returns true if this repository supports sub repositories (a.k.a.

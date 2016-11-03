@@ -662,4 +662,30 @@ public class GitRepository extends Repository {
 
         return branch;
     }
+
+    @Override
+    String determineCurrentVersion() throws IOException {
+        String line = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(RepoCommand);
+        cmd.add("log");
+        cmd.add("-1");
+        cmd.add("--pretty=%cd: %h %an %s");
+        cmd.add("--date=format:%Y-%m-%d %H:%M");
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process;
+        process = pb.start();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            if ((line = in.readLine()) != null) {
+                line = line.trim();
+            }
+        }
+
+        return line;
+    }
 }
