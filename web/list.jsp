@@ -112,12 +112,30 @@ document.pageReady.push(function() { pageReadyList();});
                 if (catfiles[i] == null) {
                     continue;
                 }
-%><h3><%= readMes.get(i) %></h3>
-<div id="src<%=i%>">
-    <pre><%
-                Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
-    %></pre>
-</div><%
+%>
+<%
+    if (readMes.get(i).toLowerCase().endsWith(".md")) {
+    %><div id="src<%=i%>" data-markdown>
+        <div class="markdown-heading">
+            <h3><%= readMes.get(i) %></h3>
+        </div>
+        <div class="markdown-content"
+             data-markdown-download="<%= request.getContextPath() + Prefix.DOWNLOAD_P + Util.URIEncodePath(cfg.getPath() + readMes.get(i)) %>">
+        </div>
+        <pre data-markdown-original><%
+            Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
+        %></pre>
+    </div>
+<% } else { %>
+    <h3><%= readMes.get(i) %></h3>
+    <div id="src<%=i%>">
+        <pre><%
+            Util.dump(out, catfiles[i], catfiles[i].getName().endsWith(".gz"));
+        %></pre>
+    </div>
+<%
+    }
+
             }
         }
     } else if (rev.length() != 0) {

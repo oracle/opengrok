@@ -1311,3 +1311,22 @@ h6.message-group-caption {
 .clearfix {
     *zoom: 1;
 }
+
+/** ---------------- markdown readme format ----- */
+
+.markdown {
+    margin-top: 15px;
+    width: 70%;
+    padding: 15px;
+    background-color: #F7F7F7 !important;
+    border-radius: 4px;
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, .3);
+}
+
+.markdown .markdown-heading {
+    border-bottom: 1px solid grey
+}
+
+[data-markdown] .markdown-content {
+    display: none;
+}

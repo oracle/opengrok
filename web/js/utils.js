@@ -1189,6 +1189,36 @@ function init_tablesorter() {
     });
 }
 
+function init_markdown_converter() {
+    var converter = null;
+    $('[data-markdown]').each(function () {
+        var $that = $(this);
+        $.script.loadScript('js/xss-0.2.16.min.js').done(function () {
+            $.script.loadScript('js/showdown-1.4.2.min.js').done(function () {
+                $that.find('.markdown-content[data-markdown-download]').each(function () {
+                    var $thet = $(this)
+                    if (converter === null) {
+                        converter = new showdown.Converter();
+                    }
+
+                    $.ajax({
+                        url: $(this).data('markdown-download'),
+                        dataType: 'text',
+                        timeout: 5000,
+                        mimeType: 'text/plain',
+                    }).done(function (payload) {
+                        $thet.html(filterXSS(converter.makeHtml(payload)))
+                                .show()
+                        $that.addClass('markdown')
+                                .find('[data-markdown-original]')
+                                .hide()
+                    })
+                });
+            });
+        });
+    });
+}
+
 $(document).ready(function () {
     /**
      * Initialize scope scroll event to display scope information correctly when
@@ -1265,6 +1295,14 @@ $(document).ready(function () {
      * pagination links.
      */
     init_history_input()
+
+    /**
+     * Initialize the markdown converter.
+     *
+     * WARNING: The converter is not XSS safe. If you're not sure about what
+     * could occur in the readmes then rather comment out this.
+     */
+    init_markdown_converter();
 });
 
 document.pageReady = [];
