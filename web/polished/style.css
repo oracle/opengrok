@@ -138,8 +138,6 @@ label {
  */
 .projects {
     list-style-type: none;
-    padding-left: 2em;
-    padding-right: 2em;
 }
 
 .panel {
@@ -152,8 +150,6 @@ label {
 }
 
 .projects > .toggle-buttons {
-    margin-left: 1%;
-    margin-right: 1%;
     border: none;
     text-align: right;
 }
@@ -161,15 +157,13 @@ label {
 .projects > .panel {
     -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
             box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
-    margin-left: 1%;
-    margin-right: 1%;
 }
 
 .projects .panel-body-accordion {
     display: none;
 }
 
-.projects .panel-body-accordion.favourite {
+.projects .panel-body-accordion.favourite, .projects .panel-body-accordion[data-accordion-visible="true"] {
     display: block;
 }
 
@@ -209,7 +203,7 @@ label {
     margin: 0;
 }
 
-.panel > .panel-body, .panel > .panel-body-accordion {
+.panel > .panel-body-accordion + .panel-body, .panel > .panel-body-accordion {
     padding: 15px;
 }
 
@@ -339,16 +333,20 @@ label {
 }
 
 #qtbl td:first-child {
-    width: 10ex;
     text-align: right;
 }
 
 #qtbl td:nth-child(2) {
-    width: 45ex;
+    width: 90%;
 }
 
-#qtbl input.q {
+#qtbl table {
     width: 100%;
+}
+
+#qtbl input.q, #qtbl select.q {
+    width: 100%;
+    height: 1.3em;
 }
 
 #ptbl {
@@ -1184,11 +1182,11 @@ span.scope-signature {
 /** --------------- fold arrows for main page ------------ */
 
 .fold-down:before {
-    content: url(./img/button1.png);
+    content: url(./img/unfolding.png);
 }
 
 .fold-up:before {
-    content: url(./img/button3.png);
+    content: url(./img/folding.png);
 }
 
 .fold {

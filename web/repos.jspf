@@ -106,18 +106,22 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                 %><div class="panel">
                     <div class="panel-heading-accordion">
                         
-                        <h2 class="clearfix">
+                        <h4 class="clearfix">
                             <span class="pull-left">
                                 <span class="name"><%= Util.htmlize(group.getName())%></span>
-                                <small>[<a href="#" class="projects_select_all">select all</a>]</small>
+                                <small>
+                                    [<a href="#" class="projects_select_all">select all</a>]
+                                    (<span title="Number of groups directly in this group"><%= pHelper.getSubgroups(group).size() %></span> +
+                                        <span title="Number of repositories directly in this group"><%= pHelper.getRepositories(group).size() %></span>)
+                                </small>
                             </span>
                             <span class="pull-right">
                                 <span class="fold <%= pHelper.hasFavourite(group) ? "fold-up" : "fold-down"%>"></span>
                             </span>
-                        </h2>
+                        </h4>
                     </div>
-                        <div class="panel-body-accordion <% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
-                        <% if (pHelper.hasFavourite(group)) { %>data-accordion-visible="true"<% } %>>
+                        <div class="panel-body-accordion<% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
+                        <% if (pHelper.hasFavourite(group) || pHelper.getRepositories(group).size() < 5) { %>data-accordion-visible="true"<% } %>>
                 <%
                 if (pHelper.getRepositories(group).size() > 0 ) {
                 %>
@@ -203,15 +207,18 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                 <div class="panel">
                     <% if (groups.size() > 0) {%>
                         <div class="panel-heading-accordion">
-                            <h2 class="clearfix">
+                            <h4 class="clearfix">
                                 <span class="pull-left">
                                     <span class="name">Other</span> 
-                                    <small>[<a href="#" class="projects_select_all">select all</a>]</small>
+                                    <small>
+                                        [<a href="#" class="projects_select_all">select all</a>]
+                                        (<span title="Number of repositories inside"><%= repositories.size() %></span>)
+                                    </small>
                                 </span>
                                 <span class="pull-right">
                                     <span class="fold <%= pHelper.hasUngroupedFavourite() ? "fold-up" : "fold-down"%>"></span>
                                 </span>
-                            </h2>
+                            </h4>
                         </div>
                     <% } %>
                     <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
