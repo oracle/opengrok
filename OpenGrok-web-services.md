@@ -69,4 +69,4 @@ You can take this response for example:
 ```
 
 ### additional note
-you need to add Access-Control-Allow-Origin header in the [JSONSearchServlet.java](https://github.com/OpenGrok/OpenGrok/blob/8319a89aaa06ff36af7fb04086caf078421086cf/src/org/opensolaris/opengrok/web/JSONSearchServlet.java) when cross-origin request is required.
+you have to add "Access-Control-Allow-Origin" header in the [JSONSearchServlet.java](https://github.com/OpenGrok/OpenGrok/blob/8319a89aaa06ff36af7fb04086caf078421086cf/src/org/opensolaris/opengrok/web/JSONSearchServlet.java) when cross-origin request is required.
