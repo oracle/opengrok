@@ -1056,7 +1056,7 @@
             }, options || {}), $.extend({
                 $scopes: $(),
                 buildLink: function (href, name) {
-                    return $('<a>').attr('href', '#' + href).attr('title', name).text(name)
+                    return $('<a>').attr('href', '#' + href).attr('title', name).html(name)
                 }
             }, context || {}));
         }
