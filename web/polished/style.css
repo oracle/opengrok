@@ -937,6 +937,7 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
 
 .scopes-window {
     min-width: 150px;
+    max-width: 40%;
     max-height: 400px;
 }
 
