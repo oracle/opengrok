@@ -1,6 +1,6 @@
 = How to build {OpenGrok =
 
-The easiest way to build (or modify) {OpenGrok is by using [http://www.netbeans.org NetBeans] (v8.1 and up preferred), but you can also build {OpenGrok from the command line.
+The easiest way to build (or modify) {OpenGrok is by using [http://www.netbeans.org NetBeans] (latest preferred), but you can also build {OpenGrok from the command line.
 
 == Requirements ==
 
