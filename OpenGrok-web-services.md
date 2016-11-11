@@ -1,13 +1,15 @@
-### requirement
-ensure the commits in this [pull request](https://github.com/OpenGrok/OpenGrok/pull/799) are included in your OpenGrok build
+### Requirement
+If you're using OpenGrok 0.12, ensure the commits in this [pull request](https://github.com/OpenGrok/OpenGrok/pull/799) are included in your OpenGrok build.
 
-### syntax
+Starting from OpenGrok 0.13, the webservice is included in the provided build.
+
+### Syntax
 ```bash
 {host}/{webapp_name}/json?freetext={keyword}&maxresults=80...
 ```
-{webapp_name} is the name of war archive, for example "source" in the default build configure.
+{webapp_name} is the name of war archive, for example "source" in the default build configuration.
 
-the overall query parameters(**maxresults**, **freetext**, **def**, **symbol**, **path** and **hist**) and result attributes(**directory**, **filename**, **lineno**, **line**, **path**, **results**, **duration**, **resultcount**) are defined as:
+The overall query parameters (**maxresults**, **freetext**, **def**, **symbol**, **path** and **hist**) and result attributes (**directory**, **filename**, **lineno**, **line**, **path**, **results**, **duration**, **resultcount**) are defined as:
 
 ```java
 private static final String PARAM_FREETEXT = "freetext"; // query params start
@@ -26,7 +28,7 @@ private static final String ATTRIBUTE_DURATION = "duration";
 private static final String ATTRIBUTE_RESULT_COUNT = "resultcount"; // attributes in response JSON end
 ```
 
-### response example
+### Response example
 You can take this response for example:
 ```javascript
 {
@@ -68,5 +70,7 @@ You can take this response for example:
 }
 ```
 
-### additional note
-you have to add "Access-Control-Allow-Origin" header in the [JSONSearchServlet.java](https://github.com/OpenGrok/OpenGrok/blob/8319a89aaa06ff36af7fb04086caf078421086cf/src/org/opensolaris/opengrok/web/JSONSearchServlet.java) when cross-origin request is required.
+The attribute **line** is base 64 encoded source line with HTML attributes showing the hit position.
+
+### Additional note
+You have to add "Access-Control-Allow-Origin" header in the [JSONSearchServlet.java](https://github.com/OpenGrok/OpenGrok/blob/8319a89aaa06ff36af7fb04086caf078421086cf/src/org/opensolaris/opengrok/web/JSONSearchServlet.java) when cross-origin request is required.
