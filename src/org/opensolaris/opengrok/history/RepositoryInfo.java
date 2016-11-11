@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -42,6 +42,7 @@ public class RepositoryInfo implements Serializable {
     protected String datePattern;
     protected String parent;
     protected String branch;
+    protected String currentVersion;
 
     /**
      * Empty constructor to support serialization.
@@ -58,6 +59,7 @@ public class RepositoryInfo implements Serializable {
         this.datePattern = orig.datePattern;
         this.parent = orig.parent;
         this.branch = orig.branch;
+        this.currentVersion = orig.currentVersion;
     }
 
     /**
@@ -166,5 +168,13 @@ public class RepositoryInfo implements Serializable {
 
     public void setBranch(String branch) {
         this.branch = branch;
+    }
+
+    public String getCurrentVersion() {
+        return currentVersion;
+    }
+
+    public void setCurrentVersion(String currentVersion) {
+        this.currentVersion = currentVersion;
     }
 }

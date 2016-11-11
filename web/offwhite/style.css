@@ -215,6 +215,10 @@ label {
     margin-bottom: 0;
 }
 
+.panel-body > table tr td:last-child, .panel-body-accordion > table tr td:last-child {
+    width: 400px;
+}
+
 /*
  * Changesets colorization
  * 1 is the most recent changeset

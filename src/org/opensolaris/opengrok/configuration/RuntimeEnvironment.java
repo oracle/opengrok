@@ -1088,6 +1088,14 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getMaxSearchThreadCount();
     }
 
+    public int getCurrentIndexedCollapseThreshold() {
+        return threadConfig.get().getCurrentIndexedCollapseThreshold();
+    }
+
+    public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
+        threadConfig.get().getCurrentIndexedCollapseThreshold();
+    }
+
     /**
      * Read an configuration file and set it as the current configuration.
      *

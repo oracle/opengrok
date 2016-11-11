@@ -1483,6 +1483,7 @@ function domReadyHistory() {
     // I cannot say what will happen if they are not like that, togglediffs
     // will go mad !
     togglerevs();
+    toggleProjectInfo();
 }
 
 function get_annotations() {
@@ -1737,21 +1738,21 @@ function toggle_revtags() {
 }
 
 /**
- *  Function to toggle revision message length for long revision messages
+ *  Function to toggle message length presentation
  */
-function togglerevs() {
+function toggleCommon(closestType) {
   $(".rev-toggle-a").click(function() {
-    var toggleState = $(this).closest("p").attr("data-toggle-state");
+    var toggleState = $(this).closest(closestType).attr("data-toggle-state");
     var thisCell = $(this).closest("td");
 
-    if (toggleState == "less") {
-      $(this).closest("p").attr("data-toggle-state", "more");
+    if (toggleState === "less") {
+      $(this).closest(closestType).attr("data-toggle-state", "more");
       thisCell.find(".rev-message-summary").addClass("rev-message-hidden");
       thisCell.find(".rev-message-full").removeClass("rev-message-hidden");
       $(this).html("... show less");
     }
-    else if (toggleState == "more") {
-      $(this).closest("p").attr("data-toggle-state", "less");
+    else if (toggleState === "more") {
+      $(this).closest(closestType).attr("data-toggle-state", "less");
       thisCell.find(".rev-message-full").addClass("rev-message-hidden");
       thisCell.find(".rev-message-summary").removeClass("rev-message-hidden");
       $(this).html("show more ...");
@@ -1759,6 +1760,19 @@ function togglerevs() {
 
     return false;
   });
+}
+
+/**
+ *  Function to toggle revision message length for long revision messages
+ */
+function togglerevs() {
+  $(".rev-toggle-a").click(toggleCommon("p"));
+}
+/**
+ *  Function to toggle project info message length
+ */
+function toggleProjectInfo() {
+  $(".rev-toggle-a").click(toggleCommon("span"));
 }
 
 function selectAllProjects() {

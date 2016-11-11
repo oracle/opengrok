@@ -134,6 +134,16 @@ public final class RepositoryFactory {
                     }
                 }
 
+                if (res.getCurrentVersion() == null || res.getCurrentVersion().length() == 0) {
+                    try {
+                        res.setCurrentVersion(res.determineCurrentVersion());
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING,
+                                "Failed to determineCurrentVersion for {0}: {1}",
+                                new Object[]{file.getAbsolutePath(), ex});
+                    }
+                }
+
                 // If this repository displays tags only for files changed by tagged
                 // revision, we need to prepare list of all tags in advance.
                 if (env.isTagsEnabled() && res.hasFileBasedTags()) {
