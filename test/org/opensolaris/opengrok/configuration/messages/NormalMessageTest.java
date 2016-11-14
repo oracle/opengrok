@@ -103,9 +103,11 @@ public class NormalMessageTest {
     @Test
     public void testApplyMultipleUnique() {
         Message[] m = makeArray(new NormalMessage(), new NormalMessage(), new NormalMessage());
+        Date d = new Date();
 
         for (int i = 0; i < m.length; i++) {
             m[i].addTag("main");
+            m[i].setCreated(d);
         }
 
         Assert.assertEquals(0, env.getMessagesInTheSystem());
