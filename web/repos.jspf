@@ -129,8 +129,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                     <thead>
                     <tr>
                     <td><b>Mirror</b></td>
-                    <td><b>SCM type</b></td>
-                    <td><b>Parent (branch)</b></td>
+                    <td><b>SCM Type: Parent (branch)</b></td>
                     <td><b>Current version</b></td>
                     </tr>
                     </thead>
@@ -180,8 +179,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             if (currentVersion == null) {
                                 currentVersion = "N/A";
                             }
-                            %><td><%= Util.htmlize(type) %></td><%
-                            %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                            %><td><%= Util.htmlize(type) %>: <%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
                             %><td><%
 
                             // Current index collapse threshold minimum of 10
@@ -256,8 +254,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         <thead>
                         <tr>
                         <td><b>Mirror</b></td>
-                        <td><b>SCM type</b></td>
-                        <td><b>Parent (branch)</b></td>
+                        <td><b>SCM Type: Parent (branch)</b></td>
                         <td><b>Current version</b></td>
                         </tr>
                             </thead>
@@ -304,8 +301,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                                 if (currentVersion == null) {
                                     currentVersion = "N/A";
                                 }
-                                %><td><%= Util.htmlize(type) %></td><%
-                                %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                %><td><%= Util.htmlize(type) %>: <%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
                                 %><td><%
 
                                 // Current index message collapse threshold minimum of 10
