@@ -310,6 +310,9 @@ label {
 
 #qtbl input.q, #qtbl select.q {
     width: 100%;
+}
+
+#qtbl input.q {
     height: 1.3em;
 }
 
