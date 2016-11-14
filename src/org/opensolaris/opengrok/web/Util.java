@@ -539,7 +539,7 @@ public final class Util {
                 }
                 if (annotation.getFileVersion(r) != 0) {
                     out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
-                            + annotation.getFileVersionsCount());
+                            + annotation.getRevisions().size());
                 }
                 out.write(closeQuotedTag);
             }
