@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -33,11 +33,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
@@ -680,5 +680,44 @@ public class MercurialRepository extends Repository {
         }
 
         return executor.getOutputString().trim();
+    }
+
+    @Override
+    String determineCurrentVersion() throws IOException {
+        String line = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(RepoCommand);
+        cmd.add("log");
+        cmd.add("-l");
+        cmd.add("1");
+        cmd.add("--template");
+        cmd.add("{date|isodate}: {node|short} {author} {desc|strip}");
+
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.directory(directory);
+        Process process = pb.start();
+
+        try {
+            process.waitFor(15, TimeUnit.SECONDS);
+
+            if (process.exitValue() != 0) {
+                throw new IOException("Process exited with non zero exit code");
+            }
+
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                if ((line = in.readLine()) != null) {
+                    line = line.trim();
+                }
+            }
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, "Unable to determine current version for {} - process timeouted", getDirectoryName());
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Unable to determine current version for {} - bad exit code", getDirectoryName());
+        }
+
+        return line;
     }
 }
