@@ -41,7 +41,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -677,28 +676,11 @@ public class GitRepository extends Repository {
         cmd.add("--pretty=%cd: %h %an %s");
         cmd.add("--date=format:%Y-%m-%d %H:%M");
 
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.directory(directory);
-        Process process = pb.start();
-
-        try {
-            process.waitFor(15, TimeUnit.SECONDS);
-
-            if (process.exitValue() != 0) {
-                throw new IOException("Process exited with non zero exit code");
-            }
-
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                if ((line = in.readLine()) != null) {
-                    line = line.trim();
-                }
-            }
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.FINE, "Unable to determine current version for {} - process timeouted", getDirectoryName());
-        } catch (IOException ex) {
-            LOGGER.log(Level.FINE, "Unable to determine current version for {} - bad exit code", getDirectoryName());
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec(false) != 0) {
+            throw new IOException(executor.getErrorString());
         }
 
-        return line;
+        return executor.getOutputString().trim();
     }
 }
