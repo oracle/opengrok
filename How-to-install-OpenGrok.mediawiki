@@ -2,7 +2,7 @@
 Note, that you '''need''' the '''index setup''' no matter what use case you plan to use. Without indexes {Opengrok will be simply useless.
 This document is a live document, we are updating it as the new versions/changes come out (note the date at the right bottom of the page)
 
-=== Requirements ===
+== Requirements ==
 
 You need the following:
 
