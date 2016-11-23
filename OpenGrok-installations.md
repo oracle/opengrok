@@ -6,6 +6,7 @@
 * http://opengrok.quantumachine.net/ &mdash; DragonFly, FreeBSD, OpenBSD and Linux
 * http://sauce.bbqdroid.org/ &mdash; CyanogenMod Android-related projects
 * http://lxr.devzen.net/source &mdash; Linux branches and some other projects
+* http://androidxref.com/ &mdash; Android
 
 ## Programming languages:
 * http://lxr.php.net/ &mdash; PHP
