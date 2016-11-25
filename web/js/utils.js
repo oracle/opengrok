@@ -1052,6 +1052,7 @@
                     }
                     this.$scopes.empty()
                     this.$scopes.html(this.buildLink(data.id, data.link))
+                    this.$window.trigger('update')
                 }
             }, options || {}), $.extend({
                 $scopes: $(),
@@ -1062,6 +1063,100 @@
         }
     }
     $.scopesWindow = new ($.extend(scopesWindow, $.scopesWindow ? $.scopesWindow : {}));
+})(window, document, jQuery, jQuery.window);
+
+/**
+ * Navigate window plugin.
+ *
+ * @author Kryštof Tulinger
+ */
+(function (browserWindow, document, $, $window) {
+    if (!$window || typeof $window.create !== 'function') {
+        console.log("The navigateWindow plugin requires $.window plugin")
+        return;
+    }
+
+    var navigateWindow = function () {
+        this.init = function (options, context) {
+            return $.navigateWindow = $window.create($.extend({
+                title: 'Navigate Window',
+                draggable: false,
+                init: function ($window) {
+                    return $window
+                            .attr('id', 'navigate_win')
+                            .addClass('navigate-window')
+                            .addClass('diff_navigation_style')
+                            .css({top: '150px', right: '20px'})
+                            .css('max-width', this.options.max_width)
+                            .append(this.$content)
+                },
+                load: function ($window) {
+                    var that = this
+                    $window.css('top', this.getTopOffset() + 10 + 'px')
+                    if ($.scopesWindow && $.scopesWindow.initialized) {
+                        $.scopesWindow.on('show', function () {
+                            setTimeout(function () {
+                                that.updatePosition($window)
+                            }, 100);
+                        }).on('hide', function () {
+                            that.updatePosition($window);
+                        }).on('update', function () {
+                            that.updatePosition($window);
+                        })
+
+                        if ($.scopesWindow.is(':visible')) {
+                            setTimeout(function () {
+                                that.updatePosition($window)
+                            }, 100);
+                        }
+                    }
+
+                    $(browserWindow).resize(function () {
+                        that.updatePosition($window)
+                    })
+                },
+                update: function (data) {
+                    var $ul;
+                    this.$content.empty()
+                    for (var i = 0; i < data.length; i++)
+                    {
+                        this.$content.append($('<h4>').text(data[i][0]))
+                        if (data[i][2].length === 0)
+                            continue;
+                        this.$content.append($ul = $('<ul>'))
+                        for (var j = 0; j < data[i][2].length; j ++)
+                            $ul.append($('<li>').append(this.buildLink(data[i][2][j][1], data[i][2][j][0], data[i][1])));
+                    }
+
+                }
+            }, options || {
+                max_height: 480,
+                max_width: 300,
+            }), $.extend({
+                $content: $('<div>'),
+                buildLink: function (href, name, c) {
+                    return $('<a>').attr('href', '#' + href).attr('title', this.escapeHtml(name)).addClass(c).html(this.escapeHtml(name)).click(lnshow)
+                },
+                getTopOffset: function () {
+                    return parseFloat($("#content").css('top'))
+                },
+                updatePosition: function ($w) {
+                    var a = {}
+                    a.top = $.scopesWindow.is(':visible') ? $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20 : this.getTopOffset() + 10,
+                            a.height = Math.min(this.options.max_height, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20)
+
+                    if (a.height == $w.height() && a.top == this.getTopOffset())
+                        return $w;
+
+                    return $w.stop().animate(a)
+                },
+                escapeHtml: function (html) {
+                    return html.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+                }
+            }, context || {}));
+        }
+    }
+    $.navigateWindow = new ($.extend(navigateWindow, $.navigateWindow ? $.navigateWindow : {}));
 })(window, document, jQuery, jQuery.window);
 
 function init_scopes() {
@@ -1512,132 +1607,12 @@ function toggle_annotations() {
  * Initialize defaults for list.jsp
  */
 function pageReadyList() {
-    document.sym_div_width = 240;
-    document.sym_div_height_max = 480;
-    document.sym_div_top = 100;
-    document.sym_div_left_margin = 40;
-    document.sym_div_height_margin = 40;
     document.highlight_count = 0;
-    $(window).resize(function() {
-        if (document.sym_div_shown == 1) {
-            document.sym_div.style.left = get_sym_div_left() + "px";
-            document.sym_div.style.height = get_sym_div_height() + "px";
-        }
-    });
-}
-
-/* ------ Navigation window for definitions ------ */
-/**
- * Create the Navigation toggle link as well as its contents.
- */
-function get_sym_list_contents() {
-    // var contents = "<input id=\"input_highlight\" name=\"input_highlight\"
-    // class=\"q\"/>";
-    // contents += "&nbsp;&nbsp;";
-    // contents += "<b><a href=\"#\" onclick=\"javascript:add_highlight();return
-    // false;\" title=\"Add highlight\">Highlight</a></b><br/>";
-    var contents =
-        "<a href=\"#\" onclick=\"javascript:lsttoggle();\">[Close]</a><br/>"
-    if (typeof get_sym_list != 'function') {
-        return contents;
-    }
-
-    var symbol_classes = get_sym_list();
-    for ( var i = 0; i < symbol_classes.length; i++) {
-        if (i > 0) {
-            contents += "<br/>";
-        }
-        var symbol_class = symbol_classes[i];
-        var class_name = symbol_class[1];
-        var symbols = symbol_class[2];
-        contents += "<b>" + symbol_class[0] + "</b><br/>";
-
-        for (var j = 0; j < symbols.length; j++) {
-            var symbol = symbols[j][0];
-            var line = symbols[j][1];
-            contents += "<a href=\"#" + line + "\" class=\"" + class_name + "\" onclick=\"lnshow(); return true;\">"
-                + escape_html(symbol) + "</a><br/>";
-        }
-    }
-
-    return contents;
-}
-
-function escape_html(string) {
-    return string.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-}
-
-function get_sym_div_left() {
-    document.sym_div_left = $(window)
-        .width() - (document.sym_div_width + document.sym_div_left_margin);
-    return document.sym_div_left;
-}
-
-function get_sym_div_height() {
-    document.sym_div_height = $(window)
-        .height() - document.sym_div_top - document.sym_div_height_margin;
-
-    if (document.sym_div_height > document.sym_div_height_max) {
-        document.sym_div_height = document.sym_div_height_max;
-    }
-    return document.sym_div_height;
-}
-
-function get_sym_div_top() {
-    return document.sym_div_top;
-}
-
-function get_sym_div_width() {
-    return document.sym_div_width;
-}
-
-/**
- * Toggle the display of the 'Navigation' window used to highlight definitions.
- */
-function lsttoggle() {
-    if (document.sym_div == null) {
-        document.sym_div = document.createElement("div");
-        document.sym_div.id = "sym_div";
-
-        document.sym_div.className = "sym_list_style";
-        document.sym_div.style.margin = "0px auto";
-        document.sym_div.style.width = get_sym_div_width() + "px";
-        document.sym_div.style.height = get_sym_div_height() + "px";
-        document.sym_div.style.top = get_sym_div_top() + "px";
-        document.sym_div.style.left = get_sym_div_left() + "px";
-
-        document.sym_div.innerHTML = get_sym_list_contents();
-
-        document.body.appendChild(document.sym_div);
-        document.sym_div_shown = 1;
-
-        if ($.scopesWindow.initialized) {
-            $.scopesWindow.on('show', function () {
-                document.sym_div_top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20
-                document.sym_div.style.height = get_sym_div_height() + "px";
-                $(document.sym_div).css('top', $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20);
-            }).on('hide', function () {
-                document.sym_div_top = 100
-                document.sym_div.style.height = get_sym_div_height() + "px";
-                $(document.sym_div).css('top', get_sym_div_top());
-            })
-            if ($.scopesWindow.is(':visible')) {
-                document.sym_div_top = $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20
-                document.sym_div.style.height = get_sym_div_height() + "px";
-                $(document.sym_div).css('top', $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20);
-            }
-        }
-    } else if (document.sym_div_shown == 1) {
-        document.sym_div.className = "sym_list_style_hide";
-        document.sym_div_shown = 0;
-    } else {
-        document.sym_div.style.height = get_sym_div_height() + "px";
-        document.sym_div.style.width = get_sym_div_width() + "px";
-        document.sym_div.style.top = get_sym_div_top() + "px";
-        document.sym_div.style.left = get_sym_div_left() + "px";
-        document.sym_div.className = "sym_list_style";
-        document.sym_div_shown = 1;
-    }
+    $.navigateWindow.init()
+    $.navigateWindow.update(get_sym_list())
+    $('#navigate').click(function () {
+        $.navigateWindow.toggle()
+    })
 }
 
 /**
