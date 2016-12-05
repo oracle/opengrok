@@ -165,7 +165,7 @@ include file="pageheader.jspf"
             title="<%= "Show or hide line numbers (might be slower if "
                 + "file has more than 10 000 lines)."
             %>"><span id="line"></span>Line#</a></li><li><a
-            href="#" onclick="javascript:lsttoggle();return false;"
+            href="#" id="navigate"
             title="Show or hide symbol list."><%--
             --%><span id="defbox"></span>Navigate</a></li><%
         }
