@@ -1516,12 +1516,9 @@ function domReadyMast() {
                 return $el;
             },
         })
-        //$('a.r').tooltip({ left: 5, showURL: false });
-        var toggle_js = document.getElementById('toggle-annotate-by-javascript');
-        var toggle_ss = document.getElementById('toggle-annotate');
 
-        toggle_js.style.display = 'inline';
-        toggle_ss.style.display = 'none';
+        $("#toggle-annotate-by-javascript").css('display', 'inline');
+        $("#toggle-annotate").hide()
     }
 
     // When we move to a version of XHTML that supports the onscroll
@@ -1532,15 +1529,13 @@ function domReadyMast() {
 
 function pageReadyMast() {
     document.adjustContent = 0;
-    if ($('#whole_header') != null && $('#content') != null) {
+    if ($('#whole_header').length > 0 && $('#content').length > 0) {
         document.adjustContent = 1;
         resizeContent();
     }
-    $(window).resize(
-        function() {
-            resizeContent();
-        }
-    );
+    $(window).resize(function () {
+        resizeContent();
+    });
 }
 
 function domReadyMenu() {
@@ -1674,42 +1669,17 @@ function add_highlight() {
 }
 
 function toggle_filelist() {
-    $("div").each(
-        function() {
-            if (this.className == "filelist") {
-                this.setAttribute("style", "display: none;");
-                this.className = "filelist-hidden";
-            } else if (this.className == "filelist-hidden") {
-                this.setAttribute("style", "display: inline;");
-                this.className = "filelist";
-            }
-        }
-    );
+    var $a = $('div.filelist')
+    var $b = $('div.filelist-hidden')
+    $a.toggle().toggleClass('filelist').toggleClass('filelist-hidden')
+    $b.toggle().toggleClass('filelist').toggleClass('filelist-hidden')
 }
 
 function toggle_revtags() {
-    $("tr").each(
-        function() {
-            if (this.className == "revtags") {
-                this.setAttribute("style", "display: none;");
-                this.className = "revtags-hidden";
-            } else if (this.className == "revtags-hidden") {
-                this.setAttribute("style", "display: table-row;");
-                this.className = "revtags";
-            }
-        }
-    );
-    $("span").each(
-        function() {
-            if (this.className == "revtags") {
-                this.setAttribute("style", "display: none;");
-                this.className = "revtags-hidden";
-            } else if (this.className == "revtags-hidden") {
-                this.setAttribute("style", "display: inline;");
-                this.className = "revtags";
-            }
-        }
-    );
+    var $a = $('tr.revtags, span.revtags')
+    var $b = $('tr.revtags-hidden, span.revtags-hidden')
+    $a.toggle().toggleClass('revtags').toggleClass('revtags-hidden')
+    $b.toggle().toggleClass('revtags').toggleClass('revtags-hidden')
 }
 
 /**
