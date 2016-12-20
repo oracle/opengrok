@@ -147,7 +147,7 @@ The file <package_name>.p5p you can easily use as a new publisher for the pkg co
 
 You can also update OpenGrok software with the *.p5p file by running a command
 
-  # pkg update --no-refresh -g /path/to/file/<package_name>.p5p 'pkg://<publisher>/*'
+  # pkg update --no-refresh -g /path/to/file/<package_name>.p5p 'pkg://opengrok/*'
 
 
 5. OpenGrok setup
