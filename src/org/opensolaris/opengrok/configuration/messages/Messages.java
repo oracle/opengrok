@@ -153,7 +153,7 @@ public final class Messages {
         try {
             m.write(server, port);
         } catch (IOException ex) {
-            System.err.println("Cannot contact the target server");
+            System.err.println(ex.getMessage());
             ex.printStackTrace(System.err);
             System.exit(5);
         }
