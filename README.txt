@@ -126,7 +126,16 @@ Currently supported message types:
     This message can delete some already published information in
     the web application.
     Use tags to restrict the deletion only to specific projects.
+3) StatsMessage (stats)
+    This message is designed to retrieve some information from the web application.
 
+    The purpose of the message is specified in the text field as one of:
+        - "reload"  the application reloads the statistics file
+                    and returns the loaded statistics
+        - "clean"   the application cleans its current statistics
+                    and returns the empty statistics
+        - "get"     the application returns current statistics
+        - otherwise the application returns current statistics
 
 4. OpenGrok install
 -----------------
