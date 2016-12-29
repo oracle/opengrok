@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
@@ -28,8 +28,10 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Kryštof Tulinger
  */
 public class NormalMessage extends Message {
+
     @Override
-    public void apply(RuntimeEnvironment env) {
+    public byte[] apply(RuntimeEnvironment env) {
         env.addMessage(this);
+        return null;
     }
 }

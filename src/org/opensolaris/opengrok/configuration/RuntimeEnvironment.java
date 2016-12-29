@@ -28,8 +28,12 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -73,6 +77,9 @@ import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -84,6 +91,8 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.util.XmlEofInputStream;
+import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.Util;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -118,6 +127,8 @@ public final class RuntimeEnvironment {
     */
     private final ConcurrentMap<String, SortedSet<Message>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
     private int messagesInTheSystem = 0;
+
+    private Statistics statistics = new Statistics();
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -265,6 +276,14 @@ public final class RuntimeEnvironment {
 
     public void setIndexRefreshPeriod(int seconds) {
         threadConfig.get().setIndexRefreshPeriod(seconds);
+    }
+
+    public Statistics getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
     }
 
     /**
@@ -1406,6 +1425,75 @@ public final class RuntimeEnvironment {
         return messagesInTheSystem;
     }
 
+    /**
+     * Dump statistics in JSON format into the file specified in configuration.
+     *
+     * @throws IOException
+     */
+    public void saveStatistics() throws IOException {
+        saveStatistics(new File(getConfiguration().getStatisticsFilePath()));
+    }
+
+    /**
+     * Dump statistics in JSON format into a file.
+     *
+     * @param out the output file
+     * @throws IOException
+     */
+    public void saveStatistics(File out) throws IOException {
+        try (FileOutputStream ofstream = new FileOutputStream(out)) {
+            saveStatistics(ofstream);
+        }
+    }
+
+    /**
+     * Dump statistics in JSON format into an output stream.
+     *
+     * @param out the output stream
+     * @throws IOException
+     */
+    public void saveStatistics(OutputStream out) throws IOException {
+        out.write(Util.statisticToJson(getStatistics()).toJSONString().getBytes());
+    }
+
+    /**
+     * Load statistics from JSON file specified in configuration.
+     *
+     * @param in the file with json
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics() throws IOException, ParseException {
+        loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
+    }
+
+    /**
+     * Load statistics from JSON file.
+     *
+     * @param in the file with json
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics(File in) throws IOException, ParseException {
+        try (FileInputStream ifstream = new FileInputStream(in)) {
+            loadStatistics(ifstream);
+        }
+    }
+
+    /**
+     * Load statistics from an input stream.
+     *
+     * @param in the file with json
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics(InputStream in) throws IOException, ParseException {
+        try (InputStreamReader iReader = new InputStreamReader(in)) {
+            JSONParser jsonParser = new JSONParser();
+            setStatistics(Util.jsonToStatistics((JSONObject) jsonParser.parse(iReader)));
+        }
+    }
+
     private ServerSocket configServerSocket;
 
     /**
@@ -1473,18 +1561,7 @@ public final class RuntimeEnvironment {
                                 maybeRefreshIndexSearchers();
                             } else if (obj instanceof Message) {
                                 Message m = ((Message) obj);
-                                if (canAcceptMessage(m)) {
-                                    m.apply(RuntimeEnvironment.getInstance());
-                                    LOGGER.log(Level.FINER, "Message received: {0}",
-                                            m.getTags());
-                                    LOGGER.log(Level.FINER, "Messages in the system: {0}",
-                                            getMessagesInTheSystem());
-                                    output.write(Message.MESSAGE_OK);
-                                } else {
-                                    LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system",
-                                            m.getTags());
-                                    output.write(Message.MESSAGE_LIMIT);
-                                }
+                                handleMessage(m, output);
                             }
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
@@ -1506,6 +1583,43 @@ public final class RuntimeEnvironment {
         }
 
         return ret;
+    }
+
+    /**
+     * Handle incoming message.
+     *
+     * @param m message
+     * @param output output stream for errors or success
+     * @throws IOException
+     */
+    protected void handleMessage(Message m, final OutputStream output) throws IOException {
+        byte[] out;
+        if (!canAcceptMessage(m)) {
+            LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system",
+                    m.getTags());
+            output.write(Message.MESSAGE_LIMIT);
+        }
+
+        try {
+            out = m.apply(RuntimeEnvironment.getInstance());
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING,
+                    String.format("Message dropped: {0} - message error", m.getTags()),
+                    ex);
+            output.write(Message.MESSAGE_ERROR);
+            output.write(ex.getMessage().getBytes());
+            return;
+        }
+
+        LOGGER.log(Level.FINER, "Message received: {0}",
+                m.getTags());
+        LOGGER.log(Level.FINER, "Messages in the system: {0}",
+                getMessagesInTheSystem());
+
+        output.write(Message.MESSAGE_OK);
+        if (out != null) {
+            output.write(out);
+        }
     }
 
     private Thread watchDogThread;

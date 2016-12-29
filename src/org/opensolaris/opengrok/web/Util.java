@@ -1081,6 +1081,26 @@ public final class Util {
     }
 
     /**
+     * Convert statistics object into JSONObject.
+     *
+     * @param stats object containing statistics
+     * @return the json object
+     */
+    public static JSONObject statisticToJson(Statistics stats) {
+        return stats.toJson();
+    }
+
+    /**
+     * Convert JSONObject object into statistics.
+     *
+     * @param input object containing statistics
+     * @return the statistics object
+     */
+    public static Statistics jsonToStatistics(JSONObject input) {
+        return Statistics.from(input);
+    }
+
+    /**
      * Print a row in an HTML table.
      *
      * @param out destination for the HTML output
