@@ -22,16 +22,25 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
+import java.io.IOException;
+import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.Util;
 
 /**
- * @author Kryštof Tulinger
+ *
+ * @author Krystof Tulinger
  */
-public class AbortMessage extends Message {
+public class StatsMessage extends Message {
 
     @Override
-    public byte[] apply(RuntimeEnvironment env) {
-        env.removeAnyMessage(tags);
-        return null;
+    public byte[] apply(RuntimeEnvironment env) throws IOException, ParseException {
+        if (getText().equalsIgnoreCase("reload")) {
+            env.loadStatistics();
+        } else if (getText().equalsIgnoreCase("clean")) {
+            env.setStatistics(new Statistics());
+        }
+        return Util.statisticToJson(env.getStatistics()).toJSONString().getBytes();
     }
 }

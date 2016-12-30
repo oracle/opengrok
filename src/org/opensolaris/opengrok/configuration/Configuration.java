@@ -65,6 +65,7 @@ public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
     public static final String PLUGIN_DIRECTORY_DEFAULT = "plugins";
+    public static final String STATISTICS_FILE_DEFAULT = "statistics.json";
 
     private String ctags;
     /**
@@ -138,7 +139,7 @@ public final class Configuration {
     private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
     private boolean foldingEnabled;
-
+    private String statisticsFilePath;
     /*
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
@@ -242,6 +243,14 @@ public final class Configuration {
         this.indexRefreshPeriod = seconds;
     }
 
+    public String getStatisticsFilePath() {
+        return statisticsFilePath;
+    }
+
+    public void setStatisticsFilePath(String statisticsFilePath) {
+        this.statisticsFilePath = statisticsFilePath;
+    }
+
     /**
      * Creates a new instance of Configuration
      */
@@ -284,6 +293,7 @@ public final class Configuration {
         cmds = new HashMap<>();
         setSourceRoot(null);
         setDataRoot(null);
+        setStatisticsFilePath(null);
         setCommandTimeout(600); // 10 minutes
         setScopesEnabled(true);
         setFoldingEnabled(true);
@@ -493,9 +503,23 @@ public final class Configuration {
         return dataRoot;
     }
 
+    /**
+     * Sets data root.
+     *
+     * This method also sets the pluginDirectory if it is not already set and
+     * also this method sets the statisticsFilePath if it is not already set
+     *
+     * @see #setPluginDirectory(java.lang.String)
+     * @see #setStatisticsFilePath(java.lang.String)
+     *
+     * @param dataRoot
+     */
     public void setDataRoot(String dataRoot) {
-        if(this.pluginDirectory == null) {
-            this.pluginDirectory = dataRoot + "/../" + PLUGIN_DIRECTORY_DEFAULT;
+        if (getPluginDirectory() == null) {
+            setPluginDirectory(dataRoot + "/../" + PLUGIN_DIRECTORY_DEFAULT);
+        }
+        if (getStatisticsFilePath() == null) {
+            setStatisticsFilePath(dataRoot + "/" + STATISTICS_FILE_DEFAULT);
         }
         this.dataRoot = dataRoot;
     }

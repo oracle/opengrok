@@ -47,6 +47,16 @@
       <url-pattern>/*</url-pattern>
   </filter-mapping>
 
+  <filter>
+      <filter-name>StatisticsFilter</filter-name>
+      <filter-class>org.opensolaris.opengrok.web.StatisticsFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+      <filter-name>StatisticsFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <servlet>
     <display-name>Source Finder</display-name>
     <servlet-name>search</servlet-name>

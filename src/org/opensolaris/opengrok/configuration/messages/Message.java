@@ -75,8 +75,10 @@ public abstract class Message implements Comparable<Message> {
      * Apply the message to the current runtime environment.
      *
      * @param env the runtime environment
+     * @return possible output for this application, null if no output
+     * @throws java.lang.Exception
      */
-    public abstract void apply(RuntimeEnvironment env);
+    public abstract byte[] apply(RuntimeEnvironment env) throws Exception;
 
     /**
      * Factory method for particular message types.
@@ -249,17 +251,35 @@ public abstract class Message implements Comparable<Message> {
      * @throws IOException
      *
      * @see #throwIfError(int)
+     *
+     * @return possible output for this application, null if no output
      */
-    public void write(String host, int port) throws IOException {
+    public byte[] write(String host, int port) throws IOException {
         try (Socket sock = new Socket(host, port)) {
             try (XMLEncoder e = new XMLEncoder(new XmlEofOutputStream(sock.getOutputStream()))) {
                 e.writeObject(this);
             }
 
-            try (InputStream input = sock.getInputStream()) {
-                throwIfError(input.read());
+            try (InputStream input = sock.getInputStream();
+                    ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                int ret, r;
+                if ((ret = input.read()) < 0) {
+                    throwIfError(ret, "unexpected end of socket while waiting for ack");
+                }
+
+                byte[] buffer = new byte[4096];
+                while ((r = input.read(buffer)) >= 0) {
+                    out.write(buffer, 0, r);
+                }
+
+                throwIfError(ret, out.toString());
+
+                if (out.size() > 0) {
+                    return out.toByteArray();
+                }
             }
         }
+        return null;
     }
 
     public void write(File file) throws IOException {
@@ -314,9 +334,10 @@ public abstract class Message implements Comparable<Message> {
      * Decode the return code from the remote server.
      *
      * @param c the code
+     * @param out error message stored in string
      * @throws IOException if the return code meant an error
      */
-    private void throwIfError(int c) throws IOException {
+    protected void throwIfError(int c, String message) throws IOException {
         switch (c) {
             case MESSAGE_OK:
                 break;
@@ -324,12 +345,18 @@ public abstract class Message implements Comparable<Message> {
                 throw new IOException(
                         String.format(
                                 "Message was not accepted by the remote server - "
-                                + "too many messages in the system (error %#x).", c));
+                                + "%s (error %#x).",
+                                message.length() > 0 ? message : "too many messages in the system",
+                                c));
             default:
                 throw new IOException(
                         String.format(
-                                "Message was not accepted by the remote server "
-                                + "(error %#x).", c));
+                                "Message was not accepted by the remote server %s%s%s(error %#x).",
+                                message.length() > 0 ? "- " : "",
+                                message.length() > 0 ? message : "",
+                                message.length() > 0 ? " " : "",
+                                c));
+
         }
     }
 }

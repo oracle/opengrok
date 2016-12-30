@@ -36,6 +36,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
+import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -97,6 +98,14 @@ public final class WebappListener
             }
         }
 
+        try {
+            RuntimeEnvironment.getInstance().loadStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Could not load statistics from a file.", ex);
+        } catch (ParseException ex) {
+            LOGGER.log(Level.SEVERE, "Could not parse statistics from a file.", ex);
+        }
+
         String pluginDirectory = context.getInitParameter(AUTHORIZATION_PLUGIN_DIRECTORY);
         if (pluginDirectory != null) {
             env.getConfiguration().setPluginDirectory(pluginDirectory);
@@ -124,10 +133,16 @@ public final class WebappListener
      */
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
+        try {
+            RuntimeEnvironment.getInstance().saveStatistics();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Could not save statistics into a file.", ex);
+        }
         RuntimeEnvironment.getInstance().stopConfigurationListenerThread();
         RuntimeEnvironment.getInstance().stopWatchDogService();
         RuntimeEnvironment.getInstance().stopIndexReopenThread();
         RuntimeEnvironment.getInstance().stopExpirationTimer();
+
     }
 
     /**
@@ -136,7 +151,7 @@ public final class WebappListener
     @Override
     public void requestDestroyed(ServletRequestEvent e) {
         PageConfig.cleanup(e.getServletRequest());
-        SearchHelper sh = (SearchHelper) e.getServletRequest().getAttribute("SearchHelper");
+        SearchHelper sh = (SearchHelper) e.getServletRequest().getAttribute(SearchHelper.REQUEST_ATTR);
         if (sh != null) {
             sh.destroy();
         }

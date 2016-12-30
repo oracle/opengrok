@@ -151,7 +151,10 @@ public final class Messages {
         }
 
         try {
-            m.write(server, port);
+            byte[] out = m.write(server, port);
+            if (out != null) {
+                System.out.write(out);
+            }
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
             ex.printStackTrace(System.err);

@@ -70,7 +70,7 @@ include file="projects.jspf"
     long starttime = System.currentTimeMillis();
 
     SearchHelper searchHelper = cfg.prepareSearch();
-    request.setAttribute("SearchHelper", searchHelper);
+    request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);

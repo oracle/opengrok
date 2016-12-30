@@ -44,7 +44,7 @@ public class AbortMessageTest {
     }
 
     @Test
-    public void testApplyNoTag() {
+    public void testApplyNoTag() throws Exception {
         Message m = new AbortMessage();
 
         Assert.assertEquals(0, env.getMessagesInTheSystem());
@@ -53,7 +53,7 @@ public class AbortMessageTest {
     }
 
     @Test
-    public void testApplyNoTagEmpty() {
+    public void testApplyNoTagEmpty() throws Exception {
         Message m = new AbortMessage();
         m.addTag("main");
 
@@ -63,7 +63,7 @@ public class AbortMessageTest {
     }
 
     @Test
-    public void testApplyNoTagFull() {
+    public void testApplyNoTagFull() throws Exception {
         new NormalMessage().addTag("main").apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().apply(env);
@@ -71,7 +71,7 @@ public class AbortMessageTest {
     }
 
     @Test
-    public void testApplySingle() {
+    public void testApplySingle() throws Exception {
         new NormalMessage().addTag("main").apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().addTag("main").apply(env);
@@ -79,7 +79,7 @@ public class AbortMessageTest {
     }
 
     @Test
-    public void testApplySingleWrongTag() {
+    public void testApplySingleWrongTag() throws Exception {
         new NormalMessage().addTag("main").apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().addTag("other").apply(env);
@@ -87,7 +87,7 @@ public class AbortMessageTest {
     }
 
     @Test
-    public void testApplyReverse() {
+    public void testApplyReverse() throws Exception {
         new AbortMessage().addTag("main").apply(env);
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         new NormalMessage().addTag("main").apply(env);
@@ -95,7 +95,7 @@ public class AbortMessageTest {
     }
 
     @Test
-    public void testApplyMultiple() {
+    public void testApplyMultiple() throws Exception {
         new NormalMessage().addTag("main").apply(env);
         new NormalMessage().addTag("project").apply(env);
         new NormalMessage().addTag("pull").apply(env);
