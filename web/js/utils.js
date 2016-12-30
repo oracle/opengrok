@@ -489,21 +489,31 @@
                 return this;
             }
 
+
+
             // private
+            this.cropPosition = function($w, position) {
+                var w = {
+                    height: $w.outerHeight(true),
+                    width: $w.outerWidth(true)
+                }
+                var bw = {
+                    height: $(browserWindow).outerHeight(true),
+                    width: $(browserWindow).outerWidth(true),
+                    yOffset: browserWindow.pageYOffset,
+                    xOffset: browserWindow.pageXOffset
+                }
+                position.top -= Math.max(0, position.top + w.height - bw.yOffset - bw.height + 20)
+                position.left -= Math.max(0, position.left + w.width - bw.xOffset - bw.width + 20)
+                return position
+            }
+
             this.determinePosition = function () {
-                var position = {}
-                var $w = this.$window;
-                if (this.clientY + $w.height() + 40 > $(browserWindow).height()) {
-                    position.top = $(browserWindow).height() - $w.height() - 40;
-                } else {
-                    position.top = this.clientY
+                var position = {
+                    top: this.clientY,
+                    left: this.clientX
                 }
-                if (this.clientX + $w.width() + 40 > $(browserWindow).width()) {
-                    position.left = $(browserWindow).width() - $w.width() - 40;
-                } else {
-                    position.left = this.clientX;
-                }
-                return position;
+                return this.cropPosition(this.$window, position)
             }
 
             this.makeMeDraggable = function () {
@@ -619,8 +629,8 @@
             this.addCallback('load', function ($window) {
                 var that = this
                 $(document).mousemove(function (e) {
-                    that.clientX = e.clientX;
-                    that.clientY = e.clientY;
+                    that.clientX = e.pageX;
+                    that.clientY = e.pageY;
                 })
                 $(document).keyup(function (e) {
                     var key = e.keyCode
