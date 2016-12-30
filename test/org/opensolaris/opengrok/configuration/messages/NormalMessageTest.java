@@ -51,7 +51,7 @@ public class NormalMessageTest {
     }
 
     @Test
-    public void testApplyNoTag() {
+    public void testApplyNoTag() throws Exception {
         Message m = new NormalMessage();
 
         Assert.assertEquals(0, env.getMessagesInTheSystem());
@@ -60,7 +60,7 @@ public class NormalMessageTest {
     }
 
     @Test
-    public void testApplySingle() {
+    public void testApplySingle() throws Exception {
         Message m = new NormalMessage().addTag("main");
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         m.apply(env);
@@ -68,7 +68,7 @@ public class NormalMessageTest {
     }
 
     @Test
-    public void testApplyMultiple() {
+    public void testApplyMultiple() throws Exception {
         Message[] m = makeArray(new NormalMessage(), new NormalMessage(), new NormalMessage());
 
         for (int i = 0; i < m.length; i++) {
@@ -101,7 +101,7 @@ public class NormalMessageTest {
     }
 
     @Test
-    public void testApplyMultipleUnique() {
+    public void testApplyMultipleUnique() throws Exception {
         Message[] m = makeArray(new NormalMessage(), new NormalMessage(), new NormalMessage());
         Date d = new Date();
 

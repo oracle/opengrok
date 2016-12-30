@@ -37,7 +37,6 @@ public class StatsMessage extends Message {
     @Override
     public byte[] apply(RuntimeEnvironment env) throws IOException, ParseException {
         if (getText().equalsIgnoreCase("reload")) {
-
             env.loadStatistics();
         } else if (getText().equalsIgnoreCase("clean")) {
             env.setStatistics(new Statistics());

@@ -37,19 +37,19 @@ import org.json.simple.JSONObject;
  */
 public class Statistics {
 
-    private static final String STATISTIC_TIMING = "timing";
-    private static final String STATISTIC_TIMING_MIN = "timing_min";
-    private static final String STATISTIC_TIMING_MAX = "timing_max";
-    private static final String STATISTIC_TIMING_AVG = "timing_avg";
-    private static final String STATISTIC_REQUEST_CATEGORIES = "request_categories";
-    private static final String STATISTIC_REQUESTS = "requests";
-    private static final String STATISTIC_MINUTES = "minutes";
-    private static final String STATISTIC_REQUESTS_PER_MINUTE = "requests_per_minute";
-    private static final String STATISTIC_REQUESTS_PER_MINUTE_MIN = "requests_per_minute_min";
-    private static final String STATISTIC_REQUESTS_PER_MINUTE_MAX = "requests_per_minute_max";
-    private static final String STATISTIC_REQUESTS_PER_MINUTE_AVG = "requests_per_minute_avg";
-    private static final String STATISTIC_DAY_HISTOGRAM = "day_histogram";
-    private static final String STATISTIC_MONTH_HISTOGRAM = "month_histogram";
+    protected static final String STATISTIC_TIMING = "timing";
+    protected static final String STATISTIC_TIMING_MIN = "timing_min";
+    protected static final String STATISTIC_TIMING_MAX = "timing_max";
+    protected static final String STATISTIC_TIMING_AVG = "timing_avg";
+    protected static final String STATISTIC_REQUEST_CATEGORIES = "request_categories";
+    protected static final String STATISTIC_REQUESTS = "requests";
+    protected static final String STATISTIC_MINUTES = "minutes";
+    protected static final String STATISTIC_REQUESTS_PER_MINUTE = "requests_per_minute";
+    protected static final String STATISTIC_REQUESTS_PER_MINUTE_MIN = "requests_per_minute_min";
+    protected static final String STATISTIC_REQUESTS_PER_MINUTE_MAX = "requests_per_minute_max";
+    protected static final String STATISTIC_REQUESTS_PER_MINUTE_AVG = "requests_per_minute_avg";
+    protected static final String STATISTIC_DAY_HISTOGRAM = "day_histogram";
+    protected static final String STATISTIC_MONTH_HISTOGRAM = "month_histogram";
 
     private Map<String, Long> requestCategories = new TreeMap<>();
     private Map<String, Long> timing = new TreeMap<>();
@@ -221,6 +221,9 @@ public class Statistics {
     }
 
     public long getRequestsPerMinuteMin() {
+        if (getRequests() <= 0) {
+            return 0;
+        }
         return requestsPerMinuteMin;
     }
 
@@ -229,6 +232,9 @@ public class Statistics {
     }
 
     public long getRequestsPerMinuteMax() {
+        if (getRequests() <= 0) {
+            return 0;
+        }
         return requestsPerMinuteMax;
     }
 
