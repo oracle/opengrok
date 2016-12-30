@@ -1205,7 +1205,7 @@ span.scope-signature {
 
 .message-group {
     padding-left: 0;
-    margin: 0 2em 0 2em;
+    margin: 0 0 5px 0;
 }
 
 .message-group.limited {
@@ -1219,8 +1219,6 @@ span.scope-signature {
     position: relative;
     display: block;
     padding: 2px 10px;
-    margin-left: 1%;
-    margin-right: 1%;
     background-color: #fff;
     margin-bottom: 3px;
 }
