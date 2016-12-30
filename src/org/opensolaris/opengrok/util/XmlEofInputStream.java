@@ -44,20 +44,33 @@ public class XmlEofInputStream extends FilterInputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        int r;
         if (isEof) {
             return -1;
         }
-        int r = super.read(b, off, len);
+        if ((r = super.read(b, off, len)) <= 0) {
+            if (r < 0) {
+                isEof = true;
+            }
+            return r;
+        }
         isEof = b[off + r - 1] == EOF;
-        return isEof ? r - 1 : r;
+        return isEof ? (r - 1 == 0 ? -1 : r - 1) : r;
     }
 
     @Override
     public int read() throws IOException {
+        int r;
         if (isEof) {
             return -1;
         }
-        int r = super.read();
+        if ((r = super.read()) <= 0) {
+            if (r < 0) {
+                isEof = true;
+            }
+            return r;
+        }
+
         isEof = r == EOF;
         return isEof ? -1 : r;
     }
@@ -66,5 +79,4 @@ public class XmlEofInputStream extends FilterInputStream {
     public void close() throws IOException {
         isEof = true;
     }
-
 }
