@@ -892,6 +892,12 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
     max-height: 400px;
 }
 
+.navigate-window {
+    min-width: 200px;
+    max-width: 300px;
+    max-height: 480px;
+}
+
 .important-note {
     background-color: rgb(255, 141, 96);
     text-align: center;

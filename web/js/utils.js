@@ -1087,7 +1087,6 @@
                             .addClass('navigate-window')
                             .addClass('diff_navigation_style')
                             .css({top: '150px', right: '20px'})
-                            .css('max-width', this.options.max_width)
                             .append(this.$content)
                 },
                 load: function ($window) {
@@ -1114,6 +1113,7 @@
                     $(browserWindow).resize(function () {
                         that.updatePosition($window)
                     })
+                    that.updatePosition($window)
                 },
                 update: function (data) {
                     var $ul;
@@ -1130,8 +1130,6 @@
 
                 }
             }, options || {
-                max_height: 480,
-                max_width: 300,
             }), $.extend({
                 $content: $('<div>'),
                 buildLink: function (href, name, c) {
@@ -1142,11 +1140,15 @@
                 },
                 updatePosition: function ($w) {
                     var a = {}
-                    a.top = $.scopesWindow.is(':visible') ? $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20 : this.getTopOffset() + 10,
-                            a.height = Math.min(this.options.max_height, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20)
+                    a.top = $.scopesWindow.is(':visible') ? $.scopesWindow.offset().top + $.scopesWindow.outerHeight() + 20 : this.getTopOffset() + 10;
+                    a.height = Math.min(parseFloat($w.css('max-height')) || 480, $(browserWindow).outerHeight() - a.top - ($w.outerHeight(true) - $w.height()) - 20);
 
                     if (a.height == $w.height() && a.top == this.getTopOffset())
                         return $w;
+
+                    if (this.$content.children().length === 0)
+                        // the window is empty
+                        delete a.height
 
                     return $w.stop().animate(a)
                 },
@@ -1604,7 +1606,9 @@ function toggle_annotations() {
 function pageReadyList() {
     document.highlight_count = 0;
     $.navigateWindow.init()
-    $.navigateWindow.update(get_sym_list())
+    if (typeof get_sym_list === 'function') {
+        $.navigateWindow.update(get_sym_list())
+    }
     $('#navigate').click(function () {
         $.navigateWindow.toggle()
     })
