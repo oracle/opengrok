@@ -250,7 +250,7 @@ public abstract class Message implements Comparable<Message> {
      * @param port port number
      * @throws IOException
      *
-     * @see #throwIfError(int)
+     * @see #throwIfError(int c, String message)
      *
      * @return possible output for this application, null if no output
      */
@@ -334,7 +334,7 @@ public abstract class Message implements Comparable<Message> {
      * Decode the return code from the remote server.
      *
      * @param c the code
-     * @param out error message stored in string
+     * @param message error message stored in string
      * @throws IOException if the return code meant an error
      */
     protected void throwIfError(int c, String message) throws IOException {

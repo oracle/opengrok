@@ -190,7 +190,7 @@ A <dfn>Query</dfn> is a series of clauses. A clause may be prefixed by:
 </p>
 
 <p>Opengrok search is powered by <a href="http://lucene.apache.org/">Lucene</a>,
-for more detail on query syntax refer to <a href="http://lucene.apache.org/core/<%=SearchEngine.LUCENE_VERSION_HELP%>/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package_description">Lucene docs</a>.
+for more detail on query syntax refer to <a href="http://lucene.apache.org/core/<%=SearchEngine.LUCENE_VERSION_HELP%>/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description">Lucene docs</a>.
 </p>
 
 <h4>Intelligence Window</h4>

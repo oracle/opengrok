@@ -1458,8 +1458,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Load statistics from JSON file specified in configuration.
-     *
-     * @param in the file with json
+     *     
      * @throws IOException
      * @throws ParseException
      */
