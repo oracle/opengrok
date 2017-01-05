@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.util;
@@ -107,4 +107,28 @@ public final class StringUtils {
 
       return (output.length() == 0 ? "0" : output);
   }
+
+    /**
+     * Finds n-th index of a given substring in a string.
+     *
+     * @param str an original string
+     * @param substr a substring to match
+     * @param n n-th occurrence
+     * @return the index of the first character of the substring in the original
+     * string where the substring occurred n-th times in the string. If the n-th
+     * candidate does not exist, -1 is returned.
+     */
+    public static int nthIndexOf(String str, String substr, int n) {
+        int pos = -1;
+        while (n > 0) {
+            if (pos >= str.length()) {
+                return -1;
+            }
+            if ((pos = str.indexOf(substr, pos + 1)) == -1) {
+                break;
+            }
+            n--;
+        }
+        return pos;
+    }
 }
