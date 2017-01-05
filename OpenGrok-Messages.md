@@ -136,4 +136,4 @@ You can also specify different instance base with environment variables, like it
 
 # XSS Vulnerability
 
-The messages can contain custom HTML markup and there is no XSS filter or any other kind of restriction for the displayed result. You should restrict the configuration listener (localhost:2424) only to users who you trust. Furter information [here](https://github.com/OpenGrok/OpenGrok/wiki/How-to-install-OpenGrok#cli---command-line-interface-usage), under the configuration.
+The messages can contain custom HTML markup and there is no XSS filter or any other kind of restriction for the displayed result. You should restrict the configuration listener (localhost:2424) only to users who you trust. Further information [here](https://github.com/OpenGrok/OpenGrok/wiki/How-to-install-OpenGrok#cli---command-line-interface-usage), under the configuration.
