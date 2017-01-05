@@ -72,7 +72,7 @@ Usage: Messages [options] <text>
 
 [OPTIONS]:
   -c|--class                    css class to apply for the message (default info)
-  -e|--expire                   human readable date string of expiration (default +5 min) (*)
+  -e|--expire                   human readable date of expiration (default +5 min) (*)
   -h|--help                     display this message and exit
   -n|--type                     type of the message (default normal)
   -p|--port                     remote port number of the application (default 2424)
@@ -83,9 +83,25 @@ Usage: Messages [options] <text>
 
   (*) see man date: option --date (requires GNU date - use DATE env variable)
   css classes: success, info, warning, error
-  types: normal, abort
+  types: normal, abort, stats
   tags: main, <project name>
   text: supports html markup
+
+  Message types:
+    normal:
+     - assign a <text> to the main page or a project
+     - can be more precise with <tags> (for specific project)
+    abort:
+     - discard existing messages in the system with the same <tags>
+    stats:
+     - ask the application for its statistics
+     - query is formed in the message <text>:
+       - "reload"  the application reloads the statistics file
+                   and returns the loaded statistics
+       - "clean"   the application cleans its current statistics
+                   and returns the empty statistics
+       - "get"     the application returns current statistics
+       - otherwise the application returns current statistics
 
   Optional environment variables:
     OPENGROK_CONFIGURATION - location of your configuration
