@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project name="OpenGrok" default="jar" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
@@ -152,6 +152,16 @@ Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
         <pathelement path="${pmd.home}/lib/"/>
         <pathelement path="${java.class.path}"/>
     </path>
+
+    <target name="get-java-version">
+      <condition property="java.version.checked">
+            <equals arg1="${ant.java.version}" arg2="1.8"/>
+      </condition>
+    </target>
+
+    <target name="check-java-version" depends="get-java-version" unless="java.version.checked">
+        <fail message="Unsupported Java version: ${ant.java.version}. Make sure that the Java version is 1.8 or greater."/>
+    </target>
 
     <target name="-check-jflex" description="Check that jflex jar file is present">
         <available file="jflex-${jflex-version}.jar" type="file" property="JFlex.present">
@@ -292,9 +302,12 @@ Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <property name="coverage.dir" value="${basedir}/coverage"/>
-    <target name="-pre-compile" depends="jrcs,jflex,download-lucene,download-servlet-api"/>
+
+    <target name="-pre-compile" depends="check-java-version,jrcs,jflex,download-lucene,download-servlet-api"/>
+
     <target name="eclipse" depends="-pre-compile"
         description="satisfy eclipse dependencies"/>
+
     <target name="-post-clean">
         <delete dir="${src.generatedsrc.dir}"/>
         <delete file="${manifest.file}"/>
