@@ -31,12 +31,22 @@ the searched information can be inconsistent.
 Currently supported message types:
 
 1. `NormalMessage` (normal)
+
     This message is designed to display some information in the web application.
     Use tags to target a specific project.
 2. `AbortMessage` (abort)
+
     This message can delete some already published information in
     the web application.
     Use tags to restrict the deletion only to specific projects.
+3. `StatsMessage` (stats)
+
+    This message is designed to retrieve some information from the web application.
+    The purpose of the message is specified in the text field as one of:
+       - "reload"  the application reloads the statistics file and returns the loaded statistics
+       - "clean"   the application cleans its current statistics and returns the empty statistics
+       - "get"     the application returns current statistics
+       - otherwise the application returns current statistics
 
 ## Tags
 
@@ -95,6 +105,9 @@ $ tools/Messages -e "+30 min" "Hello" # set expiration to 30 minutes from now
 $ tools/Messages -c "error" -e "+30 min" "Hello" # display the message as error (red color)
 $ tools/Messages -c "warning" -e "+30 min" "Hello"  # display the message as warning (yellow color)
 $ tools/Messages -c "warning" -e "+30 min" --type abort "Hello" # send abort message (delete messages in the system)
+$ tools/Messages -n stats get # get actual statistics as JSON
+$ tools/Messages -n stats reload # reload the statistics file
+$ tools/Messages -n stats clean # cleans all the statistics
 ```
 
 The script is also packaged into the target archive and the usage is similar
