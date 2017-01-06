@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 
 --%>
 <%@page import="org.json.simple.JSONArray"%>
@@ -48,6 +48,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 <%
 {
     PageConfig cfg = PageConfig.get(request);
+    JSONArray messages;
 
     Util.printMessages(out, cfg.getMessages());
 
@@ -109,6 +110,10 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         <h4 class="clearfix">
                             <span class="pull-left">
                                 <span class="name"><%= Util.htmlize(group.getName())%></span>
+                                <%
+                                if (!(messages = Util.messagesToJson(group)).isEmpty()) { %>
+                                    <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                <% } %>
                                 <small>
                                     [<a href="#" class="projects_select_all">select all</a>]
                                     (<span title="Number of groups directly in this group"><%= pHelper.getSubgroups(group).size() %></span> +
@@ -158,8 +163,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                    JSONArray messages = Util.messagesToJson(project.getDescription());
-                    if (!messages.isEmpty()) { %>
+                    if (!(messages = Util.messagesToJson(project)).isEmpty()) { %>
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                                 </td><%
@@ -236,7 +240,11 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         <div class="panel-heading-accordion">
                             <h4 class="clearfix">
                                 <span class="pull-left">
-                                    <span class="name">Other</span> 
+                                    <span class="name">Other</span>
+                                    <%
+                                    if (!(messages = Util.messagesToJson("other")).isEmpty()) { %>
+                                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                    <% } %>
                                     <small>
                                         [<a href="#" class="projects_select_all">select all</a>]
                                         (<span title="Number of repositories inside"><%= repositories.size() %></span>)
@@ -280,8 +288,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         <%= Util.htmlize(projDesc) %>
                     </a>
                     <%
-                    JSONArray messages = Util.messagesToJson(proj.getDescription());
-                    if (!messages.isEmpty()) { %>
+                    if (!(messages = Util.messagesToJson(proj)).isEmpty()) { %>
                         <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
                     <% } %>
                     </td><%
