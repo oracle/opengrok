@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.util;
 
@@ -44,7 +44,7 @@ public class XmlEofInputStream extends FilterInputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int r;
+        int r, i;
         if (isEof) {
             return -1;
         }
@@ -54,8 +54,14 @@ public class XmlEofInputStream extends FilterInputStream {
             }
             return r;
         }
-        isEof = b[off + r - 1] == EOF;
-        return isEof ? (r - 1 == 0 ? -1 : r - 1) : r;
+
+        for (i = off; i < off + len && i < off + r; i++) {
+            if (isEof = (b[i] == EOF)) {
+                return i == off ? -1 : i - off;
+            }
+        }
+
+        return r;
     }
 
     @Override
