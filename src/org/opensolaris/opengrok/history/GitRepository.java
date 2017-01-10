@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
+import org.opensolaris.opengrok.util.StringUtils;
 
 /**
  * Access to a Git repository.
@@ -663,24 +664,38 @@ public class GitRepository extends Repository {
         return branch;
     }
 
+    private static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm");
+
     @Override
     String determineCurrentVersion() throws IOException {
-        String line = null;
         File directory = new File(directoryName);
-
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("log");
         cmd.add("-1");
         cmd.add("--pretty=%cd: %h %an %s");
-        cmd.add("--date=format:%Y-%m-%d %H:%M");
+        cmd.add("--date=rfc");
 
         Executor executor = new Executor(cmd, directory);
         if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
 
-        return executor.getOutputString().trim();
+        String output = executor.getOutputString().trim();
+        int indexOf = StringUtils.nthIndexOf(output, ":", 3);
+        if (indexOf < 0) {
+            throw new IOException(
+                    String.format("Couldn't extract date from \"%s\".",
+                            new Object[]{output}));
+        }
+
+        try {
+            Date date = getDateFormat().parse(output.substring(0, indexOf));
+            return String.format("%s%s",
+                    new Object[]{outputDateFormat.format(date), output.substring(indexOf)});
+        } catch (ParseException ex) {
+            throw new IOException(ex);
+        }
     }
 }
