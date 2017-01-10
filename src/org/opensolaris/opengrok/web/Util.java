@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -1045,6 +1045,19 @@ public final class Util {
     }
 
     /**
+     * Print messages for given tags into json array
+     *
+     * @param tags list of tags
+     * @return json array of the messages
+     * @see #messagesToJson(String...)
+     * @see #messagesToJsonObject(String)
+     */
+    public static JSONArray messagesToJson(List<String> tags) {
+        String[] array = new String[tags.size()];
+        return messagesToJson(tags.toArray(array));
+    }
+
+    /**
      * Print messages for given project into json array. These messages are
      * tagged by project description or tagged by any of the project's group
      * name.
@@ -1064,7 +1077,7 @@ public final class Util {
         project.getGroups().stream().forEach((Group t) -> {
             tags.add(t.getName());
         });
-        return messagesToJson((String[]) tags.toArray());
+        return messagesToJson(tags);
     }
 
     /**
@@ -1078,6 +1091,32 @@ public final class Util {
      */
     public static JSONArray messagesToJson(Project project) {
         return messagesToJson(project, new String[0]);
+    }
+
+    /**
+     * Print messages for given group into json array.
+     *
+     * @param group the group
+     * @param additionalTags additional list of tags
+     * @return the json array
+     * @see #messagesToJson(java.util.List)
+     */
+    public static JSONArray messagesToJson(Group group, String... additionalTags) {
+        List<String> tags = new ArrayList<>();
+        tags.add(group.getName());
+        tags.addAll(Arrays.asList(additionalTags));
+        return messagesToJson(tags);
+    }
+
+    /**
+     * Print messages for given group into json array.
+     *
+     * @param group the group
+     * @return the json array
+     * @see #messagesToJson(Group, String...)
+     */
+    public static JSONArray messagesToJson(Group group) {
+        return messagesToJson(group, new String[0]);
     }
 
     /**

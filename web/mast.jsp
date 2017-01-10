@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%--
@@ -107,8 +107,8 @@ include file="pageheader.jspf"
     <%
     JSONArray messages = new JSONArray();
     if (cfg.getProject() != null) {
-        messages = Util.messagesToJson(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG,
-                            cfg.getProject().getDescription());
+        messages = Util.messagesToJson(cfg.getProject(),
+                    RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
     }
     %>
     <% if (!messages.isEmpty()) { %>

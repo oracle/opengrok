@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -172,8 +172,9 @@ public final class Results {
             }
             JSONArray messages;
             if ((p = Project.getProject(parent)) != null
-                    && (messages = Util.messagesToJson(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG,
-                            p.getDescription())).size() > 0) {
+                    && (messages = Util.messagesToJson(p,
+                            RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG
+                    )).size() > 0) {
                 out.write(" <a ");
                 out.write("href=\"" + xrefPrefix + "/" + p.getDescription() + "\">");
                 out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
