@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -50,10 +50,16 @@ public class AuthorizationFilter implements Filter {
         HttpServletResponse httpRes = (HttpServletResponse) sr1;
 
         PageConfig config = PageConfig.get(httpReq);
+        long processTime = System.currentTimeMillis();
 
         Project p = config.getProject();
         if (p != null && !config.isAllowed(p)) {
-            LOGGER.log(Level.SEVERE, "access denied for uri: {0}", httpReq.getRequestURI());
+            LOGGER.log(Level.INFO, "access denied for uri: {0}", httpReq.getRequestURI());
+            config.getEnv().getStatistics().addRequest(httpReq);
+            config.getEnv().getStatistics().addRequest(httpReq, "requests_forbidden");
+            config.getEnv().getStatistics().addRequestTime(httpReq,
+                    "requests_forbidden",
+                    System.currentTimeMillis() - processTime);
             httpRes.sendError(403, "Access forbidden");
             return;
         }
