@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
@@ -54,7 +54,7 @@ private String getAnnotateRevision(DiffData data) {
 
 include file="mast.jsp"
 
-%><script src="<%=request.getContextPath()%>/js/diff.js" type="text/javascript"></script><%
+%><script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script><%
 /* ---------------------- diff.jsp start --------------------- */
 {
     cfg = PageConfig.get(request);
