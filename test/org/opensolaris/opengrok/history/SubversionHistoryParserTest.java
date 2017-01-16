@@ -67,7 +67,9 @@ public class SubversionHistoryParserTest {
      */
     @Test
     public void parseEmpty() throws Exception {
-        History result = instance.parse("");
+        // Empty repository shoud produce at least valid XML.
+        History result = instance.parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<log>\n" + "</log>");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
         assertTrue("Should not contain any history entries", 0 == result.getHistoryEntries().size());
