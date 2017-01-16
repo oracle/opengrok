@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -129,6 +129,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
 
     /**
      * Initialize the SAX parser instance.
+     * @throws HistoryException
      */
     private void initSaxParser() throws HistoryException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -182,12 +183,12 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @param input The output from the process
      */
     @Override
-    public void processStream(InputStream input) {
+    public void processStream(InputStream input) throws IOException {
         try {
             initSaxParser();
             saxParser.parse(new BufferedInputStream(input), handler);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "An error occurred while parsing the xml output", e);
+            throw new IOException("An error occurred while parsing the xml output", e);
         }
     }
 

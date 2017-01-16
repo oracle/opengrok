@@ -202,16 +202,13 @@ public class SubversionHistoryParserTest {
                 HistoryEntry e = result.getHistoryEntries().get(0);
                 assertEquals(revId, e.getRevision());
                 assertEquals(author, e.getAuthor());
-
-                if (expectedException) {
-                    assertNull(e.getDate());
-                } else {
-                    assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
-                }
+                assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
                 assertEquals(1, e.getFiles().size());
                 assertEquals("/" + file, e.getFiles().first());
             } catch (IOException ex) {
-                fail("Should not throw an IO exception");
+                if (!expectedException) {
+                    fail("Should not throw an IO exception for " + date);
+                }
             } catch (ParseException ex) {
                 fail("Parsing the date " + date + " should not throw a parse exception");
             }
