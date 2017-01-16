@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Interner;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
@@ -84,7 +85,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qname) {
+        public void endElement(String uri, String localName, String qname) throws SAXException {
             String s = sb.toString();
             if ("author".equals(qname)) {
                 entry.setAuthor(s);
@@ -92,7 +93,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 try {
                     entry.setDate(format.parse(s));
                 } catch (ParseException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to parse: " + s, ex);
+                    throw new SAXException("Failed to parse date: " + s, ex);
                 }
             } else if ("path".equals(qname)) {
                 /*

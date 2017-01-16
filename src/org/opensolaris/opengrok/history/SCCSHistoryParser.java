@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2010, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -40,9 +40,9 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /**
- * Reads and filters out junk from a SCCS history file
- * see sccsfile(4) for details of the file format
- * Wrote it since invoking sccs prs for each file was
+ * Reads and filters out junk from a SCCS history file.
+ * See sccsfile(4) for details of the file format.
+ * Wrote it since invoking 'sccs prs' for each file was
  * taking a lot of time. Time to index history has reduced 4 to 1!
  */
 class SCCSHistoryParser {
@@ -55,23 +55,29 @@ class SCCSHistoryParser {
     int field;
     boolean sep;
     StringBuilder record = new StringBuilder(128);
-    private String revision;
-    private String author;
-    private Date rdate;
-    private String comment;
     DateFormat sccsDateFormat;
     Reader in;
+
+    // Record fields
+    private String revision;
+    private Date rdate;
+    private String author;
+    private String comment;
 
     History parse(File file, Repository repos) throws HistoryException {
         sccsDateFormat = repos.getDateFormat();
         try {
             return parseFile(file);
-        } catch (IOException ioe) {
-            throw new HistoryException(ioe);
+        } catch (IOException e) {
+            throw new HistoryException("Failed to get history for " +
+                "\"" + file.getAbsolutePath() + "\":", e);
+        } catch (ParseException e) {
+            throw new HistoryException("Failed to parse history for " +
+                "\"" + file.getAbsolutePath() + "\":", e);
         }
     }
 
-    private History parseFile(File file) throws IOException {
+    private History parseFile(File file) throws IOException, ParseException {
         File f = getSCCSFile(file);
         if (f == null) {
             return null;
@@ -103,11 +109,10 @@ class SCCSHistoryParser {
     }
 
     /**
-     * Read a single line of delta record
+     * Read a single line of delta record into the 'record' member.
      *
      * @throws java.io.IOException
-     * @return a String representing a single log delta entry
-     *       rev date time author comments(s)
+     * @return boolean indicating whether there is another record.
      */
     private boolean next() throws java.io.IOException {
         sep = true;
@@ -121,16 +126,25 @@ class SCCSHistoryParser {
         return (record.length() > 2);
     }
 
-    private void initFields() {
-        if(revision == null) {
+    /**
+     * Split record into fields.
+     *
+     * @throws java.io.IOException
+     */
+    private void initFields() throws ParseException {
+        if (revision == null) {
             String[] f = record.toString().split(" ", 6);
             if (f.length > 5) {
                 revision = f[1];
                 try {
                     rdate = sccsDateFormat.parse(f[2] + " " + f[3]);
                 } catch (ParseException e) {
-                    LOGGER.log(Level.WARNING, "An error occured while parsing date", e);
                     rdate = null;
+                    //
+                    // Throw new exception up so that it can be paired with filename
+                    // on which the problem occurred.
+                    //
+                    throw e;
                 }
                 author = f[4];
                 comment = f[5];
@@ -145,15 +159,15 @@ class SCCSHistoryParser {
     /**
      * @return  get the revision string of current log record
      */
-    private String getRevision() {
+    private String getRevision() throws ParseException {
         initFields();
         return revision;
     }
 
     /**
-     * @return  get the date assosiated with current log record
+     * @return  get the date associated with current log record
      */
-    private Date getDate() {
+    private Date getDate() throws ParseException {
         initFields();
         return rdate;
     }
@@ -161,14 +175,14 @@ class SCCSHistoryParser {
     /**
      * @return  get the author of current log record
      */
-    private String getAuthor() {
+    private String getAuthor() throws ParseException {
         initFields();
         return author;
     }
     /**
      * @return  get the comments of current log record
      */
-    private String getComment() {
+    private String getComment() throws ParseException {
         initFields();
         return comment;
     }

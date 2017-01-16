@@ -158,7 +158,11 @@ public class AccuRevHistoryParser implements Executor.StreamHandler {
                     date = df.parse(data[2]);
                     entry.setDate(date);
                 } catch (ParseException pe) {
-                    LOGGER.log(Level.WARNING, "Could not parse date: " + line, pe);
+                    //
+                    // Overriding processStream() thus need to comply with the
+                    // set of exceptions it can throw.
+                    //
+                    throw new IOException("Could not parse date: " + line, pe);
                 }
 
             } else if (line.startsWith("  #")) {  // found comment
