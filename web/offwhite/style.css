@@ -267,6 +267,7 @@ label {
 #Masthead {
     font-family: monospace; /* ala <kbd> */
     clear: left;
+    margin-bottom: 1ex;
 }
 
 #Masthead tt { /* slashes in the xref: line */

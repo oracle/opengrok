@@ -88,7 +88,6 @@ include file="httpheader.jspf"
 /* ]]> */</script>
 <div id="page">
     <div id="whole_header">
-        <form action="<%= context + Prefix.SEARCH_P %>">
 <div id="header"><%@
 
 include file="pageheader.jspf"
@@ -122,78 +121,11 @@ include file="pageheader.jspf"
     <% } %>
 
 </div>
-<div id="bar">
-    <ul>
-        <li><a href="<%= context %>/"><span id="home"></span>Home</a></li><%
-    if (!cfg.hasHistory()) {
-        %><li><span id="history"></span><span class="c">History</span></li><%
-    } else {
-        %><li><a href="<%= context + Prefix.HIST_L + uriEncodedPath
-            %>"><span id="history"></span>History</a></li><%
-    }
-    if (!cfg.hasAnnotations() /* || cfg.getPrefix() == Prefix.HIST_S */ ) {
-        %><li><span class="c"><span class="annotate"></span>Annotate</span></li><%
-    } else if (cfg.annotate()) {
-        %><li><span id="toggle-annotate-by-javascript" style="display: none"><a
-            href="#" onclick="javascript:toggle_annotations(); return false;"
-            title="Show or hide line annotation(commit revisions,authors)."
-            ><span class="annotate"></span>Annotate</a></span><span
-            id="toggle-annotate"><a href="#"><span class="annotate"></span>
-            Annotate</a></span></li><%
-    } else if (cfg.getPrefix() == Prefix.HIST_L) {
-        %><li>
-            <a href="#"
-               onclick="javascript:
-                           window.location = '<%= context + Prefix.XREF_P + uriEncodedPath %>'
-                           // taken from get_annotations() from utils.js
-                           + '?a=true'
-                           + (document.rev ? '&amp;r=' + encodeURIComponent(document.rev) : '')
-                           + (window.location.hash ? '&amp;h=' + window.location.hash.substring(1, window.location.hash.length) : '');
-                           return false;">
-                <span class="annotate"></span>
-                Annotate
-            </a>
-        </li><%
-    } else {
-        %><li><a href="#" onclick="javascript:get_annotations(); return false;"
-            ><span class="annotate"></span>Annotate</a></li><%
-    }
-    if (!cfg.isDir()) {
-        if (cfg.getPrefix() == Prefix.XREF_P) {
-        %><li><a href="#" onclick="javascript:lntoggle();return false;"
-            title="<%= "Show or hide line numbers (might be slower if "
-                + "file has more than 10 000 lines)."
-            %>"><span id="line"></span>Line#</a></li><li><a
-            href="#" id="navigate"
-            title="Show or hide symbol list."><%--
-            --%><span id="defbox"></span>Navigate</a></li><%
-        }
-        %>
-	<li><a href="<%= context + Prefix.RAW_P + uriEncodedPath
-            + (rev.length() == 0 ? "" : "?r=" + Util.URIEncode(rev))
-            %>"><span id="raw"></span>Raw</a></li>
-	<li><a href="<%= context + Prefix.DOWNLOAD_P + uriEncodedPath
-            + (rev.length() == 0 ? "" : "?r=" + Util.URIEncode(rev))
-            %>"><span id="download"></span>Download</a></li>
-	<%
-    }
-        %><li><input type="text" id="search" name="q" class="q" />
-            <input type="submit" value="Search" class="submit" /></li><%
-    Project proj = cfg.getProject();
-    String[] vals = cfg.getSearchOnlyIn();
-        %><li><input type="checkbox" name="path" value='"<%= vals[0]
-            %>"' <%= vals[2] %>/> only in <b><%= vals[1] %></b></li>
-    </ul><%
-    if (proj != null) {
-    %>
-    <input type="hidden" name="project" value="<%=proj.getDescription()%>" /><%
-    }
+<%@
+
+include file="minisearch.jspf"
+
 %>
-    <input type="hidden" id="contextpath" value="<%=request.getContextPath()%>" />
-</div>
-        </form>
-    </div>
-<div id="content">
 <%
 }
 /* ---------------------- mast.jsp end --------------------- */

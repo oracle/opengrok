@@ -302,6 +302,7 @@ label {
     clear: left;
     background-color: #426477;
     border: 1px solid #bbb;
+    margin-bottom: 1ex;
 }
 
 #Masthead tt { /* slashes in the xref: line */
