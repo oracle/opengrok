@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%><%--
@@ -94,16 +94,8 @@ include file="httpheader.jspf"
 include file="pageheader.jspf"
 
 %>
-    <div id="pagetitle"><span id="filename"
-                    >Cross Reference: <%= cfg.getCrossFilename() %></span><%
-    String dtag = cfg.getDefineTagsIndex();
-    if (dtag.length() > 0) {
-                    %><br/><%= dtag %><%
-    }
-    %></div>
 </div>
 <div id="Masthead">
-    <kbd>
     <%
     JSONArray messages = new JSONArray();
     if (cfg.getProject() != null) {
@@ -116,12 +108,19 @@ include file="pageheader.jspf"
     <% } %>
         <a href="<%= context + Prefix.XREF_P %>/">xref</a>: <%= Util
         .breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+    <div id="dtag">
+    <%
+    String dtag = cfg.getDefineTagsIndex();
+    if (dtag.length() > 0) {
+        %> (<%= dtag %>)<%
+    }
+    %></div>
     <% if (!messages.isEmpty()) { %>
     </span>
     <span class="important-note important-note-rounded"
           data-messages='<%= messages %>'>!</span>
     <% } %>
-</kbd>
+
 </div>
 <div id="bar">
     <ul>

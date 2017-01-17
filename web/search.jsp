@@ -94,26 +94,29 @@ include file="pageheader.jspf"
 
 %>
         </div>
-        <div id="Masthead"></div>
-        <div id="bar">
-            <ul>
-                <li><a href="<%= request.getContextPath()
-                    %>/"><span id="home"></span>Home</a></li>
-            </ul>
+        <div id="Masthead">
+            <a href="<%= request.getContextPath() %>/"><span id="home"></span>Home</a>
             <%-- TODO: jel: IMHO it should be move to menu.jspf as combobox --%>
             <div id="sortfield">
                 <label for="sortby">Sort by</label>
-                <ul id="sortby"><%
+                <%
     StringBuilder url = createUrl(searchHelper, true).append("&amp;sort=");
+    int ordcnt = 0;
     for (SortOrder o : SortOrder.values()) {
         if (searchHelper.order == o) {
-                    %><li><span class="active"><%= o.getDesc() %></span></li><%
+                    %><span class="active"><%= o.getDesc() %></span><%
         } else {
-                    %><li><a href="<%= url %><%= o %>"><%= o.getDesc() %></a></li><%
+                    %><a href="<%= url %><%= o %>"><%= o.getDesc() %></a><%
+        }
+        ordcnt++;
+        if (ordcnt != (SortOrder.values().length)) {
+            %> | <%
         }
     }
-                %></ul>
+                %>
             </div>
+        </div>
+        <div id="bar">
         </div>
         <div id="menu"><%@
 

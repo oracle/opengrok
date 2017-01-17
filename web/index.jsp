@@ -41,7 +41,7 @@ include file="httpheader.jspf"
 include file="pageheader.jspf"
 
             %></div>
-            <div id="Masthead"></div>
+            <div id="Masthead">OpenGrok search</div>
             <div id="sbar"><%@
 
 include file="menu.jspf"

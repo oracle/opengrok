@@ -151,7 +151,6 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
         + uriEncodedName %>"><%= path %></a>
     (Results <b> <%= start + 1 %> - <%= thispage + start
             %></b> of <b><%= totalHits %></b>)
-    <p class="slider"><%= slider %></p>
     </caption>
    
     <thead>

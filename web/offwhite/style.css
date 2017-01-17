@@ -255,7 +255,7 @@ label {
     margin: 0 0 1ex 0;
 }
 
-#pagetitle { /* short verbal summary/description of the shown content */
+#dtag { /* short verbal summary/description of the shown content */
 }
 
 #filename { /* "Cross Reference: ..." */
@@ -265,6 +265,7 @@ label {
 }
 
 #Masthead {
+    font-family: monospace; /* ala <kbd> */
     clear: left;
 }
 
