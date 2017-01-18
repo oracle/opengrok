@@ -10,9 +10,10 @@ jars/dirs for tests
 
    and put some stuff into CHANGES.txt
 
-   Then commit the change:
+   Then commit and push the change:
 
-     git commit
+     git commit build.xml
+     git push
 
 1) build must be clean
 
