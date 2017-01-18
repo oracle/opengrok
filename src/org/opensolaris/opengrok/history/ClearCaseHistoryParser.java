@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
