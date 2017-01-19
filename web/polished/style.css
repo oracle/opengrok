@@ -791,6 +791,10 @@ table#dirlist { /* the "Name" column */
     width: 3em;
 }
 
+span.simplified-path {
+    color: #888;
+}
+
 /* file display */
 div[id^='src'] {
     background: white;
