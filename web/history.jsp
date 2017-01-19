@@ -43,7 +43,7 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment"
     String path = cfg.getPath();
 
     // Need to set the title before inlcuding httpheader.jspf
-    cfg.setTitle("History log of " + path);
+    cfg.setTitle(cfg.getHistoryTitle());
 %>
 <%@
 

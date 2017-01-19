@@ -78,7 +78,7 @@ include file="projects.jspf"
     if (searchHelper.errorMsg != null) {
         cfg.setTitle("Search Error");
     } else {
-        cfg.setTitle("Search");
+        cfg.setTitle(cfg.getSearchTitle());
     }
     response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
 %><%@

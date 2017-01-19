@@ -1323,5 +1323,76 @@ public final class PageConfig {
     public SortedSet<Message> getMessages(String tag) {
         return env.getMessages(tag);
     }
-    
+
+    /**
+     * Get basename of the path or "/" if the path is empty.
+     * This is used for setting title of various pages.
+     * @param path
+     * @return short version of the path
+     */
+    public String getShortPath(String path) {
+        File file = new File(path);
+
+        if (path.isEmpty()) {
+            return "/";
+        }
+
+        return file.getName();
+    }
+
+    /**
+     * The search page title string should progressively reflect the search terms
+     * so that if only small portion of the string is seen, it describes
+     * the action as closely as possible while remaining readable.
+     * @return string used for setting page title of search results page
+     */
+    public String getSearchTitle() {
+        String title = new String();
+
+        if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
+            title += req.getParameter("q") + " (full)";
+        }
+        if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
+            if (!title.isEmpty()) {
+                title += ", ";
+            }
+            title += req.getParameter(QueryBuilder.DEFS) + " (definition)";
+        }
+        if (req.getParameter(QueryBuilder.REFS) != null && !req.getParameter(QueryBuilder.REFS).isEmpty()) {
+            if (!title.isEmpty()) {
+                title += ", ";
+            }
+            title += req.getParameter(QueryBuilder.REFS) + " (reference)";
+        }
+        if (req.getParameter(QueryBuilder.PATH) != null && !req.getParameter(QueryBuilder.PATH).isEmpty()) {
+            if (!title.isEmpty()) {
+                title += ", ";
+            }
+            title += req.getParameter(QueryBuilder.PATH) + " (path)";
+        }
+        if (req.getParameter(QueryBuilder.HIST) != null && !req.getParameter(QueryBuilder.HIST).isEmpty()) {
+            if (!title.isEmpty()) {
+                title += ", ";
+            }
+            title += req.getParameter(QueryBuilder.HIST) + " (history)";
+        }
+
+        // TODO: possibly add projects too
+
+        return title + " - OpenGrok search results";
+    }
+
+    /**
+     * Similar as {@link #getSearchTitle()}
+     * @return string used for setting page title of search view
+     */
+    public String getHistoryTitle() {
+        return getShortPath(path) +
+                " - OpenGrok history log for " + path;
+    }
+
+    public String getPathTitle() {
+        return getShortPath(path) +
+                " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
+    }
 }

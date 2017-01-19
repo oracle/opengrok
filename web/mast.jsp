@@ -67,7 +67,7 @@ org.opensolaris.opengrok.web.Util"%><%
 
     // set the default page title
     String path = cfg.getPath();
-    cfg.setTitle("Cross Reference: " + path);
+    cfg.setTitle(cfg.getPathTitle());
 
     String context = request.getContextPath();
     cfg.getEnv().setUrlPrefix(context + Prefix.SEARCH_R + "?");
