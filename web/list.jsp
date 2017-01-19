@@ -168,7 +168,6 @@ Binary file [Click <a href="<%= rawPath %>?r=<%= Util.URIEncode(rev) %>">here</a
                     } else {
 %>
 <div id="src">
-    <span class="pagetitle"><%= basename %> revision <%= Util.htmlize(rev) %></span>
     <pre><%
                         if (g == Genre.PLAIN) {
                             // We don't have any way to get definitions

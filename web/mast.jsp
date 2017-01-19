@@ -107,6 +107,9 @@ include file="pageheader.jspf"
     <% } %>
         <a href="<%= context + Prefix.XREF_P %>/">xref</a>: <%= Util
         .breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+        <% if (rev.length() != 0) { %>
+        (revision <%= Util.htmlize(rev) %>)
+        <% } %>
     <div id="dtag">
     <%
     String dtag = cfg.getDefineTagsIndex();

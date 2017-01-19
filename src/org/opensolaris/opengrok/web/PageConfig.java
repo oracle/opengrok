@@ -1379,7 +1379,7 @@ public final class PageConfig {
 
         // TODO: possibly add projects too
 
-        return title + " - OpenGrok search results";
+        return Util.htmlize(title + " - OpenGrok search results");
     }
 
     /**
@@ -1387,12 +1387,17 @@ public final class PageConfig {
      * @return string used for setting page title of search view
      */
     public String getHistoryTitle() {
-        return getShortPath(path) +
-                " - OpenGrok history log for " + path;
+        return Util.htmlize(getShortPath(path) +
+                " - OpenGrok history log for " + path);
     }
 
     public String getPathTitle() {
-        return getShortPath(path) +
-                " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
+        String title = getShortPath(path);
+        if (getRequestedRevision() != null && !getRequestedRevision().isEmpty()) {
+            title += " (revision " + getRequestedRevision() + ")";
+        }
+        title += " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
+
+        return Util.htmlize(title);
     }
 }
