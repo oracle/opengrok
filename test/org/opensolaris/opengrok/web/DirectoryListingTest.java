@@ -96,7 +96,8 @@ public class DirectoryListingTest {
 
                 // @todo verify all attributes!
                 if (name.compareTo(fe.name) == 0 &&
-                    href.compareTo(fe.href) == 0) {
+                    href.compareTo(fe.href) == 0 &&
+                    size == fe.size) {
 
                     return 0;
                 }
@@ -121,7 +122,7 @@ public class DirectoryListingTest {
         directory = FileUtilities.createTemporaryDirectory("directory");
 
         entries = new FileEntry[2];
-        entries[0] = new FileEntry("foo.c", "foo.c", 0, 0);
+        entries[0] = new FileEntry("foo.c", "foo.c", 0, 1);
         entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
 
         for (FileEntry entry : entries) {
