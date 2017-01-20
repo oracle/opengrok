@@ -254,7 +254,7 @@ label {
     margin: 0 0 0.5ex 0;
 }
 
-#pagetitle { /* short verbal summary/description of the shown content */
+#dtag { /* short verbal summary/description of the shown content */
 }
 
 #filename { /* "Cross Reference: ..." */
@@ -265,13 +265,15 @@ label {
 }
 
 #Masthead {
+    font-family: monospace; /* ala <kbd> */
     clear: left;
+    margin-bottom: 1ex;
 }
 
 #Masthead tt { /* slashes in the xref: line */
 }
 
-#sbar, #bar { /* full search and default navbar */
+#sbar, #bar { /* default navbar */
     border-top: 4px solid #ffc726;
     margin: 0;
     padding-top: 1ex;
@@ -681,6 +683,10 @@ table#dirlist { /* the "Name" column */
     font-size: small;
     padding-left: 16px;
     width: 3em;
+}
+
+span.simplified-path {
+    color: #888;
 }
 
 /* file display */

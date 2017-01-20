@@ -288,7 +288,7 @@ label {
     margin: 0;
 }
 
-#pagetitle { /* short verbal summary/description of the shown content */
+#dtag { /* short verbal summary/description of the shown content */
 }
 
 #filename { /* "Cross Reference: ..." */
@@ -298,9 +298,11 @@ label {
 }
 
 #Masthead { /* breadcrumb */
+    font-family: monospace; /* ala <kbd> */
     clear: left;
     background-color: #426477;
     border: 1px solid #bbb;
+    margin-bottom: 1ex;
 }
 
 #Masthead tt { /* slashes in the xref: line */
@@ -787,6 +789,10 @@ table#dirlist { /* the "Name" column */
     font-size: small;
     padding-left: 16px;
     width: 3em;
+}
+
+span.simplified-path {
+    color: #888;
 }
 
 /* file display */

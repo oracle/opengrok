@@ -18,11 +18,14 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page import="
+--%><%@page import="org.opensolaris.opengrok.web.Util"%>
+<%@page import="org.opensolaris.opengrok.history.HistoryGuru"%>
+<%@page import="java.io.File"%>
+<%@page import="
 java.text.Format,
 java.text.SimpleDateFormat,
 java.util.Date,
@@ -33,15 +36,21 @@ org.opensolaris.opengrok.history.History,
 org.opensolaris.opengrok.history.HistoryEntry,
 org.opensolaris.opengrok.history.HistoryException,
 org.opensolaris.opengrok.configuration.RuntimeEnvironment"
-%><%@
-
-include file="mast.jsp"
-
-%><%/* ---------------------- history.jsp start --------------------- */
+%>
+<%/* ---------------------- history.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
     String path = cfg.getPath();
 
+    // Need to set the title before inlcuding httpheader.jspf
+    cfg.setTitle(cfg.getHistoryTitle());
+%>
+<%@
+
+include file="httpheader.jspf"
+
+%>
+<%
     if (path.length() > 0) {
         String context = request.getContextPath();
         RuntimeEnvironment env = cfg.getEnv();
@@ -77,16 +86,7 @@ include file="mast.jsp"
             %><h3>Problem</h3><p class="error"><%= e.getMessage() %></p><%
         }
         if (hist != null) {
-%><script type="text/javascript">/* <![CDATA[ */
-document.domReady.push(function() {domReadyHistory();});
-/* ]]> */</script>
-<!--[if IE]>
-<style type="text/css">
-  table#revisions tbody tr td p {
-        word-break: break-all;
-    }
-</style>
-<![endif]-->
+%>
 <%
 // We have a lots of results to show: create a slider for
 String slider = "";
@@ -145,15 +145,43 @@ revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntrie
 
 %>
 
+<body>
+<script type="text/javascript">/* <![CDATA[ */
+    document.rev = getParameter("r");
+    document.annotate = <%= cfg.annotate() %>;
+    document.domReady.push(domReadyMast);
+    document.pageReady.push(pageReadyMast);
+/* ]]> */</script>
+<div id="page">
+    <div id="whole_header">
+        <div id="header"><%@
+
+include file="pageheader.jspf"
+
+%>
+        </div>
+        <div id="Masthead">History log of 
+        <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+        (Results <b> <%= start + 1 %> - <%= thispage + start
+            %></b> of <b><%= totalHits %></b>)
+        </div>
+        <%@
+
+include file="minisearch.jspf"
+
+%>
+<script type="text/javascript">/* <![CDATA[ */
+document.domReady.push(function() {domReadyHistory();});
+/* ]]> */</script>
+<!--[if IE]>
+<style type="text/css">
+  table#revisions tbody tr td p {
+        word-break: break-all;
+    }
+</style>
+<![endif]-->
 <form action="<%= context + Prefix.DIFF_P + uriEncodedName %>">
 <table class="src" id="revisions">
-    <caption>History log of <a href="<%= context + Prefix.XREF_P
-        + uriEncodedName %>"><%= path %></a>
-    (Results <b> <%= start + 1 %> - <%= thispage + start
-            %></b> of <b><%= totalHits %></b>)
-    <p class="slider"><%= slider %></p>
-    </caption>
-   
     <thead>
         <tr>
             <th>Revision <%
@@ -358,7 +386,10 @@ revisions with strike-through numbers (eg. <del>1.45</del>)</p><%
             }
 %>
 <p class="rssbadge"><a href="<%=context + Prefix.RSS_P + uriEncodedName
-%>" title="RSS XML Feed of latest changes"><span id="rssi"></span></a></p><%
+%>" title="RSS XML Feed of latest changes"><span id="rssi"></span></a></p>
+
+<%
+
         }
 
     }
