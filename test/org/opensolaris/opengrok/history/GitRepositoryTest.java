@@ -18,14 +18,17 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.DateFormat;
+import java.text.ParseException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -121,4 +124,38 @@ public class GitRepositoryTest {
         assertTrue(result);
     }
 
+    @Test
+    public void testDateFormats() {
+        String[][] tests = new String[][]{
+            {"abcd", "expected exception"},
+            {"2016-01-01 10:00:00", "expected exception"},
+            {"2016 Sat, 5 Apr 2008 15:12:51 +0000", "expected exception"},
+            {"Sat, 5 Dub 2008 15:12:51 +0000", "expected exception"},
+            {"Ned, 06 Apr 2008 15:12:51 +0730", "expected exception"},
+            {"Sat, 1 Apr 2008 15:12:51 +0000", null}, // lenient - wrong date vs. day
+            {"Sat, 40 Apr 2008 15:12:51 +0000", null}, // lenient - wrong day
+            {"Sat, 5 Apr 2008 28:12:51 +0000", null}, // lenient - wrong hour
+            {"Sat, 5 Apr 2008 15:63:51 +0000", null}, // lenient - wrong minute
+            {"Sat, 5 Apr 2008 15:12:51 +0000", null},
+            {"Sun, 06 Apr 2008 15:12:51 +0730", null},
+            {"1 Apr 2008 15:12:51 +0300", null},
+            {"2 Apr 2008 15:12:51 GMT", null}
+        };
+
+        DateFormat format = new GitRepository().getDateFormat();
+
+        for (String[] test : tests) {
+            try {
+                format.parse(test[0]);
+                if (test[1] != null) {
+                    Assert.fail("Shouldn't be able to parse the date: " + test[0]);
+                }
+            } catch (ParseException ex) {
+                if (test[1] == null) {
+                    // no exception
+                    Assert.fail("Shouldn't throw a parsing exception for date: " + test[0]);
+                }
+            }
+        }
+    }
 }

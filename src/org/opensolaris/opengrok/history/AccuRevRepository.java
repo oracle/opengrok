@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -83,7 +83,9 @@ public class AccuRevRepository extends Repository {
 
     public AccuRevRepository() {
         type = "AccuRev";
-        datePattern = "yyyy/MM/dd hh:mm:ss";
+        datePatterns = new String[]{
+            "yyyy/MM/dd hh:mm:ss"
+        };
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
     }
 

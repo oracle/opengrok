@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -114,7 +114,9 @@ public class MercurialRepository extends Repository {
 
     public MercurialRepository() {
         type = "Mercurial";
-        datePattern = "yyyy-MM-dd hh:mm ZZZZ";
+        datePatterns = new String[]{
+            "yyyy-MM-dd hh:mm ZZZZ"
+        };
     }
 
     /**

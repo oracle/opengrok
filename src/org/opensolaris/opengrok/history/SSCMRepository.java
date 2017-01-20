@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2013, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -69,8 +69,10 @@ public class SSCMRepository extends Repository {
 
     public SSCMRepository() {
         setType("SSCM");
-        setDatePattern("M/d/yyyy h:mm a");
         setRemote(true);
+        datePatterns = new String[]{
+            "M/d/yyyy h:mm a"
+        };
     }
 
     @Override
