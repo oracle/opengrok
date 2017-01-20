@@ -76,10 +76,13 @@ org.opensolaris.opengrok.web.Util"%><%
         %><li><a href="#" onclick="javascript:lntoggle();return false;"
             title="<%= "Show or hide line numbers (might be slower if "
                 + "file has more than 10 000 lines)."
-            %>"><span id="line"></span>Line#</a></li><li><a
+            %>"><span id="line"></span>Line#</a></li>
+          <li><a href="#" class="scopes-toggle"
+            title="<%= "Toggle scopes window."
+            %>"><span id="line"></span>Scopes#</a></li><li><a
             href="#" id="navigate"
             title="Show or hide symbol list."><%--
-            --%><span id="defbox"></span>Navigate</a></li><%
+            --%><span id="defbox"></span>Navigate#</a></li><%
         }
         %>
 	<li><a href="<%= context + Prefix.RAW_P + cfg.getUriEncodedPath()

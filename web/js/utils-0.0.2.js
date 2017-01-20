@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -1055,6 +1055,11 @@
                             return old.call($window).trigger(event);
                         }
                     });
+                    
+                    $('.scopes-toggle').click(function () {
+                        $window.toggle();
+                        return false;
+                    })
                 },
                 update: function (data) {
                     if(!this.$window.is(':visible') && !this.$window.data('shown-once')) {
