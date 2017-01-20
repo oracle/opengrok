@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -40,6 +40,7 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.Interner;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
 /**
@@ -84,7 +85,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qname) {
+        public void endElement(String uri, String localName, String qname) throws SAXException {
             String s = sb.toString();
             if ("author".equals(qname)) {
                 entry.setAuthor(s);
@@ -92,7 +93,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
                 try {
                     entry.setDate(format.parse(s));
                 } catch (ParseException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to parse: " + s, ex);
+                    throw new SAXException("Failed to parse date: " + s, ex);
                 }
             } else if ("path".equals(qname)) {
                 /*
@@ -128,6 +129,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
 
     /**
      * Initialize the SAX parser instance.
+     * @throws HistoryException
      */
     private void initSaxParser() throws HistoryException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -150,6 +152,7 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      */
     History parse(File file, SubversionRepository repos, String sinceRevision)
             throws HistoryException {
+
         initSaxParser();
         handler = new Handler(repos.getDirectoryName(), repos.reposPath,
                 RuntimeEnvironment.getInstance().getSourceRootPath().length(),
@@ -181,12 +184,12 @@ class SubversionHistoryParser implements Executor.StreamHandler {
      * @param input The output from the process
      */
     @Override
-    public void processStream(InputStream input) {
+    public void processStream(InputStream input) throws IOException {
         try {
             initSaxParser();
             saxParser.parse(new BufferedInputStream(input), handler);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "An error occurred while parsing the xml output", e);
+            throw new IOException("An error occurred while parsing the xml output", e);
         }
     }
 

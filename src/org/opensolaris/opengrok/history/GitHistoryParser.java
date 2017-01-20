@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -96,7 +96,11 @@ class GitHistoryParser implements Executor.StreamHandler {
                     try {
                         entry.setDate(df.parse(dateString));
                     } catch (ParseException pe) {
-                        LOGGER.log(Level.WARNING, "Failed to parse author date: " + s, pe);
+                        //
+                        // Overriding processStream() thus need to comply with the
+                        // set of exceptions it can throw.
+                        //
+                        throw new IOException("Failed to parse author date: " + s, pe);
                     }
                 } else if (StringUtils.isOnlyWhitespace(s)) {
                     // We are done reading the heading, start to read the message

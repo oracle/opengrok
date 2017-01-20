@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -179,10 +179,10 @@ public class GitRepository extends Repository {
     }
 
     /**
-     * Formatter for rfc 2822 which allows (as rfc) the optional day at the
-     * beginning.
+     * Formatter for which allows the optional day at the beginning as per
+     * RFC 2822 , section 3.3. Date and Time Specification:
      *
-     * @see <a href="https://tools.ietf.org/html/rfc2822#page-14" target="_blank">https://tools.ietf.org/html/rfc2822#page-14</a>
+     * date-time       =       [ day-of-week "," ] date FWS time [CFWS]
      *
      * @return DateFormat which accepts the optional day format
      */

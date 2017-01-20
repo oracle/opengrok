@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -67,7 +67,9 @@ public class SubversionHistoryParserTest {
      */
     @Test
     public void parseEmpty() throws Exception {
-        History result = instance.parse("");
+        // Empty repository shoud produce at least valid XML.
+        History result = instance.parse("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<log>\n" + "</log>");
         assertNotNull(result);
         assertNotNull(result.getHistoryEntries());
         assertTrue("Should not contain any history entries", 0 == result.getHistoryEntries().size());
@@ -202,16 +204,13 @@ public class SubversionHistoryParserTest {
                 HistoryEntry e = result.getHistoryEntries().get(0);
                 assertEquals(revId, e.getRevision());
                 assertEquals(author, e.getAuthor());
-
-                if (expectedException) {
-                    assertNull(e.getDate());
-                } else {
-                    assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
-                }
+                assertEquals(new SimpleDateFormat(format).parse(date), e.getDate());
                 assertEquals(1, e.getFiles().size());
                 assertEquals("/" + file, e.getFiles().first());
             } catch (IOException ex) {
-                fail("Should not throw an IO exception");
+                if (!expectedException) {
+                    fail("Should not throw an IO exception for " + date);
+                }
             } catch (ParseException ex) {
                 fail("Parsing the date " + date + " should not throw a parse exception");
             }

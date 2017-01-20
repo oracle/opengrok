@@ -17,6 +17,9 @@
  * CDDL HEADER END
  */
 
+/*
+ * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ */
 package org.opensolaris.opengrok.history;
 
 import java.io.BufferedReader;
@@ -78,8 +81,7 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
         String s;
         HistoryEntry entry = null;
         while ((s = in.readLine()) != null) {
-            if (!"create version".equals(s) &&
-                    !"create directory version".equals(s)) {
+            if (!"create version".equals(s) && !"create directory version".equals(s)) {
                 // skip this history entry
                 while ((s = in.readLine()) != null) {
                     if (".".equals(s)) {
@@ -94,7 +96,11 @@ class ClearCaseHistoryParser implements Executor.StreamHandler {
                 try {
                     entry.setDate(df.parse(s));
                 } catch (ParseException pe) {
-                    LOGGER.log(Level.WARNING, "Could not parse date: " + s, pe);
+                    //
+                    // Overriding processStream() thus need to comply with the
+                    // set of exceptions it can throw.
+                    //
+                    throw new IOException("Could not parse date: " + s, pe);
                 }
             }
             if ((s = in.readLine()) != null) {

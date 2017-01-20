@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -132,8 +132,11 @@ class BazaarHistoryParser implements Executor.StreamHandler {
                             Date date = df.parse(s.substring("timestamp:".length()).trim());
                             entry.setDate(date);
                         } catch (ParseException e) {
-                            LOGGER.log(Level.WARNING,
-                                    "Failed to parse history timestamp:" + s, e);
+                            //
+                            // Overriding processStream() thus need to comply with the
+                            // set of exceptions it can throw.
+                            //
+                            throw new IOException("Failed to parse history timestamp:" + s, e);
                         }
                         ++state;
                     }
