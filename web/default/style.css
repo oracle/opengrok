@@ -1010,6 +1010,10 @@ a.scope            { /* scope              */ color: dodgerblue; font-weight: bo
     margin: 1px;
 }
 
+.slider {
+    font-family: sans-serif;
+}
+
 /* ############### start of footer ############## */
 #footer {
     color: #777777;
