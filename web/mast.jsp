@@ -110,13 +110,13 @@ include file="pageheader.jspf"
         <% if (rev.length() != 0) { %>
         (revision <%= Util.htmlize(rev) %>)
         <% } %>
-    <div id="dtag">
+    <span id="dtag">
     <%
     String dtag = cfg.getDefineTagsIndex();
     if (dtag.length() > 0) {
         %> (<%= dtag %>)<%
     }
-    %></div>
+    %></span>
     <% if (!messages.isEmpty()) { %>
     </span>
     <span class="important-note important-note-rounded"
