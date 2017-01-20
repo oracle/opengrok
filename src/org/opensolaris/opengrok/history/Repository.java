@@ -398,7 +398,7 @@ public abstract class Repository extends RepositoryInfo {
             {
                 // initialize date formatters
                 for (int i = 0; i < datePatterns.length; i++) {
-                    formatters[i] = new SimpleDateFormat(datePatterns[i], Locale.US);
+                    formatters[i] = new SimpleDateFormat(datePatterns[i]);
                     /*
                      * TODO: the following would be nice - but currently it
                      * could break the compatibility with some repository dates
