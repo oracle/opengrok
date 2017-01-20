@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -69,7 +69,9 @@ public class CVSRepository extends RCSRepository {
     public CVSRepository() {
         working = Boolean.FALSE;
         setType("CVS");
-        setDatePattern("yyyy-MM-dd hh:mm:ss");
+        datePatterns = new String[]{
+            "yyyy-MM-dd hh:mm:ss"
+        };
     }
 
     @Override

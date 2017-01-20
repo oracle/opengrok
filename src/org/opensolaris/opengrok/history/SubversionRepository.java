@@ -28,15 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -79,15 +72,15 @@ public class SubversionRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "svn";
 
-    private static final String[] backupDatePatterns = new String[]{
-        "yyyy-MM-dd'T'HH:mm:ss.'Z'",
-        "yyyy-MM-dd'T'HH:mm:ss'Z'",};
-
     protected String reposPath;
 
     public SubversionRepository() {
         type = "Subversion";
-        datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        datePatterns = new String[]{
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        };
     }
 
     private String getValue(Node node) {
@@ -210,45 +203,6 @@ public class SubversionRepository extends Repository {
         }
 
         return new Executor(cmd, new File(directoryName), sinceRevision != null);
-    }
-
-    @Override
-    public DateFormat getDateFormat() {
-        return new DateFormat() {
-            private DateFormat formatter = new SimpleDateFormat(datePattern, Locale.getDefault());
-            private DateFormat[] backupFormatters = new DateFormat[backupDatePatterns.length];
-
-            {
-                for (int i = 0; i < backupDatePatterns.length; i++) {
-                    backupFormatters[i] = new SimpleDateFormat(backupDatePatterns[i], Locale.getDefault());
-                }
-            }
-
-            @Override
-            public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
-                return formatter.format(date, toAppendTo, fieldPosition);
-            }
-
-            @Override
-            public Date parse(String source) throws ParseException {
-                try {
-                    return formatter.parse(source);
-                } catch (ParseException ex) {
-                    for (int i = 0; i < backupFormatters.length; i++) {
-                        try {
-                            return backupFormatters[i].parse(source);
-                        } catch (ParseException ex1) {
-                        }
-                    }
-                    throw ex;
-                }
-            }
-
-            @Override
-            public Date parse(String source, ParsePosition pos) {
-                return formatter.parse(source, pos);
-            }
-        };
     }
 
     @Override

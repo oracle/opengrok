@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -61,7 +61,9 @@ public class MonotoneRepository extends Repository {
 
     public MonotoneRepository() {
         type = "Monotone";
-        datePattern = "yyyy-MM-dd'T'hh:mm:ss";
+        datePatterns = new String[]{
+            "yyyy-MM-dd'T'hh:mm:ss"
+        };
     }
 
     @Override

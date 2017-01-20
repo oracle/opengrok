@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -62,7 +62,9 @@ public class BazaarRepository extends Repository {
 
     public BazaarRepository() {
         type = "Bazaar";
-        datePattern = "EEE yyyy-MM-dd hh:mm:ss ZZZZ";
+        datePatterns = new String[]{
+            "EEE yyyy-MM-dd hh:mm:ss ZZZZ"
+        };
     }
 
     /**
