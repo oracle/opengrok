@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -421,14 +421,16 @@ web.xml of source.war file and change them (see note1) appropriately.
     * DATA_ROOT: absolute path of the directory where OpenGrok data
                  files are stored
 
-  - Header file 'header_include' can be created under DATA_ROOT.
-    The contents of this file file will be appended to the header of each
+  - File 'header_include' can be created under DATA_ROOT.
+    The contents of this file will be appended to the header of each
     web page after the OpenGrok logo element.
-  - Footer file 'footer_include' can be created under DATA_ROOT.
-    The contents of this file file will be appended to the footer of each
+  - File 'footer_include' can be created under DATA_ROOT.
+    The contents of this file will be appended to the footer of each
     web page after the information about last index update.
-  - The body of the home page can be changed by updating index_body.html
-    under the webapp directory.
+  - The file 'body_include' can be created under DATA_ROOT.
+    The contents of this file will be inserted above the footer of the web
+    application's "Home" page.
+
 
 5.4.3 - Path Descriptions (optional)
 ------------------------------------

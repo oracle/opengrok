@@ -47,11 +47,9 @@ include file="menu.jspf"
 
             %></div>
         </div>
-        <div id="results"><%@
-
-include file="index_body.html"
-
-        %>
+        <div id="results">
+        <%= cfg.getEnv().getConfiguration().getBodyIncludeFileContent() %>
+        </div>
         <%@
 
 include file="repos.jspf"

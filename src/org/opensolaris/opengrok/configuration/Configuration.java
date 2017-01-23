@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -826,6 +826,7 @@ public final class Configuration {
      *
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
+     * @see #FOOTER_INCLUDE_FILE
      */
     public String getFooterIncludeFileContent() {
         if (footer == null) {
@@ -847,12 +848,34 @@ public final class Configuration {
      *
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
+     * @see #HEADER_INCLUDE_FILE
      */
     public String getHeaderIncludeFileContent() {
         if (header == null) {
             header = getFileContent(new File(getDataRoot(), HEADER_INCLUDE_FILE));
         }
         return header;
+    }
+
+    /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
+     * be included into the body of web app's "Home" page.
+     */
+    public static final String BODY_INCLUDE_FILE = "body_include";
+
+    private transient String body = null;
+
+    /**
+     * Get the contents of the body include file.
+     * @return an empty string if it could not be read successfully, the
+     *  contents of the file otherwise.
+     *  @see Configuration#BODY_INCLUDE_FILE
+     */
+    public String getBodyIncludeFileContent() {
+        if (body == null) {
+            body = getFileContent(new File(getDataRoot(), BODY_INCLUDE_FILE));
+        }
+        return body;
     }
 
     /**
