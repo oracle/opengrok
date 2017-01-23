@@ -13,7 +13,6 @@ OpenGrok - a wicked fast source browser
 5.  OpenGrok setup
 6.  Optional Command Line Interface Usage
 7.  Change web application properties or name
-8.  OpenGrok systray
 9.  Information for developers
 10. Tuning OpenGrok for large code bases
 11. Authors
@@ -694,31 +693,6 @@ Deploy the modified .war file in tomcat:
 
   * just copy the source.war file to TOMCAT_INSTALL/webapps directory.
 
-8. OpenGrok systray
--------------------
-
-The indexer can be setup with agent and systray GUI control application.
-This is optional step for those who wish to monitor and configure OpenGrok
-from their desktop using systray application.
-
-An example opengrok-agent.properties file is provided, which can be used when
-starting special OpenGrok Agent, where you can connect with a systray GUI
-application.
-
-To start the indexer with configuration run:
-
-  $ java -cp ./opengrok.jar org.opensolaris.opengrok.management.OGAgent \
-        --config opengrok-agent.properties
-
-Then from the remote machine one can run:
-
-  $ java -cp ./opengrok.jar \
-        org.opensolaris.opengrok.management.client.OpenGrokTrayApp
-
-assuming configuration permits remote connections (i.e. not listening on
-localhost, but rather on a physical network interface).
-
-This agent is work in progress, so it might not fully work.
 
 9. Information for developers
 -----------------------------

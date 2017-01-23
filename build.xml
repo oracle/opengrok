@@ -114,13 +114,6 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <property name="mvn.repository" value="http://repo1.maven.org/maven2"/>
 
-    <available property="compileSystrayClient" classname="java.awt.TrayIcon"/>
-
-    <target name="-exclude-client" unless="compileSystrayClient">
-        <echo>JDK doesn't have java.awt.TrayIcon, excluding building of systray client ... </echo>
-        <property name="excludes" value="org/opensolaris/opengrok/management/client/**"/>
-    </target>
-
     <property name="jflex-version" value="1.6.1"/>
 
     <path id="lib.search.path">
@@ -325,7 +318,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <!-- injecting jacoco, too -->
-    <target name="-pre-init" depends="-touch-manifest, -exclude-client, -set-jacocoagent"/>
+    <target name="-pre-init" depends="-touch-manifest, -set-jacocoagent"/>
 
     <!--
         Initialize a property holding a list of jar files on which
