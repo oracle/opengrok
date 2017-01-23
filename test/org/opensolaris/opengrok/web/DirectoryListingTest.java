@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -52,12 +52,18 @@ public class DirectoryListingTest {
     private SimpleDateFormat dateFormatter;
 
     class FileEntry implements Comparable {
+        String name;
+        String href;
+        long lastModified;
+        int size;
+
         FileEntry() {
             dateFormatter = new SimpleDateFormat("dd-MMM-yyyy");
         }
 
-        FileEntry(String name, long lastModified, int size) {
+        FileEntry(String name, String href, long lastModified, int size) {
             this.name = name;
+            this.href = href;
             this.lastModified = lastModified;
             this.size = size;
         }
@@ -83,16 +89,18 @@ public class DirectoryListingTest {
                 out.close();
             }
         }
-        String name;
-        long lastModified;
-        int size;
 
         public int compareTo(Object o) {
             if (o instanceof FileEntry) {
                 FileEntry fe = (FileEntry) o;
 
                 // @todo verify all attributes!
-                return name.compareTo(fe.name);
+                if (name.compareTo(fe.name) == 0 &&
+                    href.compareTo(fe.href) == 0 &&
+                    size == fe.size) {
+
+                    return 0;
+                }
             }
             return -1;
         }
@@ -114,8 +122,8 @@ public class DirectoryListingTest {
         directory = FileUtilities.createTemporaryDirectory("directory");
 
         entries = new FileEntry[2];
-        entries[0] = new FileEntry("foo", 0, 0);
-        entries[1] = new FileEntry("bar", Long.MAX_VALUE, 0);
+        entries[0] = new FileEntry("foo.c", "foo.c", 0, 1);
+        entries[1] = new FileEntry("bar.h", "bar.h", Long.MAX_VALUE, 0);
 
         for (FileEntry entry : entries) {
             entry.create();
@@ -143,6 +151,26 @@ public class DirectoryListingTest {
     }
 
     /**
+     * Get the href attribute from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a href="foo"
+     * class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
+     *
+     * @param item
+     * @return
+     * @throws java.lang.Exception
+     */
+    private String getHref(Node item) throws Exception {
+        Node a = item.getFirstChild(); // a
+        assertNotNull(a);
+        assertEquals(Node.ELEMENT_NODE, a.getNodeType());
+
+        Node href = a.getAttributes().getNamedItem("href");
+        assertNotNull(href);
+        assertEquals(Node.ATTRIBUTE_NODE, href.getNodeType());
+
+        return href.getNodeValue();
+    }
+
+    /**
      * Get the filename from: &lt;td align="left"&gt;&lt;tt&gt;&lt;a href="foo"
      * class="p"&gt;foo&lt;/a&gt;&lt;/tt&gt;&lt;/td&gt;
      *
@@ -151,12 +179,14 @@ public class DirectoryListingTest {
      * @throws java.lang.Exception
      */
     private String getFilename(Node item) throws Exception {
-        Node node = item.getFirstChild(); // a
-        assertNotNull(node);
-        assertEquals(Node.ELEMENT_NODE, node.getNodeType());
-        node = node.getFirstChild();
+        Node a = item.getFirstChild(); // a
+        assertNotNull(a);
+        assertEquals(Node.ELEMENT_NODE, a.getNodeType());
+
+        Node node = a.getFirstChild();
         assertNotNull(node);
         assertEquals(Node.TEXT_NODE, node.getNodeType());
+
         return node.getNodeValue();
     }
 
@@ -207,10 +237,11 @@ public class DirectoryListingTest {
 
         // item(0) is a decoration placeholder, i.e. no content
         entry.name = getFilename(nl.item(1));
+        entry.href = getHref(nl.item(1));
         entry.lastModified = getLastModified(nl.item(3));
         entry.size = getSize(nl.item(4));
 
-        // Try to look it up in the list of files
+        // Try to look it up in the list of files.
         for (int ii = 0; ii < entries.length; ++ii) {
             if (entries[ii] != null && entries[ii].compareTo(entry) == 0) {
                 entries[ii] = null;
@@ -239,7 +270,7 @@ public class DirectoryListingTest {
         assertNotNull("DocumentBuilderFactory is null", factory);
 
         DocumentBuilder builder = factory.newDocumentBuilder();
-        assertNotNull("DocumentBuilder is null", out);
+        assertNotNull("DocumentBuilder is null", builder);
 
         out.append("</start>\n");
         String str = out.toString();
