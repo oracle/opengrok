@@ -61,14 +61,6 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                 <excludes><exclude>*.java</exclude></excludes>
             </resource>
             <resource>
-                <targetPath>org/opensolaris/opengrok/management/</targetPath>
-                <directory>../src/org/opensolaris/opengrok/management/</directory>
-                <includes>
-                  <include>*.properties</include>
-                  <include>**/*.gif</include>
-                </includes>
-            </resource>
-            <resource>
                 <targetPath>org/opensolaris/opengrok/history/</targetPath>
                 <directory>../src/org/opensolaris/opengrok/history/</directory>
                 <excludes>
