@@ -13,10 +13,10 @@ OpenGrok - a wicked fast source browser
 5.  OpenGrok setup
 6.  Optional Command Line Interface Usage
 7.  Change web application properties or name
-9.  Information for developers
-10. Tuning OpenGrok for large code bases
-11. Authors
-12. Contact us
+8.  Information for developers
+9. Tuning OpenGrok for large code bases
+10. Authors
+11. Contact us
 
 
 1. Introduction
@@ -694,10 +694,10 @@ Deploy the modified .war file in tomcat:
   * just copy the source.war file to TOMCAT_INSTALL/webapps directory.
 
 
-9. Information for developers
+8. Information for developers
 -----------------------------
 
-9.0 Building
+8.0 Building
 ------------
 
 Just run 'ant' from command line in the top-level directory or use build
@@ -707,13 +707,13 @@ Note: in case you are behind http proxy, use ANT_OPTS to download jflex, lucene
 E.g. $ ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
 
 
-9.0.1 Package build
+8.0.1 Package build
 -------------------
 
 Run 'ant package' to create package (specific for the operating system this is
 being executed on) under the dist/ directory.
 
-9.1 Unit testing
+8.1 Unit testing
 ----------------
 
 Note: For full coverage report your system has to provide proper junit test
@@ -737,7 +737,7 @@ The tests are then run as follows:
 To check if the test completed without error look for AssertionFailedError
 occurences in the TESTS-TestSuites.xml file produced by the test run.
 
-9.2 Using Findbugs
+8.2 Using Findbugs
 ------------------
 
 If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
@@ -772,7 +772,7 @@ under the lib directory):
 There is also a findbugs-xml ant target that can be used to generate XML files
 that can later be parsed, e.g. by Jenkins.
 
-9.3 Using Jacoco
+8.3 Using Jacoco
 --------------
 
 If you want to check test coverage on OpenGrok, download jacoco from
@@ -787,7 +787,7 @@ Now you should get output data in jacoco.exec
 
 Look at jacoco/index.html to see how complete your tests are.
 
-9.4 Using Checkstyle
+8.4 Using Checkstyle
 --------------------
 
 To check that your code follows the standard coding conventions,
@@ -820,7 +820,7 @@ checkstyle under the lib directory):
 
   $ ant checkstyle -Dcheckstyle.home=lib/checkstyle
 
-9.5 Using PMD and CPD
+8.5 Using PMD and CPD
 ---------------------
 
 To check the quality of the OpenGrok code you can also use PMD
@@ -857,7 +857,7 @@ Which will result in:
   $ ls pmd
   cpd_report.xml cpd_report.txt
 
-9.6 Using JDepend
+8.6 Using JDepend
 -----------------
 
 To see dependencies in the source code, you can use JDepend from
@@ -880,7 +880,7 @@ Output is stored in the jdepend directory:
   $ ls jdepend/
   report.txt  report.xml
 
-9.7 Using SonarQube
+8.7 Using SonarQube
 -------------------
 
 Use a sonar runner with included sonar-project.properties properties,
@@ -893,7 +893,7 @@ e.g. using bash:
     -Dsonar.host.url=http://${SERVERIP}:9000
     -Dsonar.jdbc.url=jdbc:h2:tcp://${SERVERIP}:9092/sonar
 
-9.8 Using Travis CI
+8.8 Using Travis CI
 -------------------
 
 Travis depends on updated and working maven build.
@@ -902,13 +902,13 @@ you should be able to connect your Github to Travis CI.
 OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok
 
 
-9.9 Maven
+8.9 Maven
 ------------------
 The build can now be done through Maven (https://maven.apache.org/) which takes care of the dependency management
 and setup (calls Ant for certain actions).
 
 
-9.9.1 Unit Testing
+8.9.1 Unit Testing
 -------------------------
 You can test the code at the moment by running `./mvn test` which will execute *all* tests.
 Conditionally, if you don't have every type of repository installed, you can set it to unit-test only those which are
@@ -920,10 +920,10 @@ You can also force a specific repository test from running through the following
 
 > ./mvnw test -Djunit-force-all=false -Djunit-force-git=true
 
-10. Tuning OpenGrok for large code bases
+9. Tuning OpenGrok for large code bases
 ---------------------------------------
 
-10.1 Almost atomic index flip using ZFS
+9.1 Almost atomic index flip using ZFS
 ---------------------------------------
 
 While indexing big source repos you might consider using ZFS filesystem to give
@@ -934,7 +934,7 @@ incrementally index in parallel to having the current sources and index in sync.
 the ones that were updated by SCM/index and start tomcat again - outage is
 minimal, sources+indexes are ALWAYS in sync, users see the truth)
 
-10.2 JVM tuning
+9.2 JVM tuning
 ---------------
 
 OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of
@@ -975,7 +975,7 @@ For tomcat you can easily get this done by creating conf/setenv.sh:
 
  export JAVA_OPTS
 
-10.3 Tomcat/Apache tuning
+9.3 Tomcat/Apache tuning
 -------------------------
 
 For tomcat you might also hit a limit for http header size (we use it to send
@@ -992,7 +992,7 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestLine 65536
   LimitRequestFieldSize 65536
 
-10.4 Open File hard and soft limits
+9.4 Open File hard and soft limits
 -----------------------------------
 
 The initial index creation process is resource intensive and often the error
@@ -1002,7 +1002,7 @@ avoid this increase the ulimit value to a higher number.
 It is noted that the hard and soft limit for open files of 10240 works for mid
 sized repositores and so the recommendation is to start with 10240.
 
-10.5 Multi-project search speed tip
+9.5 Multi-project search speed tip
 -----------------------------------
 
 If multi-project search is performed frequently, it might be good to warm
@@ -1010,7 +1010,7 @@ up file system cache after each reindex. This can be done e.g. with
 https://github.com/hoytech/vmtouch
 
 
-11. Authors
+10. Authors
 -----------
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
@@ -1023,7 +1023,7 @@ Knut Anders Hatlen, Oracle. http://blogs.oracle.com/kah/
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 Vladimir Kotal, Oracle. http://blogs.oracle.com/vlad/
 
-12. Contact us
+11. Contact us
 --------------
 
 Feel free to participate in discussion on the mailing lists:
