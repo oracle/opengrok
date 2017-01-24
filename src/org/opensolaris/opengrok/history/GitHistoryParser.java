@@ -28,12 +28,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.logging.Level;
+import java.util.List;
 import java.util.logging.Logger;
-
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
@@ -51,8 +51,8 @@ class GitHistoryParser implements Executor.StreamHandler {
         HEADER, MESSAGE, FILES
     }
     private String myDir;
-    private History history;
     private GitRepository repository = new GitRepository();
+    private final List<HistoryEntry> entries = new ArrayList<>();
 
     /**
      * Process the output from the log command and insert the HistoryEntries
@@ -70,10 +70,8 @@ class GitHistoryParser implements Executor.StreamHandler {
     
     private void process(BufferedReader in) throws IOException {
         DateFormat df = repository.getDateFormat();
-        ArrayList<HistoryEntry> entries = new ArrayList<HistoryEntry>();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
-        history = new History();
         HistoryEntry entry = null;
         ParseState state = ParseState.HEADER;
         String s = in.readLine();
@@ -142,15 +140,13 @@ class GitHistoryParser implements Executor.StreamHandler {
         if (entry != null) {
             entries.add(entry);
         }
-
-        history.setHistoryEntries(entries);
     }
 
     /**
      * Parse the history for the specified file.
      *
      * @param file the file to parse history for
-     * @param repos Pointer to the SubversionReporitory
+     * @param repos Pointer to the GitRepository
      * @param sinceRevision the oldest changeset to return from the executor, or
      *                      {@code null} if all changesets should be returned
      * @return object representing the file's history
@@ -158,20 +154,31 @@ class GitHistoryParser implements Executor.StreamHandler {
     History parse(File file, Repository repos, String sinceRevision) throws HistoryException {
         myDir = repos.getDirectoryName() + File.separator;
         repository = (GitRepository) repos;
+        RenamedFilesParser parser = new RenamedFilesParser();
         try {
             Executor executor = repository.getHistoryLogExecutor(file, sinceRevision);
             int status = executor.exec(true, this);
 
             if (status != 0) {
-                throw new HistoryException("Failed to get history for: \"" +
-                        file.getAbsolutePath() + "\" Exit code: " + status);
+                throw new HistoryException("Failed to get history for: \""
+                        + file.getAbsolutePath() + "\" Exit code: " + status);
+            }
+
+            if (RuntimeEnvironment.getInstance().isHandleHistoryOfRenamedFiles()) {
+                executor = repository.getRenamedFilesExecutor(file, sinceRevision);
+                status = executor.exec(true, parser);
+
+                if (status != 0) {
+                    throw new HistoryException("Failed to get renamed files for: \""
+                            + file.getAbsolutePath() + "\" Exit code: " + status);
+                }
             }
         } catch (IOException e) {
-            throw new HistoryException("Failed to get history for: \"" +
-                    file.getAbsolutePath() + "\"", e);
+            throw new HistoryException("Failed to get history for: \""
+                    + file.getAbsolutePath() + "\"", e);
         }
 
-        return history;
+        return new History(entries, parser.getRenamedFiles());
     }
 
     /**
@@ -184,6 +191,60 @@ class GitHistoryParser implements Executor.StreamHandler {
     History parse(String buffer) throws IOException {
         myDir = RuntimeEnvironment.getInstance().getSourceRootPath();
         processStream(new ByteArrayInputStream(buffer.getBytes("UTF-8")));
-        return history;
+        return new History(entries);
+    }
+
+    /**
+     * Class for handling renamed files stream.
+     */
+    private class RenamedFilesParser implements Executor.StreamHandler {
+
+        private final List<String> renamedFiles = new ArrayList<>();
+
+        @Override
+        public void processStream(InputStream input) throws IOException {
+            /*
+             * 520b0dd changing some lines
+             * M moved/movedmain.c
+             *
+             * 07a8318 moved main
+             * R100 moved/main.c moved/movedmain.c
+             *
+             * e934333 third
+             * M moved/main.c
+             *
+             * 1ee21eb second
+             * R100 main.c moved/main.c
+             *
+             * 50bb0d3 first
+             * A foo.f
+             * A foo2.f
+             * A main.c
+             *
+             */
+            RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (line.startsWith("R")) {
+                        String[] parts = line.split("\t");
+                        if (parts.length < 3
+                                || parts[1].length() <= 0
+                                || renamedFiles.contains(parts[1])) {
+                            continue;
+                        }
+                        renamedFiles.add(parts[2]);
+                    }
+                }
+            }
+        }
+
+        /**
+         * @return renamed files for this repository
+         */
+        public List<String> getRenamedFiles() {
+            return renamedFiles;
+        }
     }
 }
