@@ -52,7 +52,7 @@ class GitHistoryParser implements Executor.StreamHandler {
     }
     private String myDir;
     private GitRepository repository = new GitRepository();
-    private final List<HistoryEntry> entries = new ArrayList<>();
+    private List<HistoryEntry> entries = new ArrayList<>();
 
     /**
      * Process the output from the log command and insert the HistoryEntries
@@ -71,7 +71,7 @@ class GitHistoryParser implements Executor.StreamHandler {
     private void process(BufferedReader in) throws IOException {
         DateFormat df = repository.getDateFormat();
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-
+        entries = new ArrayList<>();
         HistoryEntry entry = null;
         ParseState state = ParseState.HEADER;
         String s = in.readLine();

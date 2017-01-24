@@ -1,3 +1,7 @@
 0000000000000000000000000000000000000000 bb74b7e849170c31dc1b1b5801c83bf0094a3b10 Trond Norbye <trond@sunray-srv.norbye.org> 1218571573 +0200	commit (initial): Added a small test program
 bb74b7e849170c31dc1b1b5801c83bf0094a3b10 8482156421620efbb44a7b6f0eb19d1f191163c7 Trond Norbye <trond@sunray-srv.norbye.org> 1218571643 +0200	commit: Add the result of a make on Solaris x86
 8482156421620efbb44a7b6f0eb19d1f191163c7 aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a Trond Norbye <trond@sunray-srv.norbye.org> 1218571965 +0200	commit: Add lint make target and fix lint warnings
+aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a ce4c98ec1d22473d4aa799c046c2a90ae05832f1 Kryštof Tulinger <krystof.tulinger@oracle.com> 1485263232 +0100	commit: adding simple file for renamed file testing
+ce4c98ec1d22473d4aa799c046c2a90ae05832f1 b6413947a59f481ddc0a05e0d181731233557f6e Kryštof Tulinger <krystof.tulinger@oracle.com> 1485263264 +0100	commit: moved renamed.c to new location
+b6413947a59f481ddc0a05e0d181731233557f6e 1086eaf5bca6d5a056097aa76017a8ab0eade20f Kryštof Tulinger <krystof.tulinger@oracle.com> 1485263368 +0100	commit: adding some lines into renamed.c
+1086eaf5bca6d5a056097aa76017a8ab0eade20f 67dfbe2648c94a8825671b0f2c132828d0d43079 Kryštof Tulinger <krystof.tulinger@oracle.com> 1485263397 +0100	commit: renaming renamed -> renamed2
