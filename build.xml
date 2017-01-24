@@ -958,7 +958,6 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="${web.src.dir}">
                 <include name="**/*.jsp"/>
                 <include name="**/*.jspf"/>
-                <include name="**/index_body.html"/>
             </fileset>
         </copy>
         <jasper validateXml="false"

@@ -34,7 +34,7 @@ SRC_ROOT=/opengrok/source
 DATA_ROOT=/opengrok/data
 EXUB_CTAGS=/absolute/path/to/Exubrant/Ctags
 
-The last thing we need to do is to configure the web application. To do so, 
+The last thing we need to do is to configure the web application. To do so,
 please execute the following commands:
 $ mkdir /opengrok/web/source
 $ cd /opengrok/web/source
@@ -42,8 +42,7 @@ $ unzip /path/to/opengrok-release/source.war
 
 edit WEB-INF/web.xml and specify SRC_ROOT and DATA_ROOT.
 
-You may also want to modify the file index_body.html before you re-create
-the war-file with the following commands:
+re-create the war-file with the following commands:
 
 $ cd /opengrok/web/source
 $ zip -r /opengrok/web/source.war
