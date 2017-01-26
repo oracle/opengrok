@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
@@ -167,11 +167,14 @@ public class GitRepositoryTest {
     @Test
     public void testRenamedFiles() throws Exception {
         String[][] tests = new String[][]{
-            {"moved/renamed2.c", "67dfbe26", "moved/renamed2.c"},
-            {"moved/renamed2.c", "1086eaf5", "moved/renamed.c"},
-            {"moved/renamed2.c", "b6413947", "moved/renamed.c"},
-            {"moved/renamed2.c", "ce4c98ec", "renamed.c"},
-            {"moved/renamed2.c", "bb74b7e8", "renamed.c"},};
+            {"moved2/renamed2.c", "84599b3c", "moved2/renamed2.c"},
+            {"moved2/renamed2.c", "67dfbe26", "moved/renamed2.c"},
+            {"moved2/renamed2.c", "67dfbe26", "moved/renamed2.c"},
+            {"moved2/renamed2.c", "1086eaf5", "moved/renamed.c"},
+            {"moved2/renamed2.c", "b6413947", "moved/renamed.c"},
+            {"moved2/renamed2.c", "ce4c98ec", "renamed.c"},
+            {"moved2/renamed2.c", "bb74b7e8", "renamed.c"}
+        };
         setUpTestRepository();
         File root = new File(repository.getSourceRoot(), "git");
         GitRepository gitrepo
@@ -190,14 +193,14 @@ public class GitRepositoryTest {
         }
     }
 
-    @Test
+    @Test(expected = IOException.class)
     public void testInvalidRenamedFiles() throws Exception {
         String[][] tests = new String[][]{
-            {"", "67dfbe26", null},
-            {"moved/renamed2.c", "", null},
-            {"", "", null},
-            {null, "67dfbe26", null},
-            {"moved/renamed2.c", null, null}
+            {"", "67dfbe26"},
+            {"moved/renamed2.c", ""},
+            {"", ""},
+            {null, "67dfbe26"},
+            {"moved/renamed2.c", null}
 
         };
         setUpTestRepository();
@@ -208,42 +211,7 @@ public class GitRepositoryTest {
         for (String[] test : tests) {
             String file = test[0];
             String changeset = test[1];
-            String expected = test[2];
-            try {
-                Assert.assertEquals(expected, gitrepo.findOriginalName(file, changeset));
-            } catch (IOException ex) {
-                Assert.fail(String.format("Looking for original name of {} in {} shouldn't fail", file, changeset));
-            }
-        }
-    }
-
-    @Test
-    public void testConvertFormat() {
-        String[][] tests = new String[][]{
-            {
-                "moved/{renamed.c => renamed2.c} (100%)",
-                "moved/renamed.c => moved/renamed2.c (100%)"
-            },
-            {
-                "moved/to/path/{renamed.c => renamed2.c} (100%)",
-                "moved/to/path/renamed.c => moved/to/path/renamed2.c (100%)"
-            },
-            {
-                "moved/to/path/{other/renamed.c => other/path/renamed2.c} (100%)",
-                "moved/to/path/other/renamed.c => moved/to/path/other/path/renamed2.c (100%)"
-            },
-            {
-                "/{renamed.c => renamed2.c} (100%)",
-                "/renamed.c => /renamed2.c (100%)"
-            },
-            {
-                "renamed.c => renamed2.c (100%)",
-                "renamed.c => renamed2.c (100%)"
-            }
-        };
-
-        for (String[] test : tests) {
-            Assert.assertEquals(test[1], instance.expandGitRenamedOutput(test[0]));
+            gitrepo.findOriginalName(file, changeset);
         }
     }
 
@@ -282,7 +250,8 @@ public class GitRepositoryTest {
                 + "\treturn 0;\n"
                 + "}\n";
 
-        runRenamedTest("moved/renamed.c", "1086eaf", exp_str);
+        runRenamedTest("moved2/renamed2.c", "84599b3", exp_str);
+        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
     }
 
     /**
@@ -297,6 +266,45 @@ public class GitRepositoryTest {
                 = "#include <stdio.h>\n"
                 + "#include <stdlib.h>\n"
                 + "\n"
+                + "int foo ( const char * path )\n"
+                + "{\n"
+                + "\treturn path && *path == 'A';\n"
+                + "}\n"
+                + "\n"
+                + "int main ( int argc, const char * argv[] )\n"
+                + "{\n"
+                + "\tint i;\n"
+                + "\tfor ( i = 1; i < argc; i ++ )\n"
+                + "\t{\n"
+                + "\t\tprintf ( \"%s called with %d\\n\", argv [ 0 ], argv [ i ] );\n"
+                + "\t}\n"
+                + "\n"
+                + "\tprintf ( \"Hello, world!\\n\" );\n"
+                + "\n"
+                + "\tif ( foo ( argv [ 0 ] ) )\n"
+                + "\t{\n"
+                + "\t\tprintf ( \"Correct call\\n\" );\n"
+                + "\t}\n"
+                + "\n"
+                + "\treturn 0;\n"
+                + "}\n";
+
+        runRenamedTest("moved/renamed.c", "1086eaf", exp_str);
+        runRenamedTest("moved/renamed2.c", "67dfbe2", exp_str);
+    }
+
+    /**
+     * Test that {@code getHistoryGet()} returns historical contents of renamed
+     * file.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test
+    public void testGetHistoryForThreeTimesRenamed() throws Exception {
+        String exp_str
+                = "#include <stdio.h>\n"
+                + "#include <stdlib.h>\n"
+                + "\n"
                 + "int main ( int argc, const char * argv[] )\n"
                 + "{\n"
                 + "\tint i;\n"
@@ -307,7 +315,9 @@ public class GitRepositoryTest {
                 + "\n"
                 + "\treturn 0;\n"
                 + "}\n";
-        runRenamedTest("moved/renamed2.c", "ce4c98e", exp_str);
+
+        runRenamedTest("moved/renamed.c", "b641394", exp_str);
+        runRenamedTest("renamed.c", "ce4c98e", exp_str);
     }
 
     /**
@@ -319,6 +329,7 @@ public class GitRepositoryTest {
     @Test
     public void testGetHistoryForNonExistentRenamed() throws Exception {
         runRenamedTest("moved/renamed.c", "67dfbe2", null);
+        runRenamedTest("renamed.c", "67dfbe2", null);
     }
 
     private void runRenamedTest(String fname, String cset, String content) throws Exception {
@@ -333,7 +344,7 @@ public class GitRepositoryTest {
         if (content == null) {
             Assert.assertNull(input);
         } else {
-            Assert.assertNotNull(input);
+            Assert.assertNotNull("expecting not null", input);
             int len = input.read(buffer);
             Assert.assertNotEquals(-1, len);
             String str = new String(buffer, 0, len);
@@ -351,23 +362,25 @@ public class GitRepositoryTest {
         History history = gitrepo.getHistory(root);
         Assert.assertNotNull(history);
         Assert.assertNotNull(history.getHistoryEntries());
-        Assert.assertEquals(7, history.getHistoryEntries().size());
+        Assert.assertEquals(8, history.getHistoryEntries().size());
 
         Assert.assertNotNull(history.getRenamedFiles());
-        Assert.assertEquals(2, history.getRenamedFiles().size());
+        Assert.assertEquals(3, history.getRenamedFiles().size());
 
         Assert.assertTrue(history.isRenamed("moved/renamed2.c"));
+        Assert.assertTrue(history.isRenamed("moved2/renamed2.c"));
         Assert.assertTrue(history.isRenamed("moved/renamed.c"));
         Assert.assertFalse(history.isRenamed("non-existent.c"));
         Assert.assertFalse(history.isRenamed("renamed.c"));
 
-        Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(0).getRevision());
-        Assert.assertEquals("1086eaf5", history.getHistoryEntries().get(1).getRevision());
-        Assert.assertEquals("b6413947", history.getHistoryEntries().get(2).getRevision());
-        Assert.assertEquals("ce4c98ec", history.getHistoryEntries().get(3).getRevision());
-        Assert.assertEquals("aa35c258", history.getHistoryEntries().get(4).getRevision());
-        Assert.assertEquals("84821564", history.getHistoryEntries().get(5).getRevision());
-        Assert.assertEquals("bb74b7e8", history.getHistoryEntries().get(6).getRevision());
+        Assert.assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
+        Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
+        Assert.assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
+        Assert.assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
+        Assert.assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
+        Assert.assertEquals("aa35c258", history.getHistoryEntries().get(5).getRevision());
+        Assert.assertEquals("84821564", history.getHistoryEntries().get(6).getRevision());
+        Assert.assertEquals("bb74b7e8", history.getHistoryEntries().get(7).getRevision());
     }
 
     @Test
@@ -377,22 +390,24 @@ public class GitRepositoryTest {
         GitRepository gitrepo
                 = (GitRepository) RepositoryFactory.getRepository(root);
 
-        History history = gitrepo.getHistory(new File(root.getAbsolutePath(), "moved/renamed2.c"));
+        History history = gitrepo.getHistory(new File(root.getAbsolutePath(), "moved2/renamed2.c"));
         Assert.assertNotNull(history);
         Assert.assertNotNull(history.getHistoryEntries());
-        Assert.assertEquals(4, history.getHistoryEntries().size());
+        Assert.assertEquals(5, history.getHistoryEntries().size());
 
         Assert.assertNotNull(history.getRenamedFiles());
-        Assert.assertEquals(2, history.getRenamedFiles().size());
+        Assert.assertEquals(3, history.getRenamedFiles().size());
 
         Assert.assertTrue(history.isRenamed("moved/renamed2.c"));
+        Assert.assertTrue(history.isRenamed("moved2/renamed2.c"));
         Assert.assertTrue(history.isRenamed("moved/renamed.c"));
         Assert.assertFalse(history.isRenamed("non-existent.c"));
         Assert.assertFalse(history.isRenamed("renamed.c"));
 
-        Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(0).getRevision());
-        Assert.assertEquals("1086eaf5", history.getHistoryEntries().get(1).getRevision());
-        Assert.assertEquals("b6413947", history.getHistoryEntries().get(2).getRevision());
-        Assert.assertEquals("ce4c98ec", history.getHistoryEntries().get(3).getRevision());
+        Assert.assertEquals("84599b3c", history.getHistoryEntries().get(0).getRevision());
+        Assert.assertEquals("67dfbe26", history.getHistoryEntries().get(1).getRevision());
+        Assert.assertEquals("1086eaf5", history.getHistoryEntries().get(2).getRevision());
+        Assert.assertEquals("b6413947", history.getHistoryEntries().get(3).getRevision());
+        Assert.assertEquals("ce4c98ec", history.getHistoryEntries().get(4).getRevision());
     }
 }

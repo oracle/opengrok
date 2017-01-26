@@ -5,3 +5,6 @@ aa35c25882b9a60a97758e0ceb276a3f8cb4ae3a ce4c98ec1d22473d4aa799c046c2a90ae05832f
 ce4c98ec1d22473d4aa799c046c2a90ae05832f1 b6413947a59f481ddc0a05e0d181731233557f6e Kryštof Tulinger <krystof.tulinger@oracle.com> 1485263264 +0100	commit: moved renamed.c to new location
 b6413947a59f481ddc0a05e0d181731233557f6e 1086eaf5bca6d5a056097aa76017a8ab0eade20f Kryštof Tulinger <krystof.tulinger@oracle.com> 1485263368 +0100	commit: adding some lines into renamed.c
 1086eaf5bca6d5a056097aa76017a8ab0eade20f 67dfbe2648c94a8825671b0f2c132828d0d43079 Kryštof Tulinger <krystof.tulinger@oracle.com> 1485263397 +0100	commit: renaming renamed -> renamed2
+67dfbe2648c94a8825671b0f2c132828d0d43079 adc051fa62d3c6a8d29d967cd6e88876286db9a2 Kryštof Tulinger <krystof.tulinger@oracle.com> 1485438663 +0100	commit: renaming directories
+adc051fa62d3c6a8d29d967cd6e88876286db9a2 67dfbe2648c94a8825671b0f2c132828d0d43079 Kryštof Tulinger <krystof.tulinger@oracle.com> 1485438687 +0100	reset: moving to HEAD~1
+67dfbe2648c94a8825671b0f2c132828d0d43079 84599b3cccb3eeb5aa9aec64771678d6526bcecb Kryštof Tulinger <krystof.tulinger@oracle.com> 1485438707 +0100	commit: renaming directories
