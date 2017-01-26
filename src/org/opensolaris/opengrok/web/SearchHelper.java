@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
  */
 package org.opensolaris.opengrok.web;
@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanQuery;
@@ -260,8 +261,13 @@ public class SearchHelper {
                 // not matter given that MultiReader is just a cheap wrapper
                 // around set of IndexReader objects.
                 closeOnDestroy = false;
-                searcher = new IndexSearcher(RuntimeEnvironment.getInstance().
-                    getMultiReader(projects, searcherList));
+                MultiReader multireader = RuntimeEnvironment.getInstance().
+                    getMultiReader(projects, searcherList);
+                if (multireader != null) {
+                    searcher = new IndexSearcher(multireader);
+                } else {
+                    errorMsg = "Failed to initialize search. Check the index.";
+                }
             }
 
             // TODO check if below is somehow reusing sessions so we don't
