@@ -147,9 +147,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     </path>
 
     <target name="get-java-version">
-      <condition property="java.version.checked">
+        <condition property="java.version.checked">
             <equals arg1="${ant.java.version}" arg2="1.8"/>
-      </condition>
+        </condition>
     </target>
 
     <target name="check-java-version" depends="get-java-version" unless="java.version.checked">
@@ -169,80 +169,126 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target name="download-jflex" depends="-check-jflex" if="jflex_not_downloaded">
         <get src="${mvn.repository}/de/jflex/jflex/${jflex-version}/jflex-${jflex-version}.jar"
-        dest="lib/jflex-${jflex-version}.jar" verbose="true" usetimestamp="true"/>
+             dest="lib/jflex-${jflex-version}.jar" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="jflex" depends="download-jflex">
         <taskdef classname="jflex.anttask.JFlexTask" name="jflex" classpathref="lib.search.path" />
         <mkdir dir="${src.generatedsrc.dir}"/>
+        
         <macrodef name="run-jflex">
-            <attribute name="file"/>
-            <sequential>
-                <jflex file="@{file}" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
+            <attribute name="name"/>
+            <attribute name="dir"/>
+            <sequential> <!-- Name of input has to be .lex -->
+                <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
             </sequential>
         </macrodef>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/c/CxxXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/erlang/ErlangXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/fortran/FortranXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/golang/GolangSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/golang/GolangXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/haskell/HaskellSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/haskell/HaskellXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/java/JavaXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/javascript/JavaScriptXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lua/LuaSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lua/LuaXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/python/PythonXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/rust/RustSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/rust/RustXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/perl/PerlXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/php/PhpXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/lisp/LispXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/tcl/TclXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/scala/ScalaSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/scala/ScalaXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainFullTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/PlainXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/plain/XMLXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/SQLXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sql/PLSQLXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/document/TroffFullTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/sh/ShXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/vb/VBSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/vb/VBXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/csharp/CSharpXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/clojure/ClojureSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/clojure/ClojureXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/uue/UuencodeFullTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/pascal/PascalSymbolTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/analysis/pascal/PascalXref.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/search/context/HistoryLineTokenizer.lex"/>
-        <run-jflex file="${src.dir}/org/opensolaris/opengrok/search/context/PlainLineTokenizer.lex"/>
+        
+        <macrodef name="run-jflex-and-disable-buffer-expansion">
+            <attribute name="name"/>    
+            <attribute name="dir"/>
+            <sequential>
+                <jflex file="${src.dir}/@{dir}/@{name}.lex" destdir="${src.generatedsrc.dir}" nobak="on" inputstreamctor="false"/>
+                <!-- LUCENE-5897: Disallow scanner buffer expansion -->
+                <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
+                               match="[ \t]*/\* is the buffer big enough\? \*/\s+if \(zzCurrentPos >= zzBuffer\.length.*?\}[ \t]*\r?\n"
+                               replace="" flags="s" />
+                <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
+                               match="private static final int ZZ_BUFFERSIZE ="
+                               replace="private int ZZ_BUFFERSIZE ="/>
+                <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
+                               match="int requested = zzBuffer.length - zzEndRead;"
+                               replace="int requested = zzBuffer.length - zzEndRead - zzFinalHighSurrogate;"/>
+             <!--   <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
+                               match="(zzFinalHighSurrogate = 1;)(\r?\n)"
+                               replace="\1\2          if (totalRead == 1) { return true; }\2"/>  this only works for jflex 1.6.0 -->
+                <replaceregexp file="${src.generatedsrc.dir}/@{dir}/@{name}.java"
+                               match="(zzFinalHighSurrogate = 1;)(\r?\n)"
+                               replace="\1\2          if (numRead == 1) { return true; }\2"/>               
+            </sequential>
+        </macrodef>
+        
+        <!-- NOTE: run-jflex-and-disable-buffer-expansion will fix #1170 https://github.com/OpenGrok/OpenGrok/issues/1170 make parsers stop producing tokens > 32766 chars
+         If a language needs more than 2048 utf8 or 1024 utf16 chars in one token, we need to use below in its lex file:
+         %buffer "size" - Set the initial size of the scan buffer to the specified value (decimal, in bytes). The default value is 16384.          
+         or add setters similar as in https://issues.apache.org/jira/secure/attachment/12663628/LUCENE-5897.patch
+         and allow configuration to override this
+         (note that lucene uses 1024*1024 (1Mb) as default value which equals 32766 utf16 chars per token and is max limit of lucene as of 25.1.2017)
+          -->
+  
+        <property name="gen.analysis.dir" value="/org/opensolaris/opengrok/analysis"/>        
+        <run-jflex dir="${gen.analysis.dir}/c" name="CSymbolTokenizer" />
+        <run-jflex dir="${gen.analysis.dir}/c" name="CXref"/>
+        <run-jflex dir="${gen.analysis.dir}/c" name="CxxSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/c" name="CxxXref"/>
+        <run-jflex dir="${gen.analysis.dir}/erlang" name="ErlangSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/erlang" name="ErlangXref"/>
+        <run-jflex dir="${gen.analysis.dir}/fortran" name="FortranSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/fortran" name="FortranXref"/>
+        <run-jflex dir="${gen.analysis.dir}/golang" name="GolangSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/golang" name="GolangXref"/>
+        <run-jflex dir="${gen.analysis.dir}/haskell" name="HaskellSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/haskell" name="HaskellXref"/>
+        <run-jflex dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/java" name="JavaXref"/>
+        <run-jflex dir="${gen.analysis.dir}/javascript" name="JavaScriptSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/javascript" name="JavaScriptXref"/>
+        <run-jflex dir="${gen.analysis.dir}/lua" name="LuaSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/lua" name="LuaXref"/>
+        <run-jflex dir="${gen.analysis.dir}/python" name="PythonSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/python" name="PythonXref"/>
+        <run-jflex dir="${gen.analysis.dir}/rust" name="RustSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/rust" name="RustXref"/>
+        <run-jflex dir="${gen.analysis.dir}/perl" name="PerlSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/perl" name="PerlXref"/>
+        <run-jflex dir="${gen.analysis.dir}/php" name="PhpSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/php" name="PhpXref"/>
+        <run-jflex dir="${gen.analysis.dir}/lisp" name="LispSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/lisp" name="LispXref"/>
+        <run-jflex dir="${gen.analysis.dir}/tcl" name="TclSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/tcl" name="TclXref"/>
+        <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaXref"/>
+        
+        <!-- just those 4 below will not increase buffer size beyond lucene token limits -->        
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainXref"/>        
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="XMLXref"/>
+        
+        <!-- old analysers that will produce tokens > 32766 chars -->
+        <!-- <run-jflex dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/plain" name="PlainXref"/>        
+        <run-jflex dir="${gen.analysis.dir}/plain" name="XMLXref"/> -->
+        
+        <run-jflex dir="${gen.analysis.dir}/sql" name="SQLXref"/>
+        <run-jflex dir="${gen.analysis.dir}/sql" name="PLSQLXref"/>
+        <run-jflex dir="${gen.analysis.dir}/document" name="TroffXref"/>
+        <run-jflex dir="${gen.analysis.dir}/document" name="TroffFullTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/sh" name="ShSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/sh" name="ShXref"/>
+        <run-jflex dir="${gen.analysis.dir}/vb" name="VBSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/vb" name="VBXref"/>
+        <run-jflex dir="${gen.analysis.dir}/csharp" name="CSharpSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/csharp" name="CSharpXref"/>
+        <run-jflex dir="${gen.analysis.dir}/clojure" name="ClojureSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/clojure" name="ClojureXref"/>
+        <run-jflex dir="${gen.analysis.dir}/uue" name="UuencodeXref"/>
+        <run-jflex dir="${gen.analysis.dir}/uue" name="UuencodeFullTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/pascal" name="PascalSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/pascal" name="PascalXref"/>
+        
+        <property name="gen.context.dir" value="/org/opensolaris/opengrok/search/context"/>
+        <run-jflex dir="${gen.context.dir}" name="HistoryLineTokenizer"/>
+        <run-jflex dir="${gen.context.dir}" name="PlainLineTokenizer"/>
     </target>
 
     <property name="git" value="git"/>
 
     <!-- Get the id of the changeset we're building from using a
-         git command.
-      -->
+       git command.
+    -->
     <target name="-get-changeset-from-command"
             depends="-check-is-git-repo" if="build.from.repo">
         <exec executable="${git}"
@@ -254,29 +300,29 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <!-- Check if we build from a checked out copy of the repository,
-         so that we have history information from git available.
-      -->
+       so that we have history information from git available.
+    -->
     <target name="-check-is-git-repo">
         <available property="build.from.repo" file=".git" type="dir"/>
     </target>
     <target name="-check-is-archived-git-repo">
         <available property="build.from.archived.repo"
-            file=".git_archival.txt"
-            type="file"/>
+                   file=".git_archival.txt"
+                   type="file"/>
     </target>
 
     <!-- Get the id of the changeset we're building from by reading
-         .git_archival.txt file created by git archive. This will only
-         be used when we're not building from a checked out copy of
-         the repository, for example the source distribution.
-      -->
+       .git_archival.txt file created by git archive. This will only
+       be used when we're not building from a checked out copy of
+       the repository, for example the source distribution.
+    -->
     <target name="-get-changeset-from-file"
             depends="-check-is-archived-git-repo" if="build.from.archived.repo">
         <tempfile property="git.archival.temp" deleteonexit="true"/>
         <copy file=".git_archival.txt" tofile="${git.archival.temp}"/>
         <replaceregexp file="${git.archival.temp}" flags="s"
-                     match=".*node: ([0-9a-f]{12}).*"
-                     replace="\1"/>
+                       match=".*node: ([0-9a-f]{12}).*"
+                       replace="\1"/>
         <loadfile srcFile="${git.archival.temp}" property="changeset"/>
     </target>
 
@@ -299,7 +345,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <target name="-pre-compile" depends="check-java-version,jrcs,jflex,download-lucene,download-servlet-api"/>
 
     <target name="eclipse" depends="-pre-compile"
-        description="satisfy eclipse dependencies"/>
+            description="satisfy eclipse dependencies"/>
 
     <target name="-post-clean">
         <delete dir="${src.generatedsrc.dir}"/>
@@ -309,11 +355,11 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     </target>
 
     <!--
-        Create an empty manifest file so that nbproject/build-impl.xml
-        notices that a manifest should be added to the jar file
-      -->
+      Create an empty manifest file so that nbproject/build-impl.xml
+      notices that a manifest should be added to the jar file
+    -->
     <target name="-touch-manifest">
-      <!-- no attributes, main-class and class-path will be added later -->
+        <!-- no attributes, main-class and class-path will be added later -->
         <manifest file="manifest.mf" mode="replace"/>
     </target>
 
@@ -321,9 +367,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <target name="-pre-init" depends="-touch-manifest, -set-jacocoagent"/>
 
     <!--
-        Initialize a property holding a list of jar files on which
-        opengrok.jar depends
-      -->
+      Initialize a property holding a list of jar files on which
+      opengrok.jar depends
+    -->
     <target name="-post-init">
         <pathconvert property="opengrok.lib.files" pathsep=" ">
             <path>
@@ -340,16 +386,16 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
     <target name="-update-manifest-classpath">
         <manifest file="${manifest.file}" mode="update">
             <attribute name="Class-Path"
-                   value="${opengrok.lib.files} lib/derbyclient.jar lib/derby.jar"/>
+                       value="${opengrok.lib.files} lib/derbyclient.jar lib/derby.jar"/>
         </manifest>
     </target>
 
     <target name="-pre-jar" depends="-update-manifest-classpath,-update-build-info"/>
 
     <!--
-        Copy the jars from lib to dist/lib manually if we don't have
-        the copylibs task from NetBeans
-      -->
+      Copy the jars from lib to dist/lib manually if we don't have
+      the copylibs task from NetBeans
+    -->
     <target name="-copy-lib-without-netbeans"
             unless="manifest.available+main.class+mkdist.available">
         <copy todir="${dist.dir}/lib">
@@ -380,30 +426,30 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         </available>
         <condition property="lucene_not_downloaded">
             <not>
-            <and>
-                <isset property="lucene-core.jar.present"/>
-                <isset property="lucene-analyzers-common.jar.present"/>
-                <isset property="lucene-queryparser.jar.present"/>
-                <isset property="lucene-suggest.jar.present"/>
-             </and>
-             </not>
+                <and>
+                    <isset property="lucene-core.jar.present"/>
+                    <isset property="lucene-analyzers-common.jar.present"/>
+                    <isset property="lucene-queryparser.jar.present"/>
+                    <isset property="lucene-suggest.jar.present"/>
+                </and>
+            </not>
         </condition>
     </target>
 
     <target name="download-lucene" depends="-check-lucene" if="lucene_not_downloaded">
         <delete>
-         <fileset dir="lib">
-          <include name="lucene-*.jar"/>
-         </fileset>
+            <fileset dir="lib">
+                <include name="lucene-*.jar"/>
+            </fileset>
         </delete>
         <get src="${mvn.repository}/org/apache/lucene/lucene-core/${lucene.version}/${lucene-core.jar}"
-        dest="lib/${lucene-core.jar}" verbose="true" usetimestamp="true"/>
+             dest="lib/${lucene-core.jar}" verbose="true" usetimestamp="true"/>
         <get src="${mvn.repository}/org/apache/lucene/lucene-analyzers-common/${lucene.version}/${lucene-analyzers-common.jar}"
-        dest="lib/${lucene-analyzers-common.jar}" verbose="true" usetimestamp="true"/>
+             dest="lib/${lucene-analyzers-common.jar}" verbose="true" usetimestamp="true"/>
         <get src="${mvn.repository}/org/apache/lucene/lucene-queryparser/${lucene.version}/${lucene-queryparser.jar}"
-        dest="lib/${lucene-queryparser.jar}" verbose="true" usetimestamp="true"/>
+             dest="lib/${lucene-queryparser.jar}" verbose="true" usetimestamp="true"/>
         <get src="${mvn.repository}/org/apache/lucene/lucene-suggest/${lucene.version}/${lucene-suggest.jar}"
-        dest="lib/${lucene-suggest.jar}" verbose="true" usetimestamp="true"/>
+             dest="lib/${lucene-suggest.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-check-servlet-api" description="Check that servlet-api jar file is present">
@@ -413,18 +459,18 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <condition property="servlet-api_not_downloaded">
             <not>
                 <isset property="servlet-api.jar.present"/>
-             </not>
+            </not>
         </condition>
     </target>
 
     <target name="download-servlet-api" depends="-check-servlet-api" if="servlet-api_not_downloaded">
         <delete>
-         <fileset dir="lib">
-          <include name="servlet-api-*.jar"/>
-         </fileset>
+            <fileset dir="lib">
+                <include name="servlet-api-*.jar"/>
+            </fileset>
         </delete>
         <get src="${mvn.repository}/javax/servlet/servlet-api/${servlet-api.version}/${servlet-api.jar}"
-        dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
+             dest="lib/${servlet-api.jar}" verbose="true" usetimestamp="true"/>
     </target>
 
     <target name="-post-jar" depends="-copy-lib-without-netbeans, sample-plugins">
@@ -457,7 +503,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
     <target name="dist" depends="jar">
         <tar destfile="${dist.dir}/${distname}-${version}.tar.gz"
-           compression="gzip">
+             compression="gzip">
             <tarfileset dir="." prefix="${distname}-${version}/doc">
                 <include name="README.txt"/>
                 <include name="CHANGES.txt"/>
@@ -493,7 +539,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <echo message="Creating archive for tag ${version}"/>
         <exec executable="${git}">
             <arg value="archive"/>
-        <!--<arg value="-v"/>-->
+            <!--<arg value="-v"/>-->
             <arg value="--prefix=${distname}-${version}-src/"/>
             <arg value="-o${dist.dir}/${distname}-${version}-src.zip"/>
             <arg value="${version}"/>
@@ -590,9 +636,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <formatter type="html" toFile="pmd/pmd_report.html"/>
             <formatter type="xml" toFile="pmd/pmd_report.xml"/>
             <fileset dir="src" includes="**/*.java"/>
-<!--            <fileset dir="test" includes="**/*.java"/> -->
-<!--            <fileset dir="web" includes="**/*.jsp"/>
-                <fileset dir="web" includes="**/*.jspf"/> -->
+            <!--            <fileset dir="test" includes="**/*.java"/> -->
+            <!--            <fileset dir="web" includes="**/*.jsp"/>
+            <fileset dir="web" includes="**/*.jspf"/> -->
         </pmd>
         <echo message="PMD finished, found ${pmd.num.warnings} warnings, see pmd/pmd_report.html"/>
     </target>
@@ -725,14 +771,14 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <copy file="${test.hg}/hgignore" tofile="${test.hg}/.hgignore"/>
 
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/index/source.zip"
-              basedir="${test.sources}"
-              update="false"
-              defaultexcludes="no"/>
+             basedir="${test.sources}"
+             update="false"
+             defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip"
-                basedir="${test.repositories}"
-                excludes="mercurial/hg/**, mercurial/hgignore, git/git/**"
-                update="false"
-                defaultexcludes="no"/>
+             basedir="${test.repositories}"
+             excludes="mercurial/hg/**, mercurial/hgignore, git/git/**"
+             update="false"
+             defaultexcludes="no"/>
 
         <antcall target="-delete-generated-repository-files"/>
     </target>
@@ -810,14 +856,14 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
         </copy>
 
-      <!--
+        <!--
           The support for binaries in Razor repositories is not fully
           functional, so the next copy target is commented out for now.
         -->
 
-      <!--copy todir="${test.razor}/Razor-Simple/SimpleCProgram-BinaryRelease/.razor">
-        <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
-      </copy-->
+        <!--copy todir="${test.razor}/Razor-Simple/SimpleCProgram-BinaryRelease/.razor">
+          <fileset dir="ext/SampleRazorRepository/Repository/OpenGrokSample/RAZOR_UNIVERSE/DOMAIN_01/Simple"/>
+        </copy-->
 
     </target>
 
@@ -868,7 +914,7 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <mkdir dir="${build.dir}/jrcs"/>
         <javac srcdir="jrcs/src/main/java" destdir="${build.dir}/jrcs"
                nowarn="on" source="${javac.source}" compiler="javac${javac.source}">
-        <compilerarg value="-Xlint:deprecation"/> <!-- ,unchecked -->
+            <compilerarg value="-Xlint:deprecation"/> <!-- ,unchecked -->
         </javac>
         <jar destfile="${file.reference.jrcs.jar}">
             <fileset dir="${build.dir}/jrcs" includes="**/*.class"/>
@@ -946,13 +992,13 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <uptodate property="jsp.not.changed">
             <srcfiles dir="${web.src.dir}" includes="**/*.jsp,**/*.jspf"/>
             <mapper type="glob" from="*.jsp"
-                to="${build.dir}/src/jsp/${codebase}/jsp/*_jsp.java"/>
+                    to="${build.dir}/src/jsp/${codebase}/jsp/*_jsp.java"/>
         </uptodate>
     </target>
 
     <target name="-jsp.generate" depends="-jsp.check" unless="jsp.not.changed">
         <taskdef name="jasper" classname="org.apache.jasper.JspC"
-            classpathref="classpath.jsp" />
+                 classpathref="classpath.jsp" />
         <mkdir dir="${build.dir}/src/web"/>
         <copy todir="${build.dir}/src/web">
             <fileset dir="${web.src.dir}">
@@ -962,34 +1008,34 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
             </fileset>
         </copy>
         <jasper validateXml="false"
-            outputdir="${build.dir}/src/jsp"
-            javaencoding="UTF-8"
-            uriroot="${build.dir}/src/web"
-            package="${codebase.dot}.jsp"
-            compilersourcevm="${javac.source}"
-            compilertargetvm="${javac.target}"
-            smapsuppressed="false"
-            webxmlfragment="${build.dir}/src/servlets_web.xml"
+                outputdir="${build.dir}/src/jsp"
+                javaencoding="UTF-8"
+                uriroot="${build.dir}/src/web"
+                package="${codebase.dot}.jsp"
+                compilersourcevm="${javac.source}"
+                compilertargetvm="${javac.target}"
+                smapsuppressed="false"
+                webxmlfragment="${build.dir}/src/servlets_web.xml"
         />
         <loadfile property="wdd" srcfile="${build.dir}/src/servlets_web.xml"/>
         <copy file="${web.src.dir}/WEB-INF/web.xml" todir="${build.dir}"
-            overwrite="true">
+              overwrite="true">
             <filterset>
                 <filter token="generated servlet mappings"
-                    value=" generated start -->${wdd}&lt;!-- generated end " />
+                        value=" generated start -->${wdd}&lt;!-- generated end " />
             </filterset>
         </copy>
     </target>
 
     <target name="compile.jsp" depends="compile,-jsp.generate"
-        description="--> compile java source code and jsp pages"
+            description="--> compile java source code and jsp pages"
     >
         <javac srcdir="${build.dir}/src/jsp" destdir="${build.dir}/classes"
-            includes="**/*.java"
-            optimize="${optimize}" debug="${debug}" debuglevel="${debuglevel}"
-            deprecation="${deprecation}" classpathref="classpath.jsp"
-            encoding="UTF-8" listfiles="${listfiles}"
-            includeantruntime="false">
+               includes="**/*.java"
+               optimize="${optimize}" debug="${debug}" debuglevel="${debuglevel}"
+               deprecation="${deprecation}" classpathref="classpath.jsp"
+               encoding="UTF-8" listfiles="${listfiles}"
+               includeantruntime="false">
             <compilerarg value="-Xlint:deprecation,unchecked" compiler="javac${javac.source}"/>
         </javac>
     </target>

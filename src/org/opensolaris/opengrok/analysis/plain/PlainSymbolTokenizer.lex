@@ -28,6 +28,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class PlainSymbolTokenizer
 %extends JFlexTokenizer
 %unicode
+%buffer 1048576
 %{
 public PlainSymbolTokenizer() {
 super();

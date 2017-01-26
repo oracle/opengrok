@@ -32,6 +32,7 @@ import java.io.Reader;
 %class PlainXref
 %extends JFlexXref
 %unicode
+%buffer 1048576
 %ignorecase
 %int
 %{
