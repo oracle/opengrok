@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -141,17 +142,11 @@ public class GitRepository extends Repository {
     }
 
     Executor getRenamedFilesExecutor(final File file, String sinceRevision) throws IOException {
-        String abs = file.getCanonicalPath();
-        String filename = "";
-        if (abs.length() > directoryName.length()) {
-            filename = abs.substring(directoryName.length() + 1);
-        }
-
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         List<String> cmd = new ArrayList<>();
         cmd.add(RepoCommand);
         cmd.add("log");
-        cmd.add("-M8"); // similarity 80%
+        cmd.add("--find-renames=8"); // similarity 80%
         cmd.add("--summary");
         cmd.add(ABBREV_LOG);
         cmd.add("--name-status");
@@ -165,9 +160,10 @@ public class GitRepository extends Repository {
             cmd.add(sinceRevision + "..");
         }
 
-        if (filename.length() > 0) {
+        if (file.getCanonicalPath().length() > directoryName.length() + 1) {
+            // this is a file in the repository
             cmd.add("--");
-            cmd.add(filename);
+            cmd.add(file.getCanonicalPath().substring(directoryName.length() + 1));
         }
 
         return new Executor(cmd, new File(getDirectoryName()), sinceRevision != null);
@@ -202,8 +198,7 @@ public class GitRepository extends Repository {
         Process process = null;
 
         try {
-            String filename = (new File(parent, fullpath)).getCanonicalPath()
-                    .substring(directoryName.length() + 1);
+            String filename = fullpath.substring(directoryName.length() + 1);
             ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
             String argv[] = {
                 RepoCommand,
@@ -255,8 +250,12 @@ public class GitRepository extends Repository {
         try {
             fullpath = new File(parent, basename).getCanonicalPath();
         } catch (IOException exp) {
-            LOGGER.log(Level.SEVERE,
-                    "Failed to get canonical path: {0}", exp.getClass().toString());
+            LOGGER.log(Level.SEVERE, exp, new Supplier<String>() {
+                @Override
+                public String get() {
+                    return String.format("Failed to get canonical path: %s/%s", parent, basename);
+                }
+            });
             return null;
         }
 
@@ -271,9 +270,12 @@ public class GitRepository extends Repository {
             try {
                 origpath = findOriginalName(fullpath, rev);
             } catch (IOException exp) {
-                LOGGER.log(Level.SEVERE,
-                        "Failed to get original revision: {0}",
-                        exp.getClass().toString());
+                LOGGER.log(Level.SEVERE, exp, new Supplier<String>() {
+                    @Override
+                    public String get() {
+                        return String.format("Failed to get original revision: %s/%s (revision %s)", parent, basename, rev);
+                    }
+                });
                 return null;
             }
             if (origpath != null) {
@@ -282,28 +284,6 @@ public class GitRepository extends Repository {
         }
 
         return ret;
-    }
-
-    /**
-     * Expand format from the git output.
-     * <br>
-     * from:<br>
-     * moved/{renamed.c => renamed2.c} (100%)<br>
-     * to:<br>
-     * moved/renamed.c => moved/renamed2.c (100%)<br>
-     *
-     * @param renamedFile the string to expand
-     * @return normalized string
-     */
-    protected String expandGitRenamedOutput(String renamedFile) {
-        // the pattern should cover format like this:
-        // moved/{renamed.c => renamed2.c} (100%)
-        Pattern pattern = Pattern.compile("\\s*([^\\{]+)\\s*\\{\\s*(.+?)\\s+=>\\s+([^\\}]+)\\s*\\}(.*)");
-        Matcher m = pattern.matcher(renamedFile);
-        if (m.find()) {
-            renamedFile = m.replaceAll("$1$2 => $1$3$4");
-        }
-        return renamedFile;
     }
 
     /**
@@ -317,15 +297,11 @@ public class GitRepository extends Repository {
     protected String findOriginalName(String fullpath, String changeset)
             throws IOException {
         if (fullpath == null || fullpath.isEmpty() || fullpath.length() < directoryName.length()) {
-            LOGGER.log(Level.SEVERE,
-                    "Invalid file path string: {0}", fullpath);
-            return null;
+            throw new IOException(String.format("Invalid file path string: %s", fullpath));
         }
 
         if (changeset == null || changeset.isEmpty()) {
-            LOGGER.log(Level.SEVERE,
-                    "Invalid changeset string: {0}", changeset);
-            return null;
+            throw new IOException(String.format("Invalid changeset string for path %s: %s", fullpath, changeset));
         }
 
         String file = fullpath.replace(directoryName + File.separator, "");
@@ -340,6 +316,9 @@ public class GitRepository extends Repository {
             "--summary",
             ABBREV_LOG,
             "--abbrev-commit",
+            "--name-status",
+            "--pretty=format:commit %h%b",
+            "--",
             fullpath
         };
 
@@ -351,31 +330,20 @@ public class GitRepository extends Repository {
                     new InputStreamReader(process.getInputStream()))) {
                 String line;
                 String rev = null;
+                Matcher m;
+                Pattern pattern = Pattern.compile("^R\\d+\\s(.*)\\s(.*)");
                 while ((line = in.readLine()) != null) {
                     if (line.startsWith("commit ")) {
-                        rev = line.replace("commit ", "");
+                        rev = line.substring(7);
                         continue;
                     }
 
-                    if (rev.equals(changeset)) {
+                    if (changeset.equals(rev)) {
                         break;
                     }
 
-                    if (line.startsWith(" rename ")) {
-                        line = line.replace(" rename ", "");
-                        line = expandGitRenamedOutput(line);
-                        String[] split = line.split(" => ");
-                        if (split.length < 2) {
-                            throw new IOException(
-                                    String.format(
-                                            "Invalid format of the git output. Expected "
-                                            + "\"file => otherfile\" but got \"{}\"", line));
-                        }
-                        file = split[0];
-                    }
-
-                    if (rev.equals(changeset)) {
-                        break;
+                    if ((m = pattern.matcher(line)).find()) {
+                        file = m.group(1);
                     }
                 }
             }

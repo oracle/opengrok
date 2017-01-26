@@ -34,6 +34,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
@@ -160,8 +161,10 @@ class GitHistoryParser implements Executor.StreamHandler {
             int status = executor.exec(true, this);
 
             if (status != 0) {
-                throw new HistoryException("Failed to get history for: \""
-                        + file.getAbsolutePath() + "\" Exit code: " + status);
+                throw new HistoryException(
+                        String.format("Failed to get history for: \"%s\" Exit code: %d",
+                                file.getAbsolutePath(),
+                                status));
             }
 
             if (RuntimeEnvironment.getInstance().isHandleHistoryOfRenamedFiles()) {
@@ -169,13 +172,16 @@ class GitHistoryParser implements Executor.StreamHandler {
                 status = executor.exec(true, parser);
 
                 if (status != 0) {
-                    throw new HistoryException("Failed to get renamed files for: \""
-                            + file.getAbsolutePath() + "\" Exit code: " + status);
+                    throw new HistoryException(
+                            String.format("Failed to get renamed files for: \"%s\" Exit code: %d",
+                                    file.getAbsolutePath(),
+                                    status));
                 }
             }
         } catch (IOException e) {
-            throw new HistoryException("Failed to get history for: \""
-                    + file.getAbsolutePath() + "\"", e);
+            throw new HistoryException(
+                    String.format("Failed to get history for: \"%s\"", file.getAbsolutePath()),
+                    e);
         }
 
         return new History(entries, parser.getRenamedFiles());
@@ -204,6 +210,27 @@ class GitHistoryParser implements Executor.StreamHandler {
         @Override
         public void processStream(InputStream input) throws IOException {
             /*
+             * Commands to create the git repository:
+             *
+             * $ git init
+             * $ touch main.c
+             * $ touch foo.f
+             * $ touch foo2.f
+             * $ nano main.c # - add some lines
+             * $ git add . && git commit -m "first"
+             * $ mkdir moved
+             * $ mv main.c moved/
+             * $ git add . && git commit -m "second"
+             * $ nano moved/main.c # - change/add some lines
+             * $ git add . && git commit -m "third"
+             * $ mv moved/main.c moved/movedmain.c
+             * $ git add . && git commit -m "moved main"
+             * $ nano moved/movedmain.c # - change/add some lines
+             * $ git add . && git commit -m "changing some lines"
+             *
+             *
+             * Expected output format for this repository:
+             *
              * 520b0dd changing some lines
              * M moved/movedmain.c
              *
@@ -220,14 +247,14 @@ class GitHistoryParser implements Executor.StreamHandler {
              * A foo.f
              * A foo2.f
              * A main.c
-             *
              */
             RuntimeEnvironment env = RuntimeEnvironment.getInstance();
 
             try (BufferedReader in = new BufferedReader(new InputStreamReader(input))) {
                 String line;
+                Pattern pattern = Pattern.compile("^R\\d+\\s.*");
                 while ((line = in.readLine()) != null) {
-                    if (line.startsWith("R")) {
+                    if (pattern.matcher(line).matches()) {
                         String[] parts = line.split("\t");
                         if (parts.length < 3
                                 || parts[1].length() <= 0
