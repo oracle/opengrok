@@ -229,9 +229,9 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/golang" name="GolangXref"/>
         <run-jflex dir="${gen.analysis.dir}/haskell" name="HaskellSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/haskell" name="HaskellXref"/>
-        <run-jflex dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
+        <!-- java tokenizer is below and has disabled buffer -->
         <run-jflex dir="${gen.analysis.dir}/java" name="JavaXref"/>
-        <run-jflex dir="${gen.analysis.dir}/javascript" name="JavaScriptSymbolTokenizer"/>
+        <!-- js tokenizer is below and has disabled buffer -->
         <run-jflex dir="${gen.analysis.dir}/javascript" name="JavaScriptXref"/>
         <run-jflex dir="${gen.analysis.dir}/lua" name="LuaSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/lua" name="LuaXref"/>
@@ -250,18 +250,23 @@ Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaSymbolTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/scala" name="ScalaXref"/>
         
-        <!-- just those 4 below will not increase buffer size beyond lucene token limits -->        
+        <!-- just those 3 below will not increase buffer size beyond lucene token limits -->        
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
         <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>
-        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="PlainXref"/>        
-        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/plain" name="XMLXref"/>
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/javascript" name="JavaScriptSymbolTokenizer"/>
+        <run-jflex-and-disable-buffer-expansion dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
         
         <!-- old analysers that will produce tokens > 32766 chars -->
-        <!-- <run-jflex dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
+        <!-- 
+        <run-jflex dir="${gen.analysis.dir}/plain" name="PlainFullTokenizer"/>
         <run-jflex dir="${gen.analysis.dir}/plain" name="PlainSymbolTokenizer"/>
-        <run-jflex dir="${gen.analysis.dir}/plain" name="PlainXref"/>        
-        <run-jflex dir="${gen.analysis.dir}/plain" name="XMLXref"/> -->
+        <run-jflex dir="${gen.analysis.dir}/javascript" name="JavaScriptSymbolTokenizer"/>
+        <run-jflex dir="${gen.analysis.dir}/java" name="JavaSymbolTokenizer"/>
+        -->        
         
+        <run-jflex dir="${gen.analysis.dir}/plain" name="PlainXref"/>        
+        <run-jflex dir="${gen.analysis.dir}/plain" name="XMLXref"/>
+                        
         <run-jflex dir="${gen.analysis.dir}/sql" name="SQLXref"/>
         <run-jflex dir="${gen.analysis.dir}/sql" name="PLSQLXref"/>
         <run-jflex dir="${gen.analysis.dir}/document" name="TroffXref"/>

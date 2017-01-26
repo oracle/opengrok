@@ -133,7 +133,8 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
             </plugin>
 <!-- TODO add the same fix as is in build.xml to patch jflex generated files to stop increasing buffer beyond token size that lucene accepts
  https://github.com/OpenGrok/OpenGrok/issues/1170 make parsers stop producing tokens > 32766 chars
- at least for PlainFullTokenizer, PlainSymbolTokenizer, PlainXref, XMLXref
+ at least for PlainFullTokenizer, PlainSymbolTokenizer, JavaScriptSymbolTokenizer, JavaSymbolTokenizer
+ use below ?
             <plugin> 
                 <groupId>com.google.code.maven-replacer-plugin</groupId> 
                 <artifactId>replacer</artifactId> 

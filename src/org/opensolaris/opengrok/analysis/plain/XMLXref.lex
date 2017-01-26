@@ -34,7 +34,6 @@ import org.opensolaris.opengrok.web.Util;
 %class XMLXref
 %extends JFlexXref
 %unicode
-%buffer 1048576
 %ignorecase
 %int
 %{
