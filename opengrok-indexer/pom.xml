@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -131,6 +131,32 @@ Copyright (c) 2010, 2011, Oracle and/or its affiliates. All rights reserved.
                     </execution>
                 </executions>
             </plugin>
+<!-- TODO add the same fix as is in build.xml to patch jflex generated files to stop increasing buffer beyond token size that lucene accepts
+ https://github.com/OpenGrok/OpenGrok/issues/1170 make parsers stop producing tokens > 32766 chars
+ at least for PlainFullTokenizer, PlainSymbolTokenizer, JavaScriptSymbolTokenizer, JavaSymbolTokenizer
+ use below ?
+            <plugin> 
+                <groupId>com.google.code.maven-replacer-plugin</groupId> 
+                <artifactId>replacer</artifactId> 
+                <version>(version)</version> 
+                <executions> 
+                    <execution> 
+                        <phase>prepare-package</phase> 
+                        <goals> 
+                            <goal>replace</goal> 
+                        </goals> 
+                    </execution> 
+                </executions> 
+                <configuration> 
+                    <file>target/someapp/jsp/helloWorld.jsp</file> 
+                    <token>ToKeN</token> 
+                    <value>value</value> 
+                    <regexFlags> 
+                        <regexFlag>CASE_INSENSITIVE</regexFlag> 
+                        <regexFlag>MULTILINE</regexFlag> 
+                    </regexFlags> 
+                </configuration> 
+            </plugin> -->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

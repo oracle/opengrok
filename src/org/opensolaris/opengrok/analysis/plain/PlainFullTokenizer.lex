@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.plain;
@@ -30,6 +30,7 @@ import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 %class PlainFullTokenizer
 %extends JFlexTokenizer
 %unicode
+%buffer 1048576
 %{
 public PlainFullTokenizer() {
 super();
