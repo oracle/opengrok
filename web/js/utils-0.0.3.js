@@ -1772,9 +1772,6 @@ function clearSearchFrom() {
     $("#type :selected").prop("selected", false);
 }
 
-var scope_visible = 0;
-var scope_text = '';
-
 /**
  * Fold or unfold a function definition.
  */
@@ -1787,30 +1784,38 @@ function fold(id) {
     $('#' + id + '_fold').toggle('fold');
 }
 
+var scope_timeout = null;
 /**
  * Function that is called when the #content div element is scrolled. Checks
  * if the top of the page is inside a function scope. If so, update the
  * scope element to show the name of the function and a link to its definition.
  */
 function scope_on_scroll() {
-    var cnt = document.getElementById("content");
-    var y = cnt.getBoundingClientRect().top + 2;
-    var c = document.elementFromPoint(15, y + 1);
-
-    if ($(c).is('.l, .hl')) {
-        var $par = $(c).closest('.scope-body, .scope-head')
-
-        if (!$par.length) {
-            return;
-        }
-
-        var $head = $par.hasClass('scope-body') ? $par.prev() : $par;
-        var $sig = $head.children().first()
-        if ($.scopesWindow.initialized) {
-            $.scopesWindow.update({
-                'id': $head.attr('id'),
-                'link': $sig.html(),
-            })
-        }
+    if (scope_timeout !== null) {
+        clearTimeout(scope_timeout)
+        scope_timeout = null
     }
+    scope_timeout = setTimeout(function () {
+        var cnt = document.getElementById("content");
+        var y = cnt.getBoundingClientRect().top + 2;
+        var c = document.elementFromPoint(15, y + 1);
+
+        if ($(c).is('.l, .hl')) {
+            var $par = $(c).closest('.scope-body, .scope-head')
+
+            if (!$par.length) {
+                return;
+            }
+
+            var $head = $par.hasClass('scope-body') ? $par.prev() : $par;
+            var $sig = $head.children().first()
+            if ($.scopesWindow.initialized) {
+                $.scopesWindow.update({
+                    'id': $head.attr('id'),
+                    'link': $sig.html(),
+                })
+            }
+        }
+        scope_timeout = null;
+    }, 150);
 }
