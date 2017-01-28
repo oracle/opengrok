@@ -16,10 +16,12 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2012, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
---%><%@ page session="false" isErrorPage="true" import="
+--%>
+<%@page import="javax.servlet.http.HttpServletResponse"%>
+<%@ page session="false" isErrorPage="true" import="
 java.io.PrintWriter,
 java.io.StringWriter,
 
@@ -30,9 +32,13 @@ org.opensolaris.opengrok.web.Util"
     cfg = PageConfig.get(request);
     cfg.setTitle("Error!");
 
+    // Set status to Internal error. This should help to avoid caching
+    // the page by some proxies.
+    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
     String context = request.getContextPath();
     String configError = "";
-    if (cfg.getSourceRootPath()==null || cfg.getSourceRootPath().isEmpty()) {
+    if (cfg.getSourceRootPath() == null || cfg.getSourceRootPath().isEmpty()) {
         configError = "CONFIGURATION parameter has not been configured in "
             + "web.xml! Please configure your webapp.";
     } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {

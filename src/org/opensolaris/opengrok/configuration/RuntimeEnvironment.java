@@ -18,7 +18,7 @@
  */
 
  /*
-  * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
   */
 package org.opensolaris.opengrok.configuration;
 
@@ -1877,6 +1877,11 @@ public final class RuntimeEnvironment {
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE,
                     "cannot get IndexReader for project" + proj, ex);
+                return null;
+            } catch (NullPointerException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot get IndexReader for project" + proj, ex);
+                return null;
             }
         }
         MultiReader multiReader = null;
