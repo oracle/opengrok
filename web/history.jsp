@@ -85,7 +85,13 @@ include file="httpheader.jspf"
             // should not happen
             %><h3>Problem</h3><p class="error"><%= e.getMessage() %></p><%
         }
-        if (hist != null) {
+
+        if (hist == null) {
+            /* No history for this file */
+            cfg.hasHistory(false);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        } else {
 %>
 <%
 // We have a lots of results to show: create a slider for

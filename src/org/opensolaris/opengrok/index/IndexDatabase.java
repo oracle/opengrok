@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -76,6 +76,7 @@ import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
+import org.opensolaris.opengrok.util.AcceptHelper;
 import org.opensolaris.opengrok.util.IOUtils;
 import org.opensolaris.opengrok.web.Util;
 
@@ -666,150 +667,6 @@ public class IndexDatabase {
     }
 
     /**
-     * Check if I should accept this file into the index database
-     *
-     * @param file the file to check
-     * @return true if the file should be included, false otherwise
-     */
-    private boolean accept(File file) {
-
-        if (!includedNames.isEmpty()
-                && // the filter should not affect directory names
-                (!(file.isDirectory() || includedNames.match(file)))) {
-            return false;
-        }
-
-        String absolutePath = file.getAbsolutePath();
-
-        if (ignoredNames.ignore(file)) {
-            LOGGER.log(Level.FINER, "ignoring {0}", absolutePath);
-            return false;
-        }
-
-        if (!file.canRead()) {
-            LOGGER.log(Level.WARNING, "Could not read {0}", absolutePath);
-            return false;
-        }
-
-        try {
-            String canonicalPath = file.getCanonicalPath();
-            if (!absolutePath.equals(canonicalPath)
-                && !acceptSymlink(absolutePath, canonicalPath)) {
-
-                LOGGER.log(Level.FINE, "Skipped symlink ''{0}'' -> ''{1}''",
-                    new Object[]{absolutePath, canonicalPath});
-                return false;
-            }
-            //below will only let go files and directories, anything else is considered special and is not added
-            if (!file.isFile() && !file.isDirectory()) {
-                LOGGER.log(Level.WARNING, "Ignored special file {0}",
-                    absolutePath);
-                return false;
-            }
-        } catch (IOException exp) {
-            LOGGER.log(Level.WARNING, "Failed to resolve name: {0}",
-                absolutePath);
-            LOGGER.log(Level.FINE, "Stack Trace: ", exp);
-        }
-
-        if (file.isDirectory()) {
-            // always accept directories so that their files can be examined
-            return true;
-        }
-
-        if (HistoryGuru.getInstance().hasHistory(file)) {
-            // versioned files should always be accepted
-            return true;
-        }
-
-        // this is an unversioned file, check if it should be indexed
-        return !RuntimeEnvironment.getInstance().isIndexVersionedFilesOnly();
-    }
-
-    boolean accept(File parent, File file) {
-        try {
-            File f1 = parent.getCanonicalFile();
-            File f2 = file.getCanonicalFile();
-            if (f1.equals(f2)) {
-                LOGGER.log(Level.INFO, "Skipping links to itself...: {0} {1}",
-                        new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
-                return false;
-            }
-
-            // Now, let's verify that it's not a link back up the chain...
-            File t1 = f1;
-            while ((t1 = t1.getParentFile()) != null) {
-                if (f2.equals(t1)) {
-                    LOGGER.log(Level.INFO, "Skipping links to parent...: {0} {1}",
-                            new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
-                    return false;
-                }
-            }
-
-            return accept(file);
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Failed to resolve name: {0} {1}",
-                    new Object[]{parent.getAbsolutePath(), file.getAbsolutePath()});
-        }
-        return false;
-    }
-
-    /**
-     * Check if I should accept the path containing a symlink
-     *
-     * @param absolutePath the path with a symlink to check
-     * @param canonicalPath the canonical path to the file
-     * @return true if the file should be accepted, false otherwise
-     */
-    private boolean acceptSymlink(String absolutePath, String canonicalPath) throws IOException {
-        // Always accept local symlinks
-        if (isLocal(canonicalPath)) {
-            return true;
-        }
-
-        for (String allowedSymlink : RuntimeEnvironment.getInstance().getAllowedSymlinks()) {
-            if (absolutePath.startsWith(allowedSymlink)) {
-                String allowedTarget = new File(allowedSymlink).getCanonicalPath();
-                if (canonicalPath.startsWith(allowedTarget)
-                        && absolutePath.substring(allowedSymlink.length()).equals(canonicalPath.substring(allowedTarget.length()))) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if a file is local to the current project. If we don't have
-     * projects, check if the file is in the source root.
-     *
-     * @param path the path to a file
-     * @return true if the file is local to the current repository
-     */
-    private boolean isLocal(String path) {
-        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-        String srcRoot = env.getSourceRootPath();
-
-        boolean local = false;
-
-        if (path.startsWith(srcRoot)) {
-            if (env.hasProjects()) {
-                String relPath = path.substring(srcRoot.length());
-                if (project.equals(Project.getProject(relPath))) {
-                    // File is under the current project, so it's local.
-                    local = true;
-                }
-            } else {
-                // File is under source root, and we don't have projects, so
-                // consider it local.
-                local = true;
-            }
-        }
-
-        return local;
-    }
-
-    /**
      * Generate indexes recursively
      *
      * @param dir the root indexDirectory to generate indexes for
@@ -828,7 +685,7 @@ public class IndexDatabase {
             return lcur_count;
         }
 
-        if (!accept(dir)) {
+        if (!AcceptHelper.accept(project, dir)) {
             return lcur_count;
         }
 
@@ -841,7 +698,7 @@ public class IndexDatabase {
         Arrays.sort(files, fileComparator);
 
         for (File file : files) {
-            if (accept(dir, file)) {
+            if (AcceptHelper.accept(project, dir, file)) {
                 String path = parent + '/' + file.getName();
 
                 if (file.isDirectory()) {

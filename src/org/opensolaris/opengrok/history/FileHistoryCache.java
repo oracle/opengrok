@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.history;
@@ -52,8 +52,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
+import org.opensolaris.opengrok.util.AcceptHelper;
 import org.opensolaris.opengrok.util.IOUtils;
 
 /*
@@ -364,6 +366,29 @@ class FileHistoryCache implements HistoryCache {
                     continue;
                 }
 
+                if (env.hasProjects()) {
+                    /*
+                     * Problem here is that if the original file was a symlink
+                     * it's been already dereferenced by
+                     * getPathRelativeToSourceRoot(). We have to solve the only
+                     * case which is that the symlink led to the project's root.
+                     *
+                     * @see
+                     * RuntimeEnvironment#getPathRelativeToSourceRoot(java.io.File, int)
+                     */
+                    Project project = Project.getProject(test);
+                    File parent = test.equals(new File(env.getSourceRootPath(), project.getPath()))
+                            /* this is a project's root */
+                            ? test
+                            /* this isn't a project's root */
+                            : test.getParentFile();
+                    if (!AcceptHelper.accept(project, parent, test)) {
+                        continue;
+                    }
+                } else if (!AcceptHelper.accept(null, test.getParentFile(), test)) {
+                    continue;
+                }
+
                 List<HistoryEntry> list = map.get(s);
                 if (list == null) {
                     list = new ArrayList<>();
@@ -380,7 +405,7 @@ class FileHistoryCache implements HistoryCache {
                 }
             }
         }
-
+        
         /*
          * Now traverse the list of files from the hash map built above
          * and for each file store its history (saved in the value of the
@@ -492,6 +517,10 @@ class FileHistoryCache implements HistoryCache {
                 return null;
         }
 
+        if (!AcceptHelper.accept(Project.getProject(file), file)) {
+            return null;
+        }
+
         final History history;
         long time;
         try {
@@ -584,6 +613,7 @@ class FileHistoryCache implements HistoryCache {
 
     /**
      * Store latest indexed revision for the repository under data directory.
+     *
      * @param repository repository
      * @param rev latest revision which has been just indexed
      */
@@ -592,11 +622,11 @@ class FileHistoryCache implements HistoryCache {
 
         try {
             writer = new BufferedWriter(new OutputStreamWriter(
-                  new FileOutputStream(getRepositoryCachedRevPath(repository))));
+                    new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for "+repository.getDirectoryName(),
-                ex);
+                    ex);
         } finally {
            try {
                if (writer != null) {

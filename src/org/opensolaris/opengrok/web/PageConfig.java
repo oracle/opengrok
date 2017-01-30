@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -602,6 +602,15 @@ public final class PageConfig {
             hasHistory = HistoryGuru.getInstance().hasHistory(getResourceFile());
         }
         return hasHistory;
+    }
+
+    /**
+     * Set if the request related resource has history information.
+     *
+     * @param history boolean to set
+     */
+    public void hasHistory(boolean history) {
+        hasHistory = history;
     }
 
     /**
