@@ -60,7 +60,7 @@ include file="pageheader.jspf"
 
 %>
         </div>
-        <div id="Masthead"></div>
+        <div id="Masthead">OpenGrok error</div>
         <div id="sbar"><%@
 
 include file="menu.jspf"
