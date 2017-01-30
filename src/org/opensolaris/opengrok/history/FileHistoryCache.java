@@ -619,13 +619,21 @@ class FileHistoryCache implements HistoryCache {
      */
     private void storeLatestCachedRevision(Repository repository, String rev) {
         Writer writer = null;
-
+        File file = new File(getRepositoryHistDataDirname(repository));
+        if (!file.exists() || !file.isDirectory()) {
+            if (!file.mkdirs()) {
+                LOGGER.log(Level.WARNING,
+                        "Cannot create the history cache directory to write the latest cached revision for {}",
+                        repository.getDirectoryName());
+            }
+        }
         try {
             writer = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(getRepositoryCachedRevPath(repository))));
             writer.write(rev);
         } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Cannot write latest cached revision to file for "+repository.getDirectoryName(),
+            LOGGER.log(Level.WARNING,
+                    "Cannot write latest cached revision to file for " + repository.getDirectoryName(),
                     ex);
         } finally {
            try {
