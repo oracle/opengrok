@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -764,34 +766,66 @@ public final class HistoryGuru {
         if (repos == null || repos.isEmpty()) {
             repositories.clear();
         } else {
-            Map<String, Repository> newrepos
-                    = new HashMap<>(repos.size());
+            Map<String, Repository> newrepos =
+                Collections.synchronizedMap(new HashMap<>(repos.size()));
             Statistics elapsed = new Statistics();
             boolean verbose = RuntimeEnvironment.getInstance().isVerbose();
+
             if (verbose) {
                 LOGGER.log(Level.FINE, "invalidating repositories");
             }
-            for (RepositoryInfo i : repos) {
-                try {
-                    Repository r = RepositoryFactory.getRepository(i);
-                    if (r == null) {
-                        LOGGER.log(Level.WARNING,
-                                "Failed to instanciate internal repository data for {0} in {1}",
-                                new Object[]{i.getType(), i.getDirectoryName()});
-                    } else {
-                        newrepos.put(r.getDirectoryName(), r);
+
+            /*
+             * getRepository() below does various checks of the repository
+             * which involves executing commands and I/O so make the checks
+             * run in parallel to speed up the process.
+             */
+            final CountDownLatch latch = new CountDownLatch(repos.size());
+            final ExecutorService executor = Executors.newFixedThreadPool(
+                Runtime.getRuntime().availableProcessors(),
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable runnable) {
+                        Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                        thread.setName("invalidate-repos-" + thread.getId());
+                        return thread;
                     }
-                } catch (InstantiationException ex) {
-                    LOGGER.log(Level.WARNING, "Could not create " + i.getType()
-                            + " for '" + i.getDirectoryName()
-                            + "', could not instantiate the repository.", ex);
-                } catch (IllegalAccessException iae) {
-                    LOGGER.log(Level.WARNING, "Could not create " + i.getType()
-                            + " for '" + i.getDirectoryName()
-                            + "', missing access rights.", iae);
-                }
+            });
+
+            for (RepositoryInfo i : repos) {
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Repository r = RepositoryFactory.getRepository(i);
+                            if (r == null) {
+                                LOGGER.log(Level.WARNING,
+                                        "Failed to instantiate internal repository data for {0} in {1}",
+                                        new Object[]{i.getType(), i.getDirectoryName()});
+                            } else {
+                                newrepos.put(r.getDirectoryName(), r);
+                            }
+                        } catch (Exception ex) {
+                            // We want to catch any exception since we are in thread.
+                            LOGGER.log(Level.WARNING, "Could not create " + i.getType()
+                                + " for '" + i.getDirectoryName(), ex);
+                        } finally {
+                            latch.countDown();
+                        }
+                    }
+                });
             }
+
+            // Wait until all repositories are validated.
+            try {
+                latch.await();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.SEVERE, "latch exception{0}", ex);
+            }
+            executor.shutdown();
+
             repositories = newrepos;
+
             if (verbose) {
                 elapsed.report(LOGGER, "done invalidating repositories");
             }
