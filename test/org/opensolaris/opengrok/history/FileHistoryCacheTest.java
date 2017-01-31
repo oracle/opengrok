@@ -351,7 +351,7 @@ public class FileHistoryCacheTest {
         Repository repo = RepositoryFactory.getRepository(reposRoot);
 
         // The test expects support for renamed files.
-        System.setProperty("org.opensolaris.opengrok.history.RenamedHandlingEnabled", "1");
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
 
         History historyToStore = repo.getHistory(reposRoot);
 
