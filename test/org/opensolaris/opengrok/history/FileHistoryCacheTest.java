@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -351,7 +351,7 @@ public class FileHistoryCacheTest {
         Repository repo = RepositoryFactory.getRepository(reposRoot);
 
         // The test expects support for renamed files.
-        System.setProperty("org.opensolaris.opengrok.history.RenamedHandlingEnabled", "1");
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
 
         History historyToStore = repo.getHistory(reposRoot);
 
