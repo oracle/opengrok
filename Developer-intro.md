@@ -9,8 +9,8 @@ OpenGrok can be built and tested on Linux, OS X, BSD, Windows etc. too.
 E.g. for Solaris install:
 
 1. Solaris 11+
-2. JDK7 (`pkg install developer/java/jdk`)
-3. [Exuberant ctags](http://ctags.sourceforge.net/) (from source, no IPS package yet)
+2. JDK8 (`pkg install developer/java/jdk`)
+3. [Universal ctags](https://github.com/universal-ctags) (from source)
 4. Git (`pkg install git`)
 5. [Netbeans](https://netbeans.org/) (with bundled Tomcat)
 6. other SCMs (e.g. `pkg install mercurial subversion`, will be handy for testing)
