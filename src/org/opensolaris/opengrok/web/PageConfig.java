@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -45,6 +45,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -1340,6 +1341,14 @@ public final class PageConfig {
         return file.getName();
     }
 
+    private String addTitleDelimiter(String title) {
+        if (!title.isEmpty()) {
+            return title + ", ";
+        }
+
+        return title;
+    }
+
     /**
      * The search page title string should progressively reflect the search terms
      * so that if only small portion of the string is seen, it describes
@@ -1353,31 +1362,30 @@ public final class PageConfig {
             title += req.getParameter("q") + " (full)";
         }
         if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
-            if (!title.isEmpty()) {
-                title += ", ";
-            }
+            title = addTitleDelimiter(title);
             title += req.getParameter(QueryBuilder.DEFS) + " (definition)";
         }
         if (req.getParameter(QueryBuilder.REFS) != null && !req.getParameter(QueryBuilder.REFS).isEmpty()) {
-            if (!title.isEmpty()) {
-                title += ", ";
-            }
+            title = addTitleDelimiter(title);
             title += req.getParameter(QueryBuilder.REFS) + " (reference)";
         }
         if (req.getParameter(QueryBuilder.PATH) != null && !req.getParameter(QueryBuilder.PATH).isEmpty()) {
-            if (!title.isEmpty()) {
-                title += ", ";
-            }
+            title = addTitleDelimiter(title);
             title += req.getParameter(QueryBuilder.PATH) + " (path)";
         }
         if (req.getParameter(QueryBuilder.HIST) != null && !req.getParameter(QueryBuilder.HIST).isEmpty()) {
-            if (!title.isEmpty()) {
-                title += ", ";
-            }
+            title = addTitleDelimiter(title);
             title += req.getParameter(QueryBuilder.HIST) + " (history)";
         }
 
-        // TODO: possibly add projects too
+        if (req.getParameterValues(QueryBuilder.PROJECT) != null && req.getParameterValues(QueryBuilder.PROJECT).length != 0) {
+            if (!title.isEmpty()) {
+                title += " ";
+            }
+            title += "in projects: ";
+            String projects[] = req.getParameterValues(QueryBuilder.PROJECT);
+            title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
+        }
 
         return Util.htmlize(title + " - OpenGrok search results");
     }
