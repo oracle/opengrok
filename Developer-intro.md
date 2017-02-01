@@ -74,6 +74,8 @@ For the webapp, this presumes it has been deployed via 'Debug' not 'Deploy'.
 
 To run tests in single file, open the file from the left column which contains the projects (e.g. opengrok -> Test Packages -> org.opensolaris.opengrok.history -> MercurialRepositoryTest.java) and right-click on it and select Test File (Ctrl+F6).
 
+Also, OpenGrok repository is setup so that pushes will trigger [Travis](https://travis-ci.org) builds so it is not necessary to run tests on your workstation - just commit and push to Github.
+
 ### Publish changes
 
 Once done with your changes, save them in Netbeans, `git commit` and `push` them to your repository (or you can do the Git dance directly from Netbeans using the Team -> Git menu). From there it is possible to create new pull request to the upstream master branch using the standard Github process (https://help.github.com/articles/creating-a-pull-request - again Github help describes this in detail).
