@@ -49,7 +49,7 @@ To build the code from command line, just run `ant`. It will download all necess
 
 ### Deploy the web app to the web server
 
-Right click on the `opengrok-web-nbproject` and select 'Deploy'. It should start the Tomcat shipped with the Netbeans and deploy the web app to it. By default the OpenGrok instance will be accessible on `http://127.0.0.1:8084/source/` - use your browser to see it.
+Right click on the `opengrok-web-nbproject` and select 'Deploy'. It should start the Tomcat shipped with the Netbeans and deploy the web app to it. By default the OpenGrok instance will be accessible on `http://127.0.0.1:8080/source/` - use your browser to see it.
 
 ### Setup sources and index them
 
