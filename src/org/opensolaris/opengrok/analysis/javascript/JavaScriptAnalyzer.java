@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.javascript;
 
@@ -27,7 +27,6 @@ import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -46,12 +45,8 @@ public class JavaScriptAnalyzer extends AbstractSourceCodeAnalyzer {
      */
     protected JavaScriptAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-    }
-
-    @Override
-    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
-        return new JavaScriptSymbolTokenizer(reader);
-    }
+        SymbolTokenizer=new JavaScriptSymbolTokenizer(null);    
+    }    
 
     @Override
     protected JFlexXref newXref(Reader reader) {

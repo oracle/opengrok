@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.csharp;
 
@@ -41,13 +41,9 @@ public class CSharpAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected CSharpAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+        SymbolTokenizer=new CSharpSymbolTokenizer(null);    
     }
-
-    @Override
-    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
-        return new CSharpSymbolTokenizer(reader);
-    }
-
+   
     @Override
     protected JFlexXref newXref(Reader reader) {
         return new CSharpXref(reader);

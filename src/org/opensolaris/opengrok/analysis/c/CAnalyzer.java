@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.c;
 
@@ -27,7 +27,6 @@ import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -44,16 +43,13 @@ public class CAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of CAnalyzer
+     * @param factory name
      */
     protected CAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+        SymbolTokenizer=new CSymbolTokenizer(null);
     }
-    
-    @Override
-    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
-        return new CSymbolTokenizer(reader);
-    }
-
+        
     @Override
     protected JFlexXref newXref(Reader reader) {
         return new CXref(reader);
