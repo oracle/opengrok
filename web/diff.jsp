@@ -18,8 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
@@ -42,9 +41,10 @@ org.opensolaris.opengrok.web.DiffType"
 %><%!
 private String getAnnotateRevision(DiffData data) {
     if (data.type == DiffType.OLD || data.type == DiffType.NEW) {
+        String rev = data.rev[data.type == DiffType.NEW ? 1 : 0];
         return "<script type=\"text/javascript\">/* <![CDATA[ */ "
-            + "document.rev = 'r=" + data.rev[data.type == DiffType.NEW ? 1 : 0]
-            + "'; /* ]]> */</script>";
+            + "document.rev = " + Util.htmlize(Util.jsStringLiteral(rev))
+            + "; /* ]]> */</script>";
     }
     return "";
 }
@@ -52,7 +52,7 @@ private String getAnnotateRevision(DiffData data) {
 
 include file="mast.jsp"
 
-%><%
+%><script src="<%=request.getContextPath()%>/diff.js" type="text/javascript"></script><%
 /* ---------------------- diff.jsp start --------------------- */
 {
     cfg = PageConfig.get(request);

@@ -50,6 +50,15 @@ public class PageConfigTest {
         repository.destroy();
         repository = null;
     }
+    
+    @Test
+    public void testRequestAttributes() {
+        PageConfig cfg = PageConfig.get(new DummyHttpServletRequest());
+        assertNull(cfg.getRequestAttribute("attr1"));
+        cfg.setRequestAttribute("attr1", "Some value");
+        assertNotNull(cfg.getRequestAttribute("attr1"));
+        assertEquals("Some value", cfg.getRequestAttribute("attr1"));
+    }
 
     @Test
     public void canProcess() {
@@ -120,4 +129,5 @@ public class PageConfigTest {
             }
         };
     }
+    
 }

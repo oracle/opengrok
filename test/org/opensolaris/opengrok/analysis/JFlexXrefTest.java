@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2010, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis;
@@ -26,10 +26,14 @@ package org.opensolaris.opengrok.analysis;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.lucene.document.Document;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,6 +57,8 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.util.TestRepository;
 
 import static org.junit.Assert.*;
+import org.opensolaris.opengrok.analysis.executables.JavaClassAnalyzerFactory;
+import org.xml.sax.InputSource;
 
 /**
  * Unit tests for JFlexXref.
@@ -400,5 +406,91 @@ public class JFlexXrefTest {
         StringWriter out = new StringWriter();
         xref.write(out);
         assertTrue(out.toString().contains("<span class=\"s\">@\"\\some_windows_path_in_a_string\\\"</span>"));
+    }
+
+    /**
+     * Test that special characters in URLs are escaped in the xref.
+     */
+    @Test
+    public void testEscapeLink() throws IOException {
+        StringReader in = new StringReader("http://www.example.com/?a=b&c=d");
+        PlainXref xref = new PlainXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        assertTrue(out.toString().contains(
+                "<a href=\"http://www.example.com/?a=b&amp;c=d\">" +
+                "http://www.example.com/?a=b&amp;c=d</a>"));
+    }
+
+    /**
+     * Test that JFlex rules that contain quotes don't cause invalid xref
+     * to be produced.
+     */
+    @Test
+    public void testJFlexRule() throws Exception {
+        StringReader in = new StringReader("\\\" { yybegin(STRING); }");
+        // JFlex files are usually analyzed with CAnalyzer.
+        CXref xref = new CXref(in);
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        // Verify that the xref is well-formed XML. Used to throw
+        // SAXParseException: The element type "span" must be terminated
+        // by the matching end-tag "</span>".
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")));
+    }
+
+    /**
+     * Unterminated string literals or comments made CXref produce output
+     * that was not valid XML, due to missing end tags. Test that it is no
+     * longer so.
+     */
+    @Test
+    public void testUnterminatedElements() throws Exception {
+        for (String str : Arrays.asList("#define STR \"abc\n",
+                                        "void f(); /* unterminated comment\n",
+                                        "const char c = 'x\n")) {
+            StringReader in = new StringReader(str);
+            CXref xref = new CXref(in);
+            StringWriter out = new StringWriter();
+            xref.write(out);
+            // Used to throw SAXParseException.
+            DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")));
+        }
+    }
+
+    /**
+     * Test that JavaClassAnalyzer produces well-formed output.
+     */
+    @Test
+    public void testJavaClassAnalyzer() throws Exception {
+        StreamSource src = new StreamSource() {
+            @Override public InputStream getStream() throws IOException {
+                final String path = "/" +
+                    StringWriter.class.getName().replace('.', '/') +
+                    ".class";
+                return StringWriter.class.getResourceAsStream(path);
+            }
+        };
+        Document doc = new Document();
+        StringWriter out = new StringWriter();
+        new JavaClassAnalyzerFactory().getAnalyzer().analyze(doc, src, out);
+        // Used to throw SAXParseException.
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+                new InputSource(new StringReader("<doc>" + out + "</doc>")));
+    }
+
+    /**
+     * Test that special characters in Fortran files are escaped.
+     */
+    @Test
+    public void testFortranSpecialCharacters() throws Exception {
+        FortranXref xref = new FortranXref(new StringReader("<?php?>"));
+        StringWriter out = new StringWriter();
+        xref.write(out);
+        // Used to throw SAXParseException.
+        DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+            new InputSource(new StringReader("<doc>" + out + "</doc>")));
     }
 }

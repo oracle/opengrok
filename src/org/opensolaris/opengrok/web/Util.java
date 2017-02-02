@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -63,65 +63,6 @@ public final class Util {
     private static final String SPAN_D = "<span class=\"d\">";
     private static final String SPAN_A = "<span class=\"a\">";
     private static final String SPAN_E = "</span>";
-
-    private static final char[][] specialCharactersRepresentation = new char[63][];
-
-    static {
-        specialCharactersRepresentation[38] = "&amp;".toCharArray();
-        specialCharactersRepresentation[60] = "&lt;".toCharArray();
-        specialCharactersRepresentation[62] = "&gt;".toCharArray();
-        specialCharactersRepresentation[34] = "&#034;".toCharArray();
-        specialCharactersRepresentation[39] = "&#039;".toCharArray();
-    }
-
-    /**
-     * Please use this function to show any variable from servlet getParameter
-     * in a html/js This is to avoid XSS such as
-     * http://OPENGROK_SERVER/source/xref/?r=%27;alert(1)// 
-     * big thnx to Alex Concha alex.concha at automattic.com
-     * - taken from jstl 1.2
-     *
-     * @param buffer
-     * @return
-     */
-    public static String escapeXml(String buffer) {
-        if (buffer == null) {
-            return "";
-        }
-        int start = 0;
-        int length = buffer.length();
-        char[] arrayBuffer = buffer.toCharArray();
-        StringBuffer escapedBuffer = null;
-
-        for (int i = 0; i < length; ++i) {
-            char c = arrayBuffer[i];
-            if (c <= 62) {
-                char[] escaped = specialCharactersRepresentation[c];
-                if (escaped != null) {
-                    if (start == 0) {
-                        escapedBuffer = new StringBuffer(length + 5);
-                    }
-
-                    if (start < i) {
-                        escapedBuffer.append(arrayBuffer, start, i - start);
-                    }
-
-                    start = i + 1;
-                    escapedBuffer.append(escaped);
-                }
-            }
-        }
-
-        if (start == 0) {
-            return buffer;
-        } else {
-            if (start < length) {
-                escapedBuffer.append(arrayBuffer, start, length - start);
-            }
-
-            return escapedBuffer.toString();
-        }
-    }
 
     private Util() {
         // singleton
@@ -602,10 +543,10 @@ public final class Util {
                 // Write link to search the revision in current project.
                 out.write(anchorClassStart);
                 out.write("search\" href=\"" + env.getUrlPrefix());
-                out.write("defs=&refs=&path=");
+                out.write("defs=&amp;refs=&amp;path=");
                 out.write(project);
-                out.write("&hist=" + URIEncode(r));
-                out.write("&type=\" title=\"Search history for this changeset");
+                out.write("&amp;hist=" + URIEncode(r));
+                out.write("&amp;type=\" title=\"Search history for this changeset");
                 out.write(closeQuotedTag);
                 out.write("S");
                 out.write(anchorEnd);

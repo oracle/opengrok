@@ -135,6 +135,14 @@ label {
     display: none;
 }
 
+.projects .panel-body-accordion.favourite {
+    display: block;
+}
+
+.projects .subrepository {
+    padding-left: 20px;
+}
+
 .panel > .panel-heading, .panel > .panel-heading-accordion {
   padding: 0 15px;
   border-bottom: 1px solid transparent;
@@ -504,11 +512,33 @@ table#revisions {
         color: #755;
 }
 
+table#revisions tbody tr td p {
+	-ms-word-break: break-all;
+	-ms-word-wrap: break-all;
+	-webkit-word-break: break-word;
+	-webkit-word-wrap: break-word;
+	word-break: break-word;
+	word-wrap: break-word;
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	-ms-hyphens: auto;
+	hyphens: auto;
+}
+
+@-moz-document url-prefix() {
+    table#revisions tbody tr td p {
+        word-break: break-all;
+    }
+}
+
+.rev-message-hidden {
+  display: none;
+}
+
 .rssbadge { /* RSS/XML Feed on history page */
 	text-align: right;
 	margin: 1ex 0;
 }
-
 
 /* *** diff page *** */
 #diffbar { /* diff navbar: contains the tabs to select diff format */
@@ -655,11 +685,12 @@ div[id^='src'] pre {
 	margin: 0;
 }
 
-div[id^='src'] .l-hide, div[id^='src'] .hl-hide, .blame-hidden { /* hidden line number/annotation block */
+/* hidden line number/annotation block */
+.lines-hidden .l, .lines-hidden .hl, .blame-hidden .blame {
 	display: none
 }
 
-div[id^='src'] .l, div[id^='src'] .hl, .blame .r, .blame .a,
+.l, .hl, .blame .r, .blame .a,
 #results .l, #more .l,
 #difftable i, del.d { /* line number/annotation block */
 	display: inline-block;

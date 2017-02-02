@@ -52,7 +52,7 @@ import javax.servlet.http.HttpSession;
  * an exception and let the tests override them.
  * </p>
  */
-class DummyHttpServletRequest implements HttpServletRequest {
+public class DummyHttpServletRequest implements HttpServletRequest {
 
     private final Map<String, Object> attrs = new HashMap<String, Object>();
 

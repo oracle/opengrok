@@ -17,11 +17,10 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
-
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -63,13 +63,15 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.Summary.Fragment;
 import org.opensolaris.opengrok.search.context.Context;
 import org.opensolaris.opengrok.search.context.HistoryContext;
+import org.opensolaris.opengrok.web.PageConfig;
 import org.opensolaris.opengrok.web.Prefix;
+import org.opensolaris.opengrok.web.ProjectHelper;
 
 /**
  * This is an encapsulation of the details on how to search in the index
  * database.
  *
- * @author Trond Norbye 2005 
+ * @author Trond Norbye 2005
  * @author Lubos Kosco - upgrade to lucene 3.x, 4.x, 5.x
  */
 public class SearchEngine {
@@ -87,7 +89,7 @@ public class SearchEngine {
      * version of lucene index common for whole application
      */
     public static final Version LUCENE_VERSION = Version.LATEST;
-    public static final String LUCENE_VERSION_HELP = LUCENE_VERSION.major+"_"+LUCENE_VERSION.minor+"_"+LUCENE_VERSION.bugfix;
+    public static final String LUCENE_VERSION_HELP = LUCENE_VERSION.major + "_" + LUCENE_VERSION.minor + "_" + LUCENE_VERSION.bugfix;
     /**
      * Holds value of property definition.
      */
@@ -121,10 +123,10 @@ public class SearchEngine {
     private HistoryContext historyContext;
     private Summarizer summarizer;
     // internal structure to hold the results from lucene
-    private final List<org.apache.lucene.document.Document> docs;
+    private final List<Document> docs;
     private final char[] content = new char[1024 * 8];
     private String source;
-    private String data;    
+    private String data;
     int hitsPerPage = RuntimeEnvironment.getInstance().getHitsPerPage();
     int cachePages = RuntimeEnvironment.getInstance().getCachePages();
     int totalHits = 0;
@@ -236,7 +238,29 @@ public class SearchEngine {
     }
 
     /**
-     * Execute a search. Before calling this function, you must set the
+     * Execute a search aware of current request. 
+     * 
+     * This filters out all projects which are not allowed for the current request.
+     * 
+     * Before calling this function,
+     * you must set the appropriate search criteria with the set-functions. Note
+     * that this search will return the first cachePages of hitsPerPage, for
+     * more you need to call more
+     *
+     * @return The number of hits
+     * @see ProjectHelper#getAllProjects() 
+     */
+    public int search(HttpServletRequest req) {
+        ProjectHelper pHelper = PageConfig.get(req).getProjectHelper();
+        return search(
+                new ArrayList<Project>(pHelper.getAllProjects()),
+                new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR));
+    }
+
+    /**
+     * Execute a search without authorization. 
+     * 
+     * Before calling this function, you must set the
      * appropriate search criteria with the set-functions. Note that this search
      * will return the first cachePages of hitsPerPage, for more you need to
      * call more
@@ -244,6 +268,21 @@ public class SearchEngine {
      * @return The number of hits
      */
     public int search() {
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        return search(
+                env.hasProjects() ? env.getProjects() : new ArrayList<Project>(),
+                new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR));
+    }
+
+    /**
+     * Execute a search on projects or root file.
+     *
+     * If @param projects is an empty list it tries to search in @code
+     * searchSingleDatabase with root set to @param root
+     *
+     * @return The number of hits
+     */
+    private int search(List<Project> projects, File root) {
         source = RuntimeEnvironment.getInstance().getSourceRootPath();
         data = RuntimeEnvironment.getInstance().getDataRootPath();
         docs.clear();
@@ -253,17 +292,18 @@ public class SearchEngine {
         try {
             query = queryBuilder.build();
             if (query != null) {
-                RuntimeEnvironment env = RuntimeEnvironment.getInstance();
-                File root = new File(env.getDataRootFile(), IndexDatabase.INDEX_DIR);
 
-                if (env.hasProjects()) {
+                if (projects.isEmpty()) {
+                    // search the index database
+                    //NOTE this assumes that src does not contain any project, just
+                    // data files - so no authorization can be enforced
+                    searchSingleDatabase(root, true);
+                } else {
                     // search all projects
                     //TODO support paging per project (in search.java)
                     //TODO optimize if only one project by falling back to SingleDatabase ?
-                    searchMultiDatabase(env.getProjects(), false);
-                } else {
-                    // search the index database
-                    searchSingleDatabase(root, true);
+                    //NOTE projects are already filtered if we accessed through web page @see search(HttpServletRequest)
+                    searchMultiDatabase(projects, false);
                 }
             }
         } catch (Exception e) {
@@ -374,9 +414,9 @@ public class SearchEngine {
                                     tags, nhits > 100, false, ret, scopes);
                         } else if (Genre.XREFABLE == genre && data != null && summarizer != null) {
                             int l;
-                            try (Reader r = RuntimeEnvironment.getInstance().isCompressXref() ?
-                                     new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + Prefix.XREF_P + filename + ".gz"))))) :
-                                     new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
+                            try (Reader r = RuntimeEnvironment.getInstance().isCompressXref()
+                                    ? new HTMLStripCharFilter(new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(data + Prefix.XREF_P + filename + ".gz")))))
+                                    : new HTMLStripCharFilter(new BufferedReader(new FileReader(data + Prefix.XREF_P + filename)))) {
                                 l = r.read(content);
                             }
                             //TODO FIX below fragmenter according to either summarizer or context (to get line numbers, might be hard, since xref writers will need to be fixed too, they generate just one line of html code now :( )
@@ -504,7 +544,7 @@ public class SearchEngine {
     public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
-    
+
     /**
      * Getter for property type.
      *
