@@ -300,7 +300,7 @@ public abstract class JFlexXref {
 
         // terminate scopes
         if (scopeOpen) {
-            out.write("</div>");
+            out.write("</span>");
             scopeOpen = false;
         }
 
