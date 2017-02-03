@@ -17,8 +17,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2010 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
@@ -59,7 +58,7 @@ Use is subject to license terms.
 		grouping="require_all"
 		restart_on="none"
 		type="service">
-		<service_fmri value="svc:/network/http:tomcat6" />
+		<service_fmri value="svc:/network/http:tomcat8" />
 	</dependency>
 
 	<property_group
@@ -153,4 +152,4 @@ Use is subject to license terms.
 		</documentation>
 	</template>
 </service>
-</service_bundle> 
+</service_bundle>

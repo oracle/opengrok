@@ -241,15 +241,15 @@ private static final String RCBREOL="}\n";
         fout.write(LCBREOL);
 
         for (Attribute a : c.getAttributes()) {
-            if (a.getTag() == org.apache.bcel.Constants.ATTR_CODE) {
+            if (a.getTag() == org.apache.bcel.Const.ATTR_CODE) {
                 for (Attribute ca : ((Code) a).getAttributes()) {
-                    if (ca.getTag() == org.apache.bcel.Constants.ATTR_LOCAL_VARIABLE_TABLE) {
+                    if (ca.getTag() == org.apache.bcel.Const.ATTR_LOCAL_VARIABLE_TABLE) {
                         for (LocalVariable l : ((LocalVariableTable) ca).getLocalVariableTable()) {
                             printLocal(out, fout, l, v, defs, refs);
                         }
                     }
                 }
-            } else if (a.getTag() == org.apache.bcel.Constants.ATTR_SOURCE_FILE) {
+            } else if (a.getTag() == org.apache.bcel.Const.ATTR_SOURCE_FILE) {
                 v[a.getNameIndex()] = 1;
                 break;
             }
@@ -328,7 +328,7 @@ private static final String RCBREOL="}\n";
             fout.write(RBRA);
             ArrayList<LocalVariable[]> locals = new ArrayList<>();
             for (Attribute a : m.getAttributes()) {
-                if (a.getTag() == org.apache.bcel.Constants.ATTR_EXCEPTIONS) {
+                if (a.getTag() == org.apache.bcel.Const.ATTR_EXCEPTIONS) {
                     for (int i : ((ExceptionTable) a).getExceptionIndexTable()) {
                         v[i] = 1;
                     }
@@ -344,9 +344,9 @@ private static final String RCBREOL="}\n";
                             fout.write(SPACE);
                         }
                     }
-                } else if (a.getTag() == org.apache.bcel.Constants.ATTR_CODE) {
+                } else if (a.getTag() == org.apache.bcel.Const.ATTR_CODE) {
                     for (Attribute ca : ((Code) a).getAttributes()) {
-                        if (ca.getTag() == org.apache.bcel.Constants.ATTR_LOCAL_VARIABLE_TABLE) {
+                        if (ca.getTag() == org.apache.bcel.Const.ATTR_LOCAL_VARIABLE_TABLE) {
                             locals.add(((LocalVariableTable) ca).getLocalVariableTable());
                         }
                     }
@@ -404,37 +404,37 @@ private static final String RCBREOL="}\n";
         byte tag = c.getTag();
 
         switch (tag) {
-            case org.apache.bcel.Constants.CONSTANT_Class:
+            case org.apache.bcel.Const.CONSTANT_Class:
                 i = ((ConstantClass) c).getNameIndex();
                 v[i] = 1;
-                Constant con = cp.getConstant(i, org.apache.bcel.Constants.CONSTANT_Utf8);
+                Constant con = cp.getConstant(i, org.apache.bcel.Const.CONSTANT_Utf8);
                 str = Utility.compactClassName(((ConstantUtf8) con).getBytes(), false);
                 break;
 
-            case org.apache.bcel.Constants.CONSTANT_String:
+            case org.apache.bcel.Const.CONSTANT_String:
                 i = ((ConstantString) c).getStringIndex();
                 v[i] = 1;
-                Constant con2 = cp.getConstant(i, org.apache.bcel.Constants.CONSTANT_Utf8);
+                Constant con2 = cp.getConstant(i, org.apache.bcel.Const.CONSTANT_Utf8);
                 str = ((ConstantUtf8) con2).getBytes();
                 break;
 
-            case org.apache.bcel.Constants.CONSTANT_Utf8:
+            case org.apache.bcel.Const.CONSTANT_Utf8:
                 str = ((ConstantUtf8) c).toString();
                 break;
-            case org.apache.bcel.Constants.CONSTANT_Double:
+            case org.apache.bcel.Const.CONSTANT_Double:
                 str = ((ConstantDouble) c).toString();
                 break;
-            case org.apache.bcel.Constants.CONSTANT_Float:
+            case org.apache.bcel.Const.CONSTANT_Float:
                 str = ((ConstantFloat) c).toString();
                 break;
-            case org.apache.bcel.Constants.CONSTANT_Long:
+            case org.apache.bcel.Const.CONSTANT_Long:
                 str = ((ConstantLong) c).toString();
                 break;
-            case org.apache.bcel.Constants.CONSTANT_Integer:
+            case org.apache.bcel.Const.CONSTANT_Integer:
                 str = ((ConstantInteger) c).toString();
                 break;
 
-            case org.apache.bcel.Constants.CONSTANT_NameAndType:
+            case org.apache.bcel.Const.CONSTANT_NameAndType:
                 i = ((ConstantNameAndType) c).getNameIndex();
                 v[i] = 1;
                 j = ((ConstantNameAndType) c).getSignatureIndex();
@@ -451,9 +451,9 @@ private static final String RCBREOL="}\n";
 
                 break;
 
-            case org.apache.bcel.Constants.CONSTANT_InterfaceMethodref:
-            case org.apache.bcel.Constants.CONSTANT_Methodref:
-            case org.apache.bcel.Constants.CONSTANT_Fieldref:
+            case org.apache.bcel.Const.CONSTANT_InterfaceMethodref:
+            case org.apache.bcel.Const.CONSTANT_Methodref:
+            case org.apache.bcel.Const.CONSTANT_Fieldref:
                 i = ((ConstantCP) c).getClassIndex();
                 v[i] = 1;
                 j = ((ConstantCP) c).getNameAndTypeIndex();

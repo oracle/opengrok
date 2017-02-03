@@ -18,36 +18,50 @@
  */
 
 /*
- * Copyright (c) 2014, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.util.TestRepository;
 
 import java.io.File;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import junit.framework.TestCase;
-import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
-import org.opensolaris.opengrok.util.TestRepository;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test file based history cache with special focus on incremental reindex.
  *
  * @author Vladimir Kotal
  */
-public class FileHistoryCacheTest extends TestCase {
+public class FileHistoryCacheTest {
 
     private TestRepository repositories;
     private FileHistoryCache cache;
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     /**
      * Set up the test environment with repositories and a cache instance.
      *
      * @throws java.lang.Exception
      */
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         repositories = new TestRepository();
         repositories.create(getClass().getResourceAsStream("repositories.zip"));
 
@@ -60,8 +74,8 @@ public class FileHistoryCacheTest extends TestCase {
      *
      * @throws java.lang.Exception
      */
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         repositories.destroy();
         repositories = null;
 
@@ -113,6 +127,8 @@ public class FileHistoryCacheTest extends TestCase {
      *
      * @throws java.lang.Exception
      */
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @Test
     public void testStoreAndGetNotRenamed() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         Repository repo = RepositoryFactory.getRepository(reposRoot);
@@ -139,6 +155,8 @@ public class FileHistoryCacheTest extends TestCase {
      *
      * @throws java.lang.Exception
      */
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @Test
     public void testStoreAndGetIncrementalTags() throws Exception {
         // Enable tagging of history entries.
         RuntimeEnvironment.getInstance().setTagsEnabled(true);
@@ -215,6 +233,8 @@ public class FileHistoryCacheTest extends TestCase {
      *
      * @throws java.lang.Exception
      */
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @Test
     public void testStoreAndGet() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
 
@@ -324,12 +344,14 @@ public class FileHistoryCacheTest extends TestCase {
      * Test what happens when incremental reindex brings in changesets where
      * a file is renamed.
      */
+    @ConditionalRun(condition = RepositoryInstalled.MercurialInstalled.class)
+    @Test
     public void testRenamedFile() throws Exception {
         File reposRoot = new File(repositories.getSourceRoot(), "mercurial");
         Repository repo = RepositoryFactory.getRepository(reposRoot);
 
         // The test expects support for renamed files.
-        System.setProperty("org.opensolaris.opengrok.history.RenamedHandlingEnabled", "1");
+        RuntimeEnvironment.getInstance().setHandleHistoryOfRenamedFiles(true);
 
         History historyToStore = repo.getHistory(reposRoot);
 
@@ -421,6 +443,7 @@ public class FileHistoryCacheTest extends TestCase {
     /*
      * Functional test for the FetchHistoryWhenNotInCache configuration option.
      */
+    @Test
     public void testNoHistoryFetch() throws Exception {
         // Do not create history cache for files which do not have it cached.
         RuntimeEnvironment.getInstance().setFetchHistoryWhenNotInCache(false);

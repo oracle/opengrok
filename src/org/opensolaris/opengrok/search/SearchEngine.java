@@ -31,9 +31,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -57,6 +61,7 @@ import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.Scopes;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -70,6 +75,7 @@ import org.opensolaris.opengrok.web.ProjectHelper;
 /**
  * This is an encapsulation of the details on how to search in the index
  * database.
+ * This is used for searching from the command line tool and also via the JSON interface.
  *
  * @author Trond Norbye 2005
  * @author Lubos Kosco - upgrade to lucene 3.x, 4.x, 5.x
@@ -86,7 +92,7 @@ public class SearchEngine {
     //increase the version - every change of below makes us incompatible with the
     //old index and we need to ask for reindex
     /**
-     * version of lucene index common for whole application
+     * version of Lucene index common for the whole application
      */
     public static final Version LUCENE_VERSION = Version.LATEST;
     public static final String LUCENE_VERSION_HELP = LUCENE_VERSION.major + "_" + LUCENE_VERSION.minor + "_" + LUCENE_VERSION.bugfix;
@@ -134,6 +140,7 @@ public class SearchEngine {
     private TopScoreDocCollector collector;
     private IndexSearcher searcher;
     boolean allCollected;
+    private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
 
     /**
      * Creates a new instance of SearchEngine
@@ -171,7 +178,7 @@ public class SearchEngine {
     }
 
     /**
-     *
+     * Search one index. This is used if no projects are set up.
      * @param paging whether to use paging (if yes, first X pages will load
      * faster)
      * @param root which db to search
@@ -196,28 +203,23 @@ public class SearchEngine {
     }
 
     /**
-     *
+     * Perform search on multiple indexes in parallel.
      * @param paging whether to use paging (if yes, first X pages will load
      * faster)
      * @param root list of projects to search
      * @throws IOException
      */
     private void searchMultiDatabase(List<Project> root, boolean paging) throws IOException {
-        IndexReader[] subreaders = new IndexReader[root.size()];
-        File droot = new File(RuntimeEnvironment.getInstance().getDataRootFile(), IndexDatabase.INDEX_DIR);
-        int ii = 0;
-        for (Project project : root) {
-            IndexReader ireader = (DirectoryReader.open(FSDirectory.open(new File(droot, project.getPath()).toPath())));
-            subreaders[ii++] = ireader;
+        SortedSet<String> projects = new TreeSet<>();
+        for (Project p : root) {
+            projects.add(p.getDescription());
         }
-        MultiReader searchables = new MultiReader(subreaders, true);
-        if (Runtime.getRuntime().availableProcessors() > 1) {
-            int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this - or we should honor the command line option here too!
-            ExecutorService executor = Executors.newFixedThreadPool(noThreads);
-            searcher = new IndexSearcher(searchables, executor);
-        } else {
-            searcher = new IndexSearcher(searchables);
-        }
+        // We use MultiReader even for single project. This should
+        // not matter given that MultiReader is just a cheap wrapper
+        // around set of IndexReader objects.
+        MultiReader searchables = RuntimeEnvironment.getInstance().
+            getMultiReader(projects, searcherList);
+        searcher = new IndexSearcher(searchables);
         collector = TopScoreDocCollector.create(hitsPerPage * cachePages);
         searcher.search(query, collector);
         totalHits = collector.getTotalHits();
@@ -245,7 +247,10 @@ public class SearchEngine {
      * Before calling this function,
      * you must set the appropriate search criteria with the set-functions. Note
      * that this search will return the first cachePages of hitsPerPage, for
-     * more you need to call more
+     * more you need to call more.
+     *
+     * Call to search() must be eventually followed by call to destroy()
+     * so that IndexSearcher objects are properly freed.
      *
      * @return The number of hits
      * @see ProjectHelper#getAllProjects() 
@@ -263,7 +268,10 @@ public class SearchEngine {
      * Before calling this function, you must set the
      * appropriate search criteria with the set-functions. Note that this search
      * will return the first cachePages of hitsPerPage, for more you need to
-     * call more
+     * call more.
+     *
+     * Call to search() must be eventually followed by call to destroy()
+     * so that IndexSearcher objects are properly freed.
      *
      * @return The number of hits
      */
@@ -279,6 +287,9 @@ public class SearchEngine {
      *
      * If @param projects is an empty list it tries to search in @code
      * searchSingleDatabase with root set to @param root
+     *
+     * Call to search() must be eventually followed by call to destroy()
+     * so that IndexSearcher objects are properly freed.
      *
      * @return The number of hits
      */
@@ -340,7 +351,7 @@ public class SearchEngine {
 
     /**
      * get results , if no search was started before, no results are returned
-     * this method will requery if end end is more than first query from search,
+     * this method will requery if end is more than first query from search,
      * hence performance hit applies, if you want results in later pages than
      * number of cachePages also end has to be bigger than start !
      *
@@ -452,7 +463,16 @@ public class SearchEngine {
                         Level.WARNING, SEARCH_EXCEPTION_MSG, e);
             }
         }
+    }
 
+    public void destroy() {
+        for (SuperIndexSearcher is : searcherList) {
+            try {
+                is.getSearcherManager().release(is);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "cannot release indexSearcher", ex);
+            }
+        }
     }
 
     /**

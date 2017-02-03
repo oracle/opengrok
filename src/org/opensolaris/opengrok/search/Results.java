@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -47,9 +47,12 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
+import org.json.simple.JSONArray;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzer.Genre;
 import org.opensolaris.opengrok.analysis.Scopes;
+import org.opensolaris.opengrok.configuration.Project;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.web.Prefix;
@@ -130,7 +133,7 @@ public final class Results {
      * <li>{@link SearchHelper#searcher}</li> <li>{@link SearchHelper#hits}</li>
      * <li>{@link SearchHelper#historyContext} (ignored if {@code null})</li>
      * <li>{@link SearchHelper#sourceContext} (ignored if {@code null})</li>
-     * <li>{@link SearchHelper#summerizer} (if sourceContext is not
+     * <li>{@link SearchHelper#summarizer} (if sourceContext is not
      * {@code null})</li> <li>{@link SearchHelper#compressed} (if sourceContext
      * is not {@code null})</li> <li>{@link SearchHelper#sourceRoot} (if
      * sourceContext or historyContext is not {@code null})</li> </ul>
@@ -146,6 +149,7 @@ public final class Results {
     public static void prettyPrint(Writer out, SearchHelper sh, int start,
             int end)
             throws HistoryException, IOException, ClassNotFoundException {
+        Project p;
         String ctxE = Util.URIEncodePath(sh.contextPath);
         String xrefPrefix = sh.contextPath + Prefix.XREF_P;
         String morePrefix = sh.contextPath + Prefix.MORE_P;
@@ -165,6 +169,16 @@ public final class Results {
                 out.write(" - <i>");
                 out.write(sh.desc.get(parent)); // htmlize ???
                 out.write("</i>");
+            }
+            JSONArray messages;
+            if ((p = Project.getProject(parent)) != null
+                    && (messages = Util.messagesToJson(p,
+                            RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG
+                    )).size() > 0) {
+                out.write(" <a ");
+                out.write("href=\"" + xrefPrefix + "/" + p.getDescription() + "\">");
+                out.write("<span class=\"important-note important-note-rounded\" data-messages='" + messages + "'>!</span>");
+                out.write("</a>");
             }
             out.write("</td></tr>");
             for (Document doc : entry.getValue()) {
@@ -207,15 +221,15 @@ public final class Results {
                     } else {
                         scopes = new Scopes();
                     }
-                    if (Genre.XREFABLE == genre && sh.summerizer != null) {
+                    if (Genre.XREFABLE == genre && sh.summarizer != null) {
                         String xtags = getTags(xrefDataDir, rpath, sh.compressed);
                         // FIXME use Highlighter from lucene contrib here,
                         // instead of summarizer, we'd also get rid of
                         // apache lucene in whole source ...
-                        out.write(sh.summerizer.getSummary(xtags).toString());
-                    } else if (Genre.HTML == genre && sh.summerizer != null) {
+                        out.write(sh.summarizer.getSummary(xtags).toString());
+                    } else if (Genre.HTML == genre && sh.summarizer != null) {
                         String htags = getTags(sh.sourceRoot, rpath, false);
-                        out.write(sh.summerizer.getSummary(htags).toString());
+                        out.write(sh.summarizer.getSummary(htags).toString());
                     } else {
                         FileReader r = genre == Genre.PLAIN
                                 ? new FileReader(new File(sh.sourceRoot, rpath))

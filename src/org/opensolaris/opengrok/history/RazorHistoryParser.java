@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 /* Portions Copyright 2008 Peter Bray */
 package org.opensolaris.opengrok.history;
@@ -171,7 +171,11 @@ class RazorHistoryParser {
                             try {
                                 date = df.parse(dateTime);
                             } catch (ParseException pe) {
-                                LOGGER.log(Level.WARNING, "Could not parse date: " + dateTime, pe);
+                                //
+                                // Overriding processStream() thus need to comply with the
+                                // set of exceptions it can throw.
+                                //
+                                throw new IOException("Could not parse date: " + dateTime, pe);
                             }
                             entry.setDate(date);
                             ignoreEntry = false;

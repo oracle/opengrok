@@ -47,7 +47,7 @@ import org.opensolaris.opengrok.web.Util;
   protected void setLineNumber(int x) { yyline = x; }
 %}
 
-WhiteSpace     = [ \t\f]+
+WhiteSpace     = [ \t\f\u{B}]+
 EOL = \r|\n|\r\n
 Identifier = [a-zA-Z_] [a-zA-Z0-9_@]+
 

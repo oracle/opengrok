@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.jdbc;
@@ -39,7 +38,7 @@ public class ConnectionManager {
 
     /** A list of connections not currently in use. */
     private final ConcurrentLinkedQueue<ConnectionResource> connections =
-            new ConcurrentLinkedQueue<ConnectionResource>();
+            new ConcurrentLinkedQueue<>();
 
     /**
      * Create a new {@code ConnectionManager} instance.
@@ -85,8 +84,8 @@ public class ConnectionManager {
     /**
      * Return a {@code ConnectionResource} back to the pool.
      *
-     * @param cr
-     * @throws SQLException
+     * @param cr connection resource object
+     * @throws SQLException if any error occurs
      */
     public void releaseConnection(ConnectionResource cr) throws SQLException {
         cr.rollback();

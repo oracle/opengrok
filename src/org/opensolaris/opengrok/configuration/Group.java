@@ -44,6 +44,7 @@ public class Group implements Comparable<Group> {
     private Set<Group> descendants = new TreeSet<>();
     private Set<Project> projects = new TreeSet<>();
     private Set<Project> repositories = new TreeSet<>();
+    private Set<Group> parents;
 
     public Set<Project> getProjects() {
         return projects;
@@ -97,6 +98,18 @@ public class Group implements Comparable<Group> {
         g.setParent(this);
         subgroups.add(g);
         descendants.add(g);
+    }
+    
+    public Set<Group> getParents () {
+        if (parents == null) {
+            parents = new TreeSet<>();
+            Group tmp = parent;
+            while (tmp != null) {
+                parents.add(tmp);
+                tmp = tmp.getParent();
+            }
+        }
+        return parents;
     }
 
     public Group getParent() {

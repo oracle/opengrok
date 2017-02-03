@@ -3,36 +3,36 @@
   <display-name>OpenGrok</display-name>
   <description>A wicked fast source browser</description>
   <context-param>
+    <description>Full path to the configuration file where OpenGrok can read its configuration</description>
     <param-name>CONFIGURATION</param-name>
     <param-value>/var/opengrok/etc/configuration.xml</param-value>
-    <description>Full path to the configuration file where OpenGrok can read it's configuration</description>
-  </context-param>
-  
-  <context-param>
-    <param-name>ConfigAddress</param-name>
-    <param-value>localhost:2424</param-value>
-    <description>An address where OpenGrok can receive new configuration</description>
   </context-param>
 
   <context-param>
-      <param-name>authorizationPluginDirectory</param-name>
-      <param-value>/var/opengrok/plugins</param-value>
+    <description>An address where OpenGrok can receive new configuration</description>
+    <param-name>ConfigAddress</param-name>
+    <param-value>localhost:2424</param-value>
+  </context-param>
+
+  <context-param>
       <description>
           Directory with authorization plugins.
-          Default value is dataRoot/../plugins 
+          Default value is dataRoot/../plugins
             (can be /var/opengrok/plugins if dataRoot is /var/opengrok/data).
       </description>
+      <param-name>authorizationPluginDirectory</param-name>
+      <param-value>/var/opengrok/plugins</param-value>
   </context-param>
-  
+
   <context-param>
-      <param-name>enableAuthorizationWatchDog</param-name>
-      <param-value>false</param-value>
       <description>
           Enable watching the plugin directory for changes in real time.
           Suitable for development.
       </description>
+      <param-name>enableAuthorizationWatchDog</param-name>
+      <param-value>false</param-value>
   </context-param>
-  
+
   <listener>
    <listener-class>org.opensolaris.opengrok.web.WebappListener</listener-class>
   </listener>
@@ -41,101 +41,113 @@
       <filter-name>AuthorizationFilter</filter-name>
       <filter-class>org.opensolaris.opengrok.web.AuthorizationFilter</filter-class>
   </filter>
-      
+
   <filter-mapping>
       <filter-name>AuthorizationFilter</filter-name>
       <url-pattern>/*</url-pattern>
-  </filter-mapping>    
-    
+  </filter-mapping>
+
+  <filter>
+      <filter-name>StatisticsFilter</filter-name>
+      <filter-class>org.opensolaris.opengrok.web.StatisticsFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+      <filter-name>StatisticsFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <servlet>
-    <servlet-name>search</servlet-name>
     <display-name>Source Finder</display-name>
+    <servlet-name>search</servlet-name>
     <jsp-file>/search.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
+</init-param>
+<init-param>
 <param-name>lastEditedDisplayMode</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
   <servlet-name>json</servlet-name>
   <servlet-class>org.opensolaris.opengrok.web.JSONSearchServlet</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>history</servlet-name>
     <display-name>Source History</display-name>
+    <servlet-name>history</servlet-name>
     <jsp-file>/history.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
-    <servlet-name>lister</servlet-name>
     <display-name>Source lister</display-name>
+    <servlet-name>lister</servlet-name>
     <jsp-file>/list.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
   </servlet>
   <servlet>
-    <servlet-name>diff</servlet-name>
     <display-name>Source diffs between revisions</display-name>
+    <servlet-name>diff</servlet-name>
     <jsp-file>/diff.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
   </servlet>
   <servlet>
-    <servlet-name>more</servlet-name>
     <display-name>Shows more matching lines</display-name>
+    <servlet-name>more</servlet-name>
     <jsp-file>/more.jsp</jsp-file>
   </servlet>
   <servlet>
-    <servlet-name>rss</servlet-name>
     <display-name>Source Changes in RSS format</display-name>
+    <servlet-name>rss</servlet-name>
     <jsp-file>/rss.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
   </servlet>
   <servlet>
-    <servlet-name>opensearch</servlet-name>
     <display-name>OpenSearch link for current project</display-name>
+    <servlet-name>opensearch</servlet-name>
     <jsp-file>/opensearch.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
   </servlet>
   <servlet>
-    <servlet-name>raw</servlet-name>
     <display-name>Raw Source lister</display-name>
+    <servlet-name>raw</servlet-name>
     <jsp-file>/raw.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
   </servlet>
   <servlet>
-    <servlet-name>download</servlet-name>
     <display-name>Download source</display-name>
+    <servlet-name>download</servlet-name>
     <jsp-file>/raw.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
   </servlet>
   <servlet>
-    <servlet-name>error</servlet-name>
     <display-name>Error Handler</display-name>
+    <servlet-name>error</servlet-name>
     <jsp-file>/error.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet>
-    <servlet-name>enoent</servlet-name>
     <display-name>File not found handler</display-name>
+    <servlet-name>enoent</servlet-name>
     <jsp-file>/enoent.jsp</jsp-file>
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
-</init-param>  
+</init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>search</servlet-name>

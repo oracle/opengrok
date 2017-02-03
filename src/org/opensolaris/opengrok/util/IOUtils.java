@@ -18,8 +18,8 @@
  */
 
 /*
- * Copyright (c) 2011 Trond Norbye
- * Copyright (c) 2011, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Trond Norbye 
  */
 package org.opensolaris.opengrok.util;
 
@@ -62,7 +62,7 @@ public final class IOUtils {
     /**
      * Delete directory recursively. This method does not follow symlinks.
      * @param path directory to delete
-     * @throws IOException
+     * @throws IOException if any read error
      */
     public static void removeRecursive(Path path) throws IOException
     {

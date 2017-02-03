@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.golang;
@@ -28,7 +28,6 @@ import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
-import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
@@ -42,16 +41,12 @@ public class GolangAnalyzer extends AbstractSourceCodeAnalyzer {
 
     /**
      * Creates a new instance of GolangAnalyzer
-     * @param factory
+     * @param factory name
      */
     protected GolangAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-    }
-
-    @Override
-    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
-        return new GolangSymbolTokenizer(reader);
-    }
+        SymbolTokenizer=new GolangSymbolTokenizer(null);    
+    }   
 
     @Override
     protected JFlexXref newXref(Reader reader) {

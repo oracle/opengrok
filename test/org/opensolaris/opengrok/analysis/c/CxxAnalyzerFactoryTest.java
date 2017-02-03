@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2015, 2016 Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.c;
 
@@ -54,12 +54,12 @@ import org.opensolaris.opengrok.util.TestRepository;
  * @author kotal
  */
 public class CxxAnalyzerFactoryTest {
-    
+
     FileAnalyzer analyzer;
     private final String ctagsProperty = "org.opensolaris.opengrok.analysis.Ctags";
     private static Ctags ctags;
     private static TestRepository repository;
-    
+
     public CxxAnalyzerFactoryTest() {
         CxxAnalyzerFactory analFact = new CxxAnalyzerFactory();
         this.analyzer = analFact.getAnalyzer();
@@ -69,7 +69,7 @@ public class CxxAnalyzerFactoryTest {
             this.analyzer.setCtags(new Ctags());
         }
     }
-    
+
     private static StreamSource getStreamSource(final String fname) {
         return new StreamSource() {
             @Override
@@ -78,7 +78,7 @@ public class CxxAnalyzerFactoryTest {
             }
         };
     }
-    
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         ctags = new Ctags();
@@ -90,7 +90,7 @@ public class CxxAnalyzerFactoryTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {        
+    public static void tearDownClass() throws Exception {
         ctags.close();
         ctags = null;
     }
@@ -108,53 +108,53 @@ public class CxxAnalyzerFactoryTest {
 
         Document doc = new Document();
         doc.add(new Field(QueryBuilder.FULLPATH, path,
-            string_ft_nstored_nanalyzed_norms));
+                string_ft_nstored_nanalyzed_norms));
         StringWriter xrefOut = new StringWriter();
         analyzer.setCtags(ctags);
         analyzer.setScopesEnabled(true);
         System.out.println(path);
-        
+
         analyzer.analyze(doc, getStreamSource(path), xrefOut);
-        
+
         IndexableField scopesField = doc.getField(QueryBuilder.SCOPES);
         assertNotNull(scopesField);
         Scopes scopes = Scopes.deserialize(scopesField.binaryValue().bytes);
         Scope globalScope = scopes.getScope(-1);
         assertEquals(9, scopes.size());
-        
-        for (int i=0; i<50; ++i) {
+
+        for (int i = 0; i < 50; ++i) {
             if (i >= 11 && i <= 15) {
                 assertEquals("SomeClass", scopes.getScope(i).getName());
-                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
-            } else if (i >= 17 && i <= 20) {                
+                assertEquals("SomeClass", scopes.getScope(i).getNamespace());
+            } else if (i >= 17 && i <= 20) {
                 assertEquals("~SomeClass", scopes.getScope(i).getName());
-                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
+                assertEquals("SomeClass", scopes.getScope(i).getNamespace());
             } else if (i >= 22 && i <= 25) {
                 assertEquals("MemberFunc", scopes.getScope(i).getName());
-                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
+                assertEquals("SomeClass", scopes.getScope(i).getNamespace());
             } else if (i >= 27 && i <= 29) {
                 assertEquals("operator ++", scopes.getScope(i).getName());
-                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
+                assertEquals("SomeClass", scopes.getScope(i).getNamespace());
             } else if (i >= 32 && i <= 34) {
                 assertEquals("TemplateMember", scopes.getScope(i).getName());
-                assertEquals("class:SomeClass", scopes.getScope(i).getScope());
+                assertEquals("SomeClass", scopes.getScope(i).getNamespace());
             } else if (i >= 44 && i <= 46) {
                 assertEquals("SomeFunc", scopes.getScope(i).getName());
-                assertEquals("class:ns1::NamespacedClass", scopes.getScope(i).getScope());
+                assertEquals("ns1::NamespacedClass", scopes.getScope(i).getNamespace());
             } else if (i >= 51 && i <= 54) {
                 assertEquals("foo", scopes.getScope(i).getName());
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             } else if (i >= 59 && i <= 73) {
                 assertEquals("bar", scopes.getScope(i).getName());
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             } else if (i >= 76 && i <= 87) {
                 assertEquals("main", scopes.getScope(i).getName());
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             } else {
                 assertEquals(scopes.getScope(i), globalScope);
-                assertNull(scopes.getScope(i).getScope());
+                assertNull(scopes.getScope(i).getNamespace());
             }
         }
     }
-    
+
 }

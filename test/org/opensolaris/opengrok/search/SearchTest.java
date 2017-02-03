@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.search;
 
@@ -42,7 +42,7 @@ import org.opensolaris.opengrok.index.IndexerTest;
 import org.opensolaris.opengrok.util.TestRepository;
 
 /**
- * Basic testing of the Search class
+ * Basic testing of the Search class, i.e. the command line utility.
  *
  * @author Trond Norbye
  */
@@ -139,7 +139,9 @@ public class SearchTest {
         if (skip) {
             return;
         }
+
         Search instance = new Search();
+
         assertFalse(instance.search());
         assertTrue(instance.parseCmdLine(new String[]{"-p", "Makefile"}));
         assertTrue(instance.search());
@@ -147,7 +149,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main~"}));
         assertTrue(instance.search());
-        assertEquals("Search for main~ in testdata sources", 8, instance.results.size());
+        assertEquals("Search for main~ in testdata sources", 9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main troff\"~5"}));
         assertTrue(instance.search());
@@ -155,7 +157,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "Main OR main"}));
         assertTrue(instance.search());
-        assertEquals("Search for Main OR main in testdata sources", 8, instance.results.size());
+        assertEquals("Search for Main OR main in testdata sources", 9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "\"main file\""}));
         assertTrue(instance.search());
@@ -163,7 +165,7 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "+main -file"}));
         assertTrue(instance.search());
-        assertEquals("search for main but not file", 8, instance.results.size());
+        assertEquals("search for main but not file", 9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-p", "main AND (file OR field)"}));
         assertTrue(instance.search());
@@ -171,11 +173,11 @@ public class SearchTest {
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "opengrok && something || else"}));
         assertTrue(instance.search());
-        assertEquals(7, instance.results.size());
+        assertEquals(9, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "op*ng?ok"}));
         assertTrue(instance.search());
-        assertEquals(6, instance.results.size());
+        assertEquals(8, instance.results.size());
 
         assertTrue(instance.parseCmdLine(new String[]{"-f", "\"op*n g?ok\""}));
         assertTrue(instance.search());

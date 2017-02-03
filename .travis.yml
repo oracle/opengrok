@@ -1,6 +1,9 @@
 language: java
 jdk:
   - oraclejdk8
+cache:
+  directories:
+  - $HOME/.m2
 before_install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq exuberant-ctags cvs git mercurial cssc bzr subversion monotone rcs
@@ -16,5 +19,5 @@ addons:
     project:
       name: "OpenGrok/OpenGrok"
       description: "Build submitted via Travis CI"
-    build_command_prepend: "mvn clean"
-    build_command:   "mvn -DskipTests=true compile"
+      #    build_command_prepend: "mvn clean"
+    build_command:   "mvn -DskipTests=true -Dmaven.javadoc.skip=false -B -V compile"

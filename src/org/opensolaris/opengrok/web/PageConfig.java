@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -45,6 +45,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -57,6 +58,7 @@ import org.opensolaris.opengrok.authorization.AuthorizationFramework;
 import org.opensolaris.opengrok.configuration.Group;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.index.IgnoredNames;
@@ -139,7 +141,15 @@ public final class PageConfig {
      */
     public Object getRequestAttribute(String attr) {
         return this.req.getAttribute(attr);
-    }    
+    }  
+    
+    /**
+     * Removes an attribute from the current request
+     * @param string the attribute 
+     */
+    public void removeAttribute(String string) {
+        req.removeAttribute(string);
+    }
     
     /**
      * Add the given data to the &lt;head&gt; section of the html page to
@@ -198,14 +208,13 @@ public final class PageConfig {
          * The code below extracts file path and revision from the URI.
          */
         for (int i = 1; i <= 2; i++) {
-            String[] tmp = null;
             String p = req.getParameter("r" + i);
             if (p != null) {
-                tmp = p.split("@");
-            }
-            if (tmp != null && tmp.length == 2) {
-                filepath[i - 1] = tmp[0];
-                data.rev[i - 1] = tmp[1];
+                int j = p.lastIndexOf("@");
+                if (j != -1) {
+                    filepath[i - 1] = p.substring(0, j);
+                    data.rev[i - 1] = p.substring(j + 1);
+                }
             }
         }
         if (data.rev[0] == null || data.rev[1] == null
@@ -469,6 +478,10 @@ public final class PageConfig {
         return getEnv().getRevisionMessageCollapseThreshold();
     }
 
+    public int getCurrentIndexedCollapseThreshold() {
+        return getEnv().getCurrentIndexedCollapseThreshold();
+    }
+
     /**
      * Get sort orders from the request parameter {@code sort} and if this list
      * would be empty from the cookie {@code OpenGrokorting}.
@@ -513,18 +526,8 @@ public final class PageConfig {
                     .setPath(req.getParameter(QueryBuilder.PATH))
                     .setHist(req.getParameter(QueryBuilder.HIST))
                     .setType(req.getParameter(QueryBuilder.TYPE));
-
-            // This is for backward compatibility with links created by OpenGrok
-            // 0.8.x and earlier. We used to concatenate the entire query into a
-            // single string and send it in the t parameter. If we get such a
-            // link, just add it to the freetext field, and we'll get the old
-            // behaviour. We can probably remove this code in the first feature
-            // release after 0.9.
-            String t = req.getParameter("t");
-            if (t != null) {
-                queryBuilder.setFreetext(t);
-            }
         }
+
         return queryBuilder;
     }
 
@@ -643,7 +646,7 @@ public final class PageConfig {
         }
         getRequestedRevision();
         try {
-            annotation = HistoryGuru.getInstance().annotate(resourceFile, rev.isEmpty() ? null : rev.substring(2));
+            annotation = HistoryGuru.getInstance().annotate(resourceFile, rev.isEmpty() ? null : rev);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to get annotations: ", e);
             /* ignore */
@@ -958,6 +961,27 @@ public final class PageConfig {
     }
 
     /**
+     * Get the on disk file for the given path.
+     *
+     * NOTE: If a repository contains hard or symbolic links, the returned file
+     * may finally point to a file outside of the source root directory.
+     *
+     * @param path the path to the file relatively to the source root
+     * @return null if the related file or directory is not
+     * available (can not be find below the source root directory), the readable
+     * file or directory otherwise.
+     * @see #getSourceRootPath()
+     */
+    public File getResourceFile(String path) {
+        File f;
+        f = new File(getSourceRootPath(), path);
+        if (!f.canRead()) {
+            return null;
+        }
+        return f;
+    }
+
+    /**
      * Get the on disk file to the request related file or directory.
      *
      * NOTE: If a repository contains hard or symbolic links, the returned file
@@ -971,8 +995,8 @@ public final class PageConfig {
      */
     public File getResourceFile() {
         if (resourceFile == null) {
-            resourceFile = new File(getSourceRootPath(), getPath());
-            if (!resourceFile.canRead()) {
+            resourceFile = getResourceFile(getPath());
+            if (resourceFile == null) {
                 resourceFile = new File("/");
             }
         }
@@ -1265,13 +1289,13 @@ public final class PageConfig {
         if (cfg == null) {
             return;
         }
+        ProjectHelper.cleanup(cfg);
         sr.removeAttribute(ATTR_NAME);
         cfg.env = null;
         cfg.req = null;
         if (cfg.eftarReader != null) {
             cfg.eftarReader.close();
         }
-        ProjectHelper.cleanup();
     }
     
     /**
@@ -1291,6 +1315,97 @@ public final class PageConfig {
     public boolean isAllowed(Group g) {
         return this.authFramework.isAllowed(this.req, g);
     }
-    
 
+    
+    public SortedSet<Message> getMessages() {
+        return env.getMessages();
+    }
+    
+    public SortedSet<Message> getMessages(String tag) {
+        return env.getMessages(tag);
+    }
+
+    /**
+     * Get basename of the path or "/" if the path is empty.
+     * This is used for setting title of various pages.
+     * @param path
+     * @return short version of the path
+     */
+    public String getShortPath(String path) {
+        File file = new File(path);
+
+        if (path.isEmpty()) {
+            return "/";
+        }
+
+        return file.getName();
+    }
+
+    private String addTitleDelimiter(String title) {
+        if (!title.isEmpty()) {
+            return title + ", ";
+        }
+
+        return title;
+    }
+
+    /**
+     * The search page title string should progressively reflect the search terms
+     * so that if only small portion of the string is seen, it describes
+     * the action as closely as possible while remaining readable.
+     * @return string used for setting page title of search results page
+     */
+    public String getSearchTitle() {
+        String title = new String();
+
+        if (req.getParameter("q") != null && !req.getParameter("q").isEmpty()) {
+            title += req.getParameter("q") + " (full)";
+        }
+        if (req.getParameter(QueryBuilder.DEFS) != null && !req.getParameter(QueryBuilder.DEFS).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.DEFS) + " (definition)";
+        }
+        if (req.getParameter(QueryBuilder.REFS) != null && !req.getParameter(QueryBuilder.REFS).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.REFS) + " (reference)";
+        }
+        if (req.getParameter(QueryBuilder.PATH) != null && !req.getParameter(QueryBuilder.PATH).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.PATH) + " (path)";
+        }
+        if (req.getParameter(QueryBuilder.HIST) != null && !req.getParameter(QueryBuilder.HIST).isEmpty()) {
+            title = addTitleDelimiter(title);
+            title += req.getParameter(QueryBuilder.HIST) + " (history)";
+        }
+
+        if (req.getParameterValues(QueryBuilder.PROJECT) != null && req.getParameterValues(QueryBuilder.PROJECT).length != 0) {
+            if (!title.isEmpty()) {
+                title += " ";
+            }
+            title += "in projects: ";
+            String projects[] = req.getParameterValues(QueryBuilder.PROJECT);
+            title += Arrays.asList(projects).stream().collect(Collectors.joining(","));
+        }
+
+        return Util.htmlize(title + " - OpenGrok search results");
+    }
+
+    /**
+     * Similar as {@link #getSearchTitle()}
+     * @return string used for setting page title of search view
+     */
+    public String getHistoryTitle() {
+        return Util.htmlize(getShortPath(path) +
+                " - OpenGrok history log for " + path);
+    }
+
+    public String getPathTitle() {
+        String title = getShortPath(path);
+        if (getRequestedRevision() != null && !getRequestedRevision().isEmpty()) {
+            title += " (revision " + getRequestedRevision() + ")";
+        }
+        title += " - OpenGrok cross reference for " + (path.isEmpty() ? "/" : path);
+
+        return Util.htmlize(title);
+    }
 }

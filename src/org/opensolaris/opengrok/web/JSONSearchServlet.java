@@ -106,9 +106,12 @@ public class JSONSearchServlet extends HttpServlet {
             result.put(PARAM_HIST, hist);
         }
 
-        if (valid) {
-            long start = System.currentTimeMillis();
+        if (!valid) {
+            return;
+        }
 
+        try {
+            long start = System.currentTimeMillis();
             int numResults = engine.search(req);
             int maxResults = MAX_RESULTS;
             String maxResultsParam = req.getParameter(PARAM_MAXRESULTS);
@@ -141,7 +144,12 @@ public class JSONSearchServlet extends HttpServlet {
             result.put(ATTRIBUTE_RESULT_COUNT, results.size());
 
             result.put(ATTRIBUTE_RESULTS, resultsArray);
+
+
+
+            resp.getWriter().write(result.toString());
+        } finally {
+            engine.destroy();
         }
-        resp.getWriter().write(result.toString());
     }
 }

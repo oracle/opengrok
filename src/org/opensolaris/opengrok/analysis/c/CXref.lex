@@ -119,7 +119,6 @@ Number = (0[xX][0-9a-fA-F]+|[0-9]+\.[0-9]+|[1-9][0-9]*)(([eE][+-]?[0-9]+)?[ufdlU
 
 <SCOMMENT> {
 {WhiteSpace}*{EOL}      {
-    out.write(yytext());
     yypop();
     startNewLine();}
 }

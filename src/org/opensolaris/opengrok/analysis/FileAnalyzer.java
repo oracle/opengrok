@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  */
 package org.opensolaris.opengrok.analysis;
@@ -178,9 +178,12 @@ public class FileAnalyzer extends Analyzer {
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
         // not used
     }
-        
+    
+    // you analyzer HAS to override this to get proper symbols in results
+    protected JFlexTokenizer SymbolTokenizer=new PlainSymbolTokenizer();
+    
     @Override
-    public TokenStreamComponents createComponents(String fieldName) {        
+    protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case "full":
                 return new TokenStreamComponents(new PlainFullTokenizer());
@@ -189,7 +192,9 @@ public class FileAnalyzer extends Analyzer {
                 return new TokenStreamComponents(new PathTokenizer());
             case "hist":
                 return new HistoryAnalyzer().createComponents(fieldName);
-            case "refs":
+            case "refs": {                
+                return new TokenStreamComponents(SymbolTokenizer); 
+                  }            
             case "defs":
                 return new TokenStreamComponents(new PlainSymbolTokenizer());
             default:

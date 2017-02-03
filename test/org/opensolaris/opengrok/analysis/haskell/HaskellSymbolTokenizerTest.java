@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.haskell;
 
@@ -57,7 +57,7 @@ public class HaskellSymbolTokenizerTest {
 
     private String[] getTermsFor(Reader r) {
         List<String> l = new LinkedList<>();
-        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.createComponents("refs").getTokenStream();        
+        JFlexTokenizer ts = (JFlexTokenizer) this.analyzer.tokenStream("refs", r);
         ts.setReader(r);        
         ts.yyreset(r);
         CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);

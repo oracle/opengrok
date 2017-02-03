@@ -18,10 +18,12 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 --%><%@page import="
+java.io.ByteArrayInputStream,
+java.io.OutputStream,
 java.io.BufferedReader,
 java.io.FileNotFoundException,
 java.io.InputStream,
@@ -52,7 +54,7 @@ private String getAnnotateRevision(DiffData data) {
 
 include file="mast.jsp"
 
-%><script src="<%=request.getContextPath()%>/diff.js" type="text/javascript"></script><%
+%><script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script><%
 /* ---------------------- diff.jsp start --------------------- */
 {
     cfg = PageConfig.get(request);
@@ -66,6 +68,25 @@ include file="mast.jsp"
     <p><%= data.errorMsg %></p>
 </div><%
 
+    } else if (data.type == DiffType.TEXT
+            && request.getParameter("action") != null
+            && request.getParameter("action").equals("download")) {
+        response.resetBuffer(); // reset buffer to clean it from the header html
+        try (OutputStream o = response.getOutputStream()) {
+            for (int i = 0; i < data.revision.size(); i++) {
+                Delta d = data.revision.getDelta(i);
+                try (InputStream in = new ByteArrayInputStream(d.toString().getBytes("UTF-8"))) {
+                    response.setHeader("content-disposition", "attachment; filename="
+                            + cfg.getResourceFile().getName() + "@" + data.rev[0]
+                            + "-" + data.rev[1] + ".diff");
+                    byte[] buffer = new byte[8192];
+                    int nr;
+                    while ((nr = in.read(buffer)) > 0) {
+                        o.write(buffer, 0, nr);
+                    }
+                }
+            }
+        }
     } else if (data.genre == Genre.IMAGE) {
 
         String link = request.getContextPath() + Prefix.DOWNLOAD_P
@@ -157,7 +178,8 @@ include file="mast.jsp"
         <span> <a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2
             %>&amp;format=<%= type.getAbbrev() %>&amp;full=0">compact</a></span><%
         }
-        %><span><a href="#" id="toggle-jumper">jumper</a></span><%
+        %><span><a href="#" id="toggle-jumper">jumper</a></span>
+          <span><a href="<%= reqURI %>?r1=<%= rp1 %>&amp;r2=<%= rp2 %>&amp;format=<%= DiffType.TEXT %>&amp;action=download">download diff</a></span><%
     %></div>
 </div>
 

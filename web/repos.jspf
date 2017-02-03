@@ -18,11 +18,17 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 
 --%>
-<script src="<%=request.getContextPath()%>/repos.js" type="text/javascript"></script>
+<%@page import="org.json.simple.JSONArray"%>
+<%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
+<%@page import="java.util.SortedSet"%>
+<%@page import="java.util.SortedSet"%>
 <%@page import="java.util.Set"%>
+<%@page import="java.text.ParseException"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.Date"%>
 <%@page import="org.opensolaris.opengrok.web.Prefix"%>
 <%@page import="org.opensolaris.opengrok.web.ProjectHelper"%>
 <%@page import="java.util.LinkedList"%>
@@ -38,9 +44,14 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
 <%@page import="org.opensolaris.opengrok.configuration.Group"%>
 <%@page import="java.util.List"%>
 <%@page import="org.opensolaris.opengrok.web.PageConfig"%>
+<script src="<%=request.getContextPath()%>/js/repos-0.0.1.js" type="text/javascript"></script>
 <%
 {
     PageConfig cfg = PageConfig.get(request);
+    JSONArray messages;
+
+    Util.printMessages(out, cfg.getMessages());
+
     Comparator<RepositoryInfo> comparatorRepo = new Comparator<RepositoryInfo>() {
         public int compare(RepositoryInfo r1, RepositoryInfo r2) {
             return r1.getDirectoryName().compareTo(r2.getDirectoryName());
@@ -51,7 +62,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
     if (pHelper.getAllProjects().size() > 0) {
         Set<Group> groups = pHelper.getGroups();
         Set<Project> repositories = pHelper.getUngroupedRepositories();
-        if(groups.size() > 0) {
+        if (groups.size() > 0) {
             // recursively print all groups
             %>
 
@@ -67,7 +78,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
             <%
             LinkedList<Group> stack = new LinkedList<Group>();
             for ( Group x : groups ) {
-                if(x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
+                if (x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
                     x.setFlag(0);
                     stack.addLast(x);
                 }
@@ -76,7 +87,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
             while ( ! stack.isEmpty() ) {
                 Group group = stack.element();
                 
-                if(group.getFlag() > 0) {
+                if (group.getFlag() > 0) {
                     // already processed
                     stack.pollFirst();
                     %></div><!-- body -->
@@ -86,8 +97,8 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                 
                 stack.element().setFlag(1);
                 
-                for ( Group x : pHelper.getSubgroups(group)) {
-                    if(cfg.isAllowed(x) || pHelper.hasAllowedSubgroup(x)) {
+                for (Group x : pHelper.getSubgroups(group)) {
+                    if (cfg.isAllowed(x) || pHelper.hasAllowedSubgroup(x)) {
                         x.setFlag(0);
                         stack.addFirst(x);
                     }
@@ -96,19 +107,35 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                 %><div class="panel">
                     <div class="panel-heading-accordion">
                         
-                        <h2><span class="name"><%= Util.htmlize(group.getName()) %></span> <small>[<a href="#" class="projects_select_all">select all</a>]</small></h2>
+                        <h4 class="clearfix">
+                            <span class="pull-left">
+                                <span class="name"><%= Util.htmlize(group.getName())%></span>
+                                <%
+                                if (!(messages = Util.messagesToJson(group)).isEmpty()) { %>
+                                    <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                <% } %>
+                                <small>
+                                    [<a href="#" class="projects_select_all">select all</a>]
+                                    (<span title="Number of groups directly in this group"><%= pHelper.getSubgroups(group).size() %></span> +
+                                        <span title="Number of repositories directly in this group"><%= pHelper.getRepositories(group).size() %></span>)
+                                </small>
+                            </span>
+                            <span class="pull-right">
+                                <span class="fold <%= pHelper.hasFavourite(group) ? "fold-up" : "fold-down"%>"></span>
+                            </span>
+                        </h4>
                     </div>
-                        <div class="panel-body-accordion <% if(pHelper.hasFavourite(group)) { %> favourite<% } %>"
-                        <% if(pHelper.hasFavourite(group)) { %>data-accordion-visible="true"<% } %>>
+                        <div class="panel-body-accordion<% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
+                        <% if (pHelper.hasFavourite(group) || pHelper.getRepositories(group).size() < 5) { %>data-accordion-visible="true"<% } %>>
                 <%
-                if(pHelper.getRepositories(group).size() > 0 ) {
+                if (pHelper.getRepositories(group).size() > 0 ) {
                 %>
                     <table>
                     <thead>
                     <tr>
                     <td><b>Mirror</b></td>
-                    <td><b>SCM type</b></td>
-                    <td><b>Parent (branch)</b></td>
+                    <td><b>SCM Type: Parent (branch)</b></td>
+                    <td><b>Current version</b></td>
                     </tr>
                     </thead>
                     <tbody>
@@ -121,7 +148,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                         %>
                         <%
                         for (RepositoryInfo ri : repos) {
-                            if(cnt > 0 && ri.getParent() == null)
+                            if (cnt > 0 && ri.getParent() == null)
                                 // discard repositories without a parent url
                                 continue;
                             if (cnt != 0) {
@@ -135,6 +162,10 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
                     </a>
+                    <%
+                    if (!(messages = Util.messagesToJson(project)).isEmpty()) { %>
+                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                    <% } %>
                                 </td><%
                             String parent = ri.getParent();
                             if (parent == null) {
@@ -148,8 +179,35 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             if (branch == null) {
                                 branch = "N/A";
                             }
-                            %><td><%= Util.htmlize(type) %></td><%
-                            %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                            String currentVersion = ri.getCurrentVersion();
+                            if (currentVersion == null) {
+                                currentVersion = "N/A";
+                            }
+                            %><td><%= Util.htmlize(type) %>: <%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                            %><td><%
+
+                            // Current index collapse threshold minimum of 10
+                            int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
+                            String cout = Util.htmlize(currentVersion);
+
+                            boolean showSummary = false;
+                            String coutSummary = currentVersion;
+                            if (coutSummary.length() > summaryLength) {
+                                showSummary = true;
+                                coutSummary = coutSummary.substring(0, summaryLength - 1);
+                                coutSummary = Util.htmlize(coutSummary);
+                            }
+                            if (showSummary) {
+                                %>
+                                <span class="rev-message-summary"><%= coutSummary %></span>
+                                <span class="rev-message-full rev-message-hidden"><%= cout %></span>
+                                <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
+                                <%
+                            }
+                            else {
+                                 %><span class="rev-message-full"><%= cout %></span><%
+                            }
+                            %></td><%
                             %></tr><%
                             cnt++;
                         }
@@ -167,7 +225,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
         // print the rest of projects which don't have a group
         if (repositories.size() > 0) { %>
             <div class="panel-group projects">
-                <% if(groups.size() > 0) { %>
+                <% if (groups.size() > 0) { %>
                     <div class="toggle-buttons">
                         <a href="#" class="accordion_show_all">
                             <button>Show all</button>
@@ -178,21 +236,34 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                     </div>
                 <% } %>
                 <div class="panel">
-                    <% if(groups.size() > 0) {%>
+                    <% if (groups.size() > 0) {%>
                         <div class="panel-heading-accordion">
-                            <h2><span class="name">Other</span> 
-                                <small>[<a href="#" class="projects_select_all">select all</a>]</small>
-                            </h2>
+                            <h4 class="clearfix">
+                                <span class="pull-left">
+                                    <span class="name">Other</span>
+                                    <%
+                                    if (!(messages = Util.messagesToJson("other")).isEmpty()) { %>
+                                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                                    <% } %>
+                                    <small>
+                                        [<a href="#" class="projects_select_all">select all</a>]
+                                        (<span title="Number of repositories inside"><%= repositories.size() %></span>)
+                                    </small>
+                                </span>
+                                <span class="pull-right">
+                                    <span class="fold <%= pHelper.hasUngroupedFavourite() ? "fold-up" : "fold-down"%>"></span>
+                                </span>
+                            </h4>
                         </div>
                     <% } %>
-                    <div class="panel-body<% if(groups.size() > 0) {%>-accordion<% } %> <% if(pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
-                        <% if(pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
+                    <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
+                        <% if (pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
                         <table>
-                            <thead>
+                        <thead>
                         <tr>
                         <td><b>Mirror</b></td>
-                        <td><b>SCM type</b></td>
-                        <td><b>Parent (branch)</b></td>
+                        <td><b>SCM Type: Parent (branch)</b></td>
+                        <td><b>Current version</b></td>
                         </tr>
                             </thead>
                             <tbody>
@@ -203,7 +274,7 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                             Integer cnt = 0;
                             Collections.sort(repos, comparatorRepo);
                             for (RepositoryInfo ri : repos) {
-                                if(cnt > 0 && ri.getParent() == null)
+                                if (cnt > 0 && ri.getParent() == null)
                                     // discard repositories without a parent url
                                     continue;
                                 if (cnt != 0) {
@@ -216,6 +287,10 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                        title="Xref for project <%= Util.htmlize(projDesc) %>">
                         <%= Util.htmlize(projDesc) %>
                     </a>
+                    <%
+                    if (!(messages = Util.messagesToJson(proj)).isEmpty()) { %>
+                        <span class="important-note important-note-rounded" data-messages='<%= messages %>'>!</span>
+                    <% } %>
                     </td><%
                                 String parent = ri.getParent();
                                 if (parent == null) {
@@ -229,8 +304,36 @@ Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
                                 if (branch == null) {
                                     branch = "N/A";
                                 }
-                                %><td><%= Util.htmlize(type) %></td><%
-                                %><td><%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                String currentVersion = ri.getCurrentVersion();
+                                if (currentVersion == null) {
+                                    currentVersion = "N/A";
+                                }
+                                %><td><%= Util.htmlize(type) %>: <%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                %><td><%
+
+                                // Current index message collapse threshold minimum of 10
+                                int summaryLength = Math.max(10, cfg.getCurrentIndexedCollapseThreshold());
+                                String cout = Util.htmlize(currentVersion);
+
+                                boolean showSummary = false;
+                                String coutSummary = currentVersion;
+                                if (coutSummary.length() > summaryLength) {
+                                    showSummary = true;
+                                    coutSummary = coutSummary.substring(0, summaryLength - 1);
+                                    coutSummary = Util.htmlize(coutSummary);
+                                }
+
+                                if (showSummary) {
+                                    %>
+                                    <span class="rev-message-summary"><%= coutSummary %></span>
+                                    <span class="rev-message-full rev-message-hidden"><%= cout %></span>
+                                    <span  data-toggle-state="less"><a class="rev-toggle-a rev-message-toggle "  href="#">show more ... </a></span>
+                                    <%
+                                }
+                                else {
+                                     %><span class="rev-message-full"><%= cout %></span><%
+                                }
+                                %></td><%
                                 %></tr><%
                                 cnt++;
                             }

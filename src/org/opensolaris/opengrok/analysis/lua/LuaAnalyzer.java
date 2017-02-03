@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.analysis.lua;
@@ -46,12 +46,8 @@ public class LuaAnalyzer extends AbstractSourceCodeAnalyzer {
      */
     protected LuaAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-    }
-
-    @Override
-    protected JFlexTokenizer newSymbolTokenizer(Reader reader) {
-        return new LuaSymbolTokenizer(reader);
-    }
+        SymbolTokenizer=new LuaSymbolTokenizer(null);    
+    }    
 
     @Override
     protected JFlexXref newXref(Reader reader) {

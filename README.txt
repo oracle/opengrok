@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -13,11 +13,10 @@ OpenGrok - a wicked fast source browser
 5.  OpenGrok setup
 6.  Optional Command Line Interface Usage
 7.  Change web application properties or name
-8.  OpenGrok systray
-9.  Information for developers
-10. Tuning OpenGrok for large code bases
-11. Authors
-12. Contact us
+8.  Information for developers
+9. Tuning OpenGrok for large code bases
+10. Authors
+11. Contact us
 
 
 1. Introduction
@@ -92,6 +91,50 @@ Each of these directories was created with 'cvs checkout' command (with
 appropriate arguments to get given branch) and will be treated by OpenGrok
 as a project.
 
+3.2 Messages
+------------
+
+Deployed OpenGrok can receive couple of messages through the active socket which
+usually listens for the main configuration file. These are used in the web
+application and displayed to the users. One can easily notify users about some
+important events, for example that the reindex is being in progress and that
+the searched information can be inconsistent.
+
+The OpenGrok comes with a tool which allows you to send these messages without
+any problem. It is called Messages and it is located under the tools directory.
+See the file for usage and more information.
+
+3.2.1 Tags
+----------
+
+Any message can use tags which makes it more specific for the application.
+Messages which tag match some OpenGrok project are considered project specific
+and the information contained in them are displayed only for the specific projects.
+
+There is a key tag "main" which is exclusive for displaying
+messages on the OpenGrok landing page - like a common information.
+
+3.2.2 Types
+-----------
+
+Currently supported message types:
+1) NormalMessage (normal)
+    This message is designed to display some information in the web application.
+    Use tags to target a specific project.
+2) AbortMessage (abort)
+    This message can delete some already published information in
+    the web application.
+    Use tags to restrict the deletion only to specific projects.
+3) StatsMessage (stats)
+    This message is designed to retrieve some information from the web application.
+
+    The purpose of the message is specified in the text field as one of:
+        - "reload"  the application reloads the statistics file
+                    and returns the loaded statistics
+        - "clean"   the application cleans its current statistics
+                    and returns the empty statistics
+        - "get"     the application returns current statistics
+        - otherwise the application returns current statistics
 
 4. OpenGrok install
 -----------------
@@ -112,7 +155,7 @@ The file <package_name>.p5p you can easily use as a new publisher for the pkg co
 
 You can also update OpenGrok software with the *.p5p file by running a command
 
-  # pkg update --no-refresh -g /path/to/file/<package_name>.p5p 'pkg://<publisher>/*'
+  # pkg update --no-refresh -g /path/to/file/<package_name>.p5p 'pkg://opengrok/*'
 
 
 5. OpenGrok setup
@@ -147,7 +190,8 @@ Note that OpenGrok ignores symbolic links.
 If you want to skip indexing the history of a particular directory
 (and all of it's subdirectories), you can touch '.opengrok_skip_history' file
 at the root of that directory.
-
+If you want to disable history generation for all repositories globally, then
+set OPENGROK_GENERATE_HISTORY environment variable to "off" during indexing.
 
 5.2 Using Opengrok shell wrapper script to create indexes
 ---------------------------------------------------------
@@ -323,10 +367,10 @@ Now enable the service:
 
   # svcadm enable -rs opengrok
 
-Note that this will enable tomcat6 service as dependency.
+Note that this will enable tomcat service as dependency.
 
 When the service starts indexing for first time, it's already enabled and
-depending on tomcat6, so at this point the web application should be
+depending on tomcat, so at this point the web application should be
 already running.
 
 Note that indexing is not done when the opengrok service is disabled.
@@ -376,14 +420,16 @@ web.xml of source.war file and change them (see note1) appropriately.
     * DATA_ROOT: absolute path of the directory where OpenGrok data
                  files are stored
 
-  - Header file 'header_include' can be created under DATA_ROOT.
-    The contents of this file file will be appended to the header of each
+  - File 'header_include' can be created under DATA_ROOT.
+    The contents of this file will be appended to the header of each
     web page after the OpenGrok logo element.
-  - Footer file 'footer_include' can be created under DATA_ROOT.
-    The contents of this file file will be appended to the footer of each
+  - File 'footer_include' can be created under DATA_ROOT.
+    The contents of this file will be appended to the footer of each
     web page after the information about last index update.
-  - The body of the home page can be changed by updating index_body.html
-    under the webapp directory.
+  - The file 'body_include' can be created under DATA_ROOT.
+    The contents of this file will be inserted above the footer of the web
+    application's "Home" page.
+
 
 5.4.3 - Path Descriptions (optional)
 ------------------------------------
@@ -550,7 +596,7 @@ Copy it over from:
   installed from the OSOLopengrok package the command will be:
 
     # cp /opt/SUNWjavadb/lib/derbyclient.jar \
-          /var/tomcat6/webapps/source/WEB-INF/lib/
+          /var/tomcat8/webapps/source/WEB-INF/lib/
     # cp /opt/SUNWjavadb/lib/derbyclient.jar \
           /usr/opengrok/lib
 
@@ -649,36 +695,11 @@ Deploy the modified .war file in tomcat:
 
   * just copy the source.war file to TOMCAT_INSTALL/webapps directory.
 
-8. OpenGrok systray
--------------------
 
-The indexer can be setup with agent and systray GUI control application.
-This is optional step for those who wish to monitor and configure OpenGrok
-from their desktop using systray application.
-
-An example opengrok-agent.properties file is provided, which can be used when
-starting special OpenGrok Agent, where you can connect with a systray GUI
-application.
-
-To start the indexer with configuration run:
-
-  $ java -cp ./opengrok.jar org.opensolaris.opengrok.management.OGAgent \
-        --config opengrok-agent.properties
-
-Then from the remote machine one can run:
-
-  $ java -cp ./opengrok.jar \
-        org.opensolaris.opengrok.management.client.OpenGrokTrayApp
-
-assuming configuration permits remote connections (i.e. not listening on
-localhost, but rather on a physical network interface).
-
-This agent is work in progress, so it might not fully work.
-
-9. Information for developers
+8. Information for developers
 -----------------------------
 
-9.0 Building
+8.0 Building
 ------------
 
 Just run 'ant' from command line in the top-level directory or use build
@@ -688,13 +709,13 @@ Note: in case you are behind http proxy, use ANT_OPTS to download jflex, lucene
 E.g. $ ANT_OPTS="-Dhttp.proxyHost=?.? -Dhttp.proxyPort=80" ant
 
 
-9.0.1 Package build
+8.0.1 Package build
 -------------------
 
 Run 'ant package' to create package (specific for the operating system this is
 being executed on) under the dist/ directory.
 
-9.1 Unit testing
+8.1 Unit testing
 ----------------
 
 Note: For full coverage report your system has to provide proper junit test
@@ -718,7 +739,7 @@ The tests are then run as follows:
 To check if the test completed without error look for AssertionFailedError
 occurences in the TESTS-TestSuites.xml file produced by the test run.
 
-9.2 Using Findbugs
+8.2 Using Findbugs
 ------------------
 
 If you want to run Findbugs (http://findbugs.sourceforge.net/) on OpenGrok,
@@ -753,7 +774,7 @@ under the lib directory):
 There is also a findbugs-xml ant target that can be used to generate XML files
 that can later be parsed, e.g. by Jenkins.
 
-9.3 Using Jacoco
+8.3 Using Jacoco
 --------------
 
 If you want to check test coverage on OpenGrok, download jacoco from
@@ -768,7 +789,7 @@ Now you should get output data in jacoco.exec
 
 Look at jacoco/index.html to see how complete your tests are.
 
-9.4 Using Checkstyle
+8.4 Using Checkstyle
 --------------------
 
 To check that your code follows the standard coding conventions,
@@ -801,7 +822,7 @@ checkstyle under the lib directory):
 
   $ ant checkstyle -Dcheckstyle.home=lib/checkstyle
 
-9.5 Using PMD and CPD
+8.5 Using PMD and CPD
 ---------------------
 
 To check the quality of the OpenGrok code you can also use PMD
@@ -838,7 +859,7 @@ Which will result in:
   $ ls pmd
   cpd_report.xml cpd_report.txt
 
-9.6 Using JDepend
+8.6 Using JDepend
 -----------------
 
 To see dependencies in the source code, you can use JDepend from
@@ -861,7 +882,7 @@ Output is stored in the jdepend directory:
   $ ls jdepend/
   report.txt  report.xml
 
-9.7 Using SonarQube
+8.7 Using SonarQube
 -------------------
 
 Use a sonar runner with included sonar-project.properties properties,
@@ -874,7 +895,7 @@ e.g. using bash:
     -Dsonar.host.url=http://${SERVERIP}:9000
     -Dsonar.jdbc.url=jdbc:h2:tcp://${SERVERIP}:9092/sonar
 
-9.8 Using Travis CI
+8.8 Using Travis CI
 -------------------
 
 Travis depends on updated and working maven build.
@@ -883,16 +904,40 @@ you should be able to connect your Github to Travis CI.
 OpenGroks Travis is here: https://travis-ci.org/OpenGrok/OpenGrok
 
 
-10. Tuning OpenGrok for large code bases
+8.9 Maven
+------------------
+The build can now be done through Maven (https://maven.apache.org/) which takes care of the dependency management
+and setup (calls Ant for certain actions).
+
+
+8.9.1 Unit Testing
+-------------------------
+You can test the code at the moment by running `./mvn test` which will execute *all* tests.
+Conditionally, if you don't have every type of repository installed, you can set it to unit-test only those which are
+found to be working on your system.
+
+> ./mvnw test -Djunit-force-all=false
+
+You can also force a specific repository test from running through the following system property
+
+> ./mvnw test -Djunit-force-all=false -Djunit-force-git=true
+
+9. Tuning OpenGrok for large code bases
+---------------------------------------
+
+9.1 Almost atomic index flip using ZFS
 ---------------------------------------
 
 While indexing big source repos you might consider using ZFS filesystem to give
 you advantage of datasets which can be flipped over or cloned when needed.
 If the machine is strong enough it will also give you an option to
 incrementally index in parallel to having the current sources and index in sync.
-(So tomcat sees certain zfs datasets, then you just stop it, flip datasets to
+(So Tomcat sees certain zfs datasets, then you just stop it, flip datasets to
 the ones that were updated by SCM/index and start tomcat again - outage is
 minimal, sources+indexes are ALWAYS in sync, users see the truth)
+
+9.2 JVM tuning
+---------------
 
 OpenGrok script by default uses 2G of heap and 16MB per thread for flush size of
 lucene docs indexing(when to flush to disk).
@@ -932,6 +977,8 @@ For tomcat you can easily get this done by creating conf/setenv.sh:
 
  export JAVA_OPTS
 
+9.3 Tomcat/Apache tuning
+-------------------------
 
 For tomcat you might also hit a limit for http header size (we use it to send
 the project list when requesting search results):
@@ -947,7 +994,9 @@ The same tuning to Apache can be done with the LimitRequestLine directive:
   LimitRequestLine 65536
   LimitRequestFieldSize 65536
 
-Open File hard and soft limits
+9.4 Open File hard and soft limits
+-----------------------------------
+
 The initial index creation process is resource intensive and often the error
 "java.io.IOException: error=24, Too many open files" appears in the logs. To
 avoid this increase the ulimit value to a higher number.
@@ -955,7 +1004,15 @@ avoid this increase the ulimit value to a higher number.
 It is noted that the hard and soft limit for open files of 10240 works for mid
 sized repositores and so the recommendation is to start with 10240.
 
-11. Authors
+9.5 Multi-project search speed tip
+-----------------------------------
+
+If multi-project search is performed frequently, it might be good to warm
+up file system cache after each reindex. This can be done e.g. with
+https://github.com/hoytech/vmtouch
+
+
+10. Authors
 -----------
 
 The project has been originally conceived in Sun Microsystems by Chandan B.N.
@@ -968,7 +1025,7 @@ Knut Anders Hatlen, Oracle. http://blogs.oracle.com/kah/
 Lubos Kosco, Oracle. http://blogs.oracle.com/taz/
 Vladimir Kotal, Oracle. http://blogs.oracle.com/vlad/
 
-12. Contact us
+11. Contact us
 --------------
 
 Feel free to participate in discussion on the mailing lists:

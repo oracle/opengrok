@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
 -->
 <project name="OpenGrok" default="jar" basedir=".">
@@ -121,7 +121,7 @@ Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
               defaultexcludes="no"/>
         <zip destfile="${build.test.classes.dir}/org/opensolaris/opengrok/history/repositories.zip" 
                 basedir="${test.repositories}"
-                excludes="mercurial/hg/**, mercurial/hgignore, git/git"
+                excludes="mercurial/hg/**, mercurial/hgignore, git/git/**"
                 update="false"
                 defaultexcludes="no"/>
 

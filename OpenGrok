@@ -30,14 +30,16 @@
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase
 #                                 or enabling server JDK)
 #                                 JAVA_OPTS=-Xmx2048m is the default!
-#   - OPENGROK_APP_SERVER         Application Server ("Tomcat" or "Glassfish")
+#   - OPENGROK_APP_SERVER         Application Server ("Tomcat", "Glassfish" or "Resin")
 #   - OPENGROK_WAR_TARGET_TOMCAT  Tomcat Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET_GLASSFISH Glassfish Specific WAR Target Directory
+#   - OPENGROK_WAR_TARGET_RESIN   Resin Specific WAR Target Directory
 #   - OPENGROK_WAR_TARGET         Fallback WAR Target Directory
 #   - OPENGROK_TOMCAT_BASE        Base Directory for Tomcat (contains webapps)
 #   - OPENGROK_GLASSFISH_BASE     Base Directory for Glassfish
 #                                 (contains domains)
 #   - OPENGROK_GLASSFISH_DOMAIN   Preferred Glassfish Domain Name
+#   - OPENGROK_RESIN_BASE         Base Directory for Resin (contains webapps)
 #   - OPENGROK_VERBOSE            Enable Verbose Mode in opengrok.jar (*)
 #   - OPENGROK_PROGRESS           Shows progress in %(percentage) of working
 #                                 through project, it's good to have Verbose
@@ -52,6 +54,9 @@
 #                                                 directory
 #                                   local	- for local repos only
 #                                   uionly	- enabled for UI only
+#   - OPENGROK_ENABLE_PROJECTS    Enable projects (set it to true or false)
+#                                 Every directory in SRC_ROOT is
+#                                   considered a separate project
 #   - OPENGROK_SCAN_REPOS         Disable Scan for repositories (*)
 #   - OPENGROK_SCAN_DEPTH         how deep should scanning for repos go
 #                                 (by default 3 directories from SRC_ROOT)
@@ -89,7 +94,7 @@
 #
 
 #
-# Copyright (c) 2008, 2014, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 #
 # Print usage to stdout and exit.
@@ -252,7 +257,12 @@ DefaultInstanceConfiguration()
 
     # OPTIONAL: Enable Projects
     #           (Every directory in SRC_ROOT is considered a separate project)
-    ENABLE_PROJECTS="-P"
+    OPENGROK_ENABLE_PROJECTS="${OPENGROK_ENABLE_PROJECTS:-true}"
+    case $OPENGROK_ENABLE_PROJECTS in
+        true) ENABLE_PROJECTS="-P" ;;
+        false) ENABLE_PROJECTS="" ;;
+        *) ENABLE_PROJECTS="-P" ;;
+    esac
 
     # OPTIONAL: Scanning Options (for Mercurial repositories)
     SCAN_FOR_REPOSITORY="-S"
@@ -266,6 +276,11 @@ DefaultInstanceConfiguration()
     if [ -n "${OPENGROK_GENERATE_HISTORY}" ]
     then
         GENERATE_HISTORY="-r ${OPENGROK_GENERATE_HISTORY}"
+    fi
+
+    if [ "$OPENGROK_GENERATE_HISTORY" != "off" ]
+    then
+        GENERATE_HISTORY="${GENERATE_HISTORY} -H"
     fi
 
     # OPTIONAL: override depth of scanning for repositories
@@ -548,9 +563,7 @@ FindApplicationServerType()
     # Maybe a better implementation would be to call Application
     # Server specific WAR Directory and see if they exist.
 
-    if [    -d "/var/tomcat6/webapps"        \
-         -o -d "/var/lib/tomcat6/webapps"    \
-         -o -d "/var/lib/tomcat7/webapps"    \
+    if [    -d "/var/tomcat8/webapps"        \
          -o -d "/var/lib/tomcat8/webapps"    \
        ]
     then
@@ -561,6 +574,12 @@ FindApplicationServerType()
     if [ -x "/etc/init.d/appserv" -a -d "/var/appserver/domains" ]
     then
         echo "Glassfish"
+        return
+    fi
+
+    if [ -d "/etc/resin" -o -d "/usr/local/share/resin" ]
+    then
+        echo "Resin"
         return
     fi
 
@@ -582,10 +601,8 @@ DetermineWarDirectoryTomcat()
 
     for prefix in               \
         ${OPENGROK_TOMCAT_BASE} \
-        /var/tomcat6            \
-        /var/lib/tomcat6        \
-        /var/lib/tomcat7        \
-        /var/lib/tomcat8
+        /var/lib/tomcat8	\
+        /var/tomcat8
     do
         if [ -d "${prefix}/webapps" ]
         then
@@ -651,6 +668,31 @@ DetermineWarDirectoryGlassfish()
     fi
 
     echo "${domainDirectory}/${firstDomain}/autodeploy"
+}
+
+DetermineWarDirectoryResin()
+{
+    if [ -n "${OPENGROK_WAR_TARGET_RESIN}" ]
+    then
+        echo "${OPENGROK_WAR_TARGET_RESIN}"
+        return
+    elif [ -n "${OPENGROK_WAR_TARGET}" ]
+    then
+        echo "${OPENGROK_WAR_TARGET}"
+        return
+    fi
+
+    for prefix in               \
+        ${OPENGROK_RESIN_BASE} \
+        /var/resin	\
+        /opt/resin
+    do
+        if [ -d "${prefix}/webapps" ]
+        then
+            echo "${prefix}/webapps"
+            return
+        fi
+    done
 }
 
 #
@@ -719,11 +761,11 @@ ValidateConfiguration()
     then
         if [ "`uname -s`" = "SunOS" -a -d /opt/SUNWjavadb -a -d /usr/opengrok ];
 	then
-	    if [ -d "/var/tomcat6" -a \
-	        ! -r "/var/tomcat6/webapps/source/WEB-INF/lib/derbyclient.jar" ];
+	    if [ -d "/var/tomcat8" -a \
+	        ! -r "/var/tomcat8/webapps/source/WEB-INF/lib/derbyclient.jar" ];
 	    then
 	        FatalError "JavaDB on but no derbyclient.jar under" \
-		    "/var/tomcat6/webapps/source/WEB-INF/lib"
+		    "/var/tomcat8/webapps/source/WEB-INF/lib"
 	    fi
 	    if [ ! -r "/usr/opengrok/lib/derbyclient.jar" ]; then
 	        FatalError "JavaDB on but no derbyclient.jar under" \
@@ -839,7 +881,7 @@ StdInvocation()
 
 UpdateGeneratedData()
 {
-    StdInvocation -H
+    StdInvocation
 }
 
 UpdateDataPartial()
@@ -880,6 +922,7 @@ DeployWar()
 
         Tomcat)    warTarget="`DetermineWarDirectoryTomcat`"    ;;
         Glassfish) warTarget="`DetermineWarDirectoryGlassfish`" ;;
+        Resin)     warTarget="`DetermineWarDirectoryResin`" ;;
 
         *) FatalError "Unsupported Application Server ${applicationServer}" ;;
 

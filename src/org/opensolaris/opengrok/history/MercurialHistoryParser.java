@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -55,7 +55,7 @@ class MercurialHistoryParser implements Executor.StreamHandler {
     private final String mydir;
     private boolean isDir;
     private final List<String> renamedFiles = new ArrayList<String>();
-        
+
     MercurialHistoryParser(MercurialRepository repository) {
         this.repository = repository;
         mydir = repository.getDirectoryName() + File.separator;
@@ -127,8 +127,11 @@ class MercurialHistoryParser implements Executor.StreamHandler {
                 try {
                     date = df.parse(s.substring(MercurialRepository.DATE.length()).trim());
                 } catch (ParseException pe) {
-                    LOGGER.log(Level.WARNING,
-                            "Could not parse date: " + s, pe);
+                    //
+                    // Overriding processStream() thus need to comply with the
+                    // set of exceptions it can throw.
+                    //
+                    throw new IOException("Could not parse date: " + s, pe);
                 }
                 entry.setDate(date);
             } else if (s.startsWith(MercurialRepository.FILES) && entry != null) {

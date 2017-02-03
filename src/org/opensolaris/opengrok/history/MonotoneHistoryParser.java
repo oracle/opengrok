@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -138,7 +137,11 @@ class MonotoneHistoryParser implements Executor.StreamHandler {
                         try {
                             date = df.parse(s.substring("date:".length()).trim());
                         } catch (ParseException pe) {
-                            LOGGER.log(Level.WARNING, "Could not parse date: " + s, pe);
+                            //
+                            // Overriding processStream() thus need to comply with the
+                            // set of exceptions it can throw.
+                            //
+                            throw new IOException("Could not parse date: " + s, pe);
                         }
                         entry.setDate(date);
                         ++state;

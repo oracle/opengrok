@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -65,6 +65,7 @@ public final class Configuration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
     public static final String PLUGIN_DIRECTORY_DEFAULT = "plugins";
+    public static final String STATISTICS_FILE_DEFAULT = "statistics.json";
 
     private String ctags;
     /**
@@ -81,6 +82,7 @@ public final class Configuration {
      */
     private boolean historyCacheInDB;
 
+    private int messageLimit;
     private String pluginDirectory;
     private List<Project> projects;
     private Set<Group> groups;
@@ -134,9 +136,10 @@ public final class Configuration {
     private final Map<String, String> cmds;
     private int tabSize;
     private int command_timeout; // in seconds
+    private int indexRefreshPeriod; // in seconds
     private boolean scopesEnabled;
     private boolean foldingEnabled;
-
+    private String statisticsFilePath;
     /*
      * Set to false if we want to disable fetching history of individual files
      * (by running appropriate SCM command) when the history is not found
@@ -166,6 +169,19 @@ public final class Configuration {
      * characters. Front end enforces an appropriate minimum.
      */
     private int revisionMessageCollapseThreshold;
+
+    /**
+     * Current indexed message will be collapsible if they exceed this many number of
+     * characters. Front end enforces an appropriate minimum.
+     */
+    private int currentIndexedCollapseThreshold;
+
+
+    /**
+     * Upper bound for number of threads used for performing multi-project
+     * searches. This is total for the whole webapp/CLI utility.
+     */
+    private int MaxSearchThreadCount;
 
     /*
      * types of handling history for remote SCM repositories:
@@ -219,6 +235,22 @@ public final class Configuration {
         this.command_timeout = timeout;
     }
 
+    public int getIndexRefreshPeriod() {
+        return indexRefreshPeriod;
+    }
+
+    public void setIndexRefreshPeriod(int seconds) {
+        this.indexRefreshPeriod = seconds;
+    }
+
+    public String getStatisticsFilePath() {
+        return statisticsFilePath;
+    }
+
+    public void setStatisticsFilePath(String statisticsFilePath) {
+        this.statisticsFilePath = statisticsFilePath;
+    }
+
     /**
      * Creates a new instance of Configuration
      */
@@ -261,6 +293,7 @@ public final class Configuration {
         cmds = new HashMap<>();
         setSourceRoot(null);
         setDataRoot(null);
+        setStatisticsFilePath(null);
         setCommandTimeout(600); // 10 minutes
         setScopesEnabled(true);
         setFoldingEnabled(true);
@@ -268,6 +301,10 @@ public final class Configuration {
         setHandleHistoryOfRenamedFiles(true);
         setRevisionMessageCollapseThreshold(200);
         setPluginDirectory(null);
+        setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
+        setIndexRefreshPeriod(60);
+        setMessageLimit(500);
+        setCurrentIndexedCollapseThreshold(27);
     }
 
     public String getRepoCmd(String clazzName) {
@@ -289,13 +326,25 @@ public final class Configuration {
         return Collections.unmodifiableMap(cmds);
     }
 
+    /**
+     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     *
+     * @return int the current message limit
+     */
+    public int getMessageLimit() {
+        return messageLimit;
+    }
+
+    /**
+     * @see RuntimeEnvironment#getMessagesInTheSystem()
+     *
+     * @param limit the limit
+     */
+    public void setMessageLimit(int limit) {
+        this.messageLimit = limit;
+    }
+
     public String getPluginDirectory() {
-        if (pluginDirectory == null) {
-            if (getDataRoot() == null) {
-                return PLUGIN_DIRECTORY_DEFAULT;
-            }
-            return getDataRoot() + "/../" + PLUGIN_DIRECTORY_DEFAULT;
-        }
         return pluginDirectory;
     }
 
@@ -454,7 +503,24 @@ public final class Configuration {
         return dataRoot;
     }
 
+    /**
+     * Sets data root.
+     *
+     * This method also sets the pluginDirectory if it is not already set and
+     * also this method sets the statisticsFilePath if it is not already set
+     *
+     * @see #setPluginDirectory(java.lang.String)
+     * @see #setStatisticsFilePath(java.lang.String)
+     *
+     * @param dataRoot
+     */
     public void setDataRoot(String dataRoot) {
+        if (getPluginDirectory() == null) {
+            setPluginDirectory(dataRoot + "/../" + PLUGIN_DIRECTORY_DEFAULT);
+        }
+        if (getStatisticsFilePath() == null) {
+            setStatisticsFilePath(dataRoot + "/" + STATISTICS_FILE_DEFAULT);
+        }
         this.dataRoot = dataRoot;
     }
 
@@ -675,6 +741,14 @@ public final class Configuration {
         return this.revisionMessageCollapseThreshold;
     }
 
+    public int getCurrentIndexedCollapseThreshold() {
+        return currentIndexedCollapseThreshold;
+    }
+
+    public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
+        this.currentIndexedCollapseThreshold = currentIndexedCollapseThreshold;
+    }
+
     private transient Date lastModified;
 
     /**
@@ -752,6 +826,7 @@ public final class Configuration {
      *
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
+     * @see #FOOTER_INCLUDE_FILE
      */
     public String getFooterIncludeFileContent() {
         if (footer == null) {
@@ -773,12 +848,34 @@ public final class Configuration {
      *
      * @return an empty string if it could not be read successfully, the
      * contents of the file otherwise.
+     * @see #HEADER_INCLUDE_FILE
      */
     public String getHeaderIncludeFileContent() {
         if (header == null) {
             header = getFileContent(new File(getDataRoot(), HEADER_INCLUDE_FILE));
         }
         return header;
+    }
+
+    /**
+     * The name of the file relative to the <var>DATA_ROOT</var>, which should
+     * be included into the body of web app's "Home" page.
+     */
+    public static final String BODY_INCLUDE_FILE = "body_include";
+
+    private transient String body = null;
+
+    /**
+     * Get the contents of the body include file.
+     * @return an empty string if it could not be read successfully, the
+     *  contents of the file otherwise.
+     *  @see Configuration#BODY_INCLUDE_FILE
+     */
+    public String getBodyIncludeFileContent() {
+        if (body == null) {
+            body = getFileContent(new File(getDataRoot(), BODY_INCLUDE_FILE));
+        }
+        return body;
     }
 
     /**
@@ -858,6 +955,14 @@ public final class Configuration {
 
     public void setFoldingEnabled(boolean foldingEnabled) {
         this.foldingEnabled = foldingEnabled;
+    }
+
+    public int getMaxSearchThreadCount() {
+        return MaxSearchThreadCount;
+    }
+
+    public void setMaxSearchThreadCount(int count) {
+        this.MaxSearchThreadCount = count;
     }
 
     /**

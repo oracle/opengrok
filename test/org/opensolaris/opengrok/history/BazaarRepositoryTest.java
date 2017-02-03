@@ -18,8 +18,7 @@
  */
 
 /*
- * Copyright 2008 Sun Microsystems, Inc.  All rights reserved.
- * Use is subject to license terms.
+ * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -29,14 +28,23 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.opensolaris.opengrok.condition.ConditionalRun;
+import org.opensolaris.opengrok.condition.ConditionalRunRule;
+import org.opensolaris.opengrok.condition.RepositoryInstalled;
+
 import static org.junit.Assert.*;
 
 /**
  *
  * @author austvik
  */
+@ConditionalRun(condition = RepositoryInstalled.BazaarInstalled.class)
 public class BazaarRepositoryTest {
+
+    @Rule
+    public ConditionalRunRule rule = new ConditionalRunRule();
 
     BazaarRepository instance;
 
@@ -63,6 +71,7 @@ public class BazaarRepositoryTest {
 
     /**
      * Test of parseAnnotation method, of class GitRepository.
+     * @throws java.lang.Exception
      */
     @Test
     public void parseAnnotation() throws Exception {

@@ -18,10 +18,12 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
---%><%@page session="false" errorPage="error.jsp" import="
+--%>
+<%@page import="javax.servlet.http.HttpServletResponse"%>
+<%@page session="false" errorPage="error.jsp" import="
 org.opensolaris.opengrok.search.Results,
 org.opensolaris.opengrok.web.SearchHelper,
 org.opensolaris.opengrok.web.SortOrder,
@@ -68,15 +70,19 @@ include file="projects.jspf"
     
     long starttime = System.currentTimeMillis();
 
-    SearchHelper searchHelper = cfg.prepareSearch()
-        .prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
+    SearchHelper searchHelper = cfg.prepareSearch();
+    request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+    searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);
     }
     if (searchHelper.errorMsg != null) {
         cfg.setTitle("Search Error");
+        // Set status to Internal error. This should help to avoid caching
+        // the page by some proxies.
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     } else {
-        cfg.setTitle("Search");
+        cfg.setTitle(cfg.getSearchTitle());
     }
     response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
 %><%@
@@ -92,26 +98,29 @@ include file="pageheader.jspf"
 
 %>
         </div>
-        <div id="Masthead"></div>
-        <div id="bar">
-            <ul>
-                <li><a href="<%= request.getContextPath()
-                    %>/"><span id="home"></span>Home</a></li>
-            </ul>
+        <div id="Masthead">
+            <a href="<%= request.getContextPath() %>/"><span id="home"></span>Home</a>
             <%-- TODO: jel: IMHO it should be move to menu.jspf as combobox --%>
             <div id="sortfield">
                 <label for="sortby">Sort by</label>
-                <ul id="sortby"><%
+                <%
     StringBuilder url = createUrl(searchHelper, true).append("&amp;sort=");
+    int ordcnt = 0;
     for (SortOrder o : SortOrder.values()) {
         if (searchHelper.order == o) {
-                    %><li><span class="active"><%= o.getDesc() %></span></li><%
+                    %><span class="active"><%= o.getDesc() %></span><%
         } else {
-                    %><li><a href="<%= url %><%= o %>"><%= o.getDesc() %></a></li><%
+                    %><a href="<%= url %><%= o %>"><%= o.getDesc() %></a><%
+        }
+        ordcnt++;
+        if (ordcnt != (SortOrder.values().length)) {
+            %> | <%
         }
     }
-                %></ul>
+                %>
             </div>
+        </div>
+        <div id="bar">
         </div>
         <div id="menu"><%@
 
@@ -120,11 +129,12 @@ include file="menu.jspf"
 %>
         </div>
     </div>
-    <div id="results"><%
+
+    <div id="results"> <%
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
     if (searchHelper.errorMsg != null) {
-        %><h3>Error</h3><p><%
+        %><h3>Error</h3><p class="pagetitle"><%
         if (searchHelper.errorMsg.startsWith((SearchHelper.PARSE_ERROR_MSG))) {
             %><%= Util.htmlize(SearchHelper.PARSE_ERROR_MSG) %>
             <br/>You might try to enclose your search term in quotes,
@@ -137,11 +147,11 @@ include file="menu.jspf"
             %><%= Util.htmlize(searchHelper.errorMsg) %><%
         }%></p><%
     } else if (searchHelper.hits == null) {
-        %><p>No hits</p><%
+        %><p class="pagetitle">No hits</p><%
     } else if (searchHelper.hits.length == 0) {
         List<Suggestion> hints = searchHelper.getSuggestions();
         for (Suggestion hint : hints) {
-        %><p><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
+        %><p class="suggestions"><font color="#cc0000">Did you mean (for <%= hint.name %>)</font>:<%
 	  if (hint.freetext!=null) { 
 	    for (String word : hint.freetext) {
             %> <a href="search?q=<%= Util.URIEncode(word) %>"><%=
@@ -163,7 +173,7 @@ include file="menu.jspf"
         %></p><%
         }
         %>
-        <p> Your search <b><%
+        <p class="pagetitle"> Your search <b><%
             Util.htmlize(searchHelper.query.toString(), out); %></b>
             did not match any files.
             <br/> Suggestions:<br/>
@@ -244,7 +254,7 @@ include file="menu.jspf"
         %>
     </div><%
     }
-    searchHelper.destroy();
+    // Note that searchHelper.destroy() is called via WebappListener.requestDestroyed().
 }
 /* ---------------------- search.jsp end --------------------- */
 %><%@

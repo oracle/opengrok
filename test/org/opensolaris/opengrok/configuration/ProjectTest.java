@@ -122,4 +122,32 @@ public class ProjectTest {
         assertNull(Project.getProject("/foof"));
         assertNull(Project.getProject("/foof/ha.c"));
     }
+
+    /**
+     * Test getProjectDescriptions().
+     */
+    @Test
+    public void testGetProjectDescriptions() {
+        // Create 2 projects.
+        Project foo = new Project();
+        foo.setPath("/foo");
+        foo.setDescription("foo");
+
+        Project bar = new Project();
+        bar.setPath("/bar");
+        bar.setDescription("bar");
+
+        // Make the runtime environment aware of these two projects.
+        List<Project> projects = new ArrayList<>();
+        projects.add(foo);
+        projects.add(bar);
+        RuntimeEnvironment env = RuntimeEnvironment.getInstance();
+        env.setProjects(projects);
+
+        List<String> descs = env.getProjectDescriptions();
+        assertTrue(descs.contains("foo"));
+        assertTrue(descs.contains("bar"));
+        assertFalse(descs.contains("foobar"));
+        assertEquals(2, descs.size());
+    }
 }

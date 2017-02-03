@@ -558,7 +558,11 @@ public final class Indexer {
                  * For the check we need to have 'env' already set.
                  */
                 for (String path : subFilesList) {
-                    path = path.substring(env.getSourceRootPath().length());
+                    String srcPath=env.getSourceRootPath();
+                    if (srcPath==null) { System.err.println("Error getting source root from environment. Exiting.");
+                    System.exit(1);
+                      }
+                    path = path.substring(srcPath.length());
                     if (env.hasProjects()) {
                         // The paths need to correspond to a project.
                         if (Project.getProject(path) != null) {
@@ -656,7 +660,9 @@ public final class Indexer {
         if (searchRepositories || listRepoPaths || !zapCache.isEmpty()) {
             LOGGER.log(Level.INFO, "Scanning for repositories...");
             long start = System.currentTimeMillis();
-            HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
+            if (refreshHistory == true) {
+                HistoryGuru.getInstance().addRepositories(env.getSourceRootPath());
+            }
             long time = (System.currentTimeMillis() - start) / 1000;
             LOGGER.log(Level.INFO, "Done scanning for repositories ({0}s)", time);
             if (listRepoPaths || !zapCache.isEmpty()) {
@@ -769,16 +775,17 @@ public final class Indexer {
             LOGGER.info("Done...");
         }
 
-        if (refreshHistory) {
-            LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
-            HistoryGuru.getInstance().createCache();
-            LOGGER.info("Done...");
-        } else if (repositories != null && !repositories.isEmpty()) {
-            LOGGER.log(Level.INFO, "Generating history cache for specified repositories ...");
-            HistoryGuru.getInstance().createCache(repositories);
-            LOGGER.info("Done...");
+         if (refreshHistory) {
+             if (repositories != null && !repositories.isEmpty()) {
+                  LOGGER.log(Level.INFO, "Generating history cache for specified repositories ...");
+                  HistoryGuru.getInstance().createCache(repositories);
+                  LOGGER.info("Done...");
+              } else {
+                  LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
+                  HistoryGuru.getInstance().createCache();
+                  LOGGER.info("Done...");
+              }
         }
-
         if (listFiles) {
             IndexDatabase.listAllFiles(subFiles);
         }

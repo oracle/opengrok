@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -230,7 +230,7 @@ public class FileAnalyzerFactory {
          * @param in the input stream from which the full file can be read
          * @return an analyzer factory if the contents match, or {@code null}
          * if they don't match any factory known by this matcher
-         * @throws java.io.IOException
+         * @throws java.io.IOException in case of any read error
          */
         FileAnalyzerFactory isMagic(byte[] contents, InputStream in)
                 throws IOException;

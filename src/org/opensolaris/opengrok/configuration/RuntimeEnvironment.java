@@ -18,8 +18,8 @@
  */
 
  /*
- * Copyright (c) 2006, 2016, Oracle and/or its affiliates. All rights reserved.
- */
+  * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
+  */
 package org.opensolaris.opengrok.configuration;
 
 import java.beans.XMLDecoder;
@@ -28,8 +28,13 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -50,8 +55,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -59,14 +70,29 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
+import org.apache.lucene.search.SearcherManager;
+import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.authorization.AuthorizationFramework;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.HistoryGuru;
 import org.opensolaris.opengrok.history.RepositoryInfo;
 import org.opensolaris.opengrok.index.Filter;
 import org.opensolaris.opengrok.index.IgnoredNames;
+import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.opensolaris.opengrok.util.IOUtils;
+import org.opensolaris.opengrok.util.XmlEofInputStream;
+import org.opensolaris.opengrok.web.Statistics;
+import org.opensolaris.opengrok.web.Util;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -83,11 +109,26 @@ public final class RuntimeEnvironment {
 
     private Configuration configuration;
     private final ThreadLocal<Configuration> threadConfig;
-    private static RuntimeEnvironment instance = new RuntimeEnvironment();
+    private static final RuntimeEnvironment instance = new RuntimeEnvironment();
     private static ExecutorService historyExecutor = null;
     private static ExecutorService historyRenamedExecutor = null;
+    private static ExecutorService searchExecutor = null;
 
     private final Map<Project, List<RepositoryInfo>> repository_map = new TreeMap<>();
+    private final Map<Project, Set<Group>> project_group_map = new TreeMap<>();
+    private final Map<String, SearcherManager> searcherManagerMap = new ConcurrentHashMap<>();
+    
+    public static final String MESSAGES_MAIN_PAGE_TAG = "main";
+    /*
+    initial capacity - default 16
+    initial load factor - default 0.75f
+    initial concurrency level - number of concurrently updating threads (default 16)
+        - just two (the timer, configuration listener) so set it to small value
+    */
+    private final ConcurrentMap<String, SortedSet<Message>> tagMessages = new ConcurrentHashMap<>(16, 0.75f, 5);
+    private int messagesInTheSystem = 0;
+
+    private Statistics statistics = new Statistics();
 
     /* Get thread pool used for top-level repository history generation. */
     public static synchronized ExecutorService getHistoryExecutor() {
@@ -105,6 +146,7 @@ public final class RuntimeEnvironment {
 
             historyExecutor = Executors.newFixedThreadPool(num,
                     new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable runnable) {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("history-handling-" + thread.getId());
@@ -132,6 +174,7 @@ public final class RuntimeEnvironment {
 
             historyRenamedExecutor = Executors.newFixedThreadPool(num,
                     new ThreadFactory() {
+                @Override
                 public Thread newThread(Runnable runnable) {
                     Thread thread = Executors.defaultThreadFactory().newThread(runnable);
                     thread.setName("renamed-handling-" + thread.getId());
@@ -141,6 +184,24 @@ public final class RuntimeEnvironment {
         }
 
         return historyRenamedExecutor;
+    }
+
+    /* Get thread pool used for multi-project searches. */
+    public synchronized ExecutorService getSearchExecutor() {
+        if (searchExecutor == null) {
+            searchExecutor = Executors.newFixedThreadPool(
+                this.getMaxSearchThreadCount(),
+                new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable runnable) {
+                    Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                    thread.setName("search-" + thread.getId());
+                    return thread;
+                }
+            });
+        }
+
+        return searchExecutor;
     }
 
     public static synchronized void freeHistoryExecutor() {
@@ -207,6 +268,22 @@ public final class RuntimeEnvironment {
 
     public void setCommandTimeout(int timeout) {
         threadConfig.get().setCommandTimeout(timeout);
+    }
+
+    public int getIndexRefreshPeriod() {
+        return threadConfig.get().getIndexRefreshPeriod();
+    }
+
+    public void setIndexRefreshPeriod(int seconds) {
+        threadConfig.get().setIndexRefreshPeriod(seconds);
+    }
+
+    public Statistics getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
     }
 
     /**
@@ -320,6 +397,16 @@ public final class RuntimeEnvironment {
      */
     public List<Project> getProjects() {
         return threadConfig.get().getProjects();
+    }
+
+    /**
+     * Get descriptions of all projects.
+     *
+     * @return a list containing descriptions of all projects.
+     */
+    public List<String> getProjectDescriptions() {
+        return threadConfig.get().getProjects().stream().
+            map(Project::getDescription).collect(Collectors.toList());
     }
 
     /**
@@ -448,7 +535,7 @@ public final class RuntimeEnvironment {
             Executor executor = new Executor(new String[]{getCtags(), "--version"});
             executor.exec(false);
             String output = executor.getOutputString();
-            boolean isUnivCtags = output.contains("Universal Ctags");
+            boolean isUnivCtags = output!=null?output.contains("Universal Ctags"):false;
             if (output == null || (!output.contains("Exuberant Ctags") && !isUnivCtags)) {
                 LOGGER.log(Level.SEVERE, "Error: No Exuberant Ctags found in PATH !\n"
                         + "(tried running " + "{0}" + ")\n"
@@ -731,7 +818,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Get the client command to use to access the repository for the given
-     * fully quallified classname.
+     * fully qualified classname.
      *
      * @param clazzName name of the targeting class
      * @return {@code null} if not yet set, the client command otherwise.
@@ -956,6 +1043,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Return whether e-mail addresses should be obfuscated in the xref.
+     * @return if we obfuscate emails
      */
     public boolean isObfuscatingEMailAddresses() {
         return threadConfig.get().isObfuscatingEMailAddresses();
@@ -963,6 +1051,7 @@ public final class RuntimeEnvironment {
 
     /**
      * Set whether e-mail addresses should be obfuscated in the xref.
+     * @param obfuscate should we obfuscate emails?
      */
     public void setObfuscatingEMailAddresses(boolean obfuscate) {
         threadConfig.get().setObfuscatingEMailAddresses(obfuscate);
@@ -1000,6 +1089,10 @@ public final class RuntimeEnvironment {
         threadConfig.get().setHandleHistoryOfRenamedFiles(enable);
     }
 
+    public boolean isHandleHistoryOfRenamedFiles() {
+        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+    }
+
     public void setRevisionMessageCollapseThreshold(int threshold) {
         threadConfig.get().setRevisionMessageCollapseThreshold(threshold);
     }
@@ -1008,8 +1101,20 @@ public final class RuntimeEnvironment {
         return threadConfig.get().getRevisionMessageCollapseThreshold();
     }
 
-    public boolean isHandleHistoryOfRenamedFiles() {
-        return threadConfig.get().isHandleHistoryOfRenamedFiles();
+    public void setMaxSearchThreadCount(int count) {
+        threadConfig.get().setMaxSearchThreadCount(count);
+    }
+
+    public int getMaxSearchThreadCount() {
+        return threadConfig.get().getMaxSearchThreadCount();
+    }
+
+    public int getCurrentIndexedCollapseThreshold() {
+        return threadConfig.get().getCurrentIndexedCollapseThreshold();
+    }
+
+    public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
+        threadConfig.get().getCurrentIndexedCollapseThreshold();
     }
 
     /**
@@ -1058,7 +1163,7 @@ public final class RuntimeEnvironment {
      */
     private void generateProjectRepositoriesMap() throws IOException {
         repository_map.clear();
-        for (RepositoryInfo r : configuration.getRepositories()) {
+        for (RepositoryInfo r : getRepositories()) {
             Project proj;
             String repoPath;
 
@@ -1085,7 +1190,7 @@ public final class RuntimeEnvironment {
         }
         for (Project project : projects) {
             // filterProjects only groups which match project's description
-            Set<Group> copy = new TreeSet<Group>(groups);
+            Set<Group> copy = new TreeSet<>(groups);
             copy.removeIf(new Predicate<Group>() {
                 @Override
                 public boolean test(Group g) {
@@ -1100,40 +1205,41 @@ public final class RuntimeEnvironment {
                 } else {
                     group.addRepository(project);
                 }
+                project.addGroup(group);
             }
         }
     }
-
+    
     /**
      * Sets the configuration and performs necessary actions.
      *
      * Mainly it classifies the projects in their groups and generates project -
      * repositories map
      *
-     * @param configuration
+     * @param configuration what configuration to use
      */
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+        register();
         try {
             generateProjectRepositoriesMap();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
         populateGroups(getGroups(), getProjects());
-        register();
         HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories());
     }
 
     public void setConfiguration(Configuration configuration, List<String> subFileList) {
         this.configuration = configuration;
+        register();
         try {
             generateProjectRepositoriesMap();
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, "Cannot generate project - repository map", ex);
         }
         populateGroups(getGroups(), getProjects());
-        register();
         HistoryGuru.getInstance().invalidateRepositories(
                 configuration.getRepositories(), subFileList);
     }
@@ -1141,6 +1247,252 @@ public final class RuntimeEnvironment {
     public Configuration getConfiguration() {
         return this.threadConfig.get();
     }
+
+    private Timer expirationTimer;
+
+    private static SortedSet<Message> emptyMessageSet(SortedSet<Message> toRet) {
+        return toRet == null ? new TreeSet<>() : toRet;
+    }
+
+    /**
+     * Get the default set of messages for the main tag.
+     *
+     * @return set of messages
+     */
+    public SortedSet<Message> getMessages() {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return emptyMessageSet(tagMessages.get(MESSAGES_MAIN_PAGE_TAG));
+    }
+
+    /**
+     * Get the set of messages for the arbitrary tag
+     *
+     * @param tag the message tag
+     * @return set of messages
+     */
+    public SortedSet<Message> getMessages(String tag) {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return emptyMessageSet(tagMessages.get(tag));
+    }
+
+    /**
+     * Add a message to the application Also schedules a expirationTimer to
+     * remove this message after its expiration.
+     *
+     * @param m the message
+     */
+    public void addMessage(Message m) {
+        if (!canAcceptMessage(m)) {
+            return;
+        }
+
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+
+        boolean added = false;
+        for (String tag : m.getTags()) {
+            if (!tagMessages.containsKey(tag)) {
+                tagMessages.put(tag, new ConcurrentSkipListSet<>());
+            }
+            if (tagMessages.get(tag).add(m)) {
+                messagesInTheSystem++;
+                added = true;
+            }
+        }
+
+        if (added) {
+            if (expirationTimer != null) {
+                expirationTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        expireMessages();
+                    }
+                }, new Date(m.getExpiration().getTime() + 10));
+            }
+        }
+    }
+
+    /**
+     * Immediately remove all messages in the application.
+     */
+    public void removeAllMessages() {
+        tagMessages.clear();
+        messagesInTheSystem = 0;
+    }
+
+    /**
+     * Remove all messages containing at least on of the tags.
+     *
+     * @param tags set of tags
+     */
+    public void removeAnyMessage(Set<String> tags) {
+        removeAnyMessage(new Predicate<Message>() {
+            @Override
+            public boolean test(Message t) {
+                return t.hasAny(tags);
+            }
+        });
+    }
+
+    /**
+     * Remove messages which have expired.
+     */
+    private void expireMessages() {
+        removeAnyMessage(new Predicate<Message>() {
+            @Override
+            public boolean test(Message t) {
+                return t.isExpired();
+            }
+        });
+    }
+
+    /**
+     * Generic function to remove any message according to the result of the
+     * predicate.
+     *
+     * @param predicate the testing predicate
+     */
+    private void removeAnyMessage(Predicate<Message> predicate) {
+        int size;
+        for (Map.Entry<String, SortedSet<Message>> set : tagMessages.entrySet()) {
+            size = set.getValue().size();
+            set.getValue().removeIf(predicate);
+            messagesInTheSystem -= size - set.getValue().size();
+        }
+
+        tagMessages.entrySet().removeIf(new Predicate<Map.Entry<String, SortedSet<Message>>>() {
+            @Override
+            public boolean test(Map.Entry<String, SortedSet<Message>> t) {
+                return t.getValue().isEmpty();
+            }
+        });
+    }
+
+    /**
+     * Test if the application can receive this messages.
+     *
+     * @param m the message
+     * @return true if it can
+     */
+    public boolean canAcceptMessage(Message m) {
+        return messagesInTheSystem < getMessageLimit() && !m.isExpired();
+    }
+
+    /**
+     * Get the maximum number of messages in the application
+     *
+     * @see #getMessagesInTheSystem()
+     * @return the number
+     */
+    public int getMessageLimit() {
+        return threadConfig.get().getMessageLimit();
+    }
+
+    /**
+     * Set the maximum number of messages in the application
+     *
+     * @see #getMessagesInTheSystem()
+     * @param limit the new limit
+     */
+    public void setMessageLimit(int limit) {
+        threadConfig.get().setMessageLimit(limit);
+    }
+
+    /**
+     * Return number of messages present in the hash map.
+     *
+     * DISCLAIMER: This is not the real number of unique messages in the
+     * application because the same message is duplicated for all of the tags in
+     * the map.
+     *
+     * This is just a cheap counter to indicate how many messages are stored in
+     * total under different tags.
+     *
+     * Also one can bypass the counter by not calling
+     * {@link #addMessage(Message)}
+     *
+     * @return number of messages
+     */
+    public int getMessagesInTheSystem() {
+        if (expirationTimer == null) {
+            expireMessages();
+        }
+        return messagesInTheSystem;
+    }
+
+    /**
+     * Dump statistics in JSON format into the file specified in configuration.
+     *
+     * @throws IOException
+     */
+    public void saveStatistics() throws IOException {
+        saveStatistics(new File(getConfiguration().getStatisticsFilePath()));
+    }
+
+    /**
+     * Dump statistics in JSON format into a file.
+     *
+     * @param out the output file
+     * @throws IOException
+     */
+    public void saveStatistics(File out) throws IOException {
+        try (FileOutputStream ofstream = new FileOutputStream(out)) {
+            saveStatistics(ofstream);
+        }
+    }
+
+    /**
+     * Dump statistics in JSON format into an output stream.
+     *
+     * @param out the output stream
+     * @throws IOException
+     */
+    public void saveStatistics(OutputStream out) throws IOException {
+        out.write(Util.statisticToJson(getStatistics()).toJSONString().getBytes());
+    }
+
+    /**
+     * Load statistics from JSON file specified in configuration.
+     *     
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics() throws IOException, ParseException {
+        loadStatistics(new File(getConfiguration().getStatisticsFilePath()));
+    }
+
+    /**
+     * Load statistics from JSON file.
+     *
+     * @param in the file with json
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics(File in) throws IOException, ParseException {
+        try (FileInputStream ifstream = new FileInputStream(in)) {
+            loadStatistics(ifstream);
+        }
+    }
+
+    /**
+     * Load statistics from an input stream.
+     *
+     * @param in the file with json
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void loadStatistics(InputStream in) throws IOException, ParseException {
+        try (InputStreamReader iReader = new InputStreamReader(in)) {
+            JSONParser jsonParser = new JSONParser();
+            setStatistics(Util.jsonToStatistics((JSONObject) jsonParser.parse(iReader)));
+        }
+    }
+
     private ServerSocket configServerSocket;
 
     /**
@@ -1149,6 +1501,8 @@ public final class RuntimeEnvironment {
     public void stopConfigurationListenerThread() {
         IOUtils.close(configServerSocket);
     }
+
+    private Thread configurationListenerThread;
 
     /**
      * Start a thread to listen on a socket to receive new configurations to
@@ -1165,13 +1519,14 @@ public final class RuntimeEnvironment {
             configServerSocket.bind(endpoint);
             ret = true;
             final ServerSocket sock = configServerSocket;
-            Thread t = new Thread(new Runnable() {
+            configurationListenerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 13);
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream(1 << 15);
                     while (!sock.isClosed()) {
                         try (Socket s = sock.accept();
-                                BufferedInputStream in = new BufferedInputStream(s.getInputStream())) {
+                                BufferedInputStream in = new BufferedInputStream(new XmlEofInputStream(s.getInputStream()));
+                                OutputStream output = s.getOutputStream()) {
                             bos.reset();
                             LOGGER.log(Level.FINE, "OpenGrok: Got request from {0}",
                                     s.getInetAddress().getHostAddress());
@@ -1195,6 +1550,17 @@ public final class RuntimeEnvironment {
                                 setConfiguration((Configuration) obj);
                                 LOGGER.log(Level.INFO, "Configuration updated: {0}",
                                         configuration.getSourceRoot());
+
+                                // We are assuming that each update of configuration
+                                // means reindex. If dedicated thread is introduced
+                                // in the future solely for the purpose of getting
+                                // the event of reindex, the 2 calls below should
+                                // be moved there.
+                                refreshSearcherManagerMap();
+                                maybeRefreshIndexSearchers();
+                            } else if (obj instanceof Message) {
+                                Message m = ((Message) obj);
+                                handleMessage(m, output);
                             }
                         } catch (IOException e) {
                             LOGGER.log(Level.SEVERE, "Error reading config file: ", e);
@@ -1203,12 +1569,12 @@ public final class RuntimeEnvironment {
                         }
                     }
                 }
-            });
-            t.start();
+            }, "configurationListener");
+            configurationListenerThread.start();
         } catch (UnknownHostException ex) {
-            LOGGER.log(Level.FINE, "Problem resolving sender: ", ex);
+            LOGGER.log(Level.WARNING, "Problem resolving sender: ", ex);
         } catch (IOException ex) {
-            LOGGER.log(Level.FINE, "I/O error when waiting for config: ", ex);
+            LOGGER.log(Level.WARNING, "I/O error when waiting for config: ", ex);
         }
 
         if (!ret && configServerSocket != null) {
@@ -1216,6 +1582,43 @@ public final class RuntimeEnvironment {
         }
 
         return ret;
+    }
+
+    /**
+     * Handle incoming message.
+     *
+     * @param m message
+     * @param output output stream for errors or success
+     * @throws IOException
+     */
+    protected void handleMessage(Message m, final OutputStream output) throws IOException {
+        byte[] out;
+        if (!canAcceptMessage(m)) {
+            LOGGER.log(Level.WARNING, "Message dropped: {0} - too many messages in the system",
+                    m.getTags());
+            output.write(Message.MESSAGE_LIMIT);
+        }
+
+        try {
+            out = m.apply(RuntimeEnvironment.getInstance());
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING,
+                    String.format("Message dropped: {0} - message error", m.getTags()),
+                    ex);
+            output.write(Message.MESSAGE_ERROR);
+            output.write(ex.getMessage().getBytes());
+            return;
+        }
+
+        LOGGER.log(Level.FINER, "Message received: {0}",
+                m.getTags());
+        LOGGER.log(Level.FINER, "Messages in the system: {0}",
+                getMessagesInTheSystem());
+
+        output.write(Message.MESSAGE_OK);
+        if (out != null) {
+            output.write(out);
+        }
     }
 
     private Thread watchDogThread;
@@ -1251,8 +1654,9 @@ public final class RuntimeEnvironment {
                             return CONTINUE;
                         }
                     });
-
-                    while (true) {
+                    
+                    LOGGER.log(Level.INFO, "Watch dog started {0}", directory);
+                    while (!Thread.currentThread().isInterrupted()) {
                         final WatchKey key;
                         try {
                             key = watchDogWatcher.take();
@@ -1279,14 +1683,12 @@ public final class RuntimeEnvironment {
                             break;
                         }
                     }
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.INFO, "Watchdog interupted (exiting): ", ex);
+                } catch (InterruptedException | IOException ex) {
                     Thread.currentThread().interrupt();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Watchdog (exiting): ", ex);
                 }
+                LOGGER.log(Level.INFO, "Watchdog finishing (exiting)");
             }
-        });
+        }, "watchDogService");
         watchDogThread.start();
     }
 
@@ -1303,6 +1705,192 @@ public final class RuntimeEnvironment {
         }
         if (watchDogThread != null) {
             watchDogThread.interrupt();
+            try {
+                watchDogThread.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, "Cannot join WatchDogService thread: ", ex);
+            }
         }
+    }
+
+    public void startExpirationTimer() {
+        if (expirationTimer != null) {
+            stopExpirationTimer();
+        }
+        expirationTimer = new Timer("expirationThread");
+        expireMessages();
+    }
+
+    /**
+     * Stops the watch dog service.
+     */
+    public void stopExpirationTimer() {
+        if (expirationTimer != null) {
+            expirationTimer.cancel();
+            expirationTimer = null;
+        }
+    }
+
+    private Thread indexReopenThread;
+
+    public void maybeRefreshIndexSearchers() {
+        for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
+            try {
+                entry.getValue().maybeRefresh();
+            } catch (AlreadyClosedException ex) {
+                // This is a case of removed project.
+                // See refreshSearcherManagerMap() for details.
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
+            }
+        }
+    }
+
+    /**
+     * Call maybeRefresh() on each SearcherManager object from dedicated thread
+     * periodically.
+     * If the corresponding index has changed in the meantime, it will be safely
+     * reopened, i.e. without impacting existing IndexSearcher/IndexReader
+     * objects, thus not disrupting searches in progress.
+     */
+    public void startIndexReopenThread() {
+        indexReopenThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        maybeRefreshIndexSearchers();
+                        Thread.sleep(getIndexRefreshPeriod() * 1000);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }, "indexReopenThread");
+
+        indexReopenThread.start();
+    }
+
+    public void stopIndexReopenThread() {
+        if (indexReopenThread != null) {
+            indexReopenThread.interrupt();
+            try {
+                indexReopenThread.join();
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, "Cannot join indexReopen thread: ", ex);
+            }
+        }
+    }
+
+    /**
+     * Get IndexSearcher for given project.
+     * Each IndexSearcher is born from a SearcherManager object. There is
+     * one SearcherManager for every project.
+     * This schema makes it possible to reuse IndexSearcher/IndexReader objects
+     * so the heavy lifting (esp. system calls) performed in FSDirectory
+     * and DirectoryReader happens only once for a project.
+     * The caller has to make sure that the IndexSearcher is returned back
+     * to the SearcherManager. This is done with returnIndexSearcher().
+     * The return of the IndexSearcher should happen only after the search
+     * result data are read fully.
+     *
+     * @param proj project
+     * @return SearcherManager for given project
+     */
+    public SuperIndexSearcher getIndexSearcher(String proj) throws IOException {
+        SearcherManager mgr = searcherManagerMap.get(proj);
+        SuperIndexSearcher searcher = null;
+
+        if (mgr == null) {
+            File indexDir = new File(getDataRootPath(), IndexDatabase.INDEX_DIR);
+
+            try {
+                Directory dir = FSDirectory.open(new File(indexDir, proj).toPath());
+                mgr = new SearcherManager(dir, new ThreadpoolSearcherFactory());
+                searcherManagerMap.put(proj, mgr);
+                searcher = (SuperIndexSearcher) mgr.acquire();
+                searcher.setSearcherManager(mgr);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot construct IndexSearcher for project " + proj, ex);
+            }
+        } else {
+            searcher = (SuperIndexSearcher) mgr.acquire();
+            searcher.setSearcherManager(mgr);
+        }
+
+        return searcher;
+    }
+
+    /**
+     * After new configuration is put into place, the set of projects might
+     * change so we go through the SearcherManager objects and close those where
+     * the corresponding project is no longer present.
+     */
+    private void refreshSearcherManagerMap() {
+        ArrayList<String> toRemove = new ArrayList<>();
+
+        for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
+            // If a project is gone, close the corresponding SearcherManager
+            // so that it cannot produce new IndexSearcher objects.
+            if (!getProjectDescriptions().contains(entry.getKey())) {
+                try {
+                    LOGGER.log(Level.FINE,
+                        "closing SearcherManager for project" + entry.getKey());
+                    entry.getValue().close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.SEVERE,
+                        "cannot close IndexReader for project" + entry.getKey(), ex);
+                }
+                toRemove.add(entry.getKey());
+            }
+        }
+
+        for (String proj : toRemove) {
+            searcherManagerMap.remove(proj);
+        }
+    }
+
+    /**
+     * Return collection of IndexReader objects as MultiReader object
+     * for given list of projects.
+     * The caller is responsible for releasing the IndexSearcher objects
+     * so we add them to the map.
+     *
+     * @param projects list of projects
+     * @param searcherList each SuperIndexSearcher produced will be put into this list
+     * @return MultiReader for the projects
+     */
+    public MultiReader getMultiReader(SortedSet<String> projects,
+        ArrayList<SuperIndexSearcher> searcherList) {
+
+        IndexReader[] subreaders = new IndexReader[projects.size()];
+        int ii = 0;
+
+        // TODO might need to rewrite to Project instead of
+        // String , need changes in projects.jspf too
+        for (String proj : projects) {
+            try {
+                SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                subreaders[ii++] = searcher.getIndexReader();
+                searcherList.add(searcher);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot get IndexReader for project" + proj, ex);
+                return null;
+            } catch (NullPointerException ex) {
+                LOGGER.log(Level.SEVERE,
+                    "cannot get IndexReader for project" + proj, ex);
+                return null;
+            }
+        }
+        MultiReader multiReader = null;
+        try {
+            multiReader = new MultiReader(subreaders, true);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE,
+                "cannot construct MultiReader for set of projects", ex);
+        }
+        return multiReader;
     }
 }

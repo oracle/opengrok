@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright (c) 2008, 2015, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
 #
 
 
@@ -196,7 +196,11 @@ PKG pkgsend add link path=/usr/opengrok/lib/lib target=../lib
 PKG pkgsend add file platform/solaris/smf/opengrok.xml mode=0444 owner=root group=sys path=/var/svc/manifest/application/opengrok.xml restart_fmri=svc:/system/manifest-import:default
 PKG pkgsend add file platform/solaris/smf/svc-opengrok mode=0555 owner=root group=bin path=/lib/svc/method/svc-opengrok
 PKG pkgsend add file platform/solaris/smf/ogindexd mode=0555 owner=root group=bin path=/usr/opengrok/lib/ogindexd
+
 PKG pkgsend add file OpenGrok mode=0555 owner=root group=bin path=/usr/opengrok/bin/OpenGrok
+PKG pkgsend add file tools/Groups mode=0555 owner=root group=bin path=/usr/opengrok/bin/Groups
+PKG pkgsend add file tools/Messages mode=0555 owner=root group=bin path=/usr/opengrok/bin/Messages
+
 PKG pkgsend add file dist/opengrok.jar mode=0444 owner=root group=bin path=/usr/opengrok/lib/opengrok.jar
 
 PKG pkgsend add file logging.properties mode=0444 owner=root group=sys path=/usr/opengrok/doc/logging.properties
@@ -208,15 +212,21 @@ PKG pkgsend add file doc/EXAMPLE.txt mode=0444 owner=root group=sys path=/usr/op
 PKG pkgsend add file doc/ctags.config mode=0444 owner=root group=sys path=/usr/opengrok/doc/ctags.config
 
 
+
 # install libs
-LV=6.0.0
-for file in ant.jar bcel-5.2.jar \
-            lucene-analyzers-common-${LV}.jar lucene-core-${LV}.jar lucene-queryparser-${LV}.jar lucene-suggest-${LV}.jar \
-            jrcs.jar \
-            swing-layout-0.9.jar \
-	    json-simple-1.1.1.jar
+LV=6.4.0
+for file in ant.jar \
+    bcel-6.0.jar \
+    lucene-analyzers-common-${LV}.jar \
+    lucene-core-${LV}.jar \
+    lucene-queryparser-${LV}.jar \
+    lucene-suggest-${LV}.jar \
+    jrcs.jar \
+    swing-layout-0.9.jar \
+    json-simple-1.1.1.jar
 do
-   PKG pkgsend add file dist/lib/${file} mode=0444 owner=root group=bin path=/usr/opengrok/lib/${file}
+   PKG pkgsend add file dist/lib/${file} mode=0444 owner=root group=bin \
+       path=/usr/opengrok/lib/${file}
 done
 
 
@@ -225,7 +235,7 @@ PKG pkgsend add file dist/opengrok.1 mode=0444 owner=root group=bin path=/usr/op
 
 # install default configuration
 PKG pkgsend add depend fmri=pkg:/runtime/java/jre-8 type=require
-PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat type=require
+PKG pkgsend add depend fmri=pkg:/web/java-servlet/tomcat-8 type=require
 
 # Following line gets commented by that the developer/tool/exuberant-ctags has been removed from IPS
 # This has to stay commented until the next release of Solaris will contain the exhuberant ctags package

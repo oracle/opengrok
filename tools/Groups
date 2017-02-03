@@ -6,17 +6,21 @@
 #
 # Supported Environment Variables for configuring the default setup:
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
-#									- determining the opengrok.jar
+#                                   - containing the opengrok.jar
+#   - OPENGROK_JAR                Directly specify the opengrok.jar file
 #   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
-#									- determining the configuration
+#                                   - determining the configuration
 #                                 switch), default is DATA_ROOT/etc/ctags.config
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
 #   - JAVA_OPTS                   Java options (e.g. for JVM memory increase view
 #   - READ_XML_CONFIGURATION      file with read only configuration
-#									- determining the configuration
+#                                   - determining the configuration
 
 PROGNAME=`basename $0`
+
+SCRIPT_DIRECTORY=`dirname "${0}"`
+SCRIPT_DIRECTORY=`cd "${SCRIPT_DIRECTORY}"; pwd`
 
 Usage()
 {
@@ -44,360 +48,360 @@ Usage()
 
 CommonInvocation()
 {
-	${DO} \
-	${JAVA} \
-	${JAVA_OPTS} \
-	${JAVA_CLASSPATH:+-classpath} ${JAVA_CLASSPATH} \
-	${MAIN_CLASS} \
-	${INPUT_FILE:+-i} ${INPUT_FILE:+"$INPUT_FILE"} \
-	${OUTPUT_FILE:+-o} ${OUTPUT_FILE:+"$OUTPUT_FILE"} \
-	"${@}"
+    ${DO} \
+    ${JAVA} \
+    ${JAVA_OPTS} \
+    ${JAVA_CLASSPATH:+-classpath} ${JAVA_CLASSPATH} \
+    ${MAIN_CLASS} \
+    ${INPUT_FILE:+-i} ${INPUT_FILE:+"$INPUT_FILE"} \
+    ${OUTPUT_FILE:+-o} ${OUTPUT_FILE:+"$OUTPUT_FILE"} \
+    "${@}"
 }
 
 StdInvocation()
 {
-	CommonInvocation \
-	${NAME:+-n} ${NAME:+"$NAME"} \
-	${PATTERN:+-r} ${PATTERN:+"$PATTERN"} \
-	${PARENT:+-p} ${PARENT:+"$PARENT"} \
-	${MATCH:+-m} ${MATCH:+"$MATCH"} \
-	${LIST:+-l} \
-	${DELETE:+-d} \
-	"${@}"
+    CommonInvocation \
+    ${NAME:+-n} ${NAME:+"$NAME"} \
+    ${PATTERN:+-r} ${PATTERN:+"$PATTERN"} \
+    ${PARENT:+-p} ${PARENT:+"$PARENT"} \
+    ${MATCH:+-m} ${MATCH:+"$MATCH"} \
+    ${LIST:+-l} \
+    ${DELETE:+-d} \
+    "${@}"
 }
 
 CheckInputFile()
 {
-	if [ -n "$INPUT_FILE" ] && ( [ ! -e "$INPUT_FILE" ] || [ ! -f "$INPUT_FILE" ] )
-	then
-		echo "input file does not exist or is not readable"
-		LocalUsage
-		exit 5
-	fi
+    if [ -n "$INPUT_FILE" ] && ( [ ! -e "$INPUT_FILE" ] || [ ! -f "$INPUT_FILE" ] )
+    then
+        echo "input file does not exist or is not readable"
+        LocalUsage
+        exit 5
+    fi
 }
 
 
 OneArgument()
 {
-	if [ $# -gt 0 ]
-	then
-		echo "$1"
-	fi
+    if [ $# -gt 0 ]
+    then
+        echo "$1"
+    fi
 }
 
 ExpectOption()
 {  
-	if [ $# -lt 2 ]
-	then
-		echo "Argument \"$1\" expects a value"
-		exit 3
-	fi
+    if [ $# -lt 2 ]
+    then
+        echo "Argument \"$1\" expects a value"
+        exit 3
+    fi
 }
 
 Info()
 {
-	if $VERBOSE
-	then
-		echo "Configuration loaded"
-		echo "\tJAVA_HOME = "${JAVA_HOME}
-		if [ -n "$JAVA_HOME" ]
-		then
-			echo "\tJAVA = $JAVA_HOME/bin/java"
-		else
-			echo "\tJAVA ="
-		fi
-		echo "\tJAVA_OPTS = "${JAVA_OPTS}
-		echo "\tJAVA_CLASSPATH = "${JAVA_CLASSPATH}
-		echo "\tOPENGROK_JAR = "${OPENGROK_JAR}
-		echo "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
-		echo "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
-		echo "\tOPENGROK_INSTANCE_BASE = "${OPENGROK_INSTANCE_BASE}
-		echo "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
-		echo "\tREAD_XML_CONFIGURATION = "${READ_XML_CONFIGURATION}
-		echo "\tOPENGROK_JAR = "${OPENGROK_JAR}
-		echo ""
-		echo "Files used"
-		echo "\tINPUT_FILE = "${INPUT_FILE:-empty configuration}
-		echo "\tOUTPUT_FILE = "${OUTPUT_FILE:-standard output}
-		echo "\tPATTERN = "${PATTERN:-$PATTERN}
-		echo "\tNAME = "${NAME:-$NAME}
-		echo "\tPARENT = "${PARENT:-$PARENT}
-		echo ""
-	fi
+    if $VERBOSE
+    then
+        echo "Configuration loaded"
+        echo "\tJAVA_HOME = "${JAVA_HOME}
+        if [ -n "$JAVA_HOME" ]
+        then
+            echo "\tJAVA = $JAVA_HOME/bin/java"
+        else
+            echo "\tJAVA ="
+        fi
+        echo "\tJAVA_OPTS = "${JAVA_OPTS}
+        echo "\tJAVA_CLASSPATH = "${JAVA_CLASSPATH}
+        echo "\tOPENGROK_JAR = "${OPENGROK_JAR}
+        echo "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
+        echo "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
+        echo "\tOPENGROK_INSTANCE_BASE = "${OPENGROK_INSTANCE_BASE}
+        echo "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
+        echo "\tREAD_XML_CONFIGURATION = "${READ_XML_CONFIGURATION}
+        echo "\tOPENGROK_JAR = "${OPENGROK_JAR}
+        echo ""
+        echo "Files used"
+        echo "\tINPUT_FILE = "${INPUT_FILE:-empty configuration}
+        echo "\tOUTPUT_FILE = "${OUTPUT_FILE:-standard output}
+        echo "\tPATTERN = "${PATTERN:-$PATTERN}
+        echo "\tNAME = "${NAME:-$NAME}
+        echo "\tPARENT = "${PARENT:-$PARENT}
+        echo ""
+    fi
 }
 
 Progress()
 {
-	if $VERBOSE
-	then
-		echo "$@"
-	fi
+    if $VERBOSE
+    then
+        echo "$@"
+    fi
 }
 
 Match ()
 {
-	LocalUsage()
-	{
-		echo "Usage:"
-		echo "${PROGNAME} match <project name> [-i|--input <file>] [-v|--verbose] [-d]"
-		echo ""
-		echo "  Lists which groups would match the project name (description)"
-		echo ""
-		echo "Options:"
-		echo " -d option performs dry run with verbose mode"
-		echo " -i option can be used for specifying the input file"
-	}
+    LocalUsage()
+    {
+        echo "Usage:"
+        echo "${PROGNAME} match <project name> [-i|--input <file>] [-v|--verbose] [-d]"
+        echo ""
+        echo "  Lists which groups would match the project name (description)"
+        echo ""
+        echo "Options:"
+        echo " -d option performs dry run with verbose mode"
+        echo " -i option can be used for specifying the input file"
+    }
 
-	while [ $# -gt 0 ]
-	do
-		opt="$1"
-		case $opt in
-			-i|--input)
-				ExpectOption "$@"
-				shift
-				INPUT_FILE=$(OneArgument "$@")
-			;;
-			-d)
-				DO=echo
-				VERBOSE=true
-			;;
-			-v|--verbose)
-				VERBOSE=true
-			;;
-			-h|--help)
-				LocalUsage
-				exit 0
-			;;
-			-*)
-				echo "Uknown option \"$opt\"" && LocalUsage && exit 5
-			;;
-			*)
-				if [ "x$MATCH" = "x" ]
-				then
-					MATCH=$(OneArgument "$@")
-				else
-					echo "match must be specified only once" && LocalUsage && exit 5
-				fi
-			;;
-		esac
-		shift
-	done
+    while [ $# -gt 0 ]
+    do
+        opt="$1"
+        case $opt in
+            -i|--input)
+                ExpectOption "$@"
+                shift
+                INPUT_FILE=$(OneArgument "$@")
+            ;;
+            -d)
+                DO=echo
+                VERBOSE=true
+            ;;
+            -v|--verbose)
+                VERBOSE=true
+            ;;
+            -h|--help)
+                LocalUsage
+                exit 0
+            ;;
+            -*)
+                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+            ;;
+            *)
+                if [ "x$MATCH" = "x" ]
+                then
+                    MATCH=$(OneArgument "$@")
+                else
+                    echo "match must be specified only once" && LocalUsage && exit 5
+                fi
+            ;;
+        esac
+        shift
+    done
 
-	[ -z "$MATCH" ] && echo "project name must be specified" && LocalUsage && exit 5
+    [ -z "$MATCH" ] && echo "project name must be specified" && LocalUsage && exit 5
 
-	CheckInputFile
-	Info
-	StdInvocation
+    CheckInputFile
+    Info
+    StdInvocation
 }
 
 List ()
 {
-	LocalUsage()
-	{
-		echo "Usage:"
-		echo "${PROGNAME} list [-i|--input <file>] [-v|--verbose] [-d]"
-		echo ""
-		echo "  Lists the current configuration"
-		echo ""
-		echo "Options:"
-		echo " -d option performs dry run with verbose mode"
-		echo " -i option can be used for specifying the input file"
-	}
+    LocalUsage()
+    {
+        echo "Usage:"
+        echo "${PROGNAME} list [-i|--input <file>] [-v|--verbose] [-d]"
+        echo ""
+        echo "  Lists the current configuration"
+        echo ""
+        echo "Options:"
+        echo " -d option performs dry run with verbose mode"
+        echo " -i option can be used for specifying the input file"
+    }
 
-	while [ $# -gt 0 ]
-	do
-		opt="$1"
-		case $opt in
-			-i|--input)
-				ExpectOption "$@"
-				shift
-				INPUT_FILE=$(OneArgument "$@")
-			;;
-			-d)
-				DO=echo
-				VERBOSE=true
-			;;
-			-v|--verbose)
-				VERBOSE=true
-			;;
-			-h|--help)
-				LocalUsage
-				exit 0
-			;;
-			-*)
-				echo "Uknown option \"$opt\"" && LocalUsage && exit 5
-			;;
-			*)
-				echo "this requires no other parameter"
-				LocalUsage
-				exit 5
-			;;
-		esac
-		shift
-	done
+    while [ $# -gt 0 ]
+    do
+        opt="$1"
+        case $opt in
+            -i|--input)
+                ExpectOption "$@"
+                shift
+                INPUT_FILE=$(OneArgument "$@")
+            ;;
+            -d)
+                DO=echo
+                VERBOSE=true
+            ;;
+            -v|--verbose)
+                VERBOSE=true
+            ;;
+            -h|--help)
+                LocalUsage
+                exit 0
+            ;;
+            -*)
+                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+            ;;
+            *)
+                echo "this requires no other parameter"
+                LocalUsage
+                exit 5
+            ;;
+        esac
+        shift
+    done
 
-	LIST=true
+    LIST=true
 
-	CheckInputFile
-	Info
-	StdInvocation
+    CheckInputFile
+    Info
+    StdInvocation
 }
 
 Delete ()
 {
-	LocalUsage()
-	{
-		echo "Usage:"
-		echo "${PROGNAME} delete <name> [-i|--input <file>] [-o|--output <file>] [-l] [-v|--verbose] [-u|--update] [-d]"
-		echo ""
-		echo "  Deletes a group with given name from the input configuration"
-		echo ""
-		echo "Options:"
-		echo " -d option performs dry run with verbose mode"
-		echo " -i option can be used for specifying the input file"
-		echo " -l option prints the overview to stdout (still -o can be used)"
-		echo " -o option can be used for saving the result"
-		echo " -u option forces the script to use same output file as input file (overwrite)"
-	}
+    LocalUsage()
+    {
+        echo "Usage:"
+        echo "${PROGNAME} delete <name> [-i|--input <file>] [-o|--output <file>] [-l] [-v|--verbose] [-u|--update] [-d]"
+        echo ""
+        echo "  Deletes a group with given name from the input configuration"
+        echo ""
+        echo "Options:"
+        echo " -d option performs dry run with verbose mode"
+        echo " -i option can be used for specifying the input file"
+        echo " -l option prints the overview to stdout (still -o can be used)"
+        echo " -o option can be used for saving the result"
+        echo " -u option forces the script to use same output file as input file (overwrite)"
+    }
 
-	while [ $# -gt 0 ]
-	do
-		opt="$1"
-		case $opt in
-			-i|--input)
-				ExpectOption "$@"
-				shift
-				INPUT_FILE=$(OneArgument "$@")
-			;;
-			-o|--output)
-				ExpectOption "$@"
-				shift
-				OUTPUT_FILE=$(OneArgument "$@")
-			;;
-			-u|--update)
-				OUTPUT_FILE="$INPUT_FILE"
-			;;
-			-l|--list)
-				LIST=true
-			;;
-			-d)
-				DO=echo
-				VERBOSE=true
-			;;
-			-v|--verbose)
-				VERBOSE=true
-			;;
-			-h|--help)
-				LocalUsage
-				exit 0
-			;;
-			-*)
-				echo "Uknown option \"$opt\"" && LocalUsage && exit 5
-			;;
-			*)
-				if [ "x$NAME" = "x" ]
-				then
-					NAME=$(OneArgument "$@")
-				else
-					echo "name must be specified only once" && LocalUsage && exit 5
-				fi
-			;;
-		esac
-		shift
-	done
+    while [ $# -gt 0 ]
+    do
+        opt="$1"
+        case $opt in
+            -i|--input)
+                ExpectOption "$@"
+                shift
+                INPUT_FILE=$(OneArgument "$@")
+            ;;
+            -o|--output)
+                ExpectOption "$@"
+                shift
+                OUTPUT_FILE=$(OneArgument "$@")
+            ;;
+            -u|--update)
+                OUTPUT_FILE="$INPUT_FILE"
+            ;;
+            -l|--list)
+                LIST=true
+            ;;
+            -d)
+                DO=echo
+                VERBOSE=true
+            ;;
+            -v|--verbose)
+                VERBOSE=true
+            ;;
+            -h|--help)
+                LocalUsage
+                exit 0
+            ;;
+            -*)
+                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+            ;;
+            *)
+                if [ "x$NAME" = "x" ]
+                then
+                    NAME=$(OneArgument "$@")
+                else
+                    echo "name must be specified only once" && LocalUsage && exit 5
+                fi
+            ;;
+        esac
+        shift
+    done
 
-	[ -z "$NAME" ] && echo "name must be specified" && LocalUsage && exit 5
+    [ -z "$NAME" ] && echo "name must be specified" && LocalUsage && exit 5
 
 
-	DELETE=true
+    DELETE=true
 
-	CheckInputFile
-	Info
-	StdInvocation
+    CheckInputFile
+    Info
+    StdInvocation
 }
 
 Add ()
 {
-	LocalUsage()
-	{
-		echo "Usage:"
-		echo "${PROGNAME} add <name> <pattern> [-i|--input <file>] [-o|--output <file>] [-l] [-v|--verbose] [-u|--update] [-d]"
-		echo ""
-		echo "  Adds or updates a group with given name"
-		echo "    1) If given group name already exists, the pattern is updated."
-		echo "    2) If given group name does not exist, the group is inserted"
-		echo "    3) If the parent group exists, the group is inserted as its child"
-		echo ""
-		echo "Options:"
-		echo " -d option performs dry run with verbose mode"
-		echo " -i option can be used for specifying the input file"
-		echo " -l option prints the overview to stdout (still -o can be used)"
-		echo " -o option can be used for saving the result"
-		echo " -u option forces the script to use same output file as input file (overwrite)"
-	}
+    LocalUsage()
+    {
+        echo "Usage:"
+        echo "${PROGNAME} add <name> <pattern> [-i|--input <file>] [-o|--output <file>] [-l] [-v|--verbose] [-u|--update] [-d]"
+        echo ""
+        echo "  Adds or updates a group with given name"
+        echo "    1) If given group name already exists, the pattern is updated."
+        echo "    2) If given group name does not exist, the group is inserted"
+        echo "    3) If the parent group exists, the group is inserted as its child"
+        echo ""
+        echo "Options:"
+        echo " -d option performs dry run with verbose mode"
+        echo " -i option can be used for specifying the input file"
+        echo " -l option prints the overview to stdout (still -o can be used)"
+        echo " -o option can be used for saving the result"
+        echo " -u option forces the script to use same output file as input file (overwrite)"
+    }
 
-	NAME=""
-	PATTERN=""
-	while [ $# -gt 0 ]
-	do
-		opt="$1"
-		case $opt in
-			-i|--input)
-				ExpectOption "$@"
-				shift
-				INPUT_FILE=$(OneArgument "$@")
-			;;
-			-o|--output)
-				ExpectOption "$@"
-				shift
-				OUTPUT_FILE=$(OneArgument "$@")
-			;;
-			-p|--parent)
-				ExpectOption "$@"
-				shift
-				PARENT=$(OneArgument "$@")
-			;;
-			-u|--update)
-				OUTPUT_FILE="$INPUT_FILE"
-			;;
-			-l|--list)
-				LIST=true
-			;;
-			-d)
-				DO=echo
-				VERBOSE=true
-			;;
-			-v|--verbose)
-				VERBOSE=true
-			;;
-			-h|--help)
-				LocalUsage
-				exit 0
-			;;
-			-*)
-				echo "Uknown option \"$opt\"" && LocalUsage && exit 5
-			;;
-			*)
-				if [ "x$NAME" = "x" ]
-				then
-					NAME=$(OneArgument "$@")
-				elif [ "x$PATTERN" = "x" ]
-				then
-					PATTERN=$(OneArgument "$@")
-				else
-					echo "name and pattern must be specified only once" && LocalUsage && exit 5
-				fi
-			;;
-		esac
-		shift
-	done
+    NAME=""
+    PATTERN=""
+    while [ $# -gt 0 ]
+    do
+        opt="$1"
+        case $opt in
+            -i|--input)
+                ExpectOption "$@"
+                shift
+                INPUT_FILE=$(OneArgument "$@")
+            ;;
+            -o|--output)
+                ExpectOption "$@"
+                shift
+                OUTPUT_FILE=$(OneArgument "$@")
+            ;;
+            -p|--parent)
+                ExpectOption "$@"
+                shift
+                PARENT=$(OneArgument "$@")
+            ;;
+            -u|--update)
+                OUTPUT_FILE="$INPUT_FILE"
+            ;;
+            -l|--list)
+                LIST=true
+            ;;
+            -d)
+                DO=echo
+                VERBOSE=true
+            ;;
+            -v|--verbose)
+                VERBOSE=true
+            ;;
+            -h|--help)
+                LocalUsage
+                exit 0
+            ;;
+            -*)
+                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+            ;;
+            *)
+                if [ "x$NAME" = "x" ]
+                then
+                    NAME=$(OneArgument "$@")
+                elif [ "x$PATTERN" = "x" ]
+                then
+                    PATTERN=$(OneArgument "$@")
+                else
+                    echo "name and pattern must be specified only once" && LocalUsage && exit 5
+                fi
+            ;;
+        esac
+        shift
+    done
 
-	[ -z "$NAME" ] && echo "name must be specified" && LocalUsage && exit 5
-	[ -z "$PATTERN" ] && echo "pattern must be specified" && LocalUsage && exit 5
+    [ -z "$NAME" ] && echo "name must be specified" && LocalUsage && exit 5
+    [ -z "$PATTERN" ] && echo "pattern must be specified" && LocalUsage && exit 5
 
-	CheckInputFile
-	Info
-	StdInvocation
+    CheckInputFile
+    Info
+    StdInvocation
 }
 
 
@@ -407,7 +411,9 @@ Add ()
 #
 SetupInstanceConfiguration()
 {
-	VERBOSE="${VERBOSE:-false}"
+    VERBOSE="${VERBOSE:-false}"
+
+    OPENGROK_INSTANCE_BASE="${OPENGROK_INSTANCE_BASE:-/var/opengrok}"
 
     if [ -f "${OPENGROK_STANDARD_ENV}" ]
     then
@@ -428,39 +434,43 @@ SetupInstanceConfiguration()
     # REQUIRED: Java Virtual Machine
     JAVA="${JAVA:-$JAVA_HOME/bin/java}"
 
-    if [ -n "$OPENGROK_DISTRIBUTION_BASE" ] && [ -f "$OPENGROK_DISTRIBUTION_BASE/dist/opengrok.jar" ]
+    if [ -z "${OPENGROK_DISTRIBUTION_BASE}" ]
     then
-	    OPENGROK_JAR="$OPENGROK_DISTRIBUTION_BASE/dist/opengrok.jar"
-	fi
+        if [ -d "${SCRIPT_DIRECTORY}/../dist" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/opengrok.jar" -a \
+             -f "${SCRIPT_DIRECTORY}/../dist/source.war" \
+           ]
+        then
+            # Handle Developer Build Environments
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../dist"
+        else
+            # Handle Binary Distributions
+            OPENGROK_DISTRIBUTION_BASE="${SCRIPT_DIRECTORY}/../lib"
+        fi
+    fi
 
-	if [ -z "$OPENGROK_JAR" ] && [ -f "../dist/opengrok.jar" ]
-	then
-		OPENGROK_JAR="${OPENGROK_JAR:-../dist/opengrok.jar}"
-	elif [ -z "$OPENGROK_JAR" ] && [ -f "dist/opengrok.jar" ]
-	then
-		OPENGROK_JAR="${OPENGROK_JAR:-dist/opengrok.jar}"
-	fi
+    # REQUIRED: Java Archive of OpenGrok (Installation Location)
+    OPENGROK_JAR="${OPENGROK_JAR:-${OPENGROK_DISTRIBUTION_BASE}/opengrok.jar}"
 
-	JAVA_CLASSPATH="$CLASSPATH"
-	JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
+    JAVA_CLASSPATH="$CLASSPATH"
+    JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
     JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
     MAIN_CLASS="org.opensolaris.opengrok.configuration.Groups"
 	
-	unset NAME
-	unset PATTERN
-	unset PARENT
-	unset DELETE
-	unset MATCH
-	unset LIST
+    unset NAME
+    unset PATTERN
+    unset PARENT
+    unset DELETE
+    unset MATCH
+    unset LIST
 
     if [ -n "$OPENGROK_INSTANCE_BASE" ] && [ -f "$OPENGROK_INSTANCE_BASE/etc/configuration.xml" ]
-	then
-		INPUT_FILE="$OPENGROK_INSTANCE_BASE/etc/configuration.xml"
-	elif [ -n "$READ_XML_CONFIGURATION" ] && [ -f "$READ_XML_CONFIGURATION" ]
-	then
-		INPUT_FILE="$READ_XML_CONFIGURATION"
-	fi
-
+    then
+            INPUT_FILE="$OPENGROK_INSTANCE_BASE/etc/configuration.xml"
+    elif [ -n "$READ_XML_CONFIGURATION" ] && [ -f "$READ_XML_CONFIGURATION" ]
+    then
+            INPUT_FILE="$READ_XML_CONFIGURATION"
+    fi
 }
 
 # Find java home based on your system information
@@ -469,31 +479,31 @@ SetupInstanceConfiguration()
 #
 FindJavaHome()
 {
-	if [ -x "/bin/uname" ]; then
-		OS_NAME="`/bin/uname -s`"
-		OS_VERSION="`/bin/uname -r`"
-	elif [ -x "/usr/bin/uname" ]; then
-		OS_NAME="`/usr/bin/uname -s`"
-		OS_VERSION="`/usr/bin/uname -r`"
-	else
-		echo "Cannot determine operating system version"
-		exit 3
-	fi
+    if [ -x "/bin/uname" ]; then
+        OS_NAME="`/bin/uname -s`"
+        OS_VERSION="`/bin/uname -r`"
+    elif [ -x "/usr/bin/uname" ]; then
+        OS_NAME="`/usr/bin/uname -s`"
+        OS_VERSION="`/usr/bin/uname -r`"
+    else
+        echo "Cannot determine operating system version"
+        exit 3
+    fi
 
     javaHome=""
     case "${OS_NAME}:${OS_VERSION}" in
 		SunOS:5.10) javaHome="/usr/jdk/instances/jdk1.7.0" ;;
 		SunOS:5.11) javaHome="/usr/jdk/latest"             ;;
 		SunOS:5.12) javaHome="/usr/jdk/latest"             ;;
-		Darwin:*)    javaHome=`/usr/libexec/java_home`     ;;
+		Darwin:*)   javaHome=`/usr/libexec/java_home`      ;;
 		Linux:*)
-            if [ -f /etc/alternatives/java ]
-            then
-               javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
-               javaHome=`dirname $javaHome`
-               javaHome=`dirname $javaHome`
-            fi
-            ;;
+        if [ -f /etc/alternatives/java ]
+        then
+           javaHome=`ls -l /etc/alternatives/java | cut -f 2 -d \> `
+           javaHome=`dirname $javaHome`
+           javaHome=`dirname $javaHome`
+        fi
+        ;;
     esac
 
     if [ -z "${javaHome}" ]
@@ -515,35 +525,35 @@ FindJavaHome()
 
 if [ $# -eq 0 ]
 then
-	Usage
-	exit 1
+    Usage
+    exit 1
 fi
 
 SetupInstanceConfiguration
 
 case "${1}" in
     match)
-		shift
-		Match "$@"
-	;;
-	delete)
-		shift
-		Delete "$@"
-	;;
-	add)
-		shift
-		Add "$@"
-	;;
-	list)
-		shift
-		List "$@"
-	;;
-	help)
-		Usage
-		exit 0
-	;;
-	*)
-		Usage
-		exit 5
-	;;
+        shift
+        Match "$@"
+    ;;
+    delete)
+        shift
+        Delete "$@"
+    ;;
+    add)
+        shift
+        Add "$@"
+    ;;
+    list)
+        shift
+        List "$@"
+    ;;
+    help)
+        Usage
+        exit 0
+    ;;
+    *)
+        Usage
+        exit 5
+    ;;
 esac

@@ -544,8 +544,8 @@ public class IndexDatabase {
     private void setDirty() {
         synchronized (lock) {
             try {
-                if (!dirty && !dirtyFile.createNewFile()) {
-                    if (!dirtyFile.exists()) {
+                if (!dirty) {
+                    if (!dirtyFile.createNewFile() && !dirtyFile.exists()) {
                         LOGGER.log(Level.FINE,
                                 "Failed to create \"dirty-file\": {0}",
                                 dirtyFile.getAbsolutePath());

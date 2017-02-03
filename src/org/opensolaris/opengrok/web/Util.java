@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.web;
@@ -35,17 +35,26 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
+import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.opensolaris.opengrok.Info;
+import org.opensolaris.opengrok.configuration.Group;
+import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.messages.Message;
 import org.opensolaris.opengrok.history.Annotation;
 import org.opensolaris.opengrok.history.HistoryException;
 import org.opensolaris.opengrok.history.HistoryGuru;
@@ -430,9 +439,12 @@ public final class Util {
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             switch (c) {
+                case '\'':
+                    sb.append("&#39;");
+                    break;
                 case '"':
-                    sb.append('\'');
-                    break; // \\\"
+                    sb.append("&#39;");
+                    break; // \\\
                 case '&':
                     sb.append("&amp;");
                     break;
@@ -527,7 +539,7 @@ public final class Util {
                 }
                 if (annotation.getFileVersion(r) != 0) {
                     out.write("&lt;br/&gt;version: " + annotation.getFileVersion(r) + "/"
-                            + annotation.getFileVersionsCount());
+                            + annotation.getRevisions().size());
                 }
                 out.write(closeQuotedTag);
             }
@@ -908,6 +920,223 @@ public final class Util {
                     "An error occured while piping file " + file + ": ", e);
         }
         return false;
+    }
+    
+    /**
+     * Print list of messages into output
+     *
+     * @param out output
+     * @param set set of messages
+     */
+    public static void printMessages(Writer out, SortedSet<Message> set) {
+        printMessages(out, set, false);
+    }
+
+    /**
+     * Print set of messages into output
+     *
+     * @param out output
+     * @param set set of messages
+     * @param limited if the container should be limited
+     */
+    public static void printMessages(Writer out, SortedSet<Message> set, boolean limited) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        if (!set.isEmpty()) {
+            try {
+                out.write("<ul class=\"message-group");
+                if (limited) {
+                    out.write(" limited");
+                }
+                out.write("\">\n");
+                for (Message m : set) {
+                    out.write("<li class=\"message-group-item ");
+                    out.write(Util.encode(m.getClassName()));
+                    out.write("\" title=\"Expires on ");
+                    out.write(Util.encode(df.format(m.getExpiration())));
+                    out.write("\">");
+                    out.write(Util.encode(df.format(m.getCreated())));
+                    out.write(": ");
+                    out.write(m.getText());
+                    out.write("</li>");
+                }
+                out.write("</ul>");
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING,
+                        "An error occured for a group of messages", ex);
+            }
+        }
+    }
+
+    /**
+     * Print set of messages into json array
+     *
+     * @param set set of messages
+     * @return json array containing the set of messages
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONArray messagesToJson(SortedSet<Message> set) {
+        JSONArray array = new JSONArray();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        for (Message m : set) {
+            JSONObject message = new JSONObject();
+            message.put("class", Util.encode(m.getClassName()));
+            message.put("expiration", Util.encode(df.format(m.getExpiration())));
+            message.put("created", Util.encode(df.format(m.getCreated())));
+            message.put("text", Util.encode(m.getText()));
+            JSONArray tags = new JSONArray();
+            for (String t : m.getTags()) {
+                tags.add(Util.encode(t));
+            }
+            message.put("tags", tags);
+            array.add(message);
+        }
+        return array;
+    }
+
+    /**
+     * Print set of messages into json object for given tag.
+     *
+     * @param tag return messages in json format for the given tag
+     * @return json object with 'tag' and 'messages' attribute or null
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONObject messagesToJsonObject(String tag) {
+        SortedSet<Message> messages = RuntimeEnvironment.getInstance().getMessages(tag);
+        if (messages.isEmpty()) {
+            return null;
+        }
+        JSONObject toRet = new JSONObject();
+        toRet.put("tag", tag);
+        toRet.put("messages", messagesToJson(messages));
+        return toRet;
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param array the array where the result should be stored
+     * @param tags list of tags
+     * @return json array of the messages (the same as the parameter)
+     * @see #messagesToJsonObject(String)
+     */
+    @SuppressWarnings("unchecked")
+    public static JSONArray messagesToJson(JSONArray array, String... tags) {
+        array = array == null ? new JSONArray() : array;
+        for (String tag : tags) {
+            JSONObject messages = messagesToJsonObject(tag);
+            if (messages == null || messages.isEmpty()) {
+                continue;
+            }
+            array.add(messages);
+        }
+        return array;
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param tags list of tags
+     * @return json array of the messages
+     * @see #messagesToJson(JSONArray, String...)
+     * @see #messagesToJsonObject(String)
+     */
+    public static JSONArray messagesToJson(String... tags) {
+        return messagesToJson((JSONArray) null, tags);
+    }
+
+    /**
+     * Print messages for given tags into json array
+     *
+     * @param tags list of tags
+     * @return json array of the messages
+     * @see #messagesToJson(String...)
+     * @see #messagesToJsonObject(String)
+     */
+    public static JSONArray messagesToJson(List<String> tags) {
+        String[] array = new String[tags.size()];
+        return messagesToJson(tags.toArray(array));
+    }
+
+    /**
+     * Print messages for given project into json array. These messages are
+     * tagged by project description or tagged by any of the project's group
+     * name.
+     *
+     * @param project the project
+     * @param additionalTags additional list of tags
+     * @return the json array
+     * @see #messagesToJson(String...)
+     */
+    public static JSONArray messagesToJson(Project project, String... additionalTags) {
+        if (project == null) {
+            return new JSONArray();
+        }
+        List<String> tags = new ArrayList<>();
+        tags.addAll(Arrays.asList(additionalTags));
+        tags.add(project.getDescription());
+        project.getGroups().stream().forEach((Group t) -> {
+            tags.add(t.getName());
+        });
+        return messagesToJson(tags);
+    }
+
+    /**
+     * Print messages for given project into json array. These messages are
+     * tagged by project description or tagged by any of the project's group
+     * name
+     *
+     * @param project the project
+     * @return the json array
+     * @see #messagesToJson(Project, String...)
+     */
+    public static JSONArray messagesToJson(Project project) {
+        return messagesToJson(project, new String[0]);
+    }
+
+    /**
+     * Print messages for given group into json array.
+     *
+     * @param group the group
+     * @param additionalTags additional list of tags
+     * @return the json array
+     * @see #messagesToJson(java.util.List)
+     */
+    public static JSONArray messagesToJson(Group group, String... additionalTags) {
+        List<String> tags = new ArrayList<>();
+        tags.add(group.getName());
+        tags.addAll(Arrays.asList(additionalTags));
+        return messagesToJson(tags);
+    }
+
+    /**
+     * Print messages for given group into json array.
+     *
+     * @param group the group
+     * @return the json array
+     * @see #messagesToJson(Group, String...)
+     */
+    public static JSONArray messagesToJson(Group group) {
+        return messagesToJson(group, new String[0]);
+    }
+
+    /**
+     * Convert statistics object into JSONObject.
+     *
+     * @param stats object containing statistics
+     * @return the json object
+     */
+    public static JSONObject statisticToJson(Statistics stats) {
+        return stats.toJson();
+    }
+
+    /**
+     * Convert JSONObject object into statistics.
+     *
+     * @param input object containing statistics
+     * @return the statistics object
+     */
+    public static Statistics jsonToStatistics(JSONObject input) {
+        return Statistics.from(input);
     }
 
     /**

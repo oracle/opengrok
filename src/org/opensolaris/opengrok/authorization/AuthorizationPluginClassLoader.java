@@ -28,6 +28,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -41,11 +43,15 @@ import org.opensolaris.opengrok.logger.LoggerFactory;
  */
 public class AuthorizationPluginClassLoader extends ClassLoader {
 
+    private final Map<String, Class> cache = new HashMap<>();
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationPluginClassLoader.class);
     private final static String[] classWhitelist = new String[]{
         "org.opensolaris.opengrok.configuration.Group",
         "org.opensolaris.opengrok.configuration.Project",
-        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin"
+        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
+        "org.opensolaris.opengrok.util.*",
+        "org.opensolaris.opengrok.logger.*",
     };
 
     private final static String[] packageBlacklist = new String[]{
@@ -65,43 +71,42 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
     }
 
     private Class loadClassFromJar(String classname) throws ClassNotFoundException {
-        try {
-            File[] jars = directory.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.endsWith(".jar");
-                }
-            });
-
-            if (jars == null) {
-                throw new IOException("Directory " + directory + " is not accessible");
+        File[] jars = directory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".jar");
             }
+        });
 
-            for (File f : jars) {
-                try (JarFile jar = new JarFile(f)) {
-                    String filename = classname.replace('.', File.separatorChar) + ".class";
-                    JarEntry entry = (JarEntry) jar.getEntry(filename);
-                    if (entry != null && entry.getName().endsWith(".class")) {
-                        try (InputStream is = jar.getInputStream(entry)) {
-                            byte[] bytes = loadBytes(is);
-                            Class c = defineClass(classname, bytes, 0, bytes.length);
-                            LOGGER.log(Level.INFO, "Class \"{0}\" found in file \"{1}\"",
-                                    new Object[]{
-                                        classname,
-                                        f.getAbsolutePath()
-                                    });
-                            return c;
+        if (jars == null) {
+            throw new ClassNotFoundException(
+                    "Cannot load class " + classname,
+                    new IOException("Directory " + directory + " is not accessible"));
+        }
 
-                        }
+        for (File f : jars) {
+            try (JarFile jar = new JarFile(f)) {
+                String filename = classname.replace('.', File.separatorChar) + ".class";
+                JarEntry entry = (JarEntry) jar.getEntry(filename);
+                if (entry != null && entry.getName().endsWith(".class")) {
+                    try (InputStream is = jar.getInputStream(entry)) {
+                        byte[] bytes = loadBytes(is);
+                        Class c = defineClass(classname, bytes, 0, bytes.length);
+                        LOGGER.log(Level.INFO, "Class \"{0}\" found in file \"{1}\"",
+                                new Object[]{
+                                    classname,
+                                    f.getAbsolutePath()
+                                });
+                        return c;
                     }
                 }
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Loading class threw an exception:", ex);
+            } catch (Throwable ex) {
+                LOGGER.log(Level.SEVERE, "Loading class threw an uknown exception:", ex);
             }
-        } catch (IOException e) {
-            throw new ClassNotFoundException(e.toString(), e);
-        } catch (Throwable e) {
-            throw new ClassNotFoundException(e.toString(), e);
         }
-        return null;
+        throw new ClassNotFoundException("Class \"" + classname + "\" could not be found");
     }
 
     private Class loadClassFromFile(String classname) throws ClassNotFoundException {
@@ -132,9 +137,21 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
         return bytes;
     }
 
+    private boolean checkWhiteList(String name) {
+        for (int i = 0; i < classWhitelist.length; i++) {
+            String pattern = classWhitelist[i];
+            pattern = pattern.replaceAll("\\.", "\\\\.");
+            pattern = pattern.replaceAll("\\*", ".*");
+            if (name.matches(pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void checkClassname(String name) throws SecurityException {
         if (name.startsWith("org.opensolaris.opengrok.")
-                && !Arrays.asList(classWhitelist).contains(name)) {
+                && !checkWhiteList(name)) {
             throw new SecurityException("Tried to load a blacklisted class \"" + name + "\"\n"
                     + "Allowed classes from opengrok package are only: "
                     + Arrays.toString(classWhitelist));
@@ -152,7 +169,7 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
             }
         }
     }
-
+    
     /**
      * Loads the class with given name.
      *
@@ -161,22 +178,62 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
      * @see #packageBlacklist Classes whitelist:
      * @see #classWhitelist
      *
-     * Order of lookup: 1) already loaded classes 2) parent class loader 3)
-     * loading from .class files 4) loading from .jar files
+     * Order of lookup: 
+     * 1) already loaded classes 
+     * 2) parent class loader 
+     * 3) loading from .class files 
+     * 4) loading from .jar files
      *
-     * @param name
+     * @param name class name
      * @return loaded class or null
-     * @throws ClassNotFoundException
-     * @throws SecurityException
+     * @throws ClassNotFoundException if class is not found
+     * @throws SecurityException if the loader cannot access the class
      */
     @Override
     public Class loadClass(String name) throws ClassNotFoundException, SecurityException {
-        Class c = null;
+        return loadClass(name, true);
+    }
+    
+    /**
+     * Loads the class with given name.
+     *
+     * Package blacklist:
+     *
+
+     * @see #packageBlacklist Classes whitelist:
+     * @see #classWhitelist
+     *
+     * Order of lookup: 
+     * 1) already loaded classes 
+     * 2) parent class loader 
+     * 3) loading from .class files 
+     * 4) loading from .jar files
+     *
+     * @param name class name
+     * @param resolveIt if the class should be resolved
+     * @return loaded class or null
+     * @throws ClassNotFoundException if class is not found
+     * @throws SecurityException if the loader cannot access the class
+     */
+    @Override
+    public Class loadClass(String name, boolean resolveIt) throws ClassNotFoundException, SecurityException {
+        Class c;
+
+        if ((c = cache.get(name)) != null) {
+            if (resolveIt) {
+                resolveClass(c);
+            }
+            return c;
+        }
 
         checkClassname(name);
 
         // find already loaded class
         if ((c = findLoadedClass(name)) != null) {
+            cache.put(name, c);
+            if (resolveIt) {
+                resolveClass(c);
+            }
             return c;
         }
 
@@ -184,6 +241,10 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
         if (this.getParent() != null) {
             try {
                 if ((c = this.getParent().loadClass(name)) != null) {
+                    cache.put(name, c);
+                    if (resolveIt) {
+                        resolveClass(c);
+                    }
                     return c;
                 }
             } catch (ClassNotFoundException ex) {
@@ -194,6 +255,10 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
             checkPackage(name);
             // load it from file
             if ((c = loadClassFromFile(name)) != null) {
+                cache.put(name, c);
+                if (resolveIt) {
+                    resolveClass(c);
+                }
                 return c;
             }
         } catch (ClassNotFoundException ex) {
@@ -203,6 +268,10 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
             checkPackage(name);
             // load it from jar
             if ((c = loadClassFromJar(name)) != null) {
+                cache.put(name, c);
+                if (resolveIt) {
+                    resolveClass(c);
+                }
                 return c;
             }
         } catch (ClassNotFoundException ex) {
@@ -210,5 +279,4 @@ public class AuthorizationPluginClassLoader extends ClassLoader {
 
         throw new ClassNotFoundException("Class \"" + name + "\" was not found");
     }
-
 }

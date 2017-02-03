@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -88,6 +88,23 @@ public class DirectoryListing {
     }
 
     /**
+     * Traverse directory until subdirectory with more than one item
+     * (other than directory) or end of path is reached.
+     * @param dir directory to traverse
+     * @return string representing path with empty directories or the name of the directory
+     */
+    private static String getSimplifiedPath(File dir) {
+        String[] files = dir.list();
+        if (files.length == 1) {
+            File entry = new File(dir, files[0]);
+            if (entry.isDirectory()) {
+                return (dir.getName() + "/" + getSimplifiedPath(entry));
+            }
+        }
+        return dir.getName();
+    }
+
+    /**
      * Write a htmlized listing of the given directory to the given destination.
      *
      * @param contextPath path used for link prefixes
@@ -120,10 +137,16 @@ public class DirectoryListing {
             }
         }
 
-        out.write("<table id=\"dirlist\" class=\"tablesorter\">\n");
-        out.write("<thead>\n<tr><th></th><th>Name</th><th></th><th>Date</th><th>Size</th>");
+        out.write("<table id=\"dirlist\" class=\"tablesorter tablesorter-default\">\n");
+        out.write("<thead>\n");
+        out.write("<tr>\n");
+        out.write("<th class=\"sorter-false\"></th>\n");
+        out.write("<th>Name</th>\n");
+        out.write("<th class=\"sorter-false\"></th>\n");
+        out.write("<th class=\"sort-dates\">Date</th>\n");
+        out.write("<th class=\"sort-groksizes\">Size</th>\n");
         if (offset > 0) {
-            out.write("<th><tt>Description</tt></th>");
+            out.write("<th><tt>Description</tt></th>\n");
         }
         out.write("</tr>\n</thead>\n<tbody>\n");
         IgnoredNames ignoredNames = RuntimeEnvironment.getInstance().getIgnoredNames();
@@ -161,12 +184,22 @@ public class DirectoryListing {
                 out.write(isDir ? 'r' : 'p');
                 out.write("\"/>");
                 out.write("</td><td><a href=\"");
-                out.write(Util.URIEncodePath(file));
                 if (isDir) {
+                    String longpath = getSimplifiedPath(child);
+                    out.write(Util.URIEncodePath(longpath));
                     out.write("/\"><b>");
-                    out.write(file);
+                    int idx;
+                    if ((idx = longpath.lastIndexOf('/')) > 0) {
+                        out.write("<span class=\"simplified-path\">");
+                        out.write(longpath.substring(0, idx + 1));
+                        out.write("</span>");
+                        out.write(longpath.substring(idx + 1));
+                    } else {
+                        out.write(longpath);
+                    }
                     out.write("</b></a>/");
                 } else {
+                    out.write(Util.URIEncodePath(file));
                     out.write("\">");
                     out.write(file);
                     out.write("</a>");

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.archive;
 
@@ -107,13 +107,5 @@ public class GZIPAnalyzer extends FileAnalyzer {
                         new GZIPInputStream(src.getStream()));
             }
         };
-    }
-
-    @Override
-    public TokenStreamComponents createComponents(String fieldName) {
-        if (fa != null) {
-            return fa.createComponents(fieldName);
-        }
-        return super.createComponents(fieldName);
-    }
+    }    
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2011, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions copyright (c) 2011 Jens Elkner. 
  */
 package org.opensolaris.opengrok.web;
@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -57,6 +55,8 @@ import org.apache.lucene.store.FSDirectory;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.analysis.CompatibleAnalyser;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
+import org.opensolaris.opengrok.configuration.SuperIndexSearcher;
 import org.opensolaris.opengrok.index.IndexDatabase;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -76,6 +76,7 @@ public class SearchHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchHelper.class);
 
+    public static final String REQUEST_ATTR = "SearchHelper";
     /**
      * max number of words to suggest for spellcheck
      */
@@ -146,6 +147,16 @@ public class SearchHelper {
      */
     public IndexSearcher searcher;
     /**
+     * If performing multi-project search, the indexSearcher objects will be
+     * tracked by the indexSearcherMap so that they can be properly released
+     * once the results are read.
+     */
+    private final ArrayList<SuperIndexSearcher> searcherList = new ArrayList<>();
+    /**
+     * close IndexReader associated with searches on destroy()
+     */
+    private Boolean closeOnDestroy;
+    /**
      * list of docs which result from the executing the query
      */
     public ScoreDoc[] hits;
@@ -159,7 +170,7 @@ public class SearchHelper {
      */
     public Query query;
     /**
-     * the lucene sort instruction based on {@link #order} created via
+     * the Lucene sort instruction based on {@link #order} created via
      * {@link #prepareExec(SortedSet)}.
      */
     protected Sort sort;
@@ -179,7 +190,7 @@ public class SearchHelper {
     /**
      * result summarizer usually created via {@link #prepareSummary()}.
      */
-    public Summarizer summerizer = null;
+    public Summarizer summarizer = null;
     /**
      * history context usually created via {@link #prepareSummary()}.
      */
@@ -193,7 +204,6 @@ public class SearchHelper {
      * Default query parse error message prefix
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";
-    private ExecutorService executor = null;
 
     /**
      * User readable description for file types. Only those listed in
@@ -223,8 +233,8 @@ public class SearchHelper {
      * <li>{@link #projects}</li> <li>{@link #errorMsg} if an error occurs</li>
      * </ul>
      *
-     * @param projects project to use query. If empty, a none-project opengrok
-     * setup is assumed (i.e. DATA_ROOT/index will be used instead of possible
+     * @param projects project to use query. If empty, a no-project setup
+     * is assumed (i.e. DATA_ROOT/index will be used instead of possible
      * multiple DATA_ROOT/$project/index).
      * @return this instance
      */
@@ -242,37 +252,29 @@ public class SearchHelper {
             }
             this.projects = projects;
             if (projects.isEmpty()) {
-                //no project setup
+                // no project setup
                 FSDirectory dir = FSDirectory.open(indexDir.toPath());
                 searcher = new IndexSearcher(DirectoryReader.open(dir));
-            } else if (projects.size() == 1) {
-                // just 1 project selected
-                FSDirectory dir
-                        = FSDirectory.open(new File(indexDir, projects.first()).toPath());
-                searcher = new IndexSearcher(DirectoryReader.open(dir));
+                closeOnDestroy = true;
             } else {
-                //more projects
-                IndexReader[] subreaders = new IndexReader[projects.size()];
-                int ii = 0;
-                //TODO might need to rewrite to Project instead of
-                // String , need changes in projects.jspf too
-                for (String proj : projects) {
-                    FSDirectory dir = FSDirectory.open(new File(indexDir, proj).toPath());
-                    subreaders[ii++] = DirectoryReader.open(dir);
+                // We use MultiReader even for single project. This should
+                // not matter given that MultiReader is just a cheap wrapper
+                // around set of IndexReader objects.
+                closeOnDestroy = false;
+                MultiReader multireader = RuntimeEnvironment.getInstance().
+                    getMultiReader(projects, searcherList);
+                if (multireader != null) {
+                    searcher = new IndexSearcher(multireader);
+                } else {
+                    errorMsg = "Failed to initialize search. Check the index.";
                 }
-                MultiReader searchables = new MultiReader(subreaders, true);
-                if (parallel) {
-                    int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors()); //TODO there might be a better way for counting this
-                    executor = Executors.newFixedThreadPool(noThreads);
-                }
-                searcher = parallel
-                        ? new IndexSearcher(searchables, executor)
-                        : new IndexSearcher(searchables);
             }
+
             // TODO check if below is somehow reusing sessions so we don't
             // requery again and again, I guess 2min timeout sessions could be
             // usefull, since you click on the next page within 2mins, if not,
             // then wait ;)
+            // Most probably they are not reused. SearcherLifetimeManager might help here.
             switch (order) {
                 case LASTMODIFIED:
                     sort = new Sort(new SortField(QueryBuilder.DATE, SortField.Type.STRING, true));
@@ -367,7 +369,8 @@ public class SearchHelper {
         String[] toks = TABSPACE.split(term.text(), 0);
         for (String tok : toks) {
             //TODO below seems to be case insensitive ... for refs/defs this is bad
-            SuggestWord[] words = checker.suggestSimilar(new Term(term.field(), tok), SPELLCHECK_SUGGEST_WORD_COUNT, ir, SuggestMode.SUGGEST_ALWAYS);
+            SuggestWord[] words = checker.suggestSimilar(new Term(term.field(), tok),
+                SPELLCHECK_SUGGEST_WORD_COUNT, ir, SuggestMode.SUGGEST_ALWAYS);
             for (SuggestWord w : words) {
                 result.add(w.string);
             }
@@ -409,8 +412,14 @@ public class SearchHelper {
         for (String proj : name) {
             Suggestion s = new Suggestion(proj);
             try {
-                dir = FSDirectory.open(new File(indexDir, proj).toPath());
-                ir = DirectoryReader.open(dir);
+                if (!closeOnDestroy) {
+                    SuperIndexSearcher searcher = RuntimeEnvironment.getInstance().getIndexSearcher(proj);
+                    searcherList.add(searcher);
+                    ir = searcher.getIndexReader();
+                } else {
+                    dir = FSDirectory.open(new File(indexDir, proj).toPath());
+                    ir = DirectoryReader.open(dir);
+                }
                 if (builder.getFreetext() != null
                         && !builder.getFreetext().isEmpty()) {
                     t = new Term(QueryBuilder.FULL, builder.getFreetext());
@@ -440,7 +449,7 @@ public class SearchHelper {
                 LOGGER.log(Level.WARNING, "Got exception while getting "
                         + "spelling suggestions: ", e);
             } finally {
-                if (ir != null) {
+                if (ir != null && closeOnDestroy) {
                     try {
                         ir.close();
                     } catch (IOException ex) {
@@ -461,7 +470,7 @@ public class SearchHelper {
      * Parameters which should be populated/set at this time: <ul>
      * <li>{@link #query}</li> <li>{@link #builder}</li> </ul> Populates/sets:
      * Otherwise the following fields are set (includes {@code null}): <ul>
-     * <li>{@link #sourceContext}</li> <li>{@link #summerizer}</li>
+     * <li>{@link #sourceContext}</li> <li>{@link #summarizer}</li>
      * <li>{@link #historyContext}</li> </ul>
      *
      * @return this instance.
@@ -472,9 +481,9 @@ public class SearchHelper {
         }
         try {
             sourceContext = new Context(query, builder.getQueries());
-            summerizer = new Summarizer(query, new CompatibleAnalyser());
+            summarizer = new Summarizer(query, new CompatibleAnalyser());
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Summerizer: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "Summarizer: {0}", e.getMessage());
         }
         try {
             historyContext = new HistoryContext(query);
@@ -486,19 +495,18 @@ public class SearchHelper {
 
     /**
      * Free any resources associated with this helper (that includes closing the
-     * used {@link #searcher}).
+     * used {@link #searcher} in case of no-project setup).
      */
     public void destroy() {
-        if (searcher != null) {
+        if (searcher != null && closeOnDestroy) {
             IOUtils.close(searcher.getIndexReader());
         }
 
-        if (executor != null) {
+        for (SuperIndexSearcher is : searcherList) {
             try {
-                executor.shutdown();
-            } catch (SecurityException se) {
-                LOGGER.warning(se.getLocalizedMessage());
-                LOGGER.log(Level.FINE, "destroy", se);
+                is.getSearcherManager().release(is);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "cannot release indexSearcher", ex);
             }
         }
     }

@@ -66,15 +66,20 @@ Example of a plugin is included in plugins directory in the root of the git repo
 Implementation
 --------------
 
-Each plugin must implement the IAuthorizationPlugin interface which contains three methods:
-1) void reload ( void );
-    This method is called whenever the framework reloads the plugins
-        - watchdog service enabled and change made
+Each plugin must implement the IAuthorizationPlugin interface which contains four methods:
+1) void load ( void );
+    This method is called whenever the framework loads the plugin into memory
+        - watchdog service enabled and change was made - forced reload
         - deploy of the webapp
-2) boolean isAllowed(HttpServletRequest request, Project project);
+2) void unload ( void );
+    This method is called whenever the framework destroyes the plugin
+        - watchdog service enabled and change was made - forced reload
+          (the order is first unload the old instance then load the new one)
+        - undeploy of the webapp
+3) boolean isAllowed(HttpServletRequest request, Project project);
     This method gives a decision if the project should be allowed
     for the current request.
-3) boolean isAllowed(HttpServletRequest request, Group group);
+4) boolean isAllowed(HttpServletRequest request, Group group);
     This analogically gives the same decision for the group.
 
 All those methods are also described in the code.
@@ -90,7 +95,9 @@ Custom classloader restricts the plugin to load only this classes from org.opens
     private final static String[] classWhitelist = new String[]{
         "org.opensolaris.opengrok.configuration.Group",
         "org.opensolaris.opengrok.configuration.Project",
-        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin"
+        "org.opensolaris.opengrok.authorization.IAuthorizationPlugin",
+        "org.opensolaris.opengrok.util.*",
+        "org.opensolaris.opengrok.logger.*",
     };
 
 And explicitly forbids these packages to be extended.
@@ -110,6 +117,7 @@ Set up
 ------
 
 The plugin class must be compiled to the .class file (and the it can be packaged into .jar file).
+The frameworks supports both .class and .jar files.
 For compiling you have to provide opengrok.jar in the classpath
 
 Example (for the SampleAuthorizaionPlugin which is included):

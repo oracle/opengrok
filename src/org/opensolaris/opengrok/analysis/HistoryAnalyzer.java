@@ -23,8 +23,8 @@
 package org.opensolaris.opengrok.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.StopFilter;
-import org.apache.lucene.analysis.util.CharArraySet;
+import org.apache.lucene.analysis.StopFilter;
+import org.apache.lucene.analysis.CharArraySet;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 
 public final class HistoryAnalyzer extends Analyzer {

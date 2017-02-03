@@ -73,8 +73,8 @@ public final class AuthorizationFramework {
     /**
      * Checks if the request should have an access to project.
      *
-     * @param request
-     * @param project
+     * @param request request object
+     * @param project project object
      * @return true if yes
      */
     public boolean isAllowed(HttpServletRequest request, Project project) {
@@ -93,8 +93,8 @@ public final class AuthorizationFramework {
     /**
      * Checks if the request should have an access to group.
      *
-     * @param request
-     * @param group
+     * @param request request object
+     * @param group group object
      * @return true if yes
      */
     public boolean isAllowed(HttpServletRequest request, Group group) {
@@ -145,6 +145,11 @@ public final class AuthorizationFramework {
 
     private void removePlugin(IAuthorizationPlugin plugin) {
         synchronized (this) {
+            try {
+                plugin.unload();
+            } catch (Throwable ex) {
+                LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while unloading with exception:", ex);
+            }
             plugins.remove(plugin);
         }
 
@@ -158,12 +163,19 @@ public final class AuthorizationFramework {
 
     private void removeAll() {
         synchronized (this) {
+            for (IAuthorizationPlugin plugin : getPlugins()) {
+                try {
+                    plugin.unload();
+                } catch (Throwable ex) {
+                    LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while unloading with exception:", ex);
+                }
+            }
             plugins.clear();
         }
     }
 
     /**
-     * @param suffix
+     * @param suffix suffix for the files
      * @return list of file with suffix
      */
     private List<File> listFiles(String suffix) {
@@ -180,7 +192,7 @@ public final class AuthorizationFramework {
     }
 
     /**
-     * @param suffix
+     * @param suffix suffix for the files
      * @return recursively traversed list of files with given suffix
      */
     private List<File> listFilesRec(String suffix) {
@@ -215,6 +227,8 @@ public final class AuthorizationFramework {
             LOGGER.log(Level.INFO, "Class couldn not be instantiated: ", ex);
         } catch (IllegalAccessException ex) {
             LOGGER.log(Level.INFO, "Class loader threw an exception: ", ex);
+        } catch (Throwable ex) {
+            LOGGER.log(Level.INFO, "Class loader threw an uknown error: ", ex);
         }
     }
 
@@ -242,11 +256,10 @@ public final class AuthorizationFramework {
     }
 
     private String getClassName(File f) {
-        // TODO recursively discover classes
         String classname = f.getAbsolutePath().substring(directory.getAbsolutePath().length() + 1, f.getAbsolutePath().length());
         classname = classname.replace(File.separatorChar, '.'); // convert to package name
-        classname = classname.substring(0, classname.lastIndexOf('.'));
-        return classname; // strip .class
+        classname = classname.substring(0, classname.lastIndexOf('.')); // strip .class
+        return classname;
     }
 
     private String getClassName(JarEntry f) {
@@ -260,9 +273,10 @@ public final class AuthorizationFramework {
      * Plugins are taken from the pluginDirectory (set in web.xml).
      *
      * Old instances of plugins are removed and new list of plugins is
-     * constructed. Reload event is fired on each plugin.
+     * constructed. Unload and load event is fired on each plugin.
      *
-     * @see IAuthorizationPlugin#reload()
+     * @see IAuthorizationPlugin#load() 
+     * @see IAuthorizationPlugin#unload() 
      */
     @SuppressWarnings("unchecked")
     public synchronized void reload() {
@@ -272,12 +286,14 @@ public final class AuthorizationFramework {
         LOGGER.log(Level.INFO, "Plugins are being reloaded from " + directory.getAbsolutePath());
         removeAll();
         // trashing out the old instance of the loaded enables us
-        // to reaload the plugins on runtime
+        // to reaload the plugins at runtime
         loader = (AuthorizationPluginClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
                 return new AuthorizationPluginClassLoader(directory);
             }
         });
+        
+        removeAll();
         plugins = new ArrayList<>();
 
         List<File> classfiles = listFilesRec(".class");
@@ -306,8 +322,15 @@ public final class AuthorizationFramework {
                 LOGGER.log(Level.INFO, "Could not manipulate with file because of: ", ex);
             }
         }
-        for (IAuthorizationPlugin plugin : plugins) {
-            plugin.reload();
+        
+        for (IAuthorizationPlugin plugin : getPlugins()) {
+            try {
+                plugin.load();
+            } catch (Throwable ex) {
+                // remove faulty plugin
+                LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed while loading with exception:", ex);
+                removePlugin(plugin);
+            }
         }
     }
 
@@ -316,8 +339,10 @@ public final class AuthorizationFramework {
      *
      * Internally performed with a predicate. Using cache in request attributes.
      *
-     * @param request
-     * @param project
+     * @param request request object
+     * @param cache cache
+     * @param name name
+     * @param predicate predicate
      * @return true if yes
      */
     @SuppressWarnings("unchecked")
@@ -343,8 +368,8 @@ public final class AuthorizationFramework {
                     return false;
                 }
             } catch (Throwable ex) {
-                removePlugin(plugin);
                 LOGGER.log(Level.SEVERE, "Plugin \"" + plugin.getClass().getName() + "\" has failed with exception:", ex);
+                removePlugin(plugin);
             }
         }
 

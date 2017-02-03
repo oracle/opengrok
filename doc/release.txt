@@ -10,14 +10,16 @@ jars/dirs for tests
 
    and put some stuff into CHANGES.txt
 
-   Then commit the change:
+   Then commit and push the change:
 
-     git commit
+     git commit build.xml
+     git push
 
 1) build must be clean
 
    ant clean
    ant # defaults to jar currently
+   ant package
 
 2) check all tests, tests code coverage:
    junit, pmd, findbugs, checkstyle, emma, jdepend
@@ -48,6 +50,7 @@ The command above creates both formats of package .pkg and .p5p into the directo
 
 
 Note that for the IPS package *.p5p the version names are translated this way:
+
 0.12          ~       0.12.0.1.0
 0.<n>         ~       0.<n>.0.1.0
 ...
@@ -56,7 +59,8 @@ Note that for the IPS package *.p5p the version names are translated this way:
 0.12-rc<i>    ~       0.12.0.0.<i>
 ...
 
-(Note that the release candidate must follow imediately after the basic version number (0.12))
+(Note that the release candidate must follow imediately after the basic version
+number (0.12))
 
 
 0.12.1        ~       0.12.1.0.0
@@ -68,6 +72,14 @@ Note that for the IPS package *.p5p the version names are translated this way:
 ...
 
 5) Upload them using https://github.com/OpenGrok/OpenGrok/releases
+
+   Note that the files has to be stored in a ZIP file for github to accept
+   them so use incantation like follows:
+
+     echo opengrok-0.13-rc1.tar.gz | zip -0 -@ opengrok-0.13-rc1.zip
+
+   Uploading from behing a proxy does not work so it is recommended to use
+   direct internet connection.
 
    Also generate cryptographic digests for all the binaries,
    e.g. using openssl:

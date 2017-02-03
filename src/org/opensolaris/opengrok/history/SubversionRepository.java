@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2016, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -32,13 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
 import org.w3c.dom.Document;
@@ -78,7 +76,11 @@ public class SubversionRepository extends Repository {
 
     public SubversionRepository() {
         type = "Subversion";
-        datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+        datePatterns = new String[]{
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        };
     }
 
     private String getValue(Node node) {

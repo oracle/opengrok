@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2006, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.Executor;
@@ -115,23 +114,27 @@ public class MercurialRepository extends Repository {
 
     public MercurialRepository() {
         type = "Mercurial";
-        datePattern = "yyyy-MM-dd hh:mm ZZZZ";
+        datePatterns = new String[]{
+            "yyyy-MM-dd hh:mm ZZZZ"
+        };
     }
 
     /**
      * Return name of the branch or "default"
      */
     @Override
-    String determineBranch() {
+    String determineBranch() throws IOException {
         List<String> cmd = new ArrayList<>();
         ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
         cmd.add(RepoCommand);
         cmd.add("branch");
 
-        Executor e = new Executor(cmd, new File(directoryName));
-        e.exec();
+        Executor executor = new Executor(cmd, new File(directoryName));
+        if (executor.exec(false) != 0) {
+            throw new IOException(executor.getErrorString());
+        }
 
-        return e.getOutputString().trim();
+        return executor.getOutputString().trim();
     }
 
     /**
@@ -673,7 +676,29 @@ public class MercurialRepository extends Repository {
         cmd.add("paths");
         cmd.add("default");
         Executor executor = new Executor(cmd, directory);
-        if (executor.exec() != 0) {
+        if (executor.exec(false) != 0) {
+            throw new IOException(executor.getErrorString());
+        }
+
+        return executor.getOutputString().trim();
+    }
+
+    @Override
+    String determineCurrentVersion() throws IOException {
+        String line = null;
+        File directory = new File(directoryName);
+
+        List<String> cmd = new ArrayList<>();
+        ensureCommand(CMD_PROPERTY_KEY, CMD_FALLBACK);
+        cmd.add(RepoCommand);
+        cmd.add("log");
+        cmd.add("-l");
+        cmd.add("1");
+        cmd.add("--template");
+        cmd.add("{date|isodate}: {node|short} {author} {desc|strip}");
+
+        Executor executor = new Executor(cmd, directory);
+        if (executor.exec(false) != 0) {
             throw new IOException(executor.getErrorString());
         }
 

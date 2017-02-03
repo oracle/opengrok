@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Placeholder for the information that builds up a project
@@ -43,6 +45,11 @@ public class Project implements Comparable<Project> {
      * projects with non-standard tab size.
      */
     private int tabSize;
+    
+    /**
+     * Set of groups which match this project.
+     */
+    private Set<Group> groups = new TreeSet<>();
 
     /**
      * Get a textual description of this project
@@ -123,6 +130,30 @@ public class Project implements Comparable<Project> {
         return tabSize > 0;
     }
 
+    /**
+     * Return groups where this project belongs
+     *
+     * @return set of groups|empty if none
+     */
+    public Set<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
+    }
+
+    /**
+     * Adds a group where this project belongs
+     *
+     * @param group group to add
+     */
+    public void addGroup(Group group) {
+        while (group != null) {
+            this.groups.add(group);
+            group = group.getParent();
+        }
+    }
 
     /**
      * Get the project for a specific file
