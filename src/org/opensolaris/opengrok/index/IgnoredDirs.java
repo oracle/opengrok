@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
@@ -58,7 +58,7 @@ public final class IgnoredDirs extends Filter {
      * @return true if this file should be ignored, false otherwise
      */
     public boolean ignore(File file) {
-        return match(file) && file.isDirectory();
+        return file.isDirectory() && match(file);
     }
 
     /**
