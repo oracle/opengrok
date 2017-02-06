@@ -1201,6 +1201,9 @@ function init_searchable_option_list() {
         showSelectAll: false,
         maxShow: 30,
         resultsContainer: $("#ltbl"),
+        texts: {
+            searchplaceholder: 'Click here to select project(s)'
+        },
         events: {
             onInitialized: function () {
                 if ($.messagesWindow.initialized) {
