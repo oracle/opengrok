@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.history;
 
@@ -82,9 +82,9 @@ public final class RepositoryFactory {
      * @param file File that might contain a repository
      * @return Correct repository for the given file
      * @throws java.lang.InstantiationException in case we cannot create the
-     * repo object
-     * @throws java.lang.IllegalAccessException in case no permissions to repo
-     * file
+     * repository object
+     * @throws java.lang.IllegalAccessException in case no permissions
+     * to repository file
      */
     public static Repository getRepository(File file) throws InstantiationException, IllegalAccessException {
         RuntimeEnvironment env = RuntimeEnvironment.getInstance();
