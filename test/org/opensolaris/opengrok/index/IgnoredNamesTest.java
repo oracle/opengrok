@@ -18,22 +18,34 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
+import java.beans.ExceptionListener;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import junit.framework.AssertionFailedError;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.c.CAnalyzerFactoryTest;
+import org.opensolaris.opengrok.util.FileUtilities;
 import org.opensolaris.opengrok.util.TestRepository;
 
 /**
@@ -110,5 +122,71 @@ public class IgnoredNamesTest {
         instance.clear();
         names = instance.getItems();
         assertEquals(0, names.size());
+    }
+
+    /**
+     * Make sure that encoding and decoding IgnoredNames object is 1:1 operation.
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    @Test
+    public void testEncodeDecode() throws FileNotFoundException, IOException {
+        IgnoredNames in = new IgnoredNames();
+        // Add file and directory to list of ignored items.
+        in.add("f:foo.txt");
+        in.add("d:bar");
+
+        // Create an exception listener to detect errors while encoding and decoding
+        final LinkedList<Exception> exceptions = new LinkedList<Exception>();
+        ExceptionListener listener = new ExceptionListener() {
+            @Override
+            public void exceptionThrown(Exception e) {
+                exceptions.addLast(e);
+            }
+        };
+
+        // Actually create the file and directory for much better test coverage.
+        File tmpdir = FileUtilities.createTemporaryDirectory("ignoredNames");
+        File foo = new File(tmpdir, "foo.txt");
+        foo.createNewFile();
+        assertTrue(foo.isFile());
+        File bar = new File(tmpdir, "bar");
+        bar.mkdir();
+        assertTrue(bar.isDirectory());
+
+        // Store the IgnoredNames object as XML file.
+        File testXML = new File(tmpdir, "Test.xml");
+        XMLEncoder e = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(testXML)));
+        e.setExceptionListener(listener);
+        e.writeObject(in);
+        e.close();
+
+        // Restore the IgnoredNames object from XML file.
+        XMLDecoder d = new XMLDecoder(new FileInputStream(testXML));
+        IgnoredNames in2 = (IgnoredNames) d.readObject();
+        d.close();
+
+        // Verify that the XML encoding/decoding did not fail.
+        if (!exceptions.isEmpty()) {
+            AssertionFailedError afe = new AssertionFailedError(
+                    "Got " + exceptions.size() + " exception(s)");
+            // Can only chain one of the exceptions. Take the first one.
+            afe.initCause(exceptions.getFirst());
+            throw afe;
+        }
+
+        // Make sure the complete list of items is equal after decoding.
+        // This will is a simple casual test that cannot verify that sub-classes
+        // are intact. For that there are the following tests.
+        assertTrue(in.getItems().containsAll(in2.getItems()));
+
+        // Use the restored object to test the matching of file and directory.
+        assertTrue(in2.ignore("foo.txt"));
+        assertTrue(in2.ignore("bar"));
+        assertTrue(in2.ignore(foo));
+        assertTrue(in2.ignore(bar));
+
+        // Cleanup.
+        FileUtilities.removeDirs(tmpdir);
     }
 }

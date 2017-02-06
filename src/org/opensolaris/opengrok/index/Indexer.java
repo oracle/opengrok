@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  *
  * Portions Copyright 2011 Jens Elkner.
  */
@@ -41,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.opensolaris.opengrok.Info;
 import org.opensolaris.opengrok.analysis.AnalyzerGuru;
 import org.opensolaris.opengrok.configuration.Configuration;
@@ -775,11 +776,12 @@ public final class Indexer {
             LOGGER.info("Done...");
         }
 
-         if (refreshHistory) {
-             if (repositories != null && !repositories.isEmpty()) {
-                  LOGGER.log(Level.INFO, "Generating history cache for specified repositories ...");
-                  HistoryGuru.getInstance().createCache(repositories);
-                  LOGGER.info("Done...");
+        if (refreshHistory) {
+            if (repositories != null && !repositories.isEmpty()) {
+                LOGGER.log(Level.INFO, "Generating history cache for repositories: " +
+                    repositories.stream().collect(Collectors.joining(",")));
+                HistoryGuru.getInstance().createCache(repositories);
+                LOGGER.info("Done...");
               } else {
                   LOGGER.log(Level.INFO, "Generating history cache for all repositories ...");
                   HistoryGuru.getInstance().createCache();

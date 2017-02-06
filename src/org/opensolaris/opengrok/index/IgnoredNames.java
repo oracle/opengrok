@@ -18,11 +18,12 @@
  */
 
 /*
- * Copyright (c) 2015, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.index;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +32,11 @@ import java.util.List;
  *
  * @author Vladimir Kotal
  */
-public class IgnoredNames {
+public class IgnoredNames implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    private final IgnoredFiles ignoredFiles;
-    private final IgnoredDirs ignoredDirs;
+    private IgnoredFiles ignoredFiles;
+    private IgnoredDirs ignoredDirs;
 
     public IgnoredNames() {
         ignoredFiles = new IgnoredFiles();
@@ -48,6 +50,13 @@ public class IgnoredNames {
         return twoLists;
     }
 
+    public void setItems(List<String> item) {
+        clear();
+        for (String s : item) {
+            add(s);
+        }
+    }
+
     public void add(String pattern) {
         if (pattern.startsWith("f:")) {
             ignoredFiles.add(pattern.substring(2));
@@ -56,13 +65,6 @@ public class IgnoredNames {
         } else {
             // backward compatibility
             ignoredFiles.add(pattern);
-        }
-    }
-
-    public void setItems(List<String> item) {
-        clear();
-        for (String s : item) {
-            add(s);
         }
     }
 
@@ -93,5 +95,21 @@ public class IgnoredNames {
     public void clear() {
         ignoredFiles.clear();
         ignoredDirs.clear();
+    }
+
+    public IgnoredDirs getIgnoredDirs() {
+        return ignoredDirs;
+    }
+
+    public IgnoredFiles getIgnoredFiles() {
+        return ignoredFiles;
+    }
+
+    public void setIgnoredDirs(IgnoredDirs i) {
+        ignoredDirs = i;
+    }
+
+    public void setIgnoredFiles(IgnoredFiles i) {
+        ignoredFiles = i;
     }
 }
