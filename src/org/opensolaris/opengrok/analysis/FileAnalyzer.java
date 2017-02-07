@@ -146,7 +146,7 @@ public class FileAnalyzer extends Analyzer {
     public FileAnalyzer(FileAnalyzerFactory factory) {
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         this.factory = factory;        
-                        
+        SymbolTokenizer=new PlainSymbolTokenizer(null);                        
     }
     
     /**
@@ -180,13 +180,13 @@ public class FileAnalyzer extends Analyzer {
     }
     
     // you analyzer HAS to override this to get proper symbols in results
-    protected JFlexTokenizer SymbolTokenizer=new PlainSymbolTokenizer();
+    protected JFlexTokenizer SymbolTokenizer;
     
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case "full":
-                return new TokenStreamComponents(new PlainFullTokenizer());
+                return new TokenStreamComponents(new PlainFullTokenizer(null));
             case "path":
             case "project":
                 return new TokenStreamComponents(new PathTokenizer());
@@ -196,7 +196,7 @@ public class FileAnalyzer extends Analyzer {
                 return new TokenStreamComponents(SymbolTokenizer); 
                   }            
             case "defs":
-                return new TokenStreamComponents(new PlainSymbolTokenizer());
+                return new TokenStreamComponents(new PlainSymbolTokenizer(null));
             default:
                 LOGGER.log(
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);

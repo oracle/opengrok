@@ -217,6 +217,16 @@ public class SearchEngineTest {
         assertEquals(8, noHits);
         instance.destroy();
 
+        // negative symbol test (comments should be ignored)
+        instance = new SearchEngine();
+        instance.setSymbol("Ordinary"); 
+        instance.setFile("\"Main.java\"");
+        instance.search();
+        assertEquals("+path:\"main . java\" +refs:Ordinary",
+                     instance.getQuery());
+        assertEquals(0, instance.search());        
+        instance.destroy();
+        
         // wildcards and case sensitivity of definition search
         instance = new SearchEngine();
         instance.setDefinition("Mai*"); // definition is case sensitive
