@@ -29,8 +29,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.document.Document;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.logger.LoggerFactory;
@@ -186,7 +190,11 @@ public class FileAnalyzer extends Analyzer {
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case "full":
-                return new TokenStreamComponents(new PlainFullTokenizer());
+                //return new TokenStreamComponents(new PlainFullTokenizer());
+                //support CJK:
+                Tokenizer src = new StandardTokenizer();
+                TokenStream tok = new LowerCaseFilter(src);
+                return new TokenStreamComponents(src, tok);                
             case "path":
             case "project":
                 return new TokenStreamComponents(new PathTokenizer());

@@ -23,6 +23,11 @@
 package org.opensolaris.opengrok.analysis;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainFullTokenizer;
 import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.search.QueryBuilder;
@@ -36,8 +41,10 @@ public class CompatibleAnalyser extends Analyzer {
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {        
         switch (fieldName) {
-            case QueryBuilder.FULL:
-                return new TokenStreamComponents(new PlainFullTokenizer());
+            case QueryBuilder.FULL: //support CJK
+                Tokenizer src = new StandardTokenizer();
+                TokenStream tok = new LowerCaseFilter(src);
+                return new TokenStreamComponents(src, tok);
             case QueryBuilder.REFS:
                 return new TokenStreamComponents(new PlainSymbolTokenizer());
             case QueryBuilder.DEFS:
