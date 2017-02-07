@@ -770,7 +770,7 @@ a.xmb              { /* member             */ color: #090;       font-weight: bo
 a.xf               { /* function           */ color: #00f;       font-weight: bold;                     }
 a.xmt              { /* method             */ color: #00f;       font-weight: bold;                     }
 a.xsr              { /* subroutine         */ color: #00f;       font-weight: bold;                     }
-a.scope            { /* scope              */ color: dodgerblue; font-weight: bold; padding-left: 1ex;  }
+a.scope            { /* scope              */ color: steelblue; font-weight: bold; padding-left: 1ex;  }
 
 #man table, #man td  { /* #man == troff src */
     background-color: #ddddcc;
