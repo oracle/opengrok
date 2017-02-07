@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  * Portions Copyright 2011 Jens Elkner.
  */
 package org.opensolaris.opengrok.analysis;
@@ -338,7 +338,7 @@ public abstract class JFlexXref {
 
         // terminate scopes
         if (scopeOpen) {
-            out.write("</div>");
+            out.write("</span>");
             scopeOpen = false;
         }
 
