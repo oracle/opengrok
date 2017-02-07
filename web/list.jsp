@@ -18,7 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2005, 2016, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 Portions Copyright 2011 Jens Elkner.
 
 --%>
@@ -51,7 +51,7 @@ org.opensolaris.opengrok.web.DirectoryListing"
     if (request.getCharacterEncoding() == null) {
         request.setCharacterEncoding("UTF-8");
     }
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     Annotation annotation = cfg.getAnnotation();
     if (annotation != null) {
         int r = annotation.getWidestRevision();
