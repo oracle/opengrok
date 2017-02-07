@@ -366,34 +366,42 @@ class FileHistoryCache implements HistoryCache {
                     continue;
                 }
 
-                if (env.hasProjects()) {
-                    /*
-                     * Problem here is that if the original file was a symlink
-                     * it's been already dereferenced by
-                     * getPathRelativeToSourceRoot(). We have to solve the only
-                     * case which is that the symlink led to the project's root.
-                     *
-                     * @see
-                     * RuntimeEnvironment#getPathRelativeToSourceRoot(java.io.File, int)
-                     */
-                    Project project = Project.getProject(test);
-                    File parent = test.equals(new File(env.getSourceRootPath(), project.getPath()))
-                            /* this is a project's root */
-                            ? test
-                            /* this isn't a project's root */
-                            : test.getParentFile();
-                    if (!AcceptHelper.accept(project, parent, test)) {
-                        continue;
-                    }
-                } else if (!AcceptHelper.accept(null, test.getParentFile(), test)) {
-                    continue;
-                }
-
                 List<HistoryEntry> list = map.get(s);
                 if (list == null) {
+                    /*
+                     * This means that the file has not been added yet. So we
+                     * try to see if we should accept it.
+                     */
+                    if (env.hasProjects()) {
+                        /*
+                         * Problem here is that if the original file was a
+                         * symlink it's been already dereferenced by
+                         * getPathRelativeToSourceRoot(). We have to solve the
+                         * only case which is that the symlink led to the
+                         * project's root.
+                         *
+                         * @see
+                         * RuntimeEnvironment#getPathRelativeToSourceRoot(java.io.File,
+                         * int)
+                         */
+                        Project project = Project.getProject(test);
+                        File parent = test.equals(new File(env.getSourceRootPath(), project.getPath()))
+                                /* this is a project's root */
+                                ? test
+                                /* this isn't a project's root */
+                                : test.getParentFile();
+                        if (!AcceptHelper.accept(project, parent, test)) {
+                            continue;
+                        }
+                    } else if (list == null && !AcceptHelper.accept(null, test.getParentFile(), test)) {
+                        continue;
+                    }
+
+                    // create a new empty record in the map
                     list = new ArrayList<>();
                     map.put(s, list);
                 }
+
                 /*
                  * We need to do deep copy in order to have different tags
                  * per each commit.
