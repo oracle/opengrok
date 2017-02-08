@@ -896,8 +896,7 @@ public final class Indexer {
             LOGGER.log(Level.INFO, "Send configuration to: {0}", configHost);
             if (cfg.length == 2) {
                 try {
-                    InetAddress host = InetAddress.getByName(cfg[0]);
-                    env.writeConfiguration(host, Integer.parseInt(cfg[1]));
+                    env.writeConfiguration(cfg[0], Integer.parseInt(cfg[1]));
                 } catch (NumberFormatException | IOException ex) {
                     LOGGER.log(Level.SEVERE, "Failed to send configuration to "
                             + configHost + " (is web application server running with opengrok deployed?)", ex);

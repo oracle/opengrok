@@ -48,6 +48,8 @@ Usage()
     echo "  text: supports html markup"
     echo ""
     echo "  Message types:"
+    echo "    config:"
+    echo "     - send configuration to the webapp. Requires file as argument."
     echo "    normal:"
     echo "     - assign a <text> to the main page or a project"
     echo "     - can be more precise with <tags> (for specific project)"
@@ -92,7 +94,8 @@ StdInvocation()
     ${REMOTE_SERVER:+-s} ${REMOTE_SERVER:+"$REMOTE_SERVER"} \
     ${REMOTE_PORT_NUM:+-p} ${REMOTE_PORT_NUM:+"$REMOTE_PORT_NUM"} \
     ${MESSAGE_TEXT:+-t} ${MESSAGE_TEXT:+"$MESSAGE_TEXT"} \
-    "${@}"
+    ${MESSAGE_FILE:+-f} ${MESSAGE_FILE:+"$MESSAGE_FILE"} \
+    -- "${@}"
 }
 
 
@@ -143,6 +146,7 @@ Info()
             echo -e "\tMESSAGE_EXPIRE = "${MESSAGE_EXPIRE:-$MESSAGE_EXPIRE}
             echo -e "\tMESSAGE_EXPIRE_TIMESTAMP = "${MESSAGE_EXPIRE_TIMESTAMP:-$MESSAGE_EXPIRE_TIMESTAMP}
             echo -e "\tMESSAGE_TEXT = "${MESSAGE_TEXT:-$MESSAGE_TEXT}
+            echo -e "\tMESSAGE_FILE = "${MESSAGE_FILE:-$MESSAGE_FILE}
             echo ""
     fi
 }
@@ -213,6 +217,7 @@ SetupInstanceConfiguration()
     MESSAGE_CLASS="info"
     MESSAGE_EXPIRE="+5 min"
     unset MESSAGE_TEXT
+    unset MESSAGE_FILE
     VERBOSE=false
 }
 
@@ -325,42 +330,50 @@ do
             echo "Uknown option \"$opt\"" && Usage && exit 5
         ;;
         *)
-            if [ $# -ne 1 ]
-            then
-                echo "Bad syntax. The text should be the last argument."
-                echo "Stopped near \"$@\"."
-                echo "Check the quotes around the arguments?"
-                exit 3
-            fi
-            if [ "x$MESSAGE_TEXT" = "x" ]
-            then
-                MESSAGE_TEXT="$@"
-                break # exit the while cycle
-            else
-                echo "Bad syntax. The text must be specified only once."
-                exit 3
-            fi
+	    if [ $MESSAGE_TYPE == "config" ]; then
+		MESSAGE_FILE="$@"
+		MESSAGE_TAGS=(-g 'load')
+	    else
+                if [ $# -ne 1 ]
+                then
+                    echo "Bad syntax. The text should be the last argument."
+                    echo "Stopped near \"$@\"."
+                    echo "Check the quotes around the arguments?"
+                    exit 3
+                fi
+                if [ "x$MESSAGE_TEXT" = "x" ]
+                then
+                    MESSAGE_TEXT="$@"
+                    break # exit the while cycle
+                else
+                    echo "Bad syntax. The text must be specified only once."
+                    exit 3
+                fi
+	    fi
         ;;
     esac
     shift
 done
 
 
-[ -z "$MESSAGE_TEXT" ] && echo "The text of the message must be specified" && Usage && exit 3
-[ -z "$MESSAGE_EXPIRE" ] && echo "The expire must be set" && Usage && exit 5
+if [ $MESSAGE_TYPE != "config" ]; then
+    [ -z "$MESSAGE_TEXT" ] && echo "The text of the message must be specified" && Usage && exit 3
+    [ -z "$MESSAGE_EXPIRE" ] && echo "The expire must be set" && Usage && exit 5
 
-if [ -z "$MESSAGE_EXPIRE_TIMESTAMP" ]
-then
-    MESSAGE_EXPIRE_TIMESTAMP=`"$DATE" --date="$MESSAGE_EXPIRE" +"%s"`
-    if [ $? -ne 0 ]
+    if [ -z "$MESSAGE_EXPIRE_TIMESTAMP" ]
     then
-        echo "The date couldn't parse the input '$MESSAGE_EXPIRE'."
-        echo "Consider installing gnu date and setting env variable DATE."
-        exit 5;
+        MESSAGE_EXPIRE_TIMESTAMP=`"$DATE" --date="$MESSAGE_EXPIRE" +"%s"`
+        if [ $? -ne 0 ]
+        then
+            echo "The date couldn't parse the input '$MESSAGE_EXPIRE'."
+            echo "Consider installing gnu date and setting env variable DATE."
+            exit 5;
+        fi
     fi
+
+    [ -z "${MESSAGE_TAGS[*]}" ] && MESSAGE_TAGS=(-g 'main')
 fi
 
-[ -z "${MESSAGE_TAGS[*]}" ] && MESSAGE_TAGS=(-g 'main')
 
 Info
 StdInvocation

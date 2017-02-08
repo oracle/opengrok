@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -43,6 +45,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 import org.opensolaris.opengrok.util.XmlEofOutputStream;
@@ -106,6 +109,11 @@ public abstract class Message implements Comparable<Message> {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public void setTextFromFile(String filepath) throws IOException {
+        byte[] encoded = Files.readAllBytes(Paths.get(filepath));
+        this.text = new String(encoded);
     }
 
     public String getClassName() {

@@ -98,6 +98,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static org.opensolaris.opengrok.configuration.Configuration.makeXMLStringAsConfiguration;
 
 /**
  * The RuntimeEnvironment class is used as a placeholder for the current
@@ -1144,11 +1145,15 @@ public final class RuntimeEnvironment {
      * @param port the port to use on the host
      * @throws IOException if an error occurs
      */
-    public void writeConfiguration(InetAddress host, int port) throws IOException {
-        try (Socket sock = new Socket(host, port);
-                XMLEncoder e = new XMLEncoder(sock.getOutputStream())) {
-            e.writeObject(threadConfig.get());
-        }
+    public void writeConfiguration(String host, int port) throws IOException {
+        Message m = Message.createMessage("config");
+        m.addTag("reindex");
+        m.setText(configuration.getXMLRepresentationAsString());
+        m.write(host, port);
+    }
+
+    public void writeConfiguration(InetAddress hostAddr, int port) throws IOException {
+        writeConfiguration(hostAddr.getHostAddress(), port);
     }
 
     protected void writeConfiguration() throws IOException {
@@ -1280,8 +1285,8 @@ public final class RuntimeEnvironment {
     }
 
     /**
-     * Add a message to the application Also schedules a expirationTimer to
-     * remove this message after its expiration.
+     * Add a message to the application.
+     * Also schedules a expiration timer to remove this message after its expiration.
      *
      * @param m the message
      */
@@ -1505,8 +1510,43 @@ public final class RuntimeEnvironment {
     private Thread configurationListenerThread;
 
     /**
-     * Start a thread to listen on a socket to receive new configurations to
-     * use.
+     * Set configuration from a message. The message could have come from
+     * the Indexer (in which case some extra work is needed) or is it just
+     * a request to set new configuration in place.
+     *
+     * @param m message containing the configuration
+     * @param reindex is the message result of reindex
+     */
+    public void applyConfig(Message m, boolean reindex) {
+        Configuration config;
+        try {
+            config = makeXMLStringAsConfiguration(m.getText());
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Configuration decoding failed" + ex);
+            return;
+        }
+
+        setConfiguration(config);
+        LOGGER.log(Level.INFO, "Configuration updated: {0}",
+                configuration.getSourceRoot());
+
+        if (reindex) {
+            // We are assuming that each update of configuration
+            // means reindex. If dedicated thread is introduced
+            // in the future solely for the purpose of getting
+            // the event of reindex, the 2 calls below should
+            // be moved there.
+            refreshSearcherManagerMap();
+            maybeRefreshIndexSearchers();
+            // Force timestamp to update itself upon new config arrival.
+            config.refreshDateForLastIndexRun();
+        }
+    }
+
+    /**
+     * Start a thread to listen on a socket to receive new messages.
+     * The messages can contain various commands for the webapp, including
+     * upload of new configuration.
      *
      * @param endpoint The socket address to listen on
      * @return true if the endpoint was available (and the thread was started)
@@ -1530,35 +1570,24 @@ public final class RuntimeEnvironment {
                             bos.reset();
                             LOGGER.log(Level.FINE, "OpenGrok: Got request from {0}",
                                     s.getInetAddress().getHostAddress());
+
                             byte[] buf = new byte[1024];
                             int len;
                             while ((len = in.read(buf)) != -1) {
                                 bos.write(buf, 0, len);
                             }
+
                             buf = bos.toByteArray();
                             if (LOGGER.isLoggable(Level.FINE)) {
                                 LOGGER.log(Level.FINE, "new config:{0}", new String(buf));
                             }
+
                             Object obj;
                             try (XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(buf))) {
                                 obj = d.readObject();
                             }
 
-                            if (obj instanceof Configuration) {
-                                //force timestamp to update itself upon new config arrival
-                                ((Configuration) obj).refreshDateForLastIndexRun();
-                                setConfiguration((Configuration) obj);
-                                LOGGER.log(Level.INFO, "Configuration updated: {0}",
-                                        configuration.getSourceRoot());
-
-                                // We are assuming that each update of configuration
-                                // means reindex. If dedicated thread is introduced
-                                // in the future solely for the purpose of getting
-                                // the event of reindex, the 2 calls below should
-                                // be moved there.
-                                refreshSearcherManagerMap();
-                                maybeRefreshIndexSearchers();
-                            } else if (obj instanceof Message) {
+                            if (obj instanceof Message) {
                                 Message m = ((Message) obj);
                                 handleMessage(m, output);
                             }
