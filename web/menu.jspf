@@ -159,8 +159,8 @@ org.opensolaris.opengrok.web.Util"
 --%>
 </table>
 <div id="form-controls">
-    <input tabindex="9" class="submit" type="submit" value="Search"/>
-    <input tabindex="10" class="submit" onclick="javascript: clearSearchFrom();"
+    <input tabindex="9" class="submit btn" type="submit" value="Search"/>
+    <input tabindex="10" class="submit btn" onclick="javascript: clearSearchFrom();"
            type="button" value="Clear"/>
     <a href="help.jsp" target="_blank" class="help btn" title="Help" tabindex="11" />Help</a>
 </div>
