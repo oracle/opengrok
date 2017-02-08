@@ -68,6 +68,8 @@ tbody tr:nth-child(EVEN) { /* alternate color for odd rows */
 .btn {
     padding: 2px 7px 2px 7px;
     text-align: center;
+    font-size: 14px;
+    font-family: inherit;
 }
 
 .btn:hover, .btn:active {
