@@ -87,7 +87,7 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
 <script type="text/javascript" src="<%=ctxPath%>/js/jquery-ui-1.12.0-custom.min.js"></script>
 <script type="text/javascript" src="<%=ctxPath%>/js/jquery.tablesorter-2.26.6.min.js"></script>
 <script type="text/javascript" src="<%=ctxPath%>/js/tablesorter.parsers-0.0.1.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/js/searchable-option-list-2.0.2.min.js"></script>
+<script type="text/javascript" src="<%=ctxPath%>/js/searchable-option-list-2.0.3.min.js"></script>
 <%--<script type="text/javascript" src="<%=ctxPath%>/js/jquery.autocomplete-1.1.pack.js"></script> --%>
 <script type="text/javascript" src="<%=ctxPath%>/js/utils-0.0.5.js"></script>
 <title><%=cfg.getTitle()%></title><%
