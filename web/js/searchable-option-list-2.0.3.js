@@ -11,6 +11,7 @@
  */
 
 /*
+ * Original based on SOL v2.0.2
  * Modified by Krystof Tulinger 2016
  */
 
@@ -921,9 +922,9 @@
                 $groupItem.addClass('disabled');
             }
             /*
-             * Modified 2016
+             * Modified 2016, 2017
              */
-            $groupCaption.dblclick(function (e) {
+            $groupCaption.click(function (e) {
                 // select all group
                 if (self.config.multiple) {
                     if (!e.ctrlKey) {
