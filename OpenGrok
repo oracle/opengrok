@@ -4,13 +4,10 @@
 #
 # Supported Operating Systems:
 #   - Solaris 11  (SunOS 5.11)
-#   - Solaris 12  (SunOS 5.12)
 #   - Debian      (Linux)
 #
 # Supported Deployment Engines:
 #   - Tomcat 8
-#   - Tomcat 7
-#   - Tomcat 6
 #   - Glassfish
 #
 # Supported Environment Variables:
@@ -45,7 +42,7 @@
 #                                 through project, it's good to have Verbose
 #                                 Mode enabled too, cost of this is one more
 #                                 traversal of the project before indexing it(*)
-#   - OPENGROK_GENERATE_HISTORY   Influence history cache generation 
+#   - OPENGROK_GENERATE_HISTORY   Influence history cache generation
 #                                 Following values are recognized:
 #                                   on		- enabled (default)
 #                                   off		- disabled for indexing and UI
@@ -78,9 +75,9 @@
 #                                 view
 #   - READ_XML_CONFIGURATION      file with read only configuration
 #                                 - temporary workaround for bug # 327
-#   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing, 
-#                                 default is 16MB per thread, you might try to 
-#                                 increase it to 256MB, but do increase JVM to 
+#   - OPENGROK_FLUSH_RAM_BUFFER_SIZE="-m 16" - set RAM buffer size for flushing,
+#                                 default is 16MB per thread, you might try to
+#                                 increase it to 256MB, but do increase JVM to
 #                                 4/8/16GB ! Lucene defaults to 8 threads.
 #                                 Increase JVM memory as noted using JAVA_OPTS
 #   - OPENGROK_LOGGER_CONFIG_PATH Set path to custom logging.properties file.
