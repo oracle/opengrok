@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.document;
 
@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Analyzes [tn]roff files Created on September 30, 2005
@@ -46,14 +47,18 @@ public class TroffAnalyzer extends TextAnalyzer {
 
     /**
      * Creates a new instance of TroffAnalyzer
+     * @param factory name
      */
     protected TroffAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-    }
-
+        SymbolTokenizer = new TroffFullTokenizer(null);
+    }    
+    
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        doc.add(new TextField("full", getReader(src.getStream())));
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
+        TextField full=new TextField(QueryBuilder.FULL,getReader(src.getStream()));
+        full.setTokenStream(SymbolTokenizer); //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        doc.add(full);
 
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
@@ -62,10 +67,11 @@ public class TroffAnalyzer extends TextAnalyzer {
         }
     }
 
+    //TODO delete below once we are sure that above setting of tokenstream will take precedence over FileAnalyzer ?
     @Override
     public TokenStreamComponents createComponents(String fieldName) {        
         if ("full".equals(fieldName)) {
-            return new TokenStreamComponents(new TroffFullTokenizer());
+            return new TokenStreamComponents(new TroffFullTokenizer(null));
         }
         return super.createComponents(fieldName);
     }
