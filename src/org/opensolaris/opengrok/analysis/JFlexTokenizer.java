@@ -24,6 +24,7 @@ package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.Stack;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -57,6 +58,10 @@ public abstract class JFlexTokenizer extends Tokenizer {
     //TODO can be removed once we figure out jflex generation of empty constructor
     protected JFlexTokenizer(Reader in) {
         super();
+        if (in==null) {
+            in=new StringReader("");
+        }
+        setReader(in);
     }
     
     protected JFlexTokenizer() {

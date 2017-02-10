@@ -192,9 +192,10 @@ public class FileAnalyzer extends Analyzer {
                 return new TokenStreamComponents(new PathTokenizer());
             case "hist":
                 return new HistoryAnalyzer().createComponents(fieldName);
-            case "refs": {                
-                return new TokenStreamComponents(SymbolTokenizer); 
-                  }            
+                //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
+//            case "refs": {                
+//                return new TokenStreamComponents(SymbolTokenizer); 
+//                  }            
             case "defs":
                 return new TokenStreamComponents(new PlainSymbolTokenizer(null));
             default:
