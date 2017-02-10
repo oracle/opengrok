@@ -57,8 +57,8 @@ org.opensolaris.opengrok.web.DirectoryListing"
         int r = annotation.getWidestRevision();
         int a = annotation.getWidestAuthor();
         cfg.addHeaderData("<style type=\"text/css\">"
-            + ".blame .r { width: " + (r == 0 ? 6 : r) + "ex; } "
-            + ".blame .a { width: " + (a == 0 ? 6 : a) + "ex; } "
+            + ".blame .r { width: " + (r == 0 ? 6 : r) + "em; } "
+            + ".blame .a { width: " + (a == 0 ? 6 : a) + "em; } "
             + "</style>");
     }
 }
