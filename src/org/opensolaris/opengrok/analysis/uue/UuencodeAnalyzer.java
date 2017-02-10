@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2005, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis.uue;
 
@@ -34,6 +34,7 @@ import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
 import org.opensolaris.opengrok.configuration.Project;
 import org.opensolaris.opengrok.history.Annotation;
+import org.opensolaris.opengrok.search.QueryBuilder;
 
 /**
  * Analyzes [tn]roff files
@@ -45,15 +46,19 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     private UuencodeXref xref;
     /**
      * Creates a new instance of UuencodeAnalyzer
+     * @param factory name
      */
     protected UuencodeAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
+        SymbolTokenizer=new UuencodeFullTokenizer(null);
     }
 
     @Override
-    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {
-        doc.add(new TextField("full", getReader(src.getStream())));
-
+    public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
+        TextField full=new TextField(QueryBuilder.FULL,getReader(src.getStream()));
+        full.setTokenStream(SymbolTokenizer); //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        doc.add(full);
+                
         if (xrefOut != null) {
             try (Reader in = getReader(src.getStream())) {
                 writeXref(in, xrefOut);
@@ -61,10 +66,11 @@ public class UuencodeAnalyzer extends TextAnalyzer {
         }
     }
 
+    //TODO delete once we're sure above works
     @Override
     public TokenStreamComponents createComponents(String fieldName) {        
         if ("full".equals(fieldName)) {
-            return new TokenStreamComponents(new UuencodeFullTokenizer());
+            return new TokenStreamComponents(new UuencodeFullTokenizer(null));
         }
         return super.createComponents(fieldName);
     }

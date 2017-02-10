@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2009, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.analysis;
 
@@ -54,7 +54,7 @@ public abstract class JFlexTokenizer extends Tokenizer {
     abstract public void yybegin(int newState);
 
     abstract public int yystate();    
-    
+        
     //TODO can be removed once we figure out jflex generation of empty constructor
     protected JFlexTokenizer(Reader in) {
         super();
@@ -64,10 +64,6 @@ public abstract class JFlexTokenizer extends Tokenizer {
         setReader(in);
     }
     
-    protected JFlexTokenizer() {
-        super();
-    }        
-
     /**
      * Reinitialize the tokenizer with new reader.
      * @throws java.io.IOException in case of I/O error
@@ -97,7 +93,8 @@ public abstract class JFlexTokenizer extends Tokenizer {
      * @throws IOException in case of I/O error
      */
     @Override
-    public final boolean incrementToken() throws IOException {
+    public final boolean incrementToken() throws IOException {        
+        clearAttributes();
         return this.yylex();
     }
 
