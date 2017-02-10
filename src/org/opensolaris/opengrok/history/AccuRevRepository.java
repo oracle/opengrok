@@ -76,7 +76,7 @@ public class AccuRevRepository extends Repository {
      */
     public static final String CMD_FALLBACK = "accurev";
     private static final Pattern annotationPattern
-            = Pattern.compile("^\\s+(\\d+/\\d+)\\s+(\\w+)");   // version, user
+            = Pattern.compile("^\\s+(\\d+\\\\\\d+)\\s+(\\w+)\\s+.*");   // version, user, code line
     private static final Pattern depotPattern
             = Pattern.compile("^Depot:\\s+(\\w+)");
     private static final RuntimeEnvironment env = RuntimeEnvironment.getInstance();
@@ -96,12 +96,7 @@ public class AccuRevRepository extends Repository {
 
         ArrayList<String> cmd = new ArrayList<>();
 
-        /*
-         * ----------------------------------------------- Strip off source root
-         * to get to workspace path.
-         *-----------------------------------------------
-         */
-        String path = getDepotRelativePath(file);
+        String path = file.getAbsolutePath();
 
         cmd.add(RepoCommand);
         cmd.add("annotate");
@@ -153,12 +148,7 @@ public class AccuRevRepository extends Repository {
      */
     Executor getHistoryLogExecutor(File file) throws IOException {
 
-        /*
-         * ----------------------------------------------- Strip off source root
-         * to get to workspace path.
-         *-----------------------------------------------
-         */
-        String path = getDepotRelativePath(file);
+        String path = file.getAbsolutePath();
 
         ArrayList<String> cmd = new ArrayList<>();
 
@@ -171,8 +161,10 @@ public class AccuRevRepository extends Repository {
         }
 
         cmd.add(path);
-
-        return new Executor(cmd, file.getParentFile());
+        
+        File workingDirectory = file.isDirectory() ? file : file.getParentFile();
+        
+        return new Executor(cmd, workingDirectory);
     }
 
     @Override
@@ -304,15 +296,15 @@ public class AccuRevRepository extends Repository {
 
     public String getDepotRelativePath(File file) {
 
-        String path = "/./";
+        String path = File.separator + "." + File.separator;
 
         try {
             path = env.getPathRelativeToSourceRoot(file, 0);
 
-            if (path.startsWith("/")) {
-                path = "/." + path;
+            if (path.startsWith(File.separator)) {
+                path = File.separator + "." + path;
             } else {
-                path = "/./" + path;
+                path = File.separator + "." + File.separator + path;
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
