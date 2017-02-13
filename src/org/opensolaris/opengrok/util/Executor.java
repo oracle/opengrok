@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.util;
@@ -37,7 +37,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
@@ -148,7 +147,7 @@ public class Executor {
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList);
         final String cmd_str = processBuilder.command().toString();
         final String dir_str;
-        Timer t = new Timer();
+        Timer t = null; // timer for timeouting the process
 
         if (workingDirectory != null) {
             processBuilder.directory(workingDirectory);
@@ -197,6 +196,8 @@ public class Executor {
              * make progress instead of hanging the whole indexer.
              */
             if (this.timeout != 0) {
+                // invoking the constructor starts the background thread
+                t = new Timer();
                 t.schedule(new TimerTask() {
                     @Override public void run() {
                         LOGGER.log(Level.INFO,
@@ -215,9 +216,6 @@ public class Executor {
             LOGGER.log(Level.FINE,
                 "Finished command {0} in directory {1}",
                 new Object[] {cmd_str,dir_str});
-            if (this.timeout != 0) {
-                t.cancel();
-            }
             process = null;
             thread.join();
             stderr = err.getBytes();
@@ -237,9 +235,13 @@ public class Executor {
                     ret = process.exitValue();
                 }
             } catch (IllegalThreadStateException e) {
-                if (process!=null) { 
+                if (process != null) {
                     process.destroy();
                 }
+            }
+            // stop timer thread if the instance exists
+            if (t != null) {
+                t.cancel();
             }
         }
 
