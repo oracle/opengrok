@@ -202,7 +202,7 @@ SetupInstanceConfiguration()
 
     JAVA_CLASSPATH="$CLASSPATH"
     JAVA_CLASSPATH="${JAVA_CLASSPATH}:${OPENGROK_JAR}"
-    JAVA_OPTS="${JAVA_OPTS:--Xmx2048m}"
+    JAVA_OPTS="${JAVA_OPTS:--Xmx32m}"
     MAIN_CLASS="org.opensolaris.opengrok.configuration.messages.Messages"
 
 
