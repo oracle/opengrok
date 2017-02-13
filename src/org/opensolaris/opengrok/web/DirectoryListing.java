@@ -95,6 +95,11 @@ public class DirectoryListing {
      */
     private static String getSimplifiedPath(File dir) {
         String[] files = dir.list();
+
+        // Permissions can prevent getting list of items in the directory.
+        if (files == null)
+            return dir.getName();
+
         if (files.length == 1) {
             File entry = new File(dir, files[0]);
             if (entry.isDirectory()) {
