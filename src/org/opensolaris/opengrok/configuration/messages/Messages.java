@@ -18,16 +18,23 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
+import java.beans.XMLDecoder;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.util.Getopt;
 
 public final class Messages {
@@ -41,10 +48,11 @@ public final class Messages {
         long expire = -1;
         String server = null;
         int port = -1;
+        String filepath = null;
 
         String x;
 
-        Getopt getopt = new Getopt(argv, "m:i:t:g:c:e:s:p:h?");
+        Getopt getopt = new Getopt(argv, "c:e:f:g:hm:p:s:t:?");
 
         try {
             getopt.parse();
@@ -59,15 +67,6 @@ public final class Messages {
         getopt.reset();
         while ((cmd = getopt.getOpt()) != -1) {
             switch (cmd) {
-                case 'm':
-                    type = getopt.getOptarg();
-                    break;
-                case 't':
-                    text = getopt.getOptarg();
-                    break;
-                case 'g':
-                    tags.add(getopt.getOptarg());
-                    break;
                 case 'c':
                     className = getopt.getOptarg();
                     break;
@@ -81,8 +80,18 @@ public final class Messages {
                         System.exit(1);
                     }
                     break;
-                case 's':
-                    server = getopt.getOptarg();
+                case 'f':
+                    filepath = getopt.getOptarg();
+                    break;
+                case 'g':
+                    tags.add(getopt.getOptarg());
+                    break;
+                case 'h':
+                    a_usage();
+                    System.exit(0);
+                    break;
+                case 'm':
+                    type = getopt.getOptarg();
                     break;
                 case 'p':
                     x = getopt.getOptarg();
@@ -94,9 +103,11 @@ public final class Messages {
                         System.exit(1);
                     }
                     break;
-                case 'h':
-                    a_usage();
-                    System.exit(0);
+                case 's':
+                    server = getopt.getOptarg();
+                    break;
+                case 't':
+                    text = getopt.getOptarg();
                     break;
                 case '?':
                     a_usage();
@@ -126,21 +137,24 @@ public final class Messages {
             port = 2424;
         }
 
-        if (text == null) {
-            System.err.println("No text given");
-            b_usage();
-            System.exit(3);
-        }
-
         Message m = Message.createMessage(type);
 
         if (m == null) {
             System.err.println("Uknown message type " + type);
             b_usage();
-            System.exit(4);
+            System.exit(1);
         }
 
-        m.setText(text);
+        if (filepath != null) {
+            try {
+                m.setTextFromFile(filepath);
+            } catch (IOException ex) {
+                System.err.println("Cannot read '" + filepath + "': " + ex);
+                System.exit(1);
+            }
+        } else {
+            m.setText(text);
+        }
         m.setClassName(className);
         for (String tag : tags) {
             m.addTag(tag);
@@ -158,7 +172,7 @@ public final class Messages {
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
             ex.printStackTrace(System.err);
-            System.exit(5);
+            System.exit(1);
         }
     }
 

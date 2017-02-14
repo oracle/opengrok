@@ -17,8 +17,8 @@
  * CDDL HEADER END
  */
 
- /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -133,7 +133,7 @@ public class MessagesTest {
     @Test
     public void testMessageSendWrongHost() {
         RuntimeEnvironment.getInstance().setMessageLimit(100);
-        Assert.assertEquals(5, invokeMain("localhost", portNum + 2));
+        Assert.assertEquals(1, invokeMain("localhost", portNum + 2));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class MessagesTest {
         RuntimeEnvironment.getInstance().setMessageLimit(0);
         String output, outerr;
 
-        Assert.assertEquals(5, invokeMain());
+        Assert.assertEquals(1, invokeMain());
         output = new String(newStdoutArray.toByteArray(), Charset.defaultCharset());
         outerr = new String(newStderrArray.toByteArray(), Charset.defaultCharset());
         Assert.assertTrue(
