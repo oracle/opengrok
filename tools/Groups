@@ -24,7 +24,7 @@ Usage()
 {
     exec >&2
     echo ""
-    echo "Usage: ${PROGNAME} <add|delete|match|list|help> [--help] [--verbose] [-d]"
+    echo "Usage: ${PROGNAME} <add|delete|match|list|empty|help> [--help] [--verbose] [-d]"
     echo "       ${PROGNAME} add <name> <pattern>"
     echo "       ${PROGNAME} delete <name>"
     echo "       ${PROGNAME} match <project name>"
@@ -64,6 +64,7 @@ StdInvocation()
     ${MATCH:+-m} ${MATCH:+"$MATCH"} \
     ${LIST:+-l} \
     ${DELETE:+-d} \
+    ${EMPTY:+-e} \
     "${@}"
 }
 
@@ -237,6 +238,60 @@ List ()
     done
 
     LIST=true
+
+    CheckInputFile
+    Info
+    StdInvocation
+}
+
+Empty ()
+{
+    LocalUsage()
+    {
+        echo "Usage:"
+        echo "${PROGNAME} empty [-i|--input <file>] [-v|--verbose] [-d]"
+        echo ""
+        echo "  Creates an empty configuration. If the input file is specified"
+        echo "  it directly outputs the given file."
+        echo ""
+        echo "Options:"
+        echo " -d option performs dry run with verbose mode"
+        echo " -i option can be used for specifying the input file"
+    }
+
+    while [ $# -gt 0 ]
+    do
+        opt="$1"
+        case $opt in
+            -i|--input)
+                ExpectOption "$@"
+                shift
+                INPUT_FILE=$(OneArgument "$@")
+            ;;
+            -d)
+                DO=echo
+                VERBOSE=true
+            ;;
+            -v|--verbose)
+                VERBOSE=true
+            ;;
+            -h|--help)
+                LocalUsage
+                exit 0
+            ;;
+            -*)
+                echo "Uknown option \"$opt\"" && LocalUsage && exit 5
+            ;;
+            *)
+                echo "this requires no other parameter"
+                LocalUsage
+                exit 5
+            ;;
+        esac
+        shift
+    done
+
+    EMPTY=true
 
     CheckInputFile
     Info
@@ -538,6 +593,10 @@ case "${1}" in
     list)
         shift
         List "$@"
+    ;;
+    empty)
+        shift
+        Empty "$@"
     ;;
     help)
         Usage

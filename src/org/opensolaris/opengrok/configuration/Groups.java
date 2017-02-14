@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -58,9 +58,10 @@ public final class Groups {
         String parent = null;
         boolean list = false;
         boolean delete = false;
+        boolean empty = false;
         String match = null;
 
-        Getopt getopt = new Getopt(argv, "i:o:hdp:n:r:m:l?");
+        Getopt getopt = new Getopt(argv, "dehi:lm:n:o:p:r:?");
 
         try {
             getopt.parse();
@@ -78,6 +79,9 @@ public final class Groups {
                 switch (cmd) {
                     case 'd':
                         delete = true;
+                        break;
+                    case 'e':
+                        empty = true;
                         break;
                     case 'h':
                         usage();
@@ -141,6 +145,14 @@ public final class Groups {
                 System.exit(1);
             }
             matchGroups(System.out, cfg.getGroups(), match);
+        } else if (empty) {
+            // just list the groups
+            if (parent != null || groupname != null || grouppattern != null) {
+                System.err.println("Match option should be used without parent|groupname|groupregex options");
+                usage();
+                System.exit(1);
+            }
+            printOut(false, cfg, out);
         } else if (delete) {
             // perform delete
             if (parent != null || grouppattern != null) {
@@ -396,6 +408,8 @@ public final class Groups {
         System.err.println("Listing");
         System.err.println("-m <project name>    performs matching based on given project name");
         System.err.println("-l                   lists all available groups in input file");
+        System.err.println("-e                   creates an empty configuration or");
+        System.err.println("                     directly outputs the input file (if given)");
         System.err.println();
         System.err.println("Modification");
         System.err.println("-n <group name>      specify group name which should be inserted|updated (requires either -r or -d option)");
