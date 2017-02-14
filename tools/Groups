@@ -8,8 +8,6 @@
 #   - OPENGROK_DISTRIBUTION_BASE  Base Directory of the OpenGrok Distribution
 #                                   - containing the opengrok.jar
 #   - OPENGROK_JAR                Directly specify the opengrok.jar file
-#   - OPENGROK_INSTANCE_BASE      Base Directory of the OpenGrok User Data Area
-#                                   - determining the configuration
 #                                 switch), default is DATA_ROOT/etc/ctags.config
 #   - JAVA_HOME                   Full Path to Java Installation Root
 #   - JAVA                        Full Path to java binary (to enable 64bit JDK)
@@ -32,7 +30,6 @@ Usage()
     echo "       ${PROGNAME} match <project name>"
     echo ""
     echo "  The script searches for the configuration in"
-    echo "    OPENGROK_INSTANCE_BASE/etc/configuration.xml or"
     echo "    READ_XML_CONFIGURATION files or"
     echo "    you can use the -i option."
     echo "  When no such file exists it uses an empty configuration."
@@ -115,7 +112,6 @@ Info()
         echo "\tOPENGROK_JAR = "${OPENGROK_JAR}
         echo "\tOPENGROK_CONFIGURATION = "${OPENGROK_CONFIGURATION}
         echo "\tOPENGROK_STANDARD_ENV = "${OPENGROK_STANDARD_ENV}
-        echo "\tOPENGROK_INSTANCE_BASE = "${OPENGROK_INSTANCE_BASE}
         echo "\tOPENGROK_DISTRIBUTION_BASE = "${OPENGROK_DISTRIBUTION_BASE}
         echo "\tREAD_XML_CONFIGURATION = "${READ_XML_CONFIGURATION}
         echo "\tOPENGROK_JAR = "${OPENGROK_JAR}
@@ -413,8 +409,6 @@ SetupInstanceConfiguration()
 {
     VERBOSE="${VERBOSE:-false}"
 
-    OPENGROK_INSTANCE_BASE="${OPENGROK_INSTANCE_BASE:-/var/opengrok}"
-
     if [ -f "${OPENGROK_STANDARD_ENV}" ]
     then
         Progress "Loading ${OPENGROK_STANDARD_ENV} ..."
@@ -464,10 +458,7 @@ SetupInstanceConfiguration()
     unset MATCH
     unset LIST
 
-    if [ -n "$OPENGROK_INSTANCE_BASE" ] && [ -f "$OPENGROK_INSTANCE_BASE/etc/configuration.xml" ]
-    then
-            INPUT_FILE="$OPENGROK_INSTANCE_BASE/etc/configuration.xml"
-    elif [ -n "$READ_XML_CONFIGURATION" ] && [ -f "$READ_XML_CONFIGURATION" ]
+    if [ -n "$READ_XML_CONFIGURATION" ] && [ -f "$READ_XML_CONFIGURATION" ]
     then
             INPUT_FILE="$READ_XML_CONFIGURATION"
     fi
