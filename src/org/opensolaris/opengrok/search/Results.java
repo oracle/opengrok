@@ -190,22 +190,24 @@ public final class Results {
                 out.write("<td class=\"f\"><a href=\"");
                 out.write(xrefPrefixE);
                 out.write(rpathE);
-                out.write("\">");
-                out.write(rpath.substring(rpath.lastIndexOf('/') + 1)); // htmlize ???
-                out.write("</a>");
-                if(sh.lastEditedDisplayMode){
+                out.write("\"");
+                if (RuntimeEnvironment.getInstance().isLastEditedDisplayMode()) {
                     try {
                         // insert last edited date if possible
                         df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
                         String dd = df.format(DateTools.stringToDate(doc.get("date")));
-                        out.write("<small class=\"edited\">(last modified ");
+                        out.write(" class=\"result-annotate\" title=\"");
+                        out.write("Last modified: ");
                         out.write(dd);
-                        out.write(")</small>");    
+                        out.write("\"");
                     } catch (ParseException ex) {
                         LOGGER.log(
                                 Level.WARNING, "An error parsing date information", ex);
-                    }                    
+                    }
                 }
+                out.write(">");
+                out.write(rpath.substring(rpath.lastIndexOf('/') + 1)); // htmlize ???
+                out.write("</a>");
                 out.write("</td><td><tt class=\"con\">");
                 if (sh.sourceContext != null) {
                     Genre genre = Genre.get(doc.get("t"));

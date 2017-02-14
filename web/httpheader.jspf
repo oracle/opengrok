@@ -89,7 +89,7 @@ if (cfg.getPrefix().equals(Prefix.HIST_L)) {
 <script type="text/javascript" src="<%=ctxPath%>/js/tablesorter.parsers-0.0.1.js"></script>
 <script type="text/javascript" src="<%=ctxPath%>/js/searchable-option-list-2.0.2.min.js"></script>
 <%--<script type="text/javascript" src="<%=ctxPath%>/js/jquery.autocomplete-1.1.pack.js"></script> --%>
-<script type="text/javascript" src="<%=ctxPath%>/js/utils-0.0.5.js"></script>
+<script type="text/javascript" src="<%=ctxPath%>/js/utils-0.0.6.js"></script>
 <title><%=cfg.getTitle()%></title><%
     out.write(cfg.getHeaderData());
 %>

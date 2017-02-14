@@ -1418,6 +1418,11 @@ $(document).ready(function () {
      * could occur in the readmes then rather comment out this.
      */
     init_markdown_converter();
+
+    /**
+     * Display last modified date in search results on hover over the filename
+     */
+    $('a.result-annotate').tooltip()
 });
 
 document.pageReady = [];

@@ -119,7 +119,6 @@ public final class PageConfig {
     private QueryBuilder queryBuilder;
     private File dataRoot;
     private StringBuilder headLines;
-    private boolean lastEditedDisplayMode = true;
 
     private static final String ATTR_NAME = PageConfig.class.getCanonicalName();
     private HttpServletRequest req;
@@ -1201,14 +1200,6 @@ public final class PageConfig {
         }
         return dataRoot;
     }
-    
-    public boolean isLastEditedDisplayMode() {
-        return lastEditedDisplayMode;
-    }
-
-    public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
-        this.lastEditedDisplayMode = lastEditedDisplayMode;
-    }
 
     /**
      * Prepare a search helper with all required information, ready to execute
@@ -1246,7 +1237,6 @@ public final class PageConfig {
         sh.compressed = env.isCompressXref();
         sh.desc = getEftarReader();
         sh.sourceRoot = new File(getSourceRootPath());
-        sh.lastEditedDisplayMode = isLastEditedDisplayMode();
         return sh;
     }
 
