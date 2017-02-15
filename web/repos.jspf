@@ -126,7 +126,9 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                         </h4>
                     </div>
                         <div class="panel-body-accordion<% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
-                        <% if (pHelper.hasFavourite(group) || pHelper.getRepositories(group).size() < 5) { %>data-accordion-visible="true"<% } %>>
+                        <% if (pHelper.hasFavourite(group) ||
+                                (pHelper.getRepositories(group).size() > 0 && pHelper.getRepositories(group).size() < 5)) {
+                        %>data-accordion-visible="true"<% } %>>
                 <%
                 if (pHelper.getRepositories(group).size() > 0 ) {
                 %>
