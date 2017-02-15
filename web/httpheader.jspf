@@ -35,14 +35,10 @@ to set the title of the document before the include directive for this fragment:
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="
 org.opensolaris.opengrok.Info,
 org.opensolaris.opengrok.web.PageConfig"
-%><%@
-
-include file="pageconfig.jspf"
-
 %><%
 /* ---------------------- httpheader.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     String styleDir = cfg.getCssDir();
     String ctxPath = request.getContextPath();
     String dstyle = styleDir + '/' + "style.css";

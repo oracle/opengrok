@@ -18,8 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2005 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -35,14 +34,10 @@ org.opensolaris.opengrok.history.HistoryGuru,
 org.opensolaris.opengrok.web.Util,
 org.opensolaris.opengrok.web.Prefix,
 org.opensolaris.opengrok.web.PageConfig"
-%><%@ page session="false" errorPage="error.jsp"%><%@
-
-include file="pageconfig.jspf"
-
-%><%
+%><%@ page session="false" errorPage="error.jsp"%><%
 /* ---------------------- rss.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
         if (redir != null) {

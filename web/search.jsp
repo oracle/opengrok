@@ -33,7 +33,7 @@ org.opensolaris.opengrok.web.Suggestion"
 include file="projects.jspf"
 
 %><%!
-    private StringBuilder createUrl(SearchHelper sh, boolean menu) {
+    private StringBuilder createUrl(HttpServletRequest request, SearchHelper sh, boolean menu) {
         StringBuilder url = new StringBuilder(64);
         QueryBuilder qb = sh.builder;
         if (menu) {
@@ -50,19 +50,20 @@ include file="projects.jspf"
             Util.appendQuery(url, "type", qb.getType());
         }
         if (sh.projects != null && sh.projects.size() != 0) {
-            Util.appendQuery(url, "project", cfg.getRequestedProjectsAsString());
+            Util.appendQuery(url, "project", PageConfig.get(request).getRequestedProjectsAsString());
         }
         return url;
     }
 %><%
 /* ---------------------- search.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
 
     long starttime = System.currentTimeMillis();
 
     SearchHelper searchHelper = cfg.prepareSearch();
     request.setAttribute(SearchHelper.REQUEST_ATTR, searchHelper);
+    request.setAttribute("search.jsp-query-start-time", starttime);
     searchHelper.prepareExec(cfg.getRequestedProjects()).executeQuery().prepareSummary();
     if (searchHelper.redirect != null) {
         response.sendRedirect(searchHelper.redirect);
@@ -76,6 +77,7 @@ include file="projects.jspf"
         cfg.setTitle(cfg.getSearchTitle());
     }
     response.addCookie(new Cookie("OpenGrokSorting", URLEncoder.encode(searchHelper.order.toString(), "utf-8")));
+}
 %><%@
 
 include file="httpheader.jspf"
@@ -95,7 +97,10 @@ include file="pageheader.jspf"
             <div id="sortfield">
                 <label for="sortby">Sort by</label>
                 <%
-    StringBuilder url = createUrl(searchHelper, true).append("&amp;sort=");
+{
+    PageConfig cfg = PageConfig.get(request);
+    SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
+    StringBuilder url = createUrl(request, searchHelper, true).append("&amp;sort=");
     int ordcnt = 0;
     for (SortOrder o : SortOrder.values()) {
         if (searchHelper.order == o) {
@@ -108,6 +113,7 @@ include file="pageheader.jspf"
             %> | <%
         }
     }
+}
                 %>
             </div>
         </div>
@@ -122,6 +128,10 @@ include file="menu.jspf"
     </div>
 
     <div id="results"> <%
+{
+    PageConfig cfg = PageConfig.get(request);
+    SearchHelper searchHelper = (SearchHelper) request.getAttribute(SearchHelper.REQUEST_ATTR);
+    Long starttime = (Long) request.getAttribute("search.jsp-query-start-time");
     // TODO spellchecking cycle below is not that great and we only create
     // suggest links for every token in query, not for a query as whole
     if (searchHelper.errorMsg != null) {
@@ -188,7 +198,7 @@ include file="menu.jspf"
         if (searchHelper.maxItems < searchHelper.totalHits) {
             StringBuilder buf = new StringBuilder(4096);
             thispage = (start + max) < totalHits ? max : totalHits - start;
-            StringBuilder urlp = createUrl(searchHelper, false);
+            StringBuilder urlp = createUrl(request, searchHelper, false);
             int labelStart = 1;
             int sstart = start - max * (start / max % 10 + 1) ;
             if (sstart < 0) {

@@ -19,6 +19,7 @@ CDDL HEADER END
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
+
 --%><%@ page session="false" errorPage="error.jsp" %><%@
 
 include file="projects.jspf"
@@ -26,8 +27,9 @@ include file="projects.jspf"
 %><%
 /* ---------------------- index.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     cfg.setTitle("Search");
+}
 %><%@
 
 include file="httpheader.jspf"
@@ -48,7 +50,7 @@ include file="menu.jspf"
             %></div>
         </div>
         <div id="results">
-        <%= cfg.getEnv().getConfiguration().getBodyIncludeFileContent() %>
+            <%= PageConfig.get(request).getEnv().getConfiguration().getBodyIncludeFileContent() %>
         </div>
         <%@
 
@@ -57,7 +59,6 @@ include file="repos.jspf"
         %>
         </div>
 <%
-}
 /* ---------------------- index.jsp end --------------------- */
 %><%@
 
