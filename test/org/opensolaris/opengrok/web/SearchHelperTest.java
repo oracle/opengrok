@@ -18,21 +18,18 @@
  */
 
 /*
- * Copyright (c) 2012, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 
 package org.opensolaris.opengrok.web;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -97,8 +94,6 @@ public class SearchHelperTest {
         sh.compressed = env.isCompressXref();
         sh.desc = null;
         sh.sourceRoot = env.getSourceRootFile();
-        sh.lastEditedDisplayMode = false;
-
         return sh;
     }
 

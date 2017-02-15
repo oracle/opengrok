@@ -197,10 +197,6 @@ public class SearchHelper {
     public HistoryContext historyContext;
     
     /**
-     * display last edited date of a file in search results
-     */
-    public boolean lastEditedDisplayMode = true;
-    /**
      * Default query parse error message prefix
      */
     public static final String PARSE_ERROR_MSG = "Unable to parse your query: ";

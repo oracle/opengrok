@@ -126,6 +126,7 @@ public final class Configuration {
     private boolean tagsEnabled;
     private int hitsPerPage;
     private int cachePages;
+    private boolean lastEditedDisplayMode;
     private String databaseDriver;
     private String databaseUrl;
     private String CTagsExtraOptionsFile;
@@ -251,6 +252,14 @@ public final class Configuration {
         this.statisticsFilePath = statisticsFilePath;
     }
 
+    public boolean isLastEditedDisplayMode() {
+        return lastEditedDisplayMode;
+    }
+
+    public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
+        this.lastEditedDisplayMode = lastEditedDisplayMode;
+    }
+
     /**
      * Creates a new instance of Configuration
      */
@@ -299,6 +308,7 @@ public final class Configuration {
         setFoldingEnabled(true);
         setFetchHistoryWhenNotInCache(true);
         setHandleHistoryOfRenamedFiles(true);
+        setLastEditedDisplayMode(true);
         setRevisionMessageCollapseThreshold(200);
         setPluginDirectory(null);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());

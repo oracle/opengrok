@@ -287,6 +287,14 @@ public final class RuntimeEnvironment {
         this.statistics = statistics;
     }
 
+    public void setLastEditedDisplayMode(boolean lastEditedDisplayMode) {
+        threadConfig.get().setLastEditedDisplayMode(lastEditedDisplayMode);
+    }
+
+    public boolean isLastEditedDisplayMode() {
+        return threadConfig.get().isLastEditedDisplayMode();
+    }
+
     /**
      * Get the path to the where the index database is stored
      *

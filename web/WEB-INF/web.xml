@@ -64,9 +64,6 @@
 <init-param>
 <param-name>keepgenerated</param-name><param-value>true</param-value>
 </init-param>
-<init-param>
-<param-name>lastEditedDisplayMode</param-name><param-value>true</param-value>
-</init-param>
   </servlet>
   <servlet>
   <servlet-name>json</servlet-name>
