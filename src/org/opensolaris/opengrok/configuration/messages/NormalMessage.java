@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -33,5 +33,22 @@ public class NormalMessage extends Message {
     public byte[] apply(RuntimeEnvironment env) {
         env.addMessage(this);
         return null;
+    }
+
+    @Override
+    public void validate() throws Exception {
+        if (getText() == null) {
+            throw new Exception("The message must contain a text.");
+        }
+        if (getExpiration() == null) {
+            throw new Exception("The message must contain an expiration date.");
+        }
+        if (getTags().isEmpty()) {
+            getTags().add(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
+        }
+        if (getClassName() == null) {
+            setClassName("info");
+        }
+        super.validate();
     }
 }

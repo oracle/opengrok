@@ -18,11 +18,14 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.json.simple.parser.ParseException;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 import org.opensolaris.opengrok.web.Statistics;
@@ -42,5 +45,19 @@ public class StatsMessage extends Message {
             env.setStatistics(new Statistics());
         }
         return Util.statisticToJson(env.getStatistics()).toJSONString().getBytes();
+    }
+
+    @Override
+    public void validate() throws Exception {
+        if (getText() == null) {
+            throw new Exception("The message must contain a text.");
+        }
+        List<String> allowed = Arrays.asList(new String[]{"get", "reload", "clean"});
+        if (!allowed.contains(getText())) {
+            throw new Exception(
+                    String.format("The message text must be one of [%s] - '%s' given",
+                            allowed.stream().collect(Collectors.joining(",")), getText()));
+        }
+        super.validate();
     }
 }

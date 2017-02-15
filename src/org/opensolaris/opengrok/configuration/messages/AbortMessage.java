@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -34,4 +34,13 @@ public class AbortMessage extends Message {
         env.removeAnyMessage(tags);
         return null;
     }
+
+    @Override
+    public void validate() throws Exception {
+        if (getTags().isEmpty()) {
+            getTags().add(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG);
+        }
+        super.validate();
+    }
+
 }

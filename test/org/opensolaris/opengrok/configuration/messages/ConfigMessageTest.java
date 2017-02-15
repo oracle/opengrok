@@ -17,13 +17,14 @@
  * CDDL HEADER END
  */
 
-/*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ /*
+ * Copyright (c) 2017, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayOutputStream;
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,9 +37,9 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
  * @author Vladimir Kotal
  */
 public class ConfigMessageTest {
-    
+
     RuntimeEnvironment env;
-    
+
     @Before
     public void setUp() {
         env = RuntimeEnvironment.getInstance();
@@ -49,7 +50,21 @@ public class ConfigMessageTest {
     public void tearDown() {
         env.removeAllMessages();
     }
-    
+
+    @Test
+    public void testValidate() {
+        Message m = new ConfigMessage();
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setClassName(null);
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertNull(m.getClassName());
+        m.setTags(new TreeSet<>());
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertEquals(new TreeSet<>(), m.getTags());
+    }
+
     @Test
     public void testApplyBasicConfig() throws Exception {
         Message m = new ConfigMessage();

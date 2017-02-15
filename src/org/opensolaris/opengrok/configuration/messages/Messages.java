@@ -22,19 +22,12 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.beans.XMLDecoder;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.util.Getopt;
 
 public final class Messages {
@@ -125,10 +118,6 @@ public final class Messages {
             type = "normal";
         }
 
-        if (className == null) {
-            className = "info";
-        }
-
         if (server == null) {
             server = "localhost";
         }
@@ -155,13 +144,23 @@ public final class Messages {
         } else {
             m.setText(text);
         }
+
         m.setClassName(className);
+
         for (String tag : tags) {
             m.addTag(tag);
         }
 
         if (expire != -1 && expire > System.currentTimeMillis()) {
             m.setExpiration(new Date(expire));
+        }
+
+        try {
+            m.validate();
+        } catch (Exception e) {
+            System.err.println("This message is not valid:");
+            System.err.println(e.getLocalizedMessage());
+            System.exit(1);
         }
 
         try {
@@ -190,6 +189,7 @@ public final class Messages {
         System.err.println();
         System.err.println("Message text");
         System.err.println("-t <text>            text of the message");
+        System.err.println("-f <path>            read the file into the message's text");
         System.err.println();
         System.err.println("Tags");
         System.err.println("-g <tag>             add a tag to the message (can be specified multiple times)");

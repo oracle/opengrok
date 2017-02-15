@@ -23,7 +23,6 @@
 package org.opensolaris.opengrok.configuration;
 
 import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -1157,6 +1156,11 @@ public final class RuntimeEnvironment {
         Message m = Message.createMessage("config");
         m.addTag("reindex");
         m.setText(configuration.getXMLRepresentationAsString());
+        try {
+            m.validate();
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
         m.write(host, port);
     }
 

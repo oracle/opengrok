@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
@@ -48,6 +48,23 @@ public class NormalMessageTest {
     @After
     public void tearDown() {
         env.removeAllMessages();
+    }
+
+    @Test
+    public void testValidate() {
+        Message m = new NormalMessage();
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setCreated(null);
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setCreated(new Date());
+        m.setClassName(null);
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertEquals("info", m.getClassName());
+        m.setTags(new TreeSet<>());
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertTrue(m.hasTag(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG));
     }
 
     @Test

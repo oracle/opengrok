@@ -18,10 +18,11 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
+import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,6 +42,20 @@ public class AbortMessageTest {
     @After
     public void tearDown() {
         env.removeAllMessages();
+    }
+
+    @Test
+    public void testValidate() {
+        Message m = new AbortMessage();
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setText("text");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setClassName(null);
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertNull(m.getClassName());
+        m.setTags(new TreeSet<>());
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertTrue(m.hasTag(RuntimeEnvironment.MESSAGES_MAIN_PAGE_TAG));
     }
 
     @Test

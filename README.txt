@@ -134,7 +134,8 @@ Currently supported message types:
         - "clean"   the application cleans its current statistics
                     and returns the empty statistics
         - "get"     the application returns current statistics
-        - otherwise the application returns current statistics
+4) ConfigMessage (config)
+    This message sends a configuration to the webapp. Requires file as argument.
 
 4. OpenGrok install
 -----------------
