@@ -190,13 +190,13 @@ The script has documented usage and all subcommands have their own usage.
 
 ### Usage:
 ```
-Usage: Groups <add|delete|match|list|help> [--help] [--verbose] [-d]
+
+Usage: Groups <add|delete|match|list|empty|help> [--help] [--verbose] [-d]
        Groups add <name> <pattern>
        Groups delete <name>
        Groups match <project name>
 
   The script searches for the configuration in
-    OPENGROK_INSTANCE_BASE/etc/configuration.xml or
     READ_XML_CONFIGURATION files or
     you can use the -i option.
   When no such file exists it uses an empty configuration.
@@ -206,6 +206,7 @@ Usage: Groups <add|delete|match|list|help> [--help] [--verbose] [-d]
       e.g. $ OPENGROK_CONFIGURATION=/var/opengrok/myog.conf tools/Groups ... 
 
     See the code for more information on configuration options / variables
+
 ```
 
 **The script has also an option to update the configuration IN PLACE. That should be used carefully because it can lead to loss of your data.**
