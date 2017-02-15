@@ -30,8 +30,9 @@ org.opensolaris.opengrok.web.PageConfig,
 org.opensolaris.opengrok.web.Prefix,
 org.opensolaris.opengrok.web.Util"%><%
     /* ---------------------- minisearch.jspf start --------------------- */
-    {
-        cfg = PageConfig.get(request);
+{
+        PageConfig cfg = PageConfig.get(request);
+        String context = request.getContextPath();
 %>
 
 <form action="<%= context + Prefix.SEARCH_P %>">

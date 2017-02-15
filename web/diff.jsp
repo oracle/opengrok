@@ -57,7 +57,7 @@ include file="mast.jsp"
 %><script src="<%=request.getContextPath()%>/js/diff-0.0.1.js" type="text/javascript"></script><%
 /* ---------------------- diff.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     DiffData data = cfg.getDiffData();
 
     if (data.errorMsg != null)  {

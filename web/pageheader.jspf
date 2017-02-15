@@ -18,10 +18,11 @@ CDDL HEADER END
 
 Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
 
---%><% 
+--%><%@page import="org.opensolaris.opengrok.web.PageConfig"%>
+<%
 /* ---------------------- pageheader.jspf start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
 %>
 <%= cfg.getEnv().getConfiguration().getHeaderIncludeFileContent() %>
 <% 

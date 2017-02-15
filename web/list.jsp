@@ -19,6 +19,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+
 Portions Copyright 2011 Jens Elkner.
 
 --%>
@@ -72,7 +73,7 @@ document.pageReady.push(function() { pageReadyList();});
 <%
 /* ---------------------- list.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     String rev = cfg.getRequestedRevision();
 
     File resourceFile = cfg.getResourceFile();

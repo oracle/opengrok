@@ -40,10 +40,10 @@ org.opensolaris.opengrok.configuration.RuntimeEnvironment"
 <%/* ---------------------- history.jsp start --------------------- */
 {
     PageConfig cfg = PageConfig.get(request);
-    String path = cfg.getPath();
 
     // Need to set the title before inlcuding httpheader.jspf
     cfg.setTitle(cfg.getHistoryTitle());
+}
 %>
 <%@
 
@@ -51,8 +51,131 @@ include file="httpheader.jspf"
 
 %>
 <%
+{
+    PageConfig cfg = PageConfig.get(request);
+    String path = cfg.getPath();
+
     if (path.length() > 0) {
-        String context = request.getContextPath();
+        File f = cfg.getResourceFile();
+        History hist = null;
+        try {
+            hist = HistoryGuru.getInstance().getHistoryUI(f);
+        } catch (Exception e) {
+            // should not happen
+            %><h3>Problem</h3><p class="error"><%= e.getMessage() %></p><%
+        }
+        if (hist != null) {
+            request.setAttribute("history.jsp-hist", hist);
+%>
+<body>
+<script type="text/javascript">/* <![CDATA[ */
+    document.rev = getParameter("r");
+    document.annotate = <%= PageConfig.get(request).annotate() %>;
+    document.domReady.push(domReadyMast);
+    document.pageReady.push(pageReadyMast);
+/* ]]> */</script>
+<div id="page">
+    <div id="whole_header">
+        <div id="header">
+<%
+        }
+    }
+}
+{
+    if (request.getAttribute("history.jsp-hist") != null) {
+%><%@
+
+include file="pageheader.jspf"
+
+%>
+<%
+    }
+}
+{
+    PageConfig cfg = PageConfig.get(request);
+    String context = request.getContextPath();
+    String path = cfg.getPath();
+
+    History hist = null;
+    if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
+
+        // We have a lots of results to show: create a slider for
+        String slider = "";
+        int thispage;  // number of items to display on the current page
+        int start = cfg.getSearchStart();
+        int max = cfg.getSearchMaxItems();
+        int totalHits = hist.getHistoryEntries().size();
+        if (max < totalHits) {
+            StringBuilder buf = new StringBuilder(4096);
+            thispage = (start + max) < totalHits ? max : totalHits - start;
+            int labelStart = 1;
+            int sstart = start - max * (start / max % 10 + 1) ;
+            if (sstart < 0) {
+                sstart = 0;
+                labelStart = 1;
+            } else {
+                labelStart = sstart / max + 1;
+            }
+            int label = labelStart;
+            int labelEnd = label + 11;
+            for (int i = sstart; i < totalHits && label <= labelEnd; i+= max) {
+                if (i <= start && start < i + max) {
+                    buf.append("<span class=\"sel\">").append(label).append("</span>");
+                } else {
+                    buf.append("<a class=\"more\" href=\"?n=").append(max)
+                        .append("&amp;start=").append(i);
+                    // append revision parameters
+                    if (cfg.getIntParam("r1", -1) != -1) {
+                        buf.append("&amp;r1=").append(cfg.getIntParam("r1", -1));
+                    }
+                    if (cfg.getIntParam("r2", -1) != -1) {
+                        buf.append("&amp;r2=").append(cfg.getIntParam("r2", -1));
+                    }
+                    buf.append("\">");
+                    if (label == labelStart && label != 1) {
+                        buf.append("&lt;&lt");
+                    } else if (label == labelEnd && i < totalHits) {
+                        buf.append("&gt;&gt;");
+                    } else {
+                        buf.append(label);
+                    }
+                    buf.append("</a>");
+                }
+                label++;
+            }
+            slider = buf.toString();
+            request.setAttribute("history.jsp-slider", slider);
+        } else {
+            // set the max index to max or last
+            thispage = totalHits - start;
+        }
+%>
+        </div>
+        <div id="Masthead">History log of 
+        <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
+        (Results <b> <%= start + 1 %> - <%= thispage + start
+            %></b> of <b><%= totalHits %></b>)
+        </div>
+<%
+    }
+}
+{
+    if (request.getAttribute("history.jsp-hist") != null) {
+%>
+        <%@
+
+include file="minisearch.jspf"
+
+%>
+<%
+    }
+}
+{
+    PageConfig cfg = PageConfig.get(request);
+    String context = request.getContextPath();
+    String path = cfg.getPath();
+    History hist = null;
+    if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
         RuntimeEnvironment env = cfg.getEnv();
         String uriEncodedName = cfg.getUriEncodedPath();
 
@@ -77,98 +200,13 @@ include file="httpheader.jspf"
         }
         Pattern reviewPattern = Pattern.compile(reviewRegex);
         Format df = new SimpleDateFormat("dd-MMM-yyyy");
-        File f = cfg.getResourceFile();
-        History hist = null;
-        try {
-            hist = HistoryGuru.getInstance().getHistoryUI(f);
-        } catch (Exception e) {
-            // should not happen
-            %><h3>Problem</h3><p class="error"><%= e.getMessage() %></p><%
-        }
-        if (hist != null) {
-%>
-<%
-// We have a lots of results to show: create a slider for
-String slider = "";
-int thispage;  // number of items to display on the current page
-int start = cfg.getSearchStart();
-int max = cfg.getSearchMaxItems();
-int totalHits = hist.getHistoryEntries().size();
-if (max < totalHits) {
-    StringBuilder buf = new StringBuilder(4096);
-    thispage = (start + max) < totalHits ? max : totalHits - start;
-    int labelStart = 1;
-    int sstart = start - max * (start / max % 10 + 1) ;
-    if (sstart < 0) {
-        sstart = 0;
-        labelStart = 1;
-    } else {
-        labelStart = sstart / max + 1;
-    }
-    int label = labelStart;
-    int labelEnd = label + 11;
-    for (int i = sstart; i < totalHits && label <= labelEnd; i+= max) {
-        if (i <= start && start < i + max) {
-            buf.append("<span class=\"sel\">").append(label).append("</span>");
-        } else {
-            buf.append("<a class=\"more\" href=\"?n=").append(max)
-                .append("&amp;start=").append(i);
-            // append revision parameters
-            if (cfg.getIntParam("r1", -1) != -1) {
-                buf.append("&amp;r1=").append(cfg.getIntParam("r1", -1));
-            }
-            if (cfg.getIntParam("r2", -1) != -1) {
-                buf.append("&amp;r2=").append(cfg.getIntParam("r2", -1));
-            }
-            buf.append("\">");
-            if (label == labelStart && label != 1) {
-                buf.append("&lt;&lt");
-            } else if (label == labelEnd && i < totalHits) {
-                buf.append("&gt;&gt;");
-            } else {
-                buf.append(label);
-            }
-            buf.append("</a>");
-        }
-        label++;
-    }
-    slider = buf.toString();
-} else {
-    // set the max index to max or last
-    thispage = totalHits - start;
-}
 
-int revision2 = cfg.getIntParam("r2", -1) < 0 ? 0 : cfg.getIntParam("r2", -1);
-int revision1 = cfg.getIntParam("r1", -1) < revision2 ? revision2 + 1 : cfg.getIntParam("r1", -1);
-revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2; 
+        int revision2 = cfg.getIntParam("r2", -1) < 0 ? 0 : cfg.getIntParam("r2", -1);
+        int revision1 = cfg.getIntParam("r1", -1) < revision2 ? revision2 + 1 : cfg.getIntParam("r1", -1);
+        revision2 = revision2 >= hist.getHistoryEntries().size() ? hist.getHistoryEntries().size() - 1 : revision2;
 
-
-%>
-
-<body>
-<script type="text/javascript">/* <![CDATA[ */
-    document.rev = getParameter("r");
-    document.annotate = <%= cfg.annotate() %>;
-    document.domReady.push(domReadyMast);
-    document.pageReady.push(pageReadyMast);
-/* ]]> */</script>
-<div id="page">
-    <div id="whole_header">
-        <div id="header"><%@
-
-include file="pageheader.jspf"
-
-%>
-        </div>
-        <div id="Masthead">History log of 
-        <%= Util.breadcrumbPath(context + Prefix.XREF_P, path,'/',"",true,cfg.isDir()) %>
-        (Results <b> <%= start + 1 %> - <%= thispage + start
-            %></b> of <b><%= totalHits %></b>)
-        </div>
-        <%@
-
-include file="minisearch.jspf"
-
+        int start = cfg.getSearchStart();
+        int max = cfg.getSearchMaxItems();
 %>
 <script type="text/javascript">/* <![CDATA[ */
 document.domReady.push(function() {domReadyHistory();});
@@ -373,7 +411,13 @@ document.domReady.push(function() {domReadyHistory();});
     <tfoot>
         <tr>
             <td colspan="5">
-                <p class="slider"><%= slider %></p>
+<%
+    String slider = null;
+    if ((slider = (String) request.getAttribute("history.jsp-slider")) != null) {
+        // NOTE: shouldn't happen that it doesn't have this attribute
+        %><p class="slider"><%= slider %></p><%
+    }
+%>
             </td>
         </tr>
     </tfoot>
@@ -389,8 +433,6 @@ revisions with strike-through numbers (eg. <del>1.45</del>)</p><%
 %>" title="RSS XML Feed of latest changes"><span id="rssi"></span></a></p>
 
 <%
-
-        }
 
     }
 }

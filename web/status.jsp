@@ -18,7 +18,8 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
+
 Portions Copyright 2011 Jens Elkner.
 
 --%><%@page session="false" errorPage="error.jsp" import="
@@ -31,8 +32,9 @@ include file="projects.jspf"
 %><%
 /* ---------------------- status.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     cfg.setTitle("Status");
+}
 %><%@
 
 include file="httpheader.jspf"
@@ -54,6 +56,8 @@ include file="pageheader.jspf"
             <p>
 This page is only used for testing purposes to dump some of the
 internal settings on your OpenGrok server.</p><%
+{
+        PageConfig cfg = PageConfig.get(request);
         if (cfg.getEnv().isChattyStatusPage()) {
             Util.dumpConfiguration(out);
         } else {

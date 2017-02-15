@@ -17,6 +17,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 CDDL HEADER END
 
 Copyright (c) 2005, 2017, Oracle and/or its affiliates. All rights reserved.
+
 Portions Copyright 2011 Jens Elkner.
 
 --%>
@@ -29,7 +30,7 @@ org.opensolaris.opengrok.web.Util"
 %><%
 /* ---------------------- error.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     cfg.setTitle("Error!");
 
     // Set status to Internal error. This should help to avoid caching
@@ -37,14 +38,7 @@ org.opensolaris.opengrok.web.Util"
     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
     String context = request.getContextPath();
-    String configError = "";
-    if (cfg.getSourceRootPath() == null || cfg.getSourceRootPath().isEmpty()) {
-        configError = "CONFIGURATION parameter has not been configured in "
-            + "web.xml! Please configure your webapp.";
-    } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
-        configError = "The source root specified in your configuration does "
-            + "not point to a valid directory! Please configure your webapp.";
-    }
+}
 %><%@
 
 include file="httpheader.jspf"
@@ -67,7 +61,18 @@ include file="menu.jspf"
 
         %></div>
     </div>
-    <h3 class="error">There was an error!</h3>
+<%
+{
+    PageConfig cfg = PageConfig.get(request);
+    String configError = "";
+    if (cfg.getSourceRootPath() == null || cfg.getSourceRootPath().isEmpty()) {
+        configError = "CONFIGURATION parameter has not been configured in "
+            + "web.xml! Please configure your webapp.";
+    } else if (!cfg.getEnv().getSourceRootFile().isDirectory()) {
+        configError = "The source root specified in your configuration does "
+            + "not point to a valid directory! Please configure your webapp.";
+    }
+%><h3 class="error">There was an error!</h3>
     <p class="error"><%= configError %></p><%
     if (exception != null) {
 %>

@@ -48,7 +48,7 @@ org.opensolaris.opengrok.web.Util"
 %><%
 /* ---------------------- menu.jspf start --------------------- */
 {
-    // PageConfig cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     ProjectHelper ph = ProjectHelper.getInstance(cfg);
     JSONArray messages;
     Set<Project> projects = ph.getAllProjects();
