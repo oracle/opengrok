@@ -46,7 +46,9 @@ Currently supported message types:
        - "reload"  the application reloads the statistics file and returns the loaded statistics
        - "clean"   the application cleans its current statistics and returns the empty statistics
        - "get"     the application returns current statistics
-       - otherwise the application returns current statistics
+4. `ConfigMessage` (config)
+
+    This message sends a configuration to the webapp. Requires file as argument.
 
 ## Tags
 
@@ -88,6 +90,8 @@ Usage: Messages [options] <text>
   text: supports html markup
 
   Message types:
+    config:
+     - send configuration to the webapp. Requires file as argument.
     normal:
      - assign a <text> to the main page or a project
      - can be more precise with <tags> (for specific project)
@@ -101,7 +105,6 @@ Usage: Messages [options] <text>
        - "clean"   the application cleans its current statistics
                    and returns the empty statistics
        - "get"     the application returns current statistics
-       - otherwise the application returns current statistics
 
   Optional environment variables:
     OPENGROK_CONFIGURATION - location of your configuration
@@ -124,6 +127,7 @@ $ tools/Messages -c "warning" -e "+30 min" --type abort "Hello" # send abort mes
 $ tools/Messages -n stats get # get actual statistics as JSON
 $ tools/Messages -n stats reload # reload the statistics file
 $ tools/Messages -n stats clean # cleans all the statistics
+$ tools/Messages -n config /var/opengrok/etc/groups.xml
 ```
 
 The script is also packaged into the target archive and the usage is similar
