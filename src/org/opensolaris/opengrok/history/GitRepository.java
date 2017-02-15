@@ -135,6 +135,7 @@ public class GitRepository extends Repository {
         }
 
         if (filename.length() > 0) {
+            cmd.add("--");
             cmd.add(filename);
         }
 
