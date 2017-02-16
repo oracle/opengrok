@@ -21,6 +21,7 @@ CDDL HEADER END
 Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 
 --%>
+<%@page import="org.jcp.xml.dsig.internal.dom.Utils"%>
 <%@page import="org.json.simple.JSONArray"%>
 <%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
@@ -185,7 +186,7 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                             if (currentVersion == null) {
                                 currentVersion = "N/A";
                             }
-                            %><td><%= Util.htmlize(type) %>: <%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
                             %><td><%
 
                             // Current index collapse threshold minimum of 10
@@ -312,7 +313,7 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                                 if (currentVersion == null) {
                                     currentVersion = "N/A";
                                 }
-                                %><td><%= Util.htmlize(type) %>: <%= Util.htmlize(parent) %> (<%= Util.htmlize(branch) %>)</td><%
+                                %><td><%= Util.htmlize(type) %>: <%= Util.linkify(parent) %> (<%= Util.htmlize(branch) %>)</td><%
                                 %><td><%
 
                                 // Current index message collapse threshold minimum of 10

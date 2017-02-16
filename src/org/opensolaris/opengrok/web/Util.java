@@ -31,6 +31,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
@@ -1241,5 +1243,53 @@ public final class Util {
 
         // Otherwise, return the full path.
         return fullPath;
+    }
+
+    /**
+     * Check if the string is a http url.
+     *
+     * @param string the string to check
+     * @return true if it is http url, false otherwise
+     */
+    public static boolean isHttpUrl(String string) {
+        URL url;
+        try {
+            url = new URL(string);
+        } catch (MalformedURLException ex) {
+            return false;
+        }
+        return url.getProtocol().equals("http") || url.getProtocol().equals("https");
+    }
+
+    /**
+     * Build a html link to the given http url. If the url is not an http uri
+     * then it is returned as it was received. This has the same effect as
+     * invoking <code>buildLink(url, true)</code>.
+     *
+     * @param url
+     * @return
+     */
+    public static String linkify(String url) {
+        return linkify(url, true);
+    }
+
+    /**
+     * Build a html link to the given http url. If the url is not an http uri
+     * then it is returned as it was received.
+     *
+     * @param url the http url
+     * @param newTab if the link should open in a new tab
+     * @return html containing the link &lt;a&gt;...&lt;/a&gt;
+     */
+    public static String linkify(String url, boolean newTab) {
+        if (isHttpUrl(url)) {
+            return String.format("<a href=\"%s\"%s title=\"Link to %s\">%s</a>",
+                    url,
+                    newTab ? " target=\"_blank\"" : "",
+                    Util.htmlize(url),
+                    Util.htmlize(url)
+            );
+        }
+        return url;
     }
 }

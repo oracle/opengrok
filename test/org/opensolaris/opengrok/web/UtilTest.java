@@ -18,7 +18,7 @@
  */
 
 /*
- * Copyright (c) 2007, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.web;
 
@@ -30,6 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -291,5 +292,55 @@ public class UtilTest {
         assertEquals("def/ghi", Util.stripPathPrefix("/abc", "/abc/def/ghi"));
         assertEquals("def/ghi", Util.stripPathPrefix("/abc/", "/abc/def/ghi"));
     }
-}
+    
+    @Test
+    public void testIsUrl() {
+        assertTrue(Util.isHttpUrl("http://www.example.com"));
+        assertTrue(Util.isHttpUrl("http://example.com"));
+        assertTrue(Util.isHttpUrl("https://example.com"));
+        assertTrue(Util.isHttpUrl("https://www.example.com"));
+        assertTrue(Util.isHttpUrl("http://www.example.com?param=1&param2=2"));
+        assertTrue(Util.isHttpUrl("http://www.example.com/other/page"));
+        assertTrue(Util.isHttpUrl("https://www.example.com?param=1&param2=2"));
+        assertTrue(Util.isHttpUrl("https://www.example.com/other/page"));
+        assertTrue(Util.isHttpUrl("http://www.example.com:80/other/page"));
+        assertTrue(Util.isHttpUrl("http://www.example.com:8080/other/page"));
+        assertTrue(Util.isHttpUrl("https://www.example.com:80/other/page"));
+        assertTrue(Util.isHttpUrl("https://www.example.com:8080/other/page"));
 
+        assertFalse(Util.isHttpUrl("git@github.com:OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUrl("hg@mercurial.com:OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUrl("ssh://git@github.com:OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUrl("ldap://example.com/OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUrl("smtp://example.com/OpenGrok/OpenGrok"));
+    }
+
+    @Test
+    public void testLinkify() {
+        assertTrue(Util.linkify("http://www.example.com")
+                .matches("<a.*?href=\"http://www\\.example\\.com\".*?>.*?</a>"));
+        assertTrue(Util.linkify("https://example.com")
+                .matches("<a.*?href=\"https://example\\.com\".*?>.*?</a>"));
+        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2")
+                .matches("<a.*?href=\"http://www\\.example\\.com\\?param=1&param2=2\".*?>.*?</a>"));
+        assertTrue(Util.linkify("https://www.example.com:8080/other/page")
+                .matches("<a.*?href=\"https://www\\.example\\.com:8080/other/page\".*?>.*?</a>"));
+
+        assertTrue(Util.linkify("http://www.example.com", true).contains("target=\"_blank\""));
+        assertTrue(Util.linkify("https://example.com", true).contains("target=\"_blank\""));
+        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2", true).contains("target=\"_blank\""));
+        assertTrue(Util.linkify("https://www.example.com:8080/other/page", true).contains("target=\"_blank\""));
+
+        assertFalse(Util.linkify("http://www.example.com", false).contains("target=\"_blank\""));
+        assertFalse(Util.linkify("https://example.com", false).contains("target=\"_blank\""));
+        assertFalse(Util.linkify("http://www.example.com?param=1&param2=2", false).contains("target=\"_blank\""));
+        assertFalse(Util.linkify("https://www.example.com:8080/other/page", false).contains("target=\"_blank\""));
+
+        assertTrue(Util.linkify("git@github.com:OpenGrok/OpenGrok").equals("git@github.com:OpenGrok/OpenGrok"));
+        assertTrue(Util.linkify("hg@mercurial.com:OpenGrok/OpenGrok").equals("hg@mercurial.com:OpenGrok/OpenGrok"));
+        assertTrue(Util.linkify("ssh://git@github.com:OpenGrok/OpenGrok").equals("ssh://git@github.com:OpenGrok/OpenGrok"));
+        assertTrue(Util.linkify("ldap://example.com/OpenGrok/OpenGrok").equals("ldap://example.com/OpenGrok/OpenGrok"));
+        assertTrue(Util.linkify("smtp://example.com/OpenGrok/OpenGrok").equals("smtp://example.com/OpenGrok/OpenGrok"));
+        assertTrue(Util.linkify("just some crazy text").equals("just some crazy text"));
+    }
+}
