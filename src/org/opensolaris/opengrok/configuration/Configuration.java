@@ -17,7 +17,7 @@
  * CDDL HEADER END
  */
 
-/*
+ /*
  * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
@@ -172,11 +172,19 @@ public final class Configuration {
     private int revisionMessageCollapseThreshold;
 
     /**
-     * Current indexed message will be collapsible if they exceed this many number of
-     * characters. Front end enforces an appropriate minimum.
+     * Groups are collapsed if number of repositories is greater than this
+     * threshold. This applies only for non-favorite groups - groups which don't
+     * contain a project which is considered as a favorite project for the user.
+     * Favorite projects are the projects which the user browses and searches
+     * and are stored in a cookie. Favorite groups are always expanded.
+     */
+    private int groupsCollapseThreshold;
+
+    /**
+     * Current indexed message will be collapsible if they exceed this many
+     * number of characters. Front end enforces an appropriate minimum.
      */
     private int currentIndexedCollapseThreshold;
-
 
     /**
      * Upper bound for number of threads used for performing multi-project
@@ -260,6 +268,14 @@ public final class Configuration {
         this.lastEditedDisplayMode = lastEditedDisplayMode;
     }
 
+    public int getGroupsCollapseThreshold() {
+        return groupsCollapseThreshold;
+    }
+
+    public void setGroupsCollapseThreshold(int groupsCollapseThreshold) {
+        this.groupsCollapseThreshold = groupsCollapseThreshold;
+    }
+
     /**
      * Creates a new instance of Configuration
      */
@@ -310,6 +326,7 @@ public final class Configuration {
         setHandleHistoryOfRenamedFiles(true);
         setLastEditedDisplayMode(true);
         setRevisionMessageCollapseThreshold(200);
+        setGroupsCollapseThreshold(4);
         setPluginDirectory(null);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
         setIndexRefreshPeriod(60);
@@ -877,9 +894,10 @@ public final class Configuration {
 
     /**
      * Get the contents of the body include file.
+     *
      * @return an empty string if it could not be read successfully, the
-     *  contents of the file otherwise.
-     *  @see Configuration#BODY_INCLUDE_FILE
+     * contents of the file otherwise.
+     * @see Configuration#BODY_INCLUDE_FILE
      */
     public String getBodyIncludeFileContent() {
         if (body == null) {

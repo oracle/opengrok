@@ -76,7 +76,7 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                     </a>
                 </div>
             <%
-            LinkedList<Group> stack = new LinkedList<Group>();
+            LinkedList<Group> stack = new LinkedList<>();
             for ( Group x : groups ) {
                 if (x.getParent() == null && (pHelper.hasAllowedSubgroup(x) || cfg.isAllowed(x))) {
                     x.setFlag(0);
@@ -126,8 +126,8 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                         </h4>
                     </div>
                         <div class="panel-body-accordion<% if (pHelper.hasFavourite(group)) { %> favourite<% } %>"
-                        <% if (pHelper.hasFavourite(group) ||
-                                (pHelper.getRepositories(group).size() > 0 && pHelper.getRepositories(group).size() < 5)) {
+                         <% if (pHelper.hasFavourite(group)
+                            || (pHelper.getRepositories(group).size() > 0 && pHelper.getRepositories(group).size() <= cfg.getGroupsCollapseThreshold())) {
                         %>data-accordion-visible="true"<% } %>>
                 <%
                 if (pHelper.getRepositories(group).size() > 0 ) {
@@ -259,7 +259,9 @@ Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
                         </div>
                     <% } %>
                     <div class="panel-body<% if (groups.size() > 0) {%>-accordion<% } %> <% if (pHelper.hasUngroupedFavourite()) { %> favourite<% } %>"
-                        <% if (pHelper.hasUngroupedFavourite()) { %>data-accordion-visible="true"<% } %>>
+                         <% if (pHelper.hasUngroupedFavourite()
+                                || (repositories.size() > 0 && repositories.size() <= cfg.getGroupsCollapseThreshold())) {
+                        %>data-accordion-visible="true"<% } %>>
                         <table>
                         <thead>
                         <tr>
