@@ -294,6 +294,22 @@ public class UtilTest {
     }
 
     @Test
+    public void testSlider() {
+        /*
+         * Test if contains all five pages for 55 results paginated by 10
+         */
+        for (int i = 0; i < 10; i++) {
+            for (int j = 1; j <= 5; j++) {
+                assertTrue("Contains page " + j, Util.createSlider(i * 10, 10, 55).contains(">" + j + "<"));
+            }
+        }
+
+        assertFalse("Does not contain page 1", Util.createSlider(0, 10, 4).contains(">1<"));
+        assertFalse("Does not contain page 5", Util.createSlider(0, 10, 2).contains(">5<"));
+        assertFalse("Does not contain page 1", Util.createSlider(0, 10, 0).contains(">1<"));
+    }
+
+    @Test
     public void testIsUrl() {
         assertTrue(Util.isHttpUri("http://www.example.com"));
         assertTrue(Util.isHttpUri("http://example.com"));
