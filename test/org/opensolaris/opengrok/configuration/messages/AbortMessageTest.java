@@ -79,15 +79,20 @@ public class AbortMessageTest {
 
     @Test
     public void testApplyNoTagFull() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().apply(env);
-        Assert.assertEquals(1, env.getMessagesInTheSystem());
+        // the main tag is added by default if no tag is present
+        Assert.assertEquals(0, env.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplySingle() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().addTag("main").apply(env);
         Assert.assertEquals(0, env.getMessagesInTheSystem());
@@ -95,7 +100,9 @@ public class AbortMessageTest {
 
     @Test
     public void testApplySingleWrongTag() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
         new AbortMessage().addTag("other").apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
@@ -105,15 +112,23 @@ public class AbortMessageTest {
     public void testApplyReverse() throws Exception {
         new AbortMessage().addTag("main").apply(env);
         Assert.assertEquals(0, env.getMessagesInTheSystem());
-        new NormalMessage().addTag("main").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplyMultiple() throws Exception {
-        new NormalMessage().addTag("main").apply(env);
-        new NormalMessage().addTag("project").apply(env);
-        new NormalMessage().addTag("pull").apply(env);
+        Message m = new NormalMessage().addTag("main");
+        m.setText("text");
+        m.apply(env);
+        m = new NormalMessage().addTag("project");
+        m.setText("text");
+        m.apply(env);
+        m = new NormalMessage().addTag("pull");
+        m.setText("text");
+        m.apply(env);
         Assert.assertEquals(3, env.getMessagesInTheSystem());
 
         new AbortMessage().addTag("other").apply(env);

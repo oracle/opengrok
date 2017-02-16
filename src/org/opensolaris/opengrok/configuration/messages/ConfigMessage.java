@@ -32,7 +32,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 public class ConfigMessage extends Message {
 
     @Override
-    public byte[] apply(RuntimeEnvironment env) throws IOException {
+    protected byte[] applyMessage(RuntimeEnvironment env) throws IOException {
         env.applyConfig(this, hasTag("reindex"));
 
         return null;

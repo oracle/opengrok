@@ -18,7 +18,7 @@
  */
 
  /*
- * Copyright (c) 2008, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration;
 
@@ -520,6 +520,7 @@ public class RuntimeEnvironmentTest {
         for (int i = 0; i < instance.getMessageLimit(); i++) {
             Message m2 = new NormalMessage();
             m2.addTag("main");
+            m2.setText("text");
             m2.setExpiration(new Date(System.currentTimeMillis() + 5000));
             m2.setCreated(new Date(System.currentTimeMillis() + i));
 
@@ -532,6 +533,7 @@ public class RuntimeEnvironmentTest {
         for (int i = 0; i < instance.getMessageLimit() * 2; i++) {
             Message m2 = new NormalMessage();
             m2.addTag("main");
+            m2.setText("text");
             m2.setExpiration(new Date(System.currentTimeMillis() + 5000));
             m2.setCreated(new Date(System.currentTimeMillis() + i + instance.getMessageLimit()));
 

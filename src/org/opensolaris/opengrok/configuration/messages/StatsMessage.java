@@ -40,7 +40,7 @@ public class StatsMessage extends Message {
     static final List<String> ALLOWED_OPTIONS = Arrays.asList(new String[]{"get", "reload", "clean"});
 
     @Override
-    public byte[] apply(RuntimeEnvironment env) throws IOException, ParseException {
+    protected byte[] applyMessage(RuntimeEnvironment env) throws IOException, ParseException {
         if (getText().equalsIgnoreCase("reload")) {
             env.loadStatistics();
         } else if (getText().equalsIgnoreCase("clean")) {

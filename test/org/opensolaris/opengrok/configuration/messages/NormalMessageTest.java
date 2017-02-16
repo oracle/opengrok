@@ -70,15 +70,17 @@ public class NormalMessageTest {
     @Test
     public void testApplyNoTag() throws Exception {
         Message m = new NormalMessage();
-
+        m.setText("text");
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         m.apply(env);
-        Assert.assertEquals(0, env.getMessagesInTheSystem());
+        // the main tag is added by default if no tag is present
+        Assert.assertEquals(1, env.getMessagesInTheSystem());
     }
 
     @Test
     public void testApplySingle() throws Exception {
         Message m = new NormalMessage().addTag("main");
+        m.setText("text");
         Assert.assertEquals(0, env.getMessagesInTheSystem());
         m.apply(env);
         Assert.assertEquals(1, env.getMessagesInTheSystem());
@@ -92,6 +94,7 @@ public class NormalMessageTest {
             m[i].addTag("main");
             m[i].addTag("project");
             m[i].addTag("pull");
+            m[i].setText("text");
             m[i].setCreated(new Date(System.currentTimeMillis() + i * 1000));
         }
 
@@ -124,6 +127,7 @@ public class NormalMessageTest {
 
         for (int i = 0; i < m.length; i++) {
             m[i].addTag("main");
+            m[i].setText("text");
             m[i].setCreated(d);
         }
 

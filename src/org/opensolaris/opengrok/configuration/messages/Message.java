@@ -74,13 +74,25 @@ public abstract class Message implements Comparable<Message> {
     protected Date expiration = new Date(System.currentTimeMillis() + DEFAULT_EXPIRATION);
 
     /**
+     * Validate and apply the message to the current runtime environment.
+     *
+     * @param env the runtime environment
+     * @return possible output for this application, null if no output
+     * @throws java.lang.Exception
+     */
+    final public byte[] apply(RuntimeEnvironment env) throws Exception {
+        validate();
+        return applyMessage(env);
+    }
+
+    /**
      * Apply the message to the current runtime environment.
      *
      * @param env the runtime environment
      * @return possible output for this application, null if no output
      * @throws java.lang.Exception
      */
-    public abstract byte[] apply(RuntimeEnvironment env) throws Exception;
+    protected abstract byte[] applyMessage(RuntimeEnvironment env) throws Exception;
 
     /**
      * Validate the current message and throw an exception if the message is not

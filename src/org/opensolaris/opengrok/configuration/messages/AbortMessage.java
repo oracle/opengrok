@@ -30,7 +30,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 public class AbortMessage extends Message {
 
     @Override
-    public byte[] apply(RuntimeEnvironment env) {
+    protected byte[] applyMessage(RuntimeEnvironment env) {
         env.removeAnyMessage(tags);
         return null;
     }

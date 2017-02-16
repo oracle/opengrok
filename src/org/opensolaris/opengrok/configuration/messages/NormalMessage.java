@@ -30,7 +30,7 @@ import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 public class NormalMessage extends Message {
 
     @Override
-    public byte[] apply(RuntimeEnvironment env) {
+    protected byte[] applyMessage(RuntimeEnvironment env) {
         env.addMessage(this);
         return null;
     }
