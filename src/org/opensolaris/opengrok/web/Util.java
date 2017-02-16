@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.opensolaris.opengrok.Info;
@@ -1245,6 +1246,79 @@ public final class Util {
 
         // Otherwise, return the full path.
         return fullPath;
+    }
+
+    /**
+     * Creates a html slider for pagination. This has the same effect as
+     * invoking <code>createSlider(offset, limit, size, null)</code>.
+     *
+     * @param offset start of the current page
+     * @param limit max number of items per page
+     * @param size number of total hits to paginate
+     * @return string containing slider html
+     */
+    public static String createSlider(int offset, int limit, int size) {
+        return createSlider(offset, limit, size, null);
+    }
+
+    /**
+     * Creates a html slider for pagination.
+     *
+     *
+     * @param offset start of the current page
+     * @param limit max number of items per page
+     * @param size number of total hits to paginate
+     * @param request request containing url parameters which should be appended
+     * to the page url
+     * @return string containing slider html
+     */
+    public static String createSlider(int offset, int limit, int size, HttpServletRequest request) {
+        String slider = "";
+        if (limit < size) {
+            StringBuilder buf = new StringBuilder(4096);
+            int labelStart = 1;
+            int sstart = offset - limit * (offset / limit % 10 + 1);
+            if (sstart < 0) {
+                sstart = 0;
+                labelStart = 1;
+            } else {
+                labelStart = sstart / limit + 1;
+            }
+            int label = labelStart;
+            int labelEnd = label + 11;
+            for (int i = sstart; i < size && label <= labelEnd; i += limit) {
+                if (i <= offset && offset < i + limit) {
+                    buf.append("<span class=\"sel\">").append(label).append("</span>");
+                } else {
+                    buf.append("<a class=\"more\" href=\"?");
+                    // append request parameters
+                    if (request != null && request.getQueryString() != null) {
+                        String query = request.getQueryString();
+                        query = query.replaceFirst("(\\?|&amp;|&|)n=\\d+", "");
+                        query = query.replaceFirst("(\\?|&amp;|&|)start=\\d+", "");
+                        query = query.replaceFirst("^(\\?|&amp;|&)", "");
+                        if (!query.isEmpty()) {
+                            buf.append(query);
+                            buf.append("&amp;");
+                        }
+                    }
+                    buf.append("n=").append(limit)
+                            .append("&amp;start=").append(i);
+                    buf.append("\">");
+                    if (label == labelStart && label != 1) {
+                        buf.append("&lt;&lt");
+                    } else if (label == labelEnd && i < size) {
+                        buf.append("&gt;&gt;");
+                    } else {
+                        buf.append(label);
+                    }
+                    buf.append("</a>");
+                }
+                label++;
+            }
+            slider = buf.toString();
+        }
+        return slider;
     }
 
     /**

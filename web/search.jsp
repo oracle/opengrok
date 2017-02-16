@@ -189,48 +189,12 @@ include file="menu.jspf"
             %> milliseconds</b></p>
 	<%
     } else {
-        // We have a lots of results to show: create a slider for
-        String slider = "";
-        int thispage;  // number of items to display on the current page
         int start = searchHelper.start;
         int max = searchHelper.maxItems;
         int totalHits = searchHelper.totalHits;
-        if (searchHelper.maxItems < searchHelper.totalHits) {
-            StringBuilder buf = new StringBuilder(4096);
-            thispage = (start + max) < totalHits ? max : totalHits - start;
-            StringBuilder urlp = createUrl(request, searchHelper, false);
-            int labelStart = 1;
-            int sstart = start - max * (start / max % 10 + 1) ;
-            if (sstart < 0) {
-                sstart = 0;
-                labelStart = 1;
-            } else {
-                labelStart = sstart / max + 1;
-            }
-            int label = labelStart;
-            int labelEnd = label + 11;
-            for (int i = sstart; i < totalHits && label <= labelEnd; i+= max) {
-                if (i <= start && start < i + max) {
-                    buf.append("<span class=\"sel\">").append(label).append("</span>");
-                } else {
-                    buf.append("<a class=\"more\" href=\"s?n=").append(max)
-                        .append("&amp;start=").append(i).append(urlp).append("\">");
-                    if (label == labelStart && label != 1) {
-                        buf.append("&lt;&lt");
-                    } else if (label == labelEnd && i < totalHits) {
-                        buf.append("&gt;&gt;");
-                    } else {
-                        buf.append(label);
-                    }
-                    buf.append("</a>");
-                }
-                label++;
-            }
-            slider = buf.toString();
-        } else {
-            // set the max index to max or last
-            thispage = totalHits - start;
-        }
+        int thispage = Math.min(totalHits - start, max);  // number of items to display on the current page
+        // We have a lots of results to show: create a slider for
+        String slider = Util.createSlider(start, max, totalHits, request);
         %>
         <p class="pagetitle">Searched <b><%
             Util.htmlize(searchHelper.query.toString(), out);

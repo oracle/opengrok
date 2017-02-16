@@ -99,56 +99,13 @@ include file="pageheader.jspf"
     History hist = null;
     if ((hist = (History) request.getAttribute("history.jsp-hist")) != null) {
 
-        // We have a lots of results to show: create a slider for
-        String slider = "";
-        int thispage;  // number of items to display on the current page
         int start = cfg.getSearchStart();
         int max = cfg.getSearchMaxItems();
         int totalHits = hist.getHistoryEntries().size();
-        if (max < totalHits) {
-            StringBuilder buf = new StringBuilder(4096);
-            thispage = (start + max) < totalHits ? max : totalHits - start;
-            int labelStart = 1;
-            int sstart = start - max * (start / max % 10 + 1) ;
-            if (sstart < 0) {
-                sstart = 0;
-                labelStart = 1;
-            } else {
-                labelStart = sstart / max + 1;
-            }
-            int label = labelStart;
-            int labelEnd = label + 11;
-            for (int i = sstart; i < totalHits && label <= labelEnd; i+= max) {
-                if (i <= start && start < i + max) {
-                    buf.append("<span class=\"sel\">").append(label).append("</span>");
-                } else {
-                    buf.append("<a class=\"more\" href=\"?n=").append(max)
-                        .append("&amp;start=").append(i);
-                    // append revision parameters
-                    if (cfg.getIntParam("r1", -1) != -1) {
-                        buf.append("&amp;r1=").append(cfg.getIntParam("r1", -1));
-                    }
-                    if (cfg.getIntParam("r2", -1) != -1) {
-                        buf.append("&amp;r2=").append(cfg.getIntParam("r2", -1));
-                    }
-                    buf.append("\">");
-                    if (label == labelStart && label != 1) {
-                        buf.append("&lt;&lt");
-                    } else if (label == labelEnd && i < totalHits) {
-                        buf.append("&gt;&gt;");
-                    } else {
-                        buf.append(label);
-                    }
-                    buf.append("</a>");
-                }
-                label++;
-            }
-            slider = buf.toString();
-            request.setAttribute("history.jsp-slider", slider);
-        } else {
-            // set the max index to max or last
-            thispage = totalHits - start;
-        }
+        int thispage = Math.min(totalHits - start, max);
+
+        // We have a lots of results to show: create a slider for them
+        request.setAttribute("history.jsp-slider", Util.createSlider(start, max, totalHits, request));
 %>
         </div>
         <div id="Masthead">History log of 
