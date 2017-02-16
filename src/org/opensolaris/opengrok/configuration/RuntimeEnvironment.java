@@ -23,7 +23,6 @@
 package org.opensolaris.opengrok.configuration;
 
 import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -1124,6 +1123,10 @@ public final class RuntimeEnvironment {
 
     public void setCurrentIndexedCollapseThreshold(int currentIndexedCollapseThreshold) {
         threadConfig.get().getCurrentIndexedCollapseThreshold();
+    }
+
+    public int getGroupsCollapseThreshold() {
+        return threadConfig.get().getGroupsCollapseThreshold();
     }
 
     /**
