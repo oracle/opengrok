@@ -1172,6 +1172,26 @@ public final class RuntimeEnvironment {
     }
 
     /**
+     * Send message to webapp to refresh SearcherManagers for given projects.
+     * This is used for partial reindex.
+     *
+     * @param subFiles list of directories to refresh corresponding SearcherManagers
+     * @param host the host address to receive the configuration
+     * @param port the port to use on the host
+     * @throws IOException if an error occurs
+     */
+    public void signalTorefreshSearcherManagers(List<String> subFiles, String host, int port) throws IOException {
+        Message m = Message.createMessage("refresh");
+        m.setText("refresh");
+        for (String proj : subFiles) {
+            // subFile entries start with path separator so get basename
+            // to convert them to project names.
+            m.addTag(new File(proj).getName());
+        }
+        m.write(host, port);
+    }
+
+    /**
      * Generate a TreeMap of projects with corresponding repository information.
      *
      * Project with some repository information is considered as a repository
@@ -1773,16 +1793,28 @@ public final class RuntimeEnvironment {
 
     private Thread indexReopenThread;
 
+    private void maybeRefreshSearcherManager(SearcherManager sm) {
+        try {
+            sm.maybeRefresh();
+        }  catch (AlreadyClosedException ex) {
+            // This is a case of removed project.
+            // See refreshSearcherManagerMap() for details.
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
+        }
+    }
+
+    public void maybeRefreshIndexSearchers(Set<String> projects) {
+        for (String proj : projects) {
+            if (searcherManagerMap.containsKey(proj)) {
+                maybeRefreshSearcherManager(searcherManagerMap.get(proj));
+            }
+        }
+    }
+
     public void maybeRefreshIndexSearchers() {
         for (Map.Entry<String, SearcherManager> entry : searcherManagerMap.entrySet()) {
-            try {
-                entry.getValue().maybeRefresh();
-            } catch (AlreadyClosedException ex) {
-                // This is a case of removed project.
-                // See refreshSearcherManagerMap() for details.
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, "maybeRefresh failed", ex);
-            }
+            maybeRefreshSearcherManager(entry.getValue());
         }
     }
 

@@ -127,6 +127,8 @@ public final class Indexer {
             boolean listRepos = false;
             boolean createDict = false;
             int noThreads = 2 + (2 * Runtime.getRuntime().availableProcessors());
+            String host = null;
+            int port = 0;
 
             // Parse command line options:
             Getopt getopt = new Getopt(argv, cmdOptions.getCommandString());
@@ -472,6 +474,25 @@ public final class Indexer {
                     }
                 }
 
+                if (configHost != null) {
+                    String[] configHostArray = configHost.split(":");
+                    if (configHostArray.length == 2) {
+                        host = configHostArray[0];
+                        try {
+                            port = Integer.parseInt(configHostArray[1]);
+                        } catch (NumberFormatException ex) {
+                            System.err.println("Failed to parse: " + configHost);
+                            System.exit(1);
+                        }
+                    } else {
+                        System.err.println("Syntax error: ");
+                        for (String s : configHostArray) {
+                            System.err.println(s);
+                        }
+                        System.exit(1);
+                    }
+                }
+
                 List<Class<? extends Repository>> repositoryClasses
                         = RepositoryFactory.getRepositoryClasses();
                 for (Class<? extends Repository> clazz : repositoryClasses) {
@@ -605,8 +626,15 @@ public final class Indexer {
                             progress);
                 }
 
-                // Finally send new configuration to the web application.
-                getInstance().sendToConfigHost(env, configHost);
+                // Finally ping webapp to refresh indexes in the case of partial reindex
+                // or send new configuration to the web application in the case of full reindex.
+                if (host != null) {
+                    if (!subFiles.isEmpty()) {
+                        getInstance().refreshSearcherManagers(env, subFiles, host, port);
+                    } else {
+                        getInstance().sendToConfigHost(env, host, port);
+                    }
+                }
             } catch (IndexerException ex) {
                 LOGGER.log(Level.SEVERE, "Exception running indexer", ex);
                 System.err.println(cmdOptions.getUsage());
@@ -890,25 +918,24 @@ public final class Indexer {
         elapsed.report(LOGGER, "Done indexing data of all repositories");
     }
 
-    public void sendToConfigHost(RuntimeEnvironment env, String configHost) {
-        if (configHost != null) {
-            String[] cfg = configHost.split(":");
-            LOGGER.log(Level.INFO, "Send configuration to: {0}", configHost);
-            if (cfg.length == 2) {
-                try {
-                    env.writeConfiguration(cfg[0], Integer.parseInt(cfg[1]));
-                } catch (NumberFormatException | IOException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to send configuration to "
-                            + configHost + " (is web application server running with opengrok deployed?)", ex);
-                }
-            } else {
-                LOGGER.severe("Syntax error: ");
-                for (String s : cfg) {
-                    LOGGER.log(Level.SEVERE, "[{0}]", s);
-                }
-            }
-            LOGGER.info("Configuration update routine done, check log output for errors.");
+    public void refreshSearcherManagers(RuntimeEnvironment env, List<String> projects, String host, int port) {
+        LOGGER.log(Level.INFO, "Refreshing searcher managers to: {0}", host);
+        try {
+            env.signalTorefreshSearcherManagers(projects, host, port);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Failed to refresh searcher managers on " + host, ex);
         }
+    }
+
+    public void sendToConfigHost(RuntimeEnvironment env, String host, int port) {
+        LOGGER.log(Level.INFO, "Sending configuration to: {0}", host);
+        try {
+            env.writeConfiguration(host, port);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Failed to send configuration to "
+                    + host + " (is web application server running with opengrok deployed?)", ex);
+        }
+        LOGGER.info("Configuration update routine done, check log output for errors.");
     }
 
     private Indexer() {

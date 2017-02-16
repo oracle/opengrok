@@ -329,7 +329,7 @@ public final class Configuration {
         setGroupsCollapseThreshold(4);
         setPluginDirectory(null);
         setMaxSearchThreadCount(2 * Runtime.getRuntime().availableProcessors());
-        setIndexRefreshPeriod(60);
+        setIndexRefreshPeriod(3600);
         setMessageLimit(500);
         setCurrentIndexedCollapseThreshold(27);
     }
