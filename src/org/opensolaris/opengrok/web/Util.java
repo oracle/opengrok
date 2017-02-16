@@ -32,6 +32,8 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -1251,7 +1253,7 @@ public final class Util {
      * @param string the string to check
      * @return true if it is http url, false otherwise
      */
-    public static boolean isHttpUrl(String string) {
+    public static boolean isHttpUri(String string) {
         URL url;
         try {
             url = new URL(string);
@@ -1282,13 +1284,22 @@ public final class Util {
      * @return html containing the link &lt;a&gt;...&lt;/a&gt;
      */
     public static String linkify(String url, boolean newTab) {
-        if (isHttpUrl(url)) {
-            return String.format("<a href=\"%s\"%s title=\"Link to %s\">%s</a>",
-                    url,
-                    newTab ? " target=\"_blank\"" : "",
-                    Util.htmlize(url),
-                    Util.htmlize(url)
-            );
+        if (isHttpUri(url)) {
+            try {
+                URL old = new URL(url);
+                URI constructed = new URI(old.getProtocol(), old.getUserInfo(),
+                        old.getHost(), old.getPort(),
+                        old.getPath(), old.getQuery(), old.getRef());
+
+                return String.format("<a href=\"%s\"%s title=\"Link to %s\">%s</a>",
+                        constructed.toString(),
+                        newTab ? " target=\"_blank\"" : "",
+                        Util.htmlize(url),
+                        Util.htmlize(url)
+                );
+            } catch (MalformedURLException | URISyntaxException ex) {
+                return url;
+            }
         }
         return url;
     }

@@ -292,27 +292,27 @@ public class UtilTest {
         assertEquals("def/ghi", Util.stripPathPrefix("/abc", "/abc/def/ghi"));
         assertEquals("def/ghi", Util.stripPathPrefix("/abc/", "/abc/def/ghi"));
     }
-    
+
     @Test
     public void testIsUrl() {
-        assertTrue(Util.isHttpUrl("http://www.example.com"));
-        assertTrue(Util.isHttpUrl("http://example.com"));
-        assertTrue(Util.isHttpUrl("https://example.com"));
-        assertTrue(Util.isHttpUrl("https://www.example.com"));
-        assertTrue(Util.isHttpUrl("http://www.example.com?param=1&param2=2"));
-        assertTrue(Util.isHttpUrl("http://www.example.com/other/page"));
-        assertTrue(Util.isHttpUrl("https://www.example.com?param=1&param2=2"));
-        assertTrue(Util.isHttpUrl("https://www.example.com/other/page"));
-        assertTrue(Util.isHttpUrl("http://www.example.com:80/other/page"));
-        assertTrue(Util.isHttpUrl("http://www.example.com:8080/other/page"));
-        assertTrue(Util.isHttpUrl("https://www.example.com:80/other/page"));
-        assertTrue(Util.isHttpUrl("https://www.example.com:8080/other/page"));
+        assertTrue(Util.isHttpUri("http://www.example.com"));
+        assertTrue(Util.isHttpUri("http://example.com"));
+        assertTrue(Util.isHttpUri("https://example.com"));
+        assertTrue(Util.isHttpUri("https://www.example.com"));
+        assertTrue(Util.isHttpUri("http://www.example.com?param=1&param2=2"));
+        assertTrue(Util.isHttpUri("http://www.example.com/other/page"));
+        assertTrue(Util.isHttpUri("https://www.example.com?param=1&param2=2"));
+        assertTrue(Util.isHttpUri("https://www.example.com/other/page"));
+        assertTrue(Util.isHttpUri("http://www.example.com:80/other/page"));
+        assertTrue(Util.isHttpUri("http://www.example.com:8080/other/page"));
+        assertTrue(Util.isHttpUri("https://www.example.com:80/other/page"));
+        assertTrue(Util.isHttpUri("https://www.example.com:8080/other/page"));
 
-        assertFalse(Util.isHttpUrl("git@github.com:OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUrl("hg@mercurial.com:OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUrl("ssh://git@github.com:OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUrl("ldap://example.com/OpenGrok/OpenGrok"));
-        assertFalse(Util.isHttpUrl("smtp://example.com/OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUri("git@github.com:OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUri("hg@mercurial.com:OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUri("ssh://git@github.com:OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUri("ldap://example.com/OpenGrok/OpenGrok"));
+        assertFalse(Util.isHttpUri("smtp://example.com/OpenGrok/OpenGrok"));
     }
 
     @Test
@@ -342,5 +342,13 @@ public class UtilTest {
         assertTrue(Util.linkify("ldap://example.com/OpenGrok/OpenGrok").equals("ldap://example.com/OpenGrok/OpenGrok"));
         assertTrue(Util.linkify("smtp://example.com/OpenGrok/OpenGrok").equals("smtp://example.com/OpenGrok/OpenGrok"));
         assertTrue(Util.linkify("just some crazy text").equals("just some crazy text"));
+
+        // escaping tests
+        assertTrue(Util.linkify("http://www.example.com/\"quotation\"/else")
+                .contains("href=\"http://www.example.com/%22quotation%22/else\""));
+        assertTrue(Util.linkify("https://example.com/><\"")
+                .contains("href=\"https://example.com/%3E%3C%22\""));
+        assertTrue(Util.linkify("http://www.example.com?param=1&param2=2&param3=\"quoted>\"")
+                .contains("href=\"http://www.example.com?param=1&param2=2&param3=%22quoted%3E%22\""));
     }
 }
