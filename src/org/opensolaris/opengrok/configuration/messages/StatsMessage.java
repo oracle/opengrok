@@ -37,6 +37,8 @@ import org.opensolaris.opengrok.web.Util;
  */
 public class StatsMessage extends Message {
 
+    static final List<String> ALLOWED_OPTIONS = Arrays.asList(new String[]{"get", "reload", "clean"});
+
     @Override
     public byte[] apply(RuntimeEnvironment env) throws IOException, ParseException {
         if (getText().equalsIgnoreCase("reload")) {
@@ -52,11 +54,10 @@ public class StatsMessage extends Message {
         if (getText() == null) {
             throw new Exception("The message must contain a text.");
         }
-        List<String> allowed = Arrays.asList(new String[]{"get", "reload", "clean"});
-        if (!allowed.contains(getText())) {
+        if (!ALLOWED_OPTIONS.contains(getText())) {
             throw new Exception(
                     String.format("The message text must be one of [%s] - '%s' given",
-                            allowed.stream().collect(Collectors.joining(",")), getText()));
+                            ALLOWED_OPTIONS.stream().collect(Collectors.joining(",")), getText()));
         }
         super.validate();
     }
