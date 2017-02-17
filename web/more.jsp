@@ -18,8 +18,7 @@ information: Portions Copyright [yyyy] [name of copyright owner]
 
 CDDL HEADER END
 
-Copyright 2010, 2015 Sun Microsystems, Inc.  All rights reserved.
-Use is subject to license terms.
+Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 Portions Copyright 2011 Jens Elkner.
 
@@ -36,12 +35,10 @@ org.opensolaris.opengrok.logger.LoggerFactory"
 
 file="mast.jsp"
 
-%><%!
-  static Logger LOGGER = LoggerFactory.getLogger(more_jsp.class);
 %><%
 /* ---------------------- more.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     QueryBuilder qbuilder = cfg.getQueryBuilder();
 
     try {
@@ -58,7 +55,7 @@ file="mast.jsp"
 </div><%
         }
     } catch (Exception e) {
-        LOGGER.log(Level.WARNING, e.getMessage());
+        LoggerFactory.getLogger(more_jsp.class).log(Level.WARNING, e.getMessage());
     }
 }
 /* ---------------------- more.jsp end --------------------- */

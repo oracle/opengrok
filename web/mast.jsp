@@ -42,7 +42,7 @@ org.opensolaris.opengrok.web.Prefix,
 org.opensolaris.opengrok.web.Util"%><%
 /* ---------------------- mast.jsp start --------------------- */
 {
-    cfg = PageConfig.get(request);
+    PageConfig cfg = PageConfig.get(request);
     String redir = cfg.canProcess();
     if (redir == null || redir.length() > 0) {
         if (redir == null) {            
@@ -71,9 +71,7 @@ org.opensolaris.opengrok.web.Util"%><%
 
     String context = request.getContextPath();
     cfg.getEnv().setUrlPrefix(context + Prefix.SEARCH_R + "?");
-
-    String uriEncodedPath = cfg.getUriEncodedPath();
-    String rev = cfg.getRequestedRevision();
+}
 %>
 <%@
 
@@ -82,7 +80,7 @@ include file="httpheader.jspf"
         %><body>
 <script type="text/javascript">/* <![CDATA[ */
     document.rev = getParameter("r");
-    document.annotate = <%= cfg.annotate() %>;
+    document.annotate = <%= PageConfig.get(request).annotate() %>;
     document.domReady.push(domReadyMast);
     document.pageReady.push(pageReadyMast);
 /* ]]> */</script>
@@ -96,6 +94,12 @@ include file="pageheader.jspf"
 </div>
 <div id="Masthead">
     <%
+{
+    PageConfig cfg = PageConfig.get(request);
+    String path = cfg.getPath();
+    String context = request.getContextPath();
+    String rev = cfg.getRequestedRevision();
+
     JSONArray messages = new JSONArray();
     if (cfg.getProject() != null) {
         messages = Util.messagesToJson(cfg.getProject(),
@@ -121,8 +125,9 @@ include file="pageheader.jspf"
     </span>
     <span class="important-note important-note-rounded"
           data-messages='<%= messages %>'>!</span>
-    <% } %>
-
+    <% }
+}
+%>
 </div>
 <%@
 
@@ -130,6 +135,5 @@ include file="minisearch.jspf"
 
 %>
 <%
-}
 /* ---------------------- mast.jsp end --------------------- */
 %>
