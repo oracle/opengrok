@@ -56,8 +56,9 @@ public class UuencodeAnalyzer extends TextAnalyzer {
 
     @Override
     public void analyze(Document doc, StreamSource src, Writer xrefOut) throws IOException {        
-        TextField full=new TextField(QueryBuilder.FULL,getReader(src.getStream()));
-        full.setTokenStream(SymbolTokenizer); //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        //this is to explicitely use appropriate analyzers tokenstream to workaround #1376 symbols search works like full text search 
+        TextField full=new TextField(QueryBuilder.FULL,SymbolTokenizer);
+        this.SymbolTokenizer.setReader(getReader(src.getStream()));        
         doc.add(full);
                 
         if (xrefOut != null) {
@@ -65,15 +66,6 @@ public class UuencodeAnalyzer extends TextAnalyzer {
                 writeXref(in, xrefOut);
             }
         }
-    }
-
-    //TODO delete once we're sure above works
-    @Override
-    public TokenStreamComponents createComponents(String fieldName) {        
-        if ("full".equals(fieldName)) {
-            return new TokenStreamComponents(new UuencodeFullTokenizer(FileAnalyzer.dummyReader));
-        }
-        return super.createComponents(fieldName);
     }
 
     /**
