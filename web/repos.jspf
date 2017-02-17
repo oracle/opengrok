@@ -21,7 +21,6 @@ CDDL HEADER END
 Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
 
 --%>
-<%@page import="org.jcp.xml.dsig.internal.dom.Utils"%>
 <%@page import="org.json.simple.JSONArray"%>
 <%@page import="org.opensolaris.opengrok.configuration.messages.Message"%>
 <%@page import="java.util.SortedSet"%>
