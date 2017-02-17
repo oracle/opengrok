@@ -31,14 +31,12 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.junit.Test;
 import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
-import org.opensolaris.opengrok.analysis.plain.PlainSymbolTokenizer;
 import org.opensolaris.opengrok.logger.LoggerFactory;
 
 /**
@@ -91,12 +89,5 @@ public class JavaSymbolTokenizerTest {
                     "System","out","println","System","out","println"
                 },
                 termsFor);
-    }
-    
-    @Test
-    public void fullTest()  throws UnsupportedEncodingException {
-        // if we do the full indexing the refs then should contain "comment" in case plainsymbol tokenizer is used
-        JFlexTokenizer ts = new PlainSymbolTokenizer(null);
-    }
-    
+    }            
 }
