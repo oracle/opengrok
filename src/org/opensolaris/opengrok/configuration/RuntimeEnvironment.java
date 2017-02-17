@@ -1187,7 +1187,6 @@ public final class RuntimeEnvironment {
      */
     public void signalTorefreshSearcherManagers(List<String> subFiles, String host, int port) throws IOException {
         Message m = Message.createMessage("refresh");
-        m.setText("refresh");
         for (String proj : subFiles) {
             // subFile entries start with path separator so get basename
             // to convert them to project names.

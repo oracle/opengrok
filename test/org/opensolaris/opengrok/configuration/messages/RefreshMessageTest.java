@@ -22,22 +22,18 @@
  */
 package org.opensolaris.opengrok.configuration.messages;
 
-import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
 import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensolaris.opengrok.configuration.Configuration;
 import org.opensolaris.opengrok.configuration.RuntimeEnvironment;
 
 /**
  *
- * @author Vladimir Kotal
+ * @author kotal
  */
-public class ConfigMessageTest {
-
+public class RefreshMessageTest {
     RuntimeEnvironment env;
 
     @Before
@@ -53,8 +49,8 @@ public class ConfigMessageTest {
 
     @Test
     public void testValidate() {
-        Message m = new ConfigMessage();
-        Assert.assertFalse(MessageTest.assertValid(m));
+        Message m = new RefreshMessage();
+        Assert.assertTrue(MessageTest.assertValid(m));
         m.setText("text");
         Assert.assertTrue(MessageTest.assertValid(m));
         m.setClassName(null);
@@ -63,22 +59,5 @@ public class ConfigMessageTest {
         m.setTags(new TreeSet<>());
         Assert.assertTrue(MessageTest.assertValid(m));
         Assert.assertEquals(new TreeSet<>(), m.getTags());
-    }
-
-    @Test
-    public void testApplyBasicConfig() throws Exception {
-        Message m = new ConfigMessage();
-        Configuration config = new Configuration();
-        String srcRoot = "/foo";
-        config.setSourceRoot(srcRoot);
-
-        m.addTag("config");
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(baos);
-        e.writeObject(config);
-        e.close();
-        m.setText(baos.toString());
-        m.apply(env);
-        Assert.assertEquals(env.getSourceRootPath(), srcRoot);
     }
 }

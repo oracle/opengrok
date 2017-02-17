@@ -39,4 +39,9 @@ public class RefreshMessage extends Message {
 
         return null;
     }
+
+    @Override
+    public void validate() throws Exception {
+        super.validate();
+    }
 }
