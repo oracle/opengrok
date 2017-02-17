@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexXref;
 import org.opensolaris.opengrok.analysis.plain.AbstractSourceCodeAnalyzer;
@@ -44,7 +45,7 @@ public class PerlAnalyzer extends AbstractSourceCodeAnalyzer {
      */
     protected PerlAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new PerlSymbolTokenizer(null);    
+        SymbolTokenizer=new PerlSymbolTokenizer(FileAnalyzer.dummyReader);    
     }
     
     @Override

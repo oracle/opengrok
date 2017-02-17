@@ -29,6 +29,7 @@ import org.apache.lucene.analysis.Analyzer.TokenStreamComponents;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.StreamSource;
 import org.opensolaris.opengrok.analysis.TextAnalyzer;
@@ -50,7 +51,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
      */
     protected UuencodeAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new UuencodeFullTokenizer(null);
+        SymbolTokenizer=new UuencodeFullTokenizer(FileAnalyzer.dummyReader);
     }
 
     @Override
@@ -70,7 +71,7 @@ public class UuencodeAnalyzer extends TextAnalyzer {
     @Override
     public TokenStreamComponents createComponents(String fieldName) {        
         if ("full".equals(fieldName)) {
-            return new TokenStreamComponents(new UuencodeFullTokenizer(null));
+            return new TokenStreamComponents(new UuencodeFullTokenizer(FileAnalyzer.dummyReader));
         }
         return super.createComponents(fieldName);
     }

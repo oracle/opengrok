@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import org.opensolaris.opengrok.analysis.Definitions;
+import org.opensolaris.opengrok.analysis.FileAnalyzer;
 import org.opensolaris.opengrok.analysis.FileAnalyzerFactory;
 import org.opensolaris.opengrok.analysis.JFlexTokenizer;
 import org.opensolaris.opengrok.analysis.JFlexXref;
@@ -41,7 +42,7 @@ public class CSharpAnalyzer extends AbstractSourceCodeAnalyzer {
 
     protected CSharpAnalyzer(FileAnalyzerFactory factory) {
         super(factory);
-        SymbolTokenizer=new CSharpSymbolTokenizer(null);    
+        SymbolTokenizer=new CSharpSymbolTokenizer(FileAnalyzer.dummyReader);    
     }
    
     @Override

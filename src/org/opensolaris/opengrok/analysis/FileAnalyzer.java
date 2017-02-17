@@ -24,6 +24,8 @@
 package org.opensolaris.opengrok.analysis;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -140,13 +142,15 @@ public class FileAnalyzer extends Analyzer {
         return factory.getGenre();
     }    
 
+    public static Reader dummyReader=new StringReader("");
+    
     /** Creates a new instance of FileAnalyzer
      * @param factory name of factory to be used 
      */
     public FileAnalyzer(FileAnalyzerFactory factory) {
         super(Analyzer.PER_FIELD_REUSE_STRATEGY);
         this.factory = factory;        
-        SymbolTokenizer=new PlainSymbolTokenizer(null);                        
+        SymbolTokenizer=new PlainSymbolTokenizer(dummyReader);
     }
     
     /**
@@ -186,18 +190,18 @@ public class FileAnalyzer extends Analyzer {
     protected TokenStreamComponents createComponents(String fieldName) {
         switch (fieldName) {
             case "full":
-                return new TokenStreamComponents(new PlainFullTokenizer(null));
+                return new TokenStreamComponents(new PlainFullTokenizer(dummyReader));
             case "path":
             case "project":
                 return new TokenStreamComponents(new PathTokenizer());
             case "hist":
                 return new HistoryAnalyzer().createComponents(fieldName);
                 //below is set by PlainAnalyzer to workaround #1376 symbols search works like full text search 
-//            case "refs": {                
-//                return new TokenStreamComponents(SymbolTokenizer); 
-//                  }            
+            case "refs": {                
+                    return new TokenStreamComponents(SymbolTokenizer);
+            }
             case "defs":
-                return new TokenStreamComponents(new PlainSymbolTokenizer(null));
+                return new TokenStreamComponents(new PlainSymbolTokenizer(dummyReader));
             default:
                 LOGGER.log(
                         Level.WARNING, "Have no analyzer for: {0}", fieldName);
