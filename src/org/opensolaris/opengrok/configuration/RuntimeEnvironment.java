@@ -1160,6 +1160,11 @@ public final class RuntimeEnvironment {
         Message m = Message.createMessage("config");
         m.addTag("reindex");
         m.setText(configuration.getXMLRepresentationAsString());
+        try {
+            m.validate();
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
         m.write(host, port);
     }
 

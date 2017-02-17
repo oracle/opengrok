@@ -18,10 +18,11 @@
  */
 
  /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
  */
 package org.opensolaris.opengrok.configuration.messages;
 
+import java.util.TreeSet;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -48,6 +49,26 @@ public class StatsMessageTest {
 
     @After
     public void tearDown() {
+    }
+
+    @Test
+    public void testValidate() {
+        Message m = new StatsMessage();
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setText("text");
+        Assert.assertFalse(MessageTest.assertValid(m));
+        m.setText("get");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setText("clean");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setText("reload");
+        Assert.assertTrue(MessageTest.assertValid(m));
+        m.setClassName(null);
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertNull(m.getClassName());
+        m.setTags(new TreeSet<>());
+        Assert.assertTrue(MessageTest.assertValid(m));
+        Assert.assertEquals(new TreeSet<>(), m.getTags());
     }
 
     @Test
